@@ -482,10 +482,10 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         end
 
         context 'when Arkose is down' do
-          it 'marks the user as Arkose-verified' do
+          it 'marks the user as Arkose-verified', :aggregate_failures do
             mock_arkose_token_verification(success: false, service_down: true)
 
-            expect { do_request }.to change { user.arkose_verified? }.from(false).to(true)
+            expect { do_request }.to change { User.find(user.id).arkose_verified? }.from(false).to(true)
 
             expect(response).to redirect_to(signup_identity_verification_path)
           end

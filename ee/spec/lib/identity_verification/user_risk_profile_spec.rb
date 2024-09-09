@@ -5,8 +5,16 @@ require 'spec_helper'
 RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instance_resiliency do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:user) { create(:user) }
-  let_it_be(:risk_profile) { described_class.new(user) }
+  let_it_be_with_reload(:user) { create(:user) }
+  let(:risk_profile) { described_class.new(user) }
+
+  shared_examples 'clears user_custom_attributes memoization' do
+    specify do
+      expect(risk_profile).to receive(:clear_memoization).with(:user_custom_attributes).and_call_original
+
+      subject
+    end
+  end
 
   describe '#assume_low_risk!' do
     subject(:call_method) { risk_profile.assume_low_risk!(reason: 'Because') }
@@ -25,6 +33,8 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
       expect(record.key).to eq described_class::ASSUMED_LOW_RISK_ATTR_KEY
       expect(record.value).to eq 'Because'
     end
+
+    it_behaves_like 'clears user_custom_attributes memoization'
   end
 
   describe '#assume_high_risk!' do
@@ -44,6 +54,8 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
       expect(record.key).to eq described_class::ASSUMED_HIGH_RISK_ATTR_KEY
       expect(record.value).to eq 'Because'
     end
+
+    it_behaves_like 'clears user_custom_attributes memoization'
   end
 
   describe '#assumed_high_risk?' do
@@ -123,6 +135,95 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
       end
 
       it { is_expected.to eq result }
+    end
+  end
+
+  describe '#remove_identity_verification_exemption' do
+    subject(:call_method) { risk_profile.remove_identity_verification_exemption }
+
+    context 'when user has an identity verification exemption custom attribute' do
+      before do
+        user.create_identity_verification_exemption('testing')
+      end
+
+      it 'destroys the custom attribute' do
+        key = UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT
+        expect { call_method }.to change {
+                                    user.custom_attributes.find_by_key(key)
+                                  }.to(nil)
+      end
+
+      it_behaves_like 'clears user_custom_attributes memoization'
+    end
+
+    context 'when user does not have an identity verification exemption custom attribute' do
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#identity_verification_exempt?' do
+    subject(:call_method) { risk_profile.identity_verification_exempt? }
+
+    context 'when user has an identity verification exemption custom attribute' do
+      it 'returns true' do
+        user.create_identity_verification_exemption('testing')
+
+        expect(call_method).to eq true
+      end
+    end
+
+    context 'when user does not have an identity verification exemption custom attribute' do
+      it { is_expected.to eq false }
+    end
+  end
+
+  describe '#phone_number_verification_exempt?' do
+    subject(:call_method) { risk_profile.phone_number_verification_exempt? }
+
+    context 'when user has a phone number verification exemption custom attribute' do
+      it 'returns true' do
+        risk_profile.add_phone_number_verification_exemption
+
+        expect(call_method).to eq true
+      end
+    end
+
+    context 'when user does not have a phone number verification exemption custom attribute' do
+      it { is_expected.to eq false }
+    end
+  end
+
+  describe '#add_phone_number_verification_exemption' do
+    subject(:call_method) { risk_profile.add_phone_number_verification_exemption }
+
+    it 'creates the exemption custom attribute' do
+      key = UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT
+      expect { call_method }.to change { user.custom_attributes.by_key(key).count }.from(0).to(1)
+    end
+
+    it_behaves_like 'clears user_custom_attributes memoization'
+  end
+
+  describe '#remove_phone_number_verification_exemption' do
+    subject(:call_method) { risk_profile.remove_phone_number_verification_exemption }
+
+    context 'when user has a phone number verification exemption custom attribute' do
+      before do
+        risk_profile.add_phone_number_verification_exemption
+      end
+
+      it 'destroys the custom attribute' do
+        key = UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT
+        expect { call_method }.to change {
+                                    user.custom_attributes.find_by_key(key)
+                                  }.to(nil)
+      end
+
+      it_behaves_like 'clears user_custom_attributes memoization'
+    end
+
+    context 'when user does not have a phone number verification exemption custom attribute' do
+      it { is_expected.to be_nil }
     end
   end
 end

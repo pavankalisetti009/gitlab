@@ -442,13 +442,14 @@ RSpec.shared_examples 'toggles phone number verification exemption for the user'
   end
 
   it 'toggles phone exemption' do
-    expect { do_request }.to change { User.find(user.id).exempt_from_phone_number_verification? }.to(true)
+    expect { do_request }.to change { User.find(user.id).phone_number_verification_exempt? }.to(true)
   end
 
-  it 'returns verification methods and state' do
+  it 'returns verification methods and state', :aggregate_failures do
     do_request
 
     expect(json_response.keys).to include('verification_methods', 'verification_state')
+    expect(json_response["verification_methods"]).not_to include('phone')
   end
 
   it_behaves_like 'logs and tracks the event', :toggle_phone_exemption, :success

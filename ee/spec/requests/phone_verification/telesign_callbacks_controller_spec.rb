@@ -87,7 +87,7 @@ RSpec.describe PhoneVerification::TelesignCallbacksController, feature_category:
         end
 
         it 'exempts the user' do
-          expect { do_request }.to change { user.exempt_from_phone_number_verification? }.from(false).to(true)
+          expect { do_request }.to change { user.phone_number_verification_exempt? }.from(false).to(true)
         end
 
         it 'invalidates verification_state_*identity_verification_path cache' do
@@ -117,7 +117,7 @@ RSpec.describe PhoneVerification::TelesignCallbacksController, feature_category:
           end
 
           it 'does not exempt the user' do
-            expect { do_request }.not_to change { user.exempt_from_phone_number_verification? }
+            expect { do_request }.not_to change { user.phone_number_verification_exempt? }
           end
 
           it_behaves_like 'does not invalidate verification_state_signup_identity_verification_path cache'

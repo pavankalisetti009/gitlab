@@ -15,7 +15,7 @@ module EE
       end
 
       def destroy_identity_verification_exemption
-        if @user.destroy_identity_verification_exemption
+        if @user.remove_identity_verification_exemption
           redirect_to [:admin, @user], notice: _('Identity verification exemption has been removed.')
         else
           redirect_to [:admin, @user], alert: _('Something went wrong. Unable to remove identity verification exemption.')

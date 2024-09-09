@@ -2,11 +2,20 @@
 
 module IdentityVerification
   class UserRiskProfile
+    include Gitlab::Utils::StrongMemoize
+
     attr_reader :user
 
-    ASSUMED_LOW_RISK_ATTR_KEY = 'assumed_low_risk_reason'
     ASSUMED_HIGH_RISK_ATTR_KEY = 'assumed_high_risk_reason'
-    ARKOSE_RISK_BAND_KEY = ::UserCustomAttribute::ARKOSE_RISK_BAND
+    ASSUMED_LOW_RISK_ATTR_KEY = 'assumed_low_risk_reason'
+
+    CUSTOM_ATTR_KEYS = [
+      UserCustomAttribute::ARKOSE_RISK_BAND,
+      UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT,
+      UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT,
+      ASSUMED_HIGH_RISK_ATTR_KEY,
+      ASSUMED_LOW_RISK_ATTR_KEY
+    ].freeze
 
     # https://developer.telesign.com/enterprise/docs/intelligence-get-started#score-scales
     TELESIGN_HIGH_RISK_THRESHOLD = 600
@@ -20,17 +29,17 @@ module IdentityVerification
     end
 
     def assume_low_risk!(reason:)
-      ::UserCustomAttribute.upsert_custom_attribute(user_id: user.id, key: ASSUMED_LOW_RISK_ATTR_KEY, value: reason)
+      create_custom_attribute(ASSUMED_LOW_RISK_ATTR_KEY, reason)
       log_assumed_risk(level: 'low', reason: reason)
     end
 
     def assume_high_risk!(reason:)
-      ::UserCustomAttribute.upsert_custom_attribute(user_id: user.id, key: ASSUMED_HIGH_RISK_ATTR_KEY, value: reason)
+      create_custom_attribute(ASSUMED_HIGH_RISK_ATTR_KEY, reason)
       log_assumed_risk(level: 'high', reason: reason)
     end
 
     def assumed_high_risk?
-      user.custom_attributes.by_key(ASSUMED_HIGH_RISK_ATTR_KEY).exists?
+      custom_attribute(ASSUMED_HIGH_RISK_ATTR_KEY).present?
     end
 
     def medium_risk?
@@ -41,14 +50,55 @@ module IdentityVerification
       arkose_risk_band == ::Arkose::VerifyResponse::RISK_BAND_HIGH.downcase
     end
 
+    def identity_verification_exempt?
+      custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT).present?
+    end
+
+    def remove_identity_verification_exemption
+      destroy_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT)
+    end
+
+    def phone_number_verification_exempt?
+      exemption_attr = custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT)
+      exemption_attr.present? && ActiveModel::Type::Boolean.new.cast(exemption_attr.value)
+    end
+
+    def add_phone_number_verification_exemption
+      create_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT, true.to_s)
+    end
+
+    def remove_phone_number_verification_exemption
+      destroy_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT)
+    end
+
     private
 
+    def user_custom_attributes
+      user.custom_attributes.by_key(CUSTOM_ATTR_KEYS).to_a
+    end
+    strong_memoize_attr :user_custom_attributes
+
+    def custom_attribute(key)
+      user_custom_attributes.find { |a| a.key == key }
+    end
+
+    def create_custom_attribute(key, value)
+      ::UserCustomAttribute.upsert_custom_attribute(user_id: user.id, key: key, value: value)
+      clear_memoization(:user_custom_attributes)
+    end
+
+    def destroy_custom_attribute(key)
+      custom_attribute(key).tap do |custom_attr|
+        custom_attr&.destroy && clear_memoization(:user_custom_attributes)
+      end
+    end
+
     def assumed_low_risk?
-      user.custom_attributes.by_key(ASSUMED_LOW_RISK_ATTR_KEY).exists?
+      custom_attribute(ASSUMED_LOW_RISK_ATTR_KEY).present?
     end
 
     def arkose_risk_band
-      risk_band_attr = user.custom_attributes.by_key(ARKOSE_RISK_BAND_KEY).first
+      risk_band_attr = custom_attribute(UserCustomAttribute::ARKOSE_RISK_BAND)
       return unless risk_band_attr.present?
 
       risk_band_attr.value.downcase
