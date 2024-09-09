@@ -3,6 +3,7 @@ import { GlIcon } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemRolledUpData from '~/work_items/components/work_item_links/work_item_rolled_up_data.vue';
+import WorkItemRolledUpCount from '~/work_items/components/work_item_links/work_item_rolled_up_count.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -17,6 +18,7 @@ describe('WorkItemRollUpData', () => {
   const findRolledUpWeightValue = () => wrapper.findByTestId('work-item-weight-value');
   const findRolledUpProgress = () => wrapper.findByTestId('work-item-rollup-progress');
   const findRolledUpProgressValue = () => wrapper.findByTestId('work-item-progress-value');
+  const findRolledUpCount = () => wrapper.findComponent(WorkItemRolledUpCount);
 
   const workItemQueryResponse = workItemByIidResponseFactory({
     canUpdate: true,
@@ -31,6 +33,7 @@ describe('WorkItemRollUpData', () => {
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemRolledUpData, {
       propsData: {
+        rolledUpCountsByType: [],
         fullPath: 'test/project',
         workItemType,
         workItemIid,
@@ -39,6 +42,12 @@ describe('WorkItemRollUpData', () => {
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
     });
   };
+
+  it('renders rolled up count component', () => {
+    createComponent();
+
+    expect(findRolledUpCount().exists()).toBe(true);
+  });
 
   describe('rolled up weight', () => {
     it.each`
