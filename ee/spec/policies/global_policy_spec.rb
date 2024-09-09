@@ -803,17 +803,19 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     let(:policy) { :access_glab_ask_git_command }
 
     context 'for self-managed' do
-      where(:licensed, :free_access, :allowed_for, :enabled_for_user) do
-        false | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | false | true  | be_allowed(:access_glab_ask_git_command)
-        true  | true  | false | be_allowed(:access_glab_ask_git_command)
-        true  | true  | true  | be_allowed(:access_glab_ask_git_command)
+      where(:duo_features_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
+        true  | false | false | false | be_disallowed(:access_glab_ask_git_command)
+        true  | true  | false | false | be_disallowed(:access_glab_ask_git_command)
+        false | true  | true  | true  | be_disallowed(:access_glab_ask_git_command)
+        true  | true  | false | true  | be_allowed(:access_glab_ask_git_command)
+        true  | true  | true  | false | be_allowed(:access_glab_ask_git_command)
+        true  | true  | true  | true  | be_allowed(:access_glab_ask_git_command)
       end
 
       with_them do
         before do
           stub_licensed_features(glab_ask_git_command: licensed)
+          stub_application_setting(duo_features_enabled: duo_features_enabled)
 
           service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:glab_ask_git_command, nil, nil)
           allow(CloudConnector::AvailableServices).to receive(:find_by_name)
@@ -830,7 +832,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         where(:free_access, :any_group_with_ga_ai_available, :allowed_for, :enabled_for_user) do
           false | false | false | be_disallowed(:access_glab_ask_git_command)
           true  | false | false | be_disallowed(:access_glab_ask_git_command)
-          false | false | true  | be_allowed(:access_glab_ask_git_command)
+          false | false | true  | be_disallowed(:access_glab_ask_git_command)
           true  | true  | false | be_allowed(:access_glab_ask_git_command)
           true  | true  | true  | be_allowed(:access_glab_ask_git_command)
         end
@@ -887,64 +889,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
     context 'when regular user' do
       it { is_expected.to be_disallowed(:manage_ai_settings) }
-    end
-  end
-
-  describe 'access_generate_commit_message' do
-    let(:policy) { :access_generate_commit_message }
-
-    context 'for self-managed' do
-      where(:flag_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
-        false | false | false | false | be_disallowed(:access_generate_commit_message)
-        true  | false | false | false | be_disallowed(:access_generate_commit_message)
-        true  | true  | false | false | be_disallowed(:access_generate_commit_message)
-        true  | true  | false | true  | be_allowed(:access_generate_commit_message)
-        true  | true  | true  | false | be_allowed(:access_generate_commit_message)
-      end
-
-      with_them do
-        before do
-          stub_licensed_features(generate_commit_message: licensed)
-          stub_feature_flags(generate_commit_message_flag: flag_enabled)
-
-          service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
-          allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                        .with(:generate_commit_message)
-                                                        .and_return(service_data)
-          allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
-          allow(service_data).to receive(:free_access?).and_return(free_access)
-        end
-
-        it { is_expected.to enabled_for_user }
-      end
-
-      context 'for SaaS', :saas do
-        where(:flag_enabled, :free_access, :any_group_with_ga_ai_available, :allowed_for, :enabled_for_user) do
-          false | false | false | false | be_disallowed(:access_generate_commit_message)
-          true  | false | false | false | be_disallowed(:access_generate_commit_message)
-          true  | true  | false | false | be_disallowed(:access_generate_commit_message)
-          true  | false | false | false | be_disallowed(:access_generate_commit_message)
-          true  | false | false | true  | be_allowed(:access_generate_commit_message)
-          true  | true  | true  | false | be_allowed(:access_generate_commit_message)
-        end
-
-        with_them do
-          before do
-            stub_feature_flags(generate_commit_message_flag: flag_enabled)
-
-            service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
-            allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                          .with(:generate_commit_message)
-                                                          .and_return(service_data)
-            allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
-            allow(service_data).to receive(:free_access?).and_return(free_access)
-            allow(current_user).to receive(:any_group_with_ga_ai_available?)
-                                     .and_return(any_group_with_ga_ai_available)
-          end
-
-          it { is_expected.to enabled_for_user }
-        end
-      end
     end
   end
 end

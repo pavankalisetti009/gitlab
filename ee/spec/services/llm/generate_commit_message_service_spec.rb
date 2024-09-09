@@ -31,7 +31,10 @@ RSpec.describe Llm::GenerateCommitMessageService, :saas, feature_category: :code
       before do
         group.add_developer(user)
 
-        allow(user).to receive(:can?).with(:access_generate_commit_message).and_return(true)
+        allow(user)
+          .to receive(:can?)
+          .with(:access_generate_commit_message, resource)
+          .and_return(true)
       end
 
       it_behaves_like 'schedules completion worker' do
@@ -76,7 +79,10 @@ RSpec.describe Llm::GenerateCommitMessageService, :saas, feature_category: :code
       before do
         group.add_maintainer(user)
 
-        allow(user).to receive(:can?).with(:access_generate_commit_message).and_return(access_generate_commit_message)
+        allow(user)
+          .to receive(:can?)
+          .with(:access_generate_commit_message, resource)
+          .and_return(access_generate_commit_message)
       end
 
       subject { described_class.new(user, resource, options) }

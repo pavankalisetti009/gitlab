@@ -69,19 +69,23 @@ module EE
         self_hosted_models.free_access? || self_hosted_models.allowed_for?(@user)
       end
 
-      condition(:user_allowed_to_use_glab_ask_git_command) do
-        next true if glab_ask_git_command_data.allowed_for?(@user)
-
-        next false unless glab_ask_git_command_data.free_access?
-
+      condition(:glab_ask_git_command_licensed) do
         if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          @user.any_group_with_ga_ai_available?(:glab_ask_git_command)
-        else
-          ::License.feature_available?(:glab_ask_git_command)
+          next @user.any_group_with_ga_ai_available?(:glab_ask_git_command)
         end
+
+        next false unless ::Gitlab::CurrentSettings.duo_features_enabled?
+
+        ::License.feature_available?(:glab_ask_git_command)
       end
 
-      rule { user_allowed_to_use_glab_ask_git_command }.policy do
+      condition(:user_allowed_to_use_glab_ask_git_command) do
+        next true if glab_ask_git_command_data.free_access?
+
+        glab_ask_git_command_data.allowed_for?(@user)
+      end
+
+      rule { glab_ask_git_command_licensed & user_allowed_to_use_glab_ask_git_command }.policy do
         enable :access_glab_ask_git_command
       end
 
@@ -214,30 +218,6 @@ module EE
       rule { security_policy_bot }.policy do
         enable :access_git
       end
-
-      condition(:generate_commit_message_enabled) do
-        ::Feature.enabled?(:generate_commit_message_flag, @user)
-      end
-
-      condition(:user_allowed_to_use_generate_commit_message) do
-        next true if generate_commit_message_data.allowed_for?(@user)
-
-        next false unless generate_commit_message_data.free_access?
-
-        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          @user.any_group_with_ga_ai_available?(:generate_commit_message)
-        else
-          ::License.feature_available?(:generate_commit_message)
-        end
-      end
-
-      rule { generate_commit_message_enabled & user_allowed_to_use_generate_commit_message }.policy do
-        enable :access_generate_commit_message
-      end
-    end
-
-    def generate_commit_message_data
-      CloudConnector::AvailableServices.find_by_name(:generate_commit_message)
     end
 
     def glab_ask_git_command_data

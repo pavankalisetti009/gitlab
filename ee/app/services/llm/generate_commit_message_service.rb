@@ -5,7 +5,7 @@ module Llm
     def valid?
       super &&
         Gitlab::Llm::StageCheck.available?(resource.resource_parent, :generate_commit_message) &&
-        user.can?(:access_generate_commit_message)
+        user.can?(:access_generate_commit_message, resource)
     end
 
     private

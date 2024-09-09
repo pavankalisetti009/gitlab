@@ -51,6 +51,25 @@ module EE
         subject&.project&.custom_roles_enabled?
       end
 
+      condition(:generate_commit_message_enabled) do
+        ::Feature.enabled?(:generate_commit_message_flag, @user) &&
+          subject.project.project_setting.duo_features_enabled?
+      end
+
+      condition(:generate_commit_message_licensed) do
+        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
+          next @user.any_group_with_ga_ai_available?(:generate_commit_message)
+        end
+
+        ::License.feature_available?(:generate_commit_message)
+      end
+
+      condition(:user_allowed_to_use_generate_commit_message) do
+        next true if generate_commit_message_data.free_access?
+
+        generate_commit_message_data.allowed_for?(@user)
+      end
+
       def read_only?
         @subject.target_project&.namespace&.read_only?
       end
@@ -87,6 +106,12 @@ module EE
       rule do
         summarize_draft_code_review_enabled & can?(:read_merge_request)
       end.enable :summarize_draft_code_review
+
+      rule do
+        generate_commit_message_enabled &
+          generate_commit_message_licensed &
+          user_allowed_to_use_generate_commit_message
+      end.enable :access_generate_commit_message
     end
 
     private
@@ -96,6 +121,10 @@ module EE
       return can?(:developer_access) if read_only?
 
       super
+    end
+
+    def generate_commit_message_data
+      CloudConnector::AvailableServices.find_by_name(:generate_commit_message)
     end
   end
 end

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_review_workflow do
   include ProjectForksHelper
   include AdminModeHelper
+  using RSpec::Parameterized::TableSyntax
 
   let_it_be(:guest) { create(:user) }
   let_it_be(:developer) { create(:user) }
@@ -398,6 +399,78 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
 
       it 'disables the `approve_merge_request` ability' do
         expect(subject).to be_disallowed(:approve_merge_request)
+      end
+    end
+  end
+
+  describe 'access_generate_commit_message' do
+    let(:user) { owner }
+
+    subject(:policy) { policy_for(user) }
+
+    context 'for self-managed' do
+      where(:flag_enabled, :duo_features_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
+        false | true  | false | false | false | be_disallowed(:access_generate_commit_message)
+        true  | true  | false | false | false | be_disallowed(:access_generate_commit_message)
+        true  | true  | true  | false | false | be_disallowed(:access_generate_commit_message)
+        true  | false | true  | true  | true  | be_disallowed(:access_generate_commit_message)
+        true  | true  | true  | false | true  | be_allowed(:access_generate_commit_message)
+        true  | true  | true  | true  | false | be_allowed(:access_generate_commit_message)
+        true  | true  | true  | true  | true  | be_allowed(:access_generate_commit_message)
+      end
+
+      with_them do
+        before do
+          stub_licensed_features(generate_commit_message: licensed)
+          stub_feature_flags(generate_commit_message_flag: flag_enabled)
+
+          allow(project)
+            .to receive_message_chain(:project_setting, :duo_features_enabled?)
+            .and_return(duo_features_enabled)
+
+          service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
+          allow(CloudConnector::AvailableServices).to receive(:find_by_name)
+                                                        .with(:generate_commit_message)
+                                                        .and_return(service_data)
+          allow(service_data).to receive(:allowed_for?).with(user).and_return(allowed_for)
+          allow(service_data).to receive(:free_access?).and_return(free_access)
+        end
+
+        it { is_expected.to enabled_for_user }
+      end
+
+      context 'for SaaS', :saas do
+        where(:flag_enabled, :duo_features_enabled, :free_access, :any_group_with_ga_ai_available, :allowed_for, :enabled_for_user) do
+          false | true  | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | true  | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | true  | true  | false | false | be_disallowed(:access_generate_commit_message)
+          true  | true  | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | true  | false | false | true  | be_disallowed(:access_generate_commit_message)
+          true  | false | true  | true  | true  | be_disallowed(:access_generate_commit_message)
+          true  | true  | true  | true  | false | be_allowed(:access_generate_commit_message)
+          true  | true  | true  | true  | true  | be_allowed(:access_generate_commit_message)
+        end
+
+        with_them do
+          before do
+            stub_feature_flags(generate_commit_message_flag: flag_enabled)
+
+            allow(project)
+              .to receive_message_chain(:project_setting, :duo_features_enabled?)
+              .and_return(duo_features_enabled)
+
+            service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
+            allow(CloudConnector::AvailableServices).to receive(:find_by_name)
+                                                          .with(:generate_commit_message)
+                                                          .and_return(service_data)
+            allow(service_data).to receive(:allowed_for?).with(user).and_return(allowed_for)
+            allow(service_data).to receive(:free_access?).and_return(free_access)
+            allow(user).to receive(:any_group_with_ga_ai_available?)
+                                     .and_return(any_group_with_ga_ai_available)
+          end
+
+          it { is_expected.to enabled_for_user }
+        end
       end
     end
   end
