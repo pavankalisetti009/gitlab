@@ -1,5 +1,0 @@
----
-name: duo_workflow
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159661
-milestone: '17.3'
-group: group::ai framework
