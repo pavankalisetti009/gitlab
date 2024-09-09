@@ -1,14 +1,24 @@
 <script>
 import { GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import ModelSelectDropdown from './model_select_dropdown.vue';
 
 export default {
   name: 'FeatureSettingsTable',
   components: {
     GlTableLite,
+    ModelSelectDropdown,
   },
   props: {
     featureSettings: {
+      type: Array,
+      required: true,
+    },
+    newSelfHostedModelPath: {
+      type: String,
+      required: true,
+    },
+    models: {
       type: Array,
       required: true,
     },
@@ -58,6 +68,12 @@ export default {
     </template>
     <template #cell(sub_feature)="{ item }">
       {{ item.subFeature }}
+    </template>
+    <template #cell(model_name)>
+      <model-select-dropdown
+        :models="models"
+        :new-self-hosted-model-path="newSelfHostedModelPath"
+      />
     </template>
   </gl-table-lite>
 </template>

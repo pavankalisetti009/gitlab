@@ -8,6 +8,14 @@ export default {
     AiFeatureSettingsTable,
   },
   props: {
+    models: {
+      type: Array,
+      required: true,
+    },
+    newSelfHostedModelPath: {
+      type: String,
+      required: true,
+    },
     // Return stubbed data for now
     featureSettings: {
       type: Array,
@@ -35,6 +43,10 @@ export default {
         </p>
       </div>
     </section>
-    <ai-feature-settings-table :feature-settings="featureSettings" />
+    <ai-feature-settings-table
+      :feature-settings="featureSettings"
+      :new-self-hosted-model-path="newSelfHostedModelPath"
+      :models="models"
+    />
   </div>
 </template>
