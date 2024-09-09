@@ -165,14 +165,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
           end
         end
 
-        context 'when feature flag "pipeline_execution_policy_suffix" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_suffix: false)
-          end
-
-          it_behaves_like 'results in duplicate job error', 'rspec'
-        end
-
         context 'when suffix is set to "never"' do
           let(:execution_policy_pipelines) do
             [
@@ -198,14 +190,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         end
 
         it_behaves_like 'merges both jobs using suffix for conflicts', 'rake'
-
-        context 'when feature flag "pipeline_execution_policy_suffix" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_suffix: false)
-          end
-
-          it_behaves_like 'results in duplicate job error', 'rake'
-        end
 
         context 'when suffix is set to "never"' do
           context 'when a policy with duplicate job uses "never" suffix' do

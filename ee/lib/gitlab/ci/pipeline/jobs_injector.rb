@@ -70,8 +70,7 @@ module Gitlab
 
         # Add suffix based on `rename_on_conflict` lambda. If it returns `nil`, no renaming is performed
         def add_suffix(job:)
-          return if ::Feature.disabled?(:pipeline_execution_policy_suffix, project) ||
-            !pipeline_jobs_by_name.key?(job.name)
+          return unless pipeline_jobs_by_name.key?(job.name)
 
           original_name = job.name
           new_name = @rename_on_conflict&.call(job.name)
@@ -90,7 +89,6 @@ module Gitlab
         end
 
         def update_needs_references!
-          return if ::Feature.disabled?(:pipeline_execution_policy_suffix, project)
           return if @job_renames.blank? || @jobs_with_needs.blank?
 
           @jobs_with_needs.flat_map(&:needs).each do |need|
