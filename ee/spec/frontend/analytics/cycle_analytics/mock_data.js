@@ -21,7 +21,6 @@ import testCountFixture from 'test_fixtures/analytics/value_stream_analytics/sta
 import stagingCountFixture from 'test_fixtures/analytics/value_stream_analytics/stages/staging/count.json';
 
 import {
-  TASKS_BY_TYPE_SUBJECT_ISSUE,
   OVERVIEW_STAGE_CONFIG,
   DURATION_CHART_Y_AXIS_TITLE,
 } from 'ee/analytics/cycle_analytics/constants';
@@ -31,10 +30,7 @@ import {
 } from 'ee/analytics/shared/constants';
 import * as types from 'ee/analytics/cycle_analytics/store/mutation_types';
 import mutations from 'ee/analytics/cycle_analytics/store/mutations';
-import {
-  getTasksByTypeData,
-  transformRawTasksByTypeData,
-} from 'ee/analytics/cycle_analytics/utils';
+import { transformRawTasksByTypeData } from 'ee/analytics/cycle_analytics/utils';
 import {
   getStageByTitle,
   rawStageMedians,
@@ -79,7 +75,6 @@ export const groupLabels = apiGroupLabels.map((l) =>
   convertObjectPropsToCamelCase({ ...l, title: l.name }),
 );
 export const groupLabelNames = groupLabels.map(({ title }) => title);
-export const groupLabelIds = groupLabels.map(({ id }) => id);
 
 export const recentActivityData = valueStreamAnalyticsSummary;
 
@@ -235,7 +230,6 @@ export const apiTasksByTypeData = tasksByType.map((labelData) => {
 });
 
 export const rawTasksByTypeData = transformRawTasksByTypeData(apiTasksByTypeData);
-export const transformedTasksByTypeData = getTasksByTypeData(apiTasksByTypeData);
 
 export const transformedStagePathData = transformStagesForPathNavigation({
   stages: [{ ...OVERVIEW_STAGE_CONFIG }, ...allowedStages],
@@ -259,14 +253,6 @@ export const currentGroup = {
   name: 'Gitlab Org',
   fullName: 'Gitlab Org',
   fullPath: 'gitlab-org',
-};
-
-export const taskByTypeFilters = {
-  namespace: currentGroup,
-  selectedProjectIds: [],
-  createdAfter: new Date('2019-12-11'),
-  createdBefore: new Date('2020-01-10'),
-  subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
 };
 
 export const transformedDurationData = [

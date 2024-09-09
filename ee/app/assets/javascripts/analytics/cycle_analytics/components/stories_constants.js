@@ -188,13 +188,6 @@ export const durationOverviewChartData = [
 
 export const subjectFilter = TASKS_BY_TYPE_FILTERS.SUBJECT;
 
-export const selectedTasksByTypeFilters = {
-  createdAfter: '',
-  createdBefore: '',
-  namespace: { name: 'Some namespace' },
-  selectedProjectIds: [],
-};
-
 export const defaultGroupLabels = [
   {
     id: 1,
@@ -216,6 +209,45 @@ export const defaultGroupLabels = [
     color: '#4c20e8',
     project_id: null,
     text_color: '#FFFFFF',
+  },
+];
+
+export const tasksByTypeData = [
+  {
+    label: { title: 'in-review' },
+    series: [
+      ['2023-10-01', 0],
+      ['2023-10-02', 0],
+      ['2023-10-03', 3],
+      ['2023-10-04', 1],
+      ['2023-10-05', 0],
+      ['2023-10-06', 0],
+      ['2023-10-07', 1],
+    ],
+  },
+  {
+    label: { title: 'ready' },
+    series: [
+      ['2023-10-01', 2],
+      ['2023-10-02', 1],
+      ['2023-10-03', 0],
+      ['2023-10-04', 0],
+      ['2023-10-05', 5],
+      ['2023-10-06', 0],
+      ['2023-10-07', 0],
+    ],
+  },
+  {
+    label: { title: 'done' },
+    series: [
+      ['2023-10-01', 1],
+      ['2023-10-02', 2],
+      ['2023-10-03', 5],
+      ['2023-10-04', 0],
+      ['2023-10-05', 0],
+      ['2023-10-06', 0],
+      ['2023-10-07', 1],
+    ],
   },
 ];
 

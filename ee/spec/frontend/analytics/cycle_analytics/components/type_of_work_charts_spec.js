@@ -11,9 +11,10 @@ import typeOfWorkModule from 'ee/analytics/cycle_analytics/store/modules/type_of
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
   TASKS_BY_TYPE_FILTERS,
+  TASKS_BY_TYPE_SUBJECT_ISSUE,
 } from 'ee/analytics/cycle_analytics/constants';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
-import { tasksByTypeData, taskByTypeFilters, groupLabelNames } from '../mock_data';
+import { rawTasksByTypeData, groupLabelNames } from '../mock_data';
 
 Vue.use(Vuex);
 jest.mock('~/alert');
@@ -24,7 +25,7 @@ describe('TypeOfWorkCharts', () => {
   const fetchTopRankedGroupLabels = jest.fn();
   const setTasksByTypeFilters = jest.fn();
 
-  const createStore = (state, getters) =>
+  const createStore = (state, rootGetters) =>
     new Vuex.Store({
       state: {
         namespace: {
@@ -46,20 +47,20 @@ describe('TypeOfWorkCharts', () => {
           milestone_title: null,
           assignee_username: null,
         }),
+        ...rootGetters,
       },
       modules: {
         typeOfWork: {
           ...typeOfWorkModule,
           state: {
+            data: rawTasksByTypeData,
+            subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
             ...typeOfWorkModule.state,
             ...state,
           },
           getters: {
             ...typeOfWorkModule.getters,
-            tasksByTypeChartData: () => tasksByTypeData,
-            selectedTasksByTypeFilters: () => taskByTypeFilters,
             selectedLabelNames: () => groupLabelNames,
-            ...getters,
           },
           actions: {
             ...typeOfWorkModule.actions,
@@ -70,9 +71,9 @@ describe('TypeOfWorkCharts', () => {
       },
     });
 
-  const createWrapper = ({ state = {}, getters = {}, stubs = {} } = {}) => {
+  const createWrapper = ({ state = {}, rootGetters = {}, stubs = {} } = {}) => {
     wrapper = shallowMount(TypeOfWorkCharts, {
-      store: createStore(state, getters),
+      store: createStore(state, rootGetters),
       stubs: {
         TasksByTypeChart: true,
         TasksByTypeFilters: true,
@@ -140,11 +141,8 @@ describe('TypeOfWorkCharts', () => {
   describe('with selected projects', () => {
     const createWithProjects = (projectIds) =>
       createWrapper({
-        getters: {
-          selectedTasksByTypeFilters: () => ({
-            ...taskByTypeFilters,
-            selectedProjectIds: projectIds,
-          }),
+        rootGetters: {
+          selectedProjectIds: () => projectIds,
         },
       });
 
@@ -165,11 +163,7 @@ describe('TypeOfWorkCharts', () => {
 
   describe('with no data', () => {
     beforeEach(() => {
-      return createWrapper({
-        getters: {
-          tasksByTypeChartData: () => ({ groupBy: [], data: [] }),
-        },
-      });
+      return createWrapper({ state: { data: [] } });
     });
 
     it('does not renders the task by type chart', () => {

@@ -1,10 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
-import {
-  tasksByTypeChartData,
-  selectedTasksByTypeFilters,
-  defaultGroupLabels,
-} from './stories_constants';
+import { tasksByTypeData, defaultGroupLabels } from './stories_constants';
 
 export default {
   component: TypeOfWorkCharts,
@@ -20,13 +16,17 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
     store: createVuexStore({
       state: {
         defaultGroupLabels,
+        namespace: { name: 'Some namespace' },
+        createdAfter: new Date('2023-01-01'),
+        createdBefore: new Date('2023-12-31'),
+      },
+      getters: {
+        selectedProjectIds: () => [],
       },
       modules: {
         typeOfWork: {
           namespaced: true,
           getters: {
-            selectedTasksByTypeFilters: () => selectedTasksByTypeFilters,
-            tasksByTypeChartData: () => tasksByTypeChartData,
             selectedLabelNames: () => [],
             ...getters,
           },
@@ -34,7 +34,12 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
             isLoading: false,
             errorMessage: null,
             topRankedLabels: [],
+            data: tasksByTypeData,
             ...state,
+          },
+          actions: {
+            fetchTopRankedGroupLabels: () => {},
+            setTasksByTypeFilters: () => {},
           },
         },
       },
@@ -45,10 +50,7 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
 const defaultState = {};
 export const Default = createStoryWithState(defaultState).bind({});
 
-const noDataState = {
-  typeOfWork: { getters: { tasksByTypeChartData: () => ({ ...tasksByTypeChartData, data: [] }) } },
-};
-
+const noDataState = { typeOfWork: { state: { data: [] } } };
 export const NoData = createStoryWithState(noDataState).bind({});
 
 const isLoadingState = {
