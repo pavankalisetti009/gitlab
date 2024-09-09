@@ -35805,6 +35805,9 @@ msgstr ""
 msgid "No child epics match applied filters"
 msgstr ""
 
+msgid "No child items are currently assigned."
+msgstr ""
+
 msgid "No comment templates found."
 msgstr ""
 
@@ -46137,6 +46140,9 @@ msgid "Role"
 msgstr ""
 
 msgid "Roles and Permissions"
+msgstr ""
+
+msgid "Roll up totals may reflect child items you don’t have access to."
 msgstr ""
 
 msgid "Rollback"
@@ -61489,6 +61495,9 @@ msgid "WorkItems|An error occurred while fetching children"
 msgstr ""
 
 msgid "WorkItems|Ancestors not available"
+msgstr ""
+
+msgid "WorkItem| %{workItemType}s closed"
 msgstr ""
 
 msgid "WorkItem|%{count} more assignees"
