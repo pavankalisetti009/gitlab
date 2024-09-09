@@ -616,31 +616,12 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     end
   end
 
-  describe '#exempt_from_phone_number_verification?' do
-    subject(:phone_number_exemption_attribute) { user.exempt_from_phone_number_verification? }
-
-    let(:user) { create(:user) }
-
-    context 'when a user has a phone number exemption' do
-      before do
-        add_phone_exemption
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when a user does not have an exemption' do
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#create_phone_number_exemption!' do
     subject(:create_phone_number_exemption) { user.create_phone_number_exemption! }
 
     let(:user) { create(:user) }
 
     it 'creates an exemption', :aggregate_failures do
-      expect(user).to receive(:clear_memoization).with(:phone_number_exemption_attribute).and_call_original
       expect(user).to receive(:clear_memoization).with(:identity_verification_state).and_call_original
 
       expect { subject }.to change {
@@ -672,29 +653,6 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       end
 
       it_behaves_like 'it does not create an exemption'
-    end
-  end
-
-  describe '#destroy_phone_number_exemption' do
-    subject(:destroy_phone_number_exemption) { user.destroy_phone_number_exemption }
-
-    let(:user) { create(:user) }
-
-    context 'when a user has a phone number exemption' do
-      it 'destroys the exemption', :aggregate_failures do
-        add_phone_exemption
-
-        expect(user).to receive(:clear_memoization).with(:phone_number_exemption_attribute).and_call_original
-        expect(user).to receive(:clear_memoization).with(:identity_verification_state).and_call_original
-
-        subject
-
-        expect(user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT)).to be_empty
-      end
-    end
-
-    context 'when a user does not have a phone number exemption' do
-      it { is_expected.to be_nil }
     end
   end
 
@@ -768,31 +726,8 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     end
   end
 
-  describe '#destroy_identity_verification_exemption' do
-    subject(:destroy_identity_verification_exemption) { user.destroy_identity_verification_exemption }
-
-    let(:user) { create(:user) }
-
-    context 'when a user has a identity verification exemption' do
-      before do
-        add_identity_verification_exemption
-      end
-
-      it 'destroys the exemption' do
-        subject
-
-        expect(user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT)).to be_empty
-      end
-    end
-
-    context 'when a user does not have a identity verification exemption' do
-      it { is_expected.to be_falsy }
-    end
-  end
-
   describe '#toggle_phone_number_verification' do
     before do
-      allow(user).to receive(:clear_memoization).with(:phone_number_exemption_attribute).and_call_original
       allow(user).to receive(:clear_memoization).with(:identity_verification_state).and_call_original
     end
 
@@ -810,9 +745,9 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       it 'destroys the exemption' do
         user.create_phone_number_exemption!
 
-        expect(user).to receive(:destroy_phone_number_exemption)
-
-        toggle_phone_number_verification
+        expect { toggle_phone_number_verification }.to change {
+                                                         user.phone_number_verification_exempt?
+                                                       }.from(true).to(false)
       end
     end
 
@@ -842,7 +777,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         stub_feature_flags(identity_verification_phone_number: phone_number)
 
         allow(user).to receive(:required_identity_verification_methods).and_return(required_verification_methods)
-        allow(user).to receive(:exempt_from_phone_number_verification?).and_return(phone_exempt)
+        user.create_phone_number_exemption! if phone_exempt
       end
 
       it { is_expected.to eq(result) }

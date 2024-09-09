@@ -171,8 +171,8 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     subject { delete :destroy_identity_verification_exemption, params: { id: user.to_param } }
 
     context 'when it is successful' do
-      it 'calls destroy_identity_verification_exemption and redirects with a success notice' do
-        expect(user).to receive(:destroy_identity_verification_exemption).once.and_return(instance_double(UserCustomAttribute))
+      it 'calls remove_identity_verification_exemption and redirects with a success notice' do
+        expect(user).to receive(:remove_identity_verification_exemption).once.and_return(instance_double(UserCustomAttribute))
 
         subject
 
@@ -182,8 +182,8 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     end
 
     context 'when it fails' do
-      it 'calls destroy_identity_verification_exemption and redirects with an alert' do
-        expect(user).to receive(:destroy_identity_verification_exemption).once.and_return(false)
+      it 'calls remove_identity_verification_exemption and redirects with an alert' do
+        expect(user).to receive(:remove_identity_verification_exemption).once.and_return(false)
 
         subject
 

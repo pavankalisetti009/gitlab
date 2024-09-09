@@ -99,45 +99,28 @@ module IdentityVerifiable
   end
 
   def create_phone_number_exemption!
+    return if phone_number_verification_exempt?
     return if phone_verified?
-    return if exempt_from_phone_number_verification?
 
-    custom_attributes.create!(
-      key: UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT,
-      value: true.to_s,
-      user_id: id
-    )
-    clear_memoization(:phone_number_exemption_attribute)
+    add_phone_number_verification_exemption
     clear_memoization(:identity_verification_state)
-  end
-
-  def destroy_phone_number_exemption
-    return unless phone_number_exemption_attribute
-
-    phone_number_exemption_attribute.destroy
-    clear_memoization(:phone_number_exemption_attribute)
-    clear_memoization(:identity_verification_state)
-  end
-
-  def exempt_from_phone_number_verification?
-    phone_number_exemption_attribute.present? &&
-      ActiveModel::Type::Boolean.new.cast(phone_number_exemption_attribute.value)
   end
 
   def toggle_phone_number_verification
-    exempt_from_phone_number_verification? ? destroy_phone_number_exemption : create_phone_number_exemption!
+    if phone_number_verification_exempt?
+      remove_phone_number_verification_exemption
+      clear_memoization(:identity_verification_state)
+    else
+      create_phone_number_exemption!
+    end
   end
 
   def create_identity_verification_exemption(reason)
     custom_attributes.create(key: UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT, value: reason)
   end
 
-  def destroy_identity_verification_exemption
-    identity_verification_exemption_attribute&.destroy
-  end
-
   def identity_verification_exempt?
-    return true if identity_verification_exemption_attribute.present?
+    return true if risk_profile.identity_verification_exempt?
     return true if enterprise_user?
     return true if belongs_to_paid_namespace?(exclude_trials: true)
 
@@ -156,7 +139,7 @@ module IdentityVerifiable
     # If phone verification is not required but a phone exemption exists it means the user toggled from
     # verifying with a phone to verifying with a credit card. Returning true if a phone exemption exists
     # will allow the user to toggle back to using phone verification from the credit card form.
-    phone_required || exempt_from_phone_number_verification?
+    phone_required || phone_number_verification_exempt?
   end
 
   def verification_method_allowed?(method:)
@@ -182,8 +165,10 @@ module IdentityVerifiable
     reached_top_level_group_limit?
   end
 
-  delegate :arkose_verified?, :assume_low_risk!, :assume_high_risk!, :assumed_high_risk?, to: :risk_profile
-  delegate :high_risk?, :medium_risk?, :low_risk?, to: :risk_profile, private: true
+  delegate :arkose_verified?, :assume_low_risk!, :assume_high_risk!, :assumed_high_risk?,
+    :remove_identity_verification_exemption, :phone_number_verification_exempt?, to: :risk_profile
+  delegate :high_risk?, :medium_risk?, :low_risk?, :remove_phone_number_verification_exemption,
+    :add_phone_number_verification_exemption, to: :risk_profile, private: true
 
   private
 
@@ -232,7 +217,7 @@ module IdentityVerifiable
   end
 
   def active_user_required_methods
-    return PHONE_NUMBER_EXEMPT_METHODS if exempt_from_phone_number_verification?
+    return PHONE_NUMBER_EXEMPT_METHODS if phone_number_verification_exempt?
     return ASSUMED_HIGH_RISK_USER_METHODS if assumed_high_risk? || affected_by_phone_verifications_limit?
 
     ACTIVE_USER_METHODS
@@ -240,7 +225,7 @@ module IdentityVerifiable
 
   def new_user_required_methods
     return SIGNUP_IDENTITY_VERIFICATION_EXEMPT_METHODS if identity_verification_exempt?
-    return PHONE_NUMBER_EXEMPT_METHODS if exempt_from_phone_number_verification?
+    return PHONE_NUMBER_EXEMPT_METHODS if phone_number_verification_exempt?
     return ASSUMED_HIGH_RISK_USER_METHODS if assumed_high_risk? || affected_by_phone_verifications_limit?
     return HIGH_RISK_USER_METHODS if high_risk?
     return MEDIUM_RISK_USER_METHODS if medium_risk?
@@ -268,15 +253,6 @@ module IdentityVerifiable
 
   def email_verified?
     confirmed?
-  end
-
-  def phone_number_exemption_attribute
-    custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT).first
-  end
-  strong_memoize_attr :phone_number_exemption_attribute
-
-  def identity_verification_exemption_attribute
-    custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT).first
   end
 
   def created_top_level_group_count
