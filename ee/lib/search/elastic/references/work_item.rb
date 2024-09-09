@@ -32,7 +32,7 @@ module Search
         def self.preload_indexing_data(refs)
           ids = refs.map(&:identifier)
 
-          records = ::WorkItem.id_in(ids).preload_for_indexing
+          records = ::WorkItem.id_in(ids).preload_indexing_data
           records_by_id = records.index_by(&:id)
 
           refs.each do |ref|
