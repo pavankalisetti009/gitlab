@@ -36,6 +36,15 @@ module Gitlab
 
         true
       end
+
+      def self.resource_id
+        Gitlab::ApplicationContext.current_context_attribute(:ai_resource).presence
+      end
+
+      def self.project_id
+        project_path = Gitlab::ApplicationContext.current_context_attribute(:project).presence
+        Project.find_by_full_path(project_path).try(:to_global_id) if project_path
+      end
     end
   end
 end
