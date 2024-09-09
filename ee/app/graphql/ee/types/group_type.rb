@@ -251,7 +251,8 @@ module EE
         field :value_streams,
           description: 'Value streams available to the group.',
           null: true,
-          resolver: ::Resolvers::Analytics::CycleAnalytics::ValueStreamsResolver
+          resolver: ::Resolvers::Analytics::CycleAnalytics::ValueStreamsResolver,
+          max_page_size: 20
 
         field :saved_replies,
           ::Types::Groups::SavedReplyType.connection_type,
