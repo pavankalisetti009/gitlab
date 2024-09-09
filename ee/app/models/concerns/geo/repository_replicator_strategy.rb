@@ -92,17 +92,11 @@ module Geo
       Geo::EventWorker.perform_async(replicable_name, EVENT_UPDATED, { 'model_record_id' => model_record.id })
     end
 
-    # Called by Gitlab::Geo::Replicator#geo_handle_after_update
-    def before_verifiable_update
-      return unless ::Gitlab::Geo.primary?
-      return unless self.class.verification_enabled?
-
-      # Just let verification backfill pick it up to ensure
-      # the verification concurrency limit is applied to all
-      # create and update events.
-      #
-      # See issue: https://gitlab.com/gitlab-org/gitlab/-/issues/443875
-      model_record.verification_pending!
+    # Schedules a verification job after a model record is created/updated
+    #
+    # Called by Gitlab::Geo::Replicator#geo_handle_after_(create|update)
+    def after_verifiable_update
+      verify_async if should_primary_verify_after_save?
     end
 
     # Called by Geo::FrameworkHousekeepingService#execute
