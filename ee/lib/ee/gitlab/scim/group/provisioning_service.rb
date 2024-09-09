@@ -72,6 +72,7 @@ module EE
               hash[:saml_provider_id] = @group.saml_provider.id
               hash[:group_id] = @group&.id
               hash[:provider] = ::Users::BuildService::GROUP_SCIM_PROVIDER
+              hash[:organization_id] = @group.organization_id
             end
           end
 
@@ -82,11 +83,7 @@ module EE
           end
 
           def create_user_and_member
-            saved = ::Namespace.with_disabled_organization_validation do
-              user.save && member.errors.empty?
-            end
-
-            return success_response if saved
+            return success_response if user.save && member.errors.empty?
 
             error_response(objects: [user, identity, member])
           end
