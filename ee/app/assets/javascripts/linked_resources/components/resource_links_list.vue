@@ -17,18 +17,13 @@ export default {
       required: false,
       default: () => [],
     },
-    isFormVisible: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
 };
 </script>
 
 <template>
   <div class="related-issues-token-body">
-    <ul class="related-items-list content-list">
+    <ul class="related-items-list content-list !-gl-mx-2 !gl-py-3">
       <li
         v-for="link in resourceLinks"
         :key="link.id"

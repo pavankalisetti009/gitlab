@@ -1,9 +1,8 @@
-import { GlLoadingIcon, GlCard } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { shallowMount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ResourceLinksBlock from 'ee/linked_resources/components/resource_links_block.vue';
 import ResourceLinksList from 'ee/linked_resources/components/resource_links_list.vue';
 import ResourceLinkItem from 'ee/linked_resources/components/resource_links_list_item.vue';
@@ -60,18 +59,18 @@ function createMockApolloCreateProvider() {
 describe('ResourceLinksBlock', () => {
   let wrapper;
 
-  const findResourceLinkAddButton = () => wrapper.findByTestId('add-resource-links');
+  const findResourceLinkAddButton = () => wrapper.findByTestId('crud-form-toggle');
   const resourceLinkForm = () => wrapper.findComponent(AddIssuableResourceLinkForm);
   const helpPath = '/help/user/project/issues/linked_resources';
   const issuableId = 1;
-  const findLoadingSpinner = () => wrapper.findComponent(GlLoadingIcon);
+  const findResourceCount = () => wrapper.findByTestId('crud-count');
   const findResourceLinksList = () => wrapper.findComponent(ResourceLinksList);
   const findAllResourceLinks = () => wrapper.findAllComponents(ResourceLinkItem);
   const findLinkTextInput = () => wrapper.findByTestId('link-text-input');
   const findLinkValueInput = () => wrapper.findByTestId('link-value-input');
   const findSubmitButton = () => wrapper.findByTestId('add-button');
-  const findToggleLinksButton = () => wrapper.findByTestId('toggle-links');
-  const findEmptyMessage = () => wrapper.findByTestId('empty');
+  const findToggleLinksButton = () => wrapper.findByTestId('crud-collapse-toggle');
+  const findEmptyMessage = () => wrapper.findByTestId('crud-empty');
 
   const clickFirstDeleteButton = async () => {
     findAllResourceLinks().at(0).vm.$emit('removeRequest', mockResourceLinks[0].id);
@@ -110,8 +109,10 @@ describe('ResourceLinksBlock', () => {
       data() {
         return {
           resourceLinks,
-          isFormVisible: false,
         };
+      },
+      stubs: {
+        CrudComponent,
       },
     });
   };
@@ -122,18 +123,19 @@ describe('ResourceLinksBlock', () => {
     });
 
     it('should show the form when add button is clicked', async () => {
-      await findResourceLinkAddButton().trigger('click');
+      await openForm();
 
-      expect(resourceLinkForm().isVisible()).toBe(true);
+      expect(resourceLinkForm().exists()).toBe(true);
+      expect(resourceLinkForm().props('isSubmitting')).toBe(false);
     });
 
     it('should hide the form when the hide event is emitted', async () => {
       // open the form
-      await findResourceLinkAddButton().trigger('click');
+      await openForm();
 
       await resourceLinkForm().vm.$emit('add-issuable-resource-link-form-cancel');
 
-      expect(resourceLinkForm().isVisible()).toBe(false);
+      expect(resourceLinkForm().exists()).toBe(false);
     });
   });
 
@@ -145,31 +147,13 @@ describe('ResourceLinksBlock', () => {
           canAddResourceLinks: false,
         },
         apolloProvider: createMockApolloProvider(),
+        stubs: {
+          CrudComponent,
+        },
       });
 
       expect(findResourceLinkAddButton().exists()).toBe(false);
-      expect(resourceLinkForm().isVisible()).toBe(false);
-    });
-  });
-
-  describe('with isFormVisible=true', () => {
-    it('renders the form with correct props', () => {
-      wrapper = shallowMount(ResourceLinksBlock, {
-        propsData: {
-          issuableId,
-          canAddResourceLinks: true,
-        },
-        data() {
-          return {
-            isFormVisible: true,
-            isSubmitting: false,
-          };
-        },
-        apolloProvider: createMockApolloProvider(),
-      });
-
-      expect(resourceLinkForm().exists()).toBe(true);
-      expect(resourceLinkForm().props('isSubmitting')).toBe(false);
+      expect(resourceLinkForm().exists()).toBe(false);
     });
   });
 
@@ -212,13 +196,12 @@ describe('ResourceLinksBlock', () => {
       expect(listResponse).toHaveBeenCalled();
     });
 
-    it('should show the loading state and correct badgeLabel', () => {
+    it('should show the loading state and correct count', () => {
       mockApollo = createMockApolloProvider(listResponse);
       mountComponent(mockApollo);
 
       expect(findResourceLinksList().exists()).toBe(false);
-      expect(findLoadingSpinner().exists()).toBe(true);
-      expect(wrapper.vm.badgeLabel).toBe('...');
+      expect(findResourceCount().text()).toBe('...');
     });
 
     it('should render the list and count', async () => {
@@ -228,7 +211,7 @@ describe('ResourceLinksBlock', () => {
       await waitForPromises();
 
       expect(findResourceLinksList().exists()).toBe(true);
-      expect(wrapper.vm.badgeLabel).toBe(3);
+      expect(findResourceCount().text()).toBe('3');
       expect(findResourceLinksList().props('resourceLinks')).toHaveLength(3);
       expect(findEmptyMessage().exists()).toBe(false);
     });
@@ -240,6 +223,7 @@ describe('ResourceLinksBlock', () => {
 
       mountComponent(createMockApolloDeleteProvider(), mockResourceLinks);
 
+      await waitForPromises();
       await clickFirstDeleteButton();
 
       expect(deleteResponse).toHaveBeenCalledWith(expectedVars);
@@ -256,6 +240,7 @@ describe('ResourceLinksBlock', () => {
       mountComponent(createMockApolloDeleteProvider(), mockResourceLinks);
       deleteResponse.mockResolvedValue(resourceLinkDeleteEventError);
 
+      await waitForPromises();
       await clickFirstDeleteButton();
 
       expect(createAlert).toHaveBeenCalledWith(expectedError);
@@ -271,6 +256,7 @@ describe('ResourceLinksBlock', () => {
       mountComponent(createMockApolloDeleteProvider(), mockResourceLinks);
       deleteResponse.mockRejectedValueOnce();
 
+      await waitForPromises();
       await clickFirstDeleteButton();
 
       expect(createAlert).toHaveBeenCalledWith(expectedError);
@@ -289,7 +275,7 @@ describe('ResourceLinksBlock', () => {
       await submitForm();
 
       expect(createResponse).toHaveBeenCalledWith(expectedData);
-      expect(resourceLinkForm().isVisible()).toBe(false);
+      expect(resourceLinkForm().exists()).toBe(false);
     });
 
     describe('error handling', () => {
@@ -325,13 +311,6 @@ describe('ResourceLinksBlock', () => {
       mountComponent();
     });
 
-    it('the widget wrapper has the "is-collapsed" CSS class', async () => {
-      findToggleLinksButton().vm.$emit('click');
-      await nextTick();
-
-      expect(wrapper.findComponent(GlCard).classes()).toContain('is-collapsed');
-    });
-
     it('the toggle links button has the correct "aria-expanded" attribute value', async () => {
       const toggleLinksButton = findToggleLinksButton();
 
@@ -347,10 +326,6 @@ describe('ResourceLinksBlock', () => {
       mountComponent();
     });
 
-    it('the widget wrapper does not have the "is-collapsed" CSS class', () => {
-      expect(wrapper.findComponent(GlCard).classes()).not.toContain('is-collapsed');
-    });
-
     it('the toggle links button has the correct "aria-expanded" attribute value', () => {
       expect(findToggleLinksButton().attributes('aria-expanded')).toBe('true');
     });
@@ -361,7 +336,7 @@ describe('ResourceLinksBlock', () => {
       mountComponent();
 
       expect(findToggleLinksButton().attributes('aria-controls')).toBe('resource-links-card');
-      expect(wrapper.findComponent(GlCard).attributes('id')).toBe('resource-links-card');
+      expect(wrapper.findComponent(CrudComponent).attributes('id')).toBe('resource-links-card');
     });
   });
 });
