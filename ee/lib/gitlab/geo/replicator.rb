@@ -312,7 +312,6 @@ module Gitlab
       def geo_handle_after_update
         return unless Gitlab::Geo.primary?
 
-        before_verifiable_update if respond_to?(:before_verifiable_update)
         publish(:updated, **updated_params)
         after_verifiable_update if respond_to?(:after_verifiable_update)
       end
