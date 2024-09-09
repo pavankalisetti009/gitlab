@@ -47,7 +47,8 @@ module QA
     end
 
     context 'when Advanced SAST is enabled' do
-      it 'finds a vulnerability', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/471561' do
+      it 'finds a vulnerability', :blocking,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/471561' do
         create(:commit,
           project: project,
           branch: project.default_branch,
