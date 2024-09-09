@@ -14,17 +14,23 @@ module Resolvers
           required: false,
           description: 'Search the user list.'
 
+        argument :sort,
+          type: Types::GitlabSubscriptions::UserSortEnum,
+          required: false,
+          description: 'Sort the user list.'
+
         argument :add_on_type,
           type: Types::GitlabSubscriptions::AddOnTypeEnum,
           required: true,
           description: 'Type of add on to filter the eligible users by.'
 
-        def resolve(add_on_type:, search: nil)
+        def resolve(add_on_type:, search: nil, sort: nil)
           authorize!
 
           users = ::GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(
             add_on_type: add_on_type,
-            search_term: search
+            search_term: search,
+            sort: sort
           ).execute
 
           offset_pagination(users)

@@ -1,6 +1,6 @@
-import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/self_managed_add_on_eligible_users.query.graphql';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
@@ -15,13 +15,14 @@ import {
   DUO_ENTERPRISE,
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
+  SORT_OPTIONS,
+  DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   eligibleSMUsers,
   pageInfoWithMorePages,
 } from 'ee_jest/usage_quotas/code_suggestions/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 Vue.use(VueApollo);
@@ -50,8 +51,10 @@ describe('Add On Eligible User List', () => {
     last: null,
     after: null,
     before: null,
+    sort: DEFAULT_SORT_OPTION,
   };
 
+  const duoTier = DUO_PRO;
   const defaultQueryVariables = {
     addOnType: ADD_ON_CODE_SUGGESTIONS,
     addOnPurchaseIds: [addOnPurchaseId],
@@ -69,16 +72,22 @@ describe('Add On Eligible User List', () => {
   const createMockApolloProvider = (handler) =>
     createMockApollo([[getAddOnEligibleUsers, handler]]);
 
-  const createComponent = ({ props = {}, handler = addOnEligibleUsersDataHandler } = {}) => {
-    wrapper = extendedWrapper(
-      shallowMount(SelfManagedAddOnEligibleUserList, {
-        apolloProvider: createMockApolloProvider(handler),
-        propsData: {
-          addOnPurchaseId,
-          ...props,
-        },
-      }),
-    );
+  const createComponent = ({
+    props = {},
+    features = { enableAddOnUsersFiltering: false },
+    handler = addOnEligibleUsersDataHandler,
+  } = {}) => {
+    wrapper = shallowMountExtended(SelfManagedAddOnEligibleUserList, {
+      apolloProvider: createMockApolloProvider(handler),
+      propsData: {
+        addOnPurchaseId,
+        duoTier,
+        ...props,
+      },
+      provide: {
+        glFeatures: features,
+      },
+    });
 
     return waitForPromises();
   };
@@ -108,6 +117,20 @@ describe('Add On Eligible User List', () => {
 
     it('calls addOnEligibleUsers query with appropriate params', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultQueryVariables);
+    });
+
+    it('passes the correct sort options to <search-and-sort-bar>', () => {
+      expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual([]);
+    });
+
+    describe('when enableAddOnUsersFiltering is enabled', () => {
+      beforeEach(() => {
+        return createComponent({ features: { enableAddOnUsersFiltering: true } });
+      });
+
+      it('passes the correct sort options to <search-and-sort-bar>', () => {
+        expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
+      });
     });
 
     describe('with Duo Enterprise add-on tier', () => {
@@ -223,6 +246,21 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
         ...defaultQueryVariables,
         ...filterOptions,
+      });
+    });
+  });
+
+  describe('sort', () => {
+    beforeEach(() => {
+      return createComponent();
+    });
+
+    it('fetches users list with the default sorting value', async () => {
+      await waitForPromises();
+
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        sort: DEFAULT_SORT_OPTION,
       });
     });
   });
