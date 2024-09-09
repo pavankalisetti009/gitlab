@@ -79,6 +79,8 @@ RSpec.describe '1_settings', feature_category: :shared do
       Settings.duo_workflow = config
     end
 
+    let(:config) { {} }
+
     context 'when service_url is set' do
       let(:config) do
         {
@@ -118,6 +120,15 @@ RSpec.describe '1_settings', feature_category: :shared do
         expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:80')
         expect(Settings.duo_workflow.secure).to eq(false)
       end
+    end
+
+    it 'reads executor details from DUO_WORKFLOW_EXECUTOR_VERSION file' do
+      version = File.read('DUO_WORKFLOW_EXECUTOR_VERSION').chomp
+
+      load_settings
+
+      expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/#{version}/duo-workflow-executor.tar.gz")
+      expect(Settings.duo_workflow.executor_version).to eq(version)
     end
   end
 
