@@ -14,7 +14,11 @@ describe('IssueHealthStatus', () => {
   const { healthStatus } = mockIssue1;
   let wrapper;
 
-  const createComponent = ({ displayAsText = false } = {}) =>
+  const createComponent = ({
+    displayAsText = false,
+    textSize = 'base',
+    disableTooltip = false,
+  } = {}) =>
     shallowMountExtended(IssueHealthStatus, {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
@@ -22,6 +26,8 @@ describe('IssueHealthStatus', () => {
       propsData: {
         healthStatus,
         displayAsText,
+        textSize,
+        disableTooltip,
       },
     });
 
@@ -55,32 +61,58 @@ describe('IssueHealthStatus', () => {
   });
 
   describe('text mode', () => {
-    beforeEach(() => {
-      wrapper = createComponent({ displayAsText: true });
+    describe('with default props', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ displayAsText: true });
+      });
+
+      it('renders text and an icon', () => {
+        expect(findIcon().exists()).toBe(true);
+        expect(findStatusText().exists()).toBe(true);
+      });
+
+      it('renders health status text', () => {
+        const expectedValue = healthStatusTextMap[healthStatus];
+
+        expect(findStatusText().text()).toBe(expectedValue);
+      });
+
+      it('renders correct icon', () => {
+        expect(findIcon().attributes('name')).toBe(healthStatusIconMap[healthStatus]);
+      });
+
+      it('applies correct color', () => {
+        expect(findStatusText().classes(healthStatusColorMap[healthStatus])).toBe(true);
+      });
+
+      it('contains health status tooltip', () => {
+        expect(getBinding(findStatusText().element, 'gl-tooltip')).not.toBeUndefined();
+        expect(findStatusText().attributes('title')).toBe('Health status');
+      });
     });
 
-    it('renders text and an icon', () => {
-      expect(findIcon().exists()).toBe(true);
-      expect(findStatusText().exists()).toBe(true);
+    describe('when textSize prop is set', () => {
+      it.each(['base', 'sm'])('When the textSize is %s', (size) => {
+        wrapper = createComponent({ displayAsText: true, textSize: size });
+
+        expect(findStatusText().classes(`gl-text-${size}`)).toBe(true);
+      });
     });
 
-    it('renders health status text', () => {
-      const expectedValue = healthStatusTextMap[healthStatus];
+    describe.each([true, false])('when disableTooltip prop is %s', (tooltipDisabled) => {
+      beforeEach(() => {
+        wrapper = createComponent({ displayAsText: true, disableTooltip: tooltipDisabled });
+      });
 
-      expect(findStatusText().text()).toBe(expectedValue);
-    });
+      it('enables the tooltip correctly', () => {
+        const { value } = getBinding(findStatusText().element, 'gl-tooltip');
 
-    it('renders correct icon', () => {
-      expect(findIcon().attributes('name')).toBe(healthStatusIconMap[healthStatus]);
-    });
+        expect(value.disabled).toBe(tooltipDisabled);
+      });
 
-    it('applies correct color', () => {
-      expect(findStatusText().classes(healthStatusColorMap[healthStatus])).toBe(true);
-    });
-
-    it('contains health status tooltip', () => {
-      expect(getBinding(findStatusText().element, 'gl-tooltip')).not.toBeUndefined();
-      expect(findStatusText().attributes('title')).toBe('Health status');
+      it('sets the correct cursor class', () => {
+        expect(findStatusText().classes('gl-cursor-help')).toBe(!tooltipDisabled);
+      });
     });
   });
 });

@@ -25,6 +25,17 @@ export default {
       type: Boolean,
       required: false,
     },
+    textSize: {
+      type: String,
+      required: false,
+      default: 'base',
+      validator: (value) => ['base', 'sm'].includes(value),
+    },
+    disableTooltip: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     statusText() {
@@ -39,6 +50,15 @@ export default {
     statusColor() {
       return healthStatusColorMap[this.healthStatus];
     },
+    textSizeClass() {
+      switch (this.textSize) {
+        case 'sm':
+          return 'gl-text-sm';
+        case 'base':
+        default:
+          return 'gl-text-base';
+      }
+    },
   },
 };
 </script>
@@ -46,11 +66,11 @@ export default {
 <template>
   <span
     v-if="displayAsText"
-    v-gl-tooltip
+    v-gl-tooltip="{ disabled: disableTooltip }"
     data-testid="status-text"
     :title="__('Health status')"
-    class="gl-inline-flex gl-cursor-help gl-text-sm"
-    :class="statusColor"
+    class="gl-inline-flex gl-items-center"
+    :class="[statusColor, textSizeClass, !disableTooltip ? 'gl-cursor-help' : undefined]"
     ><gl-icon class="gl-mr-2" :size="16" :name="statusIcon" />{{ statusText }}</span
   >
   <gl-badge

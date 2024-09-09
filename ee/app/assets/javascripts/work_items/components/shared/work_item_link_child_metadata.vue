@@ -210,6 +210,7 @@ export default {
       <issue-health-status
         v-if="healthStatus && isChildItemOpen"
         display-as-text
+        text-size="sm"
         :health-status="healthStatus"
       />
     </template>

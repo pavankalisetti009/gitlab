@@ -1,4 +1,3 @@
-import { GlBadge } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
@@ -33,7 +32,6 @@ describe('WorkItemHealthStatus component', () => {
 
   const findHeader = () => wrapper.find('h3');
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
-  const findBadge = () => wrapper.findComponent(GlBadge);
 
   const showDropdown = () => {
     findSidebarDropdownWidget().vm.$emit('dropdownShown');
@@ -215,35 +213,17 @@ describe('WorkItemHealthStatus component', () => {
       });
     });
   });
-  describe('health status rendering', () => {
-    describe('correct text', () => {
-      it.each`
-        healthStatus                     | text
-        ${HEALTH_STATUS_ON_TRACK}        | ${healthStatusTextMap[HEALTH_STATUS_ON_TRACK]}
-        ${HEALTH_STATUS_NEEDS_ATTENTION} | ${healthStatusTextMap[HEALTH_STATUS_NEEDS_ATTENTION]}
-        ${HEALTH_STATUS_AT_RISK}         | ${healthStatusTextMap[HEALTH_STATUS_AT_RISK]}
-        ${null}                          | ${HEALTH_STATUS_I18N_NONE}
-      `('renders "$text" when health status = "$healthStatus"', async ({ healthStatus, text }) => {
-        await createComponent({ healthStatus });
+  describe('health status rendered text', () => {
+    it.each`
+      healthStatus                     | text
+      ${HEALTH_STATUS_ON_TRACK}        | ${healthStatusTextMap[HEALTH_STATUS_ON_TRACK]}
+      ${HEALTH_STATUS_NEEDS_ATTENTION} | ${healthStatusTextMap[HEALTH_STATUS_NEEDS_ATTENTION]}
+      ${HEALTH_STATUS_AT_RISK}         | ${healthStatusTextMap[HEALTH_STATUS_AT_RISK]}
+      ${null}                          | ${HEALTH_STATUS_I18N_NONE}
+    `('renders "$text" when health status = "$healthStatus"', async ({ healthStatus, text }) => {
+      await createComponent({ healthStatus });
 
-        expect(wrapper.text()).toContain(text);
-      });
-    });
-
-    describe('badge renders correct variant', () => {
-      it.each`
-        healthStatus                     | variant
-        ${HEALTH_STATUS_ON_TRACK}        | ${'success'}
-        ${HEALTH_STATUS_NEEDS_ATTENTION} | ${'warning'}
-        ${HEALTH_STATUS_AT_RISK}         | ${'danger'}
-      `(
-        'uses "$variant" when health status = "$healthStatus"',
-        async ({ healthStatus, variant }) => {
-          await createComponent({ healthStatus });
-
-          expect(findBadge().props('variant')).toBe(variant);
-        },
-      );
+      expect(wrapper.text()).toContain(text);
     });
   });
 });
