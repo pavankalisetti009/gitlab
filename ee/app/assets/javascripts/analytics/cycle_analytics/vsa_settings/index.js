@@ -26,7 +26,7 @@ export default () => {
     render: (createElement) =>
       createElement(VSASettingsApp, {
         props: {
-          isEditPage: parseBoolean(isEditPage),
+          isEditing: parseBoolean(isEditPage),
         },
       }),
   });

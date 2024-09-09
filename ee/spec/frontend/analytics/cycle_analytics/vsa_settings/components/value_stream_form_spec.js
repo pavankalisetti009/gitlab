@@ -69,7 +69,7 @@ describe('ValueStreamForm', () => {
         defaultStageConfig,
         initialData,
         isEditing: false,
-        valueStreamPath: null,
+        valueStreamPath: vsaPath,
       });
     });
 
@@ -86,19 +86,22 @@ describe('ValueStreamForm', () => {
       });
     });
 
-    it(`correctly sets the form content's 'initialData' prop`, () => {
-      expect(findFormContent().props('initialData')).toMatchObject({
+    it('renders form content component correctly', () => {
+      const populatedInitialData = {
         id: selectedValueStream.id,
         name: selectedValueStream.name,
         stages: [
           camelCustomStage,
           ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: true })),
         ],
-      });
-    });
+      };
 
-    it('passes value stream path to the form content component', () => {
-      expect(findFormContent().props('valueStreamPath')).toBe(valueStreamPath);
+      expect(findFormContent().props()).toMatchObject({
+        defaultStageConfig,
+        initialData: populatedInitialData,
+        isEditing: true,
+        valueStreamPath,
+      });
     });
   });
 

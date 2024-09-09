@@ -16213,10 +16213,10 @@ msgstr ""
 msgid "CreateValueStreamForm|'%{name}' Value Stream saved"
 msgstr ""
 
-msgid "CreateValueStreamForm|Add another stage"
+msgid "CreateValueStreamForm|Add a stage"
 msgstr ""
 
-msgid "CreateValueStreamForm|Add stage"
+msgid "CreateValueStreamForm|Add another stage"
 msgstr ""
 
 msgid "CreateValueStreamForm|All default stages are currently visible"
@@ -59667,9 +59667,6 @@ msgid "ValueStreamAnalytics|Value stream"
 msgstr ""
 
 msgid "ValueStreamAnalytics|View details"
-msgstr ""
-
-msgid "ValueStreamAnalytics|View value stream"
 msgstr ""
 
 msgid "ValueStreamEvent|Items in stage"

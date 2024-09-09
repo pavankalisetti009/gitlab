@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VSASettingsApp from 'ee/analytics/cycle_analytics/vsa_settings/components/app.vue';
 import ValueStreamForm from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form.vue';
 
@@ -6,35 +6,32 @@ describe('Value stream analytics settings app component', () => {
   let wrapper;
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMount(VSASettingsApp, {
+    wrapper = shallowMountExtended(VSASettingsApp, {
       propsData: {
-        isEditPage: false,
+        isEditing: false,
         ...props,
       },
     });
   };
 
+  const findPageHeader = () => wrapper.findByTestId('vsa-settings-page-header');
   const findValueStreamForm = () => wrapper.findComponent(ValueStreamForm);
 
-  describe('default', () => {
+  describe.each`
+    isEditing | expectedPageHeader
+    ${false}  | ${'New value stream'}
+    ${true}   | ${'Edit value stream'}
+  `('when `isEditing` is `$isEditing`', ({ isEditing, expectedPageHeader }) => {
     beforeEach(() => {
-      createComponent();
+      createComponent({ props: { isEditing } });
     });
 
-    it('renders the value stream form component', () => {
-      expect(findValueStreamForm().props()).toMatchObject({
-        isEditing: false,
-      });
-    });
-  });
-
-  describe('isEditPage=true', () => {
-    beforeEach(() => {
-      createComponent({ props: { isEditPage: true } });
+    it('renders the correct page header', () => {
+      expect(findPageHeader().text()).toBe(expectedPageHeader);
     });
 
-    it(`enables the value stream form component's editing state`, () => {
-      expect(findValueStreamForm().props('isEditing')).toBe(true);
+    it('renders the value stream form component correctly', () => {
+      expect(findValueStreamForm().props('isEditing')).toBe(isEditing);
     });
   });
 });
