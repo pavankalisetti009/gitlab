@@ -20,6 +20,7 @@ module EE
           subscriptions_trials
           gitlab_com_subscriptions
           duo_chat_categorize_question
+          gitlab_terms
           google_cloud_support
           duo_chat_on_saas
           exact_code_search
