@@ -4,7 +4,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import waitForPromises from 'helpers/wait_for_promises';
-import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
+import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';

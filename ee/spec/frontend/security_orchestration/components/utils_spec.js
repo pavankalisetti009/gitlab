@@ -1,4 +1,6 @@
 import {
+  checkForPerformanceRisk,
+  hasScheduledRule,
   isPolicyInherited,
   policyHasNamespace,
   isDefaultMode,
@@ -21,6 +23,13 @@ import {
   INCLUDING,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  mockDastScanExecutionObject,
+  mockDastScanExecutionManifest,
+  mockScheduleScanExecutionObject,
+  mockScheduleScanExecutionManifest,
+} from '../mocks/mock_scan_execution_policy_data';
 
 describe(isPolicyInherited, () => {
   it.each`
@@ -251,4 +260,35 @@ describe(isScanningReport, () => {
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(isScanningReport(input)).toEqual(output);
   });
+});
+
+describe('hasScheduledRule', () => {
+  it.each`
+    title                                                      | policy                                                                                                           | output
+    ${'returns false for a non-schedule policy list policy'}   | ${{ __typename: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName, yaml: mockDastScanExecutionManifest }}     | ${false}
+    ${'returns true for a schedule policy list policy'}        | ${{ __typename: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName, yaml: mockScheduleScanExecutionManifest }} | ${true}
+    ${'returns false for a non-schedule policy editor policy'} | ${mockDastScanExecutionObject}                                                                                   | ${false}
+    ${'returns true for a schedule policy editor policy'}      | ${mockScheduleScanExecutionObject}                                                                               | ${true}
+  `('$title', ({ policy, output }) => {
+    expect(hasScheduledRule(policy)).toBe(output);
+  });
+});
+
+describe('checkForPerformanceRisk', () => {
+  it.each`
+    policyDesc                         | namespaceType              | policy                             | projectsCount | output
+    ${'does not have a schedule rule'} | ${NAMESPACE_TYPES.PROJECT} | ${mockDastScanExecutionObject}     | ${0}          | ${false}
+    ${'does not have a schedule rule'} | ${NAMESPACE_TYPES.GROUP}   | ${mockDastScanExecutionObject}     | ${0}          | ${false}
+    ${'has a schedule rule'}           | ${NAMESPACE_TYPES.PROJECT} | ${mockScheduleScanExecutionObject} | ${0}          | ${false}
+    ${'has a schedule rule'}           | ${NAMESPACE_TYPES.GROUP}   | ${mockScheduleScanExecutionObject} | ${0}          | ${false}
+    ${'does not have a schedule rule'} | ${NAMESPACE_TYPES.PROJECT} | ${mockDastScanExecutionObject}     | ${1001}       | ${false}
+    ${'does not have a schedule rule'} | ${NAMESPACE_TYPES.GROUP}   | ${mockDastScanExecutionObject}     | ${1001}       | ${false}
+    ${'has a schedule rule'}           | ${NAMESPACE_TYPES.PROJECT} | ${mockScheduleScanExecutionObject} | ${1001}       | ${false}
+    ${'has a schedule rule'}           | ${NAMESPACE_TYPES.GROUP}   | ${mockScheduleScanExecutionObject} | ${1001}       | ${true}
+  `(
+    'returns $output when namespaceType is $namespaceType, the policy $policyDesc, and projectsCount is $projectsCount',
+    ({ namespaceType, policy, projectsCount, output }) => {
+      expect(checkForPerformanceRisk({ namespaceType, policy, projectsCount })).toBe(output);
+    },
+  );
 });

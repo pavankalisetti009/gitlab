@@ -17,14 +17,12 @@ import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
-import { PROJECTS_COUNT_PERFORMANCE_LIMIT } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
-import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
 import { getPolicyType } from '../../utils';
-import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
+import { checkForPerformanceRisk, isGroup, isPolicyInherited, policyHasNamespace } from '../utils';
 import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
 import { SECURITY_POLICY_ACTIONS } from '../policy_editor/constants';
 import { goToPolicyMR } from '../policy_editor/utils';
-import { hasScheduledRule } from './utils';
+import OverloadWarningModal from '../overload_warning_modal.vue';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
@@ -150,9 +148,6 @@ export default {
 
       return policies.flat();
     },
-    projectsPerformanceLimitReached() {
-      return this.projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT;
-    },
     hasSelectedPolicy() {
       return Boolean(this.selectedPolicy);
     },
@@ -270,7 +265,11 @@ export default {
       }
     },
     hasPerformanceRisk(policy) {
-      return this.isGroup && this.projectsPerformanceLimitReached && hasScheduledRule(policy);
+      return checkForPerformanceRisk({
+        namespaceType: this.namespaceType,
+        policy,
+        projectsCount: this.projectsCount,
+      });
     },
     showBreakingChangesIcon(policyType, deprecatedProperties) {
       return (

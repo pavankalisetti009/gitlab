@@ -3,7 +3,12 @@ import { GlEmptyState, GlButton } from '@gitlab/ui';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
-import { isGroup } from 'ee/security_orchestration/components/utils';
+import {
+  checkForPerformanceRisk,
+  hasScheduledRule,
+  isGroup,
+} from 'ee/security_orchestration/components/utils';
+import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
 import {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
@@ -18,7 +23,6 @@ import DimDisableContainer from '../dim_disable_container.vue';
 import { assignSecurityPolicyProject, goToPolicyMR, parseError } from '../utils';
 import RuleSection from './rule/rule_section.vue';
 import ScanAction from './action/scan_action.vue';
-import OverloadWarningModal from './overload_warning_modal.vue';
 import {
   buildScannerAction,
   buildDefaultPipeLineRule,
@@ -33,8 +37,6 @@ import {
   ADD_CONDITION_LABEL,
   CONDITIONS_LABEL,
   ERROR_MESSAGE_MAP,
-  SCAN_EXECUTION_RULES_SCHEDULE_KEY,
-  PROJECTS_COUNT_PERFORMANCE_LIMIT,
 } from './constants';
 
 export default {
@@ -67,7 +69,7 @@ export default {
         return data.group?.projects?.count || 0;
       },
       skip() {
-        return !isGroup(this.namespaceType) || !this.hasScheduledRule;
+        return !isGroup(this.namespaceType) || !hasScheduledRule(this.policy);
       },
       error() {
         this.projectsCount = 0;
@@ -138,17 +140,6 @@ export default {
     };
   },
   computed: {
-    projectsPerformanceLimitReached() {
-      return this.projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT;
-    },
-    hasScheduledRule() {
-      return this.policy?.rules?.some(({ type }) => type === SCAN_EXECUTION_RULES_SCHEDULE_KEY);
-    },
-    hasPerformanceRisk() {
-      return (
-        this.projectsPerformanceLimitReached && this.hasScheduledRule && isGroup(this.namespaceType)
-      );
-    },
     originalName() {
       return this.existingPolicy?.name;
     },
@@ -210,6 +201,13 @@ export default {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
     },
+    hasPerformanceRisk() {
+      return checkForPerformanceRisk({
+        namespaceType: this.namespaceType,
+        policy: this.policy,
+        projectsCount: this.projectsCount,
+      });
+    },
     async getSecurityPolicyProject() {
       if (!this.newlyCreatedPolicyProject && !this.assignedPolicyProject.fullPath) {
         this.newlyCreatedPolicyProject = await assignSecurityPolicyProject(this.namespacePath);
@@ -218,7 +216,7 @@ export default {
       return this.newlyCreatedPolicyProject || this.assignedPolicyProject;
     },
     async handleModifyPolicy(act) {
-      if (this.hasPerformanceRisk && !this.dismissPerformanceWarningModal) {
+      if (this.hasPerformanceRisk() && !this.dismissPerformanceWarningModal) {
         this.showPerformanceWarningModal = true;
         return;
       }

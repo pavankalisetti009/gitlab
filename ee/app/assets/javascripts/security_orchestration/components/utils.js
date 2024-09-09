@@ -1,4 +1,5 @@
 import { isEmpty } from 'lodash';
+import { safeLoad } from 'js-yaml';
 import {
   EXCLUDING,
   INCLUDING,
@@ -8,6 +9,8 @@ import {
   REPORT_TYPE_DEPENDENCY_SCANNING,
   REPORT_TYPE_CONTAINER_SCANNING,
 } from '~/vue_shared/security_reports/constants';
+import { SCAN_EXECUTION_RULES_SCHEDULE_KEY } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from './constants';
 
 export const isPolicyInherited = (source) => source?.inherited === true;
 
@@ -160,3 +163,49 @@ export const isGroup = (namespaceType) => namespaceType === NAMESPACE_TYPES.GROU
  */
 export const isScanningReport = (scanner) =>
   [REPORT_TYPE_CONTAINER_SCANNING, REPORT_TYPE_DEPENDENCY_SCANNING].includes(scanner);
+
+/**
+ * Parses the policy from yaml to an object
+ * @param {Object} manifest policy in yaml form
+ * @returns
+ */
+export const fromYaml = ({ manifest }) => {
+  try {
+    return safeLoad(manifest, { json: true });
+  } catch {
+    /**
+     * Catch parsing error of safeLoad
+     */
+    return { error: true, key: 'yaml-parsing' };
+  }
+};
+
+/**
+ * Check if the policy is a scan execution policy and has a scheduled rule
+ * @param {Object} policy
+ * @returns {Boolean}
+ */
+export const hasScheduledRule = (policy) => {
+  let policyObject = policy;
+
+  // Handle policy list policies
+  if (
+    policyObject.yaml &&
+    // eslint-disable-next-line no-underscore-dangle
+    policyObject.__typename === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName
+  ) {
+    policyObject = fromYaml({ manifest: policyObject.yaml });
+  }
+
+  return policyObject?.rules?.some(({ type }) => type === SCAN_EXECUTION_RULES_SCHEDULE_KEY);
+};
+
+export const checkForPerformanceRisk = ({ policy, namespaceType, projectsCount }) => {
+  const PROJECTS_COUNT_PERFORMANCE_LIMIT = 1000;
+
+  return (
+    hasScheduledRule(policy) &&
+    isGroup(namespaceType) &&
+    projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT
+  );
+};

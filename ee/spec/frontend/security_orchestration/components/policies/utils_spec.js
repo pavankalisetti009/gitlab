@@ -3,17 +3,11 @@ import {
   validateTypeFilter,
   extractTypeParameter,
   extractSourceParameter,
-  hasScheduledRule,
 } from 'ee/security_orchestration/components/policies/utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
-import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import {
-  mockDastScanExecutionManifest,
-  mockScheduleScanExecutionManifest,
-} from '../../mocks/mock_scan_execution_policy_data';
 
 describe('utils', () => {
   describe('validateSourceFilter', () => {
@@ -95,17 +89,6 @@ describe('utils', () => {
       ${POLICY_SOURCE_OPTIONS.DIRECT.value.toLowerCase()}    | ${'DIRECT'}
     `('should validate source filters', ({ source, output }) => {
       expect(extractSourceParameter(source)).toBe(output);
-    });
-  });
-
-  describe('hasScheduledRule', () => {
-    it.each`
-      policy                                                                                                           | output
-      ${{ __typename: '', yaml: '' }}                                                                                  | ${false}
-      ${{ __typename: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName, yaml: mockDastScanExecutionManifest }}     | ${false}
-      ${{ __typename: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName, yaml: mockScheduleScanExecutionManifest }} | ${true}
-    `('should do the thing', ({ policy, output }) => {
-      expect(hasScheduledRule(policy)).toBe(output);
     });
   });
 });
