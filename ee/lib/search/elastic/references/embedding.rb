@@ -41,11 +41,21 @@ module Search
 
         override :as_indexed_json
         def as_indexed_json
-          {
-            embedding: embedding,
-            embedding_version: 0,
-            routing: routing
-          }
+          case model_klass.name
+          when 'Issue'
+            {
+              embedding: embedding(issue_content),
+              embedding_version: 0,
+              routing: routing
+            }
+          when 'WorkItem'
+            {
+              embedding_0: embedding(work_item_content),
+              routing: routing
+            }
+          else
+            raise ReferenceFailure, "Unknown as_indexed_json definition for model class: #{model_klass.name}"
+          end
         end
 
         override :operation
@@ -55,12 +65,12 @@ module Search
 
         override :index_name
         def index_name
-          model_klass.__elasticsearch__.index_name
+          ::Gitlab::Elastic::Helper.type_class(model_klass.to_s)&.index_name || model_klass.__elasticsearch__.index_name
         end
 
         private
 
-        def embedding
+        def embedding(content)
           if embeddings_throttled_after_increment?
             raise ReferenceFailure, "Rate limited endpoint '#{ENDPOINT}' is throttled"
           end
@@ -72,8 +82,14 @@ module Search
           raise ReferenceFailure, "Failed to generate embedding: #{error}"
         end
 
-        def content
+        def issue_content
           "issue with title '#{database_record.title}' and description '#{database_record.description}'"
+        end
+
+        def work_item_content
+          "work item of type '#{database_record.work_item_type.name}' " \
+            "with title '#{database_record.title}' " \
+            "and description '#{database_record.description}'"
         end
 
         def tracking_context

@@ -66,6 +66,10 @@ module Gitlab
         def build_es_id(es_type:, target_id:)
           "#{es_type}_#{target_id}"
         end
+
+        def type_class(class_name)
+          [::Search::Elastic::Types, class_name].join('::').safe_constantize
+        end
       end
 
       def default_settings
@@ -148,7 +152,8 @@ module Gitlab
                   end
 
         classes.map do |class_name|
-          type_class(class_name) || ::Elastic::Latest::ApplicationClassProxy.new(class_name, use_separate_indices: true)
+          self.class.type_class(class_name) ||
+            ::Elastic::Latest::ApplicationClassProxy.new(class_name, use_separate_indices: true)
         end
       end
 
@@ -348,7 +353,7 @@ module Gitlab
       def klass_to_alias_name(klass:)
         return target_name if klass == Repository
 
-        proxy_klass = type_class(klass) || ::Elastic::Latest::ApplicationClassProxy.new(klass,
+        proxy_klass = self.class.type_class(klass) || ::Elastic::Latest::ApplicationClassProxy.new(klass,
           use_separate_indices: true)
         proxy_klass.index_name
       end
@@ -453,12 +458,6 @@ module Gitlab
           routing: route,
           body: { query: { bool: { filter: { term: { rid: "wiki_#{container_type.downcase}_#{container_id}" } } } } }
         }.compact)
-      end
-
-      private
-
-      def type_class(class_name)
-        [::Search::Elastic::Types, class_name].join('::').safe_constantize
       end
     end
   end

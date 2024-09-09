@@ -663,11 +663,11 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
   end
 
-  describe '#preload_for_indexing' do
+  describe '#preload_indexing_data' do
     let_it_be(:work_item) { create(:work_item) }
 
     it 'preloads for indexing  and avoid N+1 queries' do
-      work_item = described_class.preload_for_indexing.first
+      work_item = described_class.preload_indexing_data.first
       recorder = ActiveRecord::QueryRecorder.new do
         work_item.namespace
         work_item.labels
