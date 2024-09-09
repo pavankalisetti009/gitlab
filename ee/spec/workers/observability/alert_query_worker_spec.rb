@@ -12,7 +12,20 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :metrics do
   let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
 
   let(:expected_access_token) { active_token.token }
-  let(:expected_response) { [] }
+  let(:expected_response) do
+    [
+      {
+        "tenant_id" => "1",
+        "project_id" => project.id.to_s,
+        "agg_timestamp" => "2023-11-29T13:25:45Z",
+        "alert_type" => "TraceRateLimitEvent",
+        "description" => "rate limit exceeded on path: /v1/traces with method: POST",
+        "reason" => "value of 1000 goes over the limit set to 100",
+        "count" => "4"
+      }
+    ]
+  end
+
   let(:expected_request_headers) do
     {
       'X-Gitlab-Instance-Id' => expected_instance_id,
@@ -41,6 +54,8 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :metrics do
   end
 
   context 'when alerts are queried but none exists' do
+    let(:expected_response) { [] }
+
     it 'calls alerts API' do
       expect(Gitlab::HTTP_V2).to receive(:get).and_call_original
 
@@ -49,20 +64,6 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :metrics do
   end
 
   context 'when alerts are returned from API' do
-    let(:expected_response) do
-      [
-        {
-          "tenant_id" => "1",
-          "project_id" => project.id.to_s,
-          "agg_timestamp" => "2023-11-29T13:25:45Z",
-          "alert_type" => "TraceRateLimitEvent",
-          "description" => "rate limit exceeded on path: /v1/traces with method: POST",
-          "reason" => "value of 1000 goes over the limit set to 100",
-          "count" => 4
-        }
-      ]
-    end
-
     it 'creates alerts when receives payload' do
       expect { worker.perform }.to change { ::AlertManagement::Alert.count }.by(1)
     end
@@ -158,6 +159,16 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :metrics do
   context 'when not licensed' do
     before do
       stub_licensed_features(observability: false)
+    end
+
+    it 'does not create any alert' do
+      expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
+    end
+  end
+
+  context 'when disabled via project setting' do
+    before do
+      create(:project_setting, project: project, observability_alerts_enabled: false)
     end
 
     it 'does not create any alert' do
