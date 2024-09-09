@@ -1,14 +1,37 @@
 <script>
 import { GlTable, GlLoadingIcon } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { ACCESS_LEVEL_LABELS } from '~/access_level/constants';
-import { TABLE_FIELDS } from '../constants';
-import CustomRolesActions from './custom_roles_actions.vue';
+import { s__ } from '~/locale';
+import RoleActions from './role_actions.vue';
+
+export const TABLE_FIELDS = [
+  { key: 'id', label: s__('MemberRole|ID') },
+  { key: 'name', label: s__('MemberRole|Name') },
+  { key: 'description', label: s__('MemberRole|Description') },
+  { key: 'baseRole', label: s__('MemberRole|Base role') },
+  {
+    key: 'permissions',
+    label: s__('MemberRole|Custom permissions'),
+    tdClass: 'gl-whitespace-nowrap',
+  },
+  {
+    key: 'membersCount',
+    label: s__('MemberRole|Member count'),
+    thClass: 'gl-w-12 gl-whitespace-nowrap',
+    tdClass: 'gl-text-right',
+  },
+  {
+    key: 'actions',
+    label: s__('MemberRole|Actions'),
+    thClass: 'gl-w-12',
+    tdClass: 'gl-text-right !gl-p-3',
+  },
+];
 
 export default {
-  components: { GlTable, GlLoadingIcon, CustomRolesActions },
+  components: { GlTable, GlLoadingIcon, RoleActions },
   props: {
-    customRoles: {
+    roles: {
       type: Array,
       required: true,
     },
@@ -17,18 +40,13 @@ export default {
       required: true,
     },
   },
-  methods: {
-    getBaseRoleName({ integerValue }) {
-      return ACCESS_LEVEL_LABELS[integerValue];
-    },
-  },
   TABLE_FIELDS,
   getIdFromGraphQLId,
 };
 </script>
 
 <template>
-  <gl-table :fields="$options.TABLE_FIELDS" :items="customRoles" :busy="busy" stacked="md">
+  <gl-table :fields="$options.TABLE_FIELDS" :items="roles" :busy="busy" stacked="md">
     <template #table-busy>
       <gl-loading-icon size="md" />
     </template>
@@ -43,7 +61,7 @@ export default {
     </template>
 
     <template #cell(baseRole)="{ item: { baseAccessLevel } }">
-      {{ getBaseRoleName(baseAccessLevel) }}
+      {{ baseAccessLevel.humanAccess }}
     </template>
 
     <template #cell(permissions)="{ item: { enabledPermissions } }">
@@ -53,7 +71,7 @@ export default {
     </template>
 
     <template #cell(actions)="{ item }">
-      <custom-roles-actions :custom-role="item" @delete="$emit('delete-role', item)" />
+      <role-actions :role="item" @delete="$emit('delete-role', item)" />
     </template>
   </gl-table>
 </template>

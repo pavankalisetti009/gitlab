@@ -75,11 +75,6 @@ export default {
       required: false,
       default: null,
     },
-    embedded: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
@@ -174,16 +169,14 @@ export default {
       this.isSubmitting = true;
 
       try {
-        const input = {
-          name: this.memberRole.name,
-          description: this.memberRole.description,
-          permissions: this.memberRole.permissions,
-        };
+        const { name, description, permissions, baseAccessLevel } = this.memberRole;
+
+        const input = { name, description, permissions };
 
         if (this.isEditing) {
           input.id = convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.roleId);
         } else {
-          input.baseAccessLevel = this.memberRole.baseAccessLevel;
+          input.baseAccessLevel = baseAccessLevel;
           // Only add the groupPath key if we have one, otherwise backend may throw an error.
           if (this.groupFullPath) {
             input.groupPath = this.groupFullPath;
@@ -205,9 +198,6 @@ export default {
           this.alert = createAlert({
             message: sprintf(errorMessage, { error }, false),
           });
-        } else if (this.embedded) {
-          this.$emit('success');
-          this.isSubmitting = false;
         } else {
           visitUrl(this.listPagePath);
         }
@@ -218,13 +208,6 @@ export default {
             this.isEditing ? this.$options.i18n.updateError : this.$options.i18n.createError,
           ),
         });
-      }
-    },
-    handleCancelClick() {
-      if (this.embedded) {
-        this.$emit('cancel');
-      } else {
-        visitUrl(this.listPagePath);
       }
     },
   },
@@ -240,8 +223,7 @@ export default {
   </gl-alert>
 
   <gl-form v-else @submit.prevent="saveMemberRole">
-    <h4 v-if="embedded" class="gl-mt-0">{{ headerText }}</h4>
-    <h2 v-else class="gl-mb-6">{{ headerText }}</h2>
+    <h2 class="gl-mb-6">{{ headerText }}</h2>
 
     <gl-form-group
       :label="$options.i18n.nameLabel"
@@ -272,8 +254,7 @@ export default {
       />
     </gl-form-group>
 
-    <h4 v-if="embedded" class="gl-mt-7">{{ $options.i18n.permissionsLabel }}</h4>
-    <h3 v-else class="gl-mb-6 gl-mt-8">{{ $options.i18n.permissionsLabel }}</h3>
+    <h3 class="gl-mb-6 gl-mt-8">{{ $options.i18n.permissionsLabel }}</h3>
 
     <gl-form-group
       :label="$options.i18n.baseRoleLabel"
@@ -317,12 +298,7 @@ export default {
       >
         {{ saveButtonText }}
       </gl-button>
-      <gl-button
-        type="reset"
-        data-testid="cancel-button"
-        :disabled="isSubmitting"
-        @click="handleCancelClick"
-      >
+      <gl-button data-testid="cancel-button" :disabled="isSubmitting" :href="listPagePath">
         {{ $options.i18n.cancel }}
       </gl-button>
     </div>

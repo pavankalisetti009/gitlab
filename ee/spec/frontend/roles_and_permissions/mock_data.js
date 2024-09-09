@@ -35,7 +35,7 @@ export const mockMemberRoles = {
         nodes: [
           {
             baseAccessLevel: {
-              integerValue: 20,
+              humanAccess: 'Reporter',
               __typename: 'AccessLevel',
             },
             id: 'gid://gitlab/MemberRole/1',
@@ -59,7 +59,7 @@ export const mockMemberRoles = {
           },
           {
             baseAccessLevel: {
-              integerValue: 20,
+              humanAccess: 'Reporter',
               __typename: 'AccessLevel',
             },
             id: 'gid://gitlab/MemberRole/2',
@@ -95,7 +95,7 @@ export const mockInstanceMemberRoles = {
       nodes: [
         {
           baseAccessLevel: {
-            integerValue: 10,
+            humanAccess: 'Guest',
             __typename: 'AccessLevel',
           },
           id: 'gid://gitlab/MemberRole/2',
@@ -128,8 +128,12 @@ export const mockMemberRole = {
   membersCount: 0,
   baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
   enabledPermissions: {
-    nodes: [{ value: 'A' }, { value: 'B' }],
+    nodes: [
+      { name: 'Permission A', value: 'A' },
+      { name: 'Permission B', value: 'B' },
+    ],
   },
+  __typename: 'MemberRole',
 };
 
 export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({

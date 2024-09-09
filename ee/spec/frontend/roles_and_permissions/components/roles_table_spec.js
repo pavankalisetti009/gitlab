@@ -1,23 +1,23 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import CustomRolesTable from 'ee/roles_and_permissions/components/custom_roles_table.vue';
-import CustomRolesActions from 'ee/roles_and_permissions/components/custom_roles_actions.vue';
+import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
+import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
 import { mockMemberRoles } from '../mock_data';
 
-describe('CustomRolesTable', () => {
+describe('Roles table', () => {
   let wrapper;
 
-  const customRoles = mockMemberRoles.data.namespace.memberRoles.nodes;
+  const roles = mockMemberRoles.data.namespace.memberRoles.nodes;
 
   const createComponent = () => {
-    wrapper = mountExtended(CustomRolesTable, {
-      propsData: { customRoles },
+    wrapper = mountExtended(RolesTable, {
+      propsData: { roles },
     });
   };
 
   const findHeaders = () => wrapper.find('thead').find('tr').findAll('th');
   const findRowCell = ({ row = 0, cell }) =>
     wrapper.findAll('tbody tr').at(row).findAll('td').at(cell);
-  const findActions = () => wrapper.findComponent(CustomRolesActions);
+  const findActions = () => wrapper.findComponent(RoleActions);
 
   beforeEach(() => {
     createComponent();
@@ -77,7 +77,7 @@ describe('CustomRolesTable', () => {
     });
 
     it('emits `delete-role` event', () => {
-      expect(wrapper.emitted('delete-role')[0][0]).toBe(customRoles[0]);
+      expect(wrapper.emitted('delete-role')[0][0]).toBe(roles[0]);
     });
   });
 });

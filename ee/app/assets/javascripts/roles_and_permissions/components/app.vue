@@ -1,14 +1,14 @@
 <script>
 import { GlLoadingIcon, GlSprintf, GlLink, GlButton, GlIcon, GlAlert } from '@gitlab/ui';
 import { s__, n__ } from '~/locale';
-import groupMemberRolesQuery from 'ee/invite_members/graphql/queries/group_member_roles.query.graphql';
+import groupMemberRolesQuery from '../graphql/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from '../graphql/instance_member_roles.query.graphql';
 import CustomRolesEmptyState from './custom_roles_empty_state.vue';
-import CustomRolesTable from './custom_roles_table.vue';
+import RolesTable from './roles_table.vue';
 import DeleteRoleModal from './delete_role_modal.vue';
 
 export default {
-  name: 'CustomRolesApp',
+  name: 'RolesApp',
   i18n: {
     title: s__('MemberRole|Custom roles'),
     description: s__(
@@ -26,7 +26,7 @@ export default {
     GlIcon,
     GlAlert,
     CustomRolesEmptyState,
-    CustomRolesTable,
+    RolesTable,
     DeleteRoleModal,
   },
   inject: ['documentationPath', 'groupFullPath', 'newRolePath'],
@@ -116,11 +116,7 @@ export default {
       <span>{{ customRolesCount }}</span>
     </div>
 
-    <custom-roles-table
-      :custom-roles="customRoles"
-      :busy="isLoading"
-      @delete-role="roleToDelete = $event"
-    />
+    <roles-table :roles="customRoles" :busy="isLoading" @delete-role="roleToDelete = $event" />
     <delete-role-modal
       :role="roleToDelete"
       @deleted="processRoleDeletion"

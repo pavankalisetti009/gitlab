@@ -275,9 +275,7 @@ describe('EEInviteModalBase', () => {
       });
 
       it('emits submit', () => {
-        expect(wrapper.emitted('submit')).toEqual([
-          [{ accessLevel: 20, expiresAt: undefined, memberRoleId: null }],
-        ]);
+        expect(wrapper.emitted('submit')).toEqual([[{ accessLevel: 20, expiresAt: undefined }]]);
       });
     });
   });
@@ -352,7 +350,6 @@ describe('EEInviteModalBase', () => {
           addUserEmails: [],
           addUserIds: [],
           role: 'REPORTER',
-          memberRoleId: null,
         });
         expect(defaultReconciliationMock).toHaveBeenCalledTimes(1);
         expect(defaultReconciliationMock).toHaveBeenCalledWith({ namespaceId: 54321 });
@@ -476,9 +473,7 @@ describe('EEInviteModalBase', () => {
 
     it('emits submit event', () => {
       expect(wrapper.emitted('submit')).toHaveLength(1);
-      expect(wrapper.emitted('submit')).toEqual([
-        [{ accessLevel: 20, expiresAt: undefined, memberRoleId: null }],
-      ]);
+      expect(wrapper.emitted('submit')).toEqual([[{ accessLevel: 20, expiresAt: undefined }]]);
     });
 
     it('shows the initial modal', () => {

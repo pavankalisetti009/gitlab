@@ -216,7 +216,6 @@ describe('MaxRole', () => {
         expect(actions.updateMemberRole).toHaveBeenCalledWith(expect.any(Object), {
           memberId: member.id,
           accessLevel: 20,
-          memberRoleId: null,
         });
       });
     });

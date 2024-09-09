@@ -5,12 +5,12 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import groupMemberRolesQuery from 'ee/invite_members/graphql/queries/group_member_roles.query.graphql';
+import groupMemberRolesQuery from 'ee/roles_and_permissions/graphql/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from 'ee/roles_and_permissions/graphql/instance_member_roles.query.graphql';
 
-import CustomRolesApp from 'ee/roles_and_permissions/components/app.vue';
+import RolesApp from 'ee/roles_and_permissions/components/app.vue';
 import CustomRolesEmptyState from 'ee/roles_and_permissions/components/custom_roles_empty_state.vue';
-import CustomRolesTable from 'ee/roles_and_permissions/components/custom_roles_table.vue';
+import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 
 import { mockEmptyMemberRoles, mockMemberRoles, mockInstanceMemberRoles } from '../mock_data';
@@ -19,7 +19,7 @@ Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
-describe('Custom roles app', () => {
+describe('Roles app', () => {
   let wrapper;
 
   const mockCustomRoleToDelete = mockMemberRoles.data.namespace.memberRoles.nodes[0];
@@ -35,7 +35,7 @@ describe('Custom roles app', () => {
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
     groupFullPath = 'test-group',
   } = {}) => {
-    wrapper = shallowMountExtended(CustomRolesApp, {
+    wrapper = shallowMountExtended(RolesApp, {
       apolloProvider: createMockApollo([
         [groupMemberRolesQuery, groupRolesQueryHandler],
         [instanceMemberRolesQuery, instanceRolesQueryHandler],
@@ -57,7 +57,7 @@ describe('Custom roles app', () => {
 
   const findEmptyState = () => wrapper.findComponent(CustomRolesEmptyState);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findTable = () => wrapper.findComponent(CustomRolesTable);
+  const findTable = () => wrapper.findComponent(RolesTable);
   const findHeader = () => wrapper.find('header');
   const findCount = () => wrapper.findByTestId('custom-roles-count');
   const findButton = () => wrapper.findComponent(GlButton);
@@ -111,7 +111,7 @@ describe('Custom roles app', () => {
       it('renders the table', () => {
         expect(findTable().exists()).toBe(true);
 
-        expect(findTable().props('customRoles')).toEqual(
+        expect(findTable().props('roles')).toEqual(
           mockMemberRoles.data.namespace.memberRoles.nodes,
         );
       });
@@ -127,9 +127,7 @@ describe('Custom roles app', () => {
       it('renders the table', () => {
         expect(findTable().exists()).toBe(true);
 
-        expect(findTable().props('customRoles')).toEqual(
-          mockInstanceMemberRoles.data.memberRoles.nodes,
-        );
+        expect(findTable().props('roles')).toEqual(mockInstanceMemberRoles.data.memberRoles.nodes);
       });
     });
 

@@ -1,0 +1,16 @@
+fragment MemberRole on MemberRole {
+  id
+  name
+  description
+  membersCount
+  editPath
+  baseAccessLevel {
+    humanAccess
+  }
+  enabledPermissions {
+    nodes {
+      name
+      value
+    }
+  }
+}

@@ -13,13 +13,13 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import createMemberRoleMutation from 'ee/roles_and_permissions/graphql/create_member_role.mutation.graphql';
 import updateMemberRoleMutation from 'ee/roles_and_permissions/graphql/update_member_role.mutation.graphql';
 import CreateMemberRole from 'ee/roles_and_permissions/components/create_member_role.vue';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { stubComponent } from 'helpers/stub_component';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/member_role.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
 import { BASE_ROLES } from '~/access_level/constants';
-import { stubComponent } from 'helpers/stub_component';
 import { getMemberRoleQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -43,18 +43,16 @@ describe('CreateMemberRole', () => {
   const defaultMemberRoleHandler = jest.fn().mockResolvedValue(getMemberRoleQueryResponse());
 
   const createComponent = ({
-    mountFn = mountExtended,
     createMutationMock = createMutationSuccessHandler,
     updateMutationMock = updateMutationSuccessHandler,
     memberRoleHandler = defaultMemberRoleHandler,
     groupFullPath = 'test-group',
-    embedded = false,
     roleId,
   } = {}) => {
-    wrapper = mountFn(CreateMemberRole, {
-      propsData: { groupFullPath, embedded, listPagePath: 'http://list/page/path', roleId },
+    wrapper = shallowMountExtended(CreateMemberRole, {
+      propsData: { groupFullPath, listPagePath: 'http://list/page/path', roleId },
       stubs: {
-        PermissionsSelector: true,
+        GlFormInput: stubComponent(GlFormInput, { props: ['state'] }),
         GlFormGroup: stubComponent(GlFormGroup, { props: ['state'] }),
       },
       apolloProvider: createMockApollo([
@@ -67,8 +65,8 @@ describe('CreateMemberRole', () => {
     return waitForPromises();
   };
 
-  const findButtonSubmit = () => wrapper.findByTestId('submit-button');
-  const findButtonCancel = () => wrapper.findByTestId('cancel-button');
+  const findSubmitButton = () => wrapper.findByTestId('submit-button');
+  const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findNameField = () => wrapper.findAllComponents(GlFormInput).at(0);
   const findBaseRoleFormGroup = () => wrapper.findByTestId('base-role-form-group');
   const findRoleDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
@@ -92,40 +90,26 @@ describe('CreateMemberRole', () => {
     return waitFn();
   };
 
-  it('shows the role dropdown with the expected options', () => {
-    createComponent();
+  describe('common behavior', () => {
+    beforeEach(() => createComponent());
 
-    expect(findRoleDropdown().props('items')).toBe(BASE_ROLES);
-  });
+    it('shows the role dropdown with the expected options', () => {
+      expect(findRoleDropdown().props('items')).toBe(BASE_ROLES);
+    });
 
-  it('navigates back to list page when cancel button is clicked', () => {
-    createComponent();
+    it('shows submit button', () => {
+      expect(findSubmitButton().attributes('type')).toBe('submit');
+      expect(findSubmitButton().props('variant')).toBe('confirm');
+    });
 
-    findButtonCancel().trigger('click');
-
-    expect(visitUrl).toHaveBeenCalledWith('http://list/page/path');
-  });
-
-  it('does not fetch a member role on page load when creating a role', () => {
-    createComponent();
-
-    expect(defaultMemberRoleHandler).not.toHaveBeenCalled();
-  });
-
-  describe('embedded mode', () => {
-    it('emits cancel event when the cancel button is clicked', () => {
-      createComponent({ embedded: true });
-
-      expect(wrapper.emitted('cancel')).toBeUndefined();
-
-      findButtonCancel().trigger('click');
-
-      expect(wrapper.emitted('cancel')).toHaveLength(1);
+    it('shows cancel button', () => {
+      expect(findCancelButton().text()).toBe('Cancel');
+      expect(findCancelButton().attributes('href')).toBe('http://list/page/path');
     });
   });
 
   describe('field validation', () => {
-    beforeEach(() => createComponent({ mountFn: shallowMountExtended }));
+    beforeEach(() => createComponent());
 
     it('shows a warning if no base role is selected', async () => {
       expect(findBaseRoleFormGroup().props('state')).toBe(true);
@@ -136,7 +120,7 @@ describe('CreateMemberRole', () => {
     });
 
     it('shows a warning if name field is empty', async () => {
-      expect(findNameField().attributes('state')).toBe('true');
+      expect(findNameField().props('state')).toBe(true);
 
       await submitForm();
 
@@ -153,17 +137,30 @@ describe('CreateMemberRole', () => {
     });
   });
 
+  describe('create role', () => {
+    beforeEach(() => createComponent());
+
+    it('does not fetch a member role on page load when creating a role', () => {
+      expect(defaultMemberRoleHandler).not.toHaveBeenCalled();
+    });
+
+    it('shows correct text on submit button', () => {
+      expect(findSubmitButton().text()).toBe('Create role');
+    });
+  });
+
   describe('when create role form is submitted', () => {
     it('disables the submit and cancel buttons', async () => {
-      await createComponent({ mountFn: shallowMountExtended });
+      await createComponent();
       await fillForm();
       // Verify that the buttons don't start off as disabled.
-      expect(findButtonSubmit().props('loading')).toBe(false);
-      expect(findButtonCancel().props('disabled')).toBe(false);
+      expect(findSubmitButton().props('loading')).toBe(false);
+      expect(findCancelButton().props('disabled')).toBe(false);
+
       await submitForm();
 
-      expect(findButtonSubmit().props('loading')).toBe(true);
-      expect(findButtonCancel().props('disabled')).toBe(true);
+      expect(findSubmitButton().props('loading')).toBe(true);
+      expect(findCancelButton().props('disabled')).toBe(true);
     });
 
     it('dismisses any previous alert', async () => {
@@ -210,19 +207,6 @@ describe('CreateMemberRole', () => {
 
       expect(visitUrl).toHaveBeenCalledWith('http://list/page/path');
     });
-
-    describe('embedded mode', () => {
-      it('emits success event', async () => {
-        await createComponent({ embedded: true });
-        await fillForm();
-
-        expect(wrapper.emitted('success')).toBeUndefined();
-
-        await submitForm(waitForPromises);
-
-        expect(wrapper.emitted('success')).toHaveLength(1);
-      });
-    });
   });
 
   describe('when there is an error creating the role', () => {
@@ -242,8 +226,8 @@ describe('CreateMemberRole', () => {
     });
 
     it('enables the submit and cancel buttons', () => {
-      expect(findButtonSubmit().props('loading')).toBe(false);
-      expect(findButtonCancel().props('disabled')).toBe(false);
+      expect(findSubmitButton().props('loading')).toBe(false);
+      expect(findCancelButton().props('disabled')).toBe(false);
     });
 
     it('does not emit the success event', () => {
@@ -258,8 +242,6 @@ describe('CreateMemberRole', () => {
       });
 
       it('shows a loading spinner', () => {
-        createComponent({ roleId: 1 });
-
         expect(findLoadingIcon().exists()).toBe(true);
       });
 
@@ -287,11 +269,7 @@ describe('CreateMemberRole', () => {
 
     describe('after the member role is loaded', () => {
       beforeEach(() => {
-        return createComponent({
-          mountFn: shallowMountExtended,
-          roleId: 1,
-          stubs: { GlFormCheckboxGroup: true },
-        });
+        return createComponent({ roleId: 1 });
       });
 
       it('shows the form with the expected pre-filled data', () => {
@@ -303,6 +281,10 @@ describe('CreateMemberRole', () => {
 
       it('disables the base role selector', () => {
         expect(findRoleDropdown().attributes('disabled')).toBe('true');
+      });
+
+      it('shows correct text on submit button', () => {
+        expect(findSubmitButton().text()).toBe('Save role');
       });
     });
 
