@@ -76,6 +76,10 @@ module GitlabSubscriptions
         raise NotImplementedError, 'Subclasses must implement the eligible_for_gitlab_duo_pro_seat? method'
       end
 
+      def duo_pro_or_enterprise?
+        add_on_purchase.add_on.code_suggestions? || add_on_purchase.add_on.duo_enterprise?
+      end
+
       def log_event(message, error: nil, error_code: nil)
         log_params = base_log_params.tap do |result|
           result[:message] = message
