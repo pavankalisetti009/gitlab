@@ -61,17 +61,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       let_it_be(:namespace) { group }
     end
 
-    it 'marks the jobs as execution_policy_jobs' do
-      run_chain
-
-      test_stage = pipeline.stages.find { |stage| stage.name == 'test' }
-      project_rake_job = test_stage.statuses.find { |status| status.name == 'rake' }
-      policy_rspec_job = test_stage.statuses.find { |status| status.name == 'rspec' }
-
-      expect(project_rake_job.execution_policy_job?).to eq(false)
-      expect(policy_rspec_job.execution_policy_job?).to eq(true)
-    end
-
     context 'with conflicting jobs' do
       let(:conflicting_job_script) { 'echo "job with suffix"' }
       let(:non_conflicting_job_script) { 'echo "job without suffix"' }

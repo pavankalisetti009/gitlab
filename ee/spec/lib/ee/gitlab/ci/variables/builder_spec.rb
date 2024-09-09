@@ -112,7 +112,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
 
       context 'when job is marked as a policy job' do
         before do
-          job.set_execution_policy_job!
+          job.options.merge!(execution_policy_job: true)
         end
 
         it 're-applies yaml_variables with the highest precedence' do
