@@ -29,7 +29,7 @@ export const i18n = {
   DEFAULT_FIELD_START_EVENT_LABEL: s__('CreateValueStreamForm|Start event: '),
   DEFAULT_FIELD_END_EVENT_LABEL: s__('CreateValueStreamForm|End event: '),
   BTN_UPDATE_STAGE: s__('CreateValueStreamForm|Update stage'),
-  BTN_ADD_STAGE: s__('CreateValueStreamForm|Add stage'),
+  BTN_ADD_STAGE: s__('CreateValueStreamForm|Add a stage'),
   BTN_ADD_ANOTHER_STAGE: s__('CreateValueStreamForm|Add another stage'),
   TITLE_EDIT_STAGE: s__('CreateValueStreamForm|Editing stage'),
   TITLE_ADD_STAGE: s__('CreateValueStreamForm|New stage'),

@@ -61,7 +61,7 @@ export default {
 
       return selectedValueStream
         ? mergeUrlParams({ value_stream_id: selectedValueStream.id }, vsaPath)
-        : null;
+        : vsaPath;
     },
   },
   created() {
