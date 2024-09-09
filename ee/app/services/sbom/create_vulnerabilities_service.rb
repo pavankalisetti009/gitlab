@@ -4,6 +4,7 @@ module Sbom
   class CreateVulnerabilitiesService
     include Gitlab::Utils::StrongMemoize
     include Gitlab::VulnerabilityScanning::AdvisoryUtils
+    include Gitlab::InternalEventsTracking
 
     def self.execute(pipeline_id)
       new(pipeline_id).execute
@@ -11,13 +12,19 @@ module Sbom
 
     def initialize(pipeline_id)
       @pipeline_id = pipeline_id
+      @possibly_affected_sbom_occurrences_count = 0
+      @known_affected_sbom_occurrences_count = 0
     end
 
     def execute
+      start_time = Time.current.iso8601
+
       valid_sbom_reports.each do |sbom_report|
         next unless sbom_report.source.present?
 
         sbom_report.components.each_slice(::Security::IngestionConstants::COMPONENTS_BATCH_SIZE) do |occurrence_batch|
+          @possibly_affected_sbom_occurrences_count += occurrence_batch.count
+
           affected_packages(occurrence_batch).each_batch do |affected_package_batch|
             finding_maps = affected_package_batch.filter_map do |affected_package|
               # We need to match every affected package to one occurrence
@@ -28,6 +35,8 @@ module Sbom
               end
 
               next unless affected_occurrence.present?
+
+              @known_affected_sbom_occurrences_count += 1
 
               advisory_data_object = Gitlab::VulnerabilityScanning::Advisory.from_affected_package(
                 affected_package: affected_package, advisory: affected_package.advisory)
@@ -45,9 +54,21 @@ module Sbom
           end
         end
       end
+
+      track_internal_event(
+        'cvs_on_sbom_change',
+        additional_properties: {
+          label: 'pipeline_info',
+          property: pipeline_id.to_s,
+          start_time: start_time,
+          end_time: Time.current.iso8601,
+          possibly_affected_sbom_occurrences: possibly_affected_sbom_occurrences_count,
+          known_affected_sbom_occurrences: known_affected_sbom_occurrences_count
+        }
+      )
     end
 
-    attr_reader :pipeline_id
+    attr_reader :pipeline_id, :possibly_affected_sbom_occurrences_count, :known_affected_sbom_occurrences_count
 
     private
 
