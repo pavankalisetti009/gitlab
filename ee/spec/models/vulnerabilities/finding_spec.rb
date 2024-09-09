@@ -1538,35 +1538,19 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
           :vulnerabilities_finding,
           pipeline: pipelines.first,
           latest_pipeline_id: pipelines.last.id
-        ).tap { |finding| create(:vulnerabilities_finding_pipeline, finding: finding, pipeline: pipelines.last) }
+        )
       end
 
       describe '#first_finding_pipeline' do
         subject { finding.first_finding_pipeline }
 
         it { is_expected.to eq pipelines.first }
-
-        context 'with deprecate_vulnerability_occurrence_pipelines FF disabled' do
-          before do
-            stub_feature_flags(deprecate_vulnerability_occurrence_pipelines: false)
-          end
-
-          it { is_expected.to eq pipelines.first }
-        end
       end
 
       describe '#last_finding_pipeline' do
         subject { finding.last_finding_pipeline }
 
         it { is_expected.to eq pipelines.last }
-
-        context 'with deprecate_vulnerability_occurrence_pipelines FF disabled' do
-          before do
-            stub_feature_flags(deprecate_vulnerability_occurrence_pipelines: false)
-          end
-
-          it { is_expected.to eq pipelines.last }
-        end
       end
     end
   end

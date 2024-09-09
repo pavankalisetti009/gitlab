@@ -23,7 +23,7 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
       setup_ingest_report_service
     end
 
-    it 'ingests the reports with vulnerability info' do
+    it 'ingests the reports' do
       strategy.execute
 
       expect_ingest_report_service_calls
@@ -40,19 +40,6 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
 
       expect(Sbom::Ingestion::DeleteNotPresentOccurrencesService).to have_received(:execute).with(pipeline,
         ingested_ids)
-    end
-
-    context 'when feature flag deprecate_vulnerability_occurrence_pipelines is disabled' do
-      before do
-        stub_feature_flags(deprecate_vulnerability_occurrence_pipelines: false)
-        setup_ingest_report_service(vulnerability: true)
-      end
-
-      it 'ingests the reports with empty vulnerability info' do
-        strategy.execute
-
-        expect_ingest_report_service_calls(vulnerability: true)
-      end
     end
 
     context 'when reports are ingested' do
@@ -90,20 +77,18 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
 
   private
 
-  def setup_ingest_report_service(vulnerability: false)
+  def setup_ingest_report_service
     reports.zip(report_ingested_ids) do |report, ingested_ids|
-      args = vulnerability ? instance_of(Sbom::Ingestion::Vulnerabilities) : {}
       allow(Sbom::Ingestion::IngestReportService)
-        .to receive(:execute).with(pipeline, report, args)
+        .to receive(:execute).with(pipeline, report)
         .and_return(ingested_ids)
     end
   end
 
-  def expect_ingest_report_service_calls(vulnerability: false)
+  def expect_ingest_report_service_calls
     reports.each do |report|
-      args = vulnerability ? instance_of(Sbom::Ingestion::Vulnerabilities) : {}
       expect(Sbom::Ingestion::IngestReportService).to have_received(:execute)
-        .with(pipeline, report, args)
+        .with(pipeline, report)
     end
   end
 end

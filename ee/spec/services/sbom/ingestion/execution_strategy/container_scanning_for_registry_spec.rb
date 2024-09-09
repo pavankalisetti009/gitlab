@@ -16,7 +16,7 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::ContainerScanningForRegistry,
     before do
       reports.zip(report_ingested_ids) do |report, ingested_ids|
         allow(Sbom::Ingestion::IngestReportService)
-          .to receive(:execute).with(pipeline, report, {})
+          .to receive(:execute).with(pipeline, report)
           .and_return(ingested_ids)
       end
 
@@ -28,7 +28,7 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::ContainerScanningForRegistry,
 
       reports.each do |report|
         expect(Sbom::Ingestion::IngestReportService).to have_received(:execute)
-          .with(pipeline, report, {})
+          .with(pipeline, report)
       end
     end
 

@@ -4,7 +4,6 @@ FactoryBot.define do
   factory :sbom_occurrence_map, class: '::Sbom::Ingestion::OccurrenceMap' do
     report_component factory: :ci_reports_sbom_component
     report_source factory: :ci_reports_sbom_source
-    vulnerabilities factory: :sbom_vulnerabilities
 
     trait :with_component do
       component factory: :sbom_component
@@ -38,7 +37,7 @@ FactoryBot.define do
 
     initialize_with do
       ::Sbom::Ingestion::OccurrenceMap.new(
-        *attributes.values_at(:report_component, :report_source, :vulnerabilities)
+        *attributes.values_at(:report_component, :report_source)
       ).tap do |object|
         object.component_id = attributes[:component]&.id
         object.component_version_id = attributes[:component_version]&.id

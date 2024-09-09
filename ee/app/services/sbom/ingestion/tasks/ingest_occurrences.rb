@@ -16,25 +16,18 @@ module Sbom
           'VulnerabilityData',
           :vulnerabilities_info,
           :occurrence_map,
-          :project,
           :key) do
           include Gitlab::Utils::StrongMemoize
 
           def count
-            return occurrence_map.vulnerability_count unless deprecation_flag_enabled?
-
             vulnerabilities_info.dig(key, :vulnerability_count) || 0
           end
 
           def highest_severity
-            return occurrence_map.highest_severity unless deprecation_flag_enabled?
-
             vulnerabilities_info.dig(key, :highest_severity)
           end
 
           def vulnerability_ids
-            return unless deprecation_flag_enabled?
-
             vulnerabilities_info.dig(key, :vulnerability_ids) || []
           end
 
@@ -47,11 +40,6 @@ module Sbom
               occurrence_map.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)
             ]
           end
-
-          def deprecation_flag_enabled?
-            ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-          end
-          strong_memoize_attr :deprecation_flag_enabled?
         end
 
         private
@@ -75,11 +63,7 @@ module Sbom
             occurrence_maps.filter_map do |occurrence_map|
               uuid = occurrence_map.uuid
 
-              vulnerability_data = VulnerabilityData.new(
-                vulnerabilities_info,
-                occurrence_map,
-                project
-              )
+              vulnerability_data = VulnerabilityData.new(vulnerabilities_info, occurrence_map)
 
               new_attributes = {
                 project_id: project.id,
@@ -119,8 +103,6 @@ module Sbom
         end
 
         def build_vulnerabilities_info
-          return {} unless ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-
           # rubocop:disable CodeReuse/ActiveRecord -- highly customized query
           occurrence_maps_values = occurrence_maps.map do |om|
             [om.name, om.version, om.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)]

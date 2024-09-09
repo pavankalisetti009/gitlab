@@ -9,9 +9,6 @@ module EE
       prepended do
         include UsageStatistics
 
-        has_many :vulnerabilities_finding_pipelines, class_name: 'Vulnerabilities::FindingPipeline', inverse_of: :pipeline
-        has_many :vulnerability_findings, source: :finding, through: :vulnerabilities_finding_pipelines, class_name: 'Vulnerabilities::Finding'
-
         # Subscriptions to this pipeline
         has_many :downstream_bridges, class_name: '::Ci::Bridge', foreign_key: :upstream_pipeline_id
         has_many :security_scans, class_name: 'Security::Scan', inverse_of: :pipeline
@@ -108,14 +105,6 @@ module EE
             end
           end
         end
-      end
-
-      def vulnerability_findings
-        unless ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-          return super.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480363')
-        end
-
-        raise NotImplementedError, 'Use pipeline.project.vulnerability_findings instead'
       end
 
       def needs_touch?
