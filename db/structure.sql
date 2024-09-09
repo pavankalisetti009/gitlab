@@ -23255,7 +23255,7 @@ ALTER TABLE ci_runners
 ALTER TABLE ci_job_variables
     ADD CONSTRAINT check_567d1ccb72 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
-ALTER TABLE ci_pipeline_variables
+ALTER TABLE p_ci_pipeline_variables
     ADD CONSTRAINT check_6e932dbabf CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE ci_runners
