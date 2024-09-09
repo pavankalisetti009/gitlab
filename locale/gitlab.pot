@@ -4627,9 +4627,6 @@ msgstr ""
 msgid "AdminUsers|New user"
 msgstr ""
 
-msgid "AdminUsers|No users found"
-msgstr ""
-
 msgid "AdminUsers|Owned groups will be left"
 msgstr ""
 
@@ -35884,9 +35881,6 @@ msgid "No forks are available to you."
 msgstr ""
 
 msgid "No group provided"
-msgstr ""
-
-msgid "No groups found"
 msgstr ""
 
 msgid "No groups or projects found"
