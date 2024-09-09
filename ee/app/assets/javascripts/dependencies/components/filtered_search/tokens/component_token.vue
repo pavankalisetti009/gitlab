@@ -9,6 +9,7 @@ import {
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import componentsQuery from 'ee/dependencies/graphql/components.query.graphql';
 
 export default {
   components: {
@@ -18,6 +19,7 @@ export default {
     GlLoadingIcon,
     GlIntersperse,
   },
+  inject: ['groupFullPath'],
   props: {
     config: {
       type: Object,
@@ -37,10 +39,12 @@ export default {
       searchTerm: '',
       components: [],
       selectedComponents: [],
-      isLoadingComponents: true,
     };
   },
   computed: {
+    isLoadingComponents() {
+      return this.$apollo.queries.components.loading;
+    },
     filteredComponents() {
       if (!this.searchTerm) {
         return this.components;
@@ -70,30 +74,30 @@ export default {
       };
     },
   },
-  created() {
-    this.fetchComponents();
-  },
-  methods: {
-    async fetchComponents() {
-      try {
-        this.isLoadingComponents = true;
-        // Note: This is just a placeholder. Adding the actual fetch logic will be addressed in a separate issue:
-        // https://gitlab.com/gitlab-org/gitlab/-/issues/442407
-        this.components = await new Promise((resolve) => {
-          resolve([
-            { id: 'gid://gitlab/Component/1', name: 'activerecord' },
-            { id: 'gid://gitlab/Component/2', name: 'rails' },
-            { id: 'gid://gitlab/Component/3', name: 'rack' },
-          ]);
-        });
-      } catch {
+  apollo: {
+    components: {
+      query: componentsQuery,
+      debounce: 300,
+      variables() {
+        return {
+          name: this.searchTerm,
+        };
+      },
+      update(data) {
+        // Remove __typename
+        return data.components.map(({ id, name }) => ({ name, id }));
+      },
+      error() {
         createAlert({
           message: this.$options.i18n.fetchErrorMessage,
         });
-      } finally {
-        this.isLoadingComponents = false;
-      }
+      },
+      skip() {
+        return this.searchTerm === '';
+      },
     },
+  },
+  methods: {
     isComponentSelected(component) {
       return this.selectedComponents.some((c) => c.id === component.id);
     },
@@ -103,10 +107,6 @@ export default {
       } else {
         this.selectedComponents.push(component);
       }
-    },
-    handleInput(token) {
-      // the dropdown shows a list of component names but we need to emit the components' names for filtering
-      this.$emit('input', { ...token, data: this.selectedComponentNames });
     },
     setSearchTerm(token) {
       // the data can be either a string or an array, in which case we don't want to perform the search
@@ -127,9 +127,9 @@ export default {
   <gl-filtered-search-token
     :config="config"
     v-bind="{ ...$props, ...$attrs }"
-    :multi-select-values="selectedComponentNames"
+    :multi-select-values="selectedComponentIds"
     :value="tokenValue"
-    v-on="{ ...$listeners, input: handleInput }"
+    v-on="$listeners"
     @select="toggleSelectedComponent"
     @input="setSearchTerm"
   >
