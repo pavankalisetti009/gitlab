@@ -117,7 +117,7 @@ module EE
     end
 
     def updated_by_or_author
-      last_edited_by || author
+      updated_by || author
     end
 
     private
