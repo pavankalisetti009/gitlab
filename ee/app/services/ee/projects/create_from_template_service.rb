@@ -64,7 +64,8 @@ module EE
               current_user.available_custom_project_templates(search: template_name, subgroup_id: subgroup_id)
             end
 
-          templates.first
+          template = templates.first
+          can?(current_user, :read_code, template) ? template : nil
         end
       end
 

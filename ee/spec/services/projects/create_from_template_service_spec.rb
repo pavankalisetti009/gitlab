@@ -213,5 +213,30 @@ RSpec.describe Projects::CreateFromTemplateService, feature_category: :importers
         end
       end
     end
+
+    context 'when current_user does not have read_code permissions to the template_project' do
+      let(:group_with_project_templates_id) { subgroup_1.id }
+      let(:project_template) { create(:project, :private, :metrics_dashboard_enabled, namespace: subgroup_1) }
+      let(:namespace_id) { subgroup_2.id }
+
+      before do
+        project_params.delete(:template_name)
+        project_params[:template_project_id] = project_template.id
+
+        group.update!(custom_project_templates_group_id: subgroup_1.id)
+        subgroup_1.add_guest(user)
+        subgroup_2.add_maintainer(user)
+      end
+
+      it "isn't persisted" do
+        project = subject.execute
+
+        expect(project.errors&.first&.full_message).to match(
+          "Template project #{project_template.id} is unknown or invalid"
+        )
+        expect(project).not_to be_saved
+        expect(project.repository.empty?).to eq(true)
+      end
+    end
   end
 end
