@@ -245,6 +245,12 @@ module EE
           extras: [:lookahead],
           alpha: { milestone: '16.11' }
 
+        field :ai_usage_data,
+          ::Types::Analytics::AiUsage::AiUsageDataType,
+          description: 'AI-related data.',
+          resolver_method: :object,
+          alpha: { milestone: '17.5' }
+
         field :security_training_urls,
           [::Types::Security::TrainingUrlType],
           null: true,
