@@ -17,6 +17,7 @@ module EE
         has_many :sbom_sources, class_name: 'Sbom::Source'
         has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
         has_many :sbom_components, class_name: 'Sbom::Component'
+        has_many :sbom_component_versions, class_name: 'Sbom::ComponentVersion'
 
         def has_dependencies?
           sbom_occurrences.exists?

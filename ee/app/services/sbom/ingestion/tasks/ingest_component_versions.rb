@@ -34,7 +34,7 @@ module Sbom
 
         def attributes
           insertable_maps.filter_map do |occurrence_map|
-            map_data = occurrence_map.to_h.slice(*COMPONENT_VERSION_ATTRIBUTES)
+            map_data = occurrence_map.to_h.slice(*COMPONENT_VERSION_ATTRIBUTES).merge!(organization_id: organization_id)
             existing_record = existing_record(map_data)
 
             if existing_record.present?
@@ -48,6 +48,10 @@ module Sbom
 
         def insertable_maps
           super.filter(&:version_present?)
+        end
+
+        def organization_id
+          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
         end
       end
     end

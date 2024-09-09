@@ -4,6 +4,7 @@ module Sbom
   class ComponentVersion < Gitlab::Database::SecApplicationRecord
     belongs_to :component, optional: false
     has_many :occurrences, inverse_of: :component_version
+    belongs_to :organization, class_name: 'Organizations::Organization'
 
     validates :version, presence: true, length: { maximum: 255 }
 
