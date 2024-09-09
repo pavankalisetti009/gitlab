@@ -65248,7 +65248,7 @@ msgstr ""
 msgid "must contain only a discord user ID."
 msgstr ""
 
-msgid "must contain only a mastodon username."
+msgid "must contain only a mastodon handle."
 msgstr ""
 
 msgid "must have a repository"
