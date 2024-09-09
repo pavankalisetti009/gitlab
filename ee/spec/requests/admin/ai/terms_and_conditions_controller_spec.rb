@@ -64,11 +64,23 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
   end
 
   describe 'POST #create' do
+    let(:audit_context) do
+      {
+        name: 'self_hosted_model_terms_accepted',
+        author: admin,
+        scope: admin,
+        target: admin,
+        message: "Self-hosted model usage terms accepted by user #{admin.id}"
+      }
+    end
+
     subject :perform_request do
       post admin_ai_terms_and_conditions_url
     end
 
     it 'saves the acceptance' do
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
+
       expect { perform_request }.to change { ::Ai::TestingTermsAcceptance.count }.by(1)
 
       acceptance = ::Ai::TestingTermsAcceptance.last
