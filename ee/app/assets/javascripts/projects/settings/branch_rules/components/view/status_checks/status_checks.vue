@@ -2,7 +2,12 @@
 import { GlAlert } from '@gitlab/ui';
 import produce from 'immer';
 import { s__ } from '~/locale';
+import { InternalEvents } from '~/tracking';
 import branchRulesQuery from 'ee_else_ce/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
+import {
+  BRANCH_RULE_DETAILS_LABEL,
+  CHANGED_STATUS_CHECKS,
+} from 'ee_else_ce/projects/settings/branch_rules/tracking/constants';
 import createStatusCheckMutation from '../../../mutations/external_status_check_create.mutation.graphql';
 import updateStatusCheckMutation from '../../../mutations/external_status_check_update.mutation.graphql';
 import deleteStatusCheckMutation from '../../../mutations/external_status_check_delete.mutation.graphql';
@@ -118,6 +123,9 @@ export default {
               this.serverValidationErrors = errors;
               return;
             }
+            InternalEvents.trackEvent(CHANGED_STATUS_CHECKS, {
+              label: BRANCH_RULE_DETAILS_LABEL,
+            });
             this.closeStatusCheckDrawer();
             this.$toast.show(this.$options.i18n.statusChecksCreateSuccessMessage);
           },
@@ -156,6 +164,9 @@ export default {
               this.serverValidationErrors = errors;
               return;
             }
+            InternalEvents.trackEvent(CHANGED_STATUS_CHECKS, {
+              label: BRANCH_RULE_DETAILS_LABEL,
+            });
             this.closeStatusCheckDrawer();
             this.$toast.show(this.$options.i18n.statusChecksUpdateSuccessMessage);
           },
@@ -208,6 +219,9 @@ export default {
             if (errors.length > 0) {
               this.errorMessages.push(this.$options.i18n.deleteStatusCheckError);
             } else {
+              InternalEvents.trackEvent(CHANGED_STATUS_CHECKS, {
+                label: BRANCH_RULE_DETAILS_LABEL,
+              });
               this.$toast.show(this.$options.i18n.statusChecksDeleteSuccessMessage);
             }
           },

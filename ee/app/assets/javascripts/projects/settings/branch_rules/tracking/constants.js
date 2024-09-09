@@ -9,3 +9,4 @@ export const CHANGED_ALLOW_FORCE_PUSH = 'change_allow_force_push';
 export const UNPROTECTED_BRANCH = 'unprotect_branch';
 export const CHANGED_MERGE_REQUEST_APPROVALS = 'change_merge_request_approvals';
 export const CHANGED_REQUIRE_CODEOWNER_APPROVAL = 'change_require_codeowner_approval';
+export const CHANGED_STATUS_CHECKS = 'change_status_checks';

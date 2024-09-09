@@ -4,6 +4,7 @@ import * as types from 'ee/status_checks/store/mutation_types';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 const statusChecksPath = '/api/v4/projects/1/external_status_checks';
 const rootState = { settings: { statusChecksPath } };
@@ -19,6 +20,8 @@ describe('Status checks actions', () => {
   afterEach(() => {
     mockAxios.restore();
   });
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   describe('setSettings', () => {
     it('should commit the settings', () => {
@@ -68,6 +71,7 @@ describe('Status checks actions', () => {
     `(
       'should $httpMethod to the API and then dispatch fetchStatusChecks',
       async ({ action, axiosMethod, httpMethod, statusCheck, url }) => {
+        const { trackEventSpy } = bindInternalEventDocument();
         mockAxios[axiosMethod](url).replyOnce(HTTP_STATUS_OK);
 
         await actions[action]({ dispatch, rootState }, statusCheck);
@@ -76,6 +80,9 @@ describe('Status checks actions', () => {
           convertObjectPropsToSnakeCase(statusCheck, { deep: true }),
         );
         expect(dispatch).toHaveBeenCalledWith('fetchStatusChecks');
+        expect(trackEventSpy).toHaveBeenCalledWith('change_status_checks', {
+          label: 'repository_settings',
+        });
       },
     );
   });
@@ -83,12 +90,16 @@ describe('Status checks actions', () => {
   describe('deleteStatusCheck', () => {
     it(`should DELETE call the API and then dispatch a new fetchStatusChecks`, async () => {
       const id = 1;
+      const { trackEventSpy } = bindInternalEventDocument();
 
       mockAxios.onPost(statusChecksPath).replyOnce(HTTP_STATUS_OK);
 
       await actions.postStatusCheck({ dispatch, rootState }, id);
 
       expect(dispatch).toHaveBeenCalledWith('fetchStatusChecks');
+      expect(trackEventSpy).toHaveBeenCalledWith('change_status_checks', {
+        label: 'repository_settings',
+      });
     });
   });
 });
