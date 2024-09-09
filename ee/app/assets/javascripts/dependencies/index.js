@@ -22,6 +22,7 @@ export default (namespaceType) => {
     sbomReportsErrors,
     latestSuccessfulScanPath,
     scanFinishedAt,
+    groupFullPath,
   } = el.dataset;
 
   const store = createStore();
@@ -43,6 +44,7 @@ export default (namespaceType) => {
 
   if (namespaceType === NAMESPACE_GROUP) {
     provide.locationsEndpoint = locationsEndpoint;
+    provide.groupFullPath = groupFullPath;
   }
 
   const props = {

@@ -59,7 +59,7 @@ describe('GroupDependenciesFilteredSearch', () => {
         ${'License'}   | ${{ title: 'License', type: 'licenses', multiSelect: true, token: LicenseToken }}
         ${'Project'}   | ${{ title: 'Project', type: 'project_ids', multiSelect: true, token: ProjectToken }}
         ${'Packager'}  | ${{ title: 'Packager', type: 'package_managers', multiSelect: true, token: PackagerToken }}
-        ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken }}
+        ${'Component'} | ${{ title: 'Component', type: 'component_ids', multiSelect: true, token: ComponentToken }}
       `('contains a "$tokenTitle" search token', ({ tokenConfig }) => {
         expect(findFilteredSearch().props('availableTokens')).toMatchObject(
           expect.arrayContaining([

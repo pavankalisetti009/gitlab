@@ -105,7 +105,6 @@ module Groups
                           :per_page,
                           :sort,
                           :sort_by,
-                          component_names: [],
                           licenses: [],
                           package_managers: [],
                           project_ids: [],
