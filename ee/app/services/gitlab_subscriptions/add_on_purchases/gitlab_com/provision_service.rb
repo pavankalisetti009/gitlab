@@ -24,10 +24,10 @@ module GitlabSubscriptions
             GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker.perform_async(namespace.id)
           end
 
-          if responses.any?(&:error?)
-            ServiceResponse.error(**service_response(responses))
-          else
+          if responses.all?(&:success?)
             ServiceResponse.success(**service_response(responses))
+          else
+            ServiceResponse.error(**service_response(responses))
           end
         end
 
@@ -36,7 +36,7 @@ module GitlabSubscriptions
         def consolidate(add_on_products)
           add_on_products.each_with_object({}) do |(key, value), hash|
             next unless value.presence
-            next if key == DUO_PRO && add_on_products.key?(DUO_ENTERPRISE)
+            next if key == DUO_PRO && add_on_products[DUO_ENTERPRISE].present?
 
             hash[key] = value
           end

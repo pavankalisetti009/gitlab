@@ -247,16 +247,16 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         expect { execute_service }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
       end
 
+      it 'returns error service response' do
+        expect(execute_service).to be_error
+        expect(execute_service.message).to eq "Something went wrong"
+      end
+
       it 'does not enqueue refresh user assignments worker' do
         expect(GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker)
           .not_to receive(:perform_async).with(namespace.id)
 
         execute_service
-      end
-
-      it 'returns error service response' do
-        expect(execute_service).to be_error
-        expect(execute_service.message).to eq "Something went wrong"
       end
     end
 
@@ -364,6 +364,21 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
             quantity: quantity,
             trial: trial
           )
+        end
+      end
+
+      context 'with Duo Pro and empty Duo Enterprise' do
+        let(:add_on_products) do
+          {
+            'duo_pro' => [add_on_product],
+            'duo_enterprise' => []
+          }
+        end
+
+        it 'provisions Duo Pro' do
+          expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(1)
+
+          expect(GitlabSubscriptions::AddOnPurchase.first.add_on).to be_code_suggestions
         end
       end
     end
