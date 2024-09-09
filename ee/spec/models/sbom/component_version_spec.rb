@@ -6,6 +6,7 @@ RSpec.describe Sbom::ComponentVersion, type: :model, feature_category: :dependen
   describe 'associations' do
     it { is_expected.to belong_to(:component).required }
     it { is_expected.to have_many(:occurrences) }
+    it { is_expected.to belong_to(:organization) }
   end
 
   describe 'validations' do
@@ -23,6 +24,13 @@ RSpec.describe Sbom::ComponentVersion, type: :model, feature_category: :dependen
 
     it 'returns only the matching version' do
       expect(results.to_a).to eq([matching_version])
+    end
+  end
+
+  context 'with loose foreign key on sbom_component_versions.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:sbom_component_version, organization: parent) }
     end
   end
 end

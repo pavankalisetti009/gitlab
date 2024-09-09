@@ -68,5 +68,19 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestComponentVersions, feature_category
           .from(Array.new(2)).to([an_instance_of(Integer), an_instance_of(Integer)])
       end
     end
+
+    describe 'attributes' do
+      let(:ingested_component_version) { Sbom::ComponentVersion.last }
+
+      it 'sets the correct attributes for the component' do
+        ingest_component_versions
+
+        expect(ingested_component_version.attributes).to include(
+          'component_id' => occurrence_maps.last.component_id,
+          'version' => occurrence_maps.last.version,
+          'organization_id' => pipeline.project.namespace.organization_id
+        )
+      end
+    end
   end
 end
