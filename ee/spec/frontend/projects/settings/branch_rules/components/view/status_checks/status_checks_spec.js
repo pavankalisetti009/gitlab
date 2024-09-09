@@ -2,10 +2,12 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import StatusCheckDeleteModal from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks_delete_modal.vue';
 import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
+import branchRulesQuery from 'ee_else_ce/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
 import createStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_create.mutation.graphql';
 import updateStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_update.mutation.graphql';
 import deleteStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_delete.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -14,6 +16,7 @@ import {
   statusCheckDeleteSuccessResponse,
   statusCheckCreateNameTakenResponse,
   statusChecksRulesMock,
+  branchProtectionsMockResponse,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -34,6 +37,14 @@ describe('Status checks in branch rules enterprise edition', () => {
       [deleteStatusCheckMutation, deleteStatusCheckHandler],
     ]);
 
+    fakeApollo.clients.defaultClient.cache.writeQuery({
+      query: branchRulesQuery,
+      variables: {
+        projectPath: 'gid://gitlab/Project/1',
+      },
+      ...branchProtectionsMockResponse,
+    });
+
     wrapper = shallowMountExtended(StatusChecks, {
       apolloProvider: fakeApollo,
       propsData: {
@@ -47,6 +58,8 @@ describe('Status checks in branch rules enterprise edition', () => {
       },
     });
   };
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   afterEach(() => {
     fakeApollo = null;
@@ -168,5 +181,53 @@ describe('Status checks in branch rules enterprise edition', () => {
     expect(createStatusCheckHandlerError).toHaveBeenCalled();
     await waitForPromises();
     expect(wrapper.vm.errorMessages).toContain('Unable to create status check. Please try again.');
+  });
+
+  it('emits a tracking event when a status check is added', async () => {
+    const createStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckCreateSuccessResponse);
+    createComponent({ createStatusCheckHandler: createStatusCheckHandlerSuccess });
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    findStatusChecksDrawer().vm.$emit(
+      'save-status-check-change',
+      statusChecksRulesMock[0],
+      'create',
+    );
+    await waitForPromises();
+    expect(trackEventSpy).toHaveBeenCalledWith('change_status_checks', {
+      label: 'branch_rule_details',
+    });
+  });
+
+  it('emits a tracking event when a status check is updated', async () => {
+    const updateStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckUpdateSuccessResponse);
+    createComponent({ updateStatusCheckHandler: updateStatusCheckHandlerSuccess });
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    findStatusChecksTable().vm.$emit('open-status-check-drawer', statusChecksRulesMock[0]);
+    findStatusChecksDrawer().vm.$emit(
+      'save-status-check-change',
+      { ...statusChecksRulesMock[0], name: 'new name' },
+      'update',
+    );
+    await waitForPromises();
+    expect(trackEventSpy).toHaveBeenCalledWith('change_status_checks', {
+      label: 'branch_rule_details',
+    });
+  });
+
+  it('emits a tracking event when a status check is deleted', async () => {
+    const deleteStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckDeleteSuccessResponse);
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    createComponent({ deleteStatusCheckHandler: deleteStatusCheckHandlerSuccess });
+    findStatusCheckRemovalModal().vm.$emit('delete-status-check', statusChecksRulesMock[0]);
+    await waitForPromises();
+    expect(trackEventSpy).toHaveBeenCalledWith('change_status_checks', {
+      label: 'branch_rule_details',
+    });
   });
 });
