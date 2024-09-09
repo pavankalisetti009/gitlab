@@ -10,7 +10,7 @@ module QA
         Flow::Login.sign_in
       end
 
-      it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do
+      it 'creates an epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do
         epic_title = 'Epic created via GUI'
         if work_item_epics_enabled_for_group?
           EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
@@ -27,7 +27,7 @@ module QA
         expect(page).to have_content(epic_title)
       end
 
-      it 'creates a confidential epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979' do
+      it 'creates a confidential epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979' do
         epic_title = 'Confidential epic created via GUI'
         if work_item_epics_enabled_for_group?
           EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
