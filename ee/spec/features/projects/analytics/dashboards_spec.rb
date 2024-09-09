@@ -109,9 +109,12 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
         end
 
         context 'for comparison table' do
-          before do
+          before_all do
             create_mock_dora_chart_metrics(environment)
+          end
 
+          before do
+            Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: Issue).execute
             visit_project_value_streams_dashboard(project)
           end
 
