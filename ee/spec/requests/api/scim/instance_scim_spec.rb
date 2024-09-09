@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
+RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_category: :system_access do
   include LoginHelpers
 
   let(:user) { create(:user) }
@@ -230,6 +230,10 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
       context 'when existing user' do
         it 'responds with 201 and the scim user attributes' do
           create(:user, email: email)
+
+          expect(::EE::Gitlab::Scim::ProvisioningService).to receive(:new).with(
+            hash_including(organization_id: Organizations::Organization.default_organization.id)
+          ).and_call_original
 
           api_request
 

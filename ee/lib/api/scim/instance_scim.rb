@@ -105,7 +105,9 @@ module API
           post do
             check_access!
             parser = ::EE::Gitlab::Scim::ParamsParser.new(params)
-            result = ::EE::Gitlab::Scim::ProvisioningService.new(parser.post_params).execute
+            result = ::EE::Gitlab::Scim::ProvisioningService.new(
+              parser.post_params.merge(organization_id: ::Current.organization_id)
+            ).execute
 
             case result.status
             when :success

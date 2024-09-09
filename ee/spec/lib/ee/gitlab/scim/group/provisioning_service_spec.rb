@@ -78,6 +78,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
         service.execute
 
         expect(user).to be_a(User)
+        expect(user.namespace.organization_id).to eq(group.organization_id)
       end
 
       context 'when access level is given for created group member' do

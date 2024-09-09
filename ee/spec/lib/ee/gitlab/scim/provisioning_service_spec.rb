@@ -6,13 +6,16 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
   include LoginHelpers
 
   describe '#execute' do
+    let_it_be(:organization) { create(:organization) }
+
     let(:service) { described_class.new(service_params) }
     let_it_be(:service_params) do
       {
         email: 'work@example.com',
         name: 'Test Name',
         extern_uid: 'test_uid',
-        username: 'username'
+        username: 'username',
+        organization_id: organization.id
       }
     end
 
@@ -40,7 +43,8 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
           email: 'work@example.com',
           name: 'Test Name',
           extern_uid: 'test_uid',
-          username: 'username'
+          username: 'username',
+          organization_id: organization.id
         }
       end
 
@@ -101,7 +105,8 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
             email: 'work@example.com',
             name: 'Test Name',
             extern_uid: 'test_uid',
-            username: ' --ricky.^#!__the._raccoon--'
+            username: ' --ricky.^#!__the._raccoon--',
+            organization_id: organization.id
           }
         end
 
@@ -128,7 +133,8 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
         {
           email: 'work@example.com',
           name: 'Test Name',
-          extern_uid: 'test_uid'
+          extern_uid: 'test_uid',
+          organization_id: organization.id
         }
       end
 
@@ -146,7 +152,8 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
             email: 'work@example.com',
             name: 'Test Name',
             extern_uid: '',
-            username: ''
+            username: '',
+            organization_id: organization.id
           }
         end
 
@@ -193,7 +200,8 @@ RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :syste
             email: 'work@example.com',
             name: 'Test Name',
             extern_uid: '',
-            username: 'username'
+            username: 'username',
+            organization_id: organization.id
           }
         end
 
