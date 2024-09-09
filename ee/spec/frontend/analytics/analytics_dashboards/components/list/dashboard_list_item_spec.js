@@ -191,6 +191,24 @@ describe('DashboardsListItem', () => {
     it('does not render the disclosure dropdown', () => {
       expect(findDropdown().exists()).toBe(false);
     });
+
+    it('routes to the dashboard when a list item is clicked', async () => {
+      await findListItem().trigger('click');
+
+      expect($router.push).toHaveBeenCalledWith(USER_DEFINED_DASHBOARD.slug);
+    });
+
+    describe('with a redirected dashboard', () => {
+      beforeEach(() => {
+        createWrapper({ dashboard: REDIRECTED_DASHBOARD, showUserActions: false });
+      });
+
+      it('redirects to the dashboard when the list item is clicked', async () => {
+        await findListItem().trigger('click');
+
+        expect(visitUrl).toHaveBeenCalledWith(expect.stringContaining(REDIRECTED_DASHBOARD.slug));
+      });
+    });
   });
 
   describe('when the clone action is clicked', () => {
