@@ -187,6 +187,8 @@ export default {
         <issue-health-status
           v-if="selectedHealthStatus"
           data-testid="work-item-health-status-value"
+          display-as-text
+          disable-tooltip
           :health-status="selectedHealthStatus"
         />
       </template>
