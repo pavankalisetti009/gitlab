@@ -5,21 +5,37 @@ require 'spec_helper'
 RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_composition_analysis do
   describe '.execute' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, user: user) }
+    let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user) }
     let(:occurrences_count) { 5 }
     let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
     let(:pipeline_components) { sbom_reports.flat_map(&:components) }
     let(:occurrences) do
-      components = sbom_reports.last.components
+      components = sbom_report.components
       Array.new(occurrences_count) do |i|
         { purl_type: components[i].purl.type, name: components[i].name, version: components[i].version,
-          input_file_path: sbom_reports.last.source.input_file_path }
+          input_file_path: sbom_report.source.input_file_path }
       end
     end
 
+    let(:sbom_report) { pipeline.sbom_reports.reports.last }
+    let(:source) { sbom_report.source }
+    let(:ci_build) { build(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: pipeline.project) }
     let(:occurrence) { occurrences.first }
 
     subject(:result) { described_class.execute(pipeline.id) }
+
+    before do
+      pipeline.builds << ci_build
+      pipeline.save!
+    end
+
+    def higher_version(occurrence)
+      occurrence[:version].gsub(/(\.\d+)+$/, '').to_i + 1
+    end
+
+    def sanitized_distro_version(source)
+      "#{source.operating_system_name} #{source.operating_system_version&.gsub(/\.\d$/, '')}"
+    end
 
     it { expect { result }.not_to change { Vulnerability.count } }
 
@@ -35,70 +51,72 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       let!(:affected_packages) do
         occurrences.map do |occurrence|
           create(:pm_affected_package, purl_type: occurrence[:purl_type], package_name: occurrence[:name],
-            affected_range: ">=#{occurrence[:version]}")
+            affected_range: "<#{higher_version(occurrence)}", distro_version: sanitized_distro_version(source))
         end
       end
 
-      it 'creates vulnerabilities to each advisory related to the occurrences' do
-        result
+      shared_examples 'creates vulnerabilities related to occurrences' do
+        it 'creates vulnerabilities to each advisory' do
+          result
 
-        expect(Vulnerability.all).to match_array([
-          have_attributes(
-            author_id: user.id,
-            project_id: pipeline.project.id,
-            state: 'detected',
-            confidence: 'unknown',
-            report_type: 'dependency_scanning',
-            present_on_default_branch: true,
-            title: affected_packages[0].advisory.title,
-            severity: affected_packages[0].advisory.cvss_v3.severity.downcase,
-            finding_description: affected_packages[0].advisory.description,
-            solution: affected_packages[0].solution),
-          have_attributes(
-            author_id: user.id,
-            project_id: pipeline.project.id,
-            state: 'detected',
-            confidence: 'unknown',
-            report_type: 'dependency_scanning',
-            present_on_default_branch: true,
-            title: affected_packages[1].advisory.title,
-            severity: affected_packages[1].advisory.cvss_v3.severity.downcase,
-            finding_description: affected_packages[1].advisory.description,
-            solution: affected_packages[1].solution),
-          have_attributes(
-            author_id: user.id,
-            project_id: pipeline.project.id,
-            state: 'detected',
-            confidence: 'unknown',
-            report_type: 'dependency_scanning',
-            present_on_default_branch: true,
-            title: affected_packages[2].advisory.title,
-            severity: affected_packages[2].advisory.cvss_v3.severity.downcase,
-            finding_description: affected_packages[2].advisory.description,
-            solution: affected_packages[2].solution),
-          have_attributes(
-            author_id: user.id,
-            project_id: pipeline.project.id,
-            state: 'detected',
-            confidence: 'unknown',
-            report_type: 'dependency_scanning',
-            present_on_default_branch: true,
-            title: affected_packages[3].advisory.title,
-            severity: affected_packages[3].advisory.cvss_v3.severity.downcase,
-            finding_description: affected_packages[3].advisory.description,
-            solution: affected_packages[3].solution),
-          have_attributes(
-            author_id: user.id,
-            project_id: pipeline.project.id,
-            state: 'detected',
-            confidence: 'unknown',
-            report_type: 'dependency_scanning',
-            present_on_default_branch: true,
-            title: affected_packages[4].advisory.title,
-            severity: affected_packages[4].advisory.cvss_v3.severity.downcase,
-            finding_description: affected_packages[4].advisory.description,
-            solution: affected_packages[4].solution)
-        ])
+          expect(Vulnerability.all).to match_array([
+            have_attributes(
+              author_id: user.id,
+              project_id: pipeline.project.id,
+              state: 'detected',
+              confidence: 'unknown',
+              report_type: source.source_type.to_s,
+              present_on_default_branch: true,
+              title: affected_packages[0].advisory.title,
+              severity: affected_packages[0].advisory.cvss_v3.severity.downcase,
+              finding_description: affected_packages[0].advisory.description,
+              solution: affected_packages[0].solution),
+            have_attributes(
+              author_id: user.id,
+              project_id: pipeline.project.id,
+              state: 'detected',
+              confidence: 'unknown',
+              report_type: source.source_type.to_s,
+              present_on_default_branch: true,
+              title: affected_packages[1].advisory.title,
+              severity: affected_packages[1].advisory.cvss_v3.severity.downcase,
+              finding_description: affected_packages[1].advisory.description,
+              solution: affected_packages[1].solution),
+            have_attributes(
+              author_id: user.id,
+              project_id: pipeline.project.id,
+              state: 'detected',
+              confidence: 'unknown',
+              report_type: source.source_type.to_s,
+              present_on_default_branch: true,
+              title: affected_packages[2].advisory.title,
+              severity: affected_packages[2].advisory.cvss_v3.severity.downcase,
+              finding_description: affected_packages[2].advisory.description,
+              solution: affected_packages[2].solution),
+            have_attributes(
+              author_id: user.id,
+              project_id: pipeline.project.id,
+              state: 'detected',
+              confidence: 'unknown',
+              report_type: source.source_type.to_s,
+              present_on_default_branch: true,
+              title: affected_packages[3].advisory.title,
+              severity: affected_packages[3].advisory.cvss_v3.severity.downcase,
+              finding_description: affected_packages[3].advisory.description,
+              solution: affected_packages[3].solution),
+            have_attributes(
+              author_id: user.id,
+              project_id: pipeline.project.id,
+              state: 'detected',
+              confidence: 'unknown',
+              report_type: source.source_type.to_s,
+              present_on_default_branch: true,
+              title: affected_packages[4].advisory.title,
+              severity: affected_packages[4].advisory.cvss_v3.severity.downcase,
+              finding_description: affected_packages[4].advisory.description,
+              solution: affected_packages[4].solution)
+          ])
+        end
       end
 
       it 'calls track cvs service with the right parameters', :freeze_time do
@@ -114,6 +132,8 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
                 }
                )
       end
+
+      include_examples 'creates vulnerabilities related to occurrences'
 
       context 'with multiple affected packages with different advisories associated with a single occurrence' do
         before do
@@ -150,6 +170,24 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
 
         it 'does not created new vulnerability findings' do
           expect { result }.to change { Vulnerabilities::Finding.count }.by(occurrences_count - 1)
+        end
+      end
+
+      context 'with container scanning sbom reports' do
+        let(:ci_build) do
+          build(:ee_ci_build, :cyclonedx_container_scanning, pipeline: pipeline, project: pipeline.project)
+        end
+
+        include_examples 'creates vulnerabilities related to occurrences'
+
+        context 'with cvs_for_container_scanning feature flag disabled' do
+          before do
+            stub_feature_flags(cvs_for_container_scanning: false)
+          end
+
+          it 'does not create vulnerabilities' do
+            expect { result }.not_to change { Vulnerability.count }
+          end
         end
       end
     end
