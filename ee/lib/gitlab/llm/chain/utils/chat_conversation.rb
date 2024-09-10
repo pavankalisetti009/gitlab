@@ -5,7 +5,7 @@ module Gitlab
     module Chain
       module Utils
         class ChatConversation
-          LAST_N_CONVERSATIONS = 50
+          LAST_N_MESSAGES = 50
 
           def initialize(user)
             @user = user
@@ -20,9 +20,10 @@ module Gitlab
           # For now, no truncating actually happening here but we should
           # do that to make sure we stay under the limit.
           # https://gitlab.com/gitlab-org/gitlab/-/issues/452608
-          def truncated_conversation_list(last_n: LAST_N_CONVERSATIONS)
-            messages = successful_conversations
-            messages = sorted_by_timestamp(messages)
+          def truncated_conversation_list(last_n: LAST_N_MESSAGES)
+            conversations = successful_conversations
+            conversations = deduplicate_roles(conversations)
+            messages = sort_by_timestamp(conversations)
 
             return [] if messages.blank?
 
@@ -36,17 +37,36 @@ module Gitlab
           attr_reader :user
 
           # agent_version is deprecated, Chat conversation doesn't have this param anymore
-          # include only messages with successful response and reorder
-          # messages so each question is followed by its answer
+          # returns successful interactions with chat where both question and answer are present
+          # messages are grouped into conversations based on request_id
           def successful_conversations
             ChatStorage.new(user, nil)
               .last_conversation
-              .reject { |message| message.errors.present? }
+              .reject { |message| message.errors.present? || message.content.nil? }
               .group_by(&:request_id)
               .select { |_uuid, messages| messages.size > 1 }
           end
 
-          def sorted_by_timestamp(conversations)
+          def deduplicate_roles(conversations)
+            conversations.each do |request_id, messages|
+              messages_to_keep = []
+              last_role = nil
+
+              # we're iterating messages in conversations in reverse order
+              # to keep the last message for each role
+              messages.reverse_each do |message|
+                messages_to_keep << message if message.role != last_role
+                last_role = message.role
+              end
+
+              # apply reverse card second time to get the original order
+              conversations[request_id] = messages_to_keep.reverse
+            end
+
+            conversations
+          end
+
+          def sort_by_timestamp(conversations)
             conversations.values.sort_by { |messages| messages.first.timestamp }.flatten
           end
         end
