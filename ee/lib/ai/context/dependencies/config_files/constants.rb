@@ -9,7 +9,9 @@ module Ai
           # should always appear first before non-lock files. This ordering affects
           # the result of ConfigFileParser#find_config_file_paths_with_class.
           CONFIG_FILE_CLASSES = [
+            ConfigFiles::CppConanTxt,
             ConfigFiles::GoModules,
+            ConfigFiles::JavaGradle,
             ConfigFiles::JavaMaven,
             ConfigFiles::RubyGemsLock
           ].freeze
