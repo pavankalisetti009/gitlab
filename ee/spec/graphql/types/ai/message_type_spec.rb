@@ -10,7 +10,9 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
   it { expect(described_class.graphql_name).to eq('AiMessage') }
 
   it 'has the expected fields' do
-    expected_fields = %w[id request_id content content_html role timestamp errors type chunk_id agent_version_id]
+    expected_fields = %w[
+      id request_id content content_html role timestamp errors type chunk_id agent_version_id additional_context
+    ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
   end

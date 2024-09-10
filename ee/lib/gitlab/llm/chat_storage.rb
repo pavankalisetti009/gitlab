@@ -125,6 +125,7 @@ module Gitlab
         result['extras'] = message.extras&.to_json
         result['timestamp'] = message.timestamp&.to_s
         result['content'] = result['content'][0, MAX_TEXT_LIMIT] if result['content']
+        result['additional_context'] = message.additional_context.to_a.to_json if message.additional_context.present?
 
         result.compact
       end
@@ -136,6 +137,7 @@ module Gitlab
         data['ai_action'] = 'chat'
         data['user'] = user
         data['agent_version_id'] = agent_version_id
+        data['additional_context'] = ::Gitlab::Json.parse(data['additional_context']) if data['additional_context']
 
         ChatMessage.new(data)
       end

@@ -73,6 +73,12 @@ module Types
         scopes: [:api, :read_api, :ai_features],
         description: 'Global ID of the agent version to answer the message.'
 
+      field :additional_context,
+        [Types::Ai::AdditionalContextType],
+        null: true,
+        scopes: [:api, :read_api, :ai_features],
+        description: 'Additional context for the message.'
+
       def id
         object['id']
       end

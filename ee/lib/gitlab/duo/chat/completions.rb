@@ -19,7 +19,8 @@ module Gitlab
             ai_action: action_name,
             user: current_user,
             context: ::Gitlab::Llm::AiMessageContext.new(resource: resource),
-            client_subscription_id: safe_params[:client_subscription_id]
+            client_subscription_id: safe_params[:client_subscription_id],
+            additional_context: ::Gitlab::Llm::AiMessageAdditionalContext.new(safe_params[:additional_context])
           }
 
           reset_chat(action_name, message_attributes) if safe_params[:with_clean_history]
