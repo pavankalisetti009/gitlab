@@ -5,31 +5,4 @@
 
 - return unless visible_duo_chat || visible_duo_pro
 
-- if Feature.enabled?(:ai_settings_vue_admin, :instance)
-  #js-ai-settings{ data: ai_settings_helper_data }
-- else
-  = render ::Layouts::SettingsBlockComponent.new(s_('AIPoweredSM|AI-powered features'),
-    id: 'js-ai-powered-settings',
-    expanded: false) do |c|
-    - c.with_description do
-      = ai_powered_description
-    - c.with_body do
-      = gitlab_ui_form_for @application_setting, url: general_admin_application_settings_path(anchor: 'js-ai-powered-settings'), html: { class: 'fieldset-form', id: 'ai-powered-settings' } do |f|
-        = form_errors(@application_setting)
-
-        %fieldset
-          .form-group
-            - if visible_duo_chat
-              = f.gitlab_ui_checkbox_component :duo_features_enabled,
-                s_('AIPoweredSM|Enable GitLab Duo features')
-              = f.gitlab_ui_checkbox_component :lock_duo_features_enabled,
-                s_('AIPoweredSM|Enforce Duo features setting for all subgroups')
-              = f.gitlab_ui_checkbox_component :instance_level_ai_beta_features_enabled,
-                s_('AIPoweredSM|Enable experiment and beta AI-powered features'),
-                help_text: ai_powered_testing_agreement
-            - if visible_duo_pro
-              = f.gitlab_ui_checkbox_component :disabled_direct_code_suggestions,
-                s_('AIPoweredSM|Disable direct connections for Code Suggestions'),
-                help_text: direct_connections_description
-
-        = f.submit _('Save changes'), pajamas_button: true
+#js-ai-settings{ data: ai_settings_helper_data }
