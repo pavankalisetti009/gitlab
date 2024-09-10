@@ -226,7 +226,9 @@ describe('ScopeInfoRow', () => {
       });
 
       expect(findLoader().exists()).toBe(true);
-      expect(requestHandler).toHaveBeenCalledWith({ fullPath: 'gitlab-org' });
+      expect(requestHandler).toHaveBeenCalledWith({
+        fullPath: 'gitlab-org',
+      });
     });
 
     it('should not check linked items on group level', async () => {

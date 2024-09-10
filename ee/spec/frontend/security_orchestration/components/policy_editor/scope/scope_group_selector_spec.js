@@ -20,6 +20,7 @@ describe('ScopeGroupSelector', () => {
     wrapper = shallowMountExtended(ScopeGroupSelector, {
       propsData: {
         groupFullPath: 'gitlab-org',
+        fullPath: 'gitlab-org',
         groups: { including: [] },
         ...propsData,
       },
@@ -36,6 +37,7 @@ describe('ScopeGroupSelector', () => {
 
       expect(findExceptionTypeSelector().exists()).toBe(true);
       expect(findGroupsDropdown().exists()).toBe(true);
+      expect(findGroupsDropdown().props('includeDescendants')).toBe(true);
     });
   });
 
@@ -152,7 +154,7 @@ describe('ScopeGroupSelector', () => {
     it('emits error when groups loading fails', () => {
       createComponent();
 
-      findGroupsDropdown().vm.$emit('projects-query-error');
+      findGroupsDropdown().vm.$emit('linked-items-query-error');
 
       expect(wrapper.emitted('error')).toEqual([['Failed to load groups']]);
     });

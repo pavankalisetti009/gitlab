@@ -13,6 +13,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
 import GroupProjectsDropdown from '../../shared/group_projects_dropdown.vue';
+import LinkedItemsDropdown from '../../shared/linked_items_dropdown.vue';
 
 export default {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
@@ -30,6 +31,7 @@ export default {
   components: {
     GlCollapsibleListbox,
     GroupProjectsDropdown,
+    LinkedItemsDropdown,
     PolicyPopover,
   },
   props: {
@@ -49,6 +51,11 @@ export default {
       default: () => ({}),
     },
     groupFullPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    fullPath: {
       type: String,
       required: false,
       default: null,
@@ -142,14 +149,14 @@ export default {
 
 <template>
   <div class="gl-flex gl-items-center gl-gap-3">
-    <group-projects-dropdown
-      groups-only
+    <linked-items-dropdown
       data-testid="groups-dropdown"
+      include-descendants
+      :full-path="fullPath"
       :disabled="disabled"
-      :group-full-path="groupFullPath"
       :selected="groupsIds"
       :state="!groupsEmpty"
-      @projects-query-error="emitError($options.i18n.groupErrorDescription)"
+      @linked-items-query-error="emitError($options.i18n.groupErrorDescription)"
       @select="setSelectedGroups"
     />
 

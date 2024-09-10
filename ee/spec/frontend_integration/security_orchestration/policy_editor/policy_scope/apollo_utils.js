@@ -10,6 +10,7 @@ import {
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import createComplianceFrameworkMutation from 'ee/groups/settings/compliance_frameworks/graphql/queries/create_compliance_framework.mutation.graphql';
 import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import securityPolicyProjectCreated from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
 import { createSppSubscriptionHandler } from '../utils';
@@ -82,6 +83,19 @@ export const createSppLinkedItemsHandler = ({ projects = [], namespaces = [] } =
     },
   });
 
+export const createSppLinkedGroupsHandler = ({ groups = [] } = {}) =>
+  jest.fn().mockResolvedValue({
+    data: {
+      project: {
+        id: '1',
+        securityPolicyProjectLinkedGroups: {
+          nodes: groups,
+          pageInfo: mockPageInfo(),
+        },
+      },
+    },
+  });
+
 export const mockApolloHandlers = (nodes = defaultNodes) => {
   return {
     complianceFrameworks: jest.fn().mockResolvedValue({
@@ -119,6 +133,7 @@ const mockApolloProjectHandlers = () => {
 export const defaultHandlers = {
   ...mockApolloHandlers(),
   sppLinkedItemsHandler: createSppLinkedItemsHandler(),
+  sppLinkedGroupsHandler: createSppLinkedGroupsHandler(),
   securityPolicyProjectCreatedHandler: createSppSubscriptionHandler(),
 };
 
@@ -129,6 +144,7 @@ export const createMockApolloProvider = (handlers = defaultHandlers) => {
     [getComplianceFrameworkQuery, handlers.complianceFrameworks],
     [createComplianceFrameworkMutation, handlers.createFrameworkHandler],
     [getSppLinkedProjectsNamespaces, handlers.sppLinkedItemsHandler],
+    [getSppLinkedGroups, handlers.sppLinkedGroupsHandler],
     [getGroupProjects, mockApolloProjectHandlers],
     [securityPolicyProjectCreated, handlers.securityPolicyProjectCreatedHandler],
   ]);
