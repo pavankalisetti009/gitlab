@@ -4,21 +4,40 @@ module CloudConnector
   module StatusChecks
     module Probes
       class AccessProbe < BaseProbe
-        def execute(*)
-          access_record = CloudConnector::Access.last
-          return failure(missing_access_data_text) unless access_record
+        extend ::Gitlab::Utils::Override
 
-          is_stale = (Time.current - access_record.updated_at) > CloudConnector::Access::STALE_PERIOD
-          return failure(stale_access_data_text) if is_stale
-
-          last_token = CloudConnector::ServiceAccessToken.last
-          return failure(missing_access_token_text) unless last_token
-          return failure(expired_access_token_text) if last_token.expired?
-
-          success(_("Subscription synchronized successfully."))
-        end
+        validate :check_access_data
+        validate :validate_stale_data
+        after_validation :collect_access_details
 
         private
+
+        override :success_message
+        def success_message
+          _("Subscription synchronized successfully.")
+        end
+
+        def access_record
+          @access_record ||= CloudConnector::Access.last
+        end
+
+        def check_access_data
+          errors.add(:base, missing_access_data_text) unless access_record
+        end
+
+        def validate_stale_data
+          return unless access_record
+          return unless access_record.updated_at < CloudConnector::Access::STALE_PERIOD.ago
+
+          errors.add(:base, stale_access_data_text)
+        end
+
+        def collect_access_details
+          return unless access_record
+
+          details.add(:updated_at, access_record.updated_at)
+          details.add(:data, access_record.data)
+        end
 
         # Keeping this as a separate translation key since we want to eventually link this
         # to subscriptions/self_managed/index.html#manually-synchronize-subscription-data
@@ -32,14 +51,6 @@ module CloudConnector
 
         def stale_access_data_text
           format(_("Subscription has not been synchronized recently. %{cta}"), cta: synchronize_subscription_cta)
-        end
-
-        def missing_access_token_text
-          format(_("Access credentials not found. %{cta}"), cta: synchronize_subscription_cta)
-        end
-
-        def expired_access_token_text
-          format(_("Access credentials expired. %{cta}"), cta: synchronize_subscription_cta)
         end
       end
     end

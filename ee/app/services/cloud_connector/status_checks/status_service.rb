@@ -13,6 +13,7 @@ module CloudConnector
         CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_URL),
         CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_URL),
         CloudConnector::StatusChecks::Probes::AccessProbe.new,
+        CloudConnector::StatusChecks::Probes::TokenProbe.new,
         CloudConnector::StatusChecks::Probes::EndToEndProbe.new
       ].freeze
 

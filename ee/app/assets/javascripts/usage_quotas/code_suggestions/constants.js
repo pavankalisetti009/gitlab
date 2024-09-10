@@ -19,7 +19,7 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
     ),
   },
   {
-    values: ['license_probe', 'access_probe'],
+    values: ['license_probe', 'access_probe', 'token_probe'],
     title: __('Synchronization'),
     description: s__(
       'CodeSuggestions|The active subscription must sync with customers.gitlab.com every 72 hours.',
