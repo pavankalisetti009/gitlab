@@ -1849,6 +1849,69 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#applicable_scan_result_policies_with_real_index' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+    let(:policy_scope_checker) { instance_double(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) }
+
+    before do
+      allow(Security::SecurityOrchestrationPolicies::PolicyScopeChecker).to receive(:new).with(project: project).and_return(policy_scope_checker)
+      allow(policy_configuration).to receive(:approval_policies_limit).and_return(3)
+    end
+
+    context 'when there are no policies' do
+      before do
+        allow(policy_configuration).to receive(:scan_result_policies).and_return([])
+      end
+
+      it 'does not yield any policies' do
+        expect { |b| policy_configuration.applicable_scan_result_policies_with_real_index(project, &b) }.not_to yield_control
+      end
+    end
+
+    context 'when there are policies' do
+      let(:policies) do
+        [
+          { enabled: true, name: 'Policy 1' },
+          { enabled: false, name: 'Policy 2' },
+          { enabled: true, name: 'Policy 3' },
+          { enabled: true, name: 'Policy 4' },
+          { enabled: true, name: 'Policy 5' }
+        ]
+      end
+
+      before do
+        allow(policy_configuration).to receive(:scan_result_policies).and_return(policies)
+        allow(policy_scope_checker).to receive(:policy_applicable?).and_return(true)
+      end
+
+      it 'yields applicable policies with correct indices' do
+        expect { |b| policy_configuration.applicable_scan_result_policies_with_real_index(project, &b) }.to yield_successive_args(
+          [{ enabled: true, name: 'Policy 1' }, 0, 0],
+          [{ enabled: true, name: 'Policy 3' }, 2, 1],
+          [{ enabled: true, name: 'Policy 4' }, 3, 2]
+        )
+      end
+
+      it 'respects the approval_policies_limit' do
+        expect { |b| policy_configuration.applicable_scan_result_policies_with_real_index(project, &b) }.to yield_control.exactly(3).times
+      end
+
+      context 'when a policy is not applicable' do
+        before do
+          allow(policy_scope_checker).to receive(:policy_applicable?).with(policies[0]).and_return(false)
+        end
+
+        it 'skips non-applicable policies' do
+          expect { |b| policy_configuration.applicable_scan_result_policies_with_real_index(project, &b) }.to yield_successive_args(
+            [{ enabled: true, name: 'Policy 3' }, 2, 0],
+            [{ enabled: true, name: 'Policy 4' }, 3, 1]
+          )
+        end
+      end
+    end
+  end
+
   describe '#applicable_scan_result_policies_for_project' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, :repository, group: group) }

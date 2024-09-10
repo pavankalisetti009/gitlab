@@ -113,6 +113,7 @@ class ApprovalProjectRule < ApplicationRecord
       Security::ScanResultPolicyViolation.upsert_all(
         [merge_request_id: merge_request.id,
          scan_result_policy_id: rule.scan_result_policy_id,
+         approval_policy_rule_id: rule.approval_policy_rule_id,
          status: Security::ScanResultPolicyViolation.statuses[:running],
          project_id: merge_request.project_id],
         unique_by: %w[scan_result_policy_id merge_request_id])
@@ -174,7 +175,7 @@ class ApprovalProjectRule < ApplicationRecord
 
   def report_approver_attributes
     attributes
-      .slice('approvals_required', 'name', 'orchestration_policy_idx', 'scanners', 'severity_levels', 'vulnerability_states', 'vulnerabilities_allowed', 'security_orchestration_policy_configuration_id', 'scan_result_policy_id')
+      .slice('approvals_required', 'name', 'orchestration_policy_idx', 'scanners', 'severity_levels', 'vulnerability_states', 'vulnerabilities_allowed', 'security_orchestration_policy_configuration_id', 'scan_result_policy_id', 'approval_policy_rule_id')
       .merge(
         users: users,
         groups: groups,

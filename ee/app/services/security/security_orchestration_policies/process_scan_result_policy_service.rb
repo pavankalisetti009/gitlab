@@ -8,10 +8,11 @@ module Security
         Security::ScanResultPolicy::ANY_MERGE_REQUEST => :any_merge_request
       }.freeze
 
-      def initialize(project:, policy_configuration:, policy:, policy_index:)
+      def initialize(project:, policy_configuration:, policy:, policy_index:, real_policy_index:)
         @policy_configuration = policy_configuration
         @policy = policy
         @policy_index = policy_index
+        @real_policy_index = real_policy_index
         @project = project
         @author = policy_configuration.policy_last_updated_by
       end
@@ -22,7 +23,7 @@ module Security
 
       private
 
-      attr_reader :policy_configuration, :policy, :project, :author, :policy_index
+      attr_reader :policy_configuration, :policy, :project, :author, :policy_index, :real_policy_index
 
       def create_new_approval_rules
         action_info = policy[:actions]&.find { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
@@ -37,19 +38,26 @@ module Security
             rule, action_info, send_bot_message_action, project, rule_index
           )
 
+          approval_policy_rule = if policy_configuration.persist_policies?
+                                   Security::ApprovalPolicyRule.by_policy_rule_index(policy_configuration,
+                                     policy_index: real_policy_index,
+                                     rule_index: rule_index
+                                   )
+                                 end
+
           if license_finding?(rule)
             if Feature.enabled?(:bulk_create_scan_result_policies, project)
-              bulk_create_software_license_policies(rule, scan_result_policy_read)
+              bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
             else
-              create_software_license_policies(rule, scan_result_policy_read)
+              create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
             end
           end
 
           next unless create_approval_rule?(rule)
 
-          ::ApprovalRules::CreateService
-            .new(project, author, rule_params(rule, rule_index, action_info, scan_result_policy_read))
-            .execute
+          ::ApprovalRules::CreateService.new(project, author,
+            rule_params(rule, rule_index, action_info, scan_result_policy_read, approval_policy_rule)
+          ).execute
         end
       end
 
@@ -66,26 +74,27 @@ module Security
         rule[:type] == Security::ScanResultPolicy::LICENSE_FINDING
       end
 
-      def bulk_create_software_license_policies(rule, scan_result_policy_read)
+      def bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
         ::SoftwareLicensePolicies::BulkCreateScanResultPolicyService
-          .new(project, create_software_license_params(rule, scan_result_policy_read))
+          .new(project, create_software_license_params(rule, scan_result_policy_read, approval_policy_rule))
           .execute
       end
 
-      def create_software_license_policies(rule, scan_result_policy_read)
-        create_software_license_params(rule, scan_result_policy_read).each do |params|
+      def create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
+        create_software_license_params(rule, scan_result_policy_read, approval_policy_rule).each do |params|
           ::SoftwareLicensePolicies::CreateService
             .new(project, author, params)
             .execute
         end
       end
 
-      def create_software_license_params(rule, scan_result_policy_read)
+      def create_software_license_params(rule, scan_result_policy_read, approval_policy_rule)
         rule[:license_types].map do |license_type|
           {
             name: license_type,
             approval_status: rule[:match_on_inclusion_license] ? 'denied' : 'allowed',
-            scan_result_policy_read: scan_result_policy_read
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule_id: approval_policy_rule&.id
           }
         end
       end
@@ -109,7 +118,7 @@ module Security
         )
       end
 
-      def rule_params(rule, rule_index, action_info, scan_result_policy_read)
+      def rule_params(rule, rule_index, action_info, scan_result_policy_read, approval_policy_rule)
         rule_params = {
           skip_authorization: true,
           approvals_required: action_info&.dig(:approvals_required) || 0,
@@ -123,6 +132,7 @@ module Security
           group_ids: groups_ids(action_info&.dig(:group_approvers_ids), action_info&.dig(:group_approvers)),
           security_orchestration_policy_configuration_id: policy_configuration.id,
           scan_result_policy_id: scan_result_policy_read&.id,
+          approval_policy_rule_id: approval_policy_rule&.id,
           permit_inaccessible_groups: true
         }
 
