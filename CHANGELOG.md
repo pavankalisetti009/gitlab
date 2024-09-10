@@ -3794,6 +3794,16 @@ entry.
 - [Migrate self-managed custom roles to the instance-level roles](gitlab-org/gitlab@46ab664a1877f8b761c2b25e13e01561d56cf6fd) ([merge request](gitlab-org/gitlab!147829))
 - [Feature cleanup flag wiki_content_background_job](gitlab-org/gitlab@c39a37db4a6112456052c11bf5fd1afa9c23bd6d) by @ivantedja ([merge request](gitlab-org/gitlab!148820))
 
+## 16.11.9 (2024-09-10)
+
+### Security (1 change)
+
+- [Fix for private dotenv artifacts not accessible to downstream jobs](https://gitlab.com/gitlab-org/gitlab/-/commit/9bb4b59afe5a2e8a383709a55a139d6875acf911)
+
+### Performance (1 change)
+
+- [Analyze partitioned tables every 3 days](https://gitlab.com/gitlab-org/gitlab/-/commit/e38cca011522a565d582e8760ca958f37d9be299) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163255))
+
 ## 16.11.8 (2024-08-05)
 
 ### Changed (1 change)
