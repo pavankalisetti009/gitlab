@@ -15413,6 +15413,9 @@ CREATE TABLE personal_access_tokens (
     previous_personal_access_token_id bigint,
     advanced_scopes text,
     organization_id bigint DEFAULT 1 NOT NULL,
+    seven_days_notification_sent_at timestamp with time zone,
+    thirty_days_notification_sent_at timestamp with time zone,
+    sixty_days_notification_sent_at timestamp with time zone,
     CONSTRAINT check_aa95773861 CHECK ((char_length(advanced_scopes) <= 4096))
 );
 
@@ -29458,6 +29461,12 @@ CREATE INDEX index_path_locks_on_path ON path_locks USING btree (path);
 CREATE INDEX index_path_locks_on_project_id ON path_locks USING btree (project_id);
 
 CREATE INDEX index_path_locks_on_user_id ON path_locks USING btree (user_id);
+
+CREATE INDEX index_pats_on_expiring_at_seven_days_notification_sent_at ON personal_access_tokens USING btree (expires_at, id) WHERE ((impersonation = false) AND (revoked = false) AND (seven_days_notification_sent_at IS NULL));
+
+CREATE INDEX index_pats_on_expiring_at_sixty_days_notification_sent_at ON personal_access_tokens USING btree (expires_at, id) WHERE ((impersonation = false) AND (revoked = false) AND (sixty_days_notification_sent_at IS NULL));
+
+CREATE INDEX index_pats_on_expiring_at_thirty_days_notification_sent_at ON personal_access_tokens USING btree (expires_at, id) WHERE ((impersonation = false) AND (revoked = false) AND (thirty_days_notification_sent_at IS NULL));
 
 CREATE INDEX index_pe_approval_rules_on_required_approvals_and_created_at ON protected_environment_approval_rules USING btree (required_approvals, created_at);
 
