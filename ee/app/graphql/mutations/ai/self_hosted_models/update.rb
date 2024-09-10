@@ -31,27 +31,17 @@ module Mutations
         def resolve(**args)
           check_feature_access!
 
-          model = update_self_hosted_model(args)
+          model = find_object(id: args.delete(:id))
 
-          if model.errors.present?
-            {
-              self_hosted_model: nil,
-              errors: Array(model.errors)
-            }
-          else
-            { self_hosted_model: model, errors: [] }
-          end
+          result = ::Ai::SelfHostedModels::UpdateService.new(model, current_user, args).execute
+
+          {
+            self_hosted_model: result.success? ? result.payload : nil,
+            errors: result.error? ? Array.wrap(result.errors) : []
+          }
         end
 
         private
-
-        def update_self_hosted_model(args)
-          model = find_object(id: args[:id])
-
-          model.update(args.except(:id))
-
-          model
-        end
 
         def find_object(id:)
           GitlabSchema.object_from_id(id, expected_type: ::Ai::SelfHostedModel).sync
