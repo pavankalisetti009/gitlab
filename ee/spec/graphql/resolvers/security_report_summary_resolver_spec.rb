@@ -31,7 +31,7 @@ RSpec.describe Resolvers::SecurityReportSummaryResolver do
 
       it 'returns calls the ReportSummaryService' do
         expect_next_instance_of(
-          Security::ReportSummaryService,
+          ::Security::ReportSummaryService,
           pipeline,
           expected_selection_info
         ) do |summary_service|
@@ -71,7 +71,7 @@ RSpec.describe Resolvers::SecurityReportSummaryResolver do
 
       it 'does not search for :__typename' do
         expect_next_instance_of(
-          Security::ReportSummaryService,
+          ::Security::ReportSummaryService,
           pipeline,
           expected_selection_info
         ) do |summary_service|

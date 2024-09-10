@@ -19,7 +19,7 @@ module Resolvers
         default_value: true
 
       def resolve(**args)
-        policies = Security::ScanResultPoliciesFinder.new(context[:current_user], object,
+        policies = ::Security::ScanResultPoliciesFinder.new(context[:current_user], object,
           args.merge(include_invalid: true)).execute
         construct_scan_result_policies(policies)
       end

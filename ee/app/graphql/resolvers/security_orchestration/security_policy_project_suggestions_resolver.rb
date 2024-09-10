@@ -23,7 +23,7 @@ module Resolvers
       def resolve(**args)
         args[:search_globally] = !gitlab_com_subscription?
 
-        Security::SecurityPolicyProjectsFinder
+        ::Security::SecurityPolicyProjectsFinder
           .new(container: object, current_user: current_user, params: args)
           .execute
       end

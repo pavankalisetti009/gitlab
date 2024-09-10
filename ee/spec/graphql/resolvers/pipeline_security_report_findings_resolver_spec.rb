@@ -17,10 +17,10 @@ RSpec.describe Resolvers::PipelineSecurityReportFindingsResolver, feature_catego
 
     let(:params) { {} }
 
-    let(:mock_pure_finder) { instance_double(Security::PureFindingsFinder, execute: returned_findings) }
+    let(:mock_pure_finder) { instance_double(::Security::PureFindingsFinder, execute: returned_findings) }
 
     before do
-      allow(Security::PureFindingsFinder).to receive(:new).and_return(mock_pure_finder)
+      allow(::Security::PureFindingsFinder).to receive(:new).and_return(mock_pure_finder)
     end
 
     context 'when given severities' do
