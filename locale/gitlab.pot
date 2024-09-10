@@ -12602,6 +12602,9 @@ msgstr ""
 msgid "ClusterAgents|GitLab agent for Kubernetes"
 msgstr ""
 
+msgid "ClusterAgents|GitLab will establish the connection to this agent. A URL configuration is required."
+msgstr ""
+
 msgid "ClusterAgents|Give feedback"
 msgstr ""
 
@@ -12664,6 +12667,9 @@ msgstr ""
 msgid "ClusterAgents|Premium"
 msgstr ""
 
+msgid "ClusterAgents|Receptive"
+msgstr ""
+
 msgid "ClusterAgents|Recommended"
 msgstr ""
 
@@ -12695,6 +12701,9 @@ msgid "ClusterAgents|See agent activity updates, like tokens created or revoked 
 msgstr ""
 
 msgid "ClusterAgents|Select an agent or enter a name to create new"
+msgstr ""
+
+msgid "ClusterAgents|Shared"
 msgstr ""
 
 msgid "ClusterAgents|Tell us what you think"
@@ -12773,9 +12782,6 @@ msgid "ClusterAgents|Your agent version is out of sync with your GitLab KAS vers
 msgstr ""
 
 msgid "ClusterAgents|Your instance doesn't have the %{linkStart}GitLab Agent Server (KAS)%{linkEnd} set up. Ask a GitLab Administrator to install it."
-msgstr ""
-
-msgid "ClusterAgents|shared"
 msgstr ""
 
 msgid "ClusterAgent|An agent can have only two active tokens at a time"
