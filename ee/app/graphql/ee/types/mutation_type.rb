@@ -225,6 +225,7 @@ module EE
           alpha: { milestone: '17.2' }
         mount_mutation ::Mutations::MergeTrains::Cars::Delete, alpha: { milestone: '17.2' }
         mount_mutation ::Mutations::Projects::UpdateComplianceFrameworks
+        mount_mutation ::Mutations::Ai::FeatureSettings::Update, alpha: { milestone: '17.4' }
 
         prepend(Types::DeprecatedMutations)
       end

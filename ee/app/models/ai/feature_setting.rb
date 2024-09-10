@@ -31,6 +31,8 @@ module Ai
     validates :feature, presence: true, uniqueness: true
     validates :provider, presence: true
 
+    scope :find_or_initialize_by_feature, ->(feature) { find_or_initialize_by(feature: feature) }
+
     enum provider: {
       disabled: 0,
       vendored: 1,
