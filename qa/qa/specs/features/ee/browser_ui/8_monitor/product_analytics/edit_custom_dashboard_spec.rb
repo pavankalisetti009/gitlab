@@ -67,7 +67,7 @@ module QA
           expect(analytics_dashboards.has_dashboard_item?(new_custom_dashboard_title)).to be(true)
           expect(analytics_dashboards.list_item_has_errors_badge?(name: new_custom_dashboard_title)).to be(false)
 
-          analytics_dashboards.click_dashboard_list_item(new_custom_dashboard_title)
+          analytics_dashboards.open_dashboard(new_custom_dashboard_title)
         end
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Dashboard.perform do |dashboard|

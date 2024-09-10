@@ -28,11 +28,11 @@ module QA
               end
 
               def open_audience_dashboard
-                dashboards_list[0].click
+                open_dashboard('Audience')
               end
 
               def open_behavior_dashboard
-                dashboards_list[1].click
+                open_dashboard('Behavior')
               end
 
               def click_configure_dashboard_project
@@ -49,8 +49,9 @@ module QA
                 click_element('new-dashboard-button')
               end
 
-              def click_dashboard_list_item(name)
+              def open_dashboard(name)
                 click_link(name)
+                wait_for_requests
               end
 
               def has_dashboard_item?(name)
