@@ -37,6 +37,10 @@ module Registrations
       trial_user_information = glm_params.merge(namespace_id: group.id, gitlab_com_trial: true, sync_to_gl: true)
       trial_user_information[:namespace] = group.slice(:id, :name, :path, :kind, :trial_ends_on)
 
+      if Feature.enabled?(:duo_enterprise_trials, user)
+        trial_user_information.merge!(with_add_on: true, add_on: 'duo_enterprise')
+      end
+
       GitlabSubscriptions::Trials::ApplyTrialWorker.perform_async(user.id, trial_user_information.to_h)
     end
 
