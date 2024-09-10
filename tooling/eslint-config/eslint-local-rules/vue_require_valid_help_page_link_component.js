@@ -1,26 +1,19 @@
 const { existsSync, readFileSync } = require('fs');
+const { defineTemplateBodyVisitor } = require('./utils/eslint_parsing_utils');
 const { getDocsFilePath, getAnchorsInMarkdown } = require('./utils/help_page_path_utils');
 
-const TYPE_LITERAL = 'Literal';
-
 /**
- * Extracts the anchor from a given `helpPagePath` call. The anchor can either be passed in the
- * first argument (eg '/path/to#anchor'). Or as the `anchor` property in the second argument.
+ * Extracts the anchor from a given `HelpPageLink` component. The anchor can either be passed in the
+ * `href` prop (eg '/path/to#anchor'), or as the `anchor` prop.
  *
- * @param {object} node The node from which we are extracting the anchor
+ * @param {VStartTag} node The node from which we are extracting the anchor
  * @returns {string?} The extracted anchor
  */
 function getAnchor(node) {
-  if (node.arguments.length === 1) {
-    return node.arguments[0].value.match(/#(.+)$/)?.[1] ?? null;
+  if (node.attributes.length === 1) {
+    return node.attributes[0].value.value.match(/#(.+)$/)?.[1] ?? null;
   }
-  return (
-    node.arguments?.[1]?.properties
-      .find((property) => {
-        return property.key.name === 'anchor';
-      })
-      ?.value?.value.replace(/^#/, '') ?? null
-  );
+  return node.attributes.find((attr) => attr.key.name === 'anchor')?.value?.value ?? null;
 }
 
 module.exports = {
@@ -32,21 +25,19 @@ module.exports = {
     },
   },
   create(context) {
-    return {
-      CallExpression(node) {
-        if (node.callee.name !== 'helpPagePath') {
-          return;
-        }
+    return defineTemplateBodyVisitor(context, {
+      'VElement[name="help-page-link"] > VStartTag': (node) => {
+        const hrefAttribute = node.attributes.find((attr) => attr.key.name === 'href');
 
-        if (node.arguments?.[0]?.type !== TYPE_LITERAL) {
+        if (!hrefAttribute) {
           context.report({
             node,
-            message: "`helpPagePath`'s first argument must be a string literal",
+            message: 'The `href` prop must be passed as a string literal.',
           });
           return;
         }
 
-        const docsFilePath = getDocsFilePath(node.arguments[0].value);
+        const docsFilePath = getDocsFilePath(hrefAttribute.value.value);
 
         if (!existsSync(docsFilePath)) {
           context.report({
@@ -79,6 +70,6 @@ module.exports = {
           });
         }
       },
-    };
+    });
   },
 };
