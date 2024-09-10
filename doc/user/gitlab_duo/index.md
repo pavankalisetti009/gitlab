@@ -183,7 +183,7 @@ DETAILS:
 **Status:** Experiment
 
 - Helps populate an issue more quickly by generating a more in-depth description, based on a short summary you provide.
-- LLM: Anthropic [Claude Instant 1.2](https://docs.anthropic.com/en/docs/about-claude/models#legacy-models)
+- LLM: Anthropic [Claude 3 Haiku](https://docs.anthropic.com/en/docs/about-claude/models#claude-3-a-new-generation-of-ai)
 - [View documentation](experiments.md#populate-an-issue-with-issue-description-generation).
 
 ### Code Review Summary
