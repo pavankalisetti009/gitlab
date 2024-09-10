@@ -33,48 +33,36 @@ module Search
         user.enabled_zoekt?
       end
 
-      def index_async(project_id, options = {})
+      def index_async(project_id, _options = {})
         IndexingTaskWorker.perform_async(project_id, :index_repo) if create_indexing_tasks_enabled?(project_id)
-
-        ::Zoekt::IndexerWorker.perform_async(project_id, options) if Feature.enabled?(:zoekt_legacy_indexer_worker)
       end
 
-      def index_in(delay, project_id, options = {})
-        if create_indexing_tasks_enabled?(project_id)
-          IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
-        end
+      def index_in(delay, project_id, _options = {})
+        return unless create_indexing_tasks_enabled?(project_id)
 
-        ::Zoekt::IndexerWorker.perform_in(delay, project_id, options) if Feature.enabled?(:zoekt_legacy_indexer_worker)
+        IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
       end
 
       def delete_async(project_id, root_namespace_id:, node_id: nil)
-        if create_indexing_tasks_enabled?(project_id)
-          Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
-            node_ids: [node_id]).map do |node|
-            options = { root_namespace_id: root_namespace_id, node_id: node.id }
-            IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
-          end
+        return unless create_indexing_tasks_enabled?(project_id)
+
+        Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
+          node_ids: [node_id]).map do |node|
+          options = { root_namespace_id: root_namespace_id, node_id: node.id }
+          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
         end
-
-        return unless Feature.enabled?(:zoekt_legacy_indexer_worker)
-
-        DeleteProjectWorker.perform_async(root_namespace_id, project_id, node_id)
       end
 
       def delete_in(delay, project_id, root_namespace_id:, node_id: nil)
-        if create_indexing_tasks_enabled?(project_id)
-          Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
-            node_ids: [node_id]).map do |node|
-            options = {
-              root_namespace_id: root_namespace_id, node_id: node.id, delay: delay
-            }
-            IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
-          end
+        return unless create_indexing_tasks_enabled?(project_id)
+
+        Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
+          node_ids: [node_id]).map do |node|
+          options = {
+            root_namespace_id: root_namespace_id, node_id: node.id, delay: delay
+          }
+          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
         end
-
-        return unless Feature.enabled?(:zoekt_legacy_indexer_worker)
-
-        DeleteProjectWorker.perform_in(delay, root_namespace_id, project_id, node_id)
       end
 
       private

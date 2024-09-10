@@ -6,8 +6,6 @@ module Search
       include ApplicationWorker
       prepend ::Geo::SkipSecondary
 
-      INDEXING_DELAY_PER_PROJECT_FOR_LEGACY_APPROACH = 10.seconds
-
       # Must be always otherwise we risk race condition where it does not think that indexing is enabled yet for the
       # namespace.
       data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
@@ -34,16 +32,7 @@ module Search
       def index_projects(namespace)
         return unless namespace.use_zoekt?
 
-        if Feature.enabled?(:zoekt_legacy_indexer_worker, Feature.current_request)
-          delay = 0
-          namespace.all_projects.find_each do |project|
-            ::Search::Zoekt.index_in(delay, project.id)
-
-            delay += INDEXING_DELAY_PER_PROJECT_FOR_LEGACY_APPROACH
-          end
-        else
-          namespace.all_projects.find_each { |project| ::Search::Zoekt.index_async(project.id) }
-        end
+        namespace.all_projects.find_each { |project| ::Search::Zoekt.index_async(project.id) }
       end
 
       def remove_projects(namespace, node_id:)

@@ -13,7 +13,7 @@ module Resolvers
     def resolve(lookahead:)
       return unless authorized_resource?(pipeline.project)
 
-      Security::ReportSummaryService.new(
+      ::Security::ReportSummaryService.new(
         pipeline,
         selection_information(lookahead)
       ).execute

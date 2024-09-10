@@ -12,7 +12,7 @@ module API
 
     helpers do
       def vulnerabilities_by(project)
-        Security::VulnerabilityReadsFinder.new(project).execute.as_vulnerabilities
+        ::Security::VulnerabilityReadsFinder.new(project).execute.as_vulnerabilities
       end
 
       def find_vulnerability!

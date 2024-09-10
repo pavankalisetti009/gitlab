@@ -19,7 +19,7 @@ module Resolvers
         default_value: true
 
       def resolve(**args)
-        policies = Security::PipelineExecutionPoliciesFinder.new(context[:current_user], project, args).execute
+        policies = ::Security::PipelineExecutionPoliciesFinder.new(context[:current_user], project, args).execute
         construct_pipeline_execution_policies(policies)
       end
     end
