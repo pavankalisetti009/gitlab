@@ -3,6 +3,7 @@ import { GlIcon, GlTooltip, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemLinkChildMetadata from '~/work_items/components/shared/work_item_link_child_metadata.vue';
+import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import {
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_PROGRESS,
@@ -22,6 +23,7 @@ export default {
     GlTooltip,
     IssueHealthStatus,
     WorkItemLinkChildMetadata,
+    WorkItemRolledUpHealthStatus,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -68,6 +70,9 @@ export default {
     },
     healthStatus() {
       return this.metadataWidgets[WIDGET_TYPE_HEALTH_STATUS]?.healthStatus;
+    },
+    rolledUpHealthStatus() {
+      return this.metadataWidgets[WIDGET_TYPE_HEALTH_STATUS]?.rolledUpHealthStatus;
     },
     hasProgress() {
       return Number.isInteger(this.progress);
@@ -207,12 +212,19 @@ export default {
       </div>
     </template>
     <template #right-metadata>
-      <issue-health-status
-        v-if="healthStatus && isChildItemOpen"
-        display-as-text
-        text-size="sm"
-        :health-status="healthStatus"
-      />
+      <div class="gl-flex">
+        <work-item-rolled-up-health-status
+          v-if="rolledUpHealthStatus"
+          :rolled-up-health-status="rolledUpHealthStatus"
+          :health-status-visible="healthStatus && isChildItemOpen"
+        />
+        <issue-health-status
+          v-if="healthStatus && isChildItemOpen"
+          display-as-text
+          text-size="sm"
+          :health-status="healthStatus"
+        />
+      </div>
     </template>
   </work-item-link-child-metadata>
 </template>

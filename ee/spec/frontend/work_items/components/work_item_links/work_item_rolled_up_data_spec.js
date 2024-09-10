@@ -4,10 +4,12 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemRolledUpData from '~/work_items/components/work_item_links/work_item_rolled_up_data.vue';
 import WorkItemRolledUpCount from '~/work_items/components/work_item_links/work_item_rolled_up_count.vue';
+import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import { workItemByIidResponseFactory } from 'jest/work_items/mock_data';
+import { mockRolledUpHealthStatus } from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -19,6 +21,8 @@ describe('WorkItemRollUpData', () => {
   const findRolledUpProgress = () => wrapper.findByTestId('work-item-rollup-progress');
   const findRolledUpProgressValue = () => wrapper.findByTestId('work-item-progress-value');
   const findRolledUpCount = () => wrapper.findComponent(WorkItemRolledUpCount);
+  const findWorkItemRolledUpHealthStatus = () =>
+    wrapper.findComponent(WorkItemRolledUpHealthStatus);
 
   const workItemQueryResponse = workItemByIidResponseFactory({
     canUpdate: true,
@@ -30,6 +34,7 @@ describe('WorkItemRollUpData', () => {
     workItemType = 'Objective',
     workItemIid = '2',
     workItemQueryHandler = workItemSuccessQueryHandler,
+    rolledUpHealthStatus = mockRolledUpHealthStatus,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemRolledUpData, {
       propsData: {
@@ -38,6 +43,7 @@ describe('WorkItemRollUpData', () => {
         workItemType,
         workItemIid,
         workItemId: 'gid://gitlab/WorkItem/2',
+        rolledUpHealthStatus,
       },
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
     });
@@ -121,6 +127,14 @@ describe('WorkItemRollUpData', () => {
       expect(findRolledUpProgress().findComponent(GlIcon).props('name')).toBe('progress');
       expect(findRolledUpProgressValue().text()).toBe('42%');
     });
+  });
+
+  it('rolled up health status', async () => {
+    createComponent();
+
+    await waitForPromises();
+
+    expect(findWorkItemRolledUpHealthStatus().exists()).toBe(true);
   });
 
   it('when the query is not successful , and error is emitted', async () => {

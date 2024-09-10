@@ -22,6 +22,10 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
   }
   ... on WorkItemWidgetHealthStatus {
     healthStatus
+    rolledUpHealthStatus {
+      count
+      healthStatus
+    }
   }
   ... on WorkItemWidgetMilestone {
     milestone {
