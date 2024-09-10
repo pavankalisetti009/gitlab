@@ -162,14 +162,14 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       }
     end
 
+    let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
+
     subject(:post_api) do
       post api('/code_suggestions/completions', current_user), headers: headers, params: body.to_json
     end
 
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
-
-      service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData')
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
       allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: token,
         enabled_by_namespace_ids: enabled_by_namespace_ids })
@@ -644,6 +644,34 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 post_api
 
                 expect(response).to have_gitlab_http_status(:bad_request)
+              end
+            end
+
+            context 'when code suggestions feature is self hosted' do
+              let_it_be(:feature_setting) { create(:ai_feature_setting) }
+
+              before do
+                allow(service).to receive_messages({ free_access?: true, allowed_for?: false, access_token: token })
+              end
+
+              context 'and requested before cut off date' do
+                it 'is unauthorized' do
+                  post_api
+
+                  expect(response).to have_gitlab_http_status(:unauthorized)
+                end
+
+                context 'when self_hosted_models_beta_ended is disabled' do
+                  before do
+                    stub_feature_flags(self_hosted_models_beta_ended: false)
+                  end
+
+                  it 'is unauthorized' do
+                    post_api
+
+                    expect(response).to have_gitlab_http_status(:ok)
+                  end
+                end
               end
             end
           end

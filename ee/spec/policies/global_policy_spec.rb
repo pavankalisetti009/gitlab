@@ -604,21 +604,23 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     let_it_be_with_reload(:current_user) { create(:user) }
 
     where(:code_suggestions_licensed, :duo_pro_seat_assigned, :self_hosted_enabled, :self_hosted_licensed,
-      :self_hosted_free_access, :code_suggestions_enabled_for_user) do
-      true  | true  | true  | true   | false  | be_allowed(:access_code_suggestions)
-      true  | true  | false | false  | false  | be_allowed(:access_code_suggestions)
-      true  | false | true  | true   | false  | be_allowed(:access_code_suggestions)
-      true  | false | true  | false  | true   | be_allowed(:access_code_suggestions)
-      true  | false | true  | false  | false  | be_disallowed(:access_code_suggestions)
-      true  | false | true  | false  | false  | be_disallowed(:access_code_suggestions)
-      true  | false | false | false  | false  | be_disallowed(:access_code_suggestions)
-      false | true  | true  | true   | false  | be_disallowed(:access_code_suggestions)
-      false | false | false | false  | false  | be_disallowed(:access_code_suggestions)
+      :self_hosted_free_access, :self_hosted_beta_ended, :code_suggestions_enabled_for_user) do
+      true  | true  | true  | true   | false  | false | be_allowed(:access_code_suggestions)
+      true  | true  | false | false  | false  | false | be_allowed(:access_code_suggestions)
+      true  | false | true  | true   | false  | false | be_allowed(:access_code_suggestions)
+      true  | false | true  | false  | true   | false | be_allowed(:access_code_suggestions)
+      true  | false | true  | false  | true   | true  | be_disallowed(:access_code_suggestions)
+      true  | false | true  | false  | false  | false | be_disallowed(:access_code_suggestions)
+      true  | false | true  | false  | false  | false | be_disallowed(:access_code_suggestions)
+      true  | false | false | false  | false  | false | be_disallowed(:access_code_suggestions)
+      false | true  | true  | true   | false  | false | be_disallowed(:access_code_suggestions)
+      false | false | false | false  | false  | false | be_disallowed(:access_code_suggestions)
     end
 
     with_them do
       before do
         stub_licensed_features(code_suggestions: code_suggestions_licensed)
+        stub_feature_flags(self_hosted_models_beta_ended: self_hosted_beta_ended)
         code_suggestions_service_data = instance_double(CloudConnector::BaseAvailableServiceData)
         allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
                                                                           .and_return(code_suggestions_service_data)
@@ -646,23 +648,19 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
     context 'when on .org or .com', :saas do
       where(:group_with_ai_membership, :duo_pro_seat_assigned, :requires_licensed_seat,
-        :self_hosted_duo_chat_enabled, :self_hosted_duo_chat_available, :frozen_date, :duo_chat_enabled_for_user) do
-        false | false  | false | false | false | ref(:before_cutoff) | be_disallowed(policy)
-        false | true   | false | false | false | ref(:before_cutoff) | be_disallowed(policy)
-        true  | false  | false | false | false | ref(:before_cutoff) | be_allowed(policy)
-        true  | true   | false | false | false | ref(:before_cutoff) | be_allowed(policy)
+        :frozen_date, :duo_chat_enabled_for_user) do
+        false | false  | false | ref(:before_cutoff) | be_disallowed(policy)
+        false | true   | false | ref(:before_cutoff) | be_disallowed(policy)
+        true  | false  | false | ref(:before_cutoff) | be_allowed(policy)
+        true  | true   | false | ref(:before_cutoff) | be_allowed(policy)
 
         # When Group actor belongs to a group which requires licensed seat for chat
-        true  | false  | true  | false | false | ref(:before_cutoff) | be_disallowed(policy)
-        true  | true   | true  | false | false | ref(:before_cutoff) | be_allowed(policy)
-
-        # When Duo chat is self-hosted
-        false | false  | false | true  | false | ref(:before_cutoff) | be_disallowed(policy)
-        false | false  | false | true  | true  | ref(:before_cutoff) | be_allowed(policy)
+        true  | false  | true  | ref(:before_cutoff) | be_disallowed(policy)
+        true  | true   | true  | ref(:before_cutoff) | be_allowed(policy)
 
         # After free access cutoff
-        false | true   | false | false | false | ref(:after_cutoff) | be_allowed(policy)
-        true  | false  | false | false | false | ref(:after_cutoff) | be_disallowed(policy)
+        false | true   | false | ref(:after_cutoff) | be_allowed(policy)
+        true  | false  | false | ref(:after_cutoff) | be_disallowed(policy)
       end
 
       with_them do
@@ -674,16 +672,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
           allow(duo_chat_service_data).to receive(:allowed_for?).with(current_user).and_return(duo_pro_seat_assigned)
           allow(current_user).to receive(:belongs_to_group_requires_licensed_seat_for_chat?)
                                    .and_return(requires_licensed_seat)
-
-          allow(::Ai::FeatureSetting).to receive_message_chain(:find_by_feature,
-            :self_hosted?).and_return(self_hosted_duo_chat_enabled)
-          self_hosted_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
-          allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:self_hosted_models)
-                                                                            .and_return(self_hosted_service_data)
-          allow(self_hosted_service_data).to receive(:allowed_for?)
-            .with(current_user).and_return(self_hosted_duo_chat_available)
-          allow(self_hosted_service_data).to receive(:free_access?)
-            .and_return(self_hosted_duo_chat_available)
           travel_to(frozen_date)
         end
 
@@ -696,22 +684,19 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       let_it_be(:yesterday) { Time.current - 1.day }
 
       where(:licensed, :duo_features_enabled, :duo_chat_cut_off_date, :duo_pro_seat_assigned,
-        :requires_licensed_seat_sm, :self_hosted_duo_chat_enabled, :self_hosted_duo_chat_available,
-        :duo_chat_enabled_for_user) do
-        true  | false | ref(:tomorrow)  | false | false | false | false | be_disallowed(policy)
-        true  | true  | ref(:tomorrow)  | false | false | false | false | be_allowed(policy)
-        true  | true  | ref(:tomorrow)  | false | true  | false | false | be_disallowed(policy)
-        false | false | ref(:tomorrow)  | false | false | false | false | be_disallowed(policy)
-        false | true  | ref(:tomorrow)  | false | false | false | false | be_disallowed(policy)
-        false | true  | ref(:tomorrow)  | true  | false | false | false | be_disallowed(policy)
-        false | true  | ref(:yesterday) | false | false | false | false | be_disallowed(policy)
-        false | true  | ref(:yesterday) | true  | false | false | false | be_disallowed(policy)
-        false | false | ref(:yesterday) | true  | false | false | false | be_disallowed(policy)
-        true  | false | ref(:yesterday) | true  | false | false | false | be_allowed(policy)
-        true  | false | ref(:yesterday) | true  | true  | false | false | be_allowed(policy)
-        true  | true  | ref(:yesterday) | false | false | false | false | be_disallowed(policy)
-        true  | true  | ref(:yesterday) | false | false | true  | false | be_disallowed(policy)
-        true  | true  | ref(:yesterday) | false | false | true  | true  | be_allowed(policy)
+        :requires_licensed_seat_sm, :duo_chat_enabled_for_user) do
+        true  | false | ref(:tomorrow)  | false | false | be_disallowed(policy)
+        true  | true  | ref(:tomorrow)  | false | false | be_allowed(policy)
+        true  | true  | ref(:tomorrow)  | false | true  | be_disallowed(policy)
+        false | false | ref(:tomorrow)  | false | false | be_disallowed(policy)
+        false | true  | ref(:tomorrow)  | false | false | be_disallowed(policy)
+        false | true  | ref(:tomorrow)  | true  | false | be_disallowed(policy)
+        false | true  | ref(:yesterday) | false | false | be_disallowed(policy)
+        false | true  | ref(:yesterday) | true  | false | be_disallowed(policy)
+        false | false | ref(:yesterday) | true  | false | be_disallowed(policy)
+        true  | false | ref(:yesterday) | true  | false | be_allowed(policy)
+        true  | false | ref(:yesterday) | true  | true  | be_allowed(policy)
+        true  | true  | ref(:yesterday) | false | false | be_disallowed(policy)
       end
 
       with_them do
@@ -726,16 +711,37 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
           allow(CloudConnector::AvailableServices).to receive(:find_by_name)
                                                         .with(:duo_chat).and_return(duo_chat_service_data)
           allow(duo_chat_service_data).to receive(:allowed_for?).with(current_user).and_return(duo_pro_seat_assigned)
+        end
 
+        it { is_expected.to duo_chat_enabled_for_user }
+      end
+    end
+
+    context 'when duo chat is self hosted' do
+      where(:duo_chat_on_saas, :ai_chat_available, :self_hosted, :allowed_to_use,
+        :free, :beta_ended, :duo_chat_enabled_for_user) do
+        true  | true  | true  | true  | true  | true  | be_allowed(policy)
+        false | false | true  | true  | true  | true  | be_disallowed(policy)
+        false | true  | true  | true  | true  | true  | be_allowed(policy)
+        true  | true  | false | true  | true  | true  | be_disallowed(policy)
+        true  | true  | true  | false | true  | false | be_allowed(policy)
+        true  | true  | true  | false | true  | true  | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          stub_licensed_features(ai_chat: ai_chat_available)
+          stub_feature_flags(self_hosted_models_beta_ended: beta_ended)
+
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
           allow(::Ai::FeatureSetting).to receive_message_chain(:find_by_feature,
-            :self_hosted?).and_return(self_hosted_duo_chat_enabled)
+            :self_hosted?).and_return(self_hosted)
+
           self_hosted_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
           allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:self_hosted_models)
                                                                             .and_return(self_hosted_service_data)
-          allow(self_hosted_service_data).to receive(:allowed_for?)
-            .with(current_user).and_return(self_hosted_duo_chat_available)
-          allow(self_hosted_service_data).to receive(:free_access?)
-            .and_return(self_hosted_duo_chat_available)
+          allow(self_hosted_service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_to_use)
+          allow(self_hosted_service_data).to receive(:free_access?).and_return(free)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
