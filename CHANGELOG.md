@@ -2801,6 +2801,13 @@ entry.
 
 - [Update Web IDE dependency to receive duo fixes](gitlab-org/gitlab@47323c05565dd32ea4de9f999adbd9f7aa8748e3) ([merge request](gitlab-org/gitlab!154064))
 
+## 17.0.7 (2024-09-10)
+
+### Fixed (2 changes)
+
+- [Fix Sidekiq crashing when GITLAB_LOG_LEVEL set to debug](https://gitlab.com/gitlab-org/gitlab/-/commit/e77a9cc1c49f801cdb502649a068ef1e37d728e1) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164833))
+- [Backport Fixes Geo Replication Details view](https://gitlab.com/gitlab-org/gitlab/-/commit/8d0f0278b759a2246ab187d3ef0ea3edfcd237f1) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/162944)) **GitLab Enterprise Edition**
+
 ## 17.0.6 (2024-08-06)
 
 ### Changed (1 change)
