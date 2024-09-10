@@ -288,6 +288,8 @@ module SaasRegistrationHelpers
       namespace_id: anything,
       gitlab_com_trial: true,
       sync_to_gl: true,
+      add_on: 'duo_enterprise',
+      with_add_on: true,
       namespace: {
         id: anything,
         name: 'Test Group',
@@ -374,6 +376,8 @@ module SaasRegistrationHelpers
       namespace_id: anything,
       gitlab_com_trial: true,
       sync_to_gl: true,
+      add_on: 'duo_enterprise',
+      with_add_on: true,
       namespace: {
         id: anything,
         name: 'Test Group',

@@ -104,7 +104,9 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
           namespace_id: group.id,
           gitlab_com_trial: true,
           sync_to_gl: true,
-          namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on)
+          namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on),
+          with_add_on: true,
+          add_on: 'duo_enterprise'
         }
       end
 
@@ -115,6 +117,31 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
 
         stub_saas_features(onboarding: true)
         user.update!(onboarding_status_registration_type: 'trial')
+      end
+
+      context 'with the duo_enterprise_trials feature flag off' do
+        let(:trial_user_information) do
+          {
+            glm_source: 'about.gitlab.com',
+            glm_content: 'content',
+            namespace_id: group.id,
+            gitlab_com_trial: true,
+            sync_to_gl: true,
+            namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on)
+          }
+        end
+
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it 'applies a trial without the duo_enterprise add on' do
+          expect(GitlabSubscriptions::Trials::ApplyTrialWorker).to receive(:perform_async)
+                                                                     .with(user.id, trial_user_information)
+                                                                     .and_call_original
+
+          expect(execute).to be_success
+        end
       end
 
       it 'applies a trial' do
