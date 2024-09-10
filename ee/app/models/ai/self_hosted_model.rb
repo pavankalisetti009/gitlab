@@ -26,7 +26,10 @@ module Ai
       deepseekcoder: 6,
       mixtral_8x22b: 7,
       codegemma_2b: 8,
-      codegemma_7b: 9
+      codegemma_7b: 9,
+      mistral_text: 10,
+      mixtral_text: 11,
+      mixtral_8x22b_text: 12
     }
 
     # For now, only OpenAI API format is supported, this method will be potentially

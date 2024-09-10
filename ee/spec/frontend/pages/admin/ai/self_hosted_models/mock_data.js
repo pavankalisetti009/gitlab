@@ -42,4 +42,7 @@ export const SELF_HOSTED_MODEL_OPTIONS = [
   { modelValue: 'MIXTRAL_8X22B', modelName: 'Mixtral 8x22B' },
   { modelValue: 'MIXTRAL', modelName: 'Mixtral 8x7B' },
   { modelValue: 'DEEPSEEKCODER', modelName: 'DEEPSEEKCODER' },
+  { modelValue: 'MISTRAL_TEXT', modelName: 'Mistral Text 7B' },
+  { modelValue: 'MIXTRAL_TEXT', modelName: 'Mixtral Text 8x7B' },
+  { modelValue: 'MIXTRAL_8X22B_TEXT', modelName: 'Mixtral Text 8X22B' },
 ];

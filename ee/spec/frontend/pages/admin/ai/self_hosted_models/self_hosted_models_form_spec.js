@@ -83,6 +83,9 @@ describe('SelfHostedModelForm', () => {
         'Mixtral 8x22B',
         'Mixtral 8x7B',
         'DEEPSEEKCODER',
+        'Mistral Text 7B',
+        'Mixtral Text 8x7B',
+        'Mixtral Text 8X22B',
       ]);
     });
 

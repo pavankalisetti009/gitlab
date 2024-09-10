@@ -35508,8 +35508,11 @@ LLMs supported by the self-hosted model features.
 | <a id="aiacceptedselfhostedmodelscodestral"></a>`CODESTRAL` | Codestral 22B: Suitable for code completion and code generation. |
 | <a id="aiacceptedselfhostedmodelsdeepseekcoder"></a>`DEEPSEEKCODER` | Deepseek Coder 1.3b, 6.7b and 33b base or instruct. |
 | <a id="aiacceptedselfhostedmodelsmistral"></a>`MISTRAL` | Mistral 7B: Suitable for code generation and duo chat. |
+| <a id="aiacceptedselfhostedmodelsmistral_text"></a>`MISTRAL_TEXT` | Mistral-7B Text: Suitable for code completion. |
 | <a id="aiacceptedselfhostedmodelsmixtral"></a>`MIXTRAL` | Mixtral 8x7B: Suitable for code generation and duo chat. |
 | <a id="aiacceptedselfhostedmodelsmixtral_8x22b"></a>`MIXTRAL_8X22B` | Mixtral 8x22B: Suitable for code generation and duo chat. |
+| <a id="aiacceptedselfhostedmodelsmixtral_8x22b_text"></a>`MIXTRAL_8X22B_TEXT` | Mixtral-8x22B Text: Suitable for code completion. |
+| <a id="aiacceptedselfhostedmodelsmixtral_text"></a>`MIXTRAL_TEXT` | Mixtral-8x7B Text: Suitable for code completion. |
 
 ### `AiAction`
 
