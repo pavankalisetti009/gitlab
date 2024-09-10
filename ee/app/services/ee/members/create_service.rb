@@ -109,10 +109,18 @@ module EE
       def after_add_hooks
         super
 
+        enqueue_onboarding_progress_action
+
         return unless execute_notification_worker?
 
         ::Namespaces::FreeUserCap::GroupOverLimitNotificationWorker
           .perform_async(source.id, added_member_ids_with_users)
+      end
+
+      def enqueue_onboarding_progress_action
+        return unless at_least_one_member_created?
+
+        ::Onboarding::ProgressTrackingWorker.perform_async(member_created_namespace_id, 'user_added')
       end
 
       def execute_notification_worker?

@@ -24,6 +24,16 @@ RSpec.describe Members::InviteService, :aggregate_failures, :saas, feature_categ
   end
 
   describe '#execute' do
+    context 'with onboarding progress', :sidekiq_inline do
+      it_behaves_like 'records an onboarding progress action', :user_added do
+        let(:namespace) { project.namespace }
+      end
+
+      it_behaves_like 'does not record an onboarding progress action' do
+        let(:params) { { email: '_bogus_' } }
+      end
+    end
+
     context 'with group plan observing quota limits' do
       let(:plan_limits) { create(:plan_limits, daily_invites: daily_invites) }
       let(:plan) { create(:plan, limits: plan_limits) }

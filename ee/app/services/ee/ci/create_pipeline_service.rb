@@ -12,6 +12,13 @@ module EE
 
       private
 
+      override :after_successful_creation_hook
+      def after_successful_creation_hook
+        super
+
+        ::Onboarding::ProgressTrackingWorker.perform_async(project.namespace_id, 'pipeline_created')
+      end
+
       override :validate_options!
       def validate_options!(options)
         return unless params[:partition_id] && !options[:execution_policy_dry_run]

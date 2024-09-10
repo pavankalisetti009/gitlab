@@ -33,8 +33,6 @@ module Members
       add_members
       after_add_hooks
 
-      enqueue_onboarding_progress_action
-
       publish_event!
 
       result
@@ -176,12 +174,6 @@ module Members
       limit = params.fetch(:limit, DEFAULT_INVITE_LIMIT)
 
       limit && limit < 0 ? nil : limit
-    end
-
-    def enqueue_onboarding_progress_action
-      return unless at_least_one_member_created?
-
-      Onboarding::UserAddedWorker.perform_async(member_created_namespace_id)
     end
 
     def at_least_one_member_created?
