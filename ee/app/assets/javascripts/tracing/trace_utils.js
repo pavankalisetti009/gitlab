@@ -1,4 +1,5 @@
 import { s__, sprintf } from '~/locale';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 
 // See https://design.gitlab.com/data-visualization/color/#categorical-data
 const PALETTE = [
@@ -34,10 +35,6 @@ const PALETTE = [
   'gl-bg-data-viz-magenta-950',
 ];
 
-export function durationNanoToMs(durationNano) {
-  return durationNano / 1000000;
-}
-
 export function formatDurationMs(durationMs) {
   if (durationMs <= 0) return s__('Tracing|0ms');
 
@@ -70,7 +67,7 @@ export function formatDurationMs(durationMs) {
 }
 
 export function formatTraceDuration(durationNano) {
-  return formatDurationMs(durationNanoToMs(durationNano));
+  return formatDurationMs(convertNanoToMs(durationNano));
 }
 
 export function assignColorToServices(trace) {
@@ -104,7 +101,7 @@ export function mapTraceToSpanTrees(trace) {
     span_id: span.span_id,
     operation: span.operation,
     service: span.service_name,
-    duration_ms: durationNanoToMs(span.duration_nano),
+    duration_ms: convertNanoToMs(span.duration_nano),
     children: [],
     hasError: hasError(span),
   });

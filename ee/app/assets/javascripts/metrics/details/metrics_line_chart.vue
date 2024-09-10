@@ -1,7 +1,7 @@
 <script>
 import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import { s__ } from '~/locale';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { formatDate, convertNanoToMs } from '~/lib/utils/datetime_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 
 const SYMBOL_SIZE_DEFAULT = 5;
@@ -43,7 +43,7 @@ export default {
       return this.metricData.map((metric) => {
         const data = metric.values.map((value) => [
           // note date timestamps are in nano, so converting them to ms here
-          value[0] / 1e6,
+          convertNanoToMs(value[0]),
           parseFloat(value[1]),
           { ...metric.attributes },
           { traceIds: value[2] || [] },

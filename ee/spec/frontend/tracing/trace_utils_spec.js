@@ -1,6 +1,5 @@
 import {
   mapTraceToSpanTrees,
-  durationNanoToMs,
   formatDurationMs,
   formatTraceDuration,
   assignColorToServices,
@@ -9,12 +8,6 @@ import {
 import { createMockTrace } from './mock_data';
 
 describe('trace_utils', () => {
-  describe('durationNanoToMs', () => {
-    it('converts a duration value from nano to ms', () => {
-      expect(durationNanoToMs(1234567)).toBe(1.234567);
-    });
-  });
-
   describe('formatDurationMs', () => {
     it.each`
       input      | output              | description

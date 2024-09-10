@@ -3,6 +3,7 @@ import { GlColumnChart } from '@gitlab/ui/dist/charts';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { __ } from '~/locale';
 import { numberToHumanSize, numberToMetricPrefix } from '~/lib/utils/number_utils';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 
 export default {
   name: 'ObservabilityUsageChart',
@@ -28,7 +29,7 @@ export default {
         return {
           name: key,
           data: distribution.map(([timestampNano, count]) => [
-            formatDate(new Date(timestampNano / 1e6), 'yyyy-mm-dd'),
+            formatDate(new Date(convertNanoToMs(timestampNano)), 'yyyy-mm-dd'),
             count,
           ]),
         };

@@ -1,5 +1,6 @@
 <script>
-import { durationNanoToMs, assignColorToServices } from '../trace_utils';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
+import { assignColorToServices } from '../trace_utils';
 import TracingSpansChart from './tracing_spans_chart.vue';
 
 export default {
@@ -23,7 +24,7 @@ export default {
   },
   computed: {
     traceDurationMs() {
-      return durationNanoToMs(this.trace.duration_nano);
+      return convertNanoToMs(this.trace.duration_nano);
     },
     serviceToColor() {
       return assignColorToServices(this.trace);
