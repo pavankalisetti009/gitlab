@@ -16,6 +16,7 @@ module EE
             "Created merge request #{merge_request.title}")
         end
 
+        record_onboarding_progress(merge_request)
         schedule_sync_for(merge_request)
         schedule_fetch_suggested_reviewers(merge_request)
         schedule_approval_notifications(merge_request)
@@ -23,6 +24,11 @@ module EE
       end
 
       private
+
+      def record_onboarding_progress(merge_request)
+        ::Onboarding::ProgressService
+          .new(merge_request.target_project.namespace).execute(action: :merge_request_created)
+      end
 
       def schedule_approval_notifications(merge_request)
         ::MergeRequests::NotifyApproversWorker.perform_in(APPROVERS_NOTIFICATION_DELAY, merge_request.id)
