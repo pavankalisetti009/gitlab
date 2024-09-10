@@ -15461,7 +15461,7 @@ CREATE TABLE personal_access_tokens (
     after_expiry_notification_delivered boolean DEFAULT false NOT NULL,
     previous_personal_access_token_id bigint,
     advanced_scopes text,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     seven_days_notification_sent_at timestamp with time zone,
     thirty_days_notification_sent_at timestamp with time zone,
     sixty_days_notification_sent_at timestamp with time zone,
