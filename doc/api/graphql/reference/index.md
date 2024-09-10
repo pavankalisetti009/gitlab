@@ -10853,6 +10853,52 @@ Some of the types in the schema exist solely to model connections. Each connecti
 has a distinct, named type, with a distinct named edge type. These are listed separately
 below.
 
+#### `AbuseReportDiscussionConnection`
+
+The connection type for [`AbuseReportDiscussion`](#abusereportdiscussion).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportdiscussionconnectionedges"></a>`edges` | [`[AbuseReportDiscussionEdge]`](#abusereportdiscussionedge) | A list of edges. |
+| <a id="abusereportdiscussionconnectionnodes"></a>`nodes` | [`[AbuseReportDiscussion]`](#abusereportdiscussion) | A list of nodes. |
+| <a id="abusereportdiscussionconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AbuseReportDiscussionEdge`
+
+The edge type for [`AbuseReportDiscussion`](#abusereportdiscussion).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportdiscussionedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="abusereportdiscussionedgenode"></a>`node` | [`AbuseReportDiscussion`](#abusereportdiscussion) | The item at the end of the edge. |
+
+#### `AbuseReportNoteConnection`
+
+The connection type for [`AbuseReportNote`](#abusereportnote).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportnoteconnectionedges"></a>`edges` | [`[AbuseReportNoteEdge]`](#abusereportnoteedge) | A list of edges. |
+| <a id="abusereportnoteconnectionnodes"></a>`nodes` | [`[AbuseReportNote]`](#abusereportnote) | A list of nodes. |
+| <a id="abusereportnoteconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AbuseReportNoteEdge`
+
+The edge type for [`AbuseReportNote`](#abusereportnote).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportnoteedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="abusereportnoteedgenode"></a>`node` | [`AbuseReportNote`](#abusereportnote) | The item at the end of the edge. |
+
 #### `AccessLevelDeployKeyConnection`
 
 The connection type for [`AccessLevelDeployKey`](#accessleveldeploykey).
@@ -16786,28 +16832,49 @@ An abuse report.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="abusereportcommenters"></a>`commenters` | [`UserCoreConnection!`](#usercoreconnection) | All commenters on this noteable. (see [Connections](#connections)) |
-| <a id="abusereportdiscussions"></a>`discussions` | [`DiscussionConnection!`](#discussionconnection) | All discussions on this noteable. (see [Connections](#connections)) |
+| <a id="abusereportdiscussions"></a>`discussions` | [`AbuseReportDiscussionConnection!`](#abusereportdiscussionconnection) | All discussions on the noteable. (see [Connections](#connections)) |
 | <a id="abusereportid"></a>`id` | [`AbuseReportID!`](#abusereportid) | Global ID of the abuse report. |
 | <a id="abusereportlabels"></a>`labels` | [`LabelConnection`](#labelconnection) | Labels of the abuse report. (see [Connections](#connections)) |
+| <a id="abusereportnotes"></a>`notes` | [`AbuseReportNoteConnection!`](#abusereportnoteconnection) | All notes on the noteable. (see [Connections](#connections)) |
 
-#### Fields with arguments
+### `AbuseReportDiscussion`
 
-##### `AbuseReport.notes`
-
-All notes on this noteable.
-
-Returns [`NoteConnection!`](#noteconnection).
-
-This field returns a [connection](#connections). It accepts the
-four standard [pagination arguments](#pagination-arguments):
-`before: String`, `after: String`, `first: Int`, and `last: Int`.
-
-###### Arguments
+#### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="abusereportnotesfilter"></a>`filter` | [`NotesFilterType`](#notesfiltertype) | Type of notes collection: ALL_NOTES, ONLY_COMMENTS, ONLY_ACTIVITY. |
+| <a id="abusereportdiscussionabusereport"></a>`abuseReport` | [`AbuseReport`](#abusereport) | Abuse report which the discussion belongs to. |
+| <a id="abusereportdiscussioncreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of the discussion's creation. |
+| <a id="abusereportdiscussionid"></a>`id` | [`DiscussionID!`](#discussionid) | ID of the discussion. |
+| <a id="abusereportdiscussionnotes"></a>`notes` | [`AbuseReportNoteConnection!`](#abusereportnoteconnection) | All notes in the discussion. (see [Connections](#connections)) |
+| <a id="abusereportdiscussionreplyid"></a>`replyId` | [`DiscussionID!`](#discussionid) | ID used to reply to the discussion. |
+| <a id="abusereportdiscussionresolvable"></a>`resolvable` | [`Boolean!`](#boolean) | Indicates if the object can be resolved. |
+| <a id="abusereportdiscussionresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
+| <a id="abusereportdiscussionresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
+| <a id="abusereportdiscussionresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
+
+### `AbuseReportNote`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportnoteauthor"></a>`author` | [`UserCore`](#usercore) | User who wrote the note. |
+| <a id="abusereportnoteawardemoji"></a>`awardEmoji` | [`AwardEmojiConnection`](#awardemojiconnection) | List of emoji reactions associated with the note. (see [Connections](#connections)) |
+| <a id="abusereportnotebody"></a>`body` | [`String!`](#string) | Content of the note. |
+| <a id="abusereportnotebodyfirstlinehtml"></a>`bodyFirstLineHtml` | [`String!`](#string) | First line of the note content. |
+| <a id="abusereportnotebodyhtml"></a>`bodyHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of the content of the note. |
+| <a id="abusereportnotecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of the note creation. |
+| <a id="abusereportnotediscussion"></a>`discussion` | [`AbuseReportDiscussion`](#abusereportdiscussion) | Discussion the note is a part of. |
+| <a id="abusereportnoteid"></a>`id` | [`AntiAbuseReportsNoteID!`](#antiabusereportsnoteid) | ID of the note. |
+| <a id="abusereportnotelasteditedat"></a>`lastEditedAt` | [`Time`](#time) | Timestamp when note was last edited. |
+| <a id="abusereportnotelasteditedby"></a>`lastEditedBy` | [`UserCore`](#usercore) | User who last edited the note. |
+| <a id="abusereportnoteresolvable"></a>`resolvable` | [`Boolean!`](#boolean) | Indicates if the object can be resolved. |
+| <a id="abusereportnoteresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
+| <a id="abusereportnoteresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
+| <a id="abusereportnoteresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
+| <a id="abusereportnoteupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of the note's last activity. |
+| <a id="abusereportnoteurl"></a>`url` | [`String`](#string) | URL to view the note in the Web UI. |
 
 ### `AccessLevel`
 
@@ -21531,10 +21598,10 @@ Aggregated summary of changes.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="discussioncreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of the discussion's creation. |
-| <a id="discussionid"></a>`id` | [`DiscussionID!`](#discussionid) | ID of this discussion. |
+| <a id="discussionid"></a>`id` | [`DiscussionID!`](#discussionid) | ID of the discussion. |
 | <a id="discussionnoteable"></a>`noteable` | [`NoteableType`](#noteabletype) | Object which the discussion belongs to. |
 | <a id="discussionnotes"></a>`notes` | [`NoteConnection!`](#noteconnection) | All notes in the discussion. (see [Connections](#connections)) |
-| <a id="discussionreplyid"></a>`replyId` | [`DiscussionID!`](#discussionid) | ID used to reply to this discussion. |
+| <a id="discussionreplyid"></a>`replyId` | [`DiscussionID!`](#discussionid) | ID used to reply to the discussion. |
 | <a id="discussionresolvable"></a>`resolvable` | [`Boolean!`](#boolean) | Indicates if the object can be resolved. |
 | <a id="discussionresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
 | <a id="discussionresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
@@ -38759,6 +38826,12 @@ A `AnalyticsDevopsAdoptionEnabledNamespaceID` is a global ID. It is encoded as a
 
 An example `AnalyticsDevopsAdoptionEnabledNamespaceID` is: `"gid://gitlab/Analytics::DevopsAdoption::EnabledNamespace/1"`.
 
+### `AntiAbuseReportsNoteID`
+
+A `AntiAbuseReportsNoteID` is a global ID. It is encoded as a string.
+
+An example `AntiAbuseReportsNoteID` is: `"gid://gitlab/AntiAbuse::Reports::Note/1"`.
+
 ### `AppSecFuzzingCoverageCorpusID`
 
 A `AppSecFuzzingCoverageCorpusID` is a global ID. It is encoded as a string.
@@ -39943,6 +40016,25 @@ Implementations:
 | <a id="auditeventstreamingdestinationinterfaceid"></a>`id` | [`ID!`](#id) | ID of the destination. |
 | <a id="auditeventstreamingdestinationinterfacename"></a>`name` | [`String!`](#string) | Name of the external destination to send audit events to. |
 
+#### `BaseDiscussionInterface`
+
+Implementations:
+
+- [`AbuseReportDiscussion`](#abusereportdiscussion)
+- [`Discussion`](#discussion)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="basediscussioninterfacecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of the discussion's creation. |
+| <a id="basediscussioninterfaceid"></a>`id` | [`DiscussionID!`](#discussionid) | ID of the discussion. |
+| <a id="basediscussioninterfacereplyid"></a>`replyId` | [`DiscussionID!`](#discussionid) | ID used to reply to the discussion. |
+| <a id="basediscussioninterfaceresolvable"></a>`resolvable` | [`Boolean!`](#boolean) | Indicates if the object can be resolved. |
+| <a id="basediscussioninterfaceresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
+| <a id="basediscussioninterfaceresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
+| <a id="basediscussioninterfaceresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
+
 #### `BaseHeaderInterface`
 
 Implementations:
@@ -39958,6 +40050,32 @@ Implementations:
 | <a id="baseheaderinterfaceid"></a>`id` | [`ID!`](#id) | ID of the header. |
 | <a id="baseheaderinterfacekey"></a>`key` | [`String!`](#string) | Key of the header. |
 | <a id="baseheaderinterfacevalue"></a>`value` | [`String!`](#string) | Value of the header. |
+
+#### `BaseNoteInterface`
+
+Implementations:
+
+- [`AbuseReportNote`](#abusereportnote)
+- [`Note`](#note)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="basenoteinterfaceauthor"></a>`author` | [`UserCore`](#usercore) | User who wrote the note. |
+| <a id="basenoteinterfaceawardemoji"></a>`awardEmoji` | [`AwardEmojiConnection`](#awardemojiconnection) | List of emoji reactions associated with the note. (see [Connections](#connections)) |
+| <a id="basenoteinterfacebody"></a>`body` | [`String!`](#string) | Content of the note. |
+| <a id="basenoteinterfacebodyfirstlinehtml"></a>`bodyFirstLineHtml` | [`String!`](#string) | First line of the note content. |
+| <a id="basenoteinterfacebodyhtml"></a>`bodyHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of the content of the note. |
+| <a id="basenoteinterfacecreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of the note creation. |
+| <a id="basenoteinterfacelasteditedat"></a>`lastEditedAt` | [`Time`](#time) | Timestamp when note was last edited. |
+| <a id="basenoteinterfacelasteditedby"></a>`lastEditedBy` | [`UserCore`](#usercore) | User who last edited the note. |
+| <a id="basenoteinterfaceresolvable"></a>`resolvable` | [`Boolean!`](#boolean) | Indicates if the object can be resolved. |
+| <a id="basenoteinterfaceresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
+| <a id="basenoteinterfaceresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
+| <a id="basenoteinterfaceresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
+| <a id="basenoteinterfaceupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of the note's last activity. |
+| <a id="basenoteinterfaceurl"></a>`url` | [`String`](#string) | URL to view the note in the Web UI. |
 
 #### `CiVariable`
 
@@ -40153,7 +40271,6 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 
 Implementations:
 
-- [`AbuseReport`](#abusereport)
 - [`AlertManagementAlert`](#alertmanagementalert)
 - [`BoardEpic`](#boardepic)
 - [`Design`](#design)
@@ -40230,6 +40347,8 @@ Implementations:
 
 Implementations:
 
+- [`AbuseReportDiscussion`](#abusereportdiscussion)
+- [`AbuseReportNote`](#abusereportnote)
 - [`Discussion`](#discussion)
 - [`Note`](#note)
 
