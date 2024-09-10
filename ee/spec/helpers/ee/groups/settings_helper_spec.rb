@@ -46,54 +46,24 @@ RSpec.describe EE::Groups::SettingsHelper do
   end
 
   describe 'show_group_ai_settings?' do
+    using RSpec::Parameterized::TableSyntax
     subject { helper.show_group_ai_settings? }
 
-    context 'when feature flag is enabled' do
+    where(:ai_chat_enabled, :ai_features_enabled, :result) do
+      true  | true  | true
+      true  | false | true
+      false | true  | true
+      false | false | false
+    end
+
+    with_them do
       before do
-        stub_feature_flags(ai_settings_vue_group: true)
+        allow(group).to receive(:licensed_feature_available?).with(:ai_chat).and_return(ai_chat_enabled)
+        allow(group).to receive(:licensed_feature_available?).with(:ai_features).and_return(ai_features_enabled)
       end
 
-      context 'and the user has access to ai chat' do
-        before do
-          allow(group).to receive(:licensed_feature_available?).with(:ai_chat).and_return(true)
-          allow(group).to receive(:licensed_feature_available?).with(:ai_features).and_return(false)
-        end
-
-        it 'returns true' do
-          is_expected.to be true
-        end
-      end
-
-      context 'and the user has access to ai features' do
-        before do
-          allow(group).to receive(:licensed_feature_available?).with(:ai_chat).and_return(false)
-          allow(group).to receive(:licensed_feature_available?).with(:ai_features).and_return(true)
-        end
-
-        it 'returns true' do
-          is_expected.to be true
-        end
-      end
-
-      context 'and the user does not have access to ai' do
-        before do
-          allow(group).to receive(:licensed_feature_available?).with(:ai_features).and_return(false)
-          allow(group).to receive(:licensed_feature_available?).with(:ai_chat).and_return(false)
-        end
-
-        it 'return false' do
-          is_expected.to be false
-        end
-      end
-
-      context 'and the feature flag is disabled' do
-        before do
-          stub_feature_flags(ai_settings_vue_group: false)
-        end
-
-        it 'returns false' do
-          is_expected.to be false
-        end
+      it "returns expected result" do
+        is_expected.to eq(result)
       end
     end
   end
