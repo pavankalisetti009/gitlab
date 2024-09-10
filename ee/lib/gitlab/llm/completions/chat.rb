@@ -120,6 +120,7 @@ module Gitlab
           end
 
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
+          Gitlab::AiGateway.push_feature_flag(:ai_merge_request_reader_for_chat, user)
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 

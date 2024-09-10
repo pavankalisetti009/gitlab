@@ -10,6 +10,7 @@ module AuditEvents
     worker_has_external_dependencies!
     data_consistency :sticky
     feature_category :audit_events
+    loggable_arguments 0, 1
 
     def perform(audit_operation, audit_event_id, audit_event_json = nil)
       raise ArgumentError, 'audit_event_id and audit_event_json cannot be passed together' if audit_event_id.present? && audit_event_json.present?
