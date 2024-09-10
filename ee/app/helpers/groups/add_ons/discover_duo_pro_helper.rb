@@ -4,7 +4,7 @@ module Groups
   module AddOns
     module DiscoverDuoProHelper
       def duo_pro_documentation_link_track_action(namespace)
-        if GitlabSubscriptions::DuoPro.active_trial_add_on_purchase_for_namespace?(namespace)
+        if GitlabSubscriptions::Trials::DuoPro.active_add_on_purchase_for_namespace?(namespace)
           'click_documentation_link_duo_pro_trial_active'
         else
           'click_documentation_link_duo_pro_trial_expired'
