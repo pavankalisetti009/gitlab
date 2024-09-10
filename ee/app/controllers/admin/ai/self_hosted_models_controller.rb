@@ -46,7 +46,9 @@ module Admin
       def destroy
         @self_hosted_model = ::Ai::SelfHostedModel.find(params[:id])
 
-        if @self_hosted_model.destroy
+        result = ::Ai::SelfHostedModels::DestroyService.new(@self_hosted_model, current_user).execute
+
+        if result.success?
           redirect_to admin_ai_self_hosted_models_url, notice: _("Self-Hosted Model was deleted")
         else
           render :index
