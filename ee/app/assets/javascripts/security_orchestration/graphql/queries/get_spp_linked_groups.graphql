@@ -1,0 +1,33 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+query getSppLinkedPGroups(
+  $fullPath: ID!
+  $search: String = ""
+  $after: String = ""
+  $includeParentDescendants: Boolean = false
+) {
+  project(fullPath: $fullPath) {
+    id
+    securityPolicyProjectLinkedGroups(first: 100, after: $after) {
+      nodes {
+        id
+        name
+        fullPath
+        descendantGroups(
+          includeParentDescendants: $includeParentDescendants
+          search: $search
+          first: 100
+        ) {
+          nodes {
+            id
+            name
+            fullPath
+          }
+        }
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+}

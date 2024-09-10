@@ -49037,6 +49037,9 @@ msgstr ""
 msgid "SecurityOrchestration|Hide extra projects"
 msgstr ""
 
+msgid "SecurityOrchestration|How do I link a group to the policy?"
+msgstr ""
+
 msgid "SecurityOrchestration|If %{scanners} of the default branch finds %{severity_level} vulnerabilities are no longer detected."
 msgstr ""
 
@@ -49113,6 +49116,9 @@ msgid "SecurityOrchestration|No description"
 msgstr ""
 
 msgid "SecurityOrchestration|No exceptions"
+msgstr ""
+
+msgid "SecurityOrchestration|No linked groups"
 msgstr ""
 
 msgid "SecurityOrchestration|No policies in the security policy project will be enforced until the invalid policies are fixed."
