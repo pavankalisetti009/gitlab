@@ -62,6 +62,17 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
       expect(subject.execute).to be_error
     end
 
+    context 'when response is nil' do
+      let(:response) { nil }
+
+      it 'responds successfully' do
+        response = subject.execute
+
+        expect(response).to be_success
+        expect(response.payload).to be_nil
+      end
+    end
+
     context 'when user is not a member of ultimate group' do
       let(:current_user) { create(:user) }
 
