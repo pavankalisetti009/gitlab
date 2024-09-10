@@ -1,4 +1,4 @@
-import { assignColorToServices, durationNanoToMs } from 'ee/tracing/trace_utils';
+import { assignColorToServices } from 'ee/tracing/trace_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingChart from 'ee/tracing/details/tracing_chart.vue';
 import TracingDetailsSpansChart from 'ee/tracing/details/tracing_spans_chart.vue';
@@ -23,7 +23,6 @@ describe('TracingChart', () => {
 
   beforeEach(() => {
     assignColorToServices.mockReturnValue({ tracegen: 'red' });
-    durationNanoToMs.mockReturnValue(100);
 
     mountComponent();
   });
@@ -40,7 +39,7 @@ describe('TracingChart', () => {
   it('passes the correct props to the TracingDetailsSpansChart component', () => {
     const tracingDetailsSpansChart = getTracingDetailsSpansCharts().at(0);
 
-    expect(tracingDetailsSpansChart.props('traceDurationMs')).toBe(100);
+    expect(tracingDetailsSpansChart.props('traceDurationMs')).toBe(1000);
     expect(tracingDetailsSpansChart.props('serviceToColor')).toEqual({ tracegen: 'red' });
     expect(tracingDetailsSpansChart.props('selectedSpanId')).toEqual(mockTrace.spans[0].span_id);
   });

@@ -4,7 +4,7 @@ import { GlSkeletonLoader } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
-import { durationNanoToMs } from '../trace_utils';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 
 const intervalToTimestamp = (interval) => new Date(interval * 1000);
 const toFixed = (n) => parseFloat(n).toFixed(2);
@@ -28,10 +28,10 @@ const buildDurationData = (
   durationData,
 ) => {
   const timestamp = intervalToTimestamp(interval);
-  durationData.p90.push([timestamp, toFixed(durationNanoToMs(p90))]);
-  durationData.p95.push([timestamp, toFixed(durationNanoToMs(p95))]);
-  durationData.p75.push([timestamp, toFixed(durationNanoToMs(p75))]);
-  durationData.p50.push([timestamp, toFixed(durationNanoToMs(p50))]);
+  durationData.p90.push([timestamp, toFixed(convertNanoToMs(p90))]);
+  durationData.p95.push([timestamp, toFixed(convertNanoToMs(p95))]);
+  durationData.p75.push([timestamp, toFixed(convertNanoToMs(p75))]);
+  durationData.p50.push([timestamp, toFixed(convertNanoToMs(p50))]);
 };
 
 export default {

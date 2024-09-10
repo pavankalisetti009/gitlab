@@ -1,7 +1,7 @@
 <script>
 import { GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
 import { s__, __ } from '~/locale';
-import { durationNanoToMs } from '../trace_utils';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 
 export default {
   components: {
@@ -37,7 +37,7 @@ export default {
   computed: {
     chartData() {
       const data = this.traces.map((t) => ({
-        value: [t.timestamp, durationNanoToMs(t.duration_nano)],
+        value: [t.timestamp, convertNanoToMs(t.duration_nano)],
         traceId: t.trace_id,
         hasError: t.status_code === 'STATUS_CODE_ERROR',
       }));

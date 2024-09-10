@@ -19,6 +19,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { InternalEvents } from '~/tracking';
 import { metricsDetailsQueryFromAttributes } from 'ee/metrics/details/filters';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 import { VIEW_METRICS_PAGE } from '../events';
 import {
   queryToFilterObj,
@@ -139,7 +140,7 @@ export default {
       const { type: metricType, timestamp_of_datapoint_with_traceId: traceIdTimestampNano } =
         metric;
 
-      const traceIdTimestampMs = traceIdTimestampNano / 1e6;
+      const traceIdTimestampMs = convertNanoToMs(traceIdTimestampNano);
       const traceIdTimestampIntervalDeltaMs = 60 * 1000; // 1min
 
       const query = traceIdTimestampNano

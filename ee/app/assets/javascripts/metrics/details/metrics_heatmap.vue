@@ -1,7 +1,7 @@
 <script>
 import { GlHeatmap } from '@gitlab/ui/dist/charts';
 import { s__ } from '~/locale';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { formatDate, convertNanoToMs } from '~/lib/utils/datetime_utility';
 
 // Histogram buckets are in (-Inf, +Inf) interval https://opentelemetry.io/docs/specs/otel/metrics/data-model/#histogram
 const DEFAULT_MIN_BUCKET = '-Inf';
@@ -69,7 +69,7 @@ export default {
 
       const distribution = this.heatmapData.distribution[0] || [];
       // timestamps are in nano, we need to convert them to ms
-      const timeIntervals = distribution.map((entry) => entry[0] / 1e6);
+      const timeIntervals = distribution.map((entry) => convertNanoToMs(entry[0]));
       return timeIntervals.map((entry) => formatDate(entry, `mmm dd HH:MM`));
     },
     yAxisLabels() {
@@ -101,7 +101,7 @@ export default {
 
       this.$emit('selected', [
         {
-          timestamp: timestampNano / 1e6,
+          timestamp: convertNanoToMs(timestampNano),
           value,
           traceIds,
           seriesName: `${prevBucket} - ${bucket}`,
