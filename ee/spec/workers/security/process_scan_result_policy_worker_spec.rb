@@ -88,7 +88,8 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
             project: configuration.project,
             policy_configuration: configuration,
             policy: policy,
-            policy_index: policy_index
+            policy_index: policy_index,
+            real_policy_index: 0
           ) do |service|
             expect(service).to receive(:execute)
           end

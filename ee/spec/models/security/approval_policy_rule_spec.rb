@@ -40,4 +40,48 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       end
     end
   end
+
+  describe '.by_policy_rule_index' do
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
+    end
+
+    let_it_be(:approval_policy_rule) do
+      create(:approval_policy_rule, security_policy: security_policy, rule_index: 2)
+    end
+
+    let_it_be(:other_approval_policy_rule) { create(:approval_policy_rule, rule_index: 3) }
+
+    it 'returns the correct approval policy rule' do
+      result = described_class.by_policy_rule_index(policy_configuration, policy_index: 1, rule_index: 2)
+
+      expect(result).to eq(approval_policy_rule)
+    end
+
+    it 'does not return approval policy rules with different policy configuration' do
+      other_policy_configuration = create(:security_orchestration_policy_configuration)
+      result = described_class.by_policy_rule_index(other_policy_configuration, policy_index: 1, rule_index: 2)
+
+      expect(result).to be_nil
+    end
+
+    it 'does not return approval policy rules with different policy index' do
+      result = described_class.by_policy_rule_index(policy_configuration, policy_index: 2, rule_index: 2)
+
+      expect(result).to be_nil
+    end
+
+    it 'does not return approval policy rules with different rule index' do
+      result = described_class.by_policy_rule_index(policy_configuration, policy_index: 1, rule_index: 3)
+
+      expect(result).to be_nil
+    end
+
+    it 'returns an empty relation when no matching rules are found' do
+      result = described_class.by_policy_rule_index(policy_configuration, policy_index: 99, rule_index: 99)
+
+      expect(result).to be_nil
+    end
+  end
 end

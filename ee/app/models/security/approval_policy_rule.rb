@@ -18,5 +18,15 @@ module Security
     has_many :violations, class_name: 'Security::ScanResultPolicyViolation'
 
     validates :typed_content, json_schema: { filename: "approval_policy_rule_content" }
+
+    def self.by_policy_rule_index(policy_configuration, policy_index:, rule_index:)
+      joins(:security_policy).find_by(
+        rule_index: rule_index,
+        security_policy: {
+          security_orchestration_policy_configuration_id: policy_configuration.id,
+          policy_index: policy_index
+        }
+      )
+    end
   end
 end

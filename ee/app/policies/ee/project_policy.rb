@@ -825,6 +825,16 @@ module EE
         enable :build_download_code
       end
 
+      desc "SPP project access to read policy config for pipeline execution policy"
+      condition(:spp_repository_access_allowed) do
+        Security::OrchestrationPolicyConfiguration.policy_management_project?(project) &&
+          project.project_setting.spp_repository_pipeline_access
+      end
+
+      rule { spp_repository_access_allowed & project_allowed_for_job_token_by_scope }.policy do
+        enable :download_code_spp_repository
+      end
+
       rule do
         summarize_new_merge_request_enabled & can?(:create_merge_request_in)
       end.enable :summarize_new_merge_request

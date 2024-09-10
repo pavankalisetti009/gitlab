@@ -26,7 +26,8 @@ module SoftwareLicensePolicies
           project: project,
           name: params[:name].strip,
           classification: params[:approval_status],
-          scan_result_policy_read: params[:scan_result_policy_read]
+          scan_result_policy_read: params[:scan_result_policy_read],
+          approval_policy_rule_id: params[:approval_policy_rule_id]
         )
       end
     end
@@ -45,7 +46,8 @@ module SoftwareLicensePolicies
       project.software_license_policies.create!(
         classification: params[:approval_status],
         software_license: software_license,
-        scan_result_policy_read: params[:scan_result_policy_read]
+        scan_result_policy_read: params[:scan_result_policy_read],
+        approval_policy_rule_id: params[:approval_policy_rule_id]
       )
     end
 
@@ -53,7 +55,8 @@ module SoftwareLicensePolicies
       project.software_license_policies.create!(
         classification: params[:approval_status],
         custom_software_license: custom_software_license,
-        scan_result_policy_read: params[:scan_result_policy_read]
+        scan_result_policy_read: params[:scan_result_policy_read],
+        approval_policy_rule_id: params[:approval_policy_rule_id]
       )
     end
 
