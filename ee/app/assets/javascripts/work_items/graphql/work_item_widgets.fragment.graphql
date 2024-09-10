@@ -105,6 +105,10 @@ fragment WorkItemWidgets on WorkItemWidget {
   }
   ... on WorkItemWidgetHealthStatus {
     healthStatus
+    rolledUpHealthStatus {
+      count
+      healthStatus
+    }
   }
   ... on WorkItemWidgetNotifications {
     subscribed
