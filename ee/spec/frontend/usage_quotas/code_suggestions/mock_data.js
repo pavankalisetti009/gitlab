@@ -18,17 +18,6 @@ export const noAssignedDuoProAddonData = {
     ],
   },
 };
-export const deprecatedNoAssignedDuoProAddonData = {
-  data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_CODE_SUGGESTIONS,
-      assignedQuantity: 0,
-      purchasedQuantity: 20,
-      __typename: 'AddOnPurchase',
-    },
-  },
-};
 
 export const noAssignedDuoEnterpriseAddonData = {
   data: {
@@ -41,17 +30,6 @@ export const noAssignedDuoEnterpriseAddonData = {
         __typename: 'AddOnPurchase',
       },
     ],
-  },
-};
-export const deprecatedNoAssignedDuoEnterpriseAddonData = {
-  data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_DUO_ENTERPRISE,
-      assignedQuantity: 0,
-      purchasedQuantity: 20,
-      __typename: 'AddOnPurchase',
-    },
   },
 };
 
@@ -81,11 +59,6 @@ export const noPurchasedAddonData = {
     addOnPurchases: [],
   },
 };
-export const deprecatedNoPurchasedAddonData = {
-  data: {
-    addOnPurchase: null,
-  },
-};
 
 export const purchasedAddonFuzzyData = {
   data: {
@@ -98,17 +71,6 @@ export const purchasedAddonFuzzyData = {
         __typename: 'AddOnPurchase',
       },
     ],
-  },
-};
-export const deprecatedPurchasedAddonFuzzyData = {
-  data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_CODE_SUGGESTIONS,
-      assignedQuantity: 0,
-      purchasedQuantity: null,
-      __typename: 'AddOnPurchase',
-    },
   },
 };
 

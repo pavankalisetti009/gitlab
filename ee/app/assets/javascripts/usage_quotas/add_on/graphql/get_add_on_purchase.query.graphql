@@ -1,8 +1,0 @@
-query getAddOnPurchase($addOnType: GitlabSubscriptionsAddOnType!, $namespaceId: NamespaceID) {
-  addOnPurchase(addOnType: $addOnType, namespaceId: $namespaceId) {
-    id
-    name
-    assignedQuantity
-    purchasedQuantity
-  }
-}
