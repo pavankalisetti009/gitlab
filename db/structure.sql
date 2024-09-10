@@ -873,6 +873,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_0f38e5af9adf() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "ml_candidates"
+  WHERE "ml_candidates"."id" = NEW."candidate_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_13d4aa8fe3dd() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13450,6 +13466,7 @@ CREATE TABLE ml_candidate_params (
     candidate_id bigint,
     name text NOT NULL,
     value text NOT NULL,
+    project_id bigint,
     CONSTRAINT check_093034d049 CHECK ((char_length(name) <= 250)),
     CONSTRAINT check_28a3c29e43 CHECK ((char_length(value) <= 250)),
     CONSTRAINT check_7a0505ca91 CHECK ((candidate_id IS NOT NULL))
@@ -28918,6 +28935,8 @@ CREATE INDEX index_ml_candidate_params_on_candidate_id ON ml_candidate_params US
 
 CREATE UNIQUE INDEX index_ml_candidate_params_on_candidate_id_on_name ON ml_candidate_params USING btree (candidate_id, name);
 
+CREATE INDEX index_ml_candidate_params_on_project_id ON ml_candidate_params USING btree (project_id);
+
 CREATE INDEX index_ml_candidates_on_ci_build_id ON ml_candidates USING btree (ci_build_id);
 
 CREATE UNIQUE INDEX index_ml_candidates_on_experiment_id_and_eid ON ml_candidates USING btree (experiment_id, eid);
@@ -32712,6 +32731,8 @@ CREATE TRIGGER trigger_0da002390fdc BEFORE INSERT OR UPDATE ON operations_featur
 
 CREATE TRIGGER trigger_0e13f214e504 BEFORE INSERT OR UPDATE ON merge_request_assignment_events FOR EACH ROW EXECUTE FUNCTION trigger_0e13f214e504();
 
+CREATE TRIGGER trigger_0f38e5af9adf BEFORE INSERT OR UPDATE ON ml_candidate_params FOR EACH ROW EXECUTE FUNCTION trigger_0f38e5af9adf();
+
 CREATE TRIGGER trigger_13d4aa8fe3dd BEFORE INSERT OR UPDATE ON draft_notes FOR EACH ROW EXECUTE FUNCTION trigger_13d4aa8fe3dd();
 
 CREATE TRIGGER trigger_158ac875f254 BEFORE INSERT OR UPDATE ON approval_group_rules_users FOR EACH ROW EXECUTE FUNCTION trigger_158ac875f254();
@@ -33712,6 +33733,9 @@ ALTER TABLE ONLY bulk_import_entities
 
 ALTER TABLE ONLY requirements_management_test_reports
     ADD CONSTRAINT fk_88f30752fc FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ml_candidate_params
+    ADD CONSTRAINT fk_8972b35c25 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issues
     ADD CONSTRAINT fk_899c8f3231 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
