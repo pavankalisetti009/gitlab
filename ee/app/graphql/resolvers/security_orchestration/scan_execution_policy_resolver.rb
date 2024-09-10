@@ -24,7 +24,7 @@ module Resolvers
         default_value: true
 
       def resolve(**args)
-        policies = Security::ScanExecutionPoliciesFinder.new(context[:current_user], project, args).execute
+        policies = ::Security::ScanExecutionPoliciesFinder.new(context[:current_user], project, args).execute
         construct_scan_execution_policies(policies)
       end
     end

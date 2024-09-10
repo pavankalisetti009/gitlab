@@ -467,6 +467,13 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'Traces attached to the project.',
           resolver: ::Resolvers::Observability::TracesResolver
+
+        field :security_exclusions,
+          ::Types::Security::ProjectSecurityExclusionType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Security exclusions of the project.',
+          resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver
       end
 
       def tracking_key

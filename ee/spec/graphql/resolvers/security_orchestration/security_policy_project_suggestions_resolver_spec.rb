@@ -108,7 +108,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyProjectSuggestion
         let(:args) { { search: project.full_path } }
 
         before do
-          expect_next_instance_of(Security::SecurityPolicyProjectsFinder) do |service|
+          expect_next_instance_of(::Security::SecurityPolicyProjectsFinder) do |service|
             allow(service).to receive(:global_matching_projects) \
                                 .and_return(Project.none)
                                 .once

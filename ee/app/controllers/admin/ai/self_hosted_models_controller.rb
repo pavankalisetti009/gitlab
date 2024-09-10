@@ -36,7 +36,11 @@ module Admin
       def update
         @self_hosted_model = ::Ai::SelfHostedModel.find(params[:id])
 
-        if @self_hosted_model.update(update_self_hosted_model_params)
+        result = ::Ai::SelfHostedModels::UpdateService.new(
+          @self_hosted_model, current_user, update_self_hosted_model_params
+        ).execute
+
+        if result.success?
           redirect_to admin_ai_self_hosted_models_url, notice: _("Self-Hosted Model was updated")
         else
           render :edit

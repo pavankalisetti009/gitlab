@@ -16,7 +16,7 @@ module Resolvers
         raise_resource_not_available_error! '`save_policy_violation_data` feature flag is disabled.' \
           if Feature.disabled?(:save_policy_violation_data, object.project)
 
-        Security::ScanResultPolicies::PolicyViolationDetails.new(object)
+        ::Security::ScanResultPolicies::PolicyViolationDetails.new(object)
       end
     end
   end

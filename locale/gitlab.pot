@@ -12590,6 +12590,9 @@ msgstr ""
 msgid "ClusterAgents|GitLab agent for Kubernetes"
 msgstr ""
 
+msgid "ClusterAgents|GitLab will establish the connection to this agent. A URL configuration is required."
+msgstr ""
+
 msgid "ClusterAgents|Give feedback"
 msgstr ""
 
@@ -12652,6 +12655,9 @@ msgstr ""
 msgid "ClusterAgents|Premium"
 msgstr ""
 
+msgid "ClusterAgents|Receptive"
+msgstr ""
+
 msgid "ClusterAgents|Recommended"
 msgstr ""
 
@@ -12683,6 +12689,9 @@ msgid "ClusterAgents|See agent activity updates, like tokens created or revoked 
 msgstr ""
 
 msgid "ClusterAgents|Select an agent or enter a name to create new"
+msgstr ""
+
+msgid "ClusterAgents|Shared"
 msgstr ""
 
 msgid "ClusterAgents|Tell us what you think"
@@ -12761,9 +12770,6 @@ msgid "ClusterAgents|Your agent version is out of sync with your GitLab KAS vers
 msgstr ""
 
 msgid "ClusterAgents|Your instance doesn't have the %{linkStart}GitLab Agent Server (KAS)%{linkEnd} set up. Ask a GitLab Administrator to install it."
-msgstr ""
-
-msgid "ClusterAgents|shared"
 msgstr ""
 
 msgid "ClusterAgent|An agent can have only two active tokens at a time"
@@ -59179,7 +59185,7 @@ msgstr ""
 msgid "UserMapping|Use a CSV file to reassign contributions from placeholder users to existing group members. This can be done in a few steps. %{linkStart}Learn more about matching users by CSV%{linkEnd}."
 msgstr ""
 
-msgid "UserMapping|You have approved the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}. Reassignment processing is in progress. You&#39;ll have access to the group soon."
+msgid "UserMapping|You have approved the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}. Reassignment processing is in progress."
 msgstr ""
 
 msgid "UserMapping|You have rejected the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}."
