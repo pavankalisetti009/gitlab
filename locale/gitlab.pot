@@ -2786,6 +2786,9 @@ msgstr ""
 msgid "Access Token"
 msgstr ""
 
+msgid "Access credentials are valid."
+msgstr ""
+
 msgid "Access credentials expired. %{cta}"
 msgstr ""
 
@@ -29190,6 +29193,9 @@ msgid "Invalid URL"
 msgstr ""
 
 msgid "Invalid URL: %{url}"
+msgstr ""
+
+msgid "Invalid access credentials. %{cta}"
 msgstr ""
 
 msgid "Invalid context type. %{type} is expected."

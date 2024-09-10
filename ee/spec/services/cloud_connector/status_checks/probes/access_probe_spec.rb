@@ -8,27 +8,31 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AccessProbe, :freeze_time, 
 
     subject(:probe) { described_class.new }
 
-    let(:now) { Time.current }
-
     # nil trait means record is missing
-    where(:access_trait, :token_trait, :success?, :message) do
-      :current | :active  | true  | 'Subscription synchronized successfully'
-      nil      | :active  | false | 'Subscription has not yet been synchronized'
-      :stale   | :active  | false | 'Subscription has not been synchronized recently'
-      :current | nil      | false | 'Access credentials not found'
-      :current | :expired | false | 'Access credentials expired'
+    where(:access_trait, :success?, :details?, :message) do
+      :current | true  | true  | 'Subscription synchronized successfully'
+      nil      | false | false | 'Subscription has not yet been synchronized'
+      :stale   | false | true  | 'Subscription has not been synchronized recently'
     end
 
     with_them do
-      it 'returns the expected result' do
+      before do
         create(:cloud_connector_access, access_trait) if access_trait
-        create(:service_access_token, token_trait) if token_trait
+      end
 
+      it 'returns the expected result' do
         result = probe.execute
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be success?
         expect(result.message).to match(message)
+
+        if details?
+          expect(result.details).to include(
+            updated_at: CloudConnector::Access.last.updated_at,
+            data: CloudConnector::Access.last.data
+          )
+        end
       end
     end
   end
