@@ -22,6 +22,9 @@ module Sbom
       valid_sbom_reports.each do |sbom_report|
         next unless sbom_report.source.present?
 
+        next if sbom_report.source.source_type != :dependency_scanning && Feature.disabled?(
+          :cvs_for_container_scanning, project)
+
         sbom_report.components.each_slice(::Security::IngestionConstants::COMPONENTS_BATCH_SIZE) do |occurrence_batch|
           @possibly_affected_sbom_occurrences_count += occurrence_batch.count
 
