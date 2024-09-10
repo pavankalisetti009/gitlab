@@ -587,6 +587,59 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  describe 'access to policy configs inside security policy project repository' do
+    let(:namespace_policy) do
+      build(:pipeline_execution_policy,
+        content: { include: [{
+          project: namespace_policies_project.full_path,
+          file: namespace_policy_file,
+          ref: namespace_policies_project.default_branch_or_main
+        }] })
+    end
+
+    let(:project_policy) do
+      build(:pipeline_execution_policy,
+        content: { include: [{
+          project: project_policies_project.full_path,
+          file: project_policy_file,
+          ref: project_policies_project.default_branch_or_main
+        }] })
+    end
+
+    around do |example|
+      create_and_delete_files(
+        project_policies_project, project_policy_file => project_policy_content.to_yaml
+      ) do
+        create_and_delete_files(
+          namespace_policies_project, namespace_policy_file => namespace_policy_content.to_yaml
+        ) do
+          example.run
+        end
+      end
+    end
+
+    context 'when user does not have access to the policy repository' do
+      it 'responds with error' do
+        expect(execute).to be_error
+        expect(execute.payload.errors.full_messages)
+          .to contain_exactly(
+            "Pipeline execution policy error: Project `#{project_policies_project.full_path}` not found " \
+              "or access denied! Make sure any includes in the pipeline configuration are correctly defined.")
+      end
+
+      context 'when security policy projects enable `spp_repository_pipeline_access` project setting' do
+        before do
+          project_policies_project.project_setting.update!(spp_repository_pipeline_access: true)
+          namespace_policies_project.project_setting.update!(spp_repository_pipeline_access: true)
+        end
+
+        it 'responds with success' do
+          expect(execute).to be_success
+        end
+      end
+    end
+  end
+
   private
 
   def get_job_variable(job, key)

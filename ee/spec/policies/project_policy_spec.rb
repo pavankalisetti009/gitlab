@@ -3330,6 +3330,99 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'download_code_spp_repository policy' do
+    let(:current_user) { guest }
+
+    it { is_expected.not_to be_allowed(:download_code_spp_repository) }
+
+    context 'when project is a security policy project' do
+      before do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+      end
+
+      it { is_expected.not_to be_allowed(:download_code_spp_repository) }
+
+      context 'and project allows spp_repository_pipeline_access' do
+        before do
+          project.project_setting.update!(spp_repository_pipeline_access: true)
+        end
+
+        context 'and the project is private' do
+          let(:project) { private_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is internal' do
+          let(:project) { internal_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public' do
+          let(:project) { public_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public in group' do
+          let(:project) { public_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+      end
+    end
+
+    context 'when user is authenticated via CI_JOB_TOKEN', :request_store do
+      let(:job) { build_stubbed(:ci_build, project: scope_project, user: current_user) }
+      let(:scope_project) { project }
+
+      let_it_be(:other_private_project) { create(:project, :private) }
+
+      before do
+        current_user.set_ci_job_token_scope!(job)
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+        project.project_setting.update!(spp_repository_pipeline_access: true)
+        project.update!(
+          ci_outbound_job_token_scope_enabled: token_scope_enabled,
+          ci_inbound_job_token_scope_enabled: token_scope_enabled
+        )
+        scope_project.update!(
+          ci_outbound_job_token_scope_enabled: token_scope_enabled,
+          ci_inbound_job_token_scope_enabled: token_scope_enabled
+        )
+      end
+
+      context 'when token scope is disabled' do
+        let(:token_scope_enabled) { false }
+
+        context 'when accessing from the same project' do
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'when accessing from other project' do
+          let(:scope_project) { other_private_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+      end
+
+      context 'when token scope is enabled' do
+        let(:token_scope_enabled) { true }
+
+        context 'when accessing from the same project' do
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'when accessing from other project' do
+          let(:scope_project) { other_private_project }
+
+          it { is_expected.to be_disallowed(:download_code_spp_repository) }
+        end
+      end
+    end
+  end
+
   describe 'generate_description' do
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
     let(:current_user) { guest }

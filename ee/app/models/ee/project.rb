@@ -1224,6 +1224,22 @@ module EE
       ci_cd_settings.auto_rollback_enabled?
     end
 
+    def affected_by_security_policy_management_project?(management_project)
+      all_parent_groups = group&.self_and_ancestor_ids
+      policies = ::Security::OrchestrationPolicyConfiguration
+        .for_management_project(management_project)
+        .for_project(id)
+
+      if all_parent_groups.present?
+        policies = policies.or(
+          ::Security::OrchestrationPolicyConfiguration
+            .for_management_project(management_project)
+            .for_namespace(all_parent_groups))
+      end
+
+      policies.exists?
+    end
+
     def all_security_orchestration_policy_configurations(include_invalid: false)
       all_parent_groups = group&.self_and_ancestor_ids
       return [] if all_parent_groups.blank? && !security_orchestration_policy_configuration&.policy_configuration_valid? && !include_invalid

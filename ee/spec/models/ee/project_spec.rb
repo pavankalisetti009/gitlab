@@ -3848,6 +3848,62 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.not_to include(scan_finding_rule, license_scanning_rule, any_merge_request_rule) }
   end
 
+  describe '#affected_by_security_policy_management_project?' do
+    subject { project.affected_by_security_policy_management_project?(security_policy_management_project) }
+
+    let_it_be(:spp_project) { create(:project, :repository) }
+    let_it_be(:other_spp_project) { create(:project, :repository) }
+
+    let(:security_policy_management_project) { spp_project }
+
+    it { is_expected.to be(false) }
+
+    context 'when security orchestration policy is configured for project' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:project_security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, project: project,
+          security_policy_management_project: spp_project)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'with other security policy management project' do
+        let(:security_policy_management_project) { other_spp_project }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when security orchestration policy is configured for a parent namespace' do
+      let_it_be(:parent_group) { create(:group) }
+      let_it_be(:child_group) { create(:group, parent: parent_group) }
+      let_it_be(:project) { create(:project, group: child_group) }
+
+      let_it_be(:parent_group_security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, :namespace, namespace: parent_group,
+          security_policy_management_project: spp_project)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'with other security policy management project' do
+        let(:security_policy_management_project) { other_spp_project }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when security orchestration policy is configured for another project' do
+      let_it_be(:another_project) { create(:project) }
+      let_it_be(:project_security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, project: another_project,
+          security_policy_management_project: spp_project)
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#all_security_orchestration_policy_configurations' do
     subject { project.all_security_orchestration_policy_configurations }
 
