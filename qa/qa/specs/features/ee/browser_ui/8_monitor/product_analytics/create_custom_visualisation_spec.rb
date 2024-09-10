@@ -65,7 +65,7 @@ module QA
         Page::Project::Menu.perform(&:go_to_analytics_dashboards)
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform do |analytics_dashboards|
-          analytics_dashboards.click_dashboard_list_item(custom_dashboard_title)
+          analytics_dashboards.open_dashboard(custom_dashboard_title)
         end
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Dashboard.perform do |dashboard|
