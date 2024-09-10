@@ -19,25 +19,11 @@ RSpec.describe ::Search::Zoekt::NamespaceIndexerWorker, :zoekt, feature_category
       let(:default_delay) { described_class::INDEXING_DELAY_PER_PROJECT_FOR_LEGACY_APPROACH }
 
       it 'indexes all projects belonging to the namespace' do
-        expect(Search::Zoekt).to receive(:index_in).with(0, projects[0].id)
-        expect(Search::Zoekt).to receive(:index_in).with(default_delay, projects[1].id)
-        expect(Search::Zoekt).to receive(:index_in).with(default_delay * 2, projects[2].id)
+        projects.each do |p|
+          expect(Search::Zoekt).to receive(:index_async).with(p.id)
+        end
 
         perform
-      end
-
-      context 'when feature flag zoekt_legacy_indexer_worker is disabled' do
-        before do
-          stub_feature_flags(zoekt_legacy_indexer_worker: false)
-        end
-
-        it 'indexes all projects belonging to the namespace' do
-          expect(Search::Zoekt).to receive(:index_async).with(projects[0].id)
-          expect(Search::Zoekt).to receive(:index_async).with(projects[1].id)
-          expect(Search::Zoekt).to receive(:index_async).with(projects[2].id)
-
-          perform
-        end
       end
 
       context 'when application_setting zoekt_indexing_enabled is disabled' do
@@ -46,7 +32,7 @@ RSpec.describe ::Search::Zoekt::NamespaceIndexerWorker, :zoekt, feature_category
         end
 
         it 'does nothing' do
-          expect(::Search::Zoekt).not_to receive(:index_in)
+          expect(::Search::Zoekt).not_to receive(:index_async)
 
           perform
         end
@@ -56,7 +42,7 @@ RSpec.describe ::Search::Zoekt::NamespaceIndexerWorker, :zoekt, feature_category
         subject(:perform) { described_class.new.perform(unindexed_namespace.id, 'index') }
 
         it 'does nothing' do
-          expect(::Search::Zoekt).not_to receive(:index_in)
+          expect(::Search::Zoekt).not_to receive(:index_async)
 
           perform
         end
