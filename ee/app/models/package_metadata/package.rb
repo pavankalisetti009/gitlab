@@ -104,21 +104,8 @@ module PackageMetadata
       range.add(SemverDialects::IntervalParser.parse(type, ">#{highest_version.delete_prefix('v')}")) if highest_version
 
       !range.overlaps_with?(interval)
-    rescue SemverDialects::InvalidConstraintError => err
-      track_exception(err, input_version)
-
+    rescue SemverDialects::InvalidConstraintError
       false
-    end
-
-    def track_exception(err, input_version)
-      ::Gitlab::ErrorTracking.track_exception(err, id: id,
-        package_name: name,
-        purl_type: purl_type,
-        version: input_version,
-        lowest_version: lowest_version,
-        highest_version: highest_version,
-        message: "semver_dialects parse error", error: err.message
-      )
     end
   end
 end

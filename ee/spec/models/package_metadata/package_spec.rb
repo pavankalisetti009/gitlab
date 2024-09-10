@@ -94,22 +94,7 @@ RSpec.describe PackageMetadata::Package, type: :model, feature_category: :softwa
 
         subject(:license_ids) { package.license_ids_for(version: input_version) }
 
-        it 'tracks the exception' do
-          log_params = {
-            id: package.id,
-            package_name: 'cliui',
-            purl_type: 'npm',
-            version: input_version, lowest_version: lowest, highest_version: highest,
-            message: "semver_dialects parse error",
-            error: a_string_including("invalid constraint")
-          }
-
-          expect(Gitlab::ErrorTracking).to receive(:track_exception)
-            .with(an_instance_of(SemverDialects::InvalidConstraintError), **log_params)
-            .and_call_original
-
-          license_ids
-        end
+        specify { expect(license_ids).to eq([]) }
       end
     end
 
