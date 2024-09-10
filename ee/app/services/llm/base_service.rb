@@ -60,13 +60,15 @@ module Llm
 
     def build_prompt_message(attributes = options)
       action_name = attributes[:ai_action] || ai_action
+
       message_attributes = {
         request_id: SecureRandom.uuid,
         content: content(action_name),
         role: ::Gitlab::Llm::AiMessage::ROLE_USER,
         ai_action: action_name,
         user: user,
-        context: ::Gitlab::Llm::AiMessageContext.new(resource: resource, user_agent: attributes[:user_agent])
+        context: ::Gitlab::Llm::AiMessageContext.new(resource: resource, user_agent: attributes[:user_agent]),
+        additional_context: ::Gitlab::Llm::AiMessageAdditionalContext.new(attributes[:additional_context])
       }.merge(attributes)
       ::Gitlab::Llm::AiMessage.for(action: action_name).new(message_attributes)
     end

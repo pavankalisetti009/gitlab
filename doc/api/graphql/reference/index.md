@@ -17328,6 +17328,19 @@ Information about a connected Agent.
 | <a id="aggregationstatusestimatednextupdateat"></a>`estimatedNextUpdateAt` | [`Time`](#time) | Estimated time when the next incremental update will happen. |
 | <a id="aggregationstatuslastupdateat"></a>`lastUpdateAt` | [`Time`](#time) | Last incremental update time. |
 
+### `AiAdditionalContext`
+
+Additional context for AI message.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiadditionalcontextcategory"></a>`category` | [`AiAdditionalContextCategory!`](#aiadditionalcontextcategory) | Category of the additional context. |
+| <a id="aiadditionalcontextcontent"></a>`content` | [`String!`](#string) | Content of the additional context. |
+| <a id="aiadditionalcontextid"></a>`id` | [`ID!`](#id) | ID of the additional context. |
+| <a id="aiadditionalcontextmetadata"></a>`metadata` | [`JSON`](#json) | Metadata of the additional context. |
+
 ### `AiAgent`
 
 An AI agent.
@@ -17364,6 +17377,7 @@ AI features communication message.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aimessageadditionalcontext"></a>`additionalContext` | [`[AiAdditionalContext!]`](#aiadditionalcontext) | Additional context for the message. |
 | <a id="aimessageagentversionid"></a>`agentVersionId` | [`AiAgentVersionID`](#aiagentversionid) | Global ID of the agent version to answer the message. |
 | <a id="aimessagechunkid"></a>`chunkId` | [`Int`](#int) | Incremental ID for a chunk from a streamed message. Null when it is not a streamed message. |
 | <a id="aimessagecontent"></a>`content` | [`String`](#string) | Raw response content. |
