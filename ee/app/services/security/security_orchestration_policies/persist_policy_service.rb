@@ -47,7 +47,7 @@ module Security
       delegate :security_policies, to: :policy_configuration
 
       def db_policies
-        policy_configuration.security_policies.merge(relation_scope)
+        policy_configuration.security_policies.undeleted.merge(relation_scope)
       end
       strong_memoize_attr :db_policies
 
@@ -87,6 +87,8 @@ module Security
       end
 
       def update_policies(policies_changes)
+        return if policies_changes.empty?
+
         Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesService.new(
           policies_changes: policies_changes
         ).execute

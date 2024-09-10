@@ -128,7 +128,13 @@ export default {
     },
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['existingPolicy', 'namespacePath', 'rootNamespacePath', 'namespaceType'],
+  inject: [
+    'assignedPolicyProject',
+    'existingPolicy',
+    'namespacePath',
+    'rootNamespacePath',
+    'namespaceType',
+  ],
   props: {
     policyScope: {
       type: Object,
@@ -174,6 +180,9 @@ export default {
     };
   },
   computed: {
+    assignedPolicyProjectPath() {
+      return this.assignedPolicyProject?.fullPath;
+    },
     showPolicyGroupScope() {
       return this.glFeatures.policyGroupScope;
     },
@@ -435,6 +444,7 @@ export default {
                 :groups="groups"
                 :projects="projects"
                 :disabled="disableScopeSelector"
+                :full-path="assignedPolicyProjectPath"
                 :group-full-path="rootNamespacePath"
                 @select-exception-type="selectExceptionType"
                 @changed="setSelectedItems"

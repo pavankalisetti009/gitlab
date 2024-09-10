@@ -14,6 +14,8 @@ module Security
 
     included do
       self.inheritance_column = :_type_disabled
+
+      scope :undeleted, -> { where('rule_index >= 0') }
     end
 
     class_methods do
