@@ -18,7 +18,7 @@ module Security
         # The remediations are ingested via a Bulk Insert. This requires a new class to avoid implementing the
         # Carrierwave file upload instrumentation, as this doesn't work with the BulkInsertSafe module.
         # Context: https://gitlab.com/gitlab-org/gitlab/-/issues/362169
-        class RemediationBulkInsertProxy < ApplicationRecord
+        class RemediationBulkInsertProxy < Gitlab::Database::SecApplicationRecord
           include BulkInsertSafe
           include ShaAttribute
 
