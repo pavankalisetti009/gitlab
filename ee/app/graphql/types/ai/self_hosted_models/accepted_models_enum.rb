@@ -19,6 +19,12 @@ module Types
         value 'MIXTRAL', 'Mixtral 8x7B: Suitable for code generation and duo chat.', value: 'mixtral'
         value 'DEEPSEEKCODER', description: 'Deepseek Coder 1.3b, 6.7b and 33b base or instruct.',
           value: 'deepseekcoder'
+        value 'MISTRAL_TEXT', description: 'Mistral-7B Text: Suitable for code completion.',
+          value: 'mistral_text'
+        value 'MIXTRAL_TEXT', description: 'Mixtral-8x7B Text: Suitable for code completion.',
+          value: 'mixtral_text'
+        value 'MIXTRAL_8X22B_TEXT', description: 'Mixtral-8x22B Text: Suitable for code completion.',
+          value: 'mixtral_8x22b_text'
       end
     end
   end
