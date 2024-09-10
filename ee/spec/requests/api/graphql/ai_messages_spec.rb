@@ -22,6 +22,12 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
         role
         timestamp
         errors
+        additionalContext {
+          category
+          id
+          content
+          metadata
+        }
       }
     GRAPHQL
   end
@@ -36,7 +42,16 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
   subject { graphql_data.dig('aiMessages', 'nodes') }
 
   before do
-    create(:ai_chat_message, request_id: 'uuid1', role: 'user', content: 'question 1', user: user)
+    create(
+      :ai_chat_message,
+      request_id: 'uuid1',
+      role: 'user',
+      content: 'question 1',
+      user: user,
+      additional_context: [
+        { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: '{"file_name":"hello.rb"}' }
+      ]
+    )
     create(:ai_chat_message, request_id: 'uuid1', role: 'assistant', content: response_content, user: user)
     # should not be included in response because it's for other user
     create(:ai_chat_message, request_id: 'uuid1', role: 'user', content: 'question 2', user: other_user)
@@ -59,19 +74,32 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
       post_graphql(query, current_user: current_user)
 
       expect(subject).to eq([
-        { 'requestId' => 'uuid1',
+        {
+          'requestId' => 'uuid1',
           'content' => 'question 1',
           'contentHtml' => '<p data-sourcepos="1:1-1:10" dir="auto">question 1</p>',
           'role' => 'USER',
           'errors' => [],
-          'timestamp' => Time.current.iso8601 },
-        { 'requestId' => 'uuid1',
+          'timestamp' => Time.current.iso8601,
+          'additionalContext' => [
+            {
+              'category' => 'FILE',
+              'id' => 'hello.rb',
+              'content' => 'puts "hello"',
+              'metadata' => '{"file_name":"hello.rb"}'
+            }
+          ]
+        },
+        {
+          'requestId' => 'uuid1',
           'content' => response_content,
           'contentHtml' => "<p data-sourcepos=\"1:1-1:#{response_content.size}\" dir=\"auto\">response " \
                            "<a href=\"#{external_issue_url}+\">#{external_issue_url}+</a></p>",
           'role' => 'ASSISTANT',
           'errors' => [],
-          'timestamp' => Time.current.iso8601 }
+          'timestamp' => Time.current.iso8601,
+          'additionalContext' => []
+        }
       ])
     end
   end

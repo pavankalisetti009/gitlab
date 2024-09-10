@@ -13,7 +13,7 @@ module Gitlab
       ATTRIBUTES_LIST = [
         :id, :request_id, :content, :role, :timestamp, :errors, :extras,
         :user, :ai_action, :client_subscription_id, :type, :chunk_id, :context,
-        :agent_version_id, :referer_url, :platform_origin
+        :agent_version_id, :referer_url, :platform_origin, :additional_context
       ].freeze
 
       SLASH_COMMAND_TOOLS = [
@@ -48,6 +48,7 @@ module Gitlab
         @timestamp ||= Time.current
         @errors ||= []
         @extras ||= {}
+        @additional_context ||= []
       end
 
       def to_h

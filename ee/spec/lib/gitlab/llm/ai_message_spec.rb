@@ -23,7 +23,13 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
       type: 'tool',
       context: Gitlab::Llm::AiMessageContext.new(resource: user),
       agent_version_id: 1,
-      referer_url: 'http://127.0.0.1:3000'
+      referer_url: 'http://127.0.0.1:3000',
+      additional_context: Gitlab::Llm::AiMessageAdditionalContext.new(
+        [
+          { category: 'file', id: 'additonial_context.rb', content: 'puts "additional context"' },
+          { category: 'snippet', id: 'print_context_method', content: 'def additional_context; puts "context"; end' }
+        ]
+      )
     }
   end
 

@@ -55,7 +55,7 @@ module QA
         EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform do |analytics_dashboards|
           expect(analytics_dashboards.has_dashboard_item?(custom_dashboard_title)).to be(true)
 
-          analytics_dashboards.click_dashboard_list_item(custom_dashboard_title)
+          analytics_dashboards.open_dashboard(custom_dashboard_title)
         end
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Dashboard.perform do |dashboard|

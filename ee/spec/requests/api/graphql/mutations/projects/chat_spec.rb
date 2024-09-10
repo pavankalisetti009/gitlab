@@ -137,5 +137,21 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
 
       expect(graphql_mutation_response(:ai_action)['errors']).to eq([])
     end
+
+    it 'stores additional context into chat history' do
+      expect(Llm::CompletionWorker).to receive(:perform_for).with(
+        an_object_having_attributes(
+          user: current_user,
+          resource: resource,
+          ai_action: :chat,
+          content: "summarize"),
+        hash_including(additional_context: expected_additional_context)
+      )
+
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      last_message = Gitlab::Llm::ChatStorage.new(current_user).messages.last
+      expect(last_message.additional_context).to eq(expected_additional_context.map(&:stringify_keys))
+    end
   end
 end
