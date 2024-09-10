@@ -6,10 +6,10 @@ module Gitlab
       class AiFeaturesCatalogue
         LIST = {
           explain_vulnerability: {
-            service_class: ::Gitlab::Llm::Completions::ExplainVulnerability,
-            prompt_class: ::Gitlab::Llm::Templates::ExplainVulnerability,
+            service_class: nil,
+            prompt_class: nil,
             feature_category: :vulnerability_management,
-            execute_method: ::Llm::ExplainVulnerabilityService,
+            execute_method: nil,
             maturity: :ga,
             self_managed: true,
             internal: false

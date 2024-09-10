@@ -45,13 +45,6 @@ module EE
         field :epic_board_list, ::Types::Boards::EpicListType,
           null: true,
           resolver: ::Resolvers::Boards::EpicListResolver
-        field :explain_vulnerability_prompt,
-          ::Types::Ai::Prompt::ExplainVulnerabilityPromptType,
-          null: true,
-          calls_gitaly: true,
-          alpha: { milestone: '16.2' },
-          description: "GitLab Duo Vulnerability Explanation prompt for a specified vulnerability",
-          resolver: ::Resolvers::Ai::ExplainVulnerabilityPromptResolver
         field :geo_node, ::Types::Geo::GeoNodeType,
           null: true,
           resolver: ::Resolvers::Geo::GeoNodeResolver,
