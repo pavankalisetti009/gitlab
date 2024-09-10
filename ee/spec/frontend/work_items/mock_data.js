@@ -66,6 +66,7 @@ export const workItemObjectiveMetadataWidgetsEE = {
     type: 'HEALTH_STATUS',
     __typename: 'WorkItemWidgetHealthStatus',
     healthStatus: 'onTrack',
+    rolledUpHealthStatus: [],
   },
   PROGRESS: {
     type: 'PROGRESS',
@@ -144,3 +145,21 @@ export const workItemParent = {
     },
   },
 };
+
+export const mockRolledUpHealthStatus = [
+  {
+    count: 1,
+    healthStatus: 'onTrack',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+  {
+    count: 0,
+    healthStatus: 'needsAttention',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+  {
+    count: 1,
+    healthStatus: 'atRisk',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+];

@@ -2,6 +2,7 @@ import { GlIcon, GlTooltip } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import WorkItemLinkChildMetadata from 'ee/work_items/components/shared/work_item_link_child_metadata.vue';
 
 import { workItemObjectiveMetadataWidgetsEE } from '../../mock_data';
@@ -36,6 +37,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
   const findWeight = () => wrapper.findByTestId('item-weight');
   const findWeightValue = () => wrapper.findByTestId('weight-value');
   const findWeightTooltip = () => wrapper.findByTestId('weight-tooltip');
+  const findRolledUpHealthStatus = () => wrapper.findComponent(WorkItemRolledUpHealthStatus);
 
   describe('progress', () => {
     it('renders item progress icon and percentage completion', () => {
@@ -202,7 +204,17 @@ describe('WorkItemLinkChildMetadataEE', () => {
     });
   });
 
-  it('renders health status badge when the work item is open', () => {
+  it('renders rolled up health status when rolled up health status values exist', () => {
+    const { rolledUpHealthStatus } = HEALTH_STATUS;
+
+    expect(findRolledUpHealthStatus().exists()).toBe(true);
+    expect(findRolledUpHealthStatus().props()).toEqual({
+      rolledUpHealthStatus,
+      healthStatusVisible: true,
+    });
+  });
+
+  it('renders health status badge when the health status is open', () => {
     const { healthStatus } = HEALTH_STATUS;
 
     expect(wrapper.findComponent(IssueHealthStatus).props('healthStatus')).toBe(healthStatus);
