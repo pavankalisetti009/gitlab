@@ -12,5 +12,9 @@ module Security
     validates :scanner, :type, :value, :project, presence: true
     validates :active, inclusion: { in: [true, false] }
     validates :value, :description, length: { maximum: 255 }
+
+    scope :by_scanner, ->(scanner) { where(scanner: scanner) }
+    scope :by_type, ->(type) { where(type: type) }
+    scope :by_status, ->(status) { where(active: status) }
   end
 end
