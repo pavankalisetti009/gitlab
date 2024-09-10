@@ -35,11 +35,16 @@ class SoftwareLicense < ApplicationRecord
     # This method can be used when called within a transaction.
     # For example from Security::ProcessScanResultPolicyWorker.
     # To avoid sub transactions the method does not call `safe_find_or_create_by!`.
-    def unsafe_create_policy_for!(project:, name:, classification:, scan_result_policy_read: nil)
+    def unsafe_create_policy_for!(
+      project:, name:, classification:,
+      scan_result_policy_read: nil,
+      approval_policy_rule_id: nil
+    )
       project.software_license_policies.create!(
         classification: classification,
         software_license: find_or_create_by!(name: name),
-        scan_result_policy_read: scan_result_policy_read
+        scan_result_policy_read: scan_result_policy_read,
+        approval_policy_rule_id: approval_policy_rule_id
       )
     end
   end

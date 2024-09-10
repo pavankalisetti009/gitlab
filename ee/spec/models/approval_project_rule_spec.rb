@@ -446,6 +446,8 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
 
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+
     let_it_be(:security_orchestration_policy_configuration) do
       create(:security_orchestration_policy_configuration, project: project)
     end
@@ -466,7 +468,19 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
       end
 
       with_them do
-        subject(:rules) { create_list(:approval_project_rule, rules_count, report_type, :requires_approval, project: project, orchestration_policy_idx: 1, scanners: [:sast], severity_levels: [:high], vulnerability_states: [:confirmed], vulnerabilities_allowed: 2, security_orchestration_policy_configuration: security_orchestration_policy_configuration, approvals_required: 2) }
+        subject(:rules) do
+          create_list(:approval_project_rule, rules_count, report_type, :requires_approval,
+            project: project,
+            orchestration_policy_idx: 1,
+            scanners: [:sast],
+            severity_levels: [:high],
+            vulnerability_states: [:confirmed],
+            vulnerabilities_allowed: 2,
+            approval_policy_rule: approval_policy_rule,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+            approvals_required: 2
+          )
+        end
 
         it 'creates merge_request approval rules with correct attributes', :aggregate_failures do
           result = rules.map { |rule| rule.apply_report_approver_rules_to(merge_request) }
@@ -481,6 +495,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
             expect(result_rule).to be_report_approver
             expect(result_rule.report_type).to eq(report_type.to_s)
             expect(result_rule.orchestration_policy_idx).to be 1
+            expect(result_rule.approval_policy_rule_id).to eq(approval_policy_rule.id)
             expect(result_rule.scanners).to contain_exactly('sast')
             expect(result_rule.severity_levels).to contain_exactly('high')
             expect(result_rule.vulnerability_states).to contain_exactly('confirmed')
@@ -529,6 +544,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
           :scan_finding,
           :requires_approval,
           project: project,
+          approval_policy_rule: approval_policy_rule,
           scan_result_policy_read: scan_result_policy_read)
       end
 
@@ -548,6 +564,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
 
           expect(attrs).to include(
             "scan_result_policy_id" => scan_result_policy_read.id,
+            "approval_policy_rule_id" => approval_policy_rule.id,
             "merge_request_id" => merge_request.id,
             "project_id" => project.id,
             "status" => "running")

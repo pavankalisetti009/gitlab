@@ -76,6 +76,23 @@ module Security
         )
       end
 
+      def applicable_scan_result_policies_with_real_index(project)
+        active_policies_count = 0
+        active_policy_index = 0
+        policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
+
+        scan_result_policies.each_with_index do |policy, index|
+          next unless policy[:enabled]
+
+          active_policies_count += 1
+          break if active_policies_count > approval_policies_limit
+          next unless policy_scope_checker.policy_applicable?(policy)
+
+          yield(policy, index, active_policy_index)
+          active_policy_index += 1
+        end
+      end
+
       def active_scan_result_policies
         scan_result_policies&.select { |config| config[:enabled] }&.first(approval_policies_limit)
       end

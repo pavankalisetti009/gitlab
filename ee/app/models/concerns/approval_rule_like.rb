@@ -34,7 +34,7 @@ module ApprovalRuleLike
       inverse_of: :approval_merge_request_rules,
       optional: true
 
-    belongs_to :approval_policy_rules, class_name: 'Security::ApprovalPolicyRule', optional: true
+    belongs_to :approval_policy_rule, class_name: 'Security::ApprovalPolicyRule', optional: true
 
     enum report_type: {
       vulnerability: 1, # To be removed after all MRs (related to https://gitlab.com/gitlab-org/gitlab/-/issues/356996) get merged

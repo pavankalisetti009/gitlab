@@ -50,7 +50,7 @@ module SoftwareLicensePolicies
     end
 
     def software_license_policies_to_insert(software_licenses: nil, custom_software_licenses: nil)
-      attributes_to_reject = %w[id created_at updated_at approval_policy_rule_id]
+      attributes_to_reject = %w[id created_at updated_at]
 
       params.filter_map do |policy_params|
         license_name = policy_params[:name].strip
@@ -62,7 +62,8 @@ module SoftwareLicensePolicies
           # custom_software_license_id will be nil if custom_software_licenses is nil
           custom_software_license_id: custom_software_licenses && custom_software_licenses[license_name],
           classification: policy_params[:approval_status],
-          scan_result_policy_id: policy_params[:scan_result_policy_read]&.id
+          scan_result_policy_id: policy_params[:scan_result_policy_read]&.id,
+          approval_policy_rule_id: policy_params[:approval_policy_rule_id]
         )
 
         next if record.scan_result_policy_id.nil? || record.invalid?

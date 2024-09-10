@@ -7,11 +7,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     let_it_be_with_refind(:group) { create(:group, :public) }
     let_it_be_with_refind(:project) { create(:project, :empty_repo, namespace: group) }
 
-    let(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
-    let(:policy) { build(:scan_result_policy, name: 'Test Policy') }
-    let(:policy_yaml) { Gitlab::Config::Loader::Yaml.new(policy.to_yaml).load! }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+    let_it_be(:policy) { build(:scan_result_policy, name: 'Test Policy') }
+    let_it_be(:policy_yaml) { Gitlab::Config::Loader::Yaml.new(policy.to_yaml).load! }
     let_it_be(:approver) { create(:user) }
-    let(:service) { described_class.new(project: project, policy_configuration: policy_configuration, policy: policy, policy_index: 0) }
+
+    let_it_be(:security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 0)
+    end
+
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy, rule_index: 0) }
+
+    let(:service) do
+      described_class.new(
+        project: project,
+        policy_configuration: policy_configuration,
+        policy: policy,
+        policy_index: 0,
+        real_policy_index: 0
+      )
+    end
 
     RSpec.shared_context 'with existing branch' do
       let(:branch_name) { name }
@@ -611,17 +626,47 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
               {
                 name: 'BSD',
                 approval_status: 'denied',
-                scan_result_policy_read: anything
+                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                approval_policy_rule_id: approval_policy_rule.id
               },
               {
                 name: 'MIT',
                 approval_status: 'denied',
-                scan_result_policy_read: anything
+                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                approval_policy_rule_id: approval_policy_rule.id
               }
             ]
           ).and_call_original
 
           subject
+        end
+
+        context 'with security_policies_sync disabled' do
+          before do
+            stub_feature_flags(security_policies_sync: false)
+          end
+
+          it 'calls SoftwareLicensePolicies::BulkCreateScanResultPolicyService' do
+            expect(SoftwareLicensePolicies::BulkCreateScanResultPolicyService).to receive(:new).with(
+              project,
+              [
+                {
+                  name: 'BSD',
+                  approval_status: 'denied',
+                  scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                  approval_policy_rule_id: nil
+                },
+                {
+                  name: 'MIT',
+                  approval_status: 'denied',
+                  scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                  approval_policy_rule_id: nil
+                }
+              ]
+            ).and_call_original
+
+            subject
+          end
         end
 
         context 'with bulk_create_scan_result_policies feature flag disabled' do
@@ -636,7 +681,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
               {
                 name: 'BSD',
                 approval_status: 'denied',
-                scan_result_policy_read: anything
+                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                approval_policy_rule_id: approval_policy_rule.id
               }
             ).and_call_original
 
@@ -646,7 +692,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
               {
                 name: 'MIT',
                 approval_status: 'denied',
-                scan_result_policy_read: anything
+                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+                approval_policy_rule_id: approval_policy_rule.id
               }
             ).and_call_original
 
@@ -706,6 +753,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       expect(scan_finding_rule.approvals_required).to eq(first_action[:approvals_required])
       expect(scan_finding_rule.security_orchestration_policy_configuration).to eq(policy_configuration)
       expect(scan_finding_rule.orchestration_policy_idx).to eq(0)
+      expect(scan_finding_rule.approval_policy_rule).to eq(approval_policy_rule)
+    end
+
+    context 'with security_policies_sync disabled' do
+      before do
+        stub_feature_flags(security_policies_sync: false)
+      end
+
+      it 'does not set approval_policy_rule' do
+        subject
+
+        expect(project.approval_rules.first.approval_policy_rule).to be_nil
+      end
     end
 
     context 'with fallback_behavior' do
