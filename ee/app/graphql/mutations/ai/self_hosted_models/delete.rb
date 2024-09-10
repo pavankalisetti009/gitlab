@@ -15,27 +15,19 @@ module Mutations
         def resolve(**args)
           check_feature_access!
 
-          result = delete_self_hosted_model(args)
-
-          if result[:errors].present?
-            {
-              self_hosted_model: nil,
-              errors: Array(result[:errors])
-            }
-          else
-            { self_hosted_model: result, errors: [] }
-          end
-        end
-
-        private
-
-        def delete_self_hosted_model(args)
           model = find_object(id: args[:id])
 
           return { errors: ["Self-hosted model not found"] } unless model
 
-          model.destroy
+          result = ::Ai::SelfHostedModels::DestroyService.new(model, current_user).execute
+
+          {
+            self_hosted_model: result.success? ? result.payload : nil,
+            errors: result.error? ? Array.wrap(result.errors) : []
+          }
         end
+
+        private
 
         def find_object(id:)
           GitlabSchema.object_from_id(id, expected_type: ::Ai::SelfHostedModel).sync
