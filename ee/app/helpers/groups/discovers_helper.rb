@@ -84,7 +84,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/analytics/code_review_analytics"),
           video_url: "https://vimeo.com/670893940",
-          container_class: 'gl-basis-1/2',
+          container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'code_review_feature'
         },
@@ -96,7 +96,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/permissions"),
           calculator_url: "https://about.gitlab.com/pricing/ultimate/#wu-guest-calculator",
-          container_class: 'gl-basis-1/2',
+          container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'free_guests_feature'
         },
@@ -108,7 +108,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/application_security/dependency_scanning/index"),
           video_url: "https://vimeo.com/670886968",
-          container_class: 'gl-basis-1/2',
+          container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'dependency_scanning_feature'
         },
@@ -120,7 +120,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/application_security/dast/index"),
           video_url: "https://vimeo.com/670891385",
-          container_class: 'gl-basis-1/2',
+          container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'dast_feature'
         }

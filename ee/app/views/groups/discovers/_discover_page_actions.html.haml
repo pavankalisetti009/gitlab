@@ -1,6 +1,6 @@
-.gl-flex
+.gl-flex.gl-flex-wrap.gl-flex-col.sm:gl-flex-row
   = render Pajamas::ButtonComponent.new(href: group_billings_path(group), variant: :confirm,
-    button_options: { class: 'gl-mr-3', data: { track_action: "click_compare_plans", track_label: group_trial_status(group) } }) do
+    button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0', data: { track_action: "click_compare_plans", track_label: group_trial_status(group) } }) do
     = s_('TrialDiscoverPage|Compare all plans')
 
   .js-hand-raise-lead-trigger{ data: discover_page_hand_raise_lead_data(group) }
