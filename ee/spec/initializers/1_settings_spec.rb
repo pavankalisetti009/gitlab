@@ -127,7 +127,7 @@ RSpec.describe '1_settings', feature_category: :shared do
 
       load_settings
 
-      expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/#{version}/duo-workflow-executor.tar.gz")
+      expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/duo-workflow-executor/#{version}/duo-workflow-executor.tar.gz")
       expect(Settings.duo_workflow.executor_version).to eq(version)
     end
   end
