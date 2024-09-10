@@ -423,6 +423,7 @@ export default {
           :work-item-iid="workItemIid"
           :work-item-type="workItemType"
           :show-labels="showLabels"
+          :show-closed="showClosed"
           :disable-content="disableContent"
           :show-task-weight="showTaskWeight"
           :has-indirect-children="hasIndirectChildren"

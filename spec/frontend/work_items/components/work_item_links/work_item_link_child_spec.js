@@ -22,6 +22,7 @@ import {
 import {
   workItemTask,
   workItemObjectiveWithChild,
+  workItemObjectiveWithClosedChild,
   workItemEpic,
   workItemHierarchyTreeResponse,
   workItemHierarchyPaginatedTreeResponse,
@@ -61,6 +62,7 @@ describe('WorkItemLinkChild', () => {
     workItemTreeQueryHandler = getWorkItemTreeQueryHandler,
     isExpanded = false,
     showTaskWeight = false,
+    showClosed = true,
     displayableChildrenFunction = (children) => children,
     props = {},
   } = {}) => {
@@ -88,6 +90,7 @@ describe('WorkItemLinkChild', () => {
         workItemType,
         workItemFullPath,
         showTaskWeight,
+        showClosed,
         displayableChildrenFunction,
         ...props,
       },
@@ -171,6 +174,12 @@ describe('WorkItemLinkChild', () => {
     it('displays expand button when item has children, children are not displayed by default', () => {
       expect(findExpandButton().exists()).toBe(true);
       expect(findTreeChildren().exists()).toBe(false);
+    });
+
+    it('do not displays expand button when children are all closed', () => {
+      createComponent({ showClosed: false, childItem: workItemObjectiveWithClosedChild });
+
+      expect(findExpandButton().exists()).toBe(false);
     });
 
     it('calls createAlert when children fetch request fails on clicking expand button', async () => {

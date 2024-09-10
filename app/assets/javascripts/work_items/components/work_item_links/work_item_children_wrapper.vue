@@ -61,6 +61,11 @@ export default {
       required: false,
       default: true,
     },
+    showClosed: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
     disableContent: {
       type: Boolean,
       required: false,
@@ -537,6 +542,7 @@ export default {
       :work-item-type="child.workItemType.name"
       :has-indirect-children="hasIndirectChildren"
       :show-labels="showLabels"
+      :show-closed="showClosed"
       :work-item-full-path="fullPath"
       :show-task-weight="showTaskWeight"
       :dragged-item-type="draggedItemType"

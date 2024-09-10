@@ -1,5 +1,5 @@
-import { WIDGET_TYPE_LINKED_ITEMS, NEW_WORK_ITEM_IID } from '~/work_items/constants';
 import { EMOJI_THUMBS_UP, EMOJI_THUMBS_DOWN } from '~/emoji/constants';
+import { WIDGET_TYPE_LINKED_ITEMS, NEW_WORK_ITEM_IID, STATE_CLOSED } from '~/work_items/constants';
 
 export const mockAssignees = [
   {
@@ -2602,6 +2602,76 @@ export const workItemHierarchyTreeFailureResponse = {
       message: 'Something went wrong',
     },
   ],
+};
+
+export const workItemObjectiveWithClosedChild = {
+  id: 'gid://gitlab/WorkItem/12',
+  iid: '12',
+  archived: false,
+  workItemType: {
+    id: 'gid://gitlab/WorkItems::Type/2411',
+    name: 'Objective',
+    iconName: 'issue-type-objective',
+    __typename: 'WorkItemType',
+  },
+  namespace: {
+    __typename: 'Project',
+    id: '1',
+    fullPath: 'test-project-path',
+    name: 'Project name',
+  },
+  userPermissions: {
+    deleteWorkItem: true,
+    updateWorkItem: true,
+    setWorkItemMetadata: true,
+    adminParentLink: true,
+    createNote: true,
+    adminWorkItemLink: true,
+    __typename: 'WorkItemPermissions',
+  },
+  author: {
+    ...mockAssignees[0],
+  },
+  title: 'Objective',
+  description: 'Objective description',
+  state: 'OPEN',
+  confidential: false,
+  reference: 'test-project-path#12',
+  createdAt: '2022-08-03T12:41:54Z',
+  updatedAt: null,
+  closedAt: null,
+  widgets: [
+    {
+      type: 'HIERARCHY',
+      hasChildren: true,
+      parent: null,
+      rolledUpCountsByType: [
+        {
+          countsByState: {
+            all: 1,
+            closed: 1,
+            __typename: 'WorkItemStateCountsType',
+          },
+          workItemType: {
+            id: 'gid://gitlab/WorkItems::Type/1',
+            name: 'Issue',
+            iconName: 'issue-type-issue',
+            __typename: 'WorkItemType',
+          },
+          __typename: 'WorkItemTypeCountsByState',
+        },
+      ],
+      children: {
+        nodes: mockHierarchyChildren.map((c) => ({ ...c, state: STATE_CLOSED })),
+      },
+      __typename: 'WorkItemWidgetHierarchy',
+    },
+    workItemObjectiveMetadataWidgets.MILESTONE,
+    workItemObjectiveMetadataWidgets.ASSIGNEES,
+    workItemObjectiveMetadataWidgets.LABELS,
+    workItemObjectiveMetadataWidgets.LINKED_ITEMS,
+  ],
+  __typename: 'WorkItem',
 };
 
 export const changeWorkItemParentMutationResponse = {

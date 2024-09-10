@@ -49,6 +49,11 @@ export default {
       required: false,
       default: true,
     },
+    showClosed: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
     workItemFullPath: {
       type: String,
       required: false,
@@ -148,6 +153,15 @@ export default {
         this.hierarchyWidget?.hasChildren
       );
     },
+    shouldExpandChildren() {
+      const rolledUpCountsByType =
+        findHierarchyWidgets(this.childItem.widgets)?.rolledUpCountsByType || [];
+      const nrOpenChildren = rolledUpCountsByType
+        .map((i) => i.countsByState.all - i.countsByState.closed)
+        .reduce((sum, n) => sum + n, 0);
+
+      return this.hasChildren && (nrOpenChildren > 0 || this.showClosed);
+    },
     pageInfo() {
       return this.hierarchyWidget.pageInfo || {};
     },
@@ -246,7 +260,7 @@ export default {
     <div class="gl-flex gl-items-start">
       <div v-if="hasIndirectChildren" class="gl-mr-2 gl-h-7 gl-w-5">
         <gl-button
-          v-if="hasChildren"
+          v-if="shouldExpandChildren"
           v-gl-tooltip.hover
           :title="chevronTooltip"
           :aria-label="chevronTooltip"
@@ -264,7 +278,7 @@ export default {
         class="gl-w-full"
         :class="{
           '!gl-border-x-0 !gl-border-b-1 !gl-border-t-0 !gl-border-solid gl-border-default !gl-pb-2':
-            isExpanded && hasChildren && !isLoadingChildren,
+            isExpanded && shouldExpandChildren && !isLoadingChildren,
         }"
       >
         <work-item-link-child-contents
@@ -291,6 +305,7 @@ export default {
         :children="displayableChildren"
         :parent="childItem"
         :show-labels="showLabels"
+        :show-closed="showClosed"
         :full-path="workItemFullPath"
         :is-top-level="false"
         :show-task-weight="showTaskWeight"
