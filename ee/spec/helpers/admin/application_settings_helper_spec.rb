@@ -32,18 +32,27 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
     end
 
     describe '#ai_settings_helper_data' do
+      using RSpec::Parameterized::TableSyntax
+
       subject { helper.ai_settings_helper_data }
 
-      let(:expected_settings_helper_data) do
-        {
-          duo_availability: duo_availability.to_s,
-          experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-          disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
-          redirect_path: general_admin_application_settings_path
-        }
+      where(:duo_pro_visible, :purchased, :expected_duo_pro_visible_value) do
+        'true' | true | 'true'
+        'false' | false | 'false'
+        '' | nil | ''
       end
 
-      shared_examples 'returns expected data' do |duo_pro_visible, purchased|
+      with_them do
+        let(:expected_settings_helper_data) do
+          {
+            duo_availability: duo_availability.to_s,
+            experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+            disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
+            redirect_path: general_admin_application_settings_path,
+            duo_pro_visible: expected_duo_pro_visible_value
+          }
+        end
+
         before do
           if purchased.nil?
             allow(CloudConnector::AvailableServices)
@@ -54,22 +63,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
           end
         end
 
-        it "returns the expected data when duo_pro_visible is '#{duo_pro_visible}'" do
-          expected_data = expected_settings_helper_data.merge(duo_pro_visible: duo_pro_visible)
-          is_expected.to eq(expected_data)
+        it "returns the expected data" do
+          is_expected.to eq(expected_settings_helper_data)
         end
-      end
-
-      context 'when code suggestions are purchased' do
-        it_behaves_like 'returns expected data', 'true', true
-      end
-
-      context 'when code suggestions are not purchased' do
-        it_behaves_like 'returns expected data', 'false', false
-      end
-
-      context 'when code suggestions service is not found' do
-        it_behaves_like 'returns expected data', '', nil
       end
     end
   end
