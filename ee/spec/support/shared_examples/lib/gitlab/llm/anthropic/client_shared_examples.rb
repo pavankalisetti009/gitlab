@@ -409,6 +409,14 @@ RSpec.shared_examples 'anthropic client' do
         it_behaves_like 'measured Llm request with error', Gitlab::Llm::Concerns::ExponentialBackoff::RateLimitError
       end
 
+      context 'when response is a service error' do
+        let(:http_status) { 500 }
+
+        it 'returns nil response' do
+          expect(subject).to be_nil
+        end
+      end
+
       context 'when request is retried once' do
         before do
           stub_request(:post, 'https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/messages')

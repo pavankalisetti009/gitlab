@@ -67,7 +67,7 @@ module Gitlab
             perform_messages_request(messages: messages, options: options.except(:stream))
           end
 
-          response_completion = response.dig('content', 0, 'text')
+          response_completion = response&.dig('content', 0, 'text')
           logger.info_or_debug(user, message: "Received response from Anthropic", response: response_completion)
 
           track_prompt_size(token_size(messages))

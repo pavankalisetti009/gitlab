@@ -88,7 +88,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::SummarizeReview, feature_cat
 
         before do
           allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
-            allow(client).to receive(:messages_complete).and_return(example_response.to_json)
+            allow(client).to receive(:messages_complete).and_return(example_response&.to_json)
           end
         end
 
@@ -106,6 +106,26 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::SummarizeReview, feature_cat
           expect(response_service).to receive(:execute)
 
           summarize_review.execute
+        end
+
+        context 'when response is nil' do
+          let(:example_response) { nil }
+
+          it 'publishes the content from the AI response' do
+            expect(::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview)
+              .to receive(:new)
+              .with(nil)
+              .and_return(response_modifier)
+
+            expect(::Gitlab::Llm::GraphqlSubscriptionResponseService)
+              .to receive(:new)
+              .with(*params)
+              .and_return(response_service)
+
+            expect(response_service).to receive(:execute)
+
+            summarize_review.execute
+          end
         end
 
         context 'when an unexpected error is raised' do
