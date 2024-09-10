@@ -12,7 +12,7 @@ module Security
     POLICY_CONTENT_FIELDS = {
       approval_policy: %i[actions approval_settings fallback_behavior],
       scan_execution_policy: %i[actions],
-      pipeline_execution_policy: %i[content pipeline_config_strategy]
+      pipeline_execution_policy: %i[content pipeline_config_strategy suffix]
     }.freeze
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
@@ -43,6 +43,8 @@ module Security
     validates :content, json_schema: { filename: "scan_execution_policy_content" }, if: :type_scan_execution_policy?
 
     validates :content, exclusion: { in: [nil] }
+
+    scope :undeleted, -> { where('policy_index >= 0') }
 
     def self.checksum(policy_hash)
       Digest::SHA256.hexdigest(policy_hash.to_json)
@@ -95,32 +97,36 @@ module Security
         name: name,
         description: description,
         enabled: enabled,
-        policy_scope: scope
+        policy_scope: scope,
+        metadata: metadata
       }.merge(content_by_type)
     end
 
     def content_by_type
-      content_hash = content.deep_symbolize_keys
-      content_rules = rules.map(&:typed_content).map(&:deep_symbolize_keys)
+      content_hash = content.deep_symbolize_keys.slice(*POLICY_CONTENT_FIELDS[type.to_sym])
 
       case type
-      when 'approval_policy'
-        content_hash.slice(:approval_settings, :actions).merge(rules: content_rules)
-      when 'scan_execution_policy'
-        content_hash.slice(:actions).merge(rules: content_rules)
+      when 'approval_policy', 'scan_execution_policy'
+        content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
       when 'pipeline_execution_policy'
-        content_hash.slice(:pipeline_config_strategy, :content)
+        content_hash
       end
     end
 
     def rules
       if type_approval_policy?
-        approval_policy_rules
+        approval_policy_rules.undeleted
       elsif type_scan_execution_policy?
-        scan_execution_policy_rules
+        scan_execution_policy_rules.undeleted
       else
         []
       end
+    end
+
+    def scope_applicable?(project)
+      policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
+
+      policy_scope_checker.security_policy_applicable?(self)
     end
   end
 end

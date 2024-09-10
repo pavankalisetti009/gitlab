@@ -30,7 +30,7 @@ module Security
       strong_memoize_attr :db_policy_hash
 
       def compare_policy_fields(diff)
-        all_keys = (Array.wrap(db_policy_hash.keys) + Array.wrap(yaml_policy.keys)).uniq - ['rules']
+        all_keys = (Array.wrap(db_policy_hash.keys) + Array.wrap(yaml_policy.keys)).uniq - [:rules]
         all_keys.each do |key|
           db_value = db_policy_hash[key]
           yaml_value = yaml_policy[key]
