@@ -100,7 +100,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         allow(client)
           .to receive(:messages_complete)
           .with(summary_prompt)
-          .and_return(summary_response.to_json)
+          .and_return(summary_response&.to_json)
       end
     end
 
@@ -196,6 +196,17 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
+      context 'when review response is nil' do
+        let(:review_response) { nil }
+
+        it 'updates progress note with a success message' do
+          completion.execute
+
+          expect(merge_request.notes.count).to eq 1
+          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+        end
+      end
+
       context 'when there were some comments' do
         context 'when summary returns a successful response' do
           let(:summary_answer) { 'Helpful review summary' }
@@ -236,6 +247,18 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
         context 'when summary returned no result' do
           let(:summary_answer) { '' }
+
+          it 'updates progress note with an error message' do
+            completion.execute
+
+            expect(merge_request.notes.count).to eq 3
+            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+          end
+        end
+
+        context 'when summary response is nil' do
+          let(:summary_response) { nil }
 
           it 'updates progress note with an error message' do
             completion.execute

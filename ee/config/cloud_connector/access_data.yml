@@ -36,6 +36,12 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         unit_primitives:
           - duo_chat
           - documentation_search
+  generate_description:
+    backend: 'gitlab-ai-gateway'
+    bundled_with:
+      duo_enterprise:
+        unit_primitives:
+          - generate_issue_description
   anthropic_proxy:
     backend: 'gitlab-ai-gateway'
     bundled_with:

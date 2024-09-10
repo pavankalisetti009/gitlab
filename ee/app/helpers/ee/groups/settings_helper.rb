@@ -32,8 +32,6 @@ module EE
       end
 
       def show_group_ai_settings?
-        return false unless ::Feature.enabled?(:ai_settings_vue_group, @group)
-
         @group.licensed_ai_features_available?
       end
 
