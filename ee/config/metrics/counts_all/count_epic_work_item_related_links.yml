@@ -1,5 +1,5 @@
 ---
-key_path: counts.work_item_related_links.epics
+key_path: counts.work_item_related_links_epics
 description: Total count of related links with an epic work item as type.
 product_group: product_planning
 performance_indicator_type: []

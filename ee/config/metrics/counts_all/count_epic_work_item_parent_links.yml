@@ -1,5 +1,5 @@
 ---
-key_path: counts.work_item_parent_links.epic_parent
+key_path: counts.work_item_parent_links_epic_parent
 description: Total count of work_item_parent_links with an epic work item as parent.
 product_group: product_planning
 performance_indicator_type: []
