@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class ProfilesPipeline < ApplicationRecord
+  class ProfilesPipeline < ::Gitlab::Database::SecApplicationRecord
     include BulkInsertSafe
 
     extend SuppressCompositePrimaryKeyWarning
