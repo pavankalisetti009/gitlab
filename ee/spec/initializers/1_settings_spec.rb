@@ -123,7 +123,7 @@ RSpec.describe '1_settings', feature_category: :shared do
     end
 
     it 'reads executor details from DUO_WORKFLOW_EXECUTOR_VERSION file' do
-      version = File.read('DUO_WORKFLOW_EXECUTOR_VERSION').chomp
+      version = Rails.root.join('DUO_WORKFLOW_EXECUTOR_VERSION').read.chomp
 
       load_settings
 
