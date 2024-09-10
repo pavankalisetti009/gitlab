@@ -1,8 +1,7 @@
 import { TASKS_BY_TYPE_FILTERS } from 'ee/analytics/cycle_analytics/constants';
 import * as types from 'ee/analytics/cycle_analytics/store/modules/type_of_work/mutation_types';
 import mutations from 'ee/analytics/cycle_analytics/store/modules/type_of_work/mutations';
-
-import { apiTasksByTypeData, rawTasksByTypeData, groupLabels } from '../../../mock_data';
+import { groupLabels } from '../../../mock_data';
 
 let state = null;
 
@@ -25,8 +24,6 @@ describe('Value Stream Analytics mutations', () => {
     ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorCode'}       | ${null}
     ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'errorMessage'}    | ${''}
     ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorMessage'}    | ${''}
-    ${types.REQUEST_TASKS_BY_TYPE_DATA}              | ${'isLoading'}       | ${true}
-    ${types.RECEIVE_TASKS_BY_TYPE_DATA_ERROR}        | ${'isLoading'}       | ${false}
   `('$mutation will set $stateKey=$value', ({ mutation, stateKey, value }) => {
     mutations[mutation](state);
 
@@ -38,21 +35,6 @@ describe('Value Stream Analytics mutations', () => {
       mutations[types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS](state, groupLabels);
 
       expect(state.selectedLabels).toEqual(groupLabels);
-    });
-  });
-
-  describe(`${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS}`, () => {
-    it('sets isLoading to false', () => {
-      mutations[types.RECEIVE_TASKS_BY_TYPE_DATA_SUCCESS](state, {});
-
-      expect(state.isLoading).toEqual(false);
-    });
-
-    it('sets data to the raw returned chart data', () => {
-      state = { data: null };
-      mutations[types.RECEIVE_TASKS_BY_TYPE_DATA_SUCCESS](state, apiTasksByTypeData);
-
-      expect(state.data).toEqual(rawTasksByTypeData);
     });
   });
 

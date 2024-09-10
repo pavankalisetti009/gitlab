@@ -1,6 +1,6 @@
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { TASKS_BY_TYPE_FILTERS } from '../../../constants';
-import { transformRawTasksByTypeData, toggleSelectedLabel } from '../../../utils';
+import { toggleSelectedLabel } from '../../../utils';
 import * as types from './mutation_types';
 
 export default {
@@ -24,16 +24,6 @@ export default {
     state.selectedLabels = [];
     state.errorCode = errorCode;
     state.errorMessage = message;
-  },
-  [types.REQUEST_TASKS_BY_TYPE_DATA](state) {
-    state.isLoading = true;
-  },
-  [types.RECEIVE_TASKS_BY_TYPE_DATA_ERROR](state) {
-    state.isLoading = false;
-  },
-  [types.RECEIVE_TASKS_BY_TYPE_DATA_SUCCESS](state, data = []) {
-    state.isLoading = false;
-    state.data = transformRawTasksByTypeData(data);
   },
   [types.SET_TASKS_BY_TYPE_FILTERS](state, { filter, value }) {
     const { selectedLabels } = state;

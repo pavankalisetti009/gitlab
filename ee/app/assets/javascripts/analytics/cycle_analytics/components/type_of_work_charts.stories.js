@@ -1,6 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
-import { tasksByTypeData, defaultGroupLabels } from './stories_constants';
+import { defaultGroupLabels } from './stories_constants';
 
 export default {
   component: TypeOfWorkCharts,
@@ -22,6 +22,14 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
       },
       getters: {
         selectedProjectIds: () => [],
+        cycleAnalyticsRequestParams: () => ({
+          project_ids: null,
+          created_after: '2024-01-01',
+          created_before: '2024-03-01',
+          author_username: null,
+          milestone_title: null,
+          assignee_username: null,
+        }),
       },
       modules: {
         typeOfWork: {
@@ -34,7 +42,6 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
             isLoading: false,
             errorMessage: null,
             topRankedLabels: [],
-            data: tasksByTypeData,
             ...state,
           },
           actions: {
