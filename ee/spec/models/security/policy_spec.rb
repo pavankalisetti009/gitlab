@@ -69,6 +69,19 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.undeleted' do
+    let_it_be(:policy_with_positive_index) { create(:security_policy, policy_index: 1) }
+    let_it_be(:policy_with_zero_index) { create(:security_policy, policy_index: 0) }
+    let_it_be(:policy_with_negative_index) { create(:security_policy, policy_index: -1) }
+
+    it 'returns policies with policy_index greater than or equal to 0' do
+      result = described_class.undeleted
+
+      expect(result).to contain_exactly(policy_with_positive_index, policy_with_zero_index)
+      expect(result).not_to include(policy_with_negative_index)
+    end
+  end
+
   describe '.upsert_policy' do
     shared_examples 'upserts policy' do |policy_type, assoc_name|
       let(:policy_configuration) { create(:security_orchestration_policy_configuration) }
@@ -167,6 +180,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           description: policy.description,
           enabled: true,
           policy_scope: {},
+          metadata: {},
           actions: [{ approvals_required: 1, type: "require_approval", user_approvers: ["owner"] }],
           rules: [rule_content]
         )
@@ -186,6 +200,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           description: policy.description,
           enabled: true,
           policy_scope: {},
+          metadata: {},
           actions: [{ scan: 'secret_detection' }],
           rules: [{ type: 'pipeline', branches: [] }]
         )
@@ -201,6 +216,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           description: policy.description,
           enabled: true,
           policy_scope: {},
+          metadata: {},
           pipeline_config_strategy: 'inject_ci',
           content: { include: [{ file: "compliance-pipeline.yml", project: "compliance-project" }] }
         )
@@ -214,8 +230,17 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     let_it_be(:pipeline_execution_policy) { create(:security_policy, :pipeline_execution_policy) }
 
     let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: approval_policy) }
+
+    let_it_be(:negative_index_ap_rule) do
+      create(:approval_policy_rule, security_policy: approval_policy, rule_index: -1)
+    end
+
     let_it_be(:scan_execution_policy_rule) do
       create(:scan_execution_policy_rule, security_policy: scan_execution_policy)
+    end
+
+    let_it_be(:negative_index_se_rule) do
+      create(:scan_execution_policy_rule, security_policy: scan_execution_policy, rule_index: -1)
     end
 
     subject(:rules) { policy.rules }
@@ -236,6 +261,36 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       let(:policy) { pipeline_execution_policy }
 
       it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#scope_applicable?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy) { create(:security_policy) }
+
+    let(:policy_scope_checker) { instance_double(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) }
+
+    before do
+      allow(Security::SecurityOrchestrationPolicies::PolicyScopeChecker).to receive(:new)
+        .with(project: project).and_return(policy_scope_checker)
+    end
+
+    subject(:scope_applicable) { policy.scope_applicable?(project) }
+
+    context 'when the policy is applicable to the project' do
+      before do
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).with(policy).and_return(true)
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when the policy is not applicable to the project' do
+      before do
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).with(policy).and_return(false)
+      end
+
+      it { is_expected.to be false }
     end
   end
 end

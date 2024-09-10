@@ -29,4 +29,17 @@ RSpec.describe Security::ScanExecutionPolicyRule, feature_category: :security_po
       end
     end
   end
+
+  describe '.undeleted' do
+    let_it_be(:rule_with_positive_index) { create(:scan_execution_policy_rule, rule_index: 1) }
+    let_it_be(:rule_with_zero_index) { create(:scan_execution_policy_rule, rule_index: 0) }
+    let_it_be(:rule_with_negative_index) { create(:scan_execution_policy_rule, rule_index: -1) }
+
+    it 'returns rules with rule_index greater than or equal to 0' do
+      result = described_class.undeleted
+
+      expect(result).to contain_exactly(rule_with_positive_index, rule_with_zero_index)
+      expect(result).not_to include(rule_with_negative_index)
+    end
+  end
 end

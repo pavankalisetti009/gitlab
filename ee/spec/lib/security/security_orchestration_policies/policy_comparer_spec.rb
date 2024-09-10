@@ -63,6 +63,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
 
       expect(diff[:name]).to have_attributes(from: 'Old Policy', to: 'New Policy')
       expect(diff[:description]).to have_attributes(from: 'Old description', to: 'New description')
+      expect(diff[:rules]).to be_nil
     end
 
     it 'returns the correct changes for rules' do

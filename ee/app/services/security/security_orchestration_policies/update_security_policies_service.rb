@@ -9,9 +9,11 @@ module Security
 
       def execute
         policies_changes.each do |policy_changes|
+          # diff should be computed before updating policy attributes
+          diff = policy_changes.diff
           policy = update_policy_attributes!(policy_changes.db_policy, policy_changes.yaml_policy)
 
-          update_policy_rules(policy, policy_changes.diff.rules_diff)
+          update_policy_rules(policy, diff.rules_diff)
         end
       end
 

@@ -34,6 +34,16 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         it 'does not persist policies' do
           expect { perform }.not_to change { policy_configuration.security_policies.reload.count }
         end
+
+        context 'when policy already exists in database' do
+          before do
+            create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+          end
+
+          it 'marks the policy as deleted' do
+            expect { perform }.to change { Security::Policy.last.policy_index }.from(0).to(-1)
+          end
+        end
       end
 
       describe 'cache eviction' do

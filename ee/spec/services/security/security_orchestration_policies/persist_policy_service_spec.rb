@@ -478,7 +478,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(pipeline_execution_policy),
                   enabled: true,
                   scope: pipeline_execution_policy[:policy_scope].deep_stringify_keys,
-                  content: pipeline_execution_policy.slice(:content, :pipeline_config_strategy).deep_stringify_keys
+                  content: pipeline_execution_policy.slice(:content, :pipeline_config_strategy,
+                    :suffix).deep_stringify_keys
                 }
               ]
             end
