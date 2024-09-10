@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
+import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 import { severityNumberToConfig } from '../utils';
 
 export default {
@@ -39,7 +40,7 @@ export default {
             data[severityNumber] = [];
           }
           // note: timestamps are in nano, so converting them to ms here
-          data[severityNumber].push([time / 1e6, count]);
+          data[severityNumber].push([convertNanoToMs(time), count]);
         });
       });
 
