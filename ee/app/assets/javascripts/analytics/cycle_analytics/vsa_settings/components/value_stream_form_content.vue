@@ -24,7 +24,7 @@ import {
   formatStageDataForSubmission,
   hasDirtyStage,
 } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
-import ValueStreamFormContentHeader from './value_stream_form_content_header.vue';
+import ValueStreamFormContentActions from './value_stream_form_content_actions.vue';
 
 const initializeStageErrors = (defaultStageConfig, selectedPreset = PRESET_OPTIONS_DEFAULT) =>
   selectedPreset === PRESET_OPTIONS_DEFAULT ? defaultStageConfig.map(() => ({})) : [{}];
@@ -54,7 +54,7 @@ export default {
     GlFormRadioGroup,
     DefaultStageFields,
     CustomStageFields,
-    ValueStreamFormContentHeader,
+    ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
   props: {
@@ -338,13 +338,6 @@ export default {
     >
       {{ $options.i18n.SUBMIT_FAILED }}
     </gl-alert>
-    <value-stream-form-content-header
-      class="gl-mb-6"
-      :is-editing="isEditing"
-      :is-loading="isSubmitting || isRedirecting"
-      :value-stream-path="valueStreamPath"
-      @clickedPrimaryAction="onSubmit"
-    />
     <gl-form>
       <gl-form-group
         data-testid="create-value-stream-name"
@@ -420,33 +413,32 @@ export default {
           </div>
         </transition-group>
         <div>
-          <hr class="gl-mb-5 gl-mt-2" />
-          <gl-button
-            data-testid="vsa-add-stage-button"
-            category="secondary"
-            variant="confirm"
-            icon="plus"
-            @click="onAddStage"
-            >{{ $options.i18n.BTN_ADD_ANOTHER_STAGE }}</gl-button
-          >
-        </div>
-        <div v-if="hiddenStages.length">
-          <hr />
-          <gl-form-group
-            v-for="(stage, hiddenStageIndex) in hiddenStages"
-            :key="stage.id"
-            data-testid="vsa-hidden-stage"
-          >
-            <span class="gl-m-0 gl-mr-3 gl-align-middle gl-font-bold">{{
-              recoverStageTitle(stage.name)
-            }}</span>
-            <gl-button
-              variant="link"
-              :data-testid="restoreActionTestId(hiddenStageIndex)"
-              @click="onRestore(hiddenStageIndex)"
-              >{{ $options.i18n.RESTORE_HIDDEN_STAGE }}</gl-button
+          <div v-if="hiddenStages.length">
+            <hr class="gl-mb-2 gl-mt-5" />
+            <gl-form-group
+              v-for="(stage, hiddenStageIndex) in hiddenStages"
+              :key="stage.id"
+              data-testid="vsa-hidden-stage"
             >
-          </gl-form-group>
+              <span class="gl-m-0 gl-mr-3 gl-align-middle gl-font-bold">{{
+                recoverStageTitle(stage.name)
+              }}</span>
+              <gl-button
+                variant="link"
+                :data-testid="restoreActionTestId(hiddenStageIndex)"
+                @click="onRestore(hiddenStageIndex)"
+                >{{ $options.i18n.RESTORE_HIDDEN_STAGE }}</gl-button
+              >
+            </gl-form-group>
+          </div>
+          <hr class="gl-mb-5 gl-mt-2" />
+          <value-stream-form-content-actions
+            :is-editing="isEditing"
+            :is-loading="isSubmitting || isRedirecting"
+            :value-stream-path="valueStreamPath"
+            @clickPrimaryAction="onSubmit"
+            @clickAddStageAction="onAddStage"
+          />
         </div>
       </div>
     </gl-form>

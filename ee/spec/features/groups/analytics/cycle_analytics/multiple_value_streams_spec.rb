@@ -43,8 +43,11 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     wait_for_requests
   end
 
-  def click_view_value_stream_button
-    click_link _('View value stream')
+  # TODO: Remove this action in https://gitlab.com/gitlab-org/gitlab/-/issues/451560
+  def click_cancel_button(on_settings_page = true)
+    return unless on_settings_page
+
+    click_link _('Cancel')
     wait_for_requests
   end
 
@@ -53,7 +56,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
   end
 
   def create_and_select_value_stream(name, with_aggregation = true, on_settings_page = true)
-    create_custom_value_stream(name)
+    create_custom_value_stream(name, on_settings_page)
 
     return unless with_aggregation && !on_settings_page
 
@@ -97,8 +100,8 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     end
 
     it 'can create a value stream with a custom stage and hidden defaults' do
-      add_custom_stage_to_form
-      add_custom_label_stage_to_form
+      add_custom_stage_to_form(on_settings_page)
+      add_custom_label_stage_to_form(on_settings_page)
 
       # Hide some default stages
       click_action_button('hide', 5)
@@ -113,10 +116,10 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     end
 
     it 'does not allow duplicate stage names' do
-      add_custom_stage_to_form
+      add_custom_stage_to_form(on_settings_page)
       fill_in_custom_stage_fields "Stage 1"
 
-      add_custom_stage_to_form
+      add_custom_stage_to_form(on_settings_page)
       fill_in_custom_stage_fields "Stage 1"
 
       save_value_stream(custom_value_stream_name)
@@ -125,7 +128,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       # Remove the duplicate stage and add a new one
       click_action_button('remove', 7)
-      add_custom_stage_to_form
+      add_custom_stage_to_form(on_settings_page)
       fill_in_custom_stage_fields "Stage 2"
       save_value_stream(custom_value_stream_name)
 
@@ -149,7 +152,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
       click_save_value_stream_button
       wait_for_requests
 
-      click_view_value_stream_button if on_settings_page
+      click_cancel_button(on_settings_page)
 
       expect(path_nav_stage_names_without_median).to eq(["Overview", "Plan", "Issue", "Code", "Test", "Review", "Cool custom stage - name 7", "Staging"])
     end
@@ -175,13 +178,13 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
       end
 
       it 'can add and remove custom stages' do
-        add_custom_stage_to_form
-        add_custom_label_stage_to_form
+        add_custom_stage_to_form(on_settings_page)
+        add_custom_label_stage_to_form(on_settings_page)
 
         click_save_value_stream_button
         wait_for_requests
 
-        click_view_value_stream_button if on_settings_page
+        click_cancel_button(on_settings_page)
 
         expect(path_nav_elem).to have_text("Cool custom stage - name")
 
@@ -198,7 +201,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        click_view_value_stream_button if on_settings_page
+        click_cancel_button(on_settings_page)
 
         expect(path_nav_elem).not_to have_text("Cool custom stage - name")
       end
@@ -213,7 +216,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
         expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: custom_value_stream_name })
 
-        click_view_value_stream_button if on_settings_page
+        click_cancel_button(on_settings_page)
 
         expect(path_nav_elem).not_to have_text("Staging")
         expect(path_nav_elem).not_to have_text("Review")
@@ -228,13 +231,13 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
         expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: custom_value_stream_name })
 
-        click_view_value_stream_button if on_settings_page
+        click_cancel_button(on_settings_page)
 
         expect(path_nav_elem).to have_text("Test")
       end
 
       it 'does not allow duplicate stage names' do
-        add_custom_stage_to_form
+        add_custom_stage_to_form(on_settings_page)
         fill_in_custom_stage_fields "Staging"
 
         click_save_value_stream_button
@@ -315,7 +318,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       it 'navigates to the `New value stream` settings page' do
         expect(page).to have_current_path(new_group_analytics_cycle_analytics_value_stream_path(group))
-        expect(find_by_testid('value-stream-form-title')).to have_text('New value stream')
+        expect(page).to have_text('New value stream')
       end
     end
 

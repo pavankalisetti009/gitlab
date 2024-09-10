@@ -117,7 +117,7 @@ describe('AI Impact Over Time Data Source', () => {
         metric                                         | result
         ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'62.5'}
         ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'40.0'}
-        ${AI_METRICS.DUO_PRO_USAGE_RATE}               | ${'50.0'}
+        ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'50.0'}
       `('can override the metric with `$metric`', async ({ metric, result }) => {
         res = await mockQuery(LAST_WEEK, { metric });
 

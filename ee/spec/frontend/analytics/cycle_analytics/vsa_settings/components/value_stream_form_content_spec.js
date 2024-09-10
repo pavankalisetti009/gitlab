@@ -1,5 +1,5 @@
 import { GlAlert, GlFormInput } from '@gitlab/ui';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -17,7 +17,7 @@ import {
   convertObjectPropsToCamelCase,
   convertObjectPropsToSnakeCase,
 } from '~/lib/utils/common_utils';
-import ValueStreamFormContentHeader from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content_header.vue';
+import ValueStreamFormContentActions from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content_actions.vue';
 import {
   customStageEvents as formEvents,
   defaultStageConfig,
@@ -30,9 +30,6 @@ jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrlWithAlerts: jest.fn(),
 }));
-
-const scrollIntoViewMock = jest.fn();
-HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
 
 Vue.use(Vuex);
 
@@ -108,15 +105,16 @@ describe('ValueStreamFormContent', () => {
       },
     });
 
-  const findFormHeader = () => wrapper.findComponent(ValueStreamFormContentHeader);
+  const findFormActions = () => wrapper.findComponent(ValueStreamFormContentActions);
   const findExtendedFormFields = () => wrapper.findByTestId('extended-form-fields');
   const findDefaultStages = () => findExtendedFormFields().findAllComponents(DefaultStageFields);
   const findCustomStages = () => findExtendedFormFields().findAllComponents(CustomStageFields);
+  const findLastCustomStage = () => findCustomStages().wrappers.at(-1);
+
   const findPresetSelector = () => wrapper.findByTestId('vsa-preset-selector');
   const findRestoreButton = () => wrapper.findByTestId('vsa-reset-button');
   const findRestoreStageButton = (index) => wrapper.findByTestId(`stage-action-restore-${index}`);
   const findHiddenStages = () => wrapper.findAllByTestId('vsa-hidden-stage').wrappers;
-  const findAddStageButton = () => wrapper.findByTestId('vsa-add-stage-button');
   const findCustomStageEventField = (index = 0) =>
     wrapper.findAllComponents(CustomStageEventField).at(index);
   const findFieldErrors = (testId) => wrapper.findByTestId(testId).attributes('invalid-feedback');
@@ -127,8 +125,11 @@ describe('ValueStreamFormContent', () => {
   const fillStageNameAtIndex = (name, index) =>
     findCustomStages().at(index).findComponent(GlFormInput).vm.$emit('input', name);
 
-  const clickSubmit = () => findFormHeader().vm.$emit('clickedPrimaryAction');
-  const clickAddStage = () => findAddStageButton().vm.$emit('click');
+  const clickSubmit = () => findFormActions().vm.$emit('clickPrimaryAction');
+  const clickAddStage = async () => {
+    findFormActions().vm.$emit('clickAddStageAction');
+    await nextTick();
+  };
   const clickRestoreStageAtIndex = (index) => findRestoreStageButton(index).vm.$emit('click');
   const expectFieldError = (testId, error = '') => expect(findFieldErrors(testId)).toBe(error);
   const expectCustomFieldError = (index, attr, error = '') =>
@@ -142,7 +143,7 @@ describe('ValueStreamFormContent', () => {
     });
 
     it('has the form header', () => {
-      expect(findFormHeader().props()).toMatchObject({
+      expect(findFormActions().props()).toMatchObject({
         isLoading: false,
         isEditing: false,
         valueStreamPath,
@@ -211,10 +212,6 @@ describe('ValueStreamFormContent', () => {
         });
       });
 
-      it('has the add stage button', () => {
-        expect(findAddStageButton().exists()).toBe(true);
-      });
-
       it('adds a blank custom stage when clicked', async () => {
         expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
         expect(findCustomStages()).toHaveLength(0);
@@ -227,6 +224,14 @@ describe('ValueStreamFormContent', () => {
 
       it('each stage has a transition key', () => {
         expectStageTransitionKeys(wrapper.vm.stages);
+      });
+
+      it('scrolls to the last stage after adding', async () => {
+        await clickAddStage();
+
+        expect(findLastCustomStage().element.scrollIntoView).toHaveBeenCalledWith({
+          behavior: 'smooth',
+        });
       });
     });
 
@@ -333,7 +338,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it("enables form header's loading state", () => {
-          expect(findFormHeader().props('isLoading')).toBe(true);
+          expect(findFormActions().props('isLoading')).toBe(true);
         });
       });
 
@@ -376,7 +381,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('form header should be in loading state', () => {
-          expect(findFormHeader().props('isLoading')).toBe(true);
+          expect(findFormActions().props('isLoading')).toBe(true);
         });
 
         it('redirects to the new value stream page', () => {
@@ -422,7 +427,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('form header should not be in loading state', () => {
-          expect(findFormHeader().props('isLoading')).toBe(false);
+          expect(findFormActions().props('isLoading')).toBe(false);
         });
 
         it('renders errors for the name field', () => {
@@ -455,7 +460,7 @@ describe('ValueStreamFormContent', () => {
     });
 
     it("enables form header's editing state", () => {
-      expect(findFormHeader().props('isEditing')).toBe(true);
+      expect(findFormActions().props('isEditing')).toBe(true);
     });
 
     it('does not display any hidden stages', () => {
@@ -548,10 +553,6 @@ describe('ValueStreamFormContent', () => {
         });
       });
 
-      it('has the add stage button', () => {
-        expect(findAddStageButton().exists()).toBe(true);
-      });
-
       it('adds a blank custom stage when clicked', async () => {
         expect(findCustomStages()).toHaveLength(stageCount);
 
@@ -595,7 +596,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it("enables form header's loading state", () => {
-          expect(findFormHeader().props('isLoading')).toBe(true);
+          expect(findFormActions().props('isLoading')).toBe(true);
         });
       });
 
@@ -636,7 +637,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('form header should not be in loading state', () => {
-          expect(findFormHeader().props('isLoading')).toBe(false);
+          expect(findFormActions().props('isLoading')).toBe(false);
         });
       });
 
@@ -676,7 +677,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('form header should not be in loading state', () => {
-          expect(findFormHeader().props('isLoading')).toBe(false);
+          expect(findFormActions().props('isLoading')).toBe(false);
         });
 
         it('renders errors for the name field', () => {
