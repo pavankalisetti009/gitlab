@@ -3,8 +3,6 @@
 module Gitlab
   module AiGateway
     ForbiddenError = Class.new(StandardError)
-    ClientError = Class.new(StandardError)
-    ServerError = Class.new(StandardError)
 
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
 
