@@ -197,6 +197,7 @@ const createProject = ({ id, groupPath } = {}) => ({
   description: `Project description ${id}`,
   fullPath: `${groupPath}/project${id}`,
   webUrl: `${groupPath}/project${id}`,
+  visibility: 'public',
   complianceFrameworks: {
     nodes: [
       {

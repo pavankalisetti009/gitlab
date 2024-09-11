@@ -99,7 +99,8 @@ export const i18n = {
   projects: s__('ComplianceFrameworks|Projects'),
   projectsTableFields: {
     name: s__('ComplianceFrameworks|Project name'),
-    desc: s__('ComplianceFrameworks|Project description'),
+    description: s__('ComplianceFrameworks|Description'),
+    path: s__('ComplianceFrameworks|Project path'),
   },
   projectsDescription: s__(
     'ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies.',

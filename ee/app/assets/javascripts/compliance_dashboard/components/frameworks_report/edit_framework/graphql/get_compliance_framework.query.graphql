@@ -33,6 +33,8 @@ query getComplianceFrameworkWithPolicies(
             name
             description
             webUrl
+            visibility
+            fullPath
           }
         }
         scanResultPolicies {
