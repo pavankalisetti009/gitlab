@@ -40,12 +40,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         node: zoekt_node, namespace_id: 0)
       expect(zoekt_index).to be_invalid
     end
-
-    it 'validates presence of replica', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468476' do
-      expect(zoekt_index).to be_valid
-      zoekt_index.replica = nil
-      expect(zoekt_index).not_to be_valid
-    end
   end
 
   describe 'callbacks' do
@@ -73,16 +67,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
           .with(another_enabled_namespace.root_namespace_id, :delete, another_zoekt_index.zoekt_node_id)
 
         another_zoekt_index.destroy!
-      end
-
-      it 'removes index when the enabled namespace record is destroyed' do
-        another_zoekt_index = create(:zoekt_index, zoekt_enabled_namespace: another_enabled_namespace,
-          namespace_id: another_enabled_namespace.root_namespace_id)
-
-        expect(::Search::Zoekt::NamespaceIndexerWorker).to receive(:perform_async)
-          .with(namespace_2.id, :delete, another_zoekt_index.zoekt_node_id)
-
-        another_enabled_namespace.destroy!
       end
     end
   end
@@ -169,6 +153,34 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         index = described_class.preload_node.first
         recorder = ActiveRecord::QueryRecorder.new { index.node }
         expect(recorder.count).to be_zero
+      end
+    end
+
+    describe '.should_be_marked_as_orphaned' do
+      let_it_be(:idx) { create(:zoekt_index) }
+      let_it_be(:idx_missing_replica) { create(:zoekt_index) }
+      let_it_be(:idx_missing_enabled_namespace) { create(:zoekt_index) }
+      let_it_be(:idx_already_marked_as_orphaned) { create(:zoekt_index) }
+      let_it_be(:zoekt_replica) { create(:zoekt_replica) }
+
+      it 'returns indices that are missing either an enabled namespace or a replica' do
+        idx_missing_replica.replica.destroy!
+        idx_missing_enabled_namespace.zoekt_enabled_namespace.destroy!
+        idx_already_marked_as_orphaned.replica.destroy!
+        idx_already_marked_as_orphaned.orphaned!
+
+        expect(described_class.should_be_marked_as_orphaned).to match_array([idx_missing_replica,
+          idx_missing_enabled_namespace])
+      end
+    end
+
+    describe '.should_be_deleted' do
+      let_it_be(:idx) { create(:zoekt_index) }
+      let_it_be(:idx_orphaned) { create(:zoekt_index, state: :orphaned) }
+      let_it_be(:idx_pending_deletion) { create(:zoekt_index, state: :pending_deletion) }
+
+      it 'returns indices that are marked as either orphaned or pending_deletion' do
+        expect(described_class.should_be_deleted).to match_array([idx_orphaned, idx_pending_deletion])
       end
     end
   end

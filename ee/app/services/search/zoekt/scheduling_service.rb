@@ -15,6 +15,8 @@ module Search
         auto_index_self_managed
         update_replica_states
         report_metrics
+        index_should_be_marked_as_orphaned_check
+        index_to_delete_check
       ].freeze
 
       BUFFER_FACTOR = 3
@@ -346,6 +348,30 @@ module Search
           )
 
           logger.info(log_data)
+        end
+      end
+
+      def index_should_be_marked_as_orphaned_check
+        execute_every 10.minutes, cache_key: :index_should_be_marked_as_orphaned_check do
+          Search::Zoekt::Index.should_be_marked_as_orphaned.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::OrphanedIndexEvent.new(
+                data: { index_ids: batch.pluck_primary_key }
+              )
+            )
+          end
+        end
+      end
+
+      def index_to_delete_check
+        execute_every 10.minutes, cache_key: :index_to_delete_check do
+          Search::Zoekt::Index.should_be_deleted.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::IndexMarkedAsToDeleteEvent.new(
+                data: { index_ids: batch.pluck_primary_key }
+              )
+            )
+          end
         end
       end
     end

@@ -12,7 +12,7 @@ module Search
 
       has_many :indices, class_name: '::Search::Zoekt::Index',
         foreign_key: :zoekt_enabled_namespace_id, inverse_of: :zoekt_enabled_namespace,
-        dependent: :destroy # TODO: Remove this after the cleanup task is implemented
+        dependent: :nullify
       has_many :nodes, through: :indices
 
       has_many :replicas, dependent: :destroy,

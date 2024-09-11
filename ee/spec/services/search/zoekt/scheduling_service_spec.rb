@@ -598,4 +598,40 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       execute_task
     end
   end
+
+  describe '#index_should_be_marked_as_orphaned_check' do
+    let(:task) { :index_should_be_marked_as_orphaned_check }
+
+    it 'publishes an OrphanedIndexEvent with indices that should be marked as orphaned' do
+      stubbed_orphaned_indices = Search::Zoekt::Index.all
+
+      expect(Search::Zoekt::Index).to receive_message_chain(:should_be_marked_as_orphaned,
+        :each_batch).and_yield(stubbed_orphaned_indices)
+      expect(stubbed_orphaned_indices).to receive(:pluck_primary_key).and_return([1, 2, 3])
+
+      expected_data = { index_ids: [1, 2, 3] }
+
+      expect { execute_task }
+        .to publish_event(Search::Zoekt::OrphanedIndexEvent)
+        .with(expected_data)
+    end
+  end
+
+  describe '#index_to_delete_check' do
+    let(:task) { :index_to_delete_check }
+
+    it 'publishes an IndexMarkedAsToDeleteEvent with indices that should be deleted' do
+      stubbed_orphaned_indices = Search::Zoekt::Index.all
+
+      expect(Search::Zoekt::Index).to receive_message_chain(:should_be_deleted,
+        :each_batch).and_yield(stubbed_orphaned_indices)
+      expect(stubbed_orphaned_indices).to receive(:pluck_primary_key).and_return([4, 5, 6])
+
+      expected_data = { index_ids: [4, 5, 6] }
+
+      expect { execute_task }
+        .to publish_event(Search::Zoekt::IndexMarkedAsToDeleteEvent)
+        .with(expected_data)
+    end
+  end
 end
