@@ -5,6 +5,6 @@ FactoryBot.define do
     agent { association :ai_agent }
     project { agent.project }
     prompt { 'Prompt text' }
-    model { "anthropic-#{::Gitlab::Llm::Anthropic::Client::DEFAULT_INSTANT_MODEL}" }
+    model { "anthropic-#{::Gitlab::Llm::Anthropic::Client::CLAUDE_2_1}" }
   end
 end
