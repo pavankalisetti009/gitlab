@@ -22,6 +22,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       agent.workspaces_agent_config.default_resources_per_workspace_container
     end
 
+    let(:allow_privilege_escalation) { agent.remote_development_agent_config.allow_privilege_escalation }
+    let(:use_kubernetes_user_namespaces) { agent.remote_development_agent_config.use_kubernetes_user_namespaces }
+    let(:default_runtime_class) { agent.remote_development_agent_config.default_runtime_class }
+    let(:agent_labels) { agent.remote_development_agent_config.labels }
+    let(:agent_annotations) { agent.remote_development_agent_config.annotations }
+
     let(:workspace) do
       create(
         :workspace,
@@ -41,7 +47,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           include_all_resources: include_all_resources,
           egress_ip_rules: egress_ip_rules,
           max_resources_per_workspace: max_resources_per_workspace,
-          default_resources_per_workspace_container: default_resources_per_workspace_container
+          default_resources_per_workspace_container: default_resources_per_workspace_container,
+          allow_privilege_escalation: allow_privilege_escalation,
+          use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+          default_runtime_class: default_runtime_class,
+          agent_labels: agent_labels,
+          agent_annotations: agent_annotations
         )
       )
     end

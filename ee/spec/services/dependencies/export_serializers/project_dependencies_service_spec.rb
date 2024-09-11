@@ -84,11 +84,24 @@ RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feat
           Gitlab::Json.dump(entity)
         end
 
-        control = ::ActiveRecord::QueryRecorder.new { render }
+        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            namespaces
+            project_ci_cd_settings
+            container_expiration_policies
+            project_pages_metadata
+            project_features
+            project_security_settings
+            project_statistics
+            sbom_occurrences_vulnerabilities
+          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485505'
+        ) do
+          control = ::ActiveRecord::QueryRecorder.new { render }
 
-        create(:sbom_occurrence, :with_vulnerabilities, :mit, project: project)
+          create(:sbom_occurrence, :with_vulnerabilities, :mit, project: project)
 
-        expect { render }.not_to exceed_query_limit(control)
+          expect { render }.not_to exceed_query_limit(control)
+        end
       end
     end
   end

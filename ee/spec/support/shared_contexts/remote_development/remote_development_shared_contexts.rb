@@ -333,36 +333,46 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }],
     max_resources_per_workspace: {},
     default_resources_per_workspace_container: {},
+    allow_privilege_escalation: false,
+    use_kubernetes_user_namespaces: false,
+    default_runtime_class: "",
+    agent_labels: {},
+    agent_annotations: {},
     project_name: "test-project",
     namespace_path: "test-group"
   )
+    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_3
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
     max_resources_per_workspace_sha256 = Digest::SHA256.hexdigest(
       max_resources_per_workspace.sort.to_h.to_s
     )
-    annotations = {
+    extra_annotations = {
       "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory",
       "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
       "workspaces.gitlab.com/id": workspace.id.to_s,
       "workspaces.gitlab.com/max-resources-per-workspace-sha256":
         max_resources_per_workspace_sha256
     }
-    labels = {
+    annotations = agent_annotations.merge(extra_annotations)
+    extra_labels = {
       "agent.gitlab.com/id": workspace.agent.id.to_s
     }
-    secrets_annotations = {
+    labels = agent_labels.merge(extra_labels)
+    extra_secrets_annotations = {
       "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory",
       "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
       "workspaces.gitlab.com/id": workspace.id.to_s,
       "workspaces.gitlab.com/max-resources-per-workspace-sha256":
         max_resources_per_workspace_sha256
     }
+    secrets_annotations = agent_annotations.merge(extra_secrets_annotations)
 
     workspace_inventory = workspace_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      desired_config_generator_version: desired_config_generator_version
     )
 
     workspace_deployment = workspace_deployment(
@@ -371,7 +381,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       labels: labels,
       annotations: annotations,
       spec_replicas: spec_replicas,
-      default_resources_per_workspace_container: default_resources_per_workspace_container
+      default_resources_per_workspace_container: default_resources_per_workspace_container,
+      allow_privilege_escalation: allow_privilege_escalation,
+      use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+      default_runtime_class: default_runtime_class
     )
 
     workspace_service = workspace_service(
@@ -399,7 +412,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     workspace_secrets_inventory = workspace_secrets_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      desired_config_generator_version: desired_config_generator_version
     )
 
     workspace_secret_environment = workspace_secret_environment(
@@ -463,6 +477,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
     }]
   )
+    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
     annotations = {
@@ -482,7 +497,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     workspace_inventory = workspace_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      desired_config_generator_version: desired_config_generator_version
     )
 
     workspace_deployment = workspace_deployment(
@@ -491,7 +507,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       labels: labels,
       annotations: annotations,
       spec_replicas: spec_replicas,
-      default_resources_per_workspace_container: {}
+      default_resources_per_workspace_container: {},
+      allow_privilege_escalation: false,
+      use_kubernetes_user_namespaces: false,
+      default_runtime_class: ""
     )
 
     workspace_service = workspace_service(
@@ -519,7 +538,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     workspace_secrets_inventory = workspace_secrets_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      desired_config_generator_version: desired_config_generator_version
     )
 
     workspace_secret_environment = workspace_secret_environment(
@@ -557,25 +577,31 @@ RSpec.shared_context 'with remote development shared fixtures' do
     end.join
   end
 
-  # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
-
   def workspace_inventory(
     workspace_name:,
     workspace_namespace:,
-    agent_id:
+    agent_id:,
+    desired_config_generator_version:
   )
-    {
+    configmap = {
       kind: "ConfigMap",
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-workspace-inventory",
         namespace: workspace_namespace.to_s,
+        annotations: {},
         labels: {
           "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory",
           "agent.gitlab.com/id": agent_id.to_s
         }
       }
     }
+
+    if desired_config_generator_version == RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
+      configmap[:metadata].delete(:annotations)
+    end
+
+    configmap
   end
 
   def workspace_deployment(
@@ -584,10 +610,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
     labels:,
     annotations:,
     spec_replicas:,
-    default_resources_per_workspace_container:
+    default_resources_per_workspace_container:,
+    allow_privilege_escalation:,
+    use_kubernetes_user_namespaces:,
+    default_runtime_class:
   )
     variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::FileMounts::VARIABLES_FILE_DIR
-    {
+    container_security_context = {
+      'allowPrivilegeEscalation' => allow_privilege_escalation,
+      'privileged' => false,
+      'runAsNonRoot' => true,
+      'runAsUser' => 5001
+    }
+
+    deployment = {
       apiVersion: "apps/v1",
       kind: "Deployment",
       metadata: {
@@ -614,6 +650,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
             namespace: workspace_namespace.to_s
           },
           spec: {
+            hostUsers: use_kubernetes_user_namespaces,
+            runtimeClassName: default_runtime_class,
             containers: [
               {
                 args: [
@@ -685,12 +723,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     mountPath: variables_file_mount_path.to_s
                   }
                 ],
-                securityContext: {
-                  allowPrivilegeEscalation: false,
-                  privileged: false,
-                  runAsNonRoot: true,
-                  runAsUser: 5001
-                },
+                securityContext: container_security_context,
                 envFrom: [
                   {
                     secretRef: {
@@ -728,12 +761,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     mountPath: variables_file_mount_path.to_s
                   }
                 ],
-                securityContext: {
-                  allowPrivilegeEscalation: false,
-                  privileged: false,
-                  runAsNonRoot: true,
-                  runAsUser: 5001
-                },
+                securityContext: container_security_context,
                 envFrom: [
                   {
                     secretRef: {
@@ -810,12 +838,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     mountPath: variables_file_mount_path.to_s
                   }
                 ],
-                securityContext: {
-                  allowPrivilegeEscalation: false,
-                  privileged: false,
-                  runAsNonRoot: true,
-                  runAsUser: 5001
-                },
+                securityContext: container_security_context,
                 envFrom: [
                   {
                     secretRef: {
@@ -862,12 +885,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     mountPath: variables_file_mount_path.to_s
                   }
                 ],
-                securityContext: {
-                  allowPrivilegeEscalation: false,
-                  privileged: false,
-                  runAsNonRoot: true,
-                  runAsUser: 5001
-                },
+                securityContext: container_security_context,
                 envFrom: [
                   {
                     secretRef: {
@@ -909,7 +927,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
       },
       status: {}
     }
+
+    deployment[:spec][:template][:spec].delete(:runtimeClassName) if default_runtime_class.empty?
+    deployment[:spec][:template][:spec].delete(:hostUsers) unless use_kubernetes_user_namespaces
+
+    deployment
   end
+  # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
 
   def workspace_service(
     workspace_name:,
@@ -1070,20 +1094,28 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def workspace_secrets_inventory(
     workspace_name:,
     workspace_namespace:,
-    agent_id:
+    agent_id:,
+    desired_config_generator_version:
   )
-    {
+    configmap = {
       kind: "ConfigMap",
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-secrets-inventory",
         namespace: workspace_namespace.to_s,
+        annotations: {},
         labels: {
           "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory",
           "agent.gitlab.com/id": agent_id.to_s
         }
       }
     }
+
+    if desired_config_generator_version == RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
+      configmap[:metadata].delete(:annotations)
+    end
+
+    configmap
   end
 
   def workspace_secret_environment(

@@ -21,6 +21,9 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
 
   let(:default_max_hours_before_termination_default_value) { 24 }
   let(:max_hours_before_termination_limit_default_value) { 120 }
+  let(:allow_privilege_escalation) { false }
+  let(:use_kubernetes_user_namespaces) { false }
+  let(:default_runtime_class) { "" }
 
   subject(:config) { agent.workspaces_agent_config }
 
@@ -127,6 +130,56 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       is_expected.to validate_numericality_of(:default_max_hours_before_termination)
         .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
         .is_greater_than_or_equal_to(1)
+    end
+
+    context 'when config has allow_privilege_escalation set to true' do
+      let(:allow_privilege_escalation) { true }
+
+      subject(:config) { build(:workspaces_agent_config, allow_privilege_escalation: true) }
+
+      it 'prevents config from being created' do
+        expect { config.save! }.to raise_error(
+          ActiveRecord::RecordInvalid,
+          "Validation failed: Allow privilege escalation can be true only if " \
+            "either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty"
+        )
+      end
+
+      context 'when use_kubernetes_user_namespaces is set to true' do
+        let(:use_kubernetes_user_namespaces) { true }
+
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            allow_privilege_escalation: allow_privilege_escalation,
+            use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
+          )
+        end
+
+        it 'allows the config to be created' do
+          expect(config).to be_valid
+          expect(config.allow_privilege_escalation).to eq(allow_privilege_escalation)
+          expect(config.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
+        end
+      end
+
+      context 'when default_runtime_class is set to non-empty value' do
+        let(:default_runtime_class) { "test" }
+
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            allow_privilege_escalation: allow_privilege_escalation,
+            default_runtime_class: default_runtime_class
+          )
+        end
+
+        it 'allows the config to be created' do
+          expect(config).to be_valid
+          expect(config.allow_privilege_escalation).to eq(true)
+          expect(config.default_runtime_class).to eq(default_runtime_class)
+        end
+      end
     end
   end
 end

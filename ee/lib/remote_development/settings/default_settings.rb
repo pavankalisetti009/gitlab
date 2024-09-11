@@ -31,7 +31,12 @@ module RemoteDevelopment
           default_resources_per_workspace_container: [{}, Hash],
           max_resources_per_workspace: [{}, Hash],
           gitlab_workspaces_proxy_namespace: [{}, Hash],
-          network_policy_enabled: [true, :Boolean]
+          network_policy_enabled: [true, :Boolean],
+          allow_privilege_escalation: [false, :Boolean],
+          use_kubernetes_user_namespaces: [false, :Boolean],
+          default_runtime_class: ["", String],
+          annotations: [{}, Hash],
+          labels: [{}, Hash]
         }
       end
     end
