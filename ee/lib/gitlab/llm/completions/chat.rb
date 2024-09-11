@@ -128,7 +128,9 @@ module Gitlab
         end
 
         def execute_with_tool_chosen_by_ai(response_handler, stream_response_handler)
-          if Feature.enabled?(:v2_chat_agent_integration, user)
+          if Feature.enabled?(:v2_chat_agent_integration, user) &&
+              Feature.disabled?(:v2_chat_agent_integration_override, user)
+
             Gitlab::Llm::Chain::Agents::SingleActionExecutor.new(
               user_input: prompt_message.content,
               tools: tools,

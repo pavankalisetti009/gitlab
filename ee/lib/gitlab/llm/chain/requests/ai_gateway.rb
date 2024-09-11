@@ -35,7 +35,7 @@ module Gitlab
             options = default_options.merge(prompt.fetch(:options, {}))
             return unless model_provider_valid?(options)
 
-            v2_chat_schema = Feature.enabled?(:v2_chat_agent_integration, user) && options.delete(:single_action_agent)
+            v2_chat_schema = options.delete(:single_action_agent)
 
             response = ai_client.stream(
               url: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
