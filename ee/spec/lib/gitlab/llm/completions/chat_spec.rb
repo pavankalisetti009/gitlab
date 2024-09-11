@@ -83,6 +83,10 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
   subject { described_class.new(prompt_message, nil, **options).execute }
 
+  before do
+    stub_feature_flags(v2_chat_agent_integration_override: false)
+  end
+
   shared_examples 'success' do
     it 'calls the SingleAction Agent with the right parameters', :snowplow do
       expected_params = [
@@ -461,6 +465,51 @@ client_subscription_id: 'someid' }
         expect(response_handler).to receive(:execute)
         expect(::Gitlab::Llm::ResponseService).to receive(:new).with(context, { request_id: 'uuid', ai_action: :chat })
           .and_return(response_handler)
+        expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
+          .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
+            extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
+            agent_version: agent_version, additional_context: additional_context)
+          .and_return(context)
+        expect(categorize_service).to receive(:execute)
+        expect(::Llm::ExecuteMethodService).to receive(:new)
+          .with(user, user, :categorize_question, categorize_service_params)
+          .and_return(categorize_service)
+
+        subject
+
+        expect_snowplow_event(
+          category: described_class.to_s,
+          label: "IssueReader",
+          action: 'process_gitlab_duo_question',
+          property: 'uuid',
+          namespace: container,
+          user: user,
+          value: 1
+        )
+      end
+    end
+
+    context 'with enabled v2_chat_agent_integration_override flag' do
+      before do
+        stub_feature_flags(v2_chat_agent_integration_override: true)
+      end
+
+      it 'calls the ZeroShot Agent with the right parameters', :snowplow do
+        expected_params = [
+          user_input: content,
+          tools: match_array(tools),
+          context: context,
+          response_handler: response_handler,
+          stream_response_handler: stream_response_handler
+        ]
+
+        expect_next_instance_of(::Gitlab::Llm::Chain::Agents::ZeroShot::Executor, *expected_params) do |instance|
+          expect(instance).to receive(:execute).and_return(answer)
+        end
+
+        expect(response_handler).to receive(:execute)
+        expect(::Gitlab::Llm::ResponseService).to receive(:new).with(context, { request_id: 'uuid', ai_action: :chat })
+                                                               .and_return(response_handler)
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
             extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
