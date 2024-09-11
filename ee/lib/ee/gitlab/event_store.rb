@@ -72,6 +72,7 @@ module EE
           subscribe_to_external_issue_links_events(store)
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
+          subscribe_to_zoekt_events(store)
         end
 
         def register_threat_insights_subscribers(store)
@@ -147,6 +148,14 @@ module EE
             if: ->(event) {
               ::WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEventHandler.can_handle?(event)
             }
+        end
+
+        def subscribe_to_zoekt_events(store)
+          store.subscribe ::Search::Zoekt::OrphanedIndexEventWorker,
+            to: ::Search::Zoekt::OrphanedIndexEvent
+
+          store.subscribe ::Search::Zoekt::IndexMarkedAsToDeleteEventWorker,
+            to: ::Search::Zoekt::IndexMarkedAsToDeleteEvent
         end
       end
     end

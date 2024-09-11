@@ -3,6 +3,8 @@
 module Search
   module Zoekt
     class Repository < ApplicationRecord
+      include EachBatch
+
       self.table_name = 'zoekt_repositories'
 
       belongs_to :zoekt_index, inverse_of: :zoekt_repositories, class_name: '::Search::Zoekt::Index'
@@ -26,6 +28,7 @@ module Search
         pending: 0,
         initializing: 1,
         ready: 10,
+        pending_deletion: 240,
         failed: 255
       }
 

@@ -2127,6 +2127,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: search_zoekt_index_marked_as_to_delete_event
+  :worker_name: Search::Zoekt::IndexMarkedAsToDeleteEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: search_zoekt_indexing_task
   :worker_name: Search::Zoekt::IndexingTaskWorker
   :feature_category: :global_search
@@ -2147,6 +2156,15 @@
   :tags: []
 - :name: search_zoekt_namespace_initial_indexing
   :worker_name: Search::Zoekt::NamespaceInitialIndexingWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: search_zoekt_orphaned_index_event
+  :worker_name: Search::Zoekt::OrphanedIndexEventWorker
   :feature_category: :global_search
   :has_external_dependencies: false
   :urgency: :low
