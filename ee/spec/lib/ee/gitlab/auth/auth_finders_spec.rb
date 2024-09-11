@@ -7,13 +7,16 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
   include ::EE::GeoHelpers
 
   let(:request) { ActionDispatch::Request.new(env) }
+  let_it_be(:user) { create(:user) }
   let(:env) do
     {
       'rack.input' => ''
     }
   end
 
-  let_it_be(:user) { create(:user) }
+  def set_header(key, value)
+    env[key] = value
+  end
 
   describe '#find_user_from_geo_token' do
     subject { find_user_from_geo_token }
@@ -211,6 +214,51 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
             end
           end
         end
+      end
+    end
+  end
+
+  describe '#find_user_from_job_token', :request_store do
+    let_it_be(:project) { create(:project, :private, developers: user) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+    let_it_be(:job) { create(:ci_build, :running, pipeline: pipeline, user: user) }
+    let_it_be(:route_authentication_setting) { { job_token_allowed: true } }
+
+    subject { find_user_from_job_token }
+
+    context 'when token is valid' do
+      let(:token) { job.token }
+
+      before do
+        set_header(described_class::JOB_TOKEN_HEADER, token)
+        allow(::Gitlab::Audit::Auditor).to receive(:audit)
+      end
+
+      it 'returns user and streams audit event' do
+        expect(subject).to eq(user)
+
+        expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
+          name: "user_authenticated_using_job_token",
+          author: user,
+          scope: job.project,
+          target: job,
+          target_details: job.id.to_s,
+          message: "#{user.name} authenticated using job token of job id: #{job.id}"
+        )
+      end
+    end
+
+    context 'when token is invalid' do
+      let(:token) { "invalid token" }
+
+      before do
+        set_header(described_class::JOB_TOKEN_HEADER, token)
+        allow(::Gitlab::Audit::Auditor).to receive(:audit)
+      end
+
+      it 'returns user' do
+        expect { subject }.to raise_error(Gitlab::Auth::UnauthorizedError)
+        expect(::Gitlab::Audit::Auditor).not_to have_received(:audit)
       end
     end
   end
