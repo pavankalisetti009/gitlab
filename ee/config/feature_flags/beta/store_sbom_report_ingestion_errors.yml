@@ -1,9 +1,0 @@
----
-name: store_sbom_report_ingestion_errors
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/471319
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158672
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/472872
-milestone: '17.3'
-group: group::composition analysis
-type: beta
-default_enabled: true
