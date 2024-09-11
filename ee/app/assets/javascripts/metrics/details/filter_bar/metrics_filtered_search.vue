@@ -6,6 +6,7 @@ import { OPERATORS_IS_NOT } from '~/vue_shared/components/filtered_search_bar/co
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import { OPERATORS_LIKE_NOT } from '~/observability/constants';
 import DateRangeFilter from '~/observability/components/date_range_filter.vue';
+import { isHistogram } from '../utils';
 import GroupByFilter from './groupby_filter.vue';
 
 function defaultGroupByFunction(searchMetadata) {
@@ -83,6 +84,10 @@ export default {
         operators: [...OPERATORS_IS_NOT, ...OPERATORS_LIKE_NOT],
       }));
     },
+    showGroupByFilter() {
+      const metricType = this.searchMetadata.type;
+      return !isHistogram(metricType);
+    },
   },
   methods: {
     onFilter(filters) {
@@ -134,15 +139,17 @@ export default {
 
     <date-range-filter :selected="dateRange" @onDateRangeSelected="onDateRangeSelected" />
 
-    <hr class="gl-my-3" />
+    <div v-if="showGroupByFilter">
+      <hr class="gl-my-3" />
 
-    <group-by-filter
-      :supported-functions="searchMetadata.supported_functions"
-      :supported-attributes="searchMetadata.attribute_keys"
-      :selected-attributes="groupBy.attributes"
-      :selected-function="groupBy.func"
-      @groupBy="onGroupBy"
-    />
+      <group-by-filter
+        :supported-functions="searchMetadata.supported_functions"
+        :supported-attributes="searchMetadata.attribute_keys"
+        :selected-attributes="groupBy.attributes"
+        :selected-function="groupBy.func"
+        @groupBy="onGroupBy"
+      />
+    </div>
 
     <gl-button
       type="submit"
