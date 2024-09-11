@@ -627,10 +627,30 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
               "or access denied! Make sure any includes in the pipeline configuration are correctly defined.")
       end
 
-      context 'when security policy projects enable `spp_repository_pipeline_access` project setting' do
+      context 'when security policy projects have the project setting `spp_repository_pipeline_access` enabled' do
         before do
           project_policies_project.project_setting.update!(spp_repository_pipeline_access: true)
           namespace_policies_project.project_setting.update!(spp_repository_pipeline_access: true)
+        end
+
+        it 'responds with success' do
+          expect(execute).to be_success
+        end
+      end
+
+      context 'when group has setting `spp_repository_pipeline_access` enabled' do
+        before do
+          group.namespace_settings.update!(spp_repository_pipeline_access: true)
+        end
+
+        it 'responds with success' do
+          expect(execute).to be_success
+        end
+      end
+
+      context 'when application setting `spp_repository_pipeline_access` is enabled' do
+        before do
+          stub_application_setting(spp_repository_pipeline_access: true)
         end
 
         it 'responds with success' do

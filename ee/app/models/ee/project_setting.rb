@@ -5,7 +5,7 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
-      cascading_attr :duo_features_enabled
+      cascading_attr :duo_features_enabled, :spp_repository_pipeline_access
 
       belongs_to :push_rule
 

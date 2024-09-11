@@ -3371,6 +3371,61 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:download_code_spp_repository) }
         end
       end
+
+      context 'and namespace allows spp_repository_pipeline_access' do
+        before do
+          project.group.namespace_settings.update!(spp_repository_pipeline_access: true)
+        end
+
+        context 'and the project is private in group' do
+          let(:project) { private_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is internal in group' do
+          let_it_be_with_refind(:internal_project_in_group) { create(:project, :internal, namespace: group) }
+          let(:project) { internal_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public in group' do
+          let(:project) { public_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+      end
+
+      context 'and application setting allows spp_repository_pipeline_access' do
+        before do
+          stub_application_setting(spp_repository_pipeline_access: true)
+        end
+
+        context 'and the project is private' do
+          let(:project) { private_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is internal' do
+          let(:project) { internal_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public' do
+          let(:project) { public_project }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+
+        context 'and the project is public in group' do
+          let(:project) { public_project_in_group }
+
+          it { is_expected.to be_allowed(:download_code_spp_repository) }
+        end
+      end
     end
 
     context 'when user is authenticated via CI_JOB_TOKEN', :request_store do
