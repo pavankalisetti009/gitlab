@@ -94,6 +94,17 @@ export const i18n = {
     dismiss: s__('ComplianceReport|Dismiss'),
     migratePipelineToPolicy: s__('ComplianceReport|Migrate pipeline to a policy'),
     migratePipelineToPolicyEmpty: s__('ComplianceReport|Create policy'),
+
+    postMigrationMessages: [
+      s__(
+        `ComplianceReport|This compliance framework's compliance pipeline has been migrated to a pipeline execution policy.`,
+      ),
+      s__(`ComplianceReport|However, there is still a configured compliance pipeline that must be removed. Otherwise, the compliance pipeline will
+continue to take precedence over the new pipeline execution policy.`),
+      s__(
+        `ComplianceReport|Please remove the compliance pipeline configuration from the compliance framework so that the new pipeline execution policy can take precedence.`,
+      ),
+    ],
   },
 
   projects: s__('ComplianceFrameworks|Projects'),

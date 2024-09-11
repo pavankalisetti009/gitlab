@@ -59,6 +59,11 @@ export default {
       required: false,
       default: false,
     },
+    hasMigratedPipeline: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
 
   data() {
@@ -163,6 +168,9 @@ export default {
     },
     showMaintenanceModeAlert() {
       return this.featurePipelineMaintenanceModeEnabled && !this.maintenanceModeDismissed;
+    },
+    showPostMigrationAlert() {
+      return !this.isCreatingNewPolicy && this.hasMigratedPipeline;
     },
   },
 
@@ -285,21 +293,32 @@ export default {
           :title="$options.i18n.deprecationWarning.title"
           @dismiss="handleOnDismissMaintenanceMode"
         >
-          <p>
-            <gl-sprintf :message="$options.i18n.deprecationWarning.message">
+          <template v-if="showPostMigrationAlert">
+            <p
+              v-for="(message, index) in $options.i18n.deprecationWarning.postMigrationMessages"
+              :key="index"
+            >
+              {{ message }}
+            </p>
+          </template>
+          <template v-else>
+            <p>
+              <gl-sprintf :message="$options.i18n.deprecationWarning.message">
+                <template #link="{ content }">
+                  <gl-link :href="pipelineExecutionPolicyPath" target="_blank">{{
+                    content
+                  }}</gl-link>
+                </template>
+              </gl-sprintf>
+            </p>
+
+            <gl-sprintf :message="$options.i18n.deprecationWarning.details">
               <template #link="{ content }">
-                <gl-link :href="pipelineExecutionPolicyPath" target="_blank">{{ content }}</gl-link>
+                <gl-link :href="migratePipelineToPolicyPath" target="_blank">{{ content }}</gl-link>
               </template>
             </gl-sprintf>
-          </p>
-
-          <gl-sprintf :message="$options.i18n.deprecationWarning.details">
-            <template #link="{ content }">
-              <gl-link :href="migratePipelineToPolicyPath" target="_blank">{{ content }}</gl-link>
-            </template>
-          </gl-sprintf>
-
-          <template #actions>
+          </template>
+          <template v-if="!showPostMigrationAlert" #actions>
             <gl-button
               category="primary"
               variant="confirm"

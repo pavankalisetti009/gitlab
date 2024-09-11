@@ -10,6 +10,7 @@ import {
   getSubmissionParams,
   initialiseFormData,
 } from 'ee/groups/settings/compliance_frameworks/utils';
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ROUTE_NEW_FRAMEWORK_SUCCESS } from '../../../constants';
 
@@ -50,6 +51,7 @@ export default {
       isBasicInformationValid: true,
       isSaving: false,
       isDeleting: false,
+      hasMigratedPipeline: false,
     };
   },
   apollo: {
@@ -67,6 +69,20 @@ export default {
         if (complianceFramework) {
           this.formData = { ...complianceFramework };
           this.originalName = complianceFramework.name;
+          const policyBlob =
+            data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
+          if (policyBlob) {
+            const id = getIdFromGraphQLId(this.graphqlId);
+            const contents = fromYaml({ manifest: policyBlob });
+            this.hasMigratedPipeline = Boolean(
+              contents?.pipeline_execution_policy?.find((policy) => {
+                return (
+                  policy?.policy_scope?.compliance_frameworks?.find((f) => f.id === id) &&
+                  policy?.metadata?.compliance_pipeline_migration
+                );
+              }),
+            );
+          }
         } else {
           this.errorMessage = this.$options.i18n.fetchError;
         }
@@ -251,6 +267,7 @@ export default {
           v-if="formData"
           v-model="formData"
           :is-expanded="isNewFramework"
+          :has-migrated-pipeline="hasMigratedPipeline"
           @valid="isBasicInformationValid = $event"
         />
 
