@@ -144,6 +144,9 @@ export default {
         createIssueUrl: this.createIssueUrl,
       });
     },
+    metricHasRelatedTraces() {
+      return this.metricData?.some(({ values }) => values.some((value) => value[2]?.length > 0));
+    },
   },
   created() {
     this.validateAndFetch();
@@ -317,6 +320,7 @@ export default {
             />
 
             <related-traces
+              v-if="metricHasRelatedTraces"
               class="gl-mb-5 gl-ml-11"
               :data-points="selectedDatapoints"
               :tracing-index-url="tracingIndexUrl"
