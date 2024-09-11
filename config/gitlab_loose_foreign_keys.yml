@@ -204,6 +204,9 @@ dast_profiles_tags:
   - table: tags
     column: tag_id
     on_delete: async_delete
+  - table: projects
+    column: project_id
+    on_delete: async_delete
 dast_scanner_profiles:
   - table: projects
     column: project_id
@@ -241,6 +244,10 @@ dast_site_validations:
 dast_sites:
   - table: projects
     column: project_id
+    on_delete: async_delete
+dependency_list_exports:
+  - table: ci_pipelines
+    column: pipeline_id
     on_delete: async_delete
 deployment_clusters:
   - table: clusters

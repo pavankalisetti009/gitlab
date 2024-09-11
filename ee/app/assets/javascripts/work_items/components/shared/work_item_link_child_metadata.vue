@@ -212,7 +212,7 @@ export default {
       </div>
     </template>
     <template #right-metadata>
-      <div class="gl-flex">
+      <div class="gl-flex gl-gap-3">
         <work-item-rolled-up-health-status
           v-if="rolledUpHealthStatus"
           :rolled-up-health-status="rolledUpHealthStatus"
