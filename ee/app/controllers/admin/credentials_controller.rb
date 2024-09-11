@@ -10,11 +10,8 @@ class Admin::CredentialsController < Admin::ApplicationController
 
   before_action :check_license_credentials_inventory_available!, only: [:index, :revoke, :destroy]
 
-  track_event :index,
-    name: 'i_compliance_credential_inventory',
-    action: 'visit_compliance_credential_inventory',
-    label: 'redis_hll_counters.compliance.compliance_total_unique_counts_monthly',
-    destinations: [:redis_hll, :snowplow]
+  track_internal_event :index,
+    name: 'visit_compliance_credential_inventory'
 
   feature_category :user_management
 
