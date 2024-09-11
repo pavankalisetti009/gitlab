@@ -29,8 +29,15 @@ module RemoteDevelopment
               workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
             default_resources_per_workspace_container =
               workspaces_agent_config.default_resources_per_workspace_container.deep_symbolize_keys
+            allow_privilege_escalation = workspaces_agent_config.allow_privilege_escalation
+            use_kubernetes_user_namespaces = workspaces_agent_config.use_kubernetes_user_namespaces
+            default_runtime_class = workspaces_agent_config.default_runtime_class
+            agent_annotations = workspaces_agent_config.annotations
+            agent_labels = workspaces_agent_config.labels
 
-            labels, annotations = get_labels_and_annotations(
+            labels, annotations = get_merged_labels_and_annotations(
+              agent_labels: agent_labels,
+              agent_annotations: agent_annotations,
               agent_id: workspace.agent.id,
               domain_template: domain_template,
               owning_inventory: inventory_name,
@@ -41,12 +48,12 @@ module RemoteDevelopment
             k8s_inventory_for_workspace_core = get_inventory_config_map(
               name: inventory_name,
               namespace: workspace.namespace,
+              agent_labels: agent_labels,
+              agent_annotations: agent_annotations,
               agent_id: workspace.agent.id
             )
 
-            # TODO: https://gitlab.com/groups/gitlab-org/-/epics/10461 - handle error
-            k8s_resources_for_workspace_core = DevfileParser.get_all(
-              processed_devfile: workspace.processed_devfile,
+            k8s_resources_params = {
               name: workspace.name,
               namespace: workspace.namespace,
               replicas: replicas,
@@ -56,6 +63,15 @@ module RemoteDevelopment
               env_secret_names: env_secret_names,
               file_secret_names: file_secret_names,
               default_resources_per_workspace_container: default_resources_per_workspace_container,
+              allow_privilege_escalation: allow_privilege_escalation,
+              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+              default_runtime_class: default_runtime_class
+            }
+
+            # TODO: https://gitlab.com/groups/gitlab-org/-/epics/12225 - handle error
+            k8s_resources_for_workspace_core = DevfileParser.get_all(
+              processed_devfile: workspace.processed_devfile,
+              k8s_resources_params: k8s_resources_params,
               logger: logger
             )
             # If we got no resources back from the devfile parser, this indicates some error was encountered in parsing
@@ -93,6 +109,8 @@ module RemoteDevelopment
 
               k8s_resources_for_secrets = get_k8s_resources_for_secrets(
                 workspace: workspace,
+                agent_labels: agent_labels,
+                agent_annotations: agent_annotations,
                 env_secret_name: env_secret_name,
                 file_secret_name: file_secret_name,
                 max_resources_per_workspace: max_resources_per_workspace
@@ -104,6 +122,8 @@ module RemoteDevelopment
           end
 
           # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
+          # @param [Hash<String, String>] agent_labels
+          # @param [Hash<String, String>] agent_annotations
           # @param [String] env_secret_name
           # @param [String] file_secret_name
           # @param [String] env_secret_name
@@ -112,13 +132,17 @@ module RemoteDevelopment
           # @return [Array<(Hash)>]
           def self.get_k8s_resources_for_secrets(
             workspace:,
+            agent_labels:,
+            agent_annotations:,
             env_secret_name:,
             file_secret_name:,
             max_resources_per_workspace:
           )
             inventory_name = "#{workspace.name}-secrets-inventory"
             domain_template = get_domain_template_annotation(name: workspace.name, dns_zone: workspace.dns_zone)
-            labels, annotations = get_labels_and_annotations(
+            labels, annotations = get_merged_labels_and_annotations(
+              agent_labels: agent_labels,
+              agent_annotations: agent_annotations,
               agent_id: workspace.agent.id,
               domain_template: domain_template,
               owning_inventory: inventory_name,
@@ -128,6 +152,8 @@ module RemoteDevelopment
 
             k8s_inventory = get_inventory_config_map(
               name: inventory_name,
+              agent_labels: agent_labels,
+              agent_annotations: agent_annotations,
               namespace: workspace.namespace,
               agent_id: workspace.agent.id
             )
@@ -172,23 +198,30 @@ module RemoteDevelopment
 
           # @param [String] name
           # @param [String] namespace
+          # @param [Hash<String, String>] agent_labels
+          # @param [Hash<String, String>] agent_annotations
           # @param [Integer] agent_id
           # @return [Hash]
-          def self.get_inventory_config_map(name:, namespace:, agent_id:)
+          def self.get_inventory_config_map(name:, namespace:, agent_labels:, agent_annotations:, agent_id:)
+            extra_labels = {
+              'cli-utils.sigs.k8s.io/inventory-id' => name,
+              'agent.gitlab.com/id' => agent_id.to_s
+            }
+            labels = agent_labels.merge(extra_labels)
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
               metadata: {
                 name: name,
                 namespace: namespace,
-                labels: {
-                  'cli-utils.sigs.k8s.io/inventory-id': name,
-                  'agent.gitlab.com/id': agent_id.to_s
-                }
+                labels: labels,
+                annotations: agent_annotations
               }
             }.deep_stringify_keys.to_h
           end
 
+          # @param [Hash<String, String>] agent_labels
+          # @param [Hash<String, String>] agent_annotations
           # @param [Integer] agent_id
           # @param [String] domain_template
           # @param [String] owning_inventory
@@ -196,23 +229,27 @@ module RemoteDevelopment
           # @param [Integer] workspace_id
           # @param [Hash] max_resources_per_workspace
           # @return [Array<Hash, Hash>]
-          def self.get_labels_and_annotations(
+          def self.get_merged_labels_and_annotations(
+            agent_labels:,
+            agent_annotations:,
             agent_id:,
             domain_template:,
             owning_inventory:,
             workspace_id:,
             max_resources_per_workspace:
           )
-            labels = {
+            extra_labels = {
               'agent.gitlab.com/id' => agent_id.to_s
             }
-            annotations = {
+            labels = agent_labels.merge(extra_labels)
+            extra_annotations = {
               'config.k8s.io/owning-inventory' => owning_inventory.to_s,
               'workspaces.gitlab.com/host-template' => domain_template.to_s,
               'workspaces.gitlab.com/id' => workspace_id.to_s,
               'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
                 Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
             }
+            annotations = agent_annotations.merge(extra_annotations)
             [labels, annotations]
           end
 

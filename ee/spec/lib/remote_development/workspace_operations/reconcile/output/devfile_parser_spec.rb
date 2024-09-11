@@ -40,6 +40,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
     { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
   end
 
+  let(:allow_privilege_escalation) { false }
+  let(:use_kubernetes_user_namespaces) { false }
+  let(:default_runtime_class) { "test" }
+  let(:agent_labels) { { a: "1" } }
+  let(:agent_annotations) { { b: "2" } }
+
   let(:expected_workspace_resources) do
     YAML.load_stream(
       create_config_to_apply(
@@ -52,37 +58,81 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
         include_all_resources: false,
         dns_zone: dns_zone,
         egress_ip_rules: egress_ip_rules,
-        default_resources_per_workspace_container: default_resources_per_workspace_container
+        default_resources_per_workspace_container: default_resources_per_workspace_container,
+        allow_privilege_escalation: allow_privilege_escalation,
+        use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+        default_runtime_class: default_runtime_class,
+        agent_labels: agent_labels,
+        agent_annotations: agent_annotations
       )
     )
+  end
+
+  let(:k8s_resources_params_class) do
+    RemoteDevelopment::WorkspaceOperations::Reconcile::Output::KubernetesResourcesParams
   end
 
   subject(:devfile_parser) do
     described_class
   end
 
-  it 'returns workspace_resources' do
-    workspace_resources = devfile_parser.get_all(
-      processed_devfile: example_processed_devfile,
-      name: workspace.name,
-      namespace: workspace.namespace,
-      replicas: 1,
-      domain_template: domain_template,
-      labels: { 'agent.gitlab.com/id' => workspace.agent.id },
-      annotations: {
+  shared_examples 'successfully generation of workspace_resources' do
+    it 'returns workspace_resources' do
+      extra_labels = { 'agent.gitlab.com/id' => workspace.agent.id }
+      labels = agent_labels.merge(extra_labels)
+      extra_annotations = {
         'config.k8s.io/owning-inventory' => "#{workspace.name}-workspace-inventory",
         'workspaces.gitlab.com/host-template' => domain_template,
         'workspaces.gitlab.com/id' => workspace.id,
         'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
           Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
-      },
-      env_secret_names: [environment_secret_name],
-      file_secret_names: [file_secret_name],
-      default_resources_per_workspace_container: default_resources_per_workspace_container,
-      logger: logger
-    )
+      }
+      annotations = agent_annotations.merge(extra_annotations)
 
-    expect(workspace_resources).to eq(expected_workspace_resources)
+      k8s_resources_params = {
+        name: workspace.name,
+        namespace: workspace.namespace,
+        replicas: 1,
+        domain_template: domain_template,
+        labels: labels,
+        annotations: annotations,
+        env_secret_names: [environment_secret_name],
+        file_secret_names: [file_secret_name],
+        default_resources_per_workspace_container: default_resources_per_workspace_container,
+        allow_privilege_escalation: allow_privilege_escalation,
+        use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+        default_runtime_class: default_runtime_class
+      }
+
+      workspace_resources = devfile_parser.get_all(
+        processed_devfile: example_processed_devfile,
+        k8s_resources_params: k8s_resources_params,
+        logger: logger
+      )
+
+      expect(workspace_resources).to eq(expected_workspace_resources)
+    end
+  end
+
+  it_behaves_like 'successfully generation of workspace_resources'
+
+  context "when allow_privilege_escalation is true" do
+    let(:allow_privilege_escalation) { true }
+
+    it_behaves_like 'successfully generation of workspace_resources'
+  end
+
+  context "when use_kubernetes_user_namespaces is true" do
+    let(:use_kubernetes_user_namespaces) { true }
+
+    it_behaves_like 'successfully generation of workspace_resources'
+  end
+
+  context "when allow_privilege_escalation and use_kubernetes_user_namespaces are true" do
+    let(:allow_privilege_escalation) { true }
+    let(:use_kubernetes_user_namespaces) { true }
+
+    it_behaves_like 'successfully generation of workspace_resources'
   end
 
   context "when Devfile::CliError is raised" do
@@ -99,8 +149,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
         devfile_parser_error: "some error"
       )
 
-      workspace_resources = devfile_parser.get_all(
-        processed_devfile: "",
+      k8s_resources_params = {
         name: workspace.name,
         namespace: workspace.namespace,
         replicas: 1,
@@ -110,6 +159,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
         env_secret_names: [environment_secret_name],
         file_secret_names: [file_secret_name],
         default_resources_per_workspace_container: default_resources_per_workspace_container,
+        allow_privilege_escalation: allow_privilege_escalation,
+        use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+        default_runtime_class: default_runtime_class
+      }
+
+      workspace_resources = devfile_parser.get_all(
+        processed_devfile: "",
+        k8s_resources_params: k8s_resources_params,
         logger: logger
       )
 
