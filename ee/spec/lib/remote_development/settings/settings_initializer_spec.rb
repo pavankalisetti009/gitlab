@@ -31,7 +31,12 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           :default_resources_per_workspace_container,
           :max_resources_per_workspace,
           :gitlab_workspaces_proxy_namespace,
-          :network_policy_enabled
+          :network_policy_enabled,
+          :allow_privilege_escalation,
+          :use_kubernetes_user_namespaces,
+          :default_runtime_class,
+          :annotations,
+          :labels
         ],
         settings: {
           default_branch_name: nil,
@@ -50,7 +55,12 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           default_resources_per_workspace_container: {},
           max_resources_per_workspace: {},
           gitlab_workspaces_proxy_namespace: {},
-          network_policy_enabled: true
+          network_policy_enabled: true,
+          allow_privilege_escalation: false,
+          use_kubernetes_user_namespaces: false,
+          default_runtime_class: "",
+          annotations: {},
+          labels: {}
         },
         setting_types: {
           default_branch_name: String,
@@ -66,7 +76,12 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           default_resources_per_workspace_container: Hash,
           max_resources_per_workspace: Hash,
           gitlab_workspaces_proxy_namespace: Hash,
-          network_policy_enabled: Object
+          network_policy_enabled: Object,
+          allow_privilege_escalation: :Boolean,
+          use_kubernetes_user_namespaces: :Boolean,
+          default_runtime_class: String,
+          annotations: Hash,
+          labels: Hash
         },
         env_var_prefix: "GITLAB_REMOTE_DEVELOPMENT",
         env_var_failed_message_class: RemoteDevelopment::Settings::Messages::SettingsEnvironmentVariableOverrideFailed

@@ -97,7 +97,12 @@ module RemoteDevelopment
             :network_policy_egress,
             :network_policy_enabled,
             :workspaces_per_user_quota,
-            :workspaces_quota
+            :workspaces_quota,
+            :allow_privilege_escalation,
+            :use_kubernetes_user_namespaces,
+            :default_runtime_class,
+            :annotations,
+            :labels
           ]
         )
         agent_config_values = agent_config_settings.merge(normalized_config_from_file)
@@ -120,6 +125,11 @@ module RemoteDevelopment
           agent_config_values.fetch(:default_max_hours_before_termination)
         model_instance.max_hours_before_termination_limit =
           agent_config_values.fetch(:max_hours_before_termination_limit)
+        model_instance.allow_privilege_escalation = agent_config_values.fetch(:allow_privilege_escalation)
+        model_instance.use_kubernetes_user_namespaces = agent_config_values.fetch(:use_kubernetes_user_namespaces)
+        model_instance.default_runtime_class = agent_config_values.fetch(:default_runtime_class)
+        model_instance.annotations = agent_config_values.fetch(:annotations)
+        model_instance.labels = agent_config_values.fetch(:labels)
 
         model_instance
       end

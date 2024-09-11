@@ -46,6 +46,23 @@ module RemoteDevelopment
         less_than_or_equal_to: :max_hours_before_termination_limit
       }
 
+    validate :validate_allow_privilege_escalation
+
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
+
+    private
+
+    # allow_privilege_escalation is allowed to be set to true only if
+    # - either use_kubernetes_user_namespaces is true
+    # - or default_runtime_class is set to a non-empty value
+    # This ensures that unsafe usage of allow_privilege_escalation is not allowed.
+    def validate_allow_privilege_escalation
+      return if allow_privilege_escalation == false
+      return if use_kubernetes_user_namespaces == true || default_runtime_class.present?
+
+      msg = 'can be true only if either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty'
+      errors.add(:allow_privilege_escalation, format(_(msg)))
+      false
+    end
   end
 end

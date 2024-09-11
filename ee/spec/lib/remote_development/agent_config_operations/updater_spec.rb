@@ -41,15 +41,16 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   end
 
   let(:default_default_resources_per_workspace_container) { {} }
-
   let(:default_resources_per_workspace_container) { default_default_resources_per_workspace_container }
   let(:default_max_resources_per_workspace) { {} }
-
   let(:max_resources_per_workspace) { default_max_resources_per_workspace }
-
   let(:default_max_hours_before_termination) { 24 }
-
   let(:max_hours_before_termination_limit) { 120 }
+  let(:allow_privilege_escalation) { false }
+  let(:use_kubernetes_user_namespaces) { false }
+  let(:default_runtime_class) { "" }
+  let(:annotations) { {} }
+  let(:labels) { {} }
 
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
 
@@ -75,6 +76,12 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       remote_development_config['workspaces_per_user_quota'] = quota
     end
 
+    remote_development_config['allow_privilege_escalation'] = allow_privilege_escalation if allow_privilege_escalation
+    remote_development_config['use_kubernetes_user_namespaces'] = use_kubernetes_user_namespaces
+    remote_development_config['default_runtime_class'] = default_runtime_class
+    remote_development_config['annotations'] = annotations
+    remote_development_config['labels'] = labels
+
     {
       remote_development: HashWithIndifferentAccess.new(remote_development_config)
     }
@@ -90,7 +97,12 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       :network_policy_egress,
       :network_policy_enabled,
       :workspaces_per_user_quota,
-      :workspaces_quota
+      :workspaces_quota,
+      :allow_privilege_escalation,
+      :use_kubernetes_user_namespaces,
+      :default_runtime_class,
+      :annotations,
+      :labels
     ]
   end
 
@@ -104,8 +116,12 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       network_policy_egress: default_network_policy_egress,
       network_policy_enabled: network_policy_enabled,
       workspaces_per_user_quota: default_unlimited_quota,
-      workspaces_quota: default_unlimited_quota
-
+      workspaces_quota: default_unlimited_quota,
+      allow_privilege_escalation: allow_privilege_escalation,
+      use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+      default_runtime_class: default_runtime_class,
+      annotations: annotations,
+      labels: labels
     }
   end
 
@@ -153,6 +169,11 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         expect(config_instance.workspaces_per_user_quota).to eq(saved_quota)
         expect(config_instance.default_max_hours_before_termination).to eq(default_max_hours_before_termination)
         expect(config_instance.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit)
+        expect(config_instance.allow_privilege_escalation).to eq(allow_privilege_escalation)
+        expect(config_instance.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
+        expect(config_instance.default_runtime_class).to eq(default_runtime_class)
+        expect(config_instance.annotations.deep_symbolize_keys).to eq(annotations)
+        expect(config_instance.labels.deep_symbolize_keys).to eq(labels)
 
         expect(result)
           .to be_ok_result(RemoteDevelopment::Messages::AgentConfigUpdateSuccessful.new(
@@ -276,6 +297,46 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         end
       end
 
+      context 'when allow_privilege_escalation is explicitly specified in the config passed' do
+        let(:allow_privilege_escalation) { true }
+
+        context 'when use_kubernetes_user_namespaces is explicitly specified in the config passed' do
+          let(:use_kubernetes_user_namespaces) { true }
+
+          it_behaves_like 'successful update'
+        end
+
+        context 'when default_runtime_class is explicitly specified in the config passed' do
+          let(:default_runtime_class) { "test" }
+
+          it_behaves_like 'successful update'
+        end
+      end
+
+      context 'when use_kubernetes_user_namespaces is explicitly specified in the config passed' do
+        let(:use_kubernetes_user_namespaces) { true }
+
+        it_behaves_like 'successful update'
+      end
+
+      context 'when default_runtime_class is explicitly specified in the config passed' do
+        let(:default_runtime_class) { "test" }
+
+        it_behaves_like 'successful update'
+      end
+
+      context 'when annotations is explicitly specified in the config passed' do
+        let(:annotations) { { a: "1" } }
+
+        it_behaves_like 'successful update'
+      end
+
+      context 'when labels is explicitly specified in the config passed' do
+        let(:labels) { { b: "2" } }
+
+        it_behaves_like 'successful update'
+      end
+
       context "with existing workspaces_agent_config" do
         let(:expected_configs_created) { 0 }
         let_it_be(:workspaces_agent_config, refind: true) do
@@ -377,6 +438,21 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
             expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)
             message.content => { errors: ActiveModel::Errors => errors }
             expect(errors.full_messages.join(', ')).to match(/dns zone/i)
+          end
+        end
+      end
+
+      context 'when allow_privilege_escalation is explicitly specified in the config passed' do
+        let(:allow_privilege_escalation) { true }
+
+        it 'does not create the record and returns error' do
+          expect { result }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
+          expect(agent.reload.workspaces_agent_config).to be_nil
+
+          expect(result).to be_err_result do |message|
+            expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)
+            message.content => { errors: ActiveModel::Errors => errors }
+            expect(errors.full_messages.join(', ')).to match(/allow privilege escalation/i)
           end
         end
       end

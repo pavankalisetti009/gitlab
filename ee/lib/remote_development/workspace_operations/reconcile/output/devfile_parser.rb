@@ -9,32 +9,26 @@ module RemoteDevelopment
         class DevfileParser
           RUN_AS_USER = 5001
 
-          # rubocop:todo Metrics/ParameterLists -- refactor this to have fewer parameters - perhaps introduce a parameter object: https://refactoring.com/catalog/introduceParameterObject.html
           # @param [String] processed_devfile
-          # @param [String] name
-          # @param [String] namespace
-          # @param [Integer] replicas
-          # @param [String] domain_template
-          # @param [Hash] labels
-          # @param [Hash] annotations
-          # @param [Array<String>] env_secret_names
-          # @param [Array<String>] file_secret_names
-          # @param [Hash] default_resources_per_workspace_container
+          # @param [Hash] k8s_resources_params
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
-          def self.get_all(
-            processed_devfile:,
-            name:,
-            namespace:,
-            replicas:,
-            domain_template:,
-            labels:,
-            annotations:,
-            env_secret_names:,
-            file_secret_names:,
-            default_resources_per_workspace_container:,
-            logger:
-          )
+          def self.get_all(processed_devfile:, k8s_resources_params:, logger:)
+            k8s_resources_params => {
+              name: String => name,
+              namespace: String => namespace,
+              replicas: Integer => replicas,
+              domain_template: String => domain_template,
+              labels: Hash => labels,
+              annotations: Hash => annotations,
+              env_secret_names: Array => env_secret_names,
+              file_secret_names: Array => file_secret_names,
+              default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
+              allow_privilege_escalation: TrueClass | FalseClass => allow_privilege_escalation,
+              use_kubernetes_user_namespaces: TrueClass | FalseClass => use_kubernetes_user_namespaces,
+              default_runtime_class: String => default_runtime_class
+            }
+
             begin
               workspace_resources_yaml = Devfile::Parser.get_all(
                 processed_devfile,
@@ -58,7 +52,18 @@ module RemoteDevelopment
             end
 
             workspace_resources = YAML.load_stream(workspace_resources_yaml)
-            workspace_resources = set_security_context(workspace_resources: workspace_resources)
+            workspace_resources = set_host_users(
+              workspace_resources: workspace_resources,
+              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
+            )
+            workspace_resources = set_runtime_class(
+              workspace_resources: workspace_resources,
+              runtime_class_name: default_runtime_class
+            )
+            workspace_resources = set_security_context(
+              workspace_resources: workspace_resources,
+              allow_privilege_escalation: allow_privilege_escalation
+            )
             workspace_resources = patch_default_resources(
               workspace_resources: workspace_resources,
               default_resources_per_workspace_container:
@@ -70,7 +75,40 @@ module RemoteDevelopment
               file_secret_names: file_secret_names
             )
           end
-          # rubocop:enable Metrics/ParameterLists
+
+          # @param [Array<Hash>] workspace_resources
+          # @param [Boolean] use_kubernetes_user_namespaces
+          # @return [Array<Hash>]
+          def self.set_host_users(workspace_resources:, use_kubernetes_user_namespaces:)
+            # NOTE: Not setting the use_kubernetes_user_namespaces always since setting it now would require migration
+            # from old config version to a new one. Set this field always
+            # when a new devfile parser is created for some other reason.
+            return workspace_resources unless use_kubernetes_user_namespaces
+
+            workspace_resources.each do |workspace_resource|
+              next unless workspace_resource['kind'] == 'Deployment'
+
+              workspace_resource['spec']['template']['spec']['hostUsers'] = use_kubernetes_user_namespaces
+            end
+            workspace_resources
+          end
+
+          # @param [Array<Hash>] workspace_resources
+          # @param [String] runtime_class_name
+          # @return [Array<Hash>]
+          def self.set_runtime_class(workspace_resources:, runtime_class_name:)
+            # NOTE: Not setting the runtime_class_name always since changing it now would require migration
+            # from old config version to a new one. Update this field to `runtime_class_name.presence`
+            # when a new devfile parser is created for some other reason.
+            return workspace_resources if runtime_class_name.empty?
+
+            workspace_resources.each do |workspace_resource|
+              next unless workspace_resource['kind'] == 'Deployment'
+
+              workspace_resource['spec']['template']['spec']['runtimeClassName'] = runtime_class_name
+            end
+            workspace_resources
+          end
 
           # Devfile library allows specifying the security context of pods/containers as mentioned in
           # https://github.com/devfile/api/issues/920 through `pod-overrides` and `container-overrides` attributes.
@@ -81,8 +119,13 @@ module RemoteDevelopment
           #       the logic of setting the security context as part of workspace creation.
 
           # @param [Array<Hash>] workspace_resources
+          # @param [Boolean] allow_privilege_escalation
+          # @param [Boolean] use_kubernetes_user_namespaces
           # @return [Array<Hash>]
-          def self.set_security_context(workspace_resources:)
+          def self.set_security_context(
+            workspace_resources:,
+            allow_privilege_escalation:
+          )
             workspace_resources.each do |workspace_resource|
               next unless workspace_resource['kind'] == 'Deployment'
 
@@ -93,7 +136,7 @@ module RemoteDevelopment
                 'fsGroupChangePolicy' => 'OnRootMismatch'
               }
               container_security_context = {
-                'allowPrivilegeEscalation' => false,
+                'allowPrivilegeEscalation' => allow_privilege_escalation,
                 'privileged' => false,
                 'runAsNonRoot' => true,
                 'runAsUser' => RUN_AS_USER
