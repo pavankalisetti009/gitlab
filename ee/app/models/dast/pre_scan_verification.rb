@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class PreScanVerification < ApplicationRecord
+  class PreScanVerification < Gitlab::Database::SecApplicationRecord
     self.table_name = 'dast_pre_scan_verifications'
 
     belongs_to :ci_pipeline, class_name: 'Ci::Pipeline', optional: true
