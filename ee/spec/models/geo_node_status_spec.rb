@@ -132,19 +132,36 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
   end
 
   describe '#projects_count' do
-    it 'counts the number of projects on a primary node' do
+    it 'returns nil on a primary site' do
       stub_current_geo_node(primary)
 
-      expect(subject.projects_count).to eq 4
+      expect(subject.projects_count).to be_nil
     end
 
-    it 'counts the number of projects on a secondary node' do
+    it 'returns nil on a secondary site' do
       stub_current_geo_node(secondary)
 
       create(:geo_project_repository_registry, :synced, project: project_1)
       create(:geo_project_repository_registry, project: project_3)
 
-      expect(subject.projects_count).to eq 2
+      expect(subject.projects_count).to be_nil
+    end
+  end
+
+  describe '#repositories_count' do
+    it 'counts the number of project repositories on a primary site' do
+      stub_current_geo_node(primary)
+
+      expect(subject.repositories_count).to eq 4
+    end
+
+    it 'counts the number of project repository registries on a secondary site' do
+      stub_current_geo_node(secondary)
+
+      create(:geo_project_repository_registry, :synced, project: project_1)
+      create(:geo_project_repository_registry, project: project_3)
+
+      expect(subject.repositories_count).to eq 2
     end
   end
 
@@ -256,9 +273,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
 
   describe '#[]' do
     it 'returns values for each attribute' do
-      create(:geo_project_repository_registry, project: project_1)
-
-      expect(subject[:projects_count]).to eq(1)
+      expect(subject[:project_repositories_count]).to eq(0)
+      expect(subject[:projects_count]).to be_nil
     end
 
     it 'raises an error for invalid attributes' do
@@ -291,21 +307,6 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
   describe '#storage_shards' do
     it "returns the current node's shard config" do
       expect(subject[:storage_shards].as_json).to eq(StorageShard.all.as_json)
-    end
-  end
-
-  describe '#from_json' do
-    it 'returns a new GeoNodeStatus excluding parameters' do
-      status = create(:geo_node_status)
-
-      data = GeoNodeStatusSerializer.new.represent(status).as_json
-      data['id'] = 10000
-
-      result = described_class.from_json(data)
-
-      expect(result.id).to be_nil
-      expect(result.cursor_last_event_date).to eq(Time.zone.at(status.cursor_last_event_timestamp))
-      expect(result.storage_shards.count).to eq(Settings.repositories.storages.count)
     end
   end
 
@@ -353,7 +354,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
         project_1.update!(last_repository_check_at: 2.minutes.ago)
         project_2.update!(last_repository_check_at: 7.minutes.ago)
 
-        expect(status.repositories_checked_count).to eq(2)
+        expect(status.repositories_checked_count).to be_nil
       end
     end
 
@@ -385,7 +386,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
         project_1.update!(last_repository_check_at: 2.minutes.ago, last_repository_check_failed: true)
         project_2.update!(last_repository_check_at: 7.minutes.ago, last_repository_check_failed: false)
 
-        expect(status.repositories_checked_failed_count).to eq(1)
+        expect(status.repositories_checked_failed_count).to be_nil
       end
     end
 
