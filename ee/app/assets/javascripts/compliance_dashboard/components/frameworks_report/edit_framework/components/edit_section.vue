@@ -1,9 +1,11 @@
 <script>
-import { GlButton, GlCollapse } from '@gitlab/ui';
+import { GlButton, GlCollapse, GlBadge } from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 
 export default {
   components: {
     GlButton,
+    GlBadge,
     GlCollapse,
   },
   props: {
@@ -15,7 +17,17 @@ export default {
       type: String,
       required: true,
     },
-    expandable: {
+    itemsCount: {
+      type: Number,
+      required: false,
+      default: null,
+    },
+    isRequired: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    isCompleted: {
       type: Boolean,
       required: false,
       default: false,
@@ -34,8 +46,17 @@ export default {
   },
 
   computed: {
-    isCurrentlyExpanded() {
-      return !this.expandable || this.isExpanded;
+    collapseIconName() {
+      return this.isExpanded ? 'chevron-lg-down' : 'chevron-lg-right';
+    },
+    collapseIconAlt() {
+      return this.isExpanded ? __('Collapse') : __('Expand');
+    },
+    showItemsCount() {
+      return this.itemsCount !== null;
+    },
+    isSuccessState() {
+      return this.itemsCount > 0 || this.isCompleted;
     },
   },
 
@@ -44,28 +65,47 @@ export default {
       this.isExpanded = !this.isExpanded;
     },
   },
+  i18n: {
+    required: s__('ComplianceFrameworks|Required'),
+    optional: s__('ComplianceFrameworks|Optional'),
+  },
 };
 </script>
 <template>
-  <div>
+  <div class="gl-mb-1">
     <div
-      class="gl-my-4 gl-flex gl-items-center gl-bg-gray-10 gl-p-4"
-      :class="{
-        'gl-cursor-pointer': expandable,
-      }"
+      class="gl-flex gl-cursor-pointer gl-items-center gl-bg-gray-50 gl-p-5"
       @click="toggleExpand"
     >
       <div class="gl-grow">
-        <div class="gl-text-size-h2 gl-font-bold">
-          {{ title }}
+        <div class="gl-flex gl-items-center">
+          <h3 class="gl-heading-3 gl-mb-2">{{ title }}</h3>
+          <gl-badge
+            v-if="showItemsCount"
+            class="gl-mb-2 gl-ml-3"
+            variant="neutral"
+            data-testid="count-badge"
+            >{{ itemsCount }}</gl-badge
+          >
         </div>
         <span>{{ description }}</span>
       </div>
-      <gl-button v-if="expandable" @click.stop="toggleExpand">
-        {{ isExpanded ? __('Collapse') : __('Expand') }}
-      </gl-button>
+      <gl-badge
+        :variant="isSuccessState ? 'success' : 'neutral'"
+        :icon="isSuccessState ? 'check-circle' : ''"
+        class="gl-mx-3 gl-px-3 gl-py-2"
+        data-testid="status-badge"
+      >
+        {{ isRequired ? $options.i18n.required : $options.i18n.optional }}
+      </gl-badge>
+      <gl-button
+        class="gl-m-4 !gl-bg-gray-50"
+        category="tertiary"
+        :icon="collapseIconName"
+        :alt="collapseIconAlt"
+      />
     </div>
-    <gl-collapse :visible="isCurrentlyExpanded" class="gl-p-4">
+    <gl-collapse :visible="isExpanded" class="gl-bg-gray-10 gl-px-5 gl-py-6">
       <slot></slot>
     </gl-collapse>
   </div>

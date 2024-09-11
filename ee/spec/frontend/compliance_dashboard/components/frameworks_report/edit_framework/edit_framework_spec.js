@@ -298,16 +298,16 @@ describe('Edit Framework Form', () => {
   });
 
   describe('Basic information section', () => {
-    it('renders basic information section as non-collapsible if creating new framework', async () => {
+    it('renders basic information section as expanded if creating new framework', async () => {
       wrapper = createComponent(shallowMountExtended, { routeParams: {} });
       await waitForPromises();
-      expect(wrapper.findComponent(BasicInformationSection).props('expandable')).toBe(false);
+      expect(wrapper.findComponent(BasicInformationSection).props('isExpanded')).toBe(true);
     });
 
-    it('renders basic information section as expandable if editing framework', async () => {
+    it('renders basic information section as not expanded when editing', async () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
-      expect(wrapper.findComponent(BasicInformationSection).props('expandable')).toBe(true);
+      expect(wrapper.findComponent(BasicInformationSection).props('isExpanded')).toBe(false);
     });
   });
 

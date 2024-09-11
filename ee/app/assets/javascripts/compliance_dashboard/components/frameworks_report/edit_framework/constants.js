@@ -1,10 +1,12 @@
-import { __, s__, n__, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const maxNameLength = 255;
 export const i18n = {
   basicInformation: s__('ComplianceFrameworks|Basic information'),
-  basicInformationDetails: s__('ComplianceFrameworks|Name, description'),
+  basicInformationDescription: s__(
+    'ComplianceFrameworks|Set basic information for the compliance framework.',
+  ),
   nameInputReserved: (name) =>
     sprintf(
       s__(
@@ -13,15 +15,13 @@ export const i18n = {
       { name },
     ),
 
-  policies: s__('ComplianceFrameworks|Policy'),
-  policiesLinkedCount: (count) =>
-    n__(
-      'ComplianceFrameworks|%{count} linked policy.',
-      'ComplianceFrameworks|%{count} linked policies.',
-      count,
-    ),
-  policiesTotalCount: (/* count */) =>
-    s__('ComplianceFrameworks|Total policies in the group: %{count}'),
+  policies: s__('ComplianceFrameworks|Policies'),
+  policiesDescription: s__(
+    'ComplianceFrameworks|Select policies to enforce on all projects scoped to this framework.',
+  ),
+  policiesInfoText: s__(
+    'ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEnd} to scope policies for this framework.',
+  ),
   policiesTableFields: {
     linked: s__('ComplianceFrameworks|Linked'),
     name: s__('ComplianceFrameworks|Policy name'),
@@ -34,10 +34,10 @@ export const i18n = {
     `ComplianceFrameworks|To link this policy and framework,  edit  the policy's scope.`,
   ),
 
-  addFrameworkTitle: s__('ComplianceFrameworks|Create a compliance framework'),
-  editFrameworkTitle: s__('ComplianceFrameworks|Edit a compliance framework'),
+  addFrameworkTitle: s__('ComplianceFrameworks|New compliance framework'),
+  editFrameworkTitle: s__('ComplianceFrameworks|Edit compliance framework: %{frameworkName}'),
 
-  submitButtonText: s__('ComplianceFrameworks|Add framework'),
+  submitButtonText: s__('ComplianceFrameworks|Create framework'),
 
   deleteButtonText: s__('ComplianceFrameworks|Delete framework'),
   deleteButtonDisabledTooltip: s__(
@@ -72,7 +72,7 @@ export const i18n = {
   pipelineConfigurationInputUnknownFile: s__('ComplianceFrameworks|Configuration not found'),
   colorInputLabel: s__('ComplianceFrameworks|Background color'),
 
-  editSaveBtnText: __('Save changes'),
+  editSaveBtnText: __('Update framework'),
   addSaveBtnText: s__('ComplianceFrameworks|Add framework'),
   fetchError: s__(
     'ComplianceFrameworks|Error fetching compliance frameworks data. Please refresh the page or try a different framework',
@@ -101,6 +101,10 @@ export const i18n = {
     name: s__('ComplianceFrameworks|Project name'),
     desc: s__('ComplianceFrameworks|Project description'),
   },
-  projectsTotalCount: (/* count */) =>
-    s__('ComplianceFrameworks|Total projects linked to framework: %{count}'),
+  projectsDescription: s__(
+    'ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies.',
+  ),
+  projectsInfoText: s__(
+    'ComplianceFrameworks|Go to the %{linkStart}compliance center / project page%{linkEnd} to apply projects for this framework.',
+  ),
 };
