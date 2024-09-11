@@ -115,4 +115,18 @@ RSpec.describe Vulnerabilities::IssueLink, feature_category: :vulnerability_mana
 
     it { is_expected.to match_array([created_issue_link, related_issue_link]) }
   end
+
+  context 'with loose foreign key on vulnerabilities_issue_link.issue_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:issue) }
+      let_it_be(:model) { create(:vulnerabilities_issue_link, issue: parent) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerabilities_issue_link.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_issue_link, project_id: parent.id) }
+    end
+  end
 end

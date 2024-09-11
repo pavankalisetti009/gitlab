@@ -320,7 +320,12 @@ RSpec.shared_examples 'graphql issue list request spec EE' do
     before do
       stub_licensed_features(security_dashboard: true)
       issues.each_with_index do |issue, i|
-        issue.update!(related_vulnerabilities: [create(:vulnerability, project: issue.project, title: "vuln#{i + 1}")])
+        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[vulnerability_issue_links], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480745'
+        ) do
+          issue.update!(related_vulnerabilities: [create(:vulnerability, project: issue.project,
+            title: "vuln#{i + 1}")])
+        end
       end
     end
 
