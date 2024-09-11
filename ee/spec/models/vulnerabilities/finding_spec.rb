@@ -1709,6 +1709,19 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     end
   end
 
+  describe '#ai_explanation_available?' do
+    let(:finding) { build(:vulnerabilities_finding) }
+
+    it 'returns true if the finding is a SAST finding' do
+      expect(finding.ai_explanation_available?).to be true
+    end
+
+    it 'returns false if the finding is not a SAST finding' do
+      finding.report_type = 'dast'
+      expect(finding.ai_explanation_available?).to be false
+    end
+  end
+
   describe '#ai_resolution_available?' do
     let(:finding) { build(:vulnerabilities_finding) }
 
@@ -1719,6 +1732,12 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
     it 'returns false when the finding is an unsupported CWE' do
       finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-1')
+      expect(finding.ai_resolution_available?).to be false
+    end
+
+    it 'returns false if the finding is not a SAST finding' do
+      finding.report_type = 'dast'
+      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-23')
       expect(finding.ai_resolution_available?).to be false
     end
   end

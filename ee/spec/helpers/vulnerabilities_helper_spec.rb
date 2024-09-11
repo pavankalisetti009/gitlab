@@ -376,6 +376,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         state_transitions: kind_of(Array),
         issue_links: kind_of(Array),
         merge_request_links: kind_of(Array),
+        ai_explanation_available: finding.ai_explanation_available?,
         ai_resolution_available: finding.ai_resolution_available?
       )
 
