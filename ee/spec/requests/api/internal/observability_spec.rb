@@ -50,8 +50,7 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
           'X-Gitlab-Instance-Id' => instance_uuid,
           'X-Gitlab-Realm' => gitlab_realm,
           'X-Gitlab-Version' => Gitlab.version_info.to_s,
-          'X-Gitlab-Global-User-Id' => global_user_id,
-          'X-Gitlab-Duo-Seat-Count' => '0'
+          'X-Gitlab-Global-User-Id' => global_user_id
         }
       })
     end
