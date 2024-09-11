@@ -4,15 +4,11 @@ import * as SubscriptionsApi from 'ee/api/subscriptions_api';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
-import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
 import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
 import {
   companySizes,
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COMPANY_SIZE_LABEL,
-  LEADS_COUNTRY_LABEL,
-  LEADS_COUNTRY_PROMPT,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
@@ -31,8 +27,6 @@ import {
   PQL_MODAL_PRIMARY,
   PQL_MODAL_TITLE,
   PQL_PHONE_DESCRIPTION,
-  PQL_STATE_LABEL,
-  PQL_STATE_PROMPT,
 } from '../constants';
 import eventHub from '../event_hub';
 
@@ -66,30 +60,12 @@ export default {
       phoneNumber: '',
       country: '',
       state: '',
-      countries: [],
-      states: [],
       comment: '',
       stateRequired: false,
       ctaTracking: {},
       glmContent: '',
       productInteraction: '',
     };
-  },
-  apollo: {
-    countries: {
-      query: countriesQuery,
-    },
-    states: {
-      query: statesQuery,
-      skip() {
-        return !this.country;
-      },
-      variables() {
-        return {
-          countryId: this.country,
-        };
-      },
-    },
   },
   computed: {
     modalHeaderText() {
@@ -215,12 +191,8 @@ export default {
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
     companySizeLabel: LEADS_COMPANY_SIZE_LABEL,
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
-    countryLabel: LEADS_COUNTRY_LABEL,
-    countrySelectPrompt: LEADS_COUNTRY_PROMPT,
     companySizeSelectPrompt: TRIAL_COMPANY_SIZE_PROMPT,
     phoneNumberDescription: PQL_PHONE_DESCRIPTION,
-    stateLabel: PQL_STATE_LABEL,
-    stateSelectPrompt: PQL_STATE_PROMPT,
     commentLabel: PQL_COMMENT_LABEL,
     modalTitle: PQL_MODAL_TITLE,
     modalPrimary: PQL_MODAL_PRIMARY,
