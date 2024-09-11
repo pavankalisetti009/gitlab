@@ -1737,6 +1737,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_979e7f45114f() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "ml_candidates"
+  WHERE "ml_candidates"."id" = NEW."candidate_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_98ad3a4c1d35() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -13517,6 +13533,7 @@ CREATE TABLE ml_candidate_metrics (
     is_nan bytea,
     name text NOT NULL,
     tracked_at bigint,
+    project_id bigint,
     CONSTRAINT check_3bb4a3fbd9 CHECK ((char_length(name) <= 250)),
     CONSTRAINT check_d7dfd3de26 CHECK ((candidate_id IS NOT NULL))
 );
@@ -20573,6 +20590,30 @@ CREATE TABLE workspaces (
     CONSTRAINT check_ffa8cad434 CHECK ((char_length(url_prefix) <= 256))
 );
 
+CREATE TABLE workspaces_agent_config_versions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    project_id bigint NOT NULL,
+    item_id bigint NOT NULL,
+    event text NOT NULL,
+    whodunnit text,
+    item_type text NOT NULL,
+    object jsonb,
+    object_changes jsonb,
+    CONSTRAINT check_1ad0ae8926 CHECK ((char_length(whodunnit) <= 255)),
+    CONSTRAINT check_a7055791ff CHECK ((char_length(event) <= 20)),
+    CONSTRAINT check_ed1b796ddc CHECK ((char_length(item_type) <= 255))
+);
+
+CREATE SEQUENCE workspaces_agent_config_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE workspaces_agent_config_versions_id_seq OWNED BY workspaces_agent_config_versions.id;
+
 CREATE TABLE workspaces_agent_configs (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -22472,6 +22513,8 @@ ALTER TABLE ONLY work_item_widget_definitions ALTER COLUMN id SET DEFAULT nextva
 ALTER TABLE ONLY workspace_variables ALTER COLUMN id SET DEFAULT nextval('workspace_variables_id_seq'::regclass);
 
 ALTER TABLE ONLY workspaces ALTER COLUMN id SET DEFAULT nextval('workspaces_id_seq'::regclass);
+
+ALTER TABLE ONLY workspaces_agent_config_versions ALTER COLUMN id SET DEFAULT nextval('workspaces_agent_config_versions_id_seq'::regclass);
 
 ALTER TABLE ONLY workspaces_agent_configs ALTER COLUMN id SET DEFAULT nextval('workspaces_agent_configs_id_seq'::regclass);
 
@@ -25276,6 +25319,9 @@ ALTER TABLE ONLY work_item_widget_definitions
 
 ALTER TABLE ONLY workspace_variables
     ADD CONSTRAINT workspace_variables_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY workspaces_agent_config_versions
+    ADD CONSTRAINT workspaces_agent_config_versions_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY workspaces_agent_configs
     ADD CONSTRAINT workspaces_agent_configs_pkey PRIMARY KEY (id);
@@ -29024,6 +29070,8 @@ CREATE INDEX index_ml_candidate_metadata_on_project_id ON ml_candidate_metadata 
 
 CREATE INDEX index_ml_candidate_metrics_on_candidate_id ON ml_candidate_metrics USING btree (candidate_id);
 
+CREATE INDEX index_ml_candidate_metrics_on_project_id ON ml_candidate_metrics USING btree (project_id);
+
 CREATE INDEX index_ml_candidate_params_on_candidate_id ON ml_candidate_params USING btree (candidate_id);
 
 CREATE UNIQUE INDEX index_ml_candidate_params_on_candidate_id_on_name ON ml_candidate_params USING btree (candidate_id, name);
@@ -30865,6 +30913,10 @@ CREATE INDEX index_work_item_widget_definitions_on_work_item_type_id ON work_ite
 CREATE INDEX index_workspace_variables_on_project_id ON workspace_variables USING btree (project_id);
 
 CREATE INDEX index_workspace_variables_on_workspace_id ON workspace_variables USING btree (workspace_id);
+
+CREATE INDEX index_workspaces_agent_config_versions_on_item_id ON workspaces_agent_config_versions USING btree (item_id);
+
+CREATE INDEX index_workspaces_agent_config_versions_on_project_id ON workspaces_agent_config_versions USING btree (project_id);
 
 CREATE INDEX index_workspaces_agent_configs_on_project_id ON workspaces_agent_configs USING btree (project_id);
 
@@ -32944,6 +32996,8 @@ CREATE TRIGGER trigger_9699ea03bb37 BEFORE INSERT OR UPDATE ON related_epic_link
 
 CREATE TRIGGER trigger_96a76ee9f147 BEFORE INSERT OR UPDATE ON design_management_versions FOR EACH ROW EXECUTE FUNCTION trigger_96a76ee9f147();
 
+CREATE TRIGGER trigger_979e7f45114f BEFORE INSERT OR UPDATE ON ml_candidate_metrics FOR EACH ROW EXECUTE FUNCTION trigger_979e7f45114f();
+
 CREATE TRIGGER trigger_9e137c16de79 BEFORE INSERT OR UPDATE ON vulnerability_findings_remediations FOR EACH ROW EXECUTE FUNCTION trigger_9e137c16de79();
 
 CREATE TRIGGER trigger_9f3745f8fe32 BEFORE INSERT OR UPDATE ON merge_requests_closing_issues FOR EACH ROW EXECUTE FUNCTION trigger_9f3745f8fe32();
@@ -34399,6 +34453,9 @@ ALTER TABLE p_ci_builds_metadata
 ALTER TABLE ONLY gitlab_subscriptions
     ADD CONSTRAINT fk_e2595d00a1 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY ml_candidate_metrics
+    ADD CONSTRAINT fk_e2684c8ffc FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY approval_merge_request_rules
     ADD CONSTRAINT fk_e33a9aaf67 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -35556,6 +35613,9 @@ ALTER TABLE ONLY boards_epic_user_preferences
 
 ALTER TABLE ONLY value_stream_dashboard_aggregations
     ADD CONSTRAINT fk_rails_859b4f86f3 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY workspaces_agent_config_versions
+    ADD CONSTRAINT fk_rails_8698efd89e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY deployment_merge_requests
     ADD CONSTRAINT fk_rails_86a6d8bf12 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;

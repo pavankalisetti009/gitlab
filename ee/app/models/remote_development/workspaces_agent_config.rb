@@ -13,6 +13,10 @@ module RemoteDevelopment
     #      https://gitlab.com/gitlab-org/gitlab/-/issues/471994
     MAXIMUM_HOURS_BEFORE_TERMINATION = 8760
 
+    has_paper_trail versions: {
+      class_name: 'RemoteDevelopment::WorkspacesAgentConfigVersion'
+    }
+
     belongs_to :agent,
       class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces_agent_config
 

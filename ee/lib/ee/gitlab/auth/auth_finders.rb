@@ -55,6 +55,33 @@ module EE
         def geo_api_request?
           current_request.path.starts_with?("/api/#{::API::API.version}/geo/")
         end
+
+        override :find_user_from_job_token
+        def find_user_from_job_token
+          user = super
+          return unless user
+
+          audit_job_token_authentication(user)
+
+          user
+        end
+
+        private
+
+        def audit_job_token_authentication(user)
+          # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Already used in super
+          audit_context = {
+            name: "user_authenticated_using_job_token",
+            author: user,
+            scope: @current_authenticated_job.project,
+            target: @current_authenticated_job,
+            target_details: @current_authenticated_job.id.to_s,
+            message: "#{user.name} authenticated using job token of job id: #{@current_authenticated_job.id}"
+          }
+          # rubocop:enable Gitlab/ModuleWithInstanceVariables
+
+          ::Gitlab::Audit::Auditor.audit(audit_context)
+        end
       end
     end
   end

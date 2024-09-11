@@ -25,23 +25,19 @@ module Mutations
         def resolve(**args)
           check_feature_access!
 
-          # TODO: We should create a service this is done for MVP sake
-          model = ::Ai::SelfHostedModel.create!(
-            name: args[:name],
-            model: args[:model],
-            endpoint: args[:endpoint],
-            api_token: args[:api_token]
-          )
+          result = ::Ai::SelfHostedModels::CreateService.new(current_user, args).execute
 
-          {
-            self_hosted_model: model,
-            errors: [] # Errors are rescued below
-          }
-        rescue ActiveRecord::RecordInvalid => e
-          {
-            self_hosted_model: nil,
-            errors: [e.message]
-          }
+          if result.success?
+            {
+              self_hosted_model: result.payload,
+              errors: [] # Errors are rescued below
+            }
+          else
+            {
+              self_hosted_model: nil,
+              errors: [result.message]
+            }
+          end
         end
       end
     end

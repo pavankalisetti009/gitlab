@@ -32,12 +32,12 @@ describe('PagesDeploymentsStats', () => {
     const statisticsCard = wrapper.findComponent(StatisticsCard);
     expect(statisticsCard.props('usageValue')).toBe(`${deploymentsCount}`);
     expect(statisticsCard.props('totalValue')).toBe(deploymentsLimit);
-    expect(statisticsCard.props('description')).toBe('Active extra deployments');
+    expect(statisticsCard.props('description')).toBe('Parallel deployments');
     expect(statisticsCard.props('helpLink')).toBe(
       `${DOCS_URL_IN_EE_DIR}/user/project/pages/#limits`,
     );
-    expect(statisticsCard.props('helpLabel')).toBe('Learn about Pages deployments limits');
-    expect(statisticsCard.props('helpTooltip')).toBe('Learn about Pages deployments limits');
+    expect(statisticsCard.props('helpLabel')).toBe('Learn about limits for Pages deployments');
+    expect(statisticsCard.props('helpTooltip')).toBe('Learn about limits for Pages deployments');
     expect(statisticsCard.props('percentage')).toBe(50);
   });
 });

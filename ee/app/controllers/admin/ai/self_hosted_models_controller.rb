@@ -20,9 +20,10 @@ module Admin
       end
 
       def create
-        @self_hosted_model = ::Ai::SelfHostedModel.create(self_hosted_models_params)
+        service_result = ::Ai::SelfHostedModels::CreateService.new(current_user, self_hosted_models_params).execute
 
-        if @self_hosted_model.persisted?
+        if service_result.success?
+          @self_hosted_model = service_result.payload
           redirect_to admin_ai_self_hosted_models_url, notice: _("Self-Hosted Model was created")
         else
           render :new

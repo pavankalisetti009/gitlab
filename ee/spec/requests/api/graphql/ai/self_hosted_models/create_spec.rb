@@ -64,7 +64,7 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
         post_graphql_mutation(mutation, current_user: current_user)
 
         expect(mutation_response['selfHostedModel']).to be(nil)
-        expect(mutation_response['errors']).to include("Validation failed: Name can't be blank")
+        expect(mutation_response['errors']).to include("Name can't be blank")
       end
 
       it 'does not create a self-hosted model' do

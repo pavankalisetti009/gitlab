@@ -14,7 +14,7 @@ import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
 import { visitUrl } from '~/lib/utils/url_utility';
 import UsersCache from '~/lib/utils/users_cache';
-import { __, s__ } from '~/locale';
+import { s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
 import {
@@ -43,14 +43,6 @@ export const EXPLAIN_VULNERABILITY_AI_ACTION = {
   action: 'explain-vulnerability',
   icon: 'tanuki-ai',
   category: 'primary',
-};
-
-export const CREATE_MR_AI_ACTION_DEPRECATED = {
-  ...CREATE_MR_AI_ACTION,
-  badge: __('Experiment'),
-  tooltip: s__(
-    'AI|This is an experiment feature that uses AI to provide recommendations for resolving this vulnerability. Use this feature with caution.',
-  ),
 };
 
 export const CLIENT_SUBSCRIPTION_ID = uuidv4();
@@ -98,7 +90,7 @@ export default {
       }
 
       if (this.glAbilities.resolveVulnerabilityWithAi) {
-        buttons.push(CREATE_MR_AI_ACTION_DEPRECATED);
+        buttons.push(CREATE_MR_AI_ACTION);
       }
 
       if (this.glAbilities.explainVulnerabilityWithAi) {

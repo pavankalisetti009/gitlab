@@ -2338,9 +2338,6 @@ msgstr ""
 msgid "AI|The existing description will be replaced when you submit."
 msgstr ""
 
-msgid "AI|This is an experiment feature that uses AI to provide recommendations for resolving this vulnerability. Use this feature with caution."
-msgstr ""
-
 msgid "AI|To help improve the quality of the content, send your feedback to GitLab team members."
 msgstr ""
 
@@ -4032,7 +4029,7 @@ msgstr ""
 msgid "AdminSettings|Cube API URL"
 msgstr ""
 
-msgid "AdminSettings|Default expiration time for extra deployments (in seconds)"
+msgid "AdminSettings|Default expiration time for parallel deployments (in seconds)"
 msgstr ""
 
 msgid "AdminSettings|Delete inactive projects"
@@ -4308,7 +4305,7 @@ msgstr ""
 msgid "AdminSettings|Set options for cost factors of forks"
 msgstr ""
 
-msgid "AdminSettings|Set the default time after which extra deployments expire (0 for unlimited). %{link_start}What are extra deployments%{link_end}?"
+msgid "AdminSettings|Set the default time after which parallel deployments expire (0 for unlimited). %{link_start}What are parallel deployments%{link_end}?"
 msgstr ""
 
 msgid "AdminSettings|Set the expiration time of authentication tokens of newly registered group runners."
@@ -24651,6 +24648,9 @@ msgstr ""
 msgid "GitLabPages|Edit"
 msgstr ""
 
+msgid "GitLabPages|Enable parallel deployments"
+msgstr ""
+
 msgid "GitLabPages|Expired"
 msgstr ""
 
@@ -24699,9 +24699,6 @@ msgstr ""
 msgid "GitLabPages|Updating your Pages configuration..."
 msgstr ""
 
-msgid "GitLabPages|Use multiple deployments"
-msgstr ""
-
 msgid "GitLabPages|Use unique domain"
 msgstr ""
 
@@ -24717,7 +24714,7 @@ msgstr ""
 msgid "GitLabPages|When enabled, all attempts to visit your website through HTTP are automatically redirected to HTTPS using a response with status code 301. Requires a valid certificate for all domains. %{docs_link_start}Learn more.%{link_end}"
 msgstr ""
 
-msgid "GitLabPages|When enabled, you can create multiple deployments of your pages site. %{docs_link_start}Learn More.%{link_end}"
+msgid "GitLabPages|When enabled, you can create parallel deployments of your pages site. %{docs_link_start}Learn more.%{link_end}"
 msgstr ""
 
 msgid "GitLabPages|When using Pages under the general domain of a GitLab instance (%{pages_host}), you cannot use HTTPS with subdomains of subdomains. If your namespace or groupname contains a dot, it does not work. This is a limitation of the HTTP Over TLS protocol. HTTP pages work if you don't redirect HTTP to HTTPS. %{docs_link_start}Learn more.%{link_end}"
@@ -39021,10 +39018,10 @@ msgstr ""
 msgid "PagesDomain|Certificate Key is too long. (Max %d bytes)"
 msgstr ""
 
-msgid "PagesUsageQuota|Active extra deployments"
+msgid "PagesUsageQuota|Learn about limits for Pages deployments"
 msgstr ""
 
-msgid "PagesUsageQuota|Learn about Pages deployments limits"
+msgid "PagesUsageQuota|Parallel deployments"
 msgstr ""
 
 msgid "Pages|+ %{n} more deployments"
@@ -39060,19 +39057,10 @@ msgstr ""
 msgid "Pages|Deployments"
 msgstr ""
 
-msgid "Pages|Environment deployments"
-msgstr ""
-
 msgid "Pages|Expires at"
 msgstr ""
 
-msgid "Pages|Extra deployments: %{count}"
-msgstr ""
-
 msgid "Pages|Files"
-msgstr ""
-
-msgid "Pages|Include stopped deployments"
 msgstr ""
 
 msgid "Pages|Last updated"
@@ -39082,6 +39070,12 @@ msgid "Pages|No deployments yet"
 msgstr ""
 
 msgid "Pages|Pages deployments"
+msgstr ""
+
+msgid "Pages|Parallel deployments"
+msgstr ""
+
+msgid "Pages|Parallel deployments: %{count}"
 msgstr ""
 
 msgid "Pages|Path prefix"
@@ -39100,6 +39094,9 @@ msgid "Pages|Root directory"
 msgstr ""
 
 msgid "Pages|Scheduled for deletion at"
+msgstr ""
+
+msgid "Pages|Show stopped deployments"
 msgstr ""
 
 msgid "Pages|Size"
@@ -39123,7 +39120,7 @@ msgstr ""
 msgid "Pages|URL"
 msgstr ""
 
-msgid "Pages|We did not find any Projects with Pages deployments in this namespace."
+msgid "Pages|We did not find any projects with parallel Pages deployments in this namespace."
 msgstr ""
 
 msgid "Pagination|First"
@@ -43584,6 +43581,9 @@ msgid "ProjectsNew|You can always change your URL later"
 msgstr ""
 
 msgid "ProjectsNew|Your project will be created at:"
+msgstr ""
+
+msgid "Projects|An error occurred deleting the project. Please refresh the page to try again."
 msgstr ""
 
 msgid "Project|already in use"

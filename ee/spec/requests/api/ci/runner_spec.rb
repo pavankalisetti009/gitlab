@@ -135,19 +135,20 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         before do
           project.group.root_ancestor.external_audit_event_destinations.create!(destination_url: 'http://example.com')
           stub_licensed_features(admin_audit_log: true, extended_audit_events: true, external_audit_events: true)
+          allow(::Gitlab::Audit::Auditor).to receive(:audit).and_call_original
+          allow(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async).and_call_original
         end
 
         it 'downloads artifacts' do
+          download_artifact
+
           expect(::Gitlab::Audit::Auditor).to(
-            receive(:audit).with(hash_including(name: 'job_artifact_downloaded')).and_call_original
+            have_received(:audit).with(hash_including(name: 'job_artifact_downloaded'))
           )
           expect(AuditEvents::AuditEventStreamingWorker).to(
-            receive(:perform_async)
+            have_received(:perform_async)
               .with('job_artifact_downloaded', nil, a_string_including("Downloaded artifact"))
-              .and_call_original
           )
-
-          download_artifact
 
           expect(response).to have_gitlab_http_status(:ok)
         end
