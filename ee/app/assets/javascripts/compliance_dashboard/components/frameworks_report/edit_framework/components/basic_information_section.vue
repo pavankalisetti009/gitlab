@@ -15,6 +15,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import ColorPicker from '~/vue_shared/components/color_picker/color_picker.vue';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS as DEBOUNCE_DELAY } from '~/lib/utils/constants';
 import { validateHexColor } from '~/lib/utils/color_utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   validatePipelineConfirmationFormat,
   fetchPipelineConfigurationFileExists,
@@ -67,20 +68,25 @@ export default {
   },
 
   computed: {
+    isCreatingNewPolicy() {
+      return !this.formData.pipelineConfigurationFullPath || !this.formData.id;
+    },
+
     dynamicMigratePipelineToPolicyPath() {
-      if (!this.formData.pipelineConfigurationFullPath) {
-        // create new policy
+      if (this.isCreatingNewPolicy) {
         return this.pipelineExecutionPolicyPath;
       }
 
-      return (
-        `${this.pipelineExecutionPolicyPath}&path=${this.formData.pipelineConfigurationFullPath}` +
-        `&compliance_framework_id=${this.$route.params.id}`
-      );
+      const urlSearchParams = new URLSearchParams([
+        ['path', this.formData.pipelineConfigurationFullPath],
+        ['compliance_framework_name', this.formData.name],
+        ['compliance_framework_id', getIdFromGraphQLId(this.formData.id)],
+      ]);
+
+      return `${this.pipelineExecutionPolicyPath}&${urlSearchParams.toString()}`;
     },
     deprecationWarningButtonText() {
-      if (!this.formData.pipelineConfigurationFullPath) {
-        // create new ploicy
+      if (this.isCreatingNewPolicy) {
         return this.$options.i18n.deprecationWarning.migratePipelineToPolicyEmpty;
       }
 

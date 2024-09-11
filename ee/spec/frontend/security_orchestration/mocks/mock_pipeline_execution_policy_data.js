@@ -17,6 +17,27 @@ export const customYaml = `variable: true
 
 export const customYamlObject = { variable: true };
 
+export const customYamlUrlParams = {
+  type: 'pipeline_execution_policy',
+  compliance_framework_id: 1,
+  compliance_framework_name: 'Foo',
+  path: 'foo@bar',
+};
+
+export const customYamlObjectFromUrlParams = (params) => `${customYaml.trim()}
+type: ${params.type}
+pipeline_config_strategy: override_project_ci
+policy_scope:
+  compliance_frameworks:
+    - id: ${params.compliance_framework_id}
+content:
+  include:
+    - project: bar
+      file: foo
+metadata:
+  compliance_pipeline_migration: true
+`;
+
 export const mockWithoutRefPipelineExecutionManifest = `name: Ci config file
 description: triggers all protected branches except main
 enabled: true
