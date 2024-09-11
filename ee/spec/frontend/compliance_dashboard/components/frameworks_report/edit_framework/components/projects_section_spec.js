@@ -1,4 +1,4 @@
-import { GlTable } from '@gitlab/ui';
+import { GlTable, GlLink } from '@gitlab/ui';
 
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 
@@ -14,22 +14,32 @@ describe('Basic information section', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
+  const findInfoText = () => wrapper.findByTestId('info-text');
+  const findLink = () => findInfoText().findComponent(GlLink);
 
-  function createComponent() {
-    return mountExtended(ProjectsSection, {
+  const createComponent = () => {
+    wrapper = mountExtended(ProjectsSection, {
       propsData: {
         complianceFramework: framework,
       },
     });
-  }
+  };
 
   describe('when loaded', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      createComponent();
     });
 
-    it('correctly displays title', () => {
-      expect(wrapper.text()).toContain('Total projects linked to framework: 3');
+    it('renders title', () => {
+      const title = wrapper.findByText('Projects');
+      expect(title.exists()).toBe(true);
+    });
+
+    it('correctly displays description', () => {
+      const description = wrapper.findByText(
+        'All selected projects will be covered by the framework’s selected requirements and the policies.',
+      );
+      expect(description.exists()).toBe(true);
     });
 
     it('correctly calculates projects', () => {
@@ -41,6 +51,17 @@ describe('Basic information section', () => {
       const frameworkProjects = findTableRowData(idx).wrappers.map((d) => d.text());
       expect(frameworkProjects[0]).toMatch(projects[idx].name);
       expect(frameworkProjects[1]).toMatch(projects[idx].description);
+    });
+
+    it('renders information text with correct action', () => {
+      expect(findInfoText().text()).toMatchInterpolatedText(
+        'Go to the compliance center / project page to apply projects for this framework.',
+      );
+    });
+
+    it('renders correct atrributes for the info link', () => {
+      expect(findLink().attributes('to')).toBe('/projects');
+      expect(findLink().attributes('href')).toBe('/projects');
     });
   });
 });

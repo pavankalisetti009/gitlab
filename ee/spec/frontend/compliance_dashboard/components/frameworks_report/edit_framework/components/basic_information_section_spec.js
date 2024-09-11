@@ -30,8 +30,8 @@ describe('Basic information section', () => {
 
   const router = new VueRouter();
 
-  function createComponent(props, provides) {
-    return mountExtended(BasicInformationSection, {
+  const createComponent = (props, provides) => {
+    wrapper = mountExtended(BasicInformationSection, {
       provide: {
         ...defaultProvides,
         ...provides,
@@ -45,12 +45,12 @@ describe('Basic information section', () => {
       },
       router,
     });
-  }
+  };
   const findMaintenanceAlert = () => wrapper.findComponentByTestId('maintenance-mode-alert');
   const findMigrationActionButton = () => wrapper.findComponentByTestId('migrate-action-button');
 
   beforeEach(() => {
-    wrapper = createComponent();
+    createComponent();
   });
 
   it.each([['Name'], ['Description']])('has valid state initially', (fieldName) => {
@@ -97,8 +97,8 @@ describe('Basic information section', () => {
     },
   );
 
-  it('renders section as initially expanded if expandable', () => {
-    wrapper = createComponent({ expandable: true });
+  it('renders section as initially expanded if is-expanded prop is true', () => {
+    createComponent({ isExpanded: true });
 
     expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(true);
   });
@@ -125,7 +125,7 @@ describe('Basic information section', () => {
 
   describe('when ff_compliance_pipeline_maintenance_mode feature flag is disabled', () => {
     it('does not render the maintenance-mode-alert', () => {
-      wrapper = createComponent({}, { featurePipelineMaintenanceModeEnabled: false });
+      createComponent({}, { featurePipelineMaintenanceModeEnabled: false });
       const maintenanceAlert = findMaintenanceAlert();
 
       expect(maintenanceAlert.exists()).toBe(false);

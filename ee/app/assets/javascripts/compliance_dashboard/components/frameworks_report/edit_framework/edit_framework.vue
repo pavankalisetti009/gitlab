@@ -3,6 +3,8 @@ import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui'
 
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
+import { sprintf } from '~/locale';
+
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
 import {
   getSubmissionParams,
@@ -61,7 +63,7 @@ export default {
         };
       },
       result({ data }) {
-        const [complianceFramework] = data?.namespace.complianceFrameworks?.nodes || [];
+        const [complianceFramework] = data?.namespace?.complianceFrameworks?.nodes || [];
         if (complianceFramework) {
           this.formData = { ...complianceFramework };
           this.originalName = complianceFramework.name;
@@ -119,7 +121,7 @@ export default {
     title() {
       return this.isNewFramework
         ? this.$options.i18n.addFrameworkTitle
-        : this.$options.i18n.editFrameworkTitle;
+        : sprintf(this.$options.i18n.editFrameworkTitle, { frameworkName: this.originalName });
     },
 
     saveButtonText() {
@@ -236,19 +238,19 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border-t-1 gl-border-t-gray-100 gl-pt-5 gl-border-t-solid">
-    <gl-alert v-if="errorMessage" class="gl-mb-5" variant="danger" :dismissible="false">
+  <div class="gl-mt-7">
+    <gl-alert v-if="errorMessage" class="gl-mb-7" variant="danger" :dismissible="false">
       {{ errorMessage }}
     </gl-alert>
     <gl-loading-icon v-if="isLoading" size="lg" />
 
     <template v-else>
-      <h2>{{ title }}</h2>
+      <h2 class="gl-heading-2 gl-mb-7">{{ title }}</h2>
       <gl-form @submit.prevent="onSubmit">
         <basic-information-section
           v-if="formData"
           v-model="formData"
-          :expandable="!isNewFramework"
+          :is-expanded="isNewFramework"
           @valid="isBasicInformationValid = $event"
         />
 
@@ -260,7 +262,7 @@ export default {
 
         <projects-section v-if="!isNewFramework" :compliance-framework="formData" />
 
-        <div class="gl-flex gl-gap-3 gl-pt-5">
+        <div class="gl-flex gl-gap-3 gl-px-5 gl-pt-6">
           <gl-button
             type="submit"
             variant="confirm"
