@@ -2279,9 +2279,6 @@ msgstr ""
 msgid "AI|Give feedback to improve this answer."
 msgstr ""
 
-msgid "AI|Helpful"
-msgstr ""
-
 msgid "AI|How could the content be improved?"
 msgstr ""
 
@@ -2339,9 +2336,6 @@ msgstr ""
 msgid "AI|To help improve the quality of the content, send your feedback to GitLab team members."
 msgstr ""
 
-msgid "AI|Unhelpful"
-msgstr ""
-
 msgid "AI|Use GitLab Duo to generate a merge request with a suggested solution."
 msgstr ""
 
@@ -2355,9 +2349,6 @@ msgid "AI|Write a brief description and have AI fill in the details."
 msgstr ""
 
 msgid "AI|Write a summary to fill out the selected issue template"
-msgstr ""
-
-msgid "AI|Wrong"
 msgstr ""
 
 msgid "AI|Your request does not seem to contain code to %{action}. To %{human_name} select the lines of code in your editor and then type the command %{command_name} in the chat. You may add additional instructions after this command. If you have no code to select, you can also simply add the code after the command."
