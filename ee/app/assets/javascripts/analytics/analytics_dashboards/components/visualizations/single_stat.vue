@@ -1,6 +1,6 @@
 <script>
 import { GlSingleStat } from '@gitlab/ui/dist/charts';
-import { humanizeDisplayUnit } from './utils';
+import { humanizeDisplayUnit, calculateDecimalPlaces } from './utils';
 
 export default {
   name: 'SingleStat',
@@ -25,7 +25,11 @@ export default {
     },
     decimalPlaces() {
       // Only set the decimals places if this has data
-      return (this.data && parseInt(this.options.decimalPlaces, 10)) || 0;
+      const {
+        data,
+        options: { decimalPlaces },
+      } = this;
+      return calculateDecimalPlaces({ data, decimalPlaces });
     },
     humanizedUnit() {
       const {

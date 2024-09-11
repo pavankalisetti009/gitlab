@@ -2,6 +2,7 @@ import {
   formatVisualizationTooltipTitle,
   formatVisualizationValue,
   humanizeDisplayUnit,
+  calculateDecimalPlaces,
 } from 'ee/analytics/analytics_dashboards/components/visualizations/utils';
 
 describe('visualization utils', () => {
@@ -90,5 +91,22 @@ describe('visualization utils', () => {
     `('returns $result when data=$data and unit=$unit', ({ unit, data, result }) => {
       expect(humanizeDisplayUnit({ data, unit })).toBe(result);
     });
+  });
+
+  describe('calculateDecimalPlaces', () => {
+    it.each`
+      decimalPlaces | data     | result
+      ${3}          | ${0.875} | ${3}
+      ${1}          | ${0.875} | ${1}
+      ${0}          | ${0.875} | ${0}
+      ${3}          | ${0}     | ${0}
+      ${1}          | ${0}     | ${0}
+      ${0}          | ${0}     | ${0}
+    `(
+      'returns $result when data=data and decimalPlaces=$decimalPlaces',
+      ({ decimalPlaces, data, result }) => {
+        expect(calculateDecimalPlaces({ data, decimalPlaces })).toBe(result);
+      },
+    );
   });
 });
