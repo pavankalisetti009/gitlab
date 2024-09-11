@@ -90,7 +90,7 @@ export default {
       this.$emit('change', value);
     },
   },
-  GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/protected_branches', {
+  GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/repository/branches/protected', {
     anchor: 'for-all-projects-in-a-group',
   }),
   EXCEPTION_BRANCH_TYPE_TEXTS,
