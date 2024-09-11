@@ -25,6 +25,9 @@ module Types
 
       field :licenses, [Types::Sbom::LicenseType],
         null: true, description: 'Licenses associated to the dependency.'
+
+      field :reachability, ReachabilityEnum,
+        null: true, description: 'Information about reachability of a dependency.'
     end
   end
 end
