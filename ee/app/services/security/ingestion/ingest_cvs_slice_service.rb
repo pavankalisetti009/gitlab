@@ -10,7 +10,6 @@ module Security
         IngestVulnerabilities
         IncreaseCountersTask
         AttachFindingsToVulnerabilities
-        IngestFindingPipelines
         IngestFindingIdentifiers
         IngestFindingLinks
         IngestFindingSignatures

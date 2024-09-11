@@ -2555,9 +2555,6 @@ msgstr ""
 msgid "AbuseReports|Deleted user"
 msgstr ""
 
-msgid "AbuseReports|No reports found"
-msgstr ""
-
 msgid "AbuseReport|%{reportLinkStart}Reported%{reportLinkEnd} for %{category} %{timeAgo}."
 msgstr ""
 
