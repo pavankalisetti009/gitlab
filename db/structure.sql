@@ -20222,10 +20222,12 @@ ALTER SEQUENCE webauthn_registrations_id_seq OWNED BY webauthn_registrations.id;
 
 CREATE TABLE wiki_page_meta (
     id bigint NOT NULL,
-    project_id bigint NOT NULL,
+    project_id bigint,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    title character varying(255) NOT NULL
+    title character varying(255) NOT NULL,
+    namespace_id bigint,
+    CONSTRAINT check_d858755109 CHECK ((num_nonnulls(namespace_id, project_id) = 1))
 );
 
 CREATE SEQUENCE wiki_page_meta_id_seq
@@ -30698,6 +30700,8 @@ CREATE UNIQUE INDEX index_webauthn_registrations_on_credential_xid ON webauthn_r
 
 CREATE INDEX index_webauthn_registrations_on_user_id ON webauthn_registrations USING btree (user_id);
 
+CREATE INDEX index_wiki_page_meta_on_namespace_id ON wiki_page_meta USING btree (namespace_id);
+
 CREATE INDEX index_wiki_page_meta_on_project_id ON wiki_page_meta USING btree (project_id);
 
 CREATE INDEX index_wiki_page_slugs_on_project_id ON wiki_page_slugs USING btree (project_id);
@@ -34147,6 +34151,9 @@ ALTER TABLE ONLY issue_assignment_events
 
 ALTER TABLE ONLY custom_emoji
     ADD CONSTRAINT fk_custom_emoji_creator_id FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY wiki_page_meta
+    ADD CONSTRAINT fk_d054484f21 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY bulk_import_entities
     ADD CONSTRAINT fk_d06d023c30 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;

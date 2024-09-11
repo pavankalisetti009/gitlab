@@ -61494,6 +61494,9 @@ msgstr ""
 msgid "Wiki|Wiki templates"
 msgstr ""
 
+msgid "Wiki|WikiPage::Meta should belong to either project or namespace."
+msgstr ""
+
 msgid "Will be created"
 msgstr ""
 
