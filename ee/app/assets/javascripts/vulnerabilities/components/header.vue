@@ -385,6 +385,7 @@ export default {
           :show-create-merge-request="canCreateMergeRequest"
           :show-resolve-with-ai="glAbilities.resolveVulnerabilityWithAi"
           :show-explain-with-ai="glAbilities.explainVulnerabilityWithAi"
+          :ai-explanation-available="vulnerability.aiExplanationAvailable"
           :ai-resolution-available="vulnerability.aiResolutionAvailable"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"

@@ -17,6 +17,8 @@ module Vulnerabilities
     REPORT_TYPES_WITH_LOCATION_IMAGE = %w[container_scanning cluster_image_scanning].freeze
     SECRET_DETECTION_DEFAULT_COMMIT_SHA = "0000000"
 
+    AI_ALLOWED_REPORT_TYPES = %w[sast].freeze
+
     # https://gitlab.com/gitlab-org/gitlab/-/issues/472861
     HIGH_CONFIDENCE_AI_RESOLUTION_CWES = %w[
       CWE-23
@@ -544,8 +546,12 @@ module Vulnerabilities
       identifiers.pluck(:name)
     end
 
+    def ai_explanation_available?
+      AI_ALLOWED_REPORT_TYPES.include?(report_type)
+    end
+
     def ai_resolution_available?
-      HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
+      AI_ALLOWED_REPORT_TYPES.include?(report_type) && HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
     end
 
     protected
