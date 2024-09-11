@@ -45,7 +45,7 @@ describe('MR Widget Security Reports', () => {
     containerScanningComparisonPathV2: '/my/container-scanning/endpoint',
   };
 
-  const createComponent = ({ propsData, mountFn = shallowMountExtended } = {}) => {
+  const createComponent = ({ propsData, mountFn = shallowMountExtended, ...options } = {}) => {
     wrapper = mountFn(MRSecurityWidget, {
       propsData: {
         ...propsData,
@@ -80,16 +80,28 @@ describe('MR Widget Security Reports', () => {
         MrWidgetRow,
         VulnerabilityFindingModal: stubComponent(VulnerabilityFindingModal),
       },
+      provide: {
+        glFeatures: {
+          resolveVulnerabilityInMr: true,
+        },
+      },
+      ...options,
     });
   };
 
-  const createComponentAndExpandWidget = async ({ mockDataFn, mockDataProps, mrProps = {} }) => {
+  const createComponentAndExpandWidget = async ({
+    mockDataFn,
+    mockDataProps,
+    mrProps = {},
+    ...options
+  }) => {
     mockDataFn(mockDataProps);
     createComponent({
       mountFn: mountExtended,
       propsData: {
         mr: mrProps,
       },
+      ...options,
     });
 
     await waitForPromises();
@@ -541,11 +553,13 @@ describe('MR Widget Security Reports', () => {
       mockDataFn = mockWithData,
       mockDataProps,
       mrProps,
+      ...options
     } = {}) => {
       await createComponentAndExpandWidget({
         mockDataFn,
         mockDataProps,
         mrProps,
+        ...options,
       });
 
       // Click on the vulnerability name
@@ -619,6 +633,23 @@ describe('MR Widget Security Reports', () => {
         findingUuid: '0',
         pipelineIid: 1,
         projectFullPath: targetProjectFullPath,
+        showAiResolution: true,
+      });
+    });
+
+    describe('with the "resolveVulnerabilityInMr" feature flag disabled', () => {
+      it('sets the modals "showAiResolution" prop to "false"', async () => {
+        await createComponentExpandWidgetAndOpenModal({
+          provide: {
+            glFeatures: {
+              resolveVulnerabilityInMr: false,
+            },
+          },
+        });
+
+        expect(findStandaloneModal().props()).toMatchObject({
+          showAiResolution: false,
+        });
       });
     });
 
