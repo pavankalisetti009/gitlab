@@ -8,7 +8,7 @@ module Gitlab
       end
 
       def self.headers(user:)
-        Gitlab::CloudConnector.headers(user)
+        Gitlab::CloudConnector.ai_headers(user)
       end
 
       def self.secure?
