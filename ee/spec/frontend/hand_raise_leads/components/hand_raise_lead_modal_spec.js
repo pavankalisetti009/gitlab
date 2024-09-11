@@ -1,7 +1,6 @@
 import { GlModal, GlFormTextarea } from '@gitlab/ui';
 import { kebabCase, pick } from 'lodash';
-import Vue, { nextTick } from 'vue';
-import VueApollo from 'vue-apollo';
+import { nextTick } from 'vue';
 import { createWrapper } from '@vue/test-utils';
 import { sprintf } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -25,8 +24,6 @@ import {
   GLM_CONTENT,
   PRODUCT_INTERACTION,
 } from './mock_data';
-
-Vue.use(VueApollo);
 
 describe('HandRaiseLeadModal', () => {
   let wrapper;

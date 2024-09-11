@@ -38278,9 +38278,6 @@ msgstr ""
 msgid "PQL|Message for the Sales team (optional)"
 msgstr ""
 
-msgid "PQL|Please select a city or state"
-msgstr ""
-
 msgid "PQL|Submit information"
 msgstr ""
 
@@ -52502,9 +52499,6 @@ msgid "State"
 msgstr ""
 
 msgid "State your message to activate"
-msgstr ""
-
-msgid "State/Province/City"
 msgstr ""
 
 msgid "Static Application Security Testing (SAST)"
