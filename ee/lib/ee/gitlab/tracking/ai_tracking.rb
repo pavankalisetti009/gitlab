@@ -7,7 +7,6 @@ module EE
         extend ::Gitlab::Utils::Override
 
         POSSIBLE_MODELS = [Ai::CodeSuggestionEvent, Ai::DuoChatEvent].freeze
-        REQUIRED_ATTRIBUTES = %w[user timestamp event].freeze
 
         override :track_event
         def track_event(event_name, context_hash = {})
