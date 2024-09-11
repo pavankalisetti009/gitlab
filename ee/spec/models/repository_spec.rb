@@ -47,6 +47,36 @@ RSpec.describe Repository, feature_category: :source_code_management do
     end
   end
 
+  describe '#after_create' do
+    context 'when repository is attached to a personal snippet' do
+      let(:repository) { create(:personal_snippet).repository }
+
+      it 'does not raise an error for onboarding considerations' do
+        expect { repository.after_create }.not_to raise_error
+      end
+    end
+
+    context 'when namespace is onboarded', :sidekiq_inline do
+      before do
+        ::Onboarding::Progress.onboard(project.namespace)
+      end
+
+      it 'records the onboarding progress' do
+        repository.after_create
+
+        expect(::Onboarding::Progress.completed?(project.namespace, :git_write)).to eq(true)
+      end
+    end
+
+    context 'when namespace is not onboarded', :sidekiq_inline do
+      it 'does not record the onboarding progress' do
+        repository.after_create
+
+        expect(::Onboarding::Progress.completed?(project.namespace, :git_write)).to eq(false)
+      end
+    end
+  end
+
   describe '#fetch_upstream' do
     let(:url) { "http://example.com" }
 
