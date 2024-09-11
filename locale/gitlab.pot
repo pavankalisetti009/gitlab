@@ -37046,6 +37046,9 @@ msgstr ""
 msgid "ObservabilityLogs|value"
 msgstr ""
 
+msgid "ObservabilityMetrics|(Value: %{value})"
+msgstr ""
+
 msgid "ObservabilityMetrics|+%{count} more"
 msgstr ""
 
@@ -37094,6 +37097,15 @@ msgstr ""
 msgid "ObservabilityMetrics|No data found for the selected time range %{time}"
 msgstr ""
 
+msgid "ObservabilityMetrics|No related traces"
+msgstr ""
+
+msgid "ObservabilityMetrics|No related traces for the selected time. Select another data point and try again."
+msgstr ""
+
+msgid "ObservabilityMetrics|Related traces at %{time}"
+msgstr ""
+
 msgid "ObservabilityMetrics|Search"
 msgstr ""
 
@@ -37119,6 +37131,9 @@ msgid "ObservabilityMetrics|Type"
 msgstr ""
 
 msgid "ObservabilityMetrics|Value"
+msgstr ""
+
+msgid "ObservabilityMetrics|View traces"
 msgstr ""
 
 msgid "ObservabilityMetrics|is like"

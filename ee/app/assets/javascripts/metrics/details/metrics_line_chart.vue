@@ -136,7 +136,7 @@ export default {
   <div class="gl-relative">
     <gl-line-chart
       disabled
-      :class="['gl-mb-7', { 'gl-opacity-3': loading || cancelled }]"
+      :class="{ 'gl-opacity-3': loading || cancelled }"
       :option="chartOption"
       :data="chartData"
       responsive

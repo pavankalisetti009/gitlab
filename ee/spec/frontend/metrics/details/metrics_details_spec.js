@@ -1,5 +1,6 @@
 import { GlLoadingIcon, GlEmptyState, GlSprintf, GlButton } from '@gitlab/ui';
 import MetricsDetails from 'ee/metrics/details/metrics_details.vue';
+import RelatedTraces from 'ee/metrics/details/related_traces.vue';
 import { createMockClient } from 'helpers/mock_observability_client';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -50,6 +51,7 @@ describe('MetricsDetails', () => {
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
   const findRelatedIssuesProvider = () => wrapper.findComponent(RelatedIssuesProvider);
   const findRelatedIssuesBadge = () => wrapper.findComponent(RelatedIssuesBadge);
+  const findRelatedTraces = () => wrapper.findComponent(RelatedTraces);
 
   const setFilters = async (attributes, dateRange, groupBy) => {
     findFilteredSearch().vm.$emit('submit', {
@@ -515,6 +517,22 @@ describe('MetricsDetails', () => {
     expect(chart.props('loading')).toBe(false);
   });
 
+  it('sets the datapoints when the chart emits selected', async () => {
+    const dataPoints = [
+      {
+        seriesName: 'Something',
+        color: '#fff',
+        timestamp: 1725467764487,
+        value: 1,
+        traceIds: [],
+      },
+    ];
+
+    await findChart().vm.$emit('selected', dataPoints);
+
+    expect(findRelatedTraces().props()).toMatchObject({ dataPoints });
+  });
+
   it('renders a line chart by default', () => {
     expect(findMetricDetails().findComponent(MetricsLineChart).exists()).toBe(true);
     expect(findMetricDetails().findComponent(MetricsHeatmap).exists()).toBe(false);
@@ -568,6 +586,13 @@ describe('MetricsDetails', () => {
     expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });
 
+  it('renders the related traces', () => {
+    expect(findRelatedTraces().props()).toStrictEqual({
+      dataPoints: [],
+      tracingIndexUrl,
+    });
+  });
+
   describe('with no data', () => {
     beforeEach(async () => {
       observabilityClientMock.fetchMetric.mockResolvedValue([]);
@@ -596,6 +621,10 @@ describe('MetricsDetails', () => {
       expect(findEmptyState().text()).toMatchInterpolatedText(
         'No data found for the selected time range Last ingested: 3 days ago',
       );
+    });
+
+    it('does not render the related traces', () => {
+      expect(findRelatedTraces().exists()).toBe(false);
     });
   });
 

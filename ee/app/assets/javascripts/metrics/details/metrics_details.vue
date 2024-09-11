@@ -26,6 +26,7 @@ import { filterObjToQuery, queryToFilterObj } from './filters';
 import MetricsHeatMap from './metrics_heatmap.vue';
 import { createIssueUrlWithMetricDetails } from './utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
+import RelatedTraces from './related_traces.vue';
 
 const VISUAL_HEATMAP = 'heatmap';
 
@@ -52,6 +53,7 @@ export default {
     RelatedIssuesProvider,
     RelatedIssue,
     RelatedIssuesBadge,
+    RelatedTraces,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -303,15 +305,23 @@ export default {
             @cancel="onCancel"
           />
 
-          <component
-            :is="getChartComponent()"
-            v-if="metricData && metricData.length"
-            :metric-data="metricData"
-            :loading="loading"
-            :cancelled="queryCancelled"
-            data-testid="metric-chart"
-            @selected="onChartSelected"
-          />
+          <div v-if="metricData && metricData.length">
+            <component
+              :is="getChartComponent()"
+              :metric-data="metricData"
+              :loading="loading"
+              :cancelled="queryCancelled"
+              data-testid="metric-chart"
+              class="gl-mb-5"
+              @selected="onChartSelected"
+            />
+
+            <related-traces
+              class="gl-mb-5 gl-ml-11"
+              :data-points="selectedDatapoints"
+              :tracing-index-url="tracingIndexUrl"
+            />
+          </div>
 
           <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
             <template #title>
@@ -332,12 +342,6 @@ export default {
               </p>
             </template>
           </gl-empty-state>
-
-          <!-- TODO add related-traces widget https://gitlab.com/gitlab-org/opstrace/opstrace/-/work_items/2943 -->
-          <!-- <related-traces
-            :metric-datapoints="selectedDatapoints"
-            :tracing-index-url="tracingIndexUrl"
-          /> -->
 
           <related-issue
             :id="$options.relatedIssuesId"
