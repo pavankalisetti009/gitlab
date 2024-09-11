@@ -13,6 +13,8 @@ module GitlabSubscriptions
       return error_response(online_license_error) if license.online_cloud_license?
 
       if license.save
+        update_add_on_purchases
+
         ServiceResponse.success(payload: { license: license }, message: success_message)
       else
         error_response(license.errors.full_messages.join.html_safe, license: license) # rubocop:disable Rails/OutputSafety -- Calling html_safe should be fine here
@@ -61,6 +63,12 @@ module GitlabSubscriptions
           starts_at: license.starts_at
         )
       end
+    end
+
+    def update_add_on_purchases
+      return unless license.offline_cloud_license?
+
+      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo.new.execute
     end
   end
 end

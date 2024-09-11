@@ -26,7 +26,7 @@ module GitlabSubscriptions
           private
 
           def license_has_add_on?
-            !!current_license&.online_cloud_license? && quantity.to_i > 0
+            !!current_license&.cloud_license? && quantity.to_i > 0
           end
 
           def current_license
