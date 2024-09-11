@@ -13,6 +13,7 @@ module Ai
             ConfigFiles::GoModules,
             ConfigFiles::JavaGradle,
             ConfigFiles::JavaMaven,
+            ConfigFiles::KotlinGradle,
             ConfigFiles::RubyGemsLock
           ].freeze
         end

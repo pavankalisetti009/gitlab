@@ -7,10 +7,12 @@ module Ai
         class JavaGradle < Base
           START_SECTION_REGEX = /^dependencies {/ # Identifies the dependencies section
           END_SECTION_REGEX = /^}$/
-          PREFIX_REGEX = /^(implementation |testImplementation )/ # Appears before each dependency
-          LONG_FORM_KEYWORD = 'name:' # Only present in the long form dependency definition
+          PREFIX_REGEX = /^['"]?(implementation|testImplementation)['"]?/ # Appears before each dependency
           LONG_FORM_NAME_REGEX = /name:\s*(?<value>[^,\s]*)/
           LONG_FORM_VERSION_REGEX = /version:\s*(?<value>[^,\s]*)/
+          QUOTED_VALUE_REGEX = /(?<quote>["'])(?<value>[^"']+)\k<quote>/ # Matches value between double or single quotes
+          INLINE_COMMENT_REGEX = %r{\s+//.*$}
+          STRING_INTERPOLATION_CHAR = '$'
           EXCLUDE_KEYWORD = '('
 
           def self.file_name_glob
@@ -28,7 +30,8 @@ module Ai
           # dependencies {
           #     // Short form: <group>:<name>:<version>
           #     implementation 'org.codehaus.groovy:groovy:3.+'
-          #     testImplementation "com.google.guava:guava:29.0.1"
+          #     testImplementation "com.google.guava:guava:29.0.1" // Inline comment
+          #     // The quotes on `implementation` may be a legacy format; ported from Repository X-Ray Go repo
           #     "implementation" 'org.ow2.asm:asm:9.6'
           #
           #     // Long form
@@ -41,7 +44,7 @@ module Ai
           #     runtimeOnly files('libs/a.jar', 'libs/b.jar')
           #
           #     // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/481317
-          #     // String interpolation is not currently supported; below outputs "$arcgisVersion" as version
+          #     // String interpolation is not currently supported; below outputs nil as version
           #     implementation "com.esri.arcgisruntime:arcgis-java:$arcgisVersion"
           # }
           #
@@ -51,33 +54,40 @@ module Ai
 
             content.each_line do |line|
               line.strip!
-              line.gsub!(/'|"/, '')
+              line.gsub!(INLINE_COMMENT_REGEX, '')
 
               if START_SECTION_REGEX.match?(line)
                 in_deps_section = true
-              elsif in_deps_section && PREFIX_REGEX.match?(line)
-                libs << parse_lib(line) unless line.include?(EXCLUDE_KEYWORD)
-              elsif in_deps_section && END_SECTION_REGEX.match?(line)
-                break
+              elsif in_deps_section
+                libs << parse_lib(line) if self.class::PREFIX_REGEX.match?(line)
+                break if END_SECTION_REGEX.match?(line)
               end
             end
 
-            libs
+            libs.compact
           end
 
           def parse_lib(line)
-            line.gsub!(PREFIX_REGEX, '')
+            line.gsub!(self.class::PREFIX_REGEX, '')
+            return if line.include?(EXCLUDE_KEYWORD)
 
-            if line.include?(LONG_FORM_KEYWORD)
-              # Parse long form
-              name = LONG_FORM_NAME_REGEX.match(line).try(:[], 'value')
-              version = LONG_FORM_VERSION_REGEX.match(line).try(:[], 'value')
+            long_form_name_match = LONG_FORM_NAME_REGEX.match(line)
+
+            if long_form_name_match
+              # Parse long form (not used in Kotlin Gradle)
+              name = long_form_name_match[:value].delete('"\'')
+              version_match = LONG_FORM_VERSION_REGEX.match(line)
+              version = version_match[:value].delete('"\'') if version_match
             else
               # Parse short form
-              _group, name, version = line.split(':')
+              match = QUOTED_VALUE_REGEX.match(line)
+              _group, name, version = match[:value].split(':') if match
             end
 
-            Lib.new(name: name, version: version)
+            name = nil if name&.include?(STRING_INTERPOLATION_CHAR)
+            version = nil if version&.include?(STRING_INTERPOLATION_CHAR)
+
+            Lib.new(name: name, version: version) if name
           end
         end
       end
