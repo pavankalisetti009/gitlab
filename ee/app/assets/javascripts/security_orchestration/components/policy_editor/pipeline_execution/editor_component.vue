@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
-import { setUrlFragment } from '~/lib/utils/url_utility';
+import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import {
@@ -12,12 +12,17 @@ import {
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
 } from '../constants';
-import { assignSecurityPolicyProject, doesFileExist, goToPolicyMR } from '../utils';
+import {
+  assignSecurityPolicyProject,
+  doesFileExist,
+  getMergeRequestConfig,
+  goToPolicyMR,
+} from '../utils';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
-import { createPolicyObject, fromYaml, policyToYaml } from './utils';
+import { createPolicyObject, fromYaml, policyToYaml, getInitialPolicy } from './utils';
 import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY } from './constants';
 
 export default {
@@ -67,7 +72,10 @@ export default {
     if (this.existingPolicy) {
       yamlEditorValue = policyToYaml(this.existingPolicy);
     } else {
-      yamlEditorValue = DEFAULT_PIPELINE_EXECUTION_POLICY;
+      yamlEditorValue = getInitialPolicy(
+        DEFAULT_PIPELINE_EXECUTION_POLICY,
+        queryToObject(window.location.search),
+      );
     }
 
     const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
@@ -148,12 +156,19 @@ export default {
 
       try {
         const assignedPolicyProject = await this.getSecurityPolicyProject();
+        const extraMergeRequestInput = getMergeRequestConfig(
+          queryToObject(window.location.search),
+          {
+            namespacePath: this.namespacePath,
+          },
+        );
         await goToPolicyMR({
           action: this.policyModificationAction,
           assignedPolicyProject,
           name: this.originalName || fromYaml({ manifest: this.yamlEditorValue })?.name,
           namespacePath: this.namespacePath,
           yamlEditorValue: this.yamlEditorValue,
+          extraMergeRequestInput,
         });
       } catch (e) {
         this.handleError(e);

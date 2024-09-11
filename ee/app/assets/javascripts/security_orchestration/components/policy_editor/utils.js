@@ -37,12 +37,19 @@ const checkForErrors = ({ errors, validationErrors }) => {
  * @param {Object} payload contains the path to the parent project, the branch to merge on the project, and the branch to merge into
  * @returns {Object} contains the id of the merge request and any errors
  */
-const createMergeRequest = async ({ projectPath, sourceBranch, targetBranch }) => {
+const createMergeRequest = async ({
+  projectPath,
+  sourceBranch,
+  targetBranch,
+  title = DEFAULT_MR_TITLE,
+  description = '',
+}) => {
   const input = {
     projectPath,
     sourceBranch,
     targetBranch,
-    title: DEFAULT_MR_TITLE,
+    title,
+    description,
   };
 
   const {
@@ -99,6 +106,7 @@ export const modifyPolicy = async ({
   name,
   namespacePath,
   yamlEditorValue,
+  extraMergeRequestInput,
 }) => {
   const newPolicyCommitBranch = await updatePolicy({
     action,
@@ -106,6 +114,7 @@ export const modifyPolicy = async ({
     namespacePath,
     yamlEditorValue,
   });
+  const { title, description } = extraMergeRequestInput ?? {};
 
   checkForErrors(newPolicyCommitBranch);
 
@@ -113,6 +122,8 @@ export const modifyPolicy = async ({
     projectPath: assignedPolicyProject.fullPath,
     sourceBranch: newPolicyCommitBranch.branch,
     targetBranch: assignedPolicyProject.branch,
+    title,
+    description,
   });
 
   checkForErrors(mergeRequest);
@@ -137,6 +148,7 @@ export const goToPolicyMR = async ({
   name,
   namespacePath,
   yamlEditorValue,
+  extraMergeRequestInput,
 }) => {
   const mergeRequest = await modifyPolicy({
     action,
@@ -144,6 +156,7 @@ export const goToPolicyMR = async ({
     name,
     namespacePath,
     yamlEditorValue,
+    extraMergeRequestInput,
   });
 
   redirectToMergeRequest({
@@ -604,4 +617,66 @@ export const doesFileExist = async ({ fullPath = {}, ref = null, filePath = '' }
   } catch {
     return false;
   }
+};
+
+/**
+ * Generates custom merge request title and description if compliance framework params present
+ * @param params URL params
+ * @param context context of generation request, including top level group path
+ *
+ * @returns {Object | null}
+ */
+export const getMergeRequestConfig = (params = {}, context = {}) => {
+  const {
+    compliance_framework_name: frameworkName,
+    compliance_framework_id: frameworkIdString,
+    path,
+  } = params;
+  const { namespacePath } = context;
+
+  if (!frameworkName || !frameworkIdString || !path || !namespacePath) {
+    return null;
+  }
+
+  const frameworkLink = joinPaths(
+    gon.relative_url_root || '/',
+    'groups',
+    namespacePath,
+    '/-/security/compliance_dashboard/frameworks',
+    frameworkIdString,
+  );
+
+  const title = s__(
+    'SecurityOrchestration|Compliance pipeline migration to pipeline execution policy',
+  );
+
+  const migrationInfo = sprintf(
+    s__(
+      'SecurityOrchestration|This merge request migrates compliance pipeline `%{path}` to a pipeline execution policy scoped to framework [%{framework}](%{link}).',
+    ),
+    {
+      path,
+      framework: frameworkName,
+      link: frameworkLink,
+    },
+  );
+
+  const continueToOverwriteWarning = s__(
+    'SecurityOrchestration|The compliance pipeline will continue to override the new pipeline execution policy until it is removed from the compliance framework configuration.',
+  );
+
+  const backLinkMessage = sprintf(
+    s__(
+      'SecurityOrchestration|After this merge request is merged, go to [%{framework}](%{link}) and remove the compliance pipeline so that the new pipeline execution policy can take precedence.',
+    ),
+    {
+      framework: frameworkName,
+      link: frameworkLink,
+    },
+  );
+
+  return {
+    title,
+    description: [migrationInfo, continueToOverwriteWarning, backLinkMessage].join('\n\n'),
+  };
 };

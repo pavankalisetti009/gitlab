@@ -8,10 +8,13 @@ import {
   fromYaml,
   policyToYaml,
   toYaml,
+  getInitialPolicy,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import {
   customYaml,
   customYamlObject,
+  customYamlObjectFromUrlParams,
+  customYamlUrlParams,
   invalidStrategyManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 
@@ -49,4 +52,20 @@ describe('toYaml', () => {
   it('returns policy object as yaml', () => {
     expect(toYaml(customYamlObject)).toBe(customYaml);
   });
+});
+
+describe('getInitialPolicy', () => {
+  it('updates initialPolicy with passed params if all params are present', () => {
+    const expectedYaml = customYamlObjectFromUrlParams(customYamlUrlParams);
+    expect(getInitialPolicy(customYaml, customYamlUrlParams)).toBe(expectedYaml);
+  });
+
+  it.each(Object.keys(customYamlUrlParams).map((key) => [key]))(
+    'ignores other url params if %s is missing',
+    (key) => {
+      const params = { ...customYamlUrlParams };
+      delete params[key];
+      expect(getInitialPolicy(customYaml, params)).toBe(customYaml);
+    },
+  );
 });

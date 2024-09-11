@@ -22,7 +22,7 @@ describe('Basic information section', () => {
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineConfigurationFullPathEnabled: true,
     pipelineConfigurationEnabled: true,
-    pipelineExecutionPolicyPath: '/policypath',
+    pipelineExecutionPolicyPath: '/policypath?type=1',
   };
 
   const invalidFeedback = (input) =>
@@ -111,7 +111,7 @@ describe('Basic information section', () => {
     expect(maintenanceAlert.text()).toContain('Compliance pipelines are deprecated');
 
     expect(actionButton.text()).toContain('Create policy');
-    expect(actionButton.attributes('href')).toEqual('/policypath');
+    expect(actionButton.attributes('href')).toEqual(defaultProvides.pipelineExecutionPolicyPath);
 
     jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
     const pipelineYAMLPath = 'file.yaml@group/project';
@@ -120,7 +120,10 @@ describe('Basic information section', () => {
     await waitForPromises();
 
     expect(actionButton.text()).toContain('Migrate pipeline to a policy');
-    expect(actionButton.attributes('href')).toContain(pipelineYAMLPath);
+    const urlParams = new URLSearchParams(actionButton.attributes('href').split('?')[1]);
+    expect(urlParams.get('path')).toBe(pipelineYAMLPath);
+    expect(urlParams.get('compliance_framework_name')).toBe(fakeFramework.name);
+    expect(urlParams.get('compliance_framework_id')).toBe(fakeFramework.id.toString());
   });
 
   describe('when ff_compliance_pipeline_maintenance_mode feature flag is disabled', () => {

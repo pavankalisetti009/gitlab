@@ -24,6 +24,7 @@ import {
   parseError,
   removeIdsFromPolicy,
   validateBranchProjectFormat,
+  getMergeRequestConfig,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
@@ -564,6 +565,29 @@ describe('mapBranchesToExceptions', () => {
       gqClient.query.mockRejectedValue({});
       const exists = await doesFileExist({ fullPath: 'fullPath', ref: 'main' });
       expect(exists).toBe(false);
+    });
+  });
+
+  describe('getMergeRequestConfig', () => {
+    const fullConfig = {
+      compliance_framework_name: 'test',
+      compliance_framework_id: '1',
+      path: 'foo@bar',
+    };
+
+    it('returns correct title and description if all required data is supplied', () => {
+      const output = getMergeRequestConfig(fullConfig, { namespacePath: 'foo' });
+      expect(output).toMatchObject({
+        title: 'Compliance pipeline migration to pipeline execution policy',
+        description: expect.stringContaining('This merge request migrates compliance pipeline'),
+      });
+    });
+
+    it.each(Object.keys(fullConfig).map((k) => [k]))('returns null if %s key is missing', (key) => {
+      const params = { ...fullConfig };
+      delete params[key];
+
+      expect(getMergeRequestConfig(params, { namespacePath: 'foo ' })).toBe(null);
     });
   });
 });
