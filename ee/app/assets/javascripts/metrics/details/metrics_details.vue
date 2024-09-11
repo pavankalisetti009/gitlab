@@ -18,13 +18,12 @@ import RelatedIssuesBadge from '~/observability/components/related_issues_badge.
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { ingestedAtTimeAgo } from '../utils';
-import { METRIC_TYPE } from '../constants';
 import { VIEW_METRICS_DETAILS_PAGE } from '../events';
 import MetricsLineChart from './metrics_line_chart.vue';
 import FilteredSearch from './filter_bar/metrics_filtered_search.vue';
 import { filterObjToQuery, queryToFilterObj } from './filters';
 import MetricsHeatMap from './metrics_heatmap.vue';
-import { createIssueUrlWithMetricDetails } from './utils';
+import { createIssueUrlWithMetricDetails, isHistogram } from './utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 import RelatedTraces from './related_traces.vue';
 
@@ -127,12 +126,6 @@ export default {
       // only show the spinner on the first load or when there is no metric
       return this.loading && this.noMetric;
     },
-    isHistogram() {
-      return (
-        this.metricType.toLowerCase() === METRIC_TYPE.ExponentialHistogram ||
-        this.metricType.toLowerCase() === METRIC_TYPE.Histogram
-      );
-    },
     noMetric() {
       return !this.metricData || !this.metricData.length;
     },
@@ -193,7 +186,7 @@ export default {
           {
             filters: this.filters,
             abortController: this.apiAbortController,
-            ...(this.isHistogram && { visual: VISUAL_HEATMAP }),
+            ...(isHistogram(this.metricType) && { visual: VISUAL_HEATMAP }),
           },
         );
         // gl-chart is merging data by default. As I workaround we can
@@ -237,7 +230,7 @@ export default {
       this.queryCancelled = true;
     },
     getChartComponent() {
-      return this.isHistogram ? MetricsHeatMap : MetricsLineChart;
+      return isHistogram(this.metricType) ? MetricsHeatMap : MetricsLineChart;
     },
     onChartSelected(datapoints) {
       this.selectedDatapoints = datapoints;

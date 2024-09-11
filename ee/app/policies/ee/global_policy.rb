@@ -65,8 +65,7 @@ module EE
 
         next false unless ::Ai::FeatureSetting.code_suggestions_self_hosted?
 
-        self_hosted_models = CloudConnector::AvailableServices.find_by_name(:self_hosted_models)
-        self_hosted_models.free_access? || self_hosted_models.allowed_for?(@user)
+        self_hosted_models_available_for?(@user)
       end
 
       condition(:glab_ask_git_command_licensed) do
@@ -256,6 +255,7 @@ module EE
     def self_hosted_models_available_for?(user)
       service = CloudConnector::AvailableServices.find_by_name(:self_hosted_models)
       return false unless service
+      return service.allowed_for?(user) if ::Feature.enabled?(:self_hosted_models_beta_ended, user)
 
       service.free_access? || service.allowed_for?(user)
     end

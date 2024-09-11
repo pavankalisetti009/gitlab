@@ -205,6 +205,17 @@ describe('MetricsFilteredSearch', () => {
 
       expect(findGroupByFilter().props('selectedAttributes')).toEqual(['attribute_one']);
     });
+
+    it('does not render the group-by filter when metric type is histogram', () => {
+      mount({
+        searchMetadata: {
+          ...defaultSearchMetadata,
+          type: 'Histogram',
+        },
+      });
+
+      expect(findGroupByFilter().exists()).toBe(false);
+    });
   });
 
   it('emits the submit event when the attributes filter is changed and submit button is clicked', async () => {
