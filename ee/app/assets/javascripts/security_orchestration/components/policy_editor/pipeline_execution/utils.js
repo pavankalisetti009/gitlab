@@ -64,3 +64,26 @@ export const policyToYaml = (policy) => {
 export const toYaml = (yaml) => {
   return safeDump(yaml);
 };
+
+export const getInitialPolicy = (defaultPolicy, params = {}) => {
+  const {
+    type,
+    compliance_framework_id: frameworkId,
+    compliance_framework_name: frameworkName,
+  } = params;
+  const [file, project] = params?.path?.split('@') ?? [];
+
+  if (!file || !project || !frameworkId || !frameworkName || !type) {
+    return defaultPolicy;
+  }
+
+  const newPolicy = Object.assign(fromYaml({ manifest: defaultPolicy }), {
+    type,
+    pipeline_config_strategy: 'override_project_ci',
+    policy_scope: { compliance_frameworks: [{ id: Number(frameworkId) }] },
+    content: { include: [{ project, file }] },
+    metadata: { compliance_pipeline_migration: true },
+  });
+
+  return safeDump(newPolicy);
+};

@@ -22,6 +22,7 @@ import {
   mockPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
+  customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { goToYamlMode } from '../policy_editor_helper';
 
@@ -83,6 +84,49 @@ describe('EditorComponent', () => {
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
+
+  describe('when url params are passed', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: { search: '' },
+      });
+
+      window.location.search = new URLSearchParams(Object.entries(customYamlUrlParams)).toString();
+    });
+
+    it('configures initial policy from passed url params', () => {
+      factory();
+      expect(findPolicyEditorLayout().props('policy')).toMatchObject({
+        type: customYamlUrlParams.type,
+        content: {
+          include: [{ file: 'foo', project: 'bar' }],
+        },
+        pipeline_config_strategy: 'override_project_ci',
+        metadata: {
+          compliance_pipeline_migration: true,
+        },
+      });
+    });
+
+    it('saves a new policy with correct title and description', async () => {
+      factory();
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+      expect(goToPolicyMR.mock.calls.at(-1)[0]).toMatchObject({
+        extraMergeRequestInput: expect.objectContaining({
+          title: 'Compliance pipeline migration to pipeline execution policy',
+          description: expect.stringContaining('This merge request migrates compliance pipeline'),
+        }),
+      });
+    });
+
+    afterEach(() => {
+      window.location.search = '';
+    });
+  });
 
   describe('rule mode', () => {
     it('renders the editor', () => {
@@ -167,6 +211,7 @@ describe('EditorComponent', () => {
               ? fromYaml({ manifest: yamlEditorValue }).name
               : mockWithoutRefPipelineExecutionObject.name,
           namespacePath: defaultProjectPath,
+          extraMergeRequestInput: null,
           yamlEditorValue,
         });
       },

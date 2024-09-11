@@ -43,3 +43,7 @@ export const humanizeDisplayUnit = ({ unit, data = 0 }) => {
       return unit;
   }
 };
+
+export const calculateDecimalPlaces = ({ data, decimalPlaces } = {}) => {
+  return (data && parseInt(decimalPlaces, 10)) || 0;
+};

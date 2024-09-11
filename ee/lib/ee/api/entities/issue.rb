@@ -7,7 +7,7 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
-          with_options if: ->(issue, _) { issue.project.namespace.group_namespace? && issue.project.namespace.feature_available?(:epics) } do
+          with_options if: ->(issue, _) { feature_available_for_issue_group?(issue, :epics) } do
             expose :epic_iid do |issue|
               authorized_epic_for(issue)&.iid
             end
@@ -21,7 +21,7 @@ module EE
             end
           end
 
-          with_options if: ->(issue, _) { issue.project.namespace.group_namespace? && issue.project.namespace.licensed_feature_available?(:iterations) } do
+          with_options if: ->(issue, _) { feature_available_for_issue_group?(issue, :iterations) } do
             expose :iteration, using: ::API::Entities::Iteration do |issue|
               issue.iteration if ::Ability.allowed?(options[:current_user], :read_iteration, issue.iteration)
             end
@@ -29,6 +29,13 @@ module EE
 
           with_options if: ->(issue) { issue.licensed_feature_available?(:issuable_health_status) } do
             expose :health_status
+          end
+
+          def feature_available_for_issue_group?(issue, feature)
+            namespace = issue.project&.namespace || issue.namespace
+            return false unless namespace.group_namespace?
+
+            namespace.licensed_feature_available?(feature)
           end
         end
       end
