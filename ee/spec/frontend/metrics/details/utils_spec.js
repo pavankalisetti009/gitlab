@@ -1,4 +1,8 @@
-import { createIssueUrlWithMetricDetails, viewTracesUrlWithMetric } from 'ee/metrics/details/utils';
+import {
+  createIssueUrlWithMetricDetails,
+  viewTracesUrlWithMetric,
+  isHistogram,
+} from 'ee/metrics/details/utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { useFakeDate } from 'helpers/fake_date';
 
@@ -93,5 +97,17 @@ describe('viewTracesUrlWithMetric', () => {
         timestamp: '1234',
       }),
     ).toBe('https://example.com/traces/index?trace_id[]=test-1&trace_id[]=test-2&date_range=1h');
+  });
+});
+
+describe('isHistogram', () => {
+  it.each`
+    metricType                | expected
+    ${'Histogram'}            | ${true}
+    ${'ExponentialHistogram'} | ${true}
+    ${'Sum'}                  | ${false}
+    ${'Gauge'}                | ${false}
+  `('returns $expected when metric type is $metricType', ({ metricType, expected }) => {
+    expect(isHistogram(metricType)).toBe(expected);
   });
 });
