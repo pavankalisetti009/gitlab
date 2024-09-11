@@ -2335,9 +2335,6 @@ msgstr ""
 msgid "AI|The existing description will be replaced when you submit."
 msgstr ""
 
-msgid "AI|This is an experiment feature that uses AI to provide recommendations for resolving this vulnerability. Use this feature with caution."
-msgstr ""
-
 msgid "AI|To help improve the quality of the content, send your feedback to GitLab team members."
 msgstr ""
 

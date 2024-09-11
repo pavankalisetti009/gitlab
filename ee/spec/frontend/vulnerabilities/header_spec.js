@@ -396,28 +396,6 @@ describe('Vulnerability Header', () => {
     });
   });
 
-  describe('when using experimental "Resolve with AI" (deprecated)', () => {
-    it('passes the experiment badge, tooltip, category, and tanuki icon', () => {
-      createWrapper({
-        glFeatures: {
-          explainVulnerabilityTool: false,
-          resolveVulnerability: true,
-          vulnerabilityResolutionGa: false,
-        },
-        vulnerability: getVulnerability(),
-      });
-
-      const buttons = findSplitButton().props('buttons');
-      expect(buttons[0]).toMatchObject({
-        badge: 'Experiment',
-        tooltip:
-          'This is an experiment feature that uses AI to provide recommendations for resolving this vulnerability. Use this feature with caution.',
-        icon: 'tanuki-ai',
-        category: 'primary',
-      });
-    });
-  });
-
   describe('when the "vulnerabilityResolutionGa" feature flag is disabled', () => {
     it('shows the split button and does not show the dropdown button with the list of available actions', () => {
       createWrapper({
@@ -687,19 +665,6 @@ describe('Vulnerability Header', () => {
             icon: 'tanuki-ai',
             category: 'primary',
           });
-        });
-
-        // Note: when the `resolveVulnerability` is removed, these tests can be deleted as well
-        it('does not pass the experimental badge or tooltip', () => {
-          createWrapper({
-            vulnerability: getVulnerability(),
-            glFeatures: {
-              vulnerabilityResolutionGa: false,
-            },
-          });
-
-          expect(findResolveWithAIButton()).toHaveProperty('badge');
-          expect(findResolveWithAIButton()).toHaveProperty('tooltip');
         });
 
         it('continues to show the loading state into the redirect call', async () => {
