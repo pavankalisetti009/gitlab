@@ -10,8 +10,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
   let(:processed_devfile) { example_processed_devfile }
   let(:force_include_all_resources) { false }
-  let(:current_config_version) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_3 }
-  let(:previous_config_version) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2 }
+  let(:current_desired_config_generator_version) do
+    RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
+  end
+
+  let(:previous_desired_config_generator_version) do
+    RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
+  end
+
   let(:workspace) do
     instance_double(
       "RemoteDevelopment::Workspace",
@@ -22,7 +28,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       desired_state: desired_state,
       actual_state: actual_state,
       processed_devfile: processed_devfile,
-      config_version: config_version,
+      desired_config_generator_version: desired_config_generator_version,
       force_include_all_resources: force_include_all_resources
     )
   end
@@ -99,8 +105,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
             .and_return(desired_state_updated_more_recently_than_last_response_to_agent)
   end
 
-  context "when workspace.config_version is current version" do
-    let(:config_version) { current_config_version }
+  context "when workspace.desired_config_generator_version is current version" do
+    let(:desired_config_generator_version) { current_desired_config_generator_version }
 
     before do
       allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator)
@@ -172,8 +178,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     end
   end
 
-  context "when workspace.config_version is previous version" do
-    let(:config_version) { previous_config_version }
+  context "when workspace.desired_config_generator_version is previous version" do
+    let(:desired_config_generator_version) { previous_desired_config_generator_version }
     let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
     let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
     let(:expected_include_all_resources) { true }
