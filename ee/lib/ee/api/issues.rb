@@ -16,7 +16,6 @@ module EE
               authorize!(:upload_issuable_metric_image, find_project_issue(request.params[:issue_iid]))
 
               require_gitlab_workhorse!
-              ::Gitlab::Workhorse.verify_api_request!(request.headers)
               status 200
               content_type ::Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
 
