@@ -36,6 +36,7 @@ module Admin
       {
         duo_availability: duo_availability.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+        are_experiment_settings_allowed: "true",
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         redirect_path: general_admin_application_settings_path

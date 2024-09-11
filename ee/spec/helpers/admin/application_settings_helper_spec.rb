@@ -47,6 +47,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
           {
             duo_availability: duo_availability.to_s,
             experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+            are_experiment_settings_allowed: "true",
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             redirect_path: general_admin_application_settings_path,
             duo_pro_visible: expected_duo_pro_visible_value
