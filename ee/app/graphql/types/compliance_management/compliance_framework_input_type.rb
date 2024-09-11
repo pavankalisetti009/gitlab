@@ -28,7 +28,8 @@ module Types
       argument :pipeline_configuration_full_path,
         GraphQL::Types::String,
         required: false,
-        description: 'Full path of the compliance pipeline configuration stored in a project repository, such as `.gitlab/.compliance-gitlab-ci.yml@compliance/hipaa`. Ultimate only.'
+        description: 'Full path of the compliance pipeline configuration stored in a project repository, such as `.gitlab/.compliance-gitlab-ci.yml@compliance/hipaa`. Ultimate only.',
+        deprecated: { reason: 'Use pipeline execution policies instead', milestone: '17.4' }
     end
   end
 end
