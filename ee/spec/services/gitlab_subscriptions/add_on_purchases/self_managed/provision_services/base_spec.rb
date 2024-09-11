@@ -270,15 +270,29 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         it_behaves_like 'provision service expires add-on purchase'
       end
 
-      context 'when current license is not an online cloud license' do
+      context 'when current license is a legacy license' do
         let!(:current_license) do
           create_current_license(
-            cloud_licensing_enabled: true,
-            offline_cloud_licensing_enabled: true
+            cloud_licensing_enabled: false,
+            offline_cloud_licensing_enabled: false
           )
         end
 
         it_behaves_like 'provision service expires add-on purchase'
+      end
+
+      context 'when current license is an offline license' do
+        let!(:current_license) do
+          create_current_license(
+            cloud_licensing_enabled: true,
+            offline_cloud_licensing_enabled: true,
+            restrictions: {
+              subscription_name: subscription_name
+            }
+          )
+        end
+
+        it_behaves_like 'provision service creates add-on purchase'
       end
 
       context 'when current license does not contain a code suggestions add-on purchase' do
@@ -317,32 +331,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         it_behaves_like 'provision service handles error', GitlabSubscriptions::AddOnPurchases::CreateService
       end
 
-      it 'creates a new add-on purchase' do
-        expect(GitlabSubscriptions::AddOnPurchases::CreateService).to receive(:new).with(
-          namespace,
-          add_on,
-          {
-            add_on_purchase: nil,
-            quantity: quantity,
-            started_on: starts_at,
-            expires_on: starts_at + 1.year,
-            purchase_xid: purchase_xid,
-            trial: false
-          }
-        ).and_call_original
-
-        expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
-
-        expect(result[:status]).to eq(:success)
-        expect(result[:add_on_purchase].add_on.name).to eq('code_suggestions')
-        expect(result[:add_on_purchase]).to have_attributes(
-          started_at: starts_at,
-          expires_on: starts_at + 1.year,
-          quantity: quantity,
-          purchase_xid: purchase_xid,
-          trial: false
-        )
-      end
+      it_behaves_like 'provision service creates add-on purchase'
     end
   end
 end

@@ -108,6 +108,8 @@ RSpec.describe GitlabSubscriptions::UploadLicenseService, feature_category: :pla
 
     include_examples 'unsuccessful license upload scenarios'
     include_examples 'successful license upload scenarios'
+
+    it_behaves_like 'call runner to handle the provision of add-ons'
   end
 
   context 'when license key belongs to a legacy license' do
@@ -120,9 +122,21 @@ RSpec.describe GitlabSubscriptions::UploadLicenseService, feature_category: :pla
 
       include_examples 'unsuccessful license upload scenarios'
       include_examples 'successful license upload scenarios'
+
+      it 'does not call the service to process add-on purchases' do
+        expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo).not_to receive(:new)
+
+        execute_service
+      end
     end
 
     include_examples 'unsuccessful license upload scenarios'
     include_examples 'successful license upload scenarios'
+
+    it 'does not call the service to process add-on purchases' do
+      expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo).not_to receive(:new)
+
+      execute_service
+    end
   end
 end
