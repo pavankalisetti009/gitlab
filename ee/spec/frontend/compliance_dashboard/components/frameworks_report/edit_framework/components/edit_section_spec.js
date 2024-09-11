@@ -1,65 +1,102 @@
-import { GlCollapse } from '@gitlab/ui';
+import { GlCollapse, GlIcon } from '@gitlab/ui';
 import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('Section', () => {
   let wrapper;
 
-  const findCollapse = () => wrapper.findComponent(GlCollapse);
-  const findButton = (text) => wrapper.findByText(text);
+  const title = 'Foo';
+  const description = 'Bar';
+  const itemsCount = 10;
 
-  function createComponent(propsData = {}) {
-    return mountExtended(EditSection, {
+  const findTitle = () => wrapper.findByText(title);
+  const findDescription = () => wrapper.findByText(description);
+  const findCollapse = () => wrapper.findComponent(GlCollapse);
+  const findCollapseIcon = () => wrapper.findComponent(GlIcon);
+  const findCountBadge = () => wrapper.findByTestId('count-badge');
+  const findStatusBadge = () => wrapper.findByTestId('status-badge');
+
+  const createComponent = (propsData = {}) => {
+    wrapper = mountExtended(EditSection, {
       propsData: {
-        title: 'Foo',
-        description: 'Bar',
+        title,
+        description,
         ...propsData,
       },
     });
-  }
+  };
 
-  describe('if not expandable', () => {
-    beforeEach(() => {
-      wrapper = createComponent({ expandable: false });
+  it('renders title', () => {
+    createComponent();
+    expect(findTitle().exists()).toBe(true);
+  });
+
+  it('renders description', () => {
+    createComponent();
+    expect(findDescription().exists()).toBe(true);
+  });
+
+  describe('count badge rendering', () => {
+    it('does not render count badge by default', () => {
+      createComponent();
+      expect(findCountBadge().exists()).toBe(false);
     });
 
-    it('renders collapse expanded', () => {
-      expect(findCollapse().props('visible')).toBe(true);
-    });
-
-    it('does not render expand/collapse button', () => {
-      expect(findButton('Expand').exists()).toBe(false);
-    });
-
-    it('ignores initiallyExpanded prop', () => {
-      wrapper = createComponent({ expandable: false, initiallyExpanded: false });
-
-      expect(findCollapse().props('visible')).toBe(true);
+    it('renders count badge with number when itemsCount is provided', () => {
+      createComponent({ itemsCount });
+      expect(findCountBadge().text()).toBe('10');
     });
   });
 
-  describe('if expandable', () => {
+  describe('status badge rendering', () => {
+    it('does not render status badge as optional by  default', () => {
+      createComponent();
+      expect(findStatusBadge().text()).toBe('Optional');
+    });
+
+    it('does not render status badge as required when isRequired prop is true', () => {
+      createComponent({ isRequired: true });
+      expect(findStatusBadge().text()).toBe('Required');
+    });
+
+    it('does not render icon by default', () => {
+      createComponent();
+      expect(findStatusBadge().props('icon')).toBe('');
+    });
+
+    it('renders icon when items count is passed', () => {
+      createComponent({ itemsCount });
+      expect(findStatusBadge().props('icon')).toBe('check-circle');
+    });
+
+    it('renders icon when isCompleted is true', () => {
+      createComponent({ isCompleted: true });
+      expect(findStatusBadge().props('icon')).toBe('check-circle');
+    });
+  });
+
+  describe('collapse', () => {
     it('renders collapse hidden by default', () => {
-      wrapper = createComponent({ expandable: true });
+      createComponent();
       expect(findCollapse().props('visible')).toBe(false);
     });
 
     it('renders collapse expanded if initiallyExpanded is provided', () => {
-      wrapper = createComponent({ expandable: true, initiallyExpanded: true });
+      createComponent({ initiallyExpanded: true });
       expect(findCollapse().props('visible')).toBe(true);
     });
 
-    it('renders expand button', () => {
-      wrapper = createComponent({ expandable: true });
-      expect(findButton('Expand').exists()).toBe(true);
+    it('renders expand icon', () => {
+      createComponent();
+      expect(findCollapseIcon().exists()).toBe(true);
+      expect(findCollapseIcon().props('name')).toBe('chevron-lg-right');
     });
 
     it('expands collapse on clicking button', async () => {
-      wrapper = createComponent({ expandable: true });
-      await findButton('Expand').trigger('click');
+      createComponent();
+      await findCollapseIcon().trigger('click');
       expect(findCollapse().props('visible')).toBe(true);
-      expect(findButton('Expand').exists()).toBe(false);
-      expect(findButton('Collapse').exists()).toBe(true);
+      expect(findCollapseIcon().props('name')).toBe('chevron-lg-down');
     });
   });
 });

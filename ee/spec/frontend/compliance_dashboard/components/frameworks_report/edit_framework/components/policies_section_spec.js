@@ -117,6 +117,7 @@ describe('Basic information section', () => {
       apolloProvider: createMockApollo(requestHandlers),
       provide: {
         disableScanPolicyUpdate: false,
+        groupSecurityPoliciesPath: '/group-security-policies',
         ...provide,
       },
       stubs: {
@@ -177,8 +178,25 @@ describe('Basic information section', () => {
       return waitForPromises();
     });
 
-    it('correctly displays title', () => {
-      expect(wrapper.text()).toContain('2 linked policies. Total policies in the group: 4');
+    it('renders title', () => {
+      const title = wrapper.findByText('Policies');
+      expect(title.exists()).toBe(true);
+    });
+
+    it('correctly displays description', () => {
+      const description = wrapper.findByText(
+        'Select policies to enforce on all projects scoped to this framework.',
+      );
+      expect(description.exists()).toBe(true);
+    });
+
+    it('renders info text with link', () => {
+      expect(wrapper.findByTestId('info-text').text()).toMatchInterpolatedText(
+        'Go to the policy management page to scope policies for this framework.',
+      );
+      expect(wrapper.findByTestId('info-text').find('a').attributes('href')).toBe(
+        '/group-security-policies',
+      );
     });
 
     it('correctly calculates policies', () => {

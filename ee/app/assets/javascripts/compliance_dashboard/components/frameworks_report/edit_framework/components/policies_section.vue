@@ -5,10 +5,12 @@ import {
   GlFormCheckbox,
   GlLoadingIcon,
   GlTable,
+  GlIcon,
   GlTooltipDirective,
+  GlSprintf,
+  GlLink,
 } from '@gitlab/ui';
 
-import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import { getPolicyType } from 'ee/security_orchestration/utils';
@@ -29,12 +31,14 @@ export default {
   components: {
     DrawerWrapper,
     EditSection,
-
+    GlIcon,
     GlBadge,
     GlButton,
     GlLoadingIcon,
     GlFormCheckbox,
+    GlSprintf,
     GlTable,
+    GlLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -45,7 +49,7 @@ export default {
       namespacePath: this.fullPath,
     };
   },
-  inject: ['disableScanPolicyUpdate'],
+  inject: ['disableScanPolicyUpdate', 'groupSecurityPoliciesPath'],
   props: {
     fullPath: {
       type: String,
@@ -166,21 +170,6 @@ export default {
       ].sort((a, b) => (a.name > b.name ? 1 : -1));
     },
 
-    description() {
-      if (!this.policiesLoaded) {
-        // zero-width-space to avoid jump
-        return '\u200b';
-      }
-
-      const { length: count } = this.policies;
-      const { length: linkedCount } = this.policies.filter((p) => p.isLinked);
-
-      return [
-        sprintf(i18n.policiesLinkedCount(linkedCount), { count: linkedCount }),
-        sprintf(i18n.policiesTotalCount(count), { count }),
-      ].join(' ');
-    },
-
     policyType() {
       // eslint-disable-next-line no-underscore-dangle
       return this.selectedPolicy ? getPolicyType(this.selectedPolicy.__typename) : '';
@@ -215,30 +204,39 @@ export default {
     {
       key: 'linked',
       label: i18n.policiesTableFields.linked,
-      thClass: 'gl-whitespace-nowrap gl-w-1/20',
-      tdClass: 'gl-text-center',
+      thClass: 'gl-whitespace-nowrap !gl-border-t-0 gl-w-1/20',
+      tdClass: 'gl-text-center !gl-bg-white',
     },
     {
       key: 'name',
       label: i18n.policiesTableFields.name,
+      thClass: '!gl-border-t-0',
+      tdClass: '!gl-bg-white',
     },
     {
       key: 'description',
       label: i18n.policiesTableFields.desc,
+      thClass: '!gl-border-t-0',
+      tdClass: '!gl-bg-white',
     },
     {
       key: 'edit',
       label: '',
-      thClass: 'gl-w-1',
-      tdClass: 'gl-text-right',
+      thClass: 'gl-w-1 !gl-border-t-0',
+      tdClass: 'gl-text-right !gl-bg-white',
     },
   ],
   i18n,
 };
 </script>
 <template>
-  <edit-section :title="$options.i18n.policies" :description="description" expandable>
+  <edit-section
+    :title="$options.i18n.policies"
+    :description="$options.i18n.policiesDescription"
+    :items-count="policies.length"
+  >
     <gl-table
+      v-if="policies.length"
       ref="policiesTable"
       :items="policies"
       :fields="$options.tableFields"
@@ -249,6 +247,7 @@ export default {
       selectable
       select-mode="single"
       selected-variant="primary"
+      class="gl-mb-6"
       @row-selected="presentPolicyDrawer"
     >
       <template #cell(linked)="{ item }">
@@ -282,5 +281,13 @@ export default {
       :disable-scan-policy-update="disableScanPolicyUpdate"
       @close="deselectPolicy"
     />
+    <div class="gl-ml-5" data-testid="info-text">
+      <gl-icon name="information-o" variant="subtle" class="gl-mr-2" />
+      <gl-sprintf :message="$options.i18n.policiesInfoText">
+        <template #link="{ content }">
+          <gl-link :href="groupSecurityPoliciesPath">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </div>
   </edit-section>
 </template>
