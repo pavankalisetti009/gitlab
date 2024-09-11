@@ -19,7 +19,7 @@
           = s_('Promotions|Repository Mirroring is a way to mirror repositories from external sources. It can be used to mirror all branches, tags, and commits that you have in your repository.')
       - unless @project.feature_available?(:protected_refs_for_users)
         %p
-          = link_to s_('Promotions|Better Protected Branches'), help_page_path('user/project/protected_branches'), target: '_blank', rel: 'noopener noreferrer', class: 'gl-block'
+          = link_to s_('Promotions|Better Protected Branches'), help_page_path('user/project/repository/branches/protected'), target: '_blank', rel: 'noopener noreferrer', class: 'gl-block'
           = s_('Promotions|You can restrict access to protected branches by choosing a role (Maintainers, Developers) as well as certain users.')
 
     - c.with_primary_action do

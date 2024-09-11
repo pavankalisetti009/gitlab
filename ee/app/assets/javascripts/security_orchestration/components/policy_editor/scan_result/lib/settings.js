@@ -99,7 +99,7 @@ export const SETTINGS_POPOVER_STRINGS = {
 };
 
 export const SETTINGS_LINKS = {
-  [BLOCK_BRANCH_MODIFICATION]: helpPagePath('/user/project/protected_branches.html'),
+  [BLOCK_BRANCH_MODIFICATION]: helpPagePath('/user/project/repository/branches/protected.html'),
 };
 
 export const VALID_APPROVAL_SETTINGS = [
