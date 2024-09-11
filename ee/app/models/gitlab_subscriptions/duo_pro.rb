@@ -4,15 +4,6 @@ module GitlabSubscriptions
   module DuoPro
     ELIGIBLE_PLAN = ::Plan::PREMIUM
 
-    def self.active_trial_add_on_purchase_for_namespace?(namespace)
-      GitlabSubscriptions::NamespaceAddOnPurchasesFinder.new(
-        namespace,
-        add_on: :duo_pro,
-        trial: true,
-        only_active: true
-      ).execute.any?
-    end
-
     def self.add_on_purchase_for_namespace(namespace)
       GitlabSubscriptions::NamespaceAddOnPurchasesFinder.new(namespace, add_on: :duo_pro).execute.first
     end

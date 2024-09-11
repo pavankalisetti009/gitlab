@@ -107,6 +107,58 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
     end
   end
 
+  describe '.active_add_on_purchase_for_namespace?' do
+    let_it_be(:namespace) { create(:group) }
+
+    subject { described_class.active_add_on_purchase_for_namespace?(namespace) }
+
+    context 'when there is an active trial add-on purchase for the namespace' do
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when there is an expired trial add-on purchase for the namespace' do
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: namespace)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there is an active non-trial add-on purchase for the namespace' do
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace: namespace)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there is an expired non-trial add-on purchase for the namespace' do
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there are no add-on purchases for the namespace' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'when namespace id is passed instead of namespace object' do
+      subject { described_class.active_add_on_purchase_for_namespace?(namespace.id) }
+
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '.add_on_purchase_for_namespace' do
     subject(:add_on_purchase_for_namespace) { described_class.add_on_purchase_for_namespace(namespace) }
 

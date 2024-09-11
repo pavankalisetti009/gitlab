@@ -128,7 +128,7 @@ RSpec.describe "groups/add_ons/discover_duo_pro/show", :aggregate_failures, feat
   context 'when active trial add-on purchase exists for namespace' do
     before do
       assign(:group, group)
-      allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+      allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
       .with(group).and_return(true)
       render
     end
@@ -140,7 +140,7 @@ RSpec.describe "groups/add_ons/discover_duo_pro/show", :aggregate_failures, feat
   context 'when active trial add-on purchase does not exist for namespace' do
     before do
       assign(:group, group)
-      allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+      allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
       .with(group).and_return(false)
       render
     end

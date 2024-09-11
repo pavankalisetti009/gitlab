@@ -101,7 +101,7 @@ module Subscriptions
     end
 
     def duo_pro_trial_status_cta_label(namespace)
-      if GitlabSubscriptions::DuoPro.active_trial_add_on_purchase_for_namespace?(namespace)
+      if GitlabSubscriptions::Trials::DuoPro.active_add_on_purchase_for_namespace?(namespace)
         'duo_pro_active_trial'
       else
         'duo_pro_expired_trial'

@@ -123,7 +123,7 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
 
       context 'when an active trial DuoPro add-on purchase exists' do
         before do
-          allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+          allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
             .with(namespace).and_return(true)
         end
 
@@ -134,7 +134,7 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
 
       context 'when an expired trial DuoPro add-on purchase exists' do
         before do
-          allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+          allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
             .with(namespace).and_return(false)
         end
 

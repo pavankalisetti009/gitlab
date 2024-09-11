@@ -7,7 +7,7 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
 
   shared_examples 'trial status' do |status, expected_action|
     before do
-      allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+      allow(GitlabSubscriptions::Trials::DuoPro).to receive(:active_add_on_purchase_for_namespace?)
         .with(namespace).and_return(status)
     end
 
