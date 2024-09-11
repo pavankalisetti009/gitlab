@@ -35,14 +35,16 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
     }
   end
 
+  let(:chat_response) { instance_double(Gitlab::Llm::Chain::ResponseModifier) }
+
   before do
     group.add_member(authorized_user, :developer)
     stub_licensed_features(epics: true)
     allow(SecureRandom).to receive(:uuid).and_return('uuid')
 
     # Bypass actual requests of AI Gateway client
-    allow_next_instance_of(Gitlab::CloudConnector::SelfIssuedToken) do |access_token|
-      allow(access_token).to receive(:encoded).and_return(nil)
+    allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+      allow(react_agent).to receive(:step).and_return([])
     end
   end
 
