@@ -199,7 +199,7 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
       }
     end
 
-    describe '#topics' do
+    context 'topics' do
       let(:topics) { %w[foo bar] }
       let(:topic_changed_audits) { AuditEvent.where(%q("details" LIKE '%:event_name: project_topics_updated%')) }
 
