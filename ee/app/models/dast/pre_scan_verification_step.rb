@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class PreScanVerificationStep < ApplicationRecord
+  class PreScanVerificationStep < Gitlab::Database::SecApplicationRecord
     include IgnorableColumns
 
     self.table_name = 'dast_pre_scan_verification_steps'
