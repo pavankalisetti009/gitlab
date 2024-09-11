@@ -18,11 +18,10 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       )
     end
 
-    let_it_be(:project) { create(:project) }
-    let_it_be(:issue) { create(:issue, project: project) }
-    let_it_be(:user) { create(:user).tap { |u| project.add_developer(u) } }
+    let_it_be(:issue) { build_stubbed(:issue) }
+    let_it_be(:resource) { issue }
+    let_it_be(:user) { issue.author }
 
-    let(:resource) { issue }
     let(:user_input) { 'question?' }
     let(:tools) { [Gitlab::Llm::Chain::Tools::IssueReader] }
     let(:tool_double) { instance_double(Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
@@ -31,68 +30,43 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
     let(:extra_resource) { {} }
     let(:current_file) { nil }
 
+    let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+
     let(:context) do
       Gitlab::Llm::Chain::GitlabContext.new(
-        current_user: user, container: nil, resource: resource, ai_request: nil,
+        current_user: user, container: nil, resource: resource, ai_request: ai_request_double,
         extra_resource: extra_resource, current_file: current_file, agent_version: nil
       )
     end
 
-    let(:issue_resource) { Ai::AiResource::Issue.new(user, resource) }
     let(:answer_chunk) { create(:final_answer_chunk, chunk: "Ans") }
 
-    let(:step_params) do
-      {
-        prompt: user_input,
-        options: {
-          chat_history: "",
-          context: {
-            type: issue_resource.current_page_type,
-            content: issue_resource.current_page_short_description
-          },
-          current_file: nil,
-          additional_context: []
-        },
-        model_metadata: nil,
-        unavailable_resources: %w[Pipelines Vulnerabilities]
-      }
-    end
-
-    let(:action_event) do
-      Gitlab::Duo::Chat::AgentEvents::Action.new(
-        {
-          "thought" => 'I think I need to use issue_reader',
-          "tool" => 'issue_reader',
-          "tool_input" => '#123'
-        }
-      )
-    end
-
     before do
-      allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:container).and_return(
-        Gitlab::Llm::Utils::Authorizer::Response.new(allowed: true)
-      )
-      allow(Gitlab::AiGateway).to receive(:headers).and_return({})
+      allow(context).to receive(:ai_request).and_return(ai_request_double)
+      allow(ai_request_double).to receive(:request).and_return(answer_chunk)
     end
 
     context "when answer is final" do
       let(:another_chunk) { create(:final_answer_chunk, chunk: "wer") }
+
+      let(:response_double) do
+        "#{answer_chunk}\n#{another_chunk}"
+      end
+
       let(:first_response_double) { double }
       let(:second_response_double) { double }
 
       before do
-        event_1 = Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta.new({ "text" => "Ans" })
-        event_2 = Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta.new({ "text" => "wer" })
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-            .and_yield(event_1).and_yield(event_2).and_return([event_1, event_2])
-        end
-
-        allow(Gitlab::Llm::Chain::StreamedResponseModifier).to receive(:new).with(event_1.text, { chunk_id: 1 })
+        allow(ai_request_double).to receive(:request).and_yield(answer_chunk)
+                                                     .and_yield(another_chunk)
+                                                     .and_return(response_double)
+        allow(Gitlab::Llm::Chain::StreamedResponseModifier).to receive(:new).with("Ans", { chunk_id: 1 })
                                                                             .and_return(first_response_double)
-        allow(Gitlab::Llm::Chain::StreamedResponseModifier).to receive(:new).with(event_2.text, { chunk_id: 2 })
+        allow(Gitlab::Llm::Chain::StreamedResponseModifier).to receive(:new).with("wer", { chunk_id: 2 })
                                                                             .and_return(second_response_double)
+
+        allow(context).to receive(:current_page_type).and_return("issue")
+        allow(context).to receive(:current_page_short_description).and_return("issue description")
       end
 
       it "streams final answer" do
@@ -105,27 +79,36 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
           options: { chunk_id: 2 }
         )
 
+        expect(ai_request_double).to receive(:request).with(
+          {
+            prompt: user_input,
+            options: {
+              additional_context: [],
+              agent_scratchpad: [],
+              conversation: "",
+              single_action_agent: true,
+              current_resource_params: {
+                type: "issue",
+                content: "issue description"
+              },
+              current_file_params: nil,
+              model_metadata: nil
+            }
+          },
+          { unit_primitive: nil }
+        )
+
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("Answer")
       end
     end
 
     context "when tool answer if final" do
+      let(:llm_answer) { create(:answer, :tool, tool: Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
       let(:tool_answer) { create(:answer, :final, content: 'tool answer') }
 
       before do
-        event = Gitlab::Duo::Chat::AgentEvents::Action.new(
-          {
-            "thought" => 'I think I need to use issue_reader',
-            "tool" => 'issue_reader',
-            "tool_input" => '#123'
-          }
-        )
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-            .and_yield(event).and_return([event])
-        end
+        allow(::Gitlab::Llm::Chain::Answer).to receive(:from_response).and_return(llm_answer)
 
         allow_next_instance_of(Gitlab::Llm::Chain::Tools::IssueReader::Executor) do |issue_tool|
           allow(issue_tool).to receive(:execute).and_return(tool_answer)
@@ -138,47 +121,13 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
     end
 
-    context "when tool is not found" do
-      before do
-        event = Gitlab::Duo::Chat::AgentEvents::Action.new(
-          {
-            "thought" => 'I think I need to use undef_reader',
-            "tool" => 'undef_reader',
-            "tool_input" => '#123'
-          }
-        )
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-            .and_yield(event).and_return([event])
-        end
-      end
-
-      it "returns an error answer" do
-        expect(answer.is_final?).to be_truthy
-        expect(answer.content).to eq("I'm sorry, I can't generate a response. Please try again.")
-        expect(answer.error_code).to eq("A9999")
-      end
-    end
-
     context "when max iteration reached" do
       let(:llm_answer) { create(:answer, :tool, tool: Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
 
       before do
         stub_const("#{described_class.name}::MAX_ITERATIONS", 2)
-
-        event = Gitlab::Duo::Chat::AgentEvents::Action.new(
-          {
-            "thought" => 'I think I need to use issue_reader',
-            "tool" => 'issue_reader',
-            "tool_input" => '#123'
-          }
-        )
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-            .and_yield(event).and_return([event])
-        end
+        allow(stream_response_service_double).to receive(:execute)
+        allow(::Gitlab::Llm::Chain::Answer).to receive(:from_response).and_return(llm_answer)
 
         allow_next_instance_of(Gitlab::Llm::Chain::Tools::IssueReader::Executor) do |issue_tool|
           allow(issue_tool).to receive(:execute).and_return(llm_answer)
@@ -191,32 +140,18 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
     end
 
-    context "when unknown event received" do
-      before do
-        event = Gitlab::Duo::Chat::AgentEvents::Unknown.new({ "text" => 'foo' })
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-                                              .and_yield(event).and_return([event])
-        end
-      end
-
-      it "returns unknown answer as is" do
-        expect(answer.content).to include('foo')
-      end
-    end
-
     context "when resource is not authorized" do
-      let!(:user) { create(:user) }
+      let(:resource) { user }
 
       it "sends request without context" do
-        params = step_params
-        params[:options][:context] = nil
-
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
-            .and_yield(action_event).and_return([action_event])
-        end
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(
+            options: hash_including(
+              current_resource_params: nil
+            )
+          ),
+          anything
+        )
 
         agent.execute
       end
@@ -234,17 +169,18 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
 
       it "adds code file params to the question options" do
-        params = step_params
-        params[:options][:current_file] = {
-          file_path: 'test.py',
-          data: 'code selection',
-          selected_code: true
-        }
-
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
-            .and_yield(action_event).and_return([action_event])
-        end
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(
+            options: hash_including(
+              current_file_params: {
+                file_path: 'test.py',
+                data: 'code selection',
+                selected_code: true
+              }
+            )
+          ),
+          anything
+        )
 
         agent.execute
       end
@@ -256,17 +192,18 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       let(:extra_resource) { { blob: blob } }
 
       it "adds code file params to the question options" do
-        params = step_params
-        params[:options][:current_file] = {
-          file_path: 'never.rb',
-          data: 'puts "gonna give you up"',
-          selected_code: false
-        }
-
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
-            .and_yield(action_event).and_return([action_event])
-        end
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(
+            options: hash_including(
+              current_file_params: {
+                file_path: 'never.rb',
+                data: 'puts "gonna give you up"',
+                selected_code: false
+              }
+            )
+          ),
+          anything
+        )
 
         agent.execute
       end
@@ -277,18 +214,26 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       let_it_be(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
 
       it 'sends the self-hosted model metadata' do
-        params = step_params
-        params[:model_metadata] = {
-          api_key: "test_token",
-          endpoint: "http://localhost:11434/v1",
-          name: "mistral",
-          provider: :openai
-        }
-
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
-            .and_yield(action_event).and_return([action_event])
-        end
+        expect(ai_request_double).to receive(:request).with(
+          {
+            prompt: user_input,
+            options: {
+              additional_context: [],
+              agent_scratchpad: [],
+              conversation: "",
+              single_action_agent: true,
+              current_file_params: nil,
+              current_resource_params: nil,
+              model_metadata: {
+                api_key: "test_token",
+                endpoint: "http://localhost:11434/v1",
+                name: "mistral",
+                provider: :openai
+              }
+            }
+          },
+          { unit_primitive: nil }
+        )
 
         agent.execute
       end
@@ -312,9 +257,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       context "when streamed request times out" do
         before do
-          allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-            allow(react_agent).to receive(:step).and_raise(error)
-          end
+          allow(ai_request_double).to receive(:request).and_raise(error)
         end
 
         it_behaves_like "time out error"
@@ -324,11 +267,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
         let(:llm_answer) { create(:answer, :tool, tool: Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
 
         before do
-          allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-            allow(react_agent).to receive(:step).with(step_params)
-              .and_yield(action_event).and_return([action_event])
-          end
-
+          allow(ai_request_double).to receive(:request)
           allow(::Gitlab::Llm::Chain::Answer).to receive(:from_response).and_return(llm_answer)
           allow_next_instance_of(Gitlab::Llm::Chain::Tools::IssueReader::Executor) do |issue_tool|
             allow(issue_tool).to receive(:execute).and_raise(error)
@@ -346,10 +285,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       before do
         allow(Gitlab::ErrorTracking).to receive(:track_exception)
-
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).and_raise(error)
-        end
+        allow(ai_request_double).to receive(:request).and_raise(error)
       end
 
       it "returns an error" do
