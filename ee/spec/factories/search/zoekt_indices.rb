@@ -7,6 +7,7 @@ FactoryBot.define do
     replica { association(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
     namespace_id { zoekt_enabled_namespace.root_namespace_id }
     reserved_storage_bytes { 0 }
+    state { Search::Zoekt::Replica.states.fetch(:pending) }
   end
 
   trait :ready do

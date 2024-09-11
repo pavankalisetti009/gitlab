@@ -16,8 +16,6 @@ module Search
       has_many :zoekt_repositories, foreign_key: :zoekt_index_id, inverse_of: :zoekt_index,
         class_name: '::Search::Zoekt::Repository'
 
-      validates_presence_of :replica
-
       after_commit :index, on: :create
       after_commit :delete_from_index, on: :destroy
 
@@ -26,7 +24,9 @@ module Search
         in_progress: 1,
         initializing: 2,
         ready: 10,
-        reallocating: 20
+        reallocating: 20,
+        orphaned: 230,
+        pending_deletion: 240
       }
 
       scope :for_node, ->(node) do
@@ -56,6 +56,14 @@ module Search
 
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
+
+      scope :should_be_marked_as_orphaned, -> do
+        where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: %i[orphaned pending_deletion])
+      end
+
+      scope :should_be_deleted, -> do
+        where(state: [:orphaned, :pending_deletion])
+      end
 
       def used_storage_bytes
         zoekt_repositories.sum(:size_bytes)

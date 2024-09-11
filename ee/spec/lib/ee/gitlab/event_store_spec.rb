@@ -45,7 +45,9 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::Milestones::MilestoneUpdatedEvent,
         ::WorkItems::BulkUpdatedEvent,
         ::Users::ActivityEvent,
-        Sbom::SbomIngestedEvent
+        Sbom::SbomIngestedEvent,
+        Search::Zoekt::IndexMarkedAsToDeleteEvent,
+        Search::Zoekt::OrphanedIndexEvent
       ])
     end
   end
