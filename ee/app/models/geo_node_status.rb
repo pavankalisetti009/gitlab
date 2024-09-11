@@ -17,7 +17,7 @@ class GeoNodeStatus < ApplicationRecord
 
   sha_attribute :storage_configuration_digest
 
-  alias_attribute :repositories_count, :projects_count
+  alias_attribute :repositories_count, :project_repositories_count
 
   attribute_method_suffix '_timestamp', '_timestamp='
 
@@ -138,23 +138,6 @@ class GeoNodeStatus < ApplicationRecord
 
   def self.cache_key
     "geo-node:#{Gitlab::Geo.current_node.id}:status"
-  end
-
-  def self.from_json(json_data)
-    json_data.slice!(*allowed_params)
-
-    GeoNodeStatus.new(HashWithIndifferentAccess.new(json_data))
-  end
-
-  EXCLUDED_PARAMS = %w[id created_at].freeze
-  EXTRA_PARAMS = %w[
-    last_event_timestamp
-    cursor_last_event_timestamp
-    storage_shards
-  ].freeze
-
-  def self.allowed_params
-    self.column_names - EXCLUDED_PARAMS + EXTRA_PARAMS
   end
 
   # Helps make alternative_status_store_accessor act more like regular Rails
@@ -321,12 +304,9 @@ class GeoNodeStatus < ApplicationRecord
   def load_primary_data
     return unless Gitlab::Geo.primary?
 
-    self.projects_count = geo_node.projects.count
     self.replication_slots_count = geo_node.replication_slots_count
     self.replication_slots_used_count = geo_node.replication_slots_used_count
     self.replication_slots_max_retained_wal_bytes = geo_node.replication_slots_max_retained_wal_bytes
-    self.repositories_checked_count = Project.where.not(last_repository_check_at: nil).count
-    self.repositories_checked_failed_count = Project.where(last_repository_check_failed: true).count
 
     load_primary_ssf_replicable_data
   end
@@ -337,7 +317,6 @@ class GeoNodeStatus < ApplicationRecord
     self.db_replication_lag_seconds = Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds
     self.cursor_last_event_id = current_cursor_last_event_id
     self.cursor_last_event_date = Geo::EventLog.find_by(id: self.cursor_last_event_id)&.created_at
-    self.projects_count = Geo::ProjectRepositoryReplicator.registry_count
 
     load_secondary_ssf_replicable_data
     load_secondary_usage_data
