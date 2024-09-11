@@ -111,7 +111,9 @@ module EE
       has_many :metric_images, class_name: 'IssuableMetricImage'
 
       has_many :vulnerability_links, class_name: 'Vulnerabilities::IssueLink', inverse_of: :issue
-      has_many :related_vulnerabilities, through: :vulnerability_links, source: :vulnerability
+      has_many :related_vulnerabilities, -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/481757')
+      }, through: :vulnerability_links, source: :vulnerability
 
       has_many :feature_flag_issues
       has_many :feature_flags,

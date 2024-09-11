@@ -178,7 +178,7 @@ module Vulnerabilities
       where(
         false_positive ? 'EXISTS (?)' : 'NOT EXISTS (?)',
         ::Vulnerabilities::Flag.select(1).false_positive.where(flags[:vulnerability_occurrence_id].eq(arel_table[:id]))
-      ).allow_cross_joins_across_databases(url: "https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved")
+      ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/474747")
     end
 
     scope :with_fix_available, ->(fix_available) do
@@ -294,8 +294,10 @@ module Vulnerabilities
     end
 
     def issue_feedback
-      related_issues = vulnerability&.related_issues
-      related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues)
+      Gitlab::Database.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747') do
+        related_issues = vulnerability&.related_issues
+        related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues)
+      end
     end
 
     def merge_request_feedback

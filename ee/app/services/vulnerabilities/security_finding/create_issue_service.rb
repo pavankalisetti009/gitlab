@@ -11,10 +11,22 @@ module Vulnerabilities
         issue = nil
         @error_message = nil
 
-        ApplicationRecord.transaction do
-          vulnerability = create_vulnerability
-          issue = create_issue(vulnerability)
-          create_vulnerability_issue_link(vulnerability, issue)
+        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            vulnerability_statistics
+            internal_ids
+            issues
+            issue_user_mentions
+            issue_metrics
+            vulnerability_issue_links
+          ],
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480894'
+        ) do
+          ApplicationRecord.transaction do
+            vulnerability = create_vulnerability
+            issue = create_issue(vulnerability)
+            create_vulnerability_issue_link(vulnerability, issue)
+          end
         end
 
         return error_response if @error_message

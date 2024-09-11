@@ -14,12 +14,24 @@ module EE
 
       override :execute
       def execute(issue, target_project, move_any_issue_type = false)
-        new_issue = super(issue, target_project, move_any_issue_type)
-        # The epic_issue update is not included in `update_old_entity` because it needs to run in a separate
-        # transaction that can be rolled back without aborting the move.
-        move_epic_issue(issue, new_issue) if new_entity.persisted?
+        ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            internal_ids
+            issues
+            issue_user_mentions
+            issue_metrics
+            notes
+            system_note_metadata
+            vulnerability_issue_links
+          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480371'
+        ) do
+          new_issue = super(issue, target_project, move_any_issue_type)
+          # The epic_issue update is not included in `update_old_entity` because it needs to run in a separate
+          # transaction that can be rolled back without aborting the move.
+          move_epic_issue(issue, new_issue) if new_entity.persisted?
 
-        new_issue
+          new_issue
+        end
       end
 
       private
