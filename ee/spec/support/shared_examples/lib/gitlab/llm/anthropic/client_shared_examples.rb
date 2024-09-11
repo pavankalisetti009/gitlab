@@ -33,7 +33,7 @@ RSpec.shared_examples 'anthropic client' do
 
   let(:expected_response) do
     {
-      'completion' => 'Completion Response',
+      'completion' => 'data: { response: Completion Response }',
       'stop' => nil,
       'stop_reason' => 'max_tokens',
       'truncated' => false,
@@ -108,11 +108,11 @@ RSpec.shared_examples 'anthropic client' do
           stub_const("Gitlab::Llm::Concerns::ExponentialBackoff::INITIAL_DELAY", 0.0)
         end
 
-        it_behaves_like 'tracks events for AI requests', 2, 4
+        it_behaves_like 'tracks events for AI requests', 2, 9
       end
     end
 
-    it_behaves_like 'tracks events for AI requests', 2, 4
+    it_behaves_like 'tracks events for AI requests', 2, 9
 
     it 'logs the response' do
       complete
@@ -353,7 +353,7 @@ RSpec.shared_examples 'anthropic client' do
         'content' => [
           {
             'type' => 'text',
-            'text' => 'Completion Response'
+            'text' => 'data: { response: Completion Response }'
           }
         ],
         'stop_reason' => 'end_turn',
@@ -426,11 +426,11 @@ RSpec.shared_examples 'anthropic client' do
           stub_const("Gitlab::Llm::Concerns::ExponentialBackoff::INITIAL_DELAY", 0.0)
         end
 
-        it_behaves_like 'tracks events for AI requests', 2, 4
+        it_behaves_like 'tracks events for AI requests', 2, 9
       end
     end
 
-    it_behaves_like 'tracks events for AI requests', 2, 4
+    it_behaves_like 'tracks events for AI requests', 2, 9
 
     it 'logs the response' do
       messages_complete
