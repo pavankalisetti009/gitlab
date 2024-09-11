@@ -17,7 +17,7 @@ module Search
     end
 
     def zoekt_searchable_scope?
-      scope == 'blobs' && zoekt_searchable_scope.try(:search_code_with_zoekt?)
+      zoekt_searchable_scope.try(:search_code_with_zoekt?)
     end
 
     def root_ancestor

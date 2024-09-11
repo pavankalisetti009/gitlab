@@ -219,23 +219,49 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:feature_flag, :show_elasticsearch_tabs, :zoekt_enabled, :condition) do
-          false | false | false | false
-          false | false | true | false
-          true | true | false | true
-          true | true | true | true
-          true | false | false | false
-          true | false | true | false
-          true | false | true | false
-          false | true | false | false
-          false | true | true | false
+        where(:global_search_code_tab_enabled, :global_search_with_zoekt_enabled, :show_elasticsearch_tabs,
+          :zoekt_enabled, :zoekt_enabled_for_user, :condition) do
+          false | false | false | false | false | false
+          false | false | false | false | true  | false
+          false | false | false | true  | false | false
+          false | false | false | true  | true  | false
+          false | false | true  | false | false | false
+          false | false | true  | false | true  | false
+          false | false | true  | true  | false | false
+          false | false | true  | true  | true  | false
+          false | true  | false | false | false | false
+          false | true  | false | false | true  | false
+          false | true  | false | true  | false | false
+          false | true  | false | true  | true  | false
+          false | true  | true  | false | false | false
+          false | true  | true  | false | true  | false
+          false | true  | true  | true  | false | false
+          false | true  | true  | true  | true  | false
+          true  | false | false | false | false | false
+          true  | false | false | false | true  | false
+          true  | false | false | true  | false | false
+          true  | false | false | true  | true  | false
+          true  | false | true  | false | false | true
+          true  | false | true  | false | true  | true
+          true  | false | true  | true  | false | true
+          true  | false | true  | true  | true  | true
+          true  | true  | false | false | false | false
+          true  | true  | false | false | true  | false
+          true  | true  | false | true  | false | false
+          true  | true  | false | true  | true  | true
+          true  | true  | true  | false | false | true
+          true  | true  | true  | false | true  | true
+          true  | true  | true  | true  | false | true
+          true  | true  | true  | true  | true  | true
         end
 
         with_them do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs, zoekt_enabled: zoekt_enabled } }
 
           before do
-            stub_feature_flags(global_search_code_tab: feature_flag)
+            stub_feature_flags(global_search_code_tab: global_search_code_tab_enabled)
+            stub_feature_flags(zoekt_cross_namespace_search: global_search_with_zoekt_enabled)
+            allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(zoekt_enabled_for_user)
           end
 
           it 'data item condition is set correctly' do

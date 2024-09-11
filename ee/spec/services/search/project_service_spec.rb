@@ -167,7 +167,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:scope) { 'issues' }
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.search_type).not_to eq('zoekt')
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
