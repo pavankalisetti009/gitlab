@@ -129,4 +129,85 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
         .is_greater_than_or_equal_to(1)
     end
   end
+
+  describe 'paper_trail' do
+    subject(:new_config) { create(:workspaces_agent_config) }
+
+    # making duplication of new_config, and it does not reload when new_config updated
+    let(:new_config_before_change) { new_config }
+
+    context 'on creation' do
+      it 'contains version with 1' do
+        expect(new_config.versions.length).to be 1
+      end
+
+      it 'create version has nil object' do
+        expect(new_config.versions[0].reify).to be nil
+      end
+    end
+
+    context 'on update' do
+      before do
+        new_config.update!(enabled: false)
+      end
+
+      it 'contains version with 2' do
+        expect(new_config.versions.length).to be 2
+      end
+
+      it 'contains version before update' do
+        reified_object = new_config.versions.last.reify
+
+        expect(reified_object).to eql(new_config_before_change)
+      end
+    end
+
+    context 'on destroy' do
+      before do
+        new_config.destroy!
+      end
+
+      it 'contains version with 2' do
+        expect(new_config.versions.length).to be 2
+      end
+
+      it 'contains version before destroy' do
+        reified_object = new_config.versions.last.reify
+
+        expect(reified_object).to eql(new_config_before_change)
+      end
+    end
+
+    context 'on delete' do
+      before do
+        new_config.delete
+      end
+
+      it 'contains version with 1' do
+        expect(new_config.versions.length).to be 1
+      end
+
+      it 'does not contain version before delete' do
+        reified_object = new_config.versions.last.reify
+
+        expect(reified_object).to be nil
+      end
+    end
+
+    context 'on touch' do
+      before do
+        new_config.touch
+      end
+
+      it 'contains version with 2' do
+        expect(new_config.versions.length).to be 2
+      end
+
+      it 'contains version before touch' do
+        reified_object = new_config.versions.last.reify
+
+        expect(reified_object).to eql(new_config_before_change)
+      end
+    end
+  end
 end
