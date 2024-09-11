@@ -33,17 +33,15 @@ RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_categ
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be success?
         expect(result.message).to match(message)
+        expect(result.details).to include(
+          instance_id: Gitlab::GlobalAnonymousId.instance_id,
+          gitlab_version: Gitlab::VERSION
+        )
 
         if exists?
-          expect(result.details).to include(
-            plan: license.plan,
-            trial: license.trial?,
-            expires_at: license.expires_at,
-            grace_period_expired: license.grace_period_expired?,
-            online_cloud_license: license.online_cloud_license?
-          )
+          expect(result.details[:license]).to include(license.license.as_json)
         else
-          expect(result.details).to be_empty
+          expect(result.details[:license]).to be_nil
         end
       end
     end

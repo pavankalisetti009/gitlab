@@ -9,7 +9,7 @@ module CloudConnector
         validate :check_license_exists
         validate :check_license_valid
 
-        after_validation :collect_license_details
+        after_validation :collect_instance_details, :collect_license_details
 
         private
 
@@ -33,14 +33,15 @@ module CloudConnector
           errors.add(:base, wrong_license_text)
         end
 
+        def collect_instance_details
+          details.add(:instance_id, Gitlab::GlobalAnonymousId.instance_id)
+          details.add(:gitlab_version, Gitlab::VERSION)
+        end
+
         def collect_license_details
           return unless license
 
-          details.add(:plan, license.plan)
-          details.add(:trial, license.trial?)
-          details.add(:expires_at, license.expires_at)
-          details.add(:grace_period_expired, license.grace_period_expired?)
-          details.add(:online_cloud_license, license.online_cloud_license?)
+          details.add(:license, license.license.as_json)
         end
 
         def missing_license_text
