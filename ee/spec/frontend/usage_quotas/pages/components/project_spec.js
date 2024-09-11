@@ -59,7 +59,7 @@ describe('ProjectView', () => {
   });
 
   it('displays the correct number of total deployments', () => {
-    expect(wrapper.text().replace(/\s\s+/g, ' ')).toContain('Extra deployments: 100');
+    expect(wrapper.text().replace(/\s\s+/g, ' ')).toContain('Parallel deployments: 100');
   });
 
   it('renders the correct number of deployment rows', () => {

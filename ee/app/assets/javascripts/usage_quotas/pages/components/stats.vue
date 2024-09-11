@@ -11,8 +11,8 @@ export default {
     helpLink: `${DOCS_URL_IN_EE_DIR}/user/project/pages/#limits`,
   },
   i18n: {
-    description: s__('PagesUsageQuota|Active extra deployments'),
-    helpText: s__('PagesUsageQuota|Learn about Pages deployments limits'),
+    description: s__('PagesUsageQuota|Parallel deployments'),
+    helpText: s__('PagesUsageQuota|Learn about limits for Pages deployments'),
   },
   computed: {
     percentage() {
