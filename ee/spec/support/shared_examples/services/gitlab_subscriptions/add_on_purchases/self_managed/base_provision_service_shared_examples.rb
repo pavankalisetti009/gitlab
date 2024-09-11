@@ -111,3 +111,32 @@ RSpec.shared_examples 'provision service updates the existing add-on purchase' d
     )
   end
 end
+
+RSpec.shared_examples 'provision service creates add-on purchase' do
+  it 'creates a new add-on purchase' do
+    expect(GitlabSubscriptions::AddOnPurchases::CreateService).to receive(:new).with(
+      namespace,
+      add_on,
+      {
+        add_on_purchase: nil,
+        quantity: quantity,
+        started_on: starts_at,
+        expires_on: starts_at + 1.year,
+        purchase_xid: purchase_xid,
+        trial: false
+      }
+    ).and_call_original
+
+    expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
+
+    expect(result[:status]).to eq(:success)
+    expect(result[:add_on_purchase].add_on.name).to eq('code_suggestions')
+    expect(result[:add_on_purchase]).to have_attributes(
+      started_at: starts_at,
+      expires_on: starts_at + 1.year,
+      quantity: quantity,
+      purchase_xid: purchase_xid,
+      trial: false
+    )
+  end
+end
