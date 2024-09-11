@@ -68,7 +68,7 @@ export default {
       v-else-if="!hasResults"
       :title="__('No projects found')"
       :description="
-        s__('Pages|We did not find any Projects with Pages deployments in this namespace.')
+        s__('Pages|We did not find any projects with parallel Pages deployments in this namespace.')
       "
       :svg-path="$options.EMPTY_STATE_SVG_URL"
     />

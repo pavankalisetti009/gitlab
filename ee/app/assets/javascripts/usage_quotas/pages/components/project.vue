@@ -37,10 +37,9 @@ export default {
     restoreError: s__(
       'Pages|Restoring the deployment failed. The deployment might be permanently deleted.',
     ),
-    extraDeploymentsLabel: s__('Pages|Extra deployments: %{count}'),
+    extraDeploymentsLabel: s__('Pages|Parallel deployments: %{count}'),
     activeState: s__('Pages|Active'),
     stoppedState: s__('Pages|Stopped'),
-    primaryDeploymentTitle: s__('Pages|Primary deployment'),
     pathPrefixLabel: s__('Pages|Path prefix'),
     createdLabel: s__('Pages|Created'),
     deployJobLabel: s__('Pages|Deploy job'),

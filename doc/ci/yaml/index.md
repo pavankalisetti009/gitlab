@@ -3471,7 +3471,7 @@ On self-managed GitLab, by default this feature is not available. To make it ava
 an administrator can [enable the feature flag](../../administration/feature_flags.md) named
 `pages_multiple_versions_setting`. On GitLab.com and GitLab Dedicated, this feature is not available. This feature is not ready for production use.
 
-Use `pages.path_prefix` to configure a path prefix for [multiple deployments](../../user/project/pages/index.md#create-multiple-deployments) of GitLab Pages.
+Use `pages.path_prefix` to configure a path prefix for [parallel deployments](../../user/project/pages/index.md#parallel-deployments) of GitLab Pages.
 
 **Keyword type**: Job keyword. You can use it only as part of a `pages` job.
 
