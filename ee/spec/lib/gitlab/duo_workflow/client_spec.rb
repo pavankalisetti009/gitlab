@@ -18,7 +18,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
 
   describe '.headers' do
     it 'returns cloud connector headers' do
-      expect(Gitlab::CloudConnector).to receive(:headers).with(user).and_return({ header_key: 'header_value' })
+      expect(Gitlab::CloudConnector).to receive(:ai_headers).with(user).and_return({ header_key: 'header_value' })
 
       expect(described_class.headers(user: user)).to eq({ header_key: 'header_value' })
     end

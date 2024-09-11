@@ -15,16 +15,13 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
     end
   end
 
-  describe '.headers' do
-    let(:expected_duo_seat_count) { 0 }
-
+  shared_examples 'building HTTP headers' do
     let(:expected_headers) do
       {
         'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
         'X-Gitlab-Instance-Id' => an_instance_of(String),
         'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Version' => Gitlab.version_info.to_s,
-        'X-Gitlab-Duo-Seat-Count' => expected_duo_seat_count.to_s
+        'X-Gitlab-Version' => Gitlab.version_info.to_s
       }
     end
 
@@ -45,17 +42,28 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
         expect(headers).to match(expected_headers)
       end
     end
+  end
 
-    describe 'duo seat count' do
+  describe '.headers' do
+    it_behaves_like 'building HTTP headers'
+  end
+
+  describe '.ai_headers' do
+    let(:expected_headers) do
+      super().merge('X-Gitlab-Duo-Seat-Count' => '0')
+    end
+
+    it_behaves_like 'building HTTP headers'
+
+    subject(:headers) { described_class.ai_headers(user) }
+
+    context 'when Duo seats have been purchased' do
       let(:user) { nil }
-      let(:expected_duo_seat_count) { 10 }
 
-      it 'returns the number of duo seats purchased' do
-        expect(GitlabSubscriptions::AddOnPurchase).to receive(:maximum_duo_seat_count).and_return(
-          expected_duo_seat_count
-        )
+      it 'set the header to the correct number of seats' do
+        expect(GitlabSubscriptions::AddOnPurchase).to receive(:maximum_duo_seat_count).and_return(5)
 
-        expect(headers).to match(expected_headers)
+        expect(headers).to include('X-Gitlab-Duo-Seat-Count' => '5')
       end
     end
   end

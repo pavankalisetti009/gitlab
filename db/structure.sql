@@ -1113,6 +1113,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_3d1a58344b29() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "alert_management_alerts"
+  WHERE "alert_management_alerts"."id" = NEW."alert_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_3fe922f4db67() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -5139,7 +5155,8 @@ ALTER SEQUENCE ai_vectorizable_files_id_seq OWNED BY ai_vectorizable_files.id;
 CREATE TABLE alert_management_alert_assignees (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
-    alert_id bigint NOT NULL
+    alert_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE alert_management_alert_assignees_id_seq
@@ -6069,6 +6086,7 @@ CREATE TABLE application_settings (
     security_policies jsonb DEFAULT '{}'::jsonb NOT NULL,
     spp_repository_pipeline_access boolean DEFAULT false NOT NULL,
     lock_spp_repository_pipeline_access boolean DEFAULT false NOT NULL,
+    required_instance_ci_template text,
     CONSTRAINT app_settings_container_reg_cleanup_tags_max_list_size_positive CHECK ((container_registry_cleanup_tags_service_max_list_size >= 0)),
     CONSTRAINT app_settings_dep_proxy_ttl_policies_worker_capacity_positive CHECK ((dependency_proxy_ttl_group_policy_worker_capacity >= 0)),
     CONSTRAINT app_settings_ext_pipeline_validation_service_url_text_limit CHECK ((char_length(external_pipeline_validation_service_url) <= 255)),
@@ -6128,6 +6146,7 @@ CREATE TABLE application_settings (
     CONSTRAINT check_application_settings_security_policies_is_hash CHECK ((jsonb_typeof(security_policies) = 'object'::text)),
     CONSTRAINT check_application_settings_service_ping_settings_is_hash CHECK ((jsonb_typeof(service_ping_settings) = 'object'::text)),
     CONSTRAINT check_b8c74ea5b3 CHECK ((char_length(deactivation_email_additional_text) <= 1000)),
+    CONSTRAINT check_bf5157a366 CHECK ((char_length(required_instance_ci_template) <= 1024)),
     CONSTRAINT check_cdfbd99405 CHECK ((char_length(security_txt_content) <= 2048)),
     CONSTRAINT check_d03919528d CHECK ((char_length(container_registry_vendor) <= 255)),
     CONSTRAINT check_d820146492 CHECK ((char_length(spam_check_endpoint_url) <= 255)),
@@ -26957,6 +26976,8 @@ CREATE INDEX index_alert_assignees_on_alert_id ON alert_management_alert_assigne
 
 CREATE UNIQUE INDEX index_alert_assignees_on_user_id_and_alert_id ON alert_management_alert_assignees USING btree (user_id, alert_id);
 
+CREATE INDEX index_alert_management_alert_assignees_on_project_id ON alert_management_alert_assignees USING btree (project_id);
+
 CREATE INDEX index_alert_management_alert_metric_images_on_alert_id ON alert_management_alert_metric_images USING btree (alert_id);
 
 CREATE INDEX index_alert_management_alerts_on_domain ON alert_management_alerts USING btree (domain);
@@ -32845,6 +32866,8 @@ CREATE TRIGGER trigger_2b8fdc9b4a4e BEFORE INSERT OR UPDATE ON ml_experiment_met
 
 CREATE TRIGGER trigger_3691f9f6a69f BEFORE INSERT OR UPDATE ON remote_development_agent_configs FOR EACH ROW EXECUTE FUNCTION trigger_3691f9f6a69f();
 
+CREATE TRIGGER trigger_3d1a58344b29 BEFORE INSERT OR UPDATE ON alert_management_alert_assignees FOR EACH ROW EXECUTE FUNCTION trigger_3d1a58344b29();
+
 CREATE TRIGGER trigger_3fe922f4db67 BEFORE INSERT OR UPDATE ON vulnerability_merge_request_links FOR EACH ROW EXECUTE FUNCTION trigger_3fe922f4db67();
 
 CREATE TRIGGER trigger_41eaf23bf547 BEFORE INSERT OR UPDATE ON release_links FOR EACH ROW EXECUTE FUNCTION trigger_41eaf23bf547();
@@ -33442,6 +33465,9 @@ ALTER TABLE ONLY protected_environment_approval_rules
 
 ALTER TABLE ONLY subscription_add_on_purchases
     ADD CONSTRAINT fk_410004d68b FOREIGN KEY (subscription_add_on_id) REFERENCES subscription_add_ons(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY alert_management_alert_assignees
+    ADD CONSTRAINT fk_419f7a11fa FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_pipeline_schedule_variables
     ADD CONSTRAINT fk_41c35fda51 FOREIGN KEY (pipeline_schedule_id) REFERENCES ci_pipeline_schedules(id) ON DELETE CASCADE;

@@ -32,7 +32,9 @@ module API
       end
 
       def connector_public_headers
-        Gitlab::CloudConnector.headers(current_user).merge(saas_headers).merge('X-Gitlab-Authentication-Type' => 'oidc')
+        Gitlab::CloudConnector.ai_headers(current_user)
+          .merge(saas_headers)
+          .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
 
       def saas_headers

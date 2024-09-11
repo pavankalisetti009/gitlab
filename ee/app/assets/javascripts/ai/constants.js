@@ -20,24 +20,6 @@ export const CHAT_MESSAGE_TYPES = {
   tool: 'tool',
 };
 
-export const FEEDBACK_OPTIONS = [
-  {
-    title: s__('AI|Helpful'),
-    icon: 'thumb-up',
-    value: 'helpful',
-  },
-  {
-    title: s__('AI|Unhelpful'),
-    icon: 'thumb-down',
-    value: 'unhelpful',
-  },
-  {
-    title: s__('AI|Wrong'),
-    icon: 'status_warning',
-    value: 'wrong',
-  },
-];
-
 export const EXPLAIN_CODE_TRACKING_EVENT_NAME = 'explain_code_blob_viewer';
 export const TANUKI_BOT_TRACKING_EVENT_NAME = 'ask_gitlab_chat';
 export const GENIE_CHAT_RESET_MESSAGE = '/reset';
