@@ -8,11 +8,23 @@ module EE
       module ConfigEE
         extend ::Gitlab::Utils::Override
 
+        override :rescue_errors
+        def rescue_errors
+          [*super, ::Gitlab::Ci::Config::Required::Processor::RequiredError]
+        end
+
         override :build_config
         def build_config(config)
           super
+            .then { |config| process_required_includes(config) }
             .then { |config| inject_pipeline_execution_policy_stages(config) }
             .then { |config| process_security_orchestration_policy_includes(config) }
+        end
+
+        def process_required_includes(config)
+          return config unless required_pipelines_enabled?
+
+          ::Gitlab::Ci::Config::Required::Processor.new(config).perform
         end
 
         def inject_pipeline_execution_policy_stages(config)
@@ -33,6 +45,10 @@ module EE
             ::Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor.new(config, context, source_ref_path,
               source).perform
           end
+        end
+
+        def required_pipelines_enabled?
+          @project.present? && ::Feature.enabled?(:required_pipelines, @project) # rubocop:disable Gitlab/ModuleWithInstanceVariables -- temporary usage
         end
       end
     end
