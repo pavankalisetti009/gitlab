@@ -13,11 +13,14 @@ module Audit
       visibility_level: 'group_visibility_level_updated',
       request_access_enabled: 'group_request_access_enabled_updated',
       membership_lock: 'group_membership_lock_updated',
+      share_with_group_lock: 'group_shared_with_group_lock_updated',
+      description: 'group_description_updated',
       lfs_enabled: 'group_lfs_enabled_updated',
       shared_runners_minutes_limit: 'group_shared_runners_minutes_limit_updated',
       require_two_factor_authentication: 'group_require_two_factor_authentication_updated',
       two_factor_grace_period: 'group_two_factor_grace_period_updated',
-      project_creation_level: 'group_project_creation_level_updated'
+      project_creation_level: 'group_project_creation_level_updated',
+      mentions_disabled: 'group_mentions_disabled_updated'
     }.freeze
 
     def execute
