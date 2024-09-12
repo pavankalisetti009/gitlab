@@ -21,7 +21,6 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
 
   before do
     stub_licensed_features(remote_development: true)
-    stub_feature_flags(remote_development_namespace_agent_authorization: true)
 
     sign_in(user)
     visit group_settings_workspaces_path(group)

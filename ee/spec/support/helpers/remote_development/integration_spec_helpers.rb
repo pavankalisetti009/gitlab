@@ -2,6 +2,25 @@
 
 module RemoteDevelopment
   module IntegrationSpecHelpers
+    def enable_agent_for_group(agent_name:, group_name:)
+      workspaces_group_settings_path = "/groups/#{group_name}/-/settings/workspaces"
+      gitlab_badge_selector = '.gl-badge-content'
+      visit workspaces_group_settings_path
+      wait_for_requests
+
+      # enable agent for group
+      click_link 'All agents'
+      expect(page).to have_content agent_name
+      first_agent_row_selector = 'tbody tr:first-child'
+      expect(page).not_to have_selector(gitlab_badge_selector, text: 'Allowed')
+      within first_agent_row_selector do
+        click_button 'Allow'
+        wait_for_requests
+      end
+      click_button 'Allow agent'
+      expect(page).to have_selector(gitlab_badge_selector, text: 'Allowed')
+    end
+
     def build_additional_args_for_expected_config_to_apply(
       network_policy_enabled:,
       dns_zone:,

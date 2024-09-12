@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 
 module RemoteDevelopment
+  # This controller exists because the actor for the feature flag is determined on the client side
+  # based on what choices a user makes on the page. As such, we cannot rely on the normal approach
+  # of passing the flag's state in the original body of the page, rather we would need to query
+  # it in realtime based on the current selected actor. In this case, it is the namespace.
+  # TODO: this will be cleaned up as part of gitlab-org/gitlab#482814+
   class WorkspacesFeatureFlagController < ApplicationController
-    # Authentication is being skipped temporarily because of high priority of delivery and low impact
-    # but will be added in the future
-    #   Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/461163
-    skip_before_action :authenticate_user!
-
     feature_category :workspaces
     urgency :low
 
-    ALLOWED_FLAGS = [
-      "remote_development_namespace_agent_authorization"
-    ].freeze
+    ALLOWED_FLAGS = [].freeze
 
     def show
       flag = permitted_params[:flag]

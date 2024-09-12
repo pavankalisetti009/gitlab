@@ -16,12 +16,6 @@ module Resolvers
           raise_resource_not_available_error! "'remote_development' licensed feature is not available"
         end
 
-        unless Feature.enabled?(:remote_development_namespace_agent_authorization, @object.root_ancestor)
-          raise_resource_not_available_error!(
-            "'remote_development_namespace_agent_authorization' feature flag is disabled"
-          )
-        end
-
         raise_resource_not_available_error! unless @object.group_namespace?
 
         ::RemoteDevelopment::ClusterAgentsFinder.execute(

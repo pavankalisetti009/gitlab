@@ -65,7 +65,6 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILA
   end
 
   include_examples "checks for remote_development licensed feature"
-  include_examples "checks whether the feature flag is enabled"
 
   context 'when the provided namespace is not a group namespace' do
     let(:namespace) { agent.project.project_namespace }

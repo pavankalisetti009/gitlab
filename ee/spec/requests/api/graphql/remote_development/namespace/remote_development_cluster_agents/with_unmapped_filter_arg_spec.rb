@@ -66,7 +66,6 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: UNMAPP
   end
 
   include_examples "checks for remote_development licensed feature"
-  include_examples "checks whether the feature flag is enabled"
 
   context 'when the passed namespace is not a group' do
     let(:namespace) { mapped_agent.project.project_namespace }

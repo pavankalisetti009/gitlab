@@ -287,27 +287,17 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       describe 'Workspaces menu item' do
         let(:item_id) { :workspaces_settings }
 
-        context 'when remote_development_namespace_agent_authorization feature flag is enabled' do
-          context 'when workspaces feature is available' do
-            before do
-              stub_licensed_features(remote_development: true)
-            end
-
-            it { is_expected.to be_present }
+        context 'when workspaces feature is available' do
+          before do
+            stub_licensed_features(remote_development: true)
           end
 
-          context 'when workspaces feature is not available' do
-            before do
-              stub_licensed_features(remote_development: false)
-            end
-
-            it { is_expected.not_to be_present }
-          end
+          it { is_expected.to be_present }
         end
 
-        context 'when remote_development_namespace_agent_authorization feature flag is disabled' do
+        context 'when workspaces feature is not available' do
           before do
-            stub_feature_flags(remote_development_namespace_agent_authorization: false)
+            stub_licensed_features(remote_development: false)
           end
 
           it { is_expected.not_to be_present }
@@ -343,33 +333,6 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         it 'does not show any other menu items' do
           expect(menu.renderable_items.length).to equal(1)
         end
-      end
-
-      describe 'Workspaces menu item' do
-        let(:item_id) { :workspaces_settings }
-
-        before do
-          stub_licensed_features(remote_development: true)
-        end
-
-        it { is_expected.not_to be_present }
-      end
-    end
-
-    context 'for maintainer user' do
-      let(:user) { maintainer }
-
-      subject { menu.renderable_items.find { |e| e.item_id == item_id } }
-
-      describe 'Workspaces menu item' do
-        let(:item_id) { :workspaces_settings }
-
-        before do
-          stub_feature_flags(remote_development_namespace_agent_authorization: true)
-          stub_licensed_features(remote_development: true)
-        end
-
-        it { is_expected.to be_present }
       end
     end
 
