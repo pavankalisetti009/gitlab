@@ -107,6 +107,42 @@ module Ai
           member_namespaces.by_root_id(group_ids).any?
         end
       end
+
+      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
+        feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[ai_feature]
+        service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
+        return false if service.name == :missing_service
+
+        # If the user has any relevant add-on purchase, they always have access to this service
+        return true if service.add_on_purchases.assigned_to_user(self).any?
+
+        # If the user doesn't have add-on purchases and the service isn't free, they don't have access
+        return false unless service.free_access?
+
+        if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
+          licensed_to_use_in_com?(service, feature_data[:maturity])
+        else
+          licensed_to_use_in_sm?(licensed_feature)
+        end
+      end
+
+      private
+
+      def licensed_to_use_in_com?(ai_action, maturity)
+        requiring_seat = member_namespaces.with_ai_supported_plan.select do |namespace|
+          ::Feature.enabled?(:duo_chat_requires_licensed_seat, namespace)
+        end
+
+        # If any namespace requires a licensed seat and we've reached this point after checking for any seat assigned
+        # to the user, they don't have access
+        return false if requiring_seat.any?
+
+        maturity == :ga ? any_group_with_ga_ai_available?(ai_action) : any_group_with_ai_available?
+      end
+
+      def licensed_to_use_in_sm?(licensed_feature)
+        License.feature_available?(licensed_feature)
+      end
     end
 
     class_methods do

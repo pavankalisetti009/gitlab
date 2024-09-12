@@ -27,15 +27,7 @@ class EpicPolicy < BasePolicy
   condition(:summarize_notes_enabled, scope: :subject) do
     next false unless @user
 
-    next true if summarize_comments_service.allowed_for?(@user)
-
-    next false unless summarize_comments_service.free_access?
-
-    if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-      @user.any_group_with_ai_available?
-    else
-      ::License.feature_available?(:ai_features)
-    end
+    @user.allowed_to_use?(:summarize_comments)
   end
 
   condition(:summarize_notes_allowed) do
@@ -155,9 +147,5 @@ class EpicPolicy < BasePolicy
     prevent :create_note
     prevent :admin_note
     prevent :award_emoji
-  end
-
-  def summarize_comments_service
-    CloudConnector::AvailableServices.find_by_name(:summarize_comments)
   end
 end

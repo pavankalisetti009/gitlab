@@ -11,10 +11,6 @@ module EE
       end
     end
 
-    def summarize_comments_service
-      CloudConnector::AvailableServices.find_by_name(:summarize_comments)
-    end
-
     override :epics_license_available?
     def epics_license_available?
       subject_container.licensed_feature_available?(:epics) || super
@@ -23,17 +19,9 @@ module EE
     prepended do
       with_scope :subject
       condition(:summarize_notes_enabled) do
-        next false unless @user && summarize_comments_service
+        next false unless @user
 
-        next true if summarize_comments_service.allowed_for?(@user)
-
-        next false unless summarize_comments_service.free_access?
-
-        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          @user.any_group_with_ai_available?
-        else
-          ::License.feature_available?(:ai_features)
-        end
+        @user.allowed_to_use?(:summarize_comments)
       end
 
       condition(:summarize_notes_allowed) do
