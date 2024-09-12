@@ -1,9 +1,0 @@
----
-name: remote_development_namespace_agent_authorization
-feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/12193
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145481
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/442707
-milestone: '16.11'
-group: group::ide
-type: beta
-default_enabled: true

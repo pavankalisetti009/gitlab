@@ -10,7 +10,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
   include_context 'file upload requests helpers'
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, name: 'test-group', developers: user) }
+  let_it_be(:group) { create(:group, name: 'test-group', developers: user, owners: user) }
   let_it_be(:devfile_path) { '.devfile.yaml' }
 
   let_it_be(:project) do
@@ -26,6 +26,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
 
   let(:variable_key) { "VAR1" }
   let(:variable_value) { "value 1" }
+  let(:workspaces_group_settings_path) { "/groups/#{group.name}/-/settings/workspaces" }
 
   before do
     stub_licensed_features(remote_development: true)
@@ -46,9 +47,12 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       # use live_debug to pause when WEBDRIVER_HEADLESS=0
       # live_debug
 
-      # NAVIGATE TO WORKSPACES PAGE
-
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+
+      # ENABLE AGENT FOR GROUP
+      enable_agent_for_group(agent_name: agent.name, group_name: group.name)
+
+      # NAVIGATE TO WORKSPACES PAGE
       visit remote_development_workspaces_path
       wait_for_requests
 
@@ -217,34 +221,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
     end
   end
 
-  describe 'workspaces' do
-    context 'when creating' do
-      context 'when the remote_development_namespace_agent_authorization feature flag is on' do
-        # TODO: When we default-enable the remote_development_namespace_agent_authorization feature flag,
-        #       convert this from a fixture to being created via the UI in the 'creates a workspace' shared example,
-        #       so this test can exercise the UI for agent mapping.
-        let_it_be(:cluster_agent_mapping) do
-          create(
-            :remote_development_namespace_cluster_agent_mapping,
-            user: user, agent: agent,
-            namespace: group
-          )
-        end
-
-        before do
-          stub_feature_flags(remote_development_namespace_agent_authorization: true)
-        end
-
-        it_behaves_like 'creates a workspace'
-      end
-
-      context 'when the remote_development_namespace_agent_authorization feature flag is off' do
-        before do
-          stub_feature_flags(remote_development_namespace_agent_authorization: false)
-        end
-
-        it_behaves_like 'creates a workspace'
-      end
-    end
+  context 'when creating a workspace' do
+    it_behaves_like 'creates a workspace'
   end
 end

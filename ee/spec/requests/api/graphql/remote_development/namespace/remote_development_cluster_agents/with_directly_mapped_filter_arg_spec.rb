@@ -79,7 +79,6 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: DIRECT
   end
 
   include_examples "checks for remote_development licensed feature"
-  include_examples "checks whether the feature flag is enabled"
 
   context 'when user does not have access to view the mappings' do
     # simulate test conditions by creating the maximum privileged user that does/should

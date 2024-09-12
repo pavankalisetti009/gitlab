@@ -164,40 +164,6 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     end
   end
 
-  context 'when remote_development_namespace_agent_authorization feature flag is disabled' do
-    before do
-      stub_feature_flags(remote_development_namespace_agent_authorization: false)
-    end
-
-    context 'when workspace project and agent project ARE in the same root namespace' do
-      it 'creates the workspace' do
-        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
-          stub_service_response
-        end
-
-        post_graphql_mutation(mutation, current_user: user)
-
-        expect_graphql_errors_to_be_empty
-
-        expect(mutation_response.fetch('workspace')['name']).to eq(created_workspace['name'])
-      end
-    end
-
-    context 'when workspace project and agent project are not in the same root namespace' do
-      let_it_be(:agent_project_in_different_root_namespace, reload: true) do
-        create(:project, :public, :in_group, developers: user)
-      end
-
-      before do
-        agent.update!(project: agent_project_in_different_root_namespace)
-      end
-
-      it_behaves_like 'a mutation that returns top-level errors' do
-        let(:match_errors) { include(/Workspace's project and agent's project must.*be under the same.*namespace./) }
-      end
-    end
-  end
-
   context 'when required arguments are missing' do
     let(:mutation_args) { all_mutation_args.except(:desired_state) }
 

@@ -14,55 +14,29 @@ RSpec.describe Groups::Settings::RemoteDevelopment::WorkspacesController,
 
   subject(:request) { get group_settings_workspaces_path(group) }
 
-  shared_examples 'index responds not found status' do
-    it 'responds with the not found status' do
-      request
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
-  end
-
   describe 'GET #index' do
     context 'when user can read remote agent mapping configuration' do
-      context 'with remote_development_namespace_agent_authorization feature flag on' do
+      context 'with remote development feature licensed' do
         before do
-          stub_feature_flags(remote_development_namespace_agent_authorization: true)
+          stub_licensed_features(remote_development: true)
         end
 
-        context 'with remote development feature licensed' do
-          before do
-            stub_licensed_features(remote_development: true)
-          end
+        it "responds OK status" do
+          request
 
-          it "responds OK status" do
-            request
-
-            expect(response).to have_gitlab_http_status(:ok)
-          end
-        end
-
-        context 'with remote development not licensed' do
-          before do
-            stub_licensed_features(remote_development: false)
-          end
-
-          it_behaves_like 'index responds not found status'
+          expect(response).to have_gitlab_http_status(:ok)
         end
       end
 
-      context 'with remote_development_namespace_agent_authorization feature flag off' do
+      context 'with remote development not licensed' do
         before do
-          stub_feature_flags(remote_development_namespace_agent_authorization: false)
+          stub_licensed_features(remote_development: false)
         end
 
-        it_behaves_like 'index responds not found status'
+        it 'responds with the not found status' do
+          request
 
-        context 'with remote development feature licensed' do
-          before do
-            stub_licensed_features(remote_development: true)
-          end
-
-          it_behaves_like 'index responds not found status'
+          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
     end

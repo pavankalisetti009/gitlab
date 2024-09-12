@@ -172,9 +172,6 @@ module EE
           end
 
           def workspaces_enabled?
-            return false unless ::Feature.enabled?(:remote_development_namespace_agent_authorization,
-              context.group.root_ancestor)
-
             can?(context.current_user, :access_workspaces_feature)
           end
 
