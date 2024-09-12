@@ -33,7 +33,7 @@ module Admin
         audit_context = {
           name: 'self_hosted_model_terms_accepted',
           author: user,
-          scope: user,
+          scope: Gitlab::Audit::InstanceScope.new,
           target: user,
           message: "Self-hosted model usage terms accepted by user #{user.id}"
         }

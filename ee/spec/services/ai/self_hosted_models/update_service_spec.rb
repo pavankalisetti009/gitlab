@@ -15,7 +15,7 @@ RSpec.describe ::Ai::SelfHostedModels::UpdateService, feature_category: :"self-h
     {
       name: 'self_hosted_model_updated',
       author: user,
-      scope: user,
+      scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
       target: model,
       message: "Self-hosted model new model name/#{model.model}/#{model.endpoint} updated"
     }

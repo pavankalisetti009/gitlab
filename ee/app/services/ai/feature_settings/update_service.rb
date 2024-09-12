@@ -27,7 +27,7 @@ module Ai
         audit_context = {
           name: 'self_hosted_model_feature_changed',
           author: user,
-          scope: user,
+          scope: Gitlab::Audit::InstanceScope.new,
           target: feature_setting,
           message: "Feature #{feature_setting.feature} changed to #{feature_setting.provider_title}"
         }

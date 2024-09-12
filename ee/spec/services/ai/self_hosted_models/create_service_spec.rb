@@ -28,7 +28,7 @@ RSpec.describe ::Ai::SelfHostedModels::CreateService, feature_category: :"self-h
       {
         name: 'self_hosted_model_created',
         author: user,
-        scope: user,
+        scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
         target: model,
         message: "Self-hosted model #{params[:name]}/#{params[:model]}/#{params[:endpoint]} created"
       }

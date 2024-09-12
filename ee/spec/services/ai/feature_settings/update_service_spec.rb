@@ -16,7 +16,7 @@ RSpec.describe Ai::FeatureSettings::UpdateService, feature_category: :"self-host
       {
         name: 'self_hosted_model_feature_changed',
         author: user,
-        scope: user,
+        scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
         target: feature_setting,
         message: "Feature code_generations changed to Self-hosted model (mistral-7b-ollama-api)"
       }
