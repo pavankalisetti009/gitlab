@@ -52,7 +52,6 @@ import {
   REMOVE_APPROVALS_WITH_NEW_COMMIT,
   REQUIRE_PASSWORD_TO_APPROVE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
-
 import {
   goToPolicyMR,
   removeIdsFromPolicy,
@@ -93,10 +92,13 @@ describe('EditorComponent', () => {
     role: [],
   };
 
-  const factory = ({ propsData = {}, provide = {}, glFeatures = {} } = {}) => {
+  const factory = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        errorSources: [],
+        isCreating: false,
+        isDeleting: false,
         isEditing: false,
         ...propsData,
       },
@@ -108,18 +110,12 @@ describe('EditorComponent', () => {
         namespaceType: NAMESPACE_TYPES.PROJECT,
         scanPolicyDocumentationPath,
         scanResultPolicyApprovers,
-        glFeatures,
         ...provide,
       },
     });
   };
 
-  const factoryWithExistingPolicy = ({
-    policy = {},
-    provide = {},
-    hasActions = true,
-    glFeatures = {},
-  } = {}) => {
+  const factoryWithExistingPolicy = ({ policy = {}, provide = {}, hasActions = true } = {}) => {
     const existingPolicy = { ...mockDefaultBranchesScanResultObject };
 
     if (!hasActions) {
@@ -133,7 +129,6 @@ describe('EditorComponent', () => {
         isEditing: true,
       },
       provide,
-      glFeatures,
     });
   };
 
@@ -477,7 +472,46 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('CRUD operations', () => {
+  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+    it.each`
+      status                           | action                             | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}
+      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
+    `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
+      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      findPolicyEditorLayout().vm.$emit(event);
+      await waitForPromises();
+      expect(wrapper.emitted('save')).toEqual([
+        [{ action, isActiveRuleMode: true, policy: yamlEditorValue }],
+      ]);
+    });
+
+    it('passes down action errors', () => {
+      const errorCause = {
+        field: 'approvers_ids',
+        message: 'Required approvals exceed eligible approvers.',
+        title: 'Logic error',
+      };
+      factory({
+        propsData: { errorSources: [['action', '0', 'approvers_ids', [errorCause]]] },
+        provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
+      });
+      expect(findActionSection().props('errors')).toEqual([errorCause]);
+    });
+
+    it('does not pass down non-action errors', () => {
+      const errorSources = [['rule', '0', 'type']];
+      factory({
+        propsData: { errorSources },
+        provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
+      });
+      expect(findActionSection().props('errors')).toEqual([]);
+      expect(findAllRuleSections().at(0).props('errorSources')).toEqual(errorSources);
+    });
+  });
+
+  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
     it.each`
       status                            | action                             | event              | factoryFn                    | yamlEditorValue                          | currentlyAssignedPolicyProject
       ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}            | ${NEW_POLICY_PROJECT}

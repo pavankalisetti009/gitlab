@@ -2,6 +2,7 @@
 import { GlEmptyState, GlButton } from '@gitlab/ui';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import {
   checkForPerformanceRisk,
@@ -85,6 +86,7 @@ export default {
     OverloadWarningModal,
     RuleSection,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
@@ -97,15 +99,26 @@ export default {
       type: Object,
       required: true,
     },
+    errorSources: {
+      type: Array,
+      required: true,
+    },
     existingPolicy: {
       type: Object,
       required: false,
       default: null,
     },
+    isCreating: {
+      type: Boolean,
+      required: true,
+    },
+    isDeleting: {
+      type: Boolean,
+      required: true,
+    },
     isEditing: {
       type: Boolean,
-      required: false,
-      default: false,
+      required: true,
     },
   },
   data() {
@@ -120,7 +133,7 @@ export default {
     const parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
 
     return {
-      errorSources: [],
+      errorSourcesOld: [],
       projectsCount: 0,
       showPerformanceWarningModal: false,
       dismissPerformanceWarningModal: false,
@@ -140,6 +153,17 @@ export default {
     };
   },
   computed: {
+    errorSourcesTemp() {
+      return this.glFeatures.securityPoliciesProjectBackgroundWorker
+        ? this.errorSources
+        : this.errorSourcesOld;
+    },
+    isCreatingMRTemp() {
+      return this.isCreatingMR || this.isCreating;
+    },
+    isRemovingPolicyTemp() {
+      return this.isRemovingPolicy || this.isDeleting;
+    },
     originalName() {
       return this.existingPolicy?.name;
     },
@@ -186,7 +210,7 @@ export default {
       }
 
       // Process error to pass to specific component
-      this.errorSources = parseError(error);
+      this.errorSourcesOld = parseError(error);
     },
     handleActionBuilderParsingError(key) {
       this.hasParsingError = true;
@@ -222,6 +246,14 @@ export default {
       }
 
       this.policyModificationAction = act || this.policyActionName;
+
+      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
+        this.$emit('save', {
+          action: this.policyModificationAction,
+          policy: this.yamlEditorValue,
+        });
+        return;
+      }
 
       this.$emit('error', '');
       this.setLoadingFlag(true);
@@ -269,8 +301,8 @@ export default {
     :custom-save-button-text="$options.i18n.createMergeRequest"
     :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
-    :is-removing-policy="isRemovingPolicy"
-    :is-updating-policy="isCreatingMR"
+    :is-removing-policy="isRemovingPolicyTemp"
+    :is-updating-policy="isCreatingMRTemp"
     :parsing-error="parsingError"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"

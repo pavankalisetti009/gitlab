@@ -1,8 +1,12 @@
 <script>
 import { GlAlert, GlFormGroup, GlFormSelect } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getSecurityPolicyProjectSub from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
 import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
+import { fromYaml } from '../utils';
+import { GRAPHQL_ERROR_MESSAGE, SECURITY_POLICY_ACTIONS } from './constants';
+import { assignSecurityPolicyProjectAsync, goToPolicyMR, parseError } from './utils';
 import PipelineExecutionPolicyEditor from './pipeline_execution/editor_component.vue';
 import ScanExecutionPolicyEditor from './scan_execution/editor_component.vue';
 import ScanResultPolicyEditor from './scan_result/editor_component.vue';
@@ -20,7 +24,15 @@ export default {
           return { fullPath: this.namespacePath };
         },
         result({ data: { securityPolicyProjectCreated } }) {
+          if (!securityPolicyProjectCreated) return;
+
           const project = securityPolicyProjectCreated?.project;
+          const e = securityPolicyProjectCreated?.errorMessage;
+
+          if (e) {
+            this.setError(e);
+            this.setLoadingFlag(false);
+          }
 
           if (project) {
             this.currentAssignedPolicyProject = {
@@ -31,10 +43,10 @@ export default {
         },
         error(e) {
           this.setError(e);
+          this.setLoadingFlag(false);
         },
         skip() {
-          // TODO toggle with feature flag in next MR
-          return true;
+          return !this.glFeatures.securityPoliciesProjectBackgroundWorker;
         },
       },
     },
@@ -48,6 +60,7 @@ export default {
     ScanResultPolicyEditor,
     VulnerabilityManagementPolicyEditor,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     assignedPolicyProject: { default: null },
     existingPolicy: { default: null },
@@ -64,13 +77,25 @@ export default {
   data() {
     return {
       currentAssignedPolicyProject: this.assignedPolicyProject,
+      isActiveRuleMode: true,
       error: '',
       errorMessages: [],
+      errorSources: [],
+      isCreating: false,
+      isDeleting: false,
+      policy: null,
+      policyModificationAction: null,
     };
   },
   computed: {
     isEditing() {
       return Boolean(this.existingPolicy);
+    },
+    policyActionName() {
+      return this.isEditing ? SECURITY_POLICY_ACTIONS.REPLACE : SECURITY_POLICY_ACTIONS.APPEND;
+    },
+    originalName() {
+      return this.existingPolicy?.name;
     },
     policyTypes() {
       return Object.values(POLICY_TYPE_COMPONENT_OPTIONS);
@@ -85,9 +110,87 @@ export default {
       return !this.existingPolicy;
     },
   },
+  watch: {
+    currentAssignedPolicyProject(project) {
+      this.createPolicyModification(project);
+    },
+  },
   methods: {
+    handleError(error) {
+      // Refactor errorSources to allow for customization as part of
+      // https://gitlab.com/gitlab-org/gitlab/-/issues/486021
+      const newErrorSources = [];
+      // Emit error for alert
+      if (this.isActiveRuleMode && error.cause?.length) {
+        const ACTION_ERROR_FIELD = 'approvers_ids';
+        const actionErrors = error.cause.filter((cause) => ACTION_ERROR_FIELD === cause.field);
+
+        if (error.cause.length > actionErrors.length) {
+          this.setError(error.message);
+        }
+
+        // Errors due to the approvers ids do not show up at the top level, so we do not
+        // call setError
+        if (actionErrors.length) {
+          newErrorSources.push(['action', '0', 'approvers_ids', actionErrors]);
+        }
+      } else if (error.message.toLowerCase().includes('graphql')) {
+        this.setError(GRAPHQL_ERROR_MESSAGE);
+      } else {
+        this.setError(error.message);
+      }
+
+      // Process error to pass to specific component
+      this.errorSources = [...newErrorSources, ...parseError(error)];
+    },
+    async handleSave({ action, policy, isActiveRuleMode = false }) {
+      this.policyModificationAction = action || this.policyActionName;
+      this.policy = policy;
+      this.isActiveRuleMode = isActiveRuleMode;
+
+      this.setError('');
+      this.setLoadingFlag(true);
+
+      try {
+        if (!this.assignedPolicyProject.fullPath) {
+          await assignSecurityPolicyProjectAsync(this.namespacePath);
+        } else {
+          this.createPolicyModification(this.assignedPolicyProject);
+        }
+      } catch (e) {
+        this.handleError(e);
+        this.setLoadingFlag(false);
+      }
+    },
+    async createPolicyModification(assignedPolicyProject) {
+      if (!this.policy || !this.policyModificationAction) return;
+
+      this.setError('');
+      this.setLoadingFlag(true);
+
+      try {
+        await goToPolicyMR({
+          action: this.policyModificationAction,
+          assignedPolicyProject,
+          name: this.originalName || fromYaml({ manifest: this.policy })?.name,
+          namespacePath: this.namespacePath,
+          yamlEditorValue: this.policy,
+        });
+      } catch (e) {
+        this.handleError(e);
+        this.setLoadingFlag(false);
+        this.policyModificationAction = null;
+      }
+    },
     setError(errors) {
       [this.error, ...this.errorMessages] = errors.split('\n');
+    },
+    setLoadingFlag(val) {
+      if (this.policyModificationAction === SECURITY_POLICY_ACTIONS.REMOVE) {
+        this.isDeleting = val;
+      } else {
+        this.isCreating = val;
+      }
     },
   },
   NAMESPACE_TYPES,
@@ -114,9 +217,13 @@ export default {
     </gl-alert>
     <component
       :is="policyOptions.component"
+      :error-sources="errorSources"
       :existing-policy="existingPolicy"
       :assigned-policy-project="currentAssignedPolicyProject"
+      :is-creating="isCreating"
+      :is-deleting="isDeleting"
       :is-editing="isEditing"
+      @save="handleSave"
       @error="setError($event)"
     />
   </section>

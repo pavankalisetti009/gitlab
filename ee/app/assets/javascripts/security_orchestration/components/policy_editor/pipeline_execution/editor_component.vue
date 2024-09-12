@@ -3,6 +3,7 @@ import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import {
   ACTIONS_LABEL,
@@ -44,6 +45,7 @@ export default {
     EditorLayout,
     RuleSection,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
@@ -60,10 +62,17 @@ export default {
       required: false,
       default: null,
     },
+    isCreating: {
+      type: Boolean,
+      required: true,
+    },
+    isDeleting: {
+      type: Boolean,
+      required: true,
+    },
     isEditing: {
       type: Boolean,
-      required: false,
-      default: false,
+      required: true,
     },
   },
   data() {
@@ -99,6 +108,12 @@ export default {
     };
   },
   computed: {
+    isCreatingMRTemp() {
+      return this.isCreatingMR || this.isCreating;
+    },
+    isRemovingPolicyTemp() {
+      return this.isRemovingPolicy || this.isDeleting;
+    },
     originalName() {
       return this.existingPolicy?.name;
     },
@@ -150,6 +165,14 @@ export default {
     },
     async handleModifyPolicy(act) {
       this.policyModificationAction = act || this.policyActionName;
+
+      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
+        this.$emit('save', {
+          action: this.policyModificationAction,
+          policy: this.yamlEditorValue,
+        });
+        return;
+      }
 
       this.$emit('error', '');
       this.setLoadingFlag(true);
@@ -223,8 +246,8 @@ export default {
     :custom-save-button-text="$options.i18n.createMergeRequest"
     :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
-    :is-removing-policy="isRemovingPolicy"
-    :is-updating-policy="isCreatingMR"
+    :is-removing-policy="isRemovingPolicyTemp"
+    :is-updating-policy="isCreatingMRTemp"
     :parsing-error="parsingError"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"

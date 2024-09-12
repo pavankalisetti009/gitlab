@@ -3,6 +3,7 @@ import { isValidCron } from 'cron-validator';
 import { sprintf, s__ } from '~/locale';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
+import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import getFile from 'ee/security_orchestration/graphql/queries/get_file.query.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
@@ -185,6 +186,25 @@ export const assignSecurityPolicyProject = async (fullPath) => {
   checkForErrors({ errors });
 
   return { ...project, branch: project?.branch?.rootRef, errors };
+};
+
+/**
+ * Creates a new security policy project via background worker
+ * @param {String} fullPath
+ */
+export const assignSecurityPolicyProjectAsync = async (fullPath) => {
+  const {
+    data: {
+      securityPolicyProjectCreateAsync: { errors },
+    },
+  } = await gqClient.mutate({
+    mutation: createPolicyProjectAsync,
+    variables: {
+      fullPath,
+    },
+  });
+
+  checkForErrors({ errors });
 };
 
 /**
@@ -581,8 +601,9 @@ export const isCauseOfError = ({ errorSources, primaryKey, index = 0, location }
 
 /**
  * Parses error from the backend and returns an array of [primaryKey, index, location]
- * @param {Object} error https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
- * @returns {Array} e.g. [['actions', 0, 'name']]
+ * @param {Object} error https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error with
+ * message of form `"property '/approval_policy/5/rules/0/type' is not one of: [\"scan_finding\", \"license_finding\", \"any_merge_request\"]"`
+ * @returns {Array} e.g. [['rules', 0, 'type']]
  */
 export const parseError = (error) => {
   if (!error) return [];

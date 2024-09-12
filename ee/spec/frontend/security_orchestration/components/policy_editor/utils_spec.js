@@ -1,6 +1,7 @@
 import {
   addIdsToPolicy,
   assignSecurityPolicyProject,
+  assignSecurityPolicyProjectAsync,
   doesFileExist,
   getPolicyLimitDetails,
   goToPolicyMR,
@@ -28,6 +29,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
+import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
@@ -66,6 +68,15 @@ const mockApolloResponses = (shouldReject) => {
         data: {
           securityPolicyProjectCreate: {
             project: newAssignedPolicyProject,
+            errors: shouldReject ? [error] : [],
+          },
+        },
+      });
+    }
+    if (mutation === createPolicyProjectAsync) {
+      return Promise.resolve({
+        data: {
+          securityPolicyProjectCreateAsync: {
             errors: shouldReject ? [error] : [],
           },
         },
@@ -156,6 +167,24 @@ describe('assignSecurityPolicyProject', () => {
 
     await expect(async () => {
       await assignSecurityPolicyProject(projectPath);
+    }).rejects.toThrow(error);
+  });
+});
+
+describe('assignSecurityPolicyProjectAsync', () => {
+  it('returns undefined if successful', async () => {
+    gqClient.mutate.mockImplementation(mockApolloResponses());
+
+    const newlyCreatedPolicyProject = await assignSecurityPolicyProjectAsync(projectPath);
+
+    expect(newlyCreatedPolicyProject).toBe(undefined);
+  });
+
+  it('throws when an error is detected', async () => {
+    gqClient.mutate.mockImplementation(mockApolloResponses(true));
+
+    await expect(async () => {
+      await assignSecurityPolicyProjectAsync(projectPath);
     }).rejects.toThrow(error);
   });
 });

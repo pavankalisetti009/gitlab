@@ -80,16 +80,14 @@ describe('EditorComponent', () => {
     return createMockApollo([[getGroupProjectsCount, handler]]);
   };
 
-  const factory = ({
-    propsData = {},
-    provide = {},
-    glFeatures = {},
-    handler = mockCountResponse(),
-  } = {}) => {
+  const factory = ({ propsData = {}, provide = {}, handler = mockCountResponse() } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        errorSources: [],
+        isCreating: false,
+        isDeleting: false,
         isEditing: false,
         ...propsData,
       },
@@ -99,20 +97,19 @@ describe('EditorComponent', () => {
         namespacePath: defaultProjectPath,
         namespaceType: NAMESPACE_TYPES.GROUP,
         scanPolicyDocumentationPath,
-        glFeatures,
         ...provide,
       },
     });
   };
 
-  const factoryWithExistingPolicy = ({ policy = {}, glFeatures = {} } = {}) => {
+  const factoryWithExistingPolicy = ({ policy = {}, provide = {} } = {}) => {
     return factory({
       propsData: {
         assignedPolicyProject: ASSIGNED_POLICY_PROJECT,
         existingPolicy: { ...mockDastScanExecutionObject, ...policy },
         isEditing: true,
       },
-      glFeatures,
+      provide,
     });
   };
 
@@ -157,7 +154,21 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('saving a policy', () => {
+  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+    it.each`
+      status                           | action                             | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE}
+      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
+    `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
+      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      findPolicyEditorLayout().vm.$emit(event);
+      await waitForPromises();
+      expect(wrapper.emitted('save')).toEqual([[{ action, policy: yamlEditorValue }]]);
+    });
+  });
+
+  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
     it.each`
       status                            | action                             | event              | factoryFn                    | yamlEditorValue                             | currentlyAssignedPolicyProject
       ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE} | ${NEW_POLICY_PROJECT}

@@ -13,6 +13,7 @@ module Groups
         push_frontend_feature_flag(:vulnerability_management_policy_type_group, group)
         push_frontend_feature_flag(:scan_result_policy_block_group_branch_modification, group)
         push_frontend_feature_flag(:policy_group_scope, group)
+        push_frontend_feature_flag(:security_policies_project_background_worker, group)
       end
 
       feature_category :security_policy_management
