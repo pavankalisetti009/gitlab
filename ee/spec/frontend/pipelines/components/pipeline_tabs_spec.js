@@ -14,7 +14,6 @@ describe('The Pipeline Tabs', () => {
   let wrapper;
 
   const findCodeQualityTab = () => wrapper.findByTestId('code-quality-tab');
-  const findDagTab = () => wrapper.findByTestId('dag-tab');
   const findFailedJobsTab = () => wrapper.findByTestId('failed-jobs-tab');
   const findJobsTab = () => wrapper.findByTestId('jobs-tab');
   const findLicenseTab = () => wrapper.findByTestId('license-tab');
@@ -87,7 +86,6 @@ describe('The Pipeline Tabs', () => {
     it.each`
       tabName          | tabComponent
       ${'Pipeline'}    | ${findPipelineTab}
-      ${'Dag'}         | ${findDagTab}
       ${'Jobs'}        | ${findJobsTab}
       ${'Failed Jobs'} | ${findFailedJobsTab}
       ${'Tests'}       | ${findTestsTab}
