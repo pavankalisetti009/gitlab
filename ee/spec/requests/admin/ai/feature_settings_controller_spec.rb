@@ -120,7 +120,7 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
   end
 
   describe 'POST #create' do
-    let(:self_hosted_model) { create(:ai_self_hosted_model) }
+    let(:self_hosted_model) { create(:ai_self_hosted_model, model: :codestral) }
     let(:params) do
       {
         feature_setting: {
