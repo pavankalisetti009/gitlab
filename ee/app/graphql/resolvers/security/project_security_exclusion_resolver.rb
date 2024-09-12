@@ -11,6 +11,12 @@ module Resolvers
 
       description 'Find security scanner exclusions for a project.'
 
+      when_single do
+        argument :id, ::Types::GlobalIDType[::Security::ProjectSecurityExclusion],
+          required: true,
+          description: 'ID of the project security exclusion.'
+      end
+
       argument :scanner, Types::Security::ExclusionScannerEnum, required: false,
         description: 'Filter entries by scanner.'
 
@@ -23,7 +29,9 @@ module Resolvers
       def resolve(**args)
         raise_resource_not_available_error! unless object.licensed_feature_available?(:security_exclusions)
 
-        ::Security::ProjectSecurityExclusionsFinder.new(current_user, project: object, params: args).execute
+        params = args[:id] ? { id: args[:id].model_id } : args
+
+        ::Security::ProjectSecurityExclusionsFinder.new(current_user, project: object, params: params).execute
       end
     end
   end

@@ -33,7 +33,7 @@ RSpec.describe GitlabSchema.types['Project'] do
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics saved_reply merge_trains
       pending_member_approvals observability_logs_links observability_metrics_links
-      observability_traces_links dependencies security_exclusions
+      observability_traces_links dependencies security_exclusions security_exclusion
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)

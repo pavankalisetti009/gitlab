@@ -14,6 +14,7 @@
 #   current_user - which user is requesting exclusions.
 #   project  -which project to scope to.
 #   params:
+#     id: integer
 #     scanner: string
 #     type: string
 #     status: string
@@ -29,6 +30,7 @@ module Security
       return ProjectSecurityExclusion.none unless can_read_project_security_exclusions?
 
       exclusions = project.security_exclusions
+      exclusions = by_id(exclusions)
       exclusions = by_scanner(exclusions)
       exclusions = by_type(exclusions)
 
@@ -41,6 +43,12 @@ module Security
 
     def can_read_project_security_exclusions?
       Ability.allowed?(current_user, :read_project_security_exclusions, project)
+    end
+
+    def by_id(exclusions)
+      return exclusions if params[:id].nil?
+
+      exclusions.id_in(params[:id])
     end
 
     def by_scanner(exclusions)
