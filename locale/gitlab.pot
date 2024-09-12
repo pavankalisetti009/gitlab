@@ -61661,6 +61661,11 @@ msgstr ""
 msgid "WorkItem|%{workItemType} deleted"
 msgstr ""
 
+msgid "WorkItem|%{workItemType} has 1 linked item"
+msgid_plural "WorkItem|%{workItemType} has %{itemCount} linked items"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "WorkItem|%{workItemType} is blocked by 1 item"
 msgid_plural "WorkItem|%{workItemType} is blocked by %{itemCount} items"
 msgstr[0] ""
