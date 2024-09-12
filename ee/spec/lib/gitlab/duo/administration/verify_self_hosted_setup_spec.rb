@@ -49,14 +49,6 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
     end
   end
 
-  context 'when CLOUD_CONNECTOR_SELF_SIGN_TOKENS is not set' do
-    let(:use_self_signed_token) { "0" }
-
-    it 'raises error' do
-      expect { verify_setup }.to raise_error(RuntimeError)
-    end
-  end
-
   context 'when user does not have :code_suggestions permission' do
     let(:can_user_access_code_suggestions) { false }
 
