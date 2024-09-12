@@ -1,6 +1,6 @@
 ---
 name: public_repository_download_operation
-description: Event triggered when a Git repository for a public project is downloaded
+description: Triggered when a Git repository for a public project is downloaded
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/383218
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/149842
 feature_category: compliance_management
