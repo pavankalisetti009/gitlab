@@ -2,25 +2,25 @@
 
 module Namespaces
   module Export
-    class GroupMembersTypeCombinator
-      attr_reader :group
+    class MembersTypeCombinator
+      attr_reader :entity
 
-      def initialize(group)
-        @group = group
+      def initialize(entity)
+        @entity = entity
       end
 
-      def execute(group_members, inherited_members)
+      def execute(entity_members, inherited_members)
         # first we select only the members who are really direct
-        # in group_members we will have only shared members remained
-        direct_members = group_members.extract! { |member| direct_member?(member) }
+        # in entity_members we will have only shared members remained
+        direct_members = entity_members.extract! { |member| direct_member?(member) }
         direct_user_ids = direct_members.map(&:user_id)
 
         indirect_members = []
         overridden_shared_members = []
 
         inherited_members.each do |inherited_member|
-          shared_member = shared_membership_for(inherited_member, group_members)
-          type = membership_type(inherited_member, shared_member, direct_user_ids, group_members)
+          shared_member = shared_membership_for(inherited_member, entity_members)
+          type = membership_type(inherited_member, shared_member, direct_user_ids, entity_members)
 
           next if type == :direct
 
@@ -28,7 +28,7 @@ module Namespaces
           indirect_members << inherited_member
         end
 
-        shared_members = group_members - overridden_shared_members
+        shared_members = entity_members - overridden_shared_members
 
         # we return combination of direct, inherited and shared members
         direct_members + indirect_members + shared_members
@@ -36,14 +36,14 @@ module Namespaces
 
       private
 
-      def shared_membership_for(member, group_members)
-        group_members.find { |m| m.user_id == member.user_id }
+      def shared_membership_for(member, entity_members)
+        entity_members.find { |m| m.user_id == member.user_id }
       end
 
-      def membership_type(member, shared_member, direct_user_ids, group_members)
+      def membership_type(member, shared_member, direct_user_ids, entity_members)
         return :direct if direct_user_ids.include?(member.user_id)
 
-        return :indirect if group_members.blank? # we can skip if we don't have any further group members
+        return :indirect if entity_members.blank? # we can skip if we don't have any further group members
 
         return :indirect unless shared_member
 
@@ -53,7 +53,7 @@ module Namespaces
       end
 
       def direct_member?(member)
-        member.source_id == group.id
+        member.source == entity
       end
     end
   end

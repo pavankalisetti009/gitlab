@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::Export::GroupMembersTypeCombinator, feature_category: :system_access do
+RSpec.describe Namespaces::Export::MembersTypeCombinator, feature_category: :system_access do
   include_context 'with group members shared context'
 
   let(:requested_group) { sub_sub_sub_group_1 }
