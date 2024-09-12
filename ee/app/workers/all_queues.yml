@@ -1011,6 +1011,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: ai_repository_xray_scan_dependencies
+  :worker_name: Ai::RepositoryXray::ScanDependenciesWorker
+  :feature_category: :code_suggestions
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: ai_store_repository_xray
   :worker_name: Ai::StoreRepositoryXrayWorker
   :feature_category: :code_suggestions

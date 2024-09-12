@@ -104,6 +104,25 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
       end
     end
 
+    context 'when the repository contains only invalid dependency config files' do
+      let_it_be(:project) { create(:project, :custom_repo, files: { 'go.mod' => 'invalid content' }) }
+
+      it 'does not save an X-Ray report' do
+        expect { execute }.not_to change { report_count }
+      end
+
+      it 'returns an error response' do
+        expect(execute).to be_error
+        expect(execute.message).to eq('Found 1 dependency config files, 1 had errors')
+        expect(execute.payload).to match({
+          success_messages: [],
+          error_messages: [
+            'Error(s) while parsing file `go.mod`: format not recognized or dependencies not present (GoModules)'
+          ]
+        })
+      end
+    end
+
     context 'when the repository contains both valid and invalid dependency config files' do
       let_it_be(:project) { create(:project, :custom_repo, files: valid_and_invalid_files) }
 
@@ -128,11 +147,12 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
       let(:project) { instance_double(Project, id: 123) }
       let(:lease_key) { "#{described_class.name}:project_#{project.id}" }
 
-      it 'returns a success response with the lease key' do
+      it 'returns an error response and reschedules the worker', :freeze_time do
         lease = Gitlab::ExclusiveLease.new(lease_key, timeout: 1.minute).tap(&:try_obtain)
 
-        expect(execute).to be_success
-        expect(execute.message).to eq('Lease taken')
+        expect(Ai::RepositoryXray::ScanDependenciesWorker).to receive(:perform_in).once
+        expect(execute).to be_error
+        expect(execute.message).to match(/Lease taken. Rescheduled worker/)
         expect(execute.payload).to eq({ lease_key: lease_key })
         lease.cancel
       end

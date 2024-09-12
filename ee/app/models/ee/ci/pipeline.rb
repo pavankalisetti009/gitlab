@@ -68,6 +68,7 @@ module EE
           end
 
           after_transition any => ::Ci::Pipeline.completed_statuses do |pipeline|
+            next if ::Feature.enabled?(:ai_enable_internal_repository_xray_service, pipeline.project)
             next unless pipeline.has_repository_xray_reports?
 
             pipeline.run_after_commit do
