@@ -36,6 +36,7 @@ exports[`ExternalIssuesListRoot when request succeeds renders issuable-list comp
   "currentTab": "opened",
   "defaultPageSize": 2,
   "error": "",
+  "fullPath": null,
   "hasNextPage": false,
   "hasPreviousPage": false,
   "hasScopedLabelsFeature": false,
