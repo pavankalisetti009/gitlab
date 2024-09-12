@@ -13,7 +13,8 @@ module RemoteDevelopment
               workspace_agent_infos_by_name: Hash => workspace_agent_infos_by_name,
             }
 
-            workspaces_from_agent_infos = agent.workspaces.where(name: workspace_agent_infos_by_name.keys).to_a # rubocop:todo CodeReuse/ActiveRecord -- Use a finder class here
+            workspaces_from_agent_infos =
+              agent.workspaces.by_names(workspace_agent_infos_by_name.keys).order_id_asc.to_a
 
             # Update persisted workspaces which match the names of the workspaces in the AgentInfo objects array
             workspaces_from_agent_infos.each do |persisted_workspace|

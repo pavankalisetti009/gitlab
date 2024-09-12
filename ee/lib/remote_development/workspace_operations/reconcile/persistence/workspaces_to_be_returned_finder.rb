@@ -40,6 +40,7 @@ module RemoteDevelopment
               return agent
                        .workspaces.desired_state_not_terminated
                        .or(agent.workspaces.actual_state_not_terminated)
+                       .order_id_asc
                        .all
             end
 
