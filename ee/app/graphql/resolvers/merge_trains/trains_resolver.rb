@@ -21,18 +21,12 @@ module Resolvers
         description: 'Filter merge trains by a list of target branches.'
 
       def resolve(status: nil, target_branches: [])
-        ensure_feature_available
-
-        authorize!
+        return unless merge_trains_available? && authorize!
 
         ::MergeTrains::Train.all_for(project, target_branch: target_branches, status: status)
       end
 
       private
-
-      def ensure_feature_available
-        merge_trains_available? || raise_resource_not_available_error!
-      end
 
       def merge_trains_available?
         project.licensed_feature_available?(:merge_trains)
