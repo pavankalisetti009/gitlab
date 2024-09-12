@@ -201,7 +201,7 @@ module EE
 
       # Changing the plan or other details may invalidate this cache
       before_save :clear_feature_available_cache
-      before_save :disable_project_sharing, if: -> { share_with_group_lock_changed? && namespace_settings&.user_cap_enabled? }
+      before_save :disable_project_sharing, if: :disable_project_sharing?
 
       attr_accessor :skip_sync_with_customers_dot
 
@@ -664,6 +664,10 @@ module EE
 
     def disable_project_sharing
       self.share_with_group_lock = true
+    end
+
+    def disable_project_sharing?
+      share_with_group_lock_changed? && (namespace_settings&.user_cap_enabled? || namespace_settings&.seat_control_block_overages?)
     end
 
     def mark_skip_sync_with_customers_dot

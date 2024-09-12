@@ -4115,18 +4115,41 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       it { is_expected.to eq(false) }
     end
+  end
 
-    describe 'share_with_group_lock' do
-      context 'when the namespace settings seat_control is set to user_cap', :saas do
-        before do
-          root_group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 1)
-        end
+  describe '#share_with_group_lock' do
+    let_it_be_with_refind(:group) { create(:group) }
+    let(:settings) { group.namespace_settings }
 
-        it 'cannot be set to false' do
-          root_group.update!(share_with_group_lock: false)
+    context 'when the namespace settings seat_control is set to user_cap', :saas do
+      before do
+        group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 1)
+      end
 
-          expect(root_group.share_with_group_lock).to eq(true)
-        end
+      it 'cannot be set to false' do
+        group.update!(share_with_group_lock: false)
+
+        expect(group.share_with_group_lock).to eq(true)
+      end
+    end
+
+    it 'becomes enabled when block seat overages becomes enabled', :saas do
+      expect(group.share_with_group_lock).to eq(false)
+
+      settings.update!(seat_control: :block_overages)
+
+      expect(group.reload.share_with_group_lock).to eq(true)
+    end
+
+    context 'when block seat overages is already enabled for the group', :saas do
+      before do
+        settings.update!(seat_control: :block_overages)
+      end
+
+      it 'cannot be disabled' do
+        group.update!(share_with_group_lock: false)
+
+        expect(group.reload.share_with_group_lock).to eq(true)
       end
     end
   end
