@@ -28,7 +28,7 @@ module QA
           set_prevent_forking_outside_group('disabled')
         end
 
-        it 'allows forking outside of group',
+        it 'allows forking outside of group', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347870' do
           project.visit!
 
@@ -45,7 +45,7 @@ module QA
           set_prevent_forking_outside_group('enabled')
         end
 
-        it 'does not allow forking outside of group',
+        it 'does not allow forking outside of group', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347872' do
           project.visit!
 
