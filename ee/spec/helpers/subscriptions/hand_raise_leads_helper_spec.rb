@@ -34,7 +34,8 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
         button_attributes: {
           variant: 'confirm',
           category: 'secondary',
-          'data-testid': 'trial-discover-hand-raise-lead-button'
+          'data-testid': 'trial-discover-hand-raise-lead-button',
+          class: 'gl-w-full sm:gl-w-auto'
         }.to_json
       }
 
