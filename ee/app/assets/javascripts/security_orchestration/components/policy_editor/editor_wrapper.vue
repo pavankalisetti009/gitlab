@@ -111,8 +111,8 @@ export default {
     },
   },
   watch: {
-    currentAssignedPolicyProject(project) {
-      this.createPolicyModification(project);
+    async currentAssignedPolicyProject(project) {
+      await this.createPolicyModification(project);
     },
   },
   methods: {
@@ -155,7 +155,7 @@ export default {
         if (!this.assignedPolicyProject.fullPath) {
           await assignSecurityPolicyProjectAsync(this.namespacePath);
         } else {
-          this.createPolicyModification(this.assignedPolicyProject);
+          await this.createPolicyModification(this.assignedPolicyProject);
         }
       } catch (e) {
         this.handleError(e);
