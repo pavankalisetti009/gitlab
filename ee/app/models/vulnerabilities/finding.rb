@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Finding < ApplicationRecord
+  class Finding < Gitlab::Database::SecApplicationRecord
     include ShaAttribute
     include ::Gitlab::Utils::StrongMemoize
     include Presentable

@@ -1722,4 +1722,11 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       expect(finding.ai_resolution_available?).to be false
     end
   end
+
+  context 'with loose foreign key on vulnerability_occurrences.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_finding, vulnerability_project: parent) }
+    end
+  end
 end
