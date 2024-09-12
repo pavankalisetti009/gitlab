@@ -111,6 +111,7 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
               THEN email user
               <gl-token-stub
                 class="gl-text-white"
+                removelabel="Remove"
                 style="background-color: rgb(97, 122, 226);"
                 variant="default"
                 viewonly="true"
@@ -171,6 +172,7 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
               THEN email user
               <gl-token-stub
                 class="gl-text-white"
+                removelabel="Remove"
                 style="background-color: rgb(201, 93, 46);"
                 variant="default"
                 viewonly="true"

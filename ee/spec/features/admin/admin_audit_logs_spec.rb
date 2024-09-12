@@ -244,7 +244,7 @@ RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
       click_link type
       click_link name
 
-      find('button[type="button"]:not([name="clear"]):not([aria-label="Close"]').click
+      find('button[type="button"]:not([name="clear"]):not([aria-label="Remove"]').click
     end
 
     wait_for_requests
