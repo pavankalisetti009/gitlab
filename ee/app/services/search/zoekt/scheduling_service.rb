@@ -136,7 +136,10 @@ module Search
           # Mark namespaces as not searchable so that it has enough time to re-index these
           Search::Zoekt::EnabledNamespace.id_in(scope.select(:zoekt_enabled_namespace_id))
                                          .update_all(search: false, updated_at: Time.zone.now)
-          scope.destroy_all # rubocop:disable Cop/DestroyAll -- we need to execute the on_destroy callbacks
+
+          scope.each_batch do |batch|
+            batch.update_all(state: :pending_deletion)
+          end
         end
       end
 

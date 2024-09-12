@@ -110,7 +110,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
             'meta' => node_out_of_storage.metadata_json.merge('zoekt.used_bytes' => 27000001) }
           )
 
-          expect { execute_task }.to change { Search::Zoekt::Index.count }.from(2).to(1)
+          expect { execute_task }.to change { Search::Zoekt::Index.pending_deletion.count }.from(0).to(1)
           expect(zoekt_index2.zoekt_enabled_namespace.reload.search).to eq(false)
         end
       end
