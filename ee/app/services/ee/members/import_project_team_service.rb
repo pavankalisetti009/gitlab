@@ -10,7 +10,12 @@ module EE
         root_namespace = target_project.root_ancestor
         invited_user_ids = source_project.project_members.pluck_user_ids
 
-        return unless root_namespace.block_seat_overages? && !root_namespace.seats_available_for?(invited_user_ids)
+        # Members imported from another project get the same access level as whatever they have in the source project.
+        # However, #seats_available_for? currently supports only a single access level for all invited users.
+        # So we pass DEVELOPER and nil here, meaning we assume that all members will be billable.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/485631
+        return unless root_namespace.block_seat_overages? &&
+          !root_namespace.seats_available_for?(invited_user_ids, ::Gitlab::Access::DEVELOPER, nil)
 
         raise ::Members::ImportProjectTeamService::SeatLimitExceededError, error_message
       end

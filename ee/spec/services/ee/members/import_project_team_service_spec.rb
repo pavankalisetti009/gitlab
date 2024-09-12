@@ -54,7 +54,7 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
     end
 
     context 'when block seat overages is enabled', :saas, :use_clean_rails_memory_store_caching do
-      let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 2) }
+      let_it_be(:subscription) { create(:gitlab_subscription, :ultimate, namespace: group, seats: 2) }
 
       let(:owner_message) { s_('AddMember|There are not enough available seats to invite this many users.') }
       let(:maintainer_message) do
