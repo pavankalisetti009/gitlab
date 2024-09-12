@@ -399,5 +399,32 @@ describe('ListComponentScope', () => {
       expect(findScopeDefaultLabel().exists()).toBe(false);
       expect(findDefaultText().exists()).toBe(false);
     });
+
+    it('renders group policy scope when ff is enabled', () => {
+      const items = [{ id: 1 }, { id: 2 }];
+
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+            excludingProjects: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          namespaceType: NAMESPACE_TYPES.PROJECT,
+          glFeatures: {
+            policyGroupScopeProject: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(true);
+      expect(findGroupsToggleList().props('groups')).toEqual(items);
+      expect(findGroupsToggleList().props('projects')).toEqual(items);
+    });
   });
 });
