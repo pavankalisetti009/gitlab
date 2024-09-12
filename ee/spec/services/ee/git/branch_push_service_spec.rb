@@ -21,7 +21,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
   end
 
   context 'with pull project' do
-    let_it_be(:project) { create(:project, :repository, :mirror) }
+    let_it_be_with_reload(:project) { create(:project, :repository, :mirror) }
 
     before do
       allow(project.repository).to receive(:commit).and_call_original
@@ -221,6 +221,56 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
 
           subject.execute
         end
+      end
+    end
+
+    describe 'Repository X-Ray dependency scanning', feature_category: :code_suggestions do
+      before do
+        project.update!(duo_features_enabled: true)
+      end
+
+      shared_examples 'does not enqueue the X-Ray worker' do
+        it do
+          expect(Ai::RepositoryXray::ScanDependenciesWorker).not_to receive(:perform_async)
+
+          subject.execute
+        end
+      end
+
+      context 'when pushing to the default branch' do
+        it 'enqueues the X-Ray worker' do
+          expect(Ai::RepositoryXray::ScanDependenciesWorker).to receive(:perform_async).with(project.id)
+
+          subject.execute
+        end
+
+        context 'when the project does not have Duo features enabled' do
+          before do
+            project.update!(duo_features_enabled: false)
+          end
+
+          it_behaves_like 'does not enqueue the X-Ray worker'
+        end
+
+        context 'when the FF `ai_enable_internal_repository_xray_service` is disabled' do
+          before do
+            stub_feature_flags(ai_enable_internal_repository_xray_service: false)
+          end
+
+          it_behaves_like 'does not enqueue the X-Ray worker'
+        end
+      end
+
+      context 'when pushing to a non-default branch' do
+        let(:ref) { 'refs/heads/other' }
+
+        it_behaves_like 'does not enqueue the X-Ray worker'
+      end
+
+      context 'when removing a branch' do
+        let(:newrev) { Gitlab::Git::SHA1_BLANK_SHA }
+
+        it_behaves_like 'does not enqueue the X-Ray worker'
       end
     end
   end

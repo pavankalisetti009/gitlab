@@ -11,6 +11,7 @@ module EE
         enqueue_zoekt_indexing
         enqueue_update_external_pull_requests
         enqueue_product_analytics_event_metrics
+        enqueue_repository_xray
 
         super
       end
@@ -53,6 +54,14 @@ module EE
         return false unless default_branch?
 
         project.use_elasticsearch?
+      end
+
+      def enqueue_repository_xray
+        return unless ::Feature.enabled?(:ai_enable_internal_repository_xray_service, project)
+        return if removing_branch?
+        return unless default_branch? && project.duo_features_enabled
+
+        ::Ai::RepositoryXray::ScanDependenciesWorker.perform_async(project.id)
       end
     end
   end

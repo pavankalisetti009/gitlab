@@ -257,10 +257,22 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       context 'when the xray reports can be stored for the pipeline' do
         let(:has_repository_xray_reports) { true }
 
-        it 'schedules store security scans job' do
-          expect(::Ai::StoreRepositoryXrayWorker).to receive(:perform_async).with(pipeline.id)
+        it 'does not schedule store security scans job' do
+          expect(::Ai::StoreRepositoryXrayWorker).not_to receive(:perform_async)
 
           transition_pipeline
+        end
+
+        context 'when FF `ai_enable_internal_repository_xray_service` is disabled' do
+          before do
+            stub_feature_flags(ai_enable_internal_repository_xray_service: false)
+          end
+
+          it 'schedules store security scans job' do
+            expect(::Ai::StoreRepositoryXrayWorker).to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
         end
       end
 

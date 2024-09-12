@@ -10,6 +10,7 @@ module Ai
 
       # We expect this service will complete within 5 minutes in any repo
       LEASE_TIMEOUT = 5.minutes
+      WORKER_CLASS = Ai::RepositoryXray::ScanDependenciesWorker
 
       def initialize(project)
         @project = project
@@ -18,7 +19,9 @@ module Ai
       def execute
         response = try_obtain_lease { process }
 
-        response || ServiceResponse.success(message: 'Lease taken', payload: { lease_key: lease_key })
+        # The worker's deduplication settings normally prevent a situation where we
+        # can't obtain the lease; however, should it occur, we reschedule the worker.
+        response || reschedule_worker
       end
 
       private
@@ -41,7 +44,7 @@ module Ai
           "#{config_file.error_message} (#{class_name(config_file)})"
         end
 
-        save_xray_reports(valid_config_files)
+        save_xray_reports(valid_config_files) if valid_config_files.any?
 
         build_response(success_messages, error_messages)
       end
@@ -76,6 +79,15 @@ module Ai
         else
           ServiceResponse.success(**response_hash)
         end
+      end
+
+      def reschedule_worker
+        WORKER_CLASS.perform_in(LEASE_TIMEOUT, project.id)
+
+        ServiceResponse.error(
+          message: "Lease taken. Rescheduled worker `#{WORKER_CLASS.name}`",
+          payload: { lease_key: lease_key }
+        )
       end
 
       def class_name(obj)
