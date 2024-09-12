@@ -26,7 +26,7 @@ module Ai
         audit_context = {
           name: 'self_hosted_model_created',
           author: user,
-          scope: user,
+          scope: Gitlab::Audit::InstanceScope.new,
           target: model,
           message: "Self-hosted model #{model.name}/#{model.model}/#{model.endpoint} created"
         }

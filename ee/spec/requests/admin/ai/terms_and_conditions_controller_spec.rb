@@ -68,7 +68,7 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
       {
         name: 'self_hosted_model_terms_accepted',
         author: admin,
-        scope: admin,
+        scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
         target: admin,
         message: "Self-hosted model usage terms accepted by user #{admin.id}"
       }

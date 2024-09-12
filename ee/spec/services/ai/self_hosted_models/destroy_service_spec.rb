@@ -14,7 +14,7 @@ RSpec.describe ::Ai::SelfHostedModels::DestroyService, feature_category: :"self-
     {
       name: 'self_hosted_model_destroyed',
       author: user,
-      scope: user,
+      scope: be_an_instance_of(Gitlab::Audit::InstanceScope),
       target: model,
       message: "Self-hosted model #{model.name}/#{model.model}/#{model.endpoint} destroyed"
     }
