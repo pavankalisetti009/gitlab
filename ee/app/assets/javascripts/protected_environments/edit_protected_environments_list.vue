@@ -57,6 +57,10 @@ export default {
     isProjectType() {
       return this.entityType === 'projects';
     },
+    approvalRules() {
+      if (!this.addingEnvironment) return [];
+      return this.addingEnvironment[APPROVER_RULE_KEY];
+    },
   },
   mounted() {
     this.fetchProtectedEnvironments();
@@ -156,6 +160,7 @@ export default {
       <template v-else #add-rule-form>
         <add-approvers
           :project-id="entityId"
+          :approval-rules="approvalRules"
           @change="setRule({ environment: addingEnvironment, newRules: $event })"
         />
       </template>
