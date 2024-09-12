@@ -23,42 +23,37 @@ module Mutations
         def resolve(**args)
           check_feature_access!
 
-          feature_setting = upsert_feature_setting(args)
+          result = upsert_feature_setting(args)
 
-          if feature_setting.errors.present?
+          if result.error?
             {
               ai_feature_setting: nil,
-              errors: Array(feature_setting.errors)
+              errors: Array(result.errors)
             }
           else
-            { ai_feature_setting: feature_setting, errors: [] }
+            { ai_feature_setting: result.payload, errors: [] }
           end
         end
 
         private
 
         def upsert_feature_setting(args)
-          feature_setting = find_object(feature: args[:feature])
-          self_hosted_model_id = args[:self_hosted_model_id]
+          feature_setting = find_or_initialize_object(feature: args[:feature])
+          feature_settings_params = args.dup
 
-          feature_setting.assign_attributes(**args.except(:self_hosted_model_id))
+          self_hosted_model_gid = feature_settings_params.delete(:self_hosted_model_id)
 
-          if self_hosted_model_id
-            self_hosted_model = find_self_hosted_model(id: self_hosted_model_id)
-            feature_setting.self_hosted_model = self_hosted_model if self_hosted_model
+          if self_hosted_model_gid.present?
+            feature_settings_params[:ai_self_hosted_model_id] = GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
           end
 
-          feature_setting.save
-
-          feature_setting
+          ::Ai::FeatureSettings::UpdateService.new(
+            feature_setting, current_user, feature_settings_params
+          ).execute
         end
 
-        def find_object(feature:)
+        def find_or_initialize_object(feature:)
           ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
-        end
-
-        def find_self_hosted_model(id:)
-          GitlabSchema.object_from_id(id, expected_type: ::Ai::SelfHostedModel).sync
         end
       end
     end
