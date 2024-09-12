@@ -31,7 +31,7 @@ module Gitlab
         case scope
         when :users
           super.except(:group_ids) # User uses group_id for namespace_query
-        when :wiki_blobs
+        when :wiki_blobs, :work_items
           super.merge(root_ancestor_ids: [group.root_ancestor.id])
         else
           super

@@ -51,5 +51,9 @@ RSpec.describe Elastic::Latest::Routing, feature_category: :global_search do
 
       expect(subject.routing_options({ project_ids: 1.upto(max_count + 1).to_a })).to eq({})
     end
+
+    it 'returns correct options for root_ancestor_ids param' do
+      expect(subject.routing_options({ root_ancestor_ids: [1, 2] })).to eq({ routing: 'group_1,group_2' })
+    end
   end
 end
