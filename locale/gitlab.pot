@@ -12053,6 +12053,9 @@ msgstr ""
 msgid "Clear this checkbox to use an external authentication provider instead."
 msgstr ""
 
+msgid "Clear uploads"
+msgstr ""
+
 msgid "Clear weight"
 msgstr ""
 
@@ -34518,6 +34521,9 @@ msgstr ""
 msgid "MlModelRegistry|Add a model"
 msgstr ""
 
+msgid "MlModelRegistry|All artifact uploads failed or were canceled."
+msgstr ""
+
 msgid "MlModelRegistry|An error has occurred when saving the model."
 msgstr ""
 
@@ -34530,13 +34536,16 @@ msgstr ""
 msgid "MlModelRegistry|Artifact file is too large"
 msgstr ""
 
+msgid "MlModelRegistry|Artifact uploaded successfully."
+msgstr ""
+
+msgid "MlModelRegistry|Artifact uploads completed with errors."
+msgstr ""
+
 msgid "MlModelRegistry|Artifacts"
 msgstr ""
 
 msgid "MlModelRegistry|CI Info"
-msgstr ""
-
-msgid "MlModelRegistry|Cancel upload"
 msgstr ""
 
 msgid "MlModelRegistry|Candidate not linked to a CI build"
@@ -34596,7 +34605,7 @@ msgstr ""
 msgid "MlModelRegistry|Deleting this model version will delete the associated artifacts."
 msgstr ""
 
-msgid "MlModelRegistry|Drop or %{linkStart}select%{linkEnd} artifact to attach"
+msgid "MlModelRegistry|Drop or %{linkStart}select%{linkEnd} artifacts to attach"
 msgstr ""
 
 msgid "MlModelRegistry|Drop to start upload"
@@ -34777,9 +34786,6 @@ msgid "MlModelRegistry|This model has no candidates"
 msgstr ""
 
 msgid "MlModelRegistry|Triggered by"
-msgstr ""
-
-msgid "MlModelRegistry|Uploaded files successfully"
 msgstr ""
 
 msgid "MlModelRegistry|Use versions to track performance, parameters, and metadata"
