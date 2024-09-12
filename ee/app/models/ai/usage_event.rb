@@ -13,11 +13,12 @@ module Ai
       end
     end
 
-    REQUIRED_ATTRIBUTES = %w[user timestamp event].freeze
+    REQUIRED_ATTRIBUTES = %w[user user_id organization organization_id namespace_path timestamp event].freeze
 
     def initialize(attributes = {})
-      required_attributes = attributes.with_indifferent_access.slice(*::Ai::UsageEvent::REQUIRED_ATTRIBUTES)
-      payload_attributes = attributes.with_indifferent_access.slice(*self.class::PAYLOAD_ATTRIBUTES)
+      hash = attributes.with_indifferent_access
+      required_attributes = hash.slice(*::Ai::UsageEvent::REQUIRED_ATTRIBUTES)
+      payload_attributes = (hash[:payload] || {}).merge(hash.slice(*self.class::PAYLOAD_ATTRIBUTES))
 
       super(required_attributes.merge(payload: payload_attributes))
     end

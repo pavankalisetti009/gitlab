@@ -8,10 +8,17 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   let(:attributes) { { event: 'code_suggestion_shown_in_ide' } }
   let(:user) { build_stubbed(:user, :with_namespace) }
 
+  it { is_expected.to belong_to(:organization) }
+  it { is_expected.to belong_to(:user) }
+
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:user) }
+    it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
     it { is_expected.to validate_presence_of(:organization_id) }
+
+    it do
+      is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
+    end
   end
 
   describe '#timestamp', :freeze_time do

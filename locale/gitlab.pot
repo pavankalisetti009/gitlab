@@ -65197,6 +65197,9 @@ msgstr ""
 msgid "must be 254 characters or less."
 msgstr ""
 
+msgid "must be 3 months old at the most"
+msgstr ""
+
 msgid "must be a boolean value"
 msgstr ""
 

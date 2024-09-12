@@ -9,7 +9,7 @@ module Ai
     self.clickhouse_table_name = "code_suggestion_usages"
     self.primary_key = :id
 
-    partitioned_by :timestamp, strategy: :monthly
+    partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
 
     EVENTS = {
       'code_suggestions_requested' => 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
@@ -26,9 +26,11 @@ module Ai
     enum event: EVENTS
 
     belongs_to :user
+    belongs_to :organization, class_name: 'Organizations::Organization'
 
-    validates :user, :timestamp, :organization_id, presence: true
+    validates :user_id, :timestamp, :organization_id, presence: true
     validates :payload, json_schema: { filename: "code_suggestion_event" }
+    validate :validate_recent_timestamp, on: :create
 
     before_validation :populate_organization_id
 
@@ -43,7 +45,13 @@ module Ai
     private
 
     def populate_organization_id
-      self.organization_id = user&.namespace&.organization_id
+      self.organization_id = user.namespace&.organization_id if user
+    end
+
+    def validate_recent_timestamp
+      return unless timestamp && timestamp < self.class.partitioning_strategy.retain_for.ago
+
+      errors.add(:timestamp, _('must be 3 months old at the most'))
     end
   end
 end
