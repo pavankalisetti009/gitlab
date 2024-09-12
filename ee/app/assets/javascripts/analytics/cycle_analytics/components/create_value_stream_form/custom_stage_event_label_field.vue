@@ -135,7 +135,7 @@ export default {
           :header-text="$options.i18n.headerText"
           :searching="searching"
           :items="items"
-          @search="searchTerm = arguments[0]"
+          @search="searchTerm = $event"
         >
           <template #toggle>
             <gl-button
