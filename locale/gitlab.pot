@@ -60648,6 +60648,9 @@ msgstr ""
 msgid "Vulnerability|Unmodified response:"
 msgstr ""
 
+msgid "Vulnerability|Use AI to understand a vulnerability and suggest a fix"
+msgstr ""
+
 msgid "Vulnerability|View code flow"
 msgstr ""
 
