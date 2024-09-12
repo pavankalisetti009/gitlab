@@ -1,6 +1,6 @@
 ---
 name: project_topics_updated
-description: Event triggered when a project topics assignments are changed.
+description: Triggered when a project's topics assignments are changed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/343204
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154158
 feature_category: compliance_management

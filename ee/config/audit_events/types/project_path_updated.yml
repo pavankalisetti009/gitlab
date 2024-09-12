@@ -1,5 +1,6 @@
+---
 name: project_path_updated
-description: Event triggered on updating a project's path
+description: Triggered when a project's path is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369271
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/100770
 milestone: '15.5'

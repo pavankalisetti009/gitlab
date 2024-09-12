@@ -1,6 +1,6 @@
 ---
 name: project_resolve_outdated_diff_discussions_updated
-description: audit when project resolve outdated diff discussions setting is updated
+description: Triggered when a project's resolve outdated diff discussions setting is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369288
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106652
 milestone: '15.7'
