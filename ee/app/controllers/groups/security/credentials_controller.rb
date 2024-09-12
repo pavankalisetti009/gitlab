@@ -46,7 +46,7 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
 
   override :users
   def users
-    group.managed_users
+    group.enterprise_users
   end
 
   override :revocable

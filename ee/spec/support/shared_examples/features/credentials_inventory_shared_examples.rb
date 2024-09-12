@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.shared_examples_for 'credentials inventory personal access tokens' do
-  let_it_be(:user) { defined?(managed_user) ? managed_user : create(:user, name: 'abc') }
+  let_it_be(:user) { defined?(enterprise_user) ? enterprise_user : create(:user, name: 'abc') }
 
   context 'when a personal access token has an expiry' do
     let_it_be(:expiry_date) { 1.day.since.to_date.to_s }
@@ -53,7 +53,7 @@ RSpec.shared_examples_for 'credentials inventory personal access tokens' do
 end
 
 RSpec.shared_examples_for 'credentials inventory SSH keys' do
-  let_it_be(:user) { defined?(managed_user) ? managed_user : create(:user, name: 'abc') }
+  let_it_be(:user) { defined?(enterprise_user) ? enterprise_user : create(:user, name: 'abc') }
 
   context 'when a SSH key is active' do
     before_all do

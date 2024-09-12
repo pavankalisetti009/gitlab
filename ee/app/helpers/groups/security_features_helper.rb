@@ -11,9 +11,8 @@ module Groups::SecurityFeaturesHelper
   end
 
   def group_level_credentials_inventory_available?(group)
-    can?(current_user, :read_group_credentials_inventory, group) &&
-      group.licensed_feature_available?(:credentials_inventory) &&
-      group.enforced_group_managed_accounts?
+    Feature.enabled?(:group_credentials_inventory, group) &&
+      can?(current_user, :read_group_credentials_inventory, group)
   end
 
   def group_level_security_dashboard_data(group)
