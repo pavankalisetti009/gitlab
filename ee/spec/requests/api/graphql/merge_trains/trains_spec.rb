@@ -116,16 +116,17 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
   end
 
   context 'when the project does not have the required license' do
+    let(:result) { graphql_data_at(:project, :merge_trains, :nodes, :cars, :nodes) }
+
     before do
       stub_licensed_features(merge_trains: false)
+
+      create_merge_request_on_train(project: target_project, source_branch: 'branch-4', author: maintainer)
     end
 
-    it 'returns a resource not available error' do
+    it 'returns nil' do
       post_query
-      expect_graphql_errors_to_include(
-        "The resource that you are attempting to access does not exist " \
-          "or you don't have permission to perform this action"
-      )
+      expect(result).to be_nil
     end
   end
 
