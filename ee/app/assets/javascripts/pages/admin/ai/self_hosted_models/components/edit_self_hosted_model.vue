@@ -1,11 +1,12 @@
 <script>
 import { s__ } from '~/locale';
-import selfHostedModelCreateMutation from '../graphql/mutations/create_self_hosted_model.mutation.graphql';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import updateSelfHostedModelMutation from '../graphql/mutations/update_self_hosted_model.mutation.graphql';
 import { SELF_HOSTED_MODEL_MUTATIONS } from '../constants';
 import SelfHostedModelForm from './self_hosted_model_form.vue';
 
 export default {
-  name: 'NewSelfHostedModel',
+  name: 'EditSelfHostedModel',
   components: {
     SelfHostedModelForm,
   },
@@ -14,20 +15,29 @@ export default {
       type: String,
       required: true,
     },
+    model: {
+      type: Object,
+      required: true,
+    },
     modelOptions: {
       type: Array,
       required: true,
     },
   },
+  computed: {
+    modelData() {
+      return convertObjectPropsToCamelCase(this.model);
+    },
+  },
   i18n: {
-    title: s__('AdminSelfHostedModels|Add self-hosted models'),
+    title: s__('AdminSelfHostedModels|Edit self-hosted model'),
     description: s__(
-      'AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo features.',
+      'AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo features.',
     ),
   },
   mutationData: {
-    name: SELF_HOSTED_MODEL_MUTATIONS.CREATE,
-    mutation: selfHostedModelCreateMutation,
+    name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
+    mutation: updateSelfHostedModelMutation,
   },
 };
 </script>
@@ -38,9 +48,11 @@ export default {
       {{ $options.i18n.description }}
     </p>
     <self-hosted-model-form
+      :initial-form-values="modelData"
       :base-path="basePath"
       :model-options="modelOptions"
       :mutation-data="$options.mutationData"
+      :submit-button-text="s__('AdminSelfHostedModels|Edit self-hosted model')"
     />
   </div>
 </template>
