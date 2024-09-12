@@ -51,15 +51,6 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
 
             expect(data).to match_array([headers] + expected_result)
           end
-
-          it 'avoids N+1 queries' do
-            count = ActiveRecord::QueryRecorder.new { export }
-
-            create(:group_member, :owner, group: requested_group, user: create(:user))
-
-            expect { described_class.new(container: requested_group, current_user: current_user).execute }
-              .not_to exceed_query_limit(count).with_threshold(1)
-          end
         end
 
         let(:data) { CSV.parse(export.payload) }
@@ -68,6 +59,32 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
             user_data(0) + [group.full_path, 'Owner', 'direct', group.full_path] + member_data(group_owner_1),
             user_data(1) + [group.full_path, 'Maintainer', 'direct', group.full_path] + member_data(group_maintainer_2),
             user_data(2) + [group.full_path, 'Developer', 'direct', group.full_path] + member_data(group_developer_3)
+          ]
+        end
+
+        let(:group_project_1_members) do
+          [
+            user_data(0) + [group_project_1.full_path, 'Owner', 'inherited',
+              group.full_path] + member_data(group_owner_1),
+            user_data(1) + [group_project_1.full_path, 'Maintainer', 'inherited',
+              group.full_path] + member_data(group_maintainer_2),
+            user_data(2) + [group_project_1.full_path, 'Developer', 'inherited',
+              group.full_path] + member_data(group_developer_3),
+            user_data(4) + [group_project_1.full_path, 'Owner', 'direct',
+              group_project_1.full_path] + member_data(group_project_1_owner_5)
+          ]
+        end
+
+        let(:group_project_2_members) do
+          [
+            user_data(0) + [group_project_2.full_path, 'Owner', 'inherited',
+              group.full_path] + member_data(group_owner_1),
+            user_data(1) + [group_project_2.full_path, 'Maintainer', 'inherited',
+              group.full_path] + member_data(group_maintainer_2),
+            user_data(2) + [group_project_2.full_path, 'Developer', 'inherited',
+              group.full_path] + member_data(group_developer_3),
+            user_data(5) + [group_project_2.full_path, 'Owner', 'direct',
+              group_project_2.full_path] + member_data(group_project_2_owner_6)
           ]
         end
 
@@ -82,6 +99,23 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
               shared_group.full_path] + member_data(shared_maintainer_5),
             user_data(5) + [sub_group_1.full_path, 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_6)
+          ]
+        end
+
+        let(:sub_group_1_project_members) do
+          [
+            user_data(1) + [sub_group_1_project.full_path, 'Owner', 'inherited',
+              sub_group_1.full_path] + member_data(sub_group_1_owner_2),
+            user_data(0) + [sub_group_1_project.full_path, 'Owner', 'inherited',
+              group.full_path] + member_data(group_owner_1),
+            user_data(2) + [sub_group_1_project.full_path, 'Developer', 'inherited',
+              group.full_path] + member_data(group_developer_3),
+            user_data(4) + [sub_group_1_project.full_path, 'Developer', 'shared',
+              shared_group.full_path] + member_data(shared_maintainer_5),
+            user_data(5) + [sub_group_1_project.full_path, 'Developer', 'shared',
+              shared_group.full_path] + member_data(shared_maintainer_6),
+            user_data(3) + [sub_group_1_project.full_path, 'Maintainer', 'direct',
+              sub_group_1_project.full_path] + member_data(sub_group_1_project_maintainer_4)
           ]
         end
 
@@ -156,15 +190,56 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
             let(:requested_group) { group }
             let(:expected_result) do
               group_members + sub_group_1_members + sub_group_2_members +
-                sub_sub_group_1_members + sub_sub_sub_group_1_members
+                sub_sub_group_1_members + sub_sub_sub_group_1_members +
+                group_project_1_members + group_project_2_members + sub_group_1_project_members
             end
 
             it_behaves_like 'exporting correct data'
+
+            describe 'avoiding N+1 queries' do
+              it 'when new memberships for existing entities are created' do
+                count = ActiveRecord::QueryRecorder.new { export }
+
+                create(:group_member, :owner, group: requested_group, user: create(:user))
+                create(:project_member, :owner, project: group_project_1, user: create(:user))
+
+                expect { described_class.new(container: requested_group, current_user: current_user).execute }
+                  .not_to exceed_query_limit(count)
+              end
+
+              it 'when new memberships for a new group is added' do
+                count = ActiveRecord::QueryRecorder.new { export }
+
+                new_group = create(:group, parent: requested_group)
+                create(:group_member, :owner, group: new_group, user: users[5])
+
+                # additional queries: namespaces 2x, organizations + organization_users, routes 2x,
+                # users, projects, access levels, members
+                # some of the queries are "hidden" in GroupMembersFinder
+                expect { described_class.new(container: requested_group, current_user: current_user).execute }
+                  .not_to exceed_query_limit(count).with_threshold(10)
+              end
+
+              it 'when new memberships for a new project is added' do
+                count = ActiveRecord::QueryRecorder.new { export }
+
+                new_project = create(:project, group: requested_group)
+                create(:project_member, :owner, project: new_project, user: users[5])
+
+                # additional queries: users, routes 2x, project + authorizations, members
+                # most of the queries are "hidden" in MembersFinder
+                expect { described_class.new(container: requested_group, current_user: current_user).execute }
+                  .not_to exceed_query_limit(count).with_threshold(6)
+              end
+            end
           end
 
           context 'for subgroup' do
             let(:requested_group) { sub_group_1 }
-            let(:expected_result) { sub_group_1_members + sub_sub_group_1_members + sub_sub_sub_group_1_members }
+            let(:expected_result) do
+              sub_group_1_members + sub_sub_group_1_members + sub_sub_sub_group_1_members +
+                sub_group_1_project_members
+            end
 
             it_behaves_like 'exporting correct data'
           end

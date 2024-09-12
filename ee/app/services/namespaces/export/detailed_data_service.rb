@@ -12,7 +12,7 @@ module Namespaces
       private
 
       def data
-        GroupMembershipCollector.new(container, current_user).execute
+        MembershipCollector.new(container, current_user).execute
       end
 
       def header_to_value_hash
@@ -20,7 +20,7 @@ module Namespaces
           'Name' => ->(member) { member.name },
           'Username' => ->(member) { member.username },
           'Email' => ->(member) { member.email },
-          'Path' => ->(member) { member.group_path },
+          'Path' => ->(member) { member.membershipable_path },
           'Role' => ->(member) { member.role },
           'Membership type' => ->(member) { member.membership_type },
           'Membership source' => ->(member) { member.membership_source },
