@@ -474,6 +474,13 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'Security exclusions of the project.',
           resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver
+
+        field :security_exclusion,
+          ::Types::Security::ProjectSecurityExclusionType,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'A single security exclusion of a project.',
+          resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver.single
       end
 
       def tracking_key

@@ -8,11 +8,11 @@ RSpec.describe Security::ProjectSecurityExclusionsFinder, feature_category: :sec
 
   let(:exclusions) do
     {
-      inactive: create(:project_security_exclusion, project: project, active: false),
-      raw_value: create(:project_security_exclusion, project: project),
-      path: create(:project_security_exclusion, project: project, type: :path, value: 'spec/models/project_spec.rb'),
-      regex: create(:project_security_exclusion, project: project, type: :regex_pattern, value: 'SK[0-9a-fA-F]{32}'),
-      rule: create(:project_security_exclusion, project: project, type: :rule, value: 'gitlab_personal_access_token')
+      inactive: create(:project_security_exclusion, :with_raw_value, :inactive, project: project),
+      raw_value: create(:project_security_exclusion, :with_raw_value, project: project),
+      path: create(:project_security_exclusion, :with_path, project: project),
+      regex_pattern: create(:project_security_exclusion, :with_regex_pattern, project: project),
+      rule: create(:project_security_exclusion, :with_rule, project: project)
     }
   end
 
@@ -31,25 +31,31 @@ RSpec.describe Security::ProjectSecurityExclusionsFinder, feature_category: :sec
       before_all { project.add_maintainer(user) }
 
       context 'without filters' do
-        include_examples 'returns expected exclusions', [:rule, :regex, :raw_value, :path, :inactive]
+        include_examples 'returns expected exclusions', %i[rule regex_pattern raw_value path inactive]
+      end
+
+      context 'when filtering by id' do
+        let(:params) { { id: exclusions[:rule].id } }
+
+        include_examples 'returns expected exclusions', %i[rule]
       end
 
       context 'when filtering by security scanner' do
         let(:params) { { scanner: 'secret_push_protection' } }
 
-        include_examples 'returns expected exclusions', [:rule, :regex, :raw_value, :path, :inactive]
+        include_examples 'returns expected exclusions', %i[rule regex_pattern raw_value path inactive]
       end
 
       context 'when filtering by exclusion type' do
         let(:params) { { type: 'rule' } }
 
-        include_examples 'returns expected exclusions', [:rule]
+        include_examples 'returns expected exclusions', %i[rule]
       end
 
       context 'when filtering by exclusion status' do
         let(:params) { { active: true } }
 
-        include_examples 'returns expected exclusions', [:rule, :regex, :raw_value, :path]
+        include_examples 'returns expected exclusions', %i[rule regex_pattern raw_value path]
       end
     end
 

@@ -7,7 +7,7 @@ module Types
       graphql_name 'ProjectSecurityExclusion'
       description 'Represents a project-level security scanner exclusion'
 
-      field :id, GraphQL::Types::ID,
+      field :id, ::Types::GlobalIDType[::Security::ProjectSecurityExclusion],
         null: false,
         description: 'ID of the exclusion.'
 

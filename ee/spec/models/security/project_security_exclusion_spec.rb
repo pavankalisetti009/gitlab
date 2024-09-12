@@ -23,9 +23,9 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
 
   describe 'scopes' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:exclusion_1) { create(:project_security_exclusion, project: project) }
-    let_it_be(:exclusion_2) { create(:project_security_exclusion, project: project, active: false) }
-    let_it_be(:exclusion_3) { create(:project_security_exclusion, project: project, type: :path) }
+    let_it_be(:exclusion_1) { create(:project_security_exclusion, :with_raw_value, project: project) }
+    let_it_be(:exclusion_2) { create(:project_security_exclusion, :with_raw_value, :inactive, project: project) }
+    let_it_be(:exclusion_3) { create(:project_security_exclusion, :with_path, project: project) }
 
     describe '.by_scanner' do
       it 'returns the correct records' do
@@ -50,7 +50,7 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
   context 'with loose foreign key on project_security_exclusions.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:project) }
-      let_it_be(:model) { create(:project_security_exclusion, project: parent) }
+      let_it_be(:model) { create(:project_security_exclusion, :with_rule, project: parent) }
     end
   end
 end
