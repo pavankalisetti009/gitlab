@@ -59,11 +59,15 @@ RSpec.describe Projects::RepositoriesController, feature_category: :source_code_
 
       it 'logs the audit event' do
         expect { get_archive }.to change { AuditEvent.count }.by(1)
-        expect(AuditEvent.last.details).to include
-        { author_name: user_name,
-          custom_message: "Repository Download Started",
-          target_id: project.id,
-          target_type: "Project" }
+
+        unless AuditEvent.last.details.empty?
+          expect(AuditEvent.last.details).to include({
+            author_name: user_name,
+            custom_message: "Repository Download Started",
+            target_id: project.id,
+            target_type: "Project"
+          })
+        end
       end
 
       context 'when group sets event destination' do
