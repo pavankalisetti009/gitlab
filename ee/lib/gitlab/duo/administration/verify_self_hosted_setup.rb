@@ -27,12 +27,6 @@ module Gitlab
         def verify_environmental_variables!
           puts "Verifying environmental variables..."
 
-          unless ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'] == "1"
-            raise "Set 'CLOUD_CONNECTOR_SELF_SIGN_TOKENS' environmental variable to 1"
-          end
-
-          puts ">> CLOUD_CONNECTOR_SELF_SIGN_TOKENS set to 1 ✔"
-
           raise "Set 'AI_GATEWAY_URL' to point to your AI Gateway Instance" unless ai_gateway_url
 
           puts ">> 'AI_GATEWAY_URL' set to #{ai_gateway_url} ✔"
