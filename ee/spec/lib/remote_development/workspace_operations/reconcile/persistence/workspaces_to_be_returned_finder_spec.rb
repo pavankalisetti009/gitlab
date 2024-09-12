@@ -158,7 +158,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
 
     it "preserves existing context entries",
       :unlimited_max_formatted_output_length do
-      is_expected.to match(a_hash_including(context))
+      expect(returned_value).to eq(context.merge(workspaces_to_be_returned: expected_workspaces_to_be_returned))
     end
   end
 

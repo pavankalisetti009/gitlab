@@ -56,6 +56,7 @@ module RemoteDevelopment
     end
 
     scope :forced_to_include_all_resources, -> { where(force_include_all_resources: true) }
+    scope :by_names, ->(names) { where(name: names) }
     scope :by_user_ids, ->(ids) { where(user_id: ids) }
     scope :by_project_ids, ->(ids) { where(project_id: ids) }
     scope :by_agent_ids, ->(ids) { where(cluster_agent_id: ids) }

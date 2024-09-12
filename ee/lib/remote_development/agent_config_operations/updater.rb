@@ -66,7 +66,7 @@ module RemoteDevelopment
       # @param [Hash] config_from_agent_config_file
       # @return [RemoteDevelopment::WorkspacesAgentConfig]
       def self.find_or_initialize_workspaces_agent_config(agent:, config_from_agent_config_file:)
-        model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:todo CodeReuse/ActiveRecord -- Use a finder class here
+        model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:disable CodeReuse/ActiveRecord -- We don't want to use a finder, we want to use find_or_initialize_by because it's more concise
 
         normalized_config_from_file = config_from_agent_config_file.dup.to_h.transform_keys(&:to_sym)
 

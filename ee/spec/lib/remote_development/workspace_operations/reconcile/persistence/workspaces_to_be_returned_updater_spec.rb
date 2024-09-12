@@ -39,6 +39,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
     )
   end
 
+  let_it_be(:workspace4) do
+    create(
+      :workspace,
+      :without_realistic_after_create_timestamp_updates,
+      name: "workspace4",
+      agent: agent,
+      user: user,
+      force_include_all_resources: true
+    )
+  end
+
   let(:workspaces_to_be_returned) { [workspace1, workspace2, workspace3] }
 
   let(:context) do
@@ -90,6 +101,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
     it 'does not change force_include_all_resources for workspaces with false' do
       expect { returned_value }.not_to change { workspace1.reload.force_include_all_resources }
       expect { returned_value }.not_to change { workspace2.reload.force_include_all_resources }
+    end
+
+    it 'does not include workspaces which are not passed in workspaces_to_be_returned' do
+      expect(returned_value[:workspaces_to_be_returned]).not_to include(workspace4)
     end
   end
 end
