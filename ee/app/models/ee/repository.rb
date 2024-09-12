@@ -83,6 +83,13 @@ module EE
       log_geo_updated_event
     end
 
+    override :after_create
+    def after_create
+      super
+
+      project&.run_after_commit_or_now { ::Onboarding::ProgressTrackingWorker.perform_async(namespace_id, 'git_write') }
+    end
+
     # TODO: Refactor to avoid this case statement https://gitlab.com/gitlab-org/gitlab/-/issues/437929
     def log_geo_updated_event
       return unless ::Gitlab::Geo.primary?
