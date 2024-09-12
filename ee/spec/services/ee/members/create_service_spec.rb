@@ -445,8 +445,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
   context 'with block seat overages enabled', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:owner) { create(:user) }
-    let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
-
+    let_it_be_with_refind(:group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be_with_refind(:project) { create(:project, group: group) }
 
     before_all do
@@ -455,12 +454,15 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
+      stub_licensed_features(custom_roles: true)
       group.add_owner(owner)
       group.gitlab_subscription.update!(seats: 1)
       group.namespace_settings.update!(seat_control: :block_overages)
     end
 
-    it 'notifies the admin about the requested membership' do
+    it 'notifies the group owner about the rejected membership' do
+      params[:access_level] = ::Gitlab::Access::DEVELOPER
+
       notification_service = double
 
       expect(::NotificationService).to receive(:new).and_return(notification_service)
@@ -472,16 +474,10 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
     context 'when current user is the owner' do
       let_it_be(:owner) { user }
-      let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
-      let_it_be_with_refind(:project) { create(:project, group: group) }
 
-      let(:invites) { create(:user).id.to_s }
+      it 'does not notify the group owner about the rejected membership' do
+        params[:access_level] = ::Gitlab::Access::DEVELOPER
 
-      before do
-        group.namespace_settings.update!(seat_control: :block_overages)
-      end
-
-      it 'does not notify the admin about the requested membership' do
         expect(::NotificationService).not_to receive(:new)
 
         execute_service
@@ -491,11 +487,50 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     context 'with invited emails' do
       let(:invites) { ['email@example.com'] }
 
-      it 'removes invite emails from the seat check' do
+      it 'does not notify the owner of rejected email invites' do
+        params[:access_level] = ::Gitlab::Access::DEVELOPER
+
         expect(::NotificationService).not_to receive(:new)
 
         execute_service
       end
+    end
+
+    it 'adds guest users even if there are no seats available' do
+      expect { execute_service }.to change { project.members.count }.by(2)
+    end
+
+    it 'rejects members with a billable custom role when there are no seats available' do
+      custom_role = create(:member_role, namespace: group, base_access_level: Gitlab::Access::GUEST,
+        permissions: { remove_project: true })
+      params[:member_role_id] = custom_role.id
+
+      expect { execute_service }.not_to change { project.members.count }
+    end
+
+    it 'accepts members with a non-billable custom role when there are no seats available' do
+      custom_role = create(:member_role, namespace: group, base_access_level: Gitlab::Access::GUEST,
+        permissions: { read_code: true })
+      params[:member_role_id] = custom_role.id
+
+      expect { execute_service }.to change { project.members.count }.by(2)
+    end
+
+    it 'rejects members with a custom role from another namespace' do
+      other_group = create(:group)
+      custom_role = create(:member_role, namespace: other_group, base_access_level: Gitlab::Access::GUEST,
+        permissions: { read_code: true })
+      user = create(:user)
+      params[:member_role_id] = custom_role.id
+      params[:user_id] = user.id.to_s
+
+      result = execute_service
+
+      expect(project.members.count).to eq(1)
+      expect(result).to eq({
+        status: :error,
+        message: "#{user.username}: Member namespace must be in same hierarchy as custom role's namespace"
+      })
     end
   end
 
