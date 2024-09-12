@@ -73,8 +73,9 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         group.external_audit_event_destinations.create!(destination_url: 'http://example.com')
       end
 
-      it 'makes one HTTP call' do
+      it 'makes one HTTP call and logs the event type' do
         expect(Gitlab::HTTP).to receive(:post).once
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:audit_event_type, "event_type_filters_created")
 
         subject
       end
