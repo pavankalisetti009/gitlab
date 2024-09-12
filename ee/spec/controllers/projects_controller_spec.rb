@@ -731,6 +731,37 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'when spp_repository_pipeline_access is specified' do
+      subject(:request) { put :update, params: params }
+
+      let(:params) do
+        {
+          id: project,
+          namespace_id: project.namespace,
+          project: {
+            project_setting_attributes: {
+              spp_repository_pipeline_access: true
+            }
+          }
+        }
+      end
+
+      it 'does not update the setting' do
+        expect { request }.not_to change { project.reload.project_setting.spp_repository_pipeline_access }.from(false)
+      end
+
+      context 'with licensed feature' do
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+        end
+
+        it 'sets spp_repository_pipeline_access' do
+          expect { request }
+            .to change { project.reload.project_setting.spp_repository_pipeline_access }.from(false).to(true)
+        end
+      end
+    end
   end
 
   describe '#download_export', feature_category: :importers do
