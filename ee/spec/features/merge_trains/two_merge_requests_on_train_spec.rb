@@ -211,7 +211,7 @@ RSpec.describe 'Two merge requests on a merge train', feature_category: :merge_t
 
     it_behaves_like 'drops merge request 1 from the merge train' do
       let(:system_note) do
-        'removed this merge request from the merge train because the merge request is not mergeable. ' \
+        'removed this merge request from the merge train because the merge request is marked as draft. ' \
           '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
       end
     end

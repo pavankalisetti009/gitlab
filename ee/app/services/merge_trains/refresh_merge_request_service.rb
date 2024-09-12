@@ -34,9 +34,7 @@ module MergeTrains
         raise ProcessError, 'merge request is not on a merge train'
       end
 
-      if !merge_request.open? || merge_request.broken? || merge_request.draft?
-        raise ProcessError, "the merge request is not mergeable. [Learn more](#{learn_more_url})."
-      end
+      validate_merge_request!
 
       unless merge_train_car.previous_ref_sha.present?
         raise ProcessError, "the previous ref does not exist. [Learn more](#{learn_more_url})."
@@ -44,6 +42,20 @@ module MergeTrains
 
       if merge_train_car.pipeline_not_succeeded?
         raise ProcessError, "the pipeline did not succeed. [Learn more](#{learn_more_url})."
+      end
+    end
+
+    def validate_merge_request!
+      unless merge_request.open?
+        raise ProcessError, "the merge request is closed. [Learn more](#{learn_more_url})."
+      end
+
+      if merge_request.broken?
+        raise ProcessError, "the merge request is broken. [Learn more](#{learn_more_url})."
+      end
+
+      if merge_request.draft?
+        raise ProcessError, "the merge request is marked as draft. [Learn more](#{learn_more_url})."
       end
     end
 
