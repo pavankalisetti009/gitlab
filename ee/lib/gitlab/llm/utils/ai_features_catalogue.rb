@@ -28,8 +28,8 @@ module Gitlab
             prompt_class: nil,
             feature_category: :ai_abstraction_layer,
             execute_method: ::Llm::GenerateSummaryService,
-            maturity: :beta,
-            self_managed: false,
+            maturity: :ga,
+            self_managed: true,
             internal: false
           },
           summarize_review: {
