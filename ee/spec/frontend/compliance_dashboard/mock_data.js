@@ -338,6 +338,23 @@ export const createComplianceFrameworksTokenResponse = () => {
   };
 };
 
+const securityPolicyBlob = `---
+pipeline_execution_policy:
+- name: test
+  description: ''
+  enabled: true
+  pipeline_config_strategy: override_project_ci
+  content:
+    include:
+    - project: Commit451/commit451-security-policy-project
+      file: ".gitlab/security-policies/policy.yml"
+  policy_scope:
+    compliance_frameworks:
+    - id: 1
+  metadata:
+    compliance_pipeline_migration: true
+`;
+
 export const createComplianceFrameworksReportResponse = ({
   count = 1,
   projects = 0,
@@ -348,6 +365,19 @@ export const createComplianceFrameworksReportResponse = ({
       namespace: {
         id: 'gid://gitlab/Group/1',
         name: 'Gitlab Org',
+        securityPolicyProject: {
+          id: 'gid://gitlab/Project/20',
+          repository: {
+            blobs: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Blob/1',
+                  rawBlob: securityPolicyBlob,
+                },
+              ],
+            },
+          },
+        },
         complianceFrameworks: {
           pageInfo: mockPageInfo(),
           nodes: Array(count)

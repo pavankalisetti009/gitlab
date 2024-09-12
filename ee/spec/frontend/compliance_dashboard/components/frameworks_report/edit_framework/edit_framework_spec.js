@@ -129,6 +129,33 @@ describe('Edit Framework Form', () => {
     expect(wrapper.find('input[name="default"]').attributes('value')).toBe('true');
   });
 
+  describe('Security policies migration', () => {
+    it('passes hasMigratedPipeline prop to BasicInformationSection if relevant policy exists', async () => {
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [[getComplianceFrameworkQuery, createComplianceFrameworksReportResponse]],
+        routeParams: { id: 1 },
+      });
+
+      await waitForPromises();
+      expect(wrapper.findComponent(BasicInformationSection).props('hasMigratedPipeline')).toBe(
+        true,
+      );
+    });
+
+    it('does not pass hasMigratedPipeline prop to BasicInformationSection if relevant policy does not exists', async () => {
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [[getComplianceFrameworkQuery, createComplianceFrameworksReportResponse]],
+        /* id: 2 does not have attached policy, only id: 1 has */
+        routeParams: { id: 2 },
+      });
+
+      await waitForPromises();
+      expect(wrapper.findComponent(BasicInformationSection).props('hasMigratedPipeline')).toBe(
+        false,
+      );
+    });
+  });
+
   describe('Validation', () => {
     beforeEach(() => {
       wrapper = createComponent();

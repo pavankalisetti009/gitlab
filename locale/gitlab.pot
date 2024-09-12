@@ -14230,6 +14230,9 @@ msgstr ""
 msgid "ComplianceReport|Full target branch name"
 msgstr ""
 
+msgid "ComplianceReport|However, there is still a configured compliance pipeline that must be removed. Otherwise, the compliance pipeline will continue to take precedence over the new pipeline execution policy."
+msgstr ""
+
 msgid "ComplianceReport|Less than 2 approvers"
 msgstr ""
 
@@ -14254,6 +14257,9 @@ msgstr ""
 msgid "ComplianceReport|No violations found. Change search options and try again"
 msgstr ""
 
+msgid "ComplianceReport|Please remove the compliance pipeline configuration from the compliance framework so that the new pipeline execution policy can take precedence."
+msgstr ""
+
 msgid "ComplianceReport|Remove frameworks from selected projects"
 msgstr ""
 
@@ -14264,6 +14270,9 @@ msgid "ComplianceReport|Select at least one project to apply the bulk action"
 msgstr ""
 
 msgid "ComplianceReport|Select frameworks"
+msgstr ""
+
+msgid "ComplianceReport|This compliance framework's compliance pipeline has been migrated to a pipeline execution policy."
 msgstr ""
 
 msgid "ComplianceReport|Unable to load the compliance framework projects report. Refresh the page and try again."

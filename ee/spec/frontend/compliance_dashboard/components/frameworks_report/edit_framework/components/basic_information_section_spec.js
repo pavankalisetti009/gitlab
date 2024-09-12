@@ -103,27 +103,63 @@ describe('Basic information section', () => {
     expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(true);
   });
 
-  it('renders the maintenance-mode-alert', async () => {
-    const maintenanceAlert = findMaintenanceAlert();
-    const actionButton = findMigrationActionButton();
+  describe('maintenance mode alert', () => {
+    it('renders message about suggested migration when hasMigratedPipeline is false', async () => {
+      const maintenanceAlert = findMaintenanceAlert();
+      const actionButton = findMigrationActionButton();
 
-    expect(maintenanceAlert.exists()).toBe(true);
-    expect(maintenanceAlert.text()).toContain('Compliance pipelines are deprecated');
+      expect(maintenanceAlert.exists()).toBe(true);
+      expect(maintenanceAlert.text()).toContain('Compliance pipelines are deprecated');
 
-    expect(actionButton.text()).toContain('Create policy');
-    expect(actionButton.attributes('href')).toEqual(defaultProvides.pipelineExecutionPolicyPath);
+      expect(actionButton.text()).toContain('Create policy');
+      expect(actionButton.attributes('href')).toEqual(defaultProvides.pipelineExecutionPolicyPath);
 
-    jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
-    const pipelineYAMLPath = 'file.yaml@group/project';
-    const pipelineInput = wrapper.findByLabelText('Compliance pipeline configuration (optional)');
-    await pipelineInput.setValue(pipelineYAMLPath);
-    await waitForPromises();
+      jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
+      const pipelineYAMLPath = 'file.yaml@group/project';
+      const pipelineInput = wrapper.findByLabelText('Compliance pipeline configuration (optional)');
+      await pipelineInput.setValue(pipelineYAMLPath);
+      await waitForPromises();
 
-    expect(actionButton.text()).toContain('Migrate pipeline to a policy');
-    const urlParams = new URLSearchParams(actionButton.attributes('href').split('?')[1]);
-    expect(urlParams.get('path')).toBe(pipelineYAMLPath);
-    expect(urlParams.get('compliance_framework_name')).toBe(fakeFramework.name);
-    expect(urlParams.get('compliance_framework_id')).toBe(fakeFramework.id.toString());
+      expect(actionButton.text()).toContain('Migrate pipeline to a policy');
+      const urlParams = new URLSearchParams(actionButton.attributes('href').split('?')[1]);
+      expect(urlParams.get('path')).toBe(pipelineYAMLPath);
+      expect(urlParams.get('compliance_framework_name')).toBe(fakeFramework.name);
+      expect(urlParams.get('compliance_framework_id')).toBe(fakeFramework.id.toString());
+    });
+
+    it('renders message about completing migration when hasMigratedPipeline is true and we have previous pipeline', () => {
+      createComponent({
+        hasMigratedPipeline: true,
+        value: { ...fakeFramework, pipelineConfigurationFullPath: 'foo.yml@bar/baz' },
+      });
+
+      const maintenanceAlert = findMaintenanceAlert();
+      const actionButton = findMigrationActionButton();
+
+      expect(maintenanceAlert.exists()).toBe(true);
+      expect(actionButton.exists()).toBe(false);
+
+      expect(maintenanceAlert.text()).toContain(
+        `This compliance framework's compliance pipeline has been migrated to a pipeline execution policy`,
+      );
+    });
+
+    it('does not render message about completing migration when hasMigratedPipeline is true but we do not have previous pipeline', () => {
+      createComponent({
+        hasMigratedPipeline: true,
+        value: { ...fakeFramework, pipelineConfigurationFullPath: '' },
+      });
+
+      const maintenanceAlert = findMaintenanceAlert();
+      const actionButton = findMigrationActionButton();
+
+      expect(maintenanceAlert.exists()).toBe(true);
+      expect(actionButton.exists()).toBe(true);
+
+      expect(maintenanceAlert.text()).not.toContain(
+        `This compliance framework's compliance pipeline has been migrated to a pipeline execution policy`,
+      );
+    });
   });
 
   describe('when ff_compliance_pipeline_maintenance_mode feature flag is disabled', () => {

@@ -12,6 +12,17 @@ query getComplianceFrameworkWithPolicies(
   namespace(fullPath: $fullPath) {
     id
     name
+    securityPolicyProject {
+      id
+      repository {
+        blobs(paths: [".gitlab/security-policies/policy.yml"]) {
+          nodes {
+            id
+            rawBlob
+          }
+        }
+      }
+    }
     complianceFrameworks(
       id: $complianceFramework
       search: $search
