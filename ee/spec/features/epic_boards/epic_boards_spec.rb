@@ -407,6 +407,30 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
     end
   end
 
+  context "when user is navigating via keyboard" do
+    before do
+      stub_licensed_features(epics: true)
+
+      group.add_guest(user)
+      sign_in(user)
+      visit_epic_boards_page
+    end
+
+    it 'allows user to traverse cards forward and backward across board columns' do
+      click_button 'Epic3'
+
+      expect(page).to have_selector('button.board-card-button[data-col-index="0"]', focused: true)
+
+      send_keys :right
+
+      expect(page).to have_selector('button.board-card-button[data-col-index="1"]', focused: true)
+
+      send_keys :left
+
+      expect(page).to have_selector('button.board-card-button[data-col-index="0"]', focused: true)
+    end
+  end
+
   def visit_epic_boards_page
     visit group_epic_boards_path(group)
     wait_for_requests

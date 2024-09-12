@@ -70,6 +70,10 @@ export default {
       type: Object,
       required: true,
     },
+    rowIndex: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     const { userPreferences } = this.epic;
@@ -251,7 +255,7 @@ export default {
       data-testid="board-epic-lane-issues"
     >
       <issues-lane-list
-        v-for="list in lists"
+        v-for="(list, index) in lists"
         :key="`${list.id}-issues`"
         :list="list"
         :issues="getIssuesByList(list.id)"
@@ -264,6 +268,8 @@ export default {
         :can-admin-epic="canAdminEpic"
         :lists="lists"
         :total-issues-count="totalIssuesCountByListId[list.id]"
+        :row-index="rowIndex"
+        :column-index="index"
         @setFilters="$emit('setFilters', $event)"
       />
     </div>
