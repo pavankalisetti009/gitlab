@@ -201,6 +201,15 @@ export default {
       });
       this.$emit('change', rules);
     },
+    doesApprovalExists(rule) {
+      return this.approvalRules?.some((approver) => {
+        return (
+          (rule.type === 'user' && approver.user_id === rule.id) ||
+          (rule.type === 'group' && approver.group_id === rule.id) ||
+          approver.access_level === rule.accessLevel
+        );
+      });
+    },
     isGroupRule(rule) {
       return rule.type === 'group';
     },
@@ -226,6 +235,7 @@ export default {
     inheritanceTooltip: s__(
       'ProtectedEnvironments|If a group is invited to the current project, its parent and members inherit the permissions of the invited group.',
     ),
+    invalidFeedback: s__('ProtectedEnvironments|This rule already exists.'),
   },
 };
 </script>
@@ -316,13 +326,18 @@ export default {
               :id="approvalsId(index)"
               :value="approver.approvals"
               :disabled="approver.inputDisabled"
-              :state="isApprovalValid(approver.approvals)"
+              :state="isApprovalValid(approver.approvals) && !doesApprovalExists(approver)"
               :name="`approval-count-${approver.name}`"
               type="number"
               @input="updateApproverInfo(approver, $event)"
             />
             <template #invalid-feedback>
-              {{ $options.i18n.approvalsInvalid }}
+              <span v-if="doesApprovalExists(approver)">
+                {{ $options.i18n.invalidFeedback }}
+              </span>
+              <span v-else>
+                {{ $options.i18n.approvalsInvalid }}
+              </span>
             </template>
           </gl-form-group>
 

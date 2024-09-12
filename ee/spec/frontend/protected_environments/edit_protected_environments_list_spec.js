@@ -312,6 +312,10 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         expect(findAddApprovers().exists()).toBe(true);
       });
 
+      it('provides current rules list for the the access level dropdown', () => {
+        expect(findAddApprovers().props('approvalRules')).toBe(environment[APPROVER_RULE_KEY]);
+      });
+
       it('sends new rules to be added', async () => {
         mock.onPut().reply(HTTP_STATUS_OK);
 
