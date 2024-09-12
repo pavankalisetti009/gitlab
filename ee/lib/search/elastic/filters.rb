@@ -6,6 +6,14 @@ module Search
       class << self
         include ::Elastic::Latest::QueryContext::Aware
 
+        def by_search_level_and_membership(query_hash:, options:)
+          raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
+
+          query_hash = search_level_filter(query_hash: query_hash, options: options)
+
+          membership_filter(query_hash: query_hash, options: options)
+        end
+
         def by_source_branch(query_hash:, options:)
           source_branch = options[:source_branch]
           not_source_branch = options[:not_source_branch]
@@ -296,6 +304,7 @@ module Search
           end
         end
 
+        # deprecated - use by_search_level_and_membership
         def by_authorization(query_hash:, options:)
           user = options[:current_user]
           project_ids = options[:project_ids]
@@ -357,6 +366,96 @@ module Search
           return [] if !Ability.allowed?(current_user, :read_cross_project) && project_ids.size > 1
 
           project_ids
+        end
+
+        def project_ids_for_user(user, options)
+          return [] unless user
+
+          search_level = options.fetch(:search_level).to_sym
+          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+
+          projects = case search_level
+                     when :global
+                       authorized_projects
+                     when :group
+                       namespace_ids = options[:group_ids]
+                       projects = Project.in_namespace(namespace_ids)
+                       if !projects.id_not_in(authorized_projects).exists?
+                         projects
+                       else
+                         Project.from_union([
+                           authorized_projects.in_namespace(namespace_ids),
+                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
+                         ])
+                       end
+                     when :project
+                       project_ids = options[:project_ids]
+                       projects = Project.id_in(project_ids)
+                       if !projects.id_not_in(authorized_projects).exists?
+                         projects
+                       else
+                         authorized_projects.id_in(project_ids)
+                       end
+                     else
+                       raise ArgumentError, "Invalid search level: #{search_level}"
+                     end
+
+          features = Array.wrap(options[:features])
+          return projects.pluck_primary_key unless features.present?
+
+          project_ids_for_features(projects, user, features)
+        end
+
+        def traversal_ids_for_user(user, options)
+          return [] unless user
+
+          search_level = options.fetch(:search_level).to_sym
+          authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+
+          groups = case search_level
+                   when :global
+                     authorized_groups
+                   when :group
+                     namespace_ids = options[:group_ids]
+                     namespaces = Namespace.id_in(namespace_ids)
+                     if !namespaces.id_not_in(authorized_groups).exists?
+                       namespaces
+                     else
+                       namespaces.map do |namespace|
+                         authorized_groups.by_contains_all_traversal_ids(namespace.traversal_ids)
+                       end
+                     end
+                   when :project
+                     project_ids = options[:project_ids]
+                     namespace_ids = Project.id_in(project_ids).select(:namespace_id)
+                     namespaces = Namespace.id_in(namespace_ids)
+
+                     if !namespaces.id_not_in(authorized_groups).exists?
+                       namespaces
+                     else
+                       namespaces.map do |namespace|
+                         authorized_groups.by_traversal_ids(namespace.traversal_ids)
+                       end
+                     end
+                   else
+                     raise ArgumentError, "Invalid search_level: #{search_level}"
+                   end
+
+          Group.from_union(groups).map(&:elastic_namespace_ancestry)
+        end
+
+        def visibility_level_for_user(user)
+          if user && !user.external?
+            { terms: {
+              _name: context.name(:visibility_level, :public_and_internal),
+              visibility_level: [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
+            } }
+          else
+            { terms: {
+              _name: context.name(:visibility_level, :public),
+              visibility_level: [::Gitlab::VisibilityLevel::PUBLIC]
+            } }
+          end
         end
 
         def authorized_project_ids(current_user, scoped_project_ids)
@@ -610,37 +709,33 @@ module Search
         end
 
         def traversal_ids_ancestry_filter(query_hash, namespace_ancestry, options)
+          return {} unless options[:current_user] || namespace_ancestry.blank?
+
           context.name(:namespace) do
             add_filter(query_hash, :query, :bool, :filter) do
-              ancestry_filter(options[:current_user],
-                namespace_ancestry,
-                prefix: options.fetch(:traversal_ids_prefix, :traversal_ids)
-              )
+              {
+                bool: {
+                  should: ancestry_filter(namespace_ancestry,
+                    traversal_id_field: options.fetch(:traversal_ids_prefix, :traversal_ids)),
+                  minimum_should_match: 1
+                }
+              }
             end
           end
         end
 
-        def ancestry_filter(current_user, namespace_ancestry, prefix:)
-          return {} unless current_user
-          return {} if namespace_ancestry.blank?
-
+        def ancestry_filter(namespace_ancestry, traversal_id_field:)
           context.name(:ancestry_filter) do
-            filters = namespace_ancestry.map do |namespace_ids|
+            namespace_ancestry.map do |namespace_ids|
               {
                 prefix: {
-                  "#{prefix}": {
+                  "#{traversal_id_field}": {
                     _name: context.name(:descendants),
                     value: namespace_ids
                   }
                 }
               }
             end
-
-            {
-              bool: {
-                should: filters
-              }
-            }
           end
         end
 
@@ -649,6 +744,32 @@ module Search
             .id_in(project_ids)
             .filter_by_feature_visibility(feature, user)
             .pluck_primary_key
+        end
+
+        def project_ids_for_features(projects, user, features)
+          project_ids = projects.pluck_primary_key
+
+          [].tap do |allowed_ids|
+            features.each do |feature|
+              allowed_ids.concat(filter_ids_by_feature(project_ids, user, feature))
+              allowed_ids.concat(filter_project_ids_by_ability(projects, user, ability_to_access_feature(feature)))
+            end
+          end.uniq
+        end
+
+        def filter_project_ids_by_ability(projects, user, ability)
+          return [] if ability.nil? || user.blank?
+
+          projects.select do |project|
+            ::Authz::CustomAbility.allowed?(user, ability, project)
+          end.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord relation
+        end
+
+        def ability_to_access_feature(feature)
+          case feature&.to_sym
+          when :repository
+            :read_code
+          end
         end
 
         def find_labels_by_name(names, options)
@@ -678,6 +799,161 @@ module Search
           labels = LabelsFinder.new(nil, finder_params).execute(skip_authorization: true)
           labels.each_with_object(Hash.new { |h, k| h[k] = [] }) do |label, hash|
             hash[label.name] << label.id
+          end
+        end
+
+        def search_level_filter(query_hash:, options:)
+          user = options[:current_user]
+          search_level = options[:search_level].to_sym
+          namespace_ids = options[:group_ids]
+          project_ids = scoped_project_ids(user, options[:project_ids])
+
+          add_filter(query_hash, :query, :bool, :filter) do
+            context.name(:filters, :level, search_level) do
+              case search_level
+              when :global
+                nil # no-op
+              when :group
+                raise ArgumentError, 'No group_ids provided for group level search' if namespace_ids.empty?
+
+                namespaces = Namespace.id_in(namespace_ids)
+                traversal_ids = namespaces.map(&:elastic_namespace_ancestry)
+                { bool:
+                  { _name: context.name,
+                    minimum_should_match: 1,
+                    should: ancestry_filter(traversal_ids,
+                      traversal_id_field: options.fetch(:traversal_ids_prefix, :traversal_ids)) } }
+              when :project
+                raise ArgumentError, 'No project_ids provided for project level search' if project_ids.empty?
+
+                { bool:
+                  { _name: context.name,
+                    must: { terms: { project_id: project_ids } } } }
+              else
+                raise ArgumentError, "Invalid search level: #{search_level}"
+              end
+            end
+          end
+        end
+
+        def membership_filter(query_hash:, options:)
+          features = Array.wrap(options[:features])
+          user = options[:current_user]
+          search_level = options[:search_level].to_sym
+
+          add_filter(query_hash, :query, :bool, :filter) do
+            context.name(:filters, :permissions, search_level) do
+              permissions_filters = Search::Elastic::BoolExpr.new
+              add_visibility_level_filter(permissions_filters, user)
+              add_feature_visibility_filter(permissions_filters, features, user)
+
+              membership_filters = build_membership_filters(user, options, features)
+
+              should = [{ bool: permissions_filters.to_h }]
+              should << { bool: membership_filters.to_h } unless membership_filters.to_h.empty?
+
+              {
+                bool: {
+                  _name: context.name,
+                  should: should,
+                  minimum_should_match: 1
+                }
+              }
+            end
+          end
+        end
+
+        def add_visibility_level_filter(permissions_filters, user)
+          return if user&.can_read_all_resources?
+
+          add_filter(permissions_filters, :must) do
+            visibility_level_for_user(user)
+          end
+        end
+
+        def add_feature_visibility_filter(permissions_filters, features, user)
+          return if features.blank?
+
+          access_level_allowed = [::ProjectFeature::ENABLED]
+          access_context_name = :enabled
+          if user&.can_read_all_resources?
+            access_level_allowed << ::ProjectFeature::PRIVATE
+            access_context_name = :enabled_or_private
+          end
+
+          permissions_filters.minimum_should_match = 1
+          features.each do |feature|
+            add_filter(permissions_filters, :should) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", access_context_name),
+                  "#{feature}_access_level": access_level_allowed
+                }
+              }
+            end
+          end
+        end
+
+        def build_membership_filters(user, options, features)
+          membership_filters = Search::Elastic::BoolExpr.new
+          return membership_filters if user&.can_read_all_resources?
+
+          has_traversal_ids_filter = add_traversal_ids_filters(membership_filters, user, options)
+          has_project_ids_filter = add_project_ids_filters(membership_filters, user, options)
+
+          if (has_traversal_ids_filter || has_project_ids_filter) && features.present?
+            add_feature_access_level_filter(membership_filters, features)
+          end
+
+          membership_filters
+        end
+
+        def add_traversal_ids_filters(membership_filters, user, options)
+          traversal_ids = traversal_ids_for_user(user, options)
+          return false if traversal_ids.blank?
+
+          traversal_id_field_prefix = options.fetch(:traversal_ids_prefix, :traversal_ids)
+          membership_filters.minimum_should_match = 1
+          # ancestry_filter returns an array so add_filter cannot be used
+          membership_filters.should += ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field_prefix)
+
+          true
+        end
+
+        def add_project_ids_filters(membership_filters, user, options)
+          project_ids = project_ids_for_user(user, options)
+          return false if project_ids.blank?
+
+          membership_filters.minimum_should_match = 1
+          add_filter(membership_filters, :should) do
+            {
+              terms: {
+                _name: context.name(:project, :member),
+                project_id: project_ids
+              }
+            }
+          end
+
+          true
+        end
+
+        def add_feature_access_level_filter(membership_filters, features)
+          feature_access_level_filter = Search::Elastic::BoolExpr.new
+          feature_access_level_filter.minimum_should_match = 1
+          features.each do |feature|
+            add_filter(feature_access_level_filter, :should) do
+              {
+                terms: {
+                  _name: context.name(:"#{feature}_access_level", :enabled_or_private),
+                  "#{feature}_access_level": [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                }
+              }
+            end
+          end
+
+          membership_filters.minimum_should_match = 1
+          add_filter(membership_filters, :must) do
+            { bool: feature_access_level_filter.to_h }
           end
         end
       end

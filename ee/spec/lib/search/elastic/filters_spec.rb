@@ -1874,10 +1874,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
         it 'returns the expected query' do
           expected_filter = [
-            { bool: { should: [
-              { prefix: { traversal_ids:
-                { _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-" } } }
-            ] } }
+            { bool: {
+              minimum_should_match: 1,
+              should: [{
+                prefix: {
+                  traversal_ids: {
+                    _name: 'filters:namespace:ancestry_filter:descendants',
+                    value: "#{public_group.id}-"
+                  }
+                }
+              }]
+            } }
           ]
           expected_must_not = [
             { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
@@ -1894,10 +1901,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           it 'returns the expected query' do
             expected_filter = [
-              { bool: { should: [
-                { prefix: { foo:
-                  { _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-" } } }
-              ] } }
+              { bool: {
+                minimum_should_match: 1,
+                should: [{
+                  prefix: {
+                    foo: {
+                      _name: 'filters:namespace:ancestry_filter:descendants',
+                      value: "#{public_group.id}-"
+                    }
+                  }
+                }]
+              } }
             ]
             expected_must_not = [
               { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
@@ -1948,6 +1962,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it 'returns the expected query' do
             expected_filter = [
               { bool: {
+                minimum_should_match: 1,
                 should: [
                   { prefix: { traversal_ids: {
                     _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-"
@@ -1998,11 +2013,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             it 'returns the expected query' do
               expected_filter = [
                 { bool: {
-                  should: [
-                    { prefix: { foo: {
-                      _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-"
-                    } } }
-                  ]
+                  minimum_should_match: 1,
+                  should: [{
+                    prefix: {
+                      foo: {
+                        _name: 'filters:namespace:ancestry_filter:descendants',
+                        value: "#{public_group.id}-"
+                      }
+                    }
+                  }]
                 } }
               ]
               expected_must_not = [
@@ -2022,11 +2041,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             it 'returns the expected query' do
               expected_filter = [
                 { bool: {
-                  should: [
-                    { prefix: { traversal_ids: {
-                      _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-"
-                    } } }
-                  ]
+                  minimum_should_match: 1,
+                  should: [{
+                    prefix: {
+                      traversal_ids: {
+                        _name: 'filters:namespace:ancestry_filter:descendants',
+                        value: "#{public_group.id}-"
+                      }
+                    }
+                  }]
                 } }
               ]
               expected_must_not = [
@@ -2047,11 +2070,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
         it 'returns the expected query' do
           expected_filter = [
-            { bool: { should: [
-              { prefix:
-                { traversal_ids:
-                  { _name: 'filters:namespace:ancestry_filter:descendants', value: "#{public_group.id}-" } } }
-            ] } }
+            { bool: {
+              minimum_should_match: 1,
+              should: [{
+                prefix: {
+                  traversal_ids: {
+                    _name: 'filters:namespace:ancestry_filter:descendants',
+                    value: "#{public_group.id}-"
+                  }
+                }
+              }]
+            } }
           ]
           expected_must_not = [
             { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
@@ -2069,6 +2098,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it 'returns the expected query' do
             expected_filter = [
               { bool: {
+                minimum_should_match: 1,
                 should: [
                   { prefix:
                     { traversal_ids:
@@ -2092,6 +2122,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             it 'returns the expected query' do
               expected_filter = [
                 { bool: {
+                  minimum_should_match: 1,
                   should: [
                     { prefix:
                       { traversal_ids:
@@ -2415,7 +2446,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_type' do
+  describe '.by_type' do
     let(:options) { { doc_type: 'my_type' } }
 
     subject(:by_type) { described_class.by_type(query_hash: query_hash, options: options) }
@@ -2435,6 +2466,594 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it 'raises an exception' do
         expect { by_type }.to raise_exception(ArgumentError)
       end
+    end
+  end
+
+  describe '.by_search_level_and_membership' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:by_search_level_and_membership) do
+      described_class.by_search_level_and_membership(query_hash: query_hash, options: options)
+    end
+
+    let_it_be(:user_with_access) { create(:user) }
+
+    let_it_be(:grp_public) { create(:group, :public) }
+    let_it_be(:grp_public_prj_public) { create(:project, :public, group: grp_public) }
+    let_it_be(:grp_public_prj_internal) { create(:project, :internal, group: grp_public) }
+
+    let_it_be(:sub_grp_internal) { create(:group, :internal, parent: grp_public, developers: user_with_access) }
+    let_it_be(:sub_grp_internal_prj_internal) { create(:project, :internal, group: sub_grp_internal) }
+    let_it_be(:sub_grp_internal_prj_private) { create(:project, :private, group: sub_grp_internal) }
+
+    let_it_be(:sub_grp_private) { create(:group, :private, parent: grp_public) }
+    let_it_be(:sub_grp_private_prj_private) do
+      create(:project, :private, developers: user_with_access, group: sub_grp_private)
+    end
+
+    let_it_be(:grp_private) { create(:group, :private) }
+    let_it_be(:grp_private_prj_private) { create(:project, :private, group: grp_private) }
+    let_it_be(:grp_shared) { create(:group, :private, developers: user_with_access) }
+    let_it_be(:grp_shared_prj_private_link) do
+      create(:project_group_link, :reporter, project: grp_private_prj_private, group: grp_shared)
+    end
+
+    let_it_be(:grp_private_2) { create(:group, :private) }
+    let_it_be(:grp_private_2_prj_private) { create(:project, :private, group: grp_private_2) }
+    let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
+    let_it_be(:member) do
+      create(:group_member, :guest, member_role: role, user: user_with_access, source: grp_private_2)
+    end
+
+    let(:auth_projects) { [] }
+    let(:auth_groups) { [] }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    shared_examples 'a query filtered by search level and membership' do
+      it 'returns the expected query' do
+        expect(by_search_level_and_membership.dig(:query, :bool, :filter))
+          .to match(expected_access_filter)
+        expect(by_search_level_and_membership.dig(:query, :bool, :must)).to be_empty
+        expect(by_search_level_and_membership.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_search_level_and_membership.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when invalid search_level is provided' do
+      let(:options) do
+        {
+          current_user: nil,
+          project_ids: [],
+          group_ids: [],
+          search_level: :foobar,
+          features: [:issues, :repository]
+        }
+      end
+
+      it 'raises an error' do
+        expect { by_search_level_and_membership }.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'for global search' do
+      let(:search_level) { :global }
+      let(:options) do
+        {
+          current_user: user,
+          project_ids: [],
+          group_ids: [],
+          search_level: search_level,
+          features: [:issues, :repository]
+        }
+      end
+
+      context 'when user has no access' do
+        let_it_be(:user) { create(:user) }
+        let(:expected_access_filter) { [user_public_access_filter] }
+
+        it_behaves_like 'a query filtered by search level and membership'
+      end
+
+      context 'when user has access' do
+        let(:user) { user_with_access }
+        let(:auth_projects) { [grp_private_prj_private, sub_grp_private_prj_private] }
+        let(:auth_groups) { [grp_private_2, grp_shared, sub_grp_internal] }
+        let(:expected_access_filter) do
+          [
+            { bool:
+              { _name: 'filters:permissions:global',
+                should: [
+                  public_and_internal_and_enabled_filter,
+                  global_member_access_filter
+                ],
+                minimum_should_match: 1 } }
+          ]
+        end
+
+        it_behaves_like 'a query filtered by search level and membership'
+      end
+
+      context 'when user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+        let(:expected_access_filter) { [admin_public_access_filter] }
+
+        it_behaves_like 'a query filtered by search level and membership'
+      end
+
+      context 'when user is anonymous' do
+        let(:user) { nil }
+        let(:expected_access_filter) { [no_user_public_access_filter] }
+
+        it_behaves_like 'a query filtered by search level and membership'
+      end
+    end
+
+    context 'for group search' do
+      let(:search_level) { :group }
+      let(:options) do
+        {
+          current_user: user,
+          project_ids: [],
+          group_ids: groups.map(&:id),
+          search_level: search_level,
+          features: [:issues, :repository]
+        }
+      end
+
+      context 'when user has no access' do
+        let_it_be(:user) { create(:user) }
+        let(:expected_access_filter) { [group_filter, user_public_access_filter] }
+
+        where(:groups) do
+          [
+            [[ref(:grp_public)]],
+            [[ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private)]],
+            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_internal), ref(:grp_private)]],
+            [[ref(:sub_grp_private), ref(:grp_private)]],
+            [[ref(:grp_private)]],
+            [[ref(:grp_private_2)]]
+          ]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user has access' do
+        let(:user) { user_with_access }
+        let(:expected_access_filter) do
+          [group_filter].tap do |filters|
+            filters << if auth_projects.any? || auth_groups.any?
+                         member_with_access_filter
+                       else
+                         user_public_access_filter
+                       end
+          end
+        end
+
+        # rubocop:disable Layout/LineLength -- splitting the table syntax affects readability
+        where(:groups, :auth_projects, :auth_groups) do
+          [ref(:grp_public)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_internal)]
+          [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)] | []
+          [ref(:sub_grp_internal)] | [] | [ref(:sub_grp_internal)]
+          [ref(:grp_public), ref(:sub_grp_internal)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_internal)]
+          [ref(:sub_grp_internal), ref(:grp_private)] | [ref(:grp_private_prj_private)] | [ref(:sub_grp_internal)]
+          [ref(:sub_grp_private), ref(:grp_private)] | [ref(:sub_grp_private_prj_private), ref(:grp_private_prj_private)] | []
+          [ref(:grp_private)] | [ref(:grp_private_prj_private)] | []
+          [ref(:grp_private_2)] | [] | [ref(:grp_private_2)]
+        end
+        # rubocop:enable Layout/LineLength
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+        let(:expected_access_filter) { [group_filter, admin_public_access_filter] }
+
+        where(:groups) do
+          [
+            [[ref(:grp_public)]],
+            [[ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private)]],
+            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_internal), ref(:grp_private)]],
+            [[ref(:sub_grp_private), ref(:grp_private)]],
+            [[ref(:grp_private)]],
+            [[ref(:grp_private_2)]]
+          ]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user is anonymous' do
+        let(:user) { nil }
+        let(:expected_access_filter) { [group_filter, no_user_public_access_filter] }
+
+        where(:groups) do
+          [
+            [[ref(:grp_public)]],
+            [[ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private)]],
+            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_internal), ref(:grp_private)]],
+            [[ref(:sub_grp_private), ref(:grp_private)]],
+            [[ref(:grp_private)]],
+            [[ref(:grp_private_2)]]
+          ]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+    end
+
+    context 'for project search' do
+      let(:search_level) { :project }
+      let(:options) do
+        {
+          current_user: user,
+          project_ids: projects.map(&:id),
+          group_ids: groups.map(&:id),
+          search_level: search_level,
+          features: [:issues, :repository]
+        }
+      end
+
+      context 'when user has no access' do
+        let_it_be(:user) { create(:user) }
+        let(:expected_access_filter) { [project_filter, user_public_access_filter] }
+
+        where(:groups, :projects) do
+          [ref(:grp_public)] | [ref(:grp_public_prj_public)]
+          [ref(:grp_public)] | [ref(:grp_public_prj_internal)]
+          [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
+          [ref(:grp_private)] | [ref(:grp_private_prj_private)]
+          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:grp_public_prj_internal)]
+          [] | [ref(:sub_grp_private_prj_private)]
+          [] | [ref(:sub_grp_internal_prj_internal)]
+          [] | [ref(:grp_private_prj_private)]
+          [] | [ref(:grp_private_2_prj_private)]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user has access' do
+        let(:user) { user_with_access }
+        let(:expected_access_filter) do
+          [project_filter].tap do |filters|
+            filters << if auth_projects.any? || auth_groups.any?
+                         member_with_access_filter
+                       else
+                         user_public_access_filter
+                       end
+          end
+        end
+
+        where(:groups, :projects, :auth_projects, :auth_groups) do
+          [ref(:grp_public)] | [ref(:grp_public_prj_public)] | [] | []
+          [ref(:grp_public)] | [ref(:grp_public_prj_internal)] | [] | []
+          [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_private_prj_private)] | []
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)] | [] | [ref(:sub_grp_internal)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)] | [] | [ref(:sub_grp_internal)]
+          [ref(:grp_private)] | [ref(:grp_private_prj_private)] | [ref(:grp_private_prj_private)] | []
+          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)] | [] | [ref(:grp_private_2)]
+          [] | [ref(:grp_public_prj_internal)] | [] | []
+          [] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_private_prj_private)] | []
+          [] | [ref(:sub_grp_internal_prj_internal)] | [] | [ref(:sub_grp_internal)]
+          [] | [ref(:sub_grp_internal_prj_private)] | [] | [ref(:sub_grp_internal)]
+          [] | [ref(:grp_private_prj_private)] | [ref(:grp_private_prj_private)] | []
+          [] | [ref(:grp_private_2_prj_private)] | [] | [ref(:grp_private_2)]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+        let(:expected_access_filter) { [project_filter, admin_public_access_filter] }
+
+        where(:groups, :projects) do
+          [ref(:grp_public)] | [ref(:grp_public_prj_public)]
+          [ref(:grp_public)] | [ref(:grp_public_prj_internal)]
+          [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)]
+          [ref(:grp_private)] | [ref(:grp_private_prj_private)]
+          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:grp_public_prj_internal)]
+          [] | [ref(:sub_grp_private_prj_private)]
+          [] | [ref(:sub_grp_internal_prj_internal)]
+          [] | [ref(:sub_grp_internal_prj_private)]
+          [] | [ref(:grp_private_prj_private)]
+          [] | [ref(:grp_private_2_prj_private)]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+
+      context 'when user is anonymous' do
+        let(:user) { nil }
+        let(:expected_access_filter) { [project_filter, no_user_public_access_filter] }
+
+        where(:groups, :projects) do
+          [ref(:grp_public)] | [ref(:grp_public_prj_public)]
+          [ref(:grp_public)] | [ref(:grp_public_prj_internal)]
+          [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
+          [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)]
+          [ref(:grp_private)] | [ref(:grp_private_prj_private)]
+          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:grp_public_prj_internal)]
+          [] | [ref(:sub_grp_private_prj_private)]
+          [] | [ref(:sub_grp_internal_prj_internal)]
+          [] | [ref(:sub_grp_internal_prj_private)]
+          [] | [ref(:grp_private_prj_private)]
+          [] | [ref(:grp_private_2_prj_private)]
+        end
+
+        with_them do
+          it_behaves_like 'a query filtered by search level and membership'
+        end
+      end
+    end
+
+    def member_filter_for_namespace(namespace)
+      {
+        prefix: {
+          traversal_ids: {
+            _name: "filters:permissions:#{search_level}:ancestry_filter:descendants",
+            value: namespace.elastic_namespace_ancestry
+          }
+        }
+      }
+    end
+
+    def member_filter_for_projects(projects)
+      {
+        terms: {
+          _name: "filters:permissions:#{search_level}:project:member",
+          project_id: match_array(projects.map(&:id))
+        }
+      }
+    end
+
+    def user_public_access_filter
+      { bool: {
+        _name: "filters:permissions:#{search_level}",
+        should: [public_and_internal_and_enabled_filter],
+        minimum_should_match: 1
+      } }
+    end
+
+    def admin_public_access_filter
+      { bool: {
+        _name: "filters:permissions:#{search_level}",
+        should: [{
+          bool: {
+            should: contain_exactly(
+              {
+                terms: {
+                  _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
+                  issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
+                }
+              },
+              {
+                terms: {
+                  _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",
+                  repository_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
+                }
+              }
+            ),
+            minimum_should_match: 1
+          }
+        }],
+        minimum_should_match: 1
+      } }
+    end
+
+    def no_user_public_access_filter
+      { bool:
+        { _name: "filters:permissions:#{search_level}",
+          should: [public_filter],
+          minimum_should_match: 1 } }
+    end
+
+    def public_filter
+      {
+        bool: {
+          must: [
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:visibility_level:public",
+                visibility_level: contain_exactly(::Gitlab::VisibilityLevel::PUBLIC)
+              }
+            }
+          ],
+          should: contain_exactly(
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:issues_access_level:enabled",
+                issues_access_level: contain_exactly(::ProjectFeature::ENABLED)
+              }
+            },
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:repository_access_level:enabled",
+                repository_access_level: contain_exactly(::ProjectFeature::ENABLED)
+              }
+            }
+          ),
+          minimum_should_match: 1
+        }
+      }
+    end
+
+    def search_level_public_and_internal_access_filter
+      { bool:
+        { _name: "filters:permissions:#{search_level}",
+          should: [public_and_internal_and_enabled_filter],
+          minimum_should_match: 1 } }
+    end
+
+    def public_and_internal_and_enabled_filter
+      {
+        bool: {
+          must: [
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:visibility_level:public_and_internal",
+                visibility_level: contain_exactly(::Gitlab::VisibilityLevel::PUBLIC,
+                  ::Gitlab::VisibilityLevel::INTERNAL)
+              }
+            }
+          ],
+          should: contain_exactly(
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:issues_access_level:enabled",
+                issues_access_level: contain_exactly(::ProjectFeature::ENABLED)
+              }
+            },
+            {
+              terms: {
+                _name: "filters:permissions:#{search_level}:repository_access_level:enabled",
+                repository_access_level: contain_exactly(::ProjectFeature::ENABLED)
+              }
+            }
+          ),
+          minimum_should_match: 1
+        }
+      }
+    end
+
+    def project_filter
+      { bool:
+        { _name: 'filters:level:project',
+          must: { terms: { project_id: projects.map(&:id) } } } }
+    end
+
+    def group_filter
+      groups_filter = groups.map do |group|
+        {
+          prefix: {
+            traversal_ids: {
+              _name: 'filters:level:group:ancestry_filter:descendants',
+              value: group.elastic_namespace_ancestry
+            }
+          }
+        }
+      end
+
+      {
+        bool: {
+          _name: 'filters:level:group',
+          should: match_array(groups_filter),
+          minimum_should_match: 1
+        }
+      }
+    end
+
+    def member_with_access_filter
+      member_filter_array = []
+      auth_groups.map do |group|
+        member_filter_array << member_filter_for_namespace(group)
+      end
+      member_filter_array << member_filter_for_projects(auth_projects) if auth_projects.present?
+
+      {
+        bool: {
+          _name: "filters:permissions:#{search_level}",
+          minimum_should_match: 1,
+          should: contain_exactly(
+            public_and_internal_and_enabled_filter,
+            {
+              bool: {
+                must: [
+                  {
+                    bool: {
+                      should: contain_exactly(
+                        {
+                          terms: {
+                            _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
+                            issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
+                          }
+                        },
+                        {
+                          terms: {
+                            _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",
+                            repository_access_level: contain_exactly(::ProjectFeature::ENABLED,
+                              ::ProjectFeature::PRIVATE)
+                          }
+                        }
+                      ),
+                      minimum_should_match: 1
+                    }
+                  }
+                ],
+                should: match_array(member_filter_array),
+                minimum_should_match: 1
+              }
+            }
+          )
+        }
+      }
+    end
+
+    def global_member_access_filter
+      member_filter_array = auth_groups.map do |group|
+        member_filter_for_namespace(group)
+      end
+      member_filter_array << member_filter_for_projects(auth_projects) if auth_projects.present?
+
+      {
+        bool: {
+          must: [
+            {
+              bool: {
+                should: match_array([
+                  {
+                    terms: {
+                      _name: "filters:permissions:#{search_level}:issues_access_level:enabled_or_private",
+                      issues_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
+                    }
+                  },
+                  {
+                    terms: {
+                      _name: "filters:permissions:#{search_level}:repository_access_level:enabled_or_private",
+                      repository_access_level: contain_exactly(::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE)
+                    }
+                  }
+                ]),
+                minimum_should_match: 1
+              }
+            }
+          ],
+          should: match_array(member_filter_array),
+          minimum_should_match: 1
+        }
+      }
     end
   end
 end

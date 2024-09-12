@@ -27,7 +27,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     { options: { search_level: 'global', current_user: user, project_ids: :any } }
   end
 
-  it 'deletes a project with all nested objects and clears the index_status', :sidekiq_inline do
+  it 'deletes a project with all nested objects and clears the index_status', :sidekiq_inline, :enable_admin_mode do
     ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
 
     ensure_elasticsearch_index!
@@ -148,7 +148,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     end
   end
 
-  context 'when passed delete_project option of false', :sidekiq_inline do
+  context 'when passed delete_project option of false', :sidekiq_inline, :enable_admin_mode do
     it 'deletes only the nested objects and clears the index_status' do
       ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
 
@@ -195,7 +195,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     end
   end
 
-  context 'when passed project_only option of true', :sidekiq_inline do
+  context 'when passed project_only option of true', :sidekiq_inline, :enable_admin_mode do
     it 'deletes only the project objects' do
       allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
 

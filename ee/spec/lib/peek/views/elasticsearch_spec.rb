@@ -5,7 +5,7 @@ require 'spec_helper'
 # We don't want to interact with Elasticsearch in GitLab FOSS so we test
 # this in ee/ only. The code exists in FOSS and won't do anything.
 
-RSpec.describe Peek::Views::Elasticsearch, :elastic, :request_store do
+RSpec.describe Peek::Views::Elasticsearch, :elastic, :request_store, feature_category: :global_search do
   before do
     ::Gitlab::Instrumentation::ElasticsearchTransport.detail_store # Create store in redis
     allow(::Gitlab::PerformanceBar).to receive(:enabled_for_request?).and_return(true)
@@ -19,7 +19,8 @@ RSpec.describe Peek::Views::Elasticsearch, :elastic, :request_store do
 
     it 'includes performance details' do
       ::Gitlab::SafeRequestStore.clear!
-      project.repository.__elasticsearch__.elastic_search_as_found_blob('hello world')
+      project.repository.__elasticsearch__.elastic_search_as_found_blob('hello world',
+        options: { search_level: 'global' })
 
       expect(results[:calls]).to be > 0
       expect(results[:duration]).to be_kind_of(String)
