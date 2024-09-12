@@ -1,0 +1,30 @@
+code_generations:
+  title: Code Generation
+  main_feature: Code Suggestions
+  release_state: GA
+  compatible_llms:
+    - codegemma
+    - codellama
+    - codestral
+    - deepseekcoder
+    - mistral
+    - mixtral
+    - mixtral_8x22b
+code_completions:
+  title: Code Completion
+  release_state: GA
+  main_feature: Code Suggestions
+  compatible_llms:
+    - codegemma_2b
+    - codegemma_7b
+    - codellama_13b_code
+    - codestral
+    - deepseekcoder
+duo_chat:
+  title: Duo Chat
+  release_state: BETA
+  main_feature: Duo Chat
+  compatible_llms:
+    - mistral
+    - mixtral_8x22b
+    - mixtral

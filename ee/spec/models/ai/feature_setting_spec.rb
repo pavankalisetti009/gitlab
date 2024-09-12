@@ -29,7 +29,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     it { expect(feature_setting.provider_title).to eq('Disabled') }
   end
 
-  describe '#code_suggestions_self_hosted?' do
+  describe '.code_suggestions_self_hosted?' do
     where(:feature, :provider, :code_suggestions_self_hosted) do
       [
         [:code_generations, :self_hosted, true],
@@ -42,7 +42,9 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
 
     with_them do
       it 'returns whether code generations or completions are self hosted' do
-        create(:ai_feature_setting, feature: feature, provider: provider)
+        feature_setting = build(:ai_feature_setting, feature: feature, provider: provider)
+        allow(feature_setting).to receive(:compatible_llms).and_return(%w[mistral]) # skip model compatibility check
+        feature_setting.save!
 
         expect(described_class.code_suggestions_self_hosted?).to eq(code_suggestions_self_hosted)
       end
@@ -87,6 +89,149 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       expect(Gitlab::AiGateway).to receive(:cloud_connector_url).and_return(url)
 
       expect(build(:ai_feature_setting, provider: :vendored).base_url).to eq(url)
+    end
+  end
+
+  describe '#metadata' do
+    let(:feature_setting) { create(:ai_feature_setting) }
+
+    before do
+      allow(Ai::FeatureSetting::FEATURE_METADATA)
+        .to receive(:[]).with(feature_setting.feature.to_s)
+        .and_return(feature_metadata)
+    end
+
+    context 'when feature metadata exists' do
+      let(:feature_metadata) do
+        { 'title' => 'Duo Chat', 'main_feature' => 'duo_chat', 'compatible_llms' => ['mixtral_8x22b'],
+          'release_state' => 'BETA' }
+      end
+
+      it 'returns a FeatureMetadata object with correct attributes' do
+        metadata = feature_setting.metadata
+
+        expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
+        expect(metadata.title).to eq('Duo Chat')
+        expect(metadata.main_feature).to eq('duo_chat')
+        expect(metadata.compatible_llms).to eq(['mixtral_8x22b'])
+        expect(metadata.release_state).to eq('BETA')
+      end
+    end
+
+    context 'when feature metadata does not exist' do
+      let(:feature_metadata) { nil }
+
+      it 'returns a FeatureMetadata object with nil attributes' do
+        metadata = feature_setting.metadata
+
+        expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
+        expect(metadata.title).to be nil
+        expect(metadata.main_feature).to be nil
+        expect(metadata.compatible_llms).to be nil
+        expect(metadata.release_state).to be nil
+      end
+    end
+  end
+
+  describe '#compatible_self_hosted_models' do
+    let_it_be(:llm_names) { %w[codegemma_2b deepseekcoder mixtral codellama_13b_code] }
+    let_it_be(:models) do
+      llm_names.map do |llm_name|
+        create(:ai_self_hosted_model, name: "vllm_#{llm_name}", model: llm_name)
+      end
+    end
+
+    let(:feature_setting) { create(:ai_feature_setting, feature: :code_generations) }
+
+    before do
+      allow(Ai::FeatureSetting::FEATURE_METADATA)
+        .to receive(:[]).with(feature_setting.feature.to_s)
+        .and_return(feature_metadata)
+    end
+
+    context 'with compatible LLMs assigned to the feature' do
+      let(:feature_metadata) do
+        { 'title' => 'Code Generation', 'main_feature' => 'Code Suggestion',
+          'compatible_llms' => %w[deepseekcoder codellama_13b_code], 'release_state' => 'GA' }
+      end
+
+      it 'returns the compatible self-hosted models' do
+        expected_result = [models[1], models[3]]
+        expect(feature_setting.compatible_self_hosted_models).to match_array(expected_result)
+      end
+    end
+
+    context 'with no compatible LLMs assigned to the feature' do
+      let(:feature_metadata) do
+        { 'title' => 'Code Generation', 'main_feature' => 'Code Suggestion', 'compatible_llms' => [],
+          'release_state' => 'BETA' }
+      end
+
+      it 'returns all the self-hosted models' do
+        expect(feature_setting.compatible_self_hosted_models).to match_array(::Ai::SelfHostedModel.all)
+      end
+    end
+
+    context 'with no feature metadata' do
+      let(:feature_metadata) { nil }
+
+      it 'returns all the self-hosted models' do
+        expect(feature_setting.compatible_self_hosted_models).to match_array(::Ai::SelfHostedModel.all)
+      end
+    end
+  end
+
+  describe 'validation of self-hosted model' do
+    let(:feature_setting) { build(:ai_feature_setting, feature: :duo_chat) }
+    let(:self_hosted_model) { create(:ai_self_hosted_model) }
+
+    context 'when provider is not self_hosted' do
+      it 'does not add any errors' do
+        feature_setting.provider = :vendored
+        feature_setting.validate
+        expect(feature_setting.errors[:self_hosted_model]).to be_empty
+      end
+    end
+
+    context 'when provider is self_hosted' do
+      before do
+        feature_setting.provider = :self_hosted
+        feature_setting.self_hosted_model = self_hosted_model
+      end
+
+      context 'when compatible_llms is not present' do
+        it 'does not add any errors' do
+          allow(feature_setting).to receive(:compatible_llms).and_return([])
+          feature_setting.validate
+          expect(feature_setting.errors[:self_hosted_model]).to be_empty
+        end
+      end
+
+      context 'when compatible_llms is present' do
+        let(:compatible_llms) { %w[mistral mixtral_8x22b mixtral] }
+
+        before do
+          allow(feature_setting).to receive(:compatible_llms).and_return(compatible_llms)
+        end
+
+        context 'when self_hosted_model is compatible' do
+          it 'does not add any errors' do
+            self_hosted_model.model = :mistral
+            feature_setting.validate
+            expect(feature_setting.errors[:self_hosted_model]).to be_empty
+          end
+        end
+
+        context 'when self_hosted_model is not compatible' do
+          it 'adds an error message' do
+            incompatible_model = :codegemma_7b
+            self_hosted_model.model = incompatible_model
+            feature_setting.validate
+            expect(feature_setting.errors[:self_hosted_model])
+              .to include("Model #{incompatible_model} is incompatible with the #{feature_setting.title} feature")
+          end
+        end
+      end
     end
   end
 end
