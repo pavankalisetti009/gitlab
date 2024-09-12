@@ -3,7 +3,7 @@ export const mockSelfHostedModel = {
   name: 'mock-self-hosted-model',
   model: 'mixtral',
   endpoint: 'https://mock-endpoint.com',
-  hasApiToken: false,
+  apiToken: '',
 };
 
 export const mockSelfHostedModelsList = [

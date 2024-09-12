@@ -1,9 +1,11 @@
 <script>
 import { GlForm, GlButton, GlCollapsibleListbox, GlFormFields } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
 
 export default {
   name: 'SelfHostedModelForm',
@@ -12,6 +14,7 @@ export default {
     GlButton,
     GlCollapsibleListbox,
     GlFormFields,
+    InputCopyToggleVisibility,
   },
   props: {
     basePath: {
@@ -31,10 +34,15 @@ export default {
       type: Object,
       required: true,
     },
+    initialFormValues: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   i18n: {
     defaultError: s__(
-      'AdminSelfHostedModels|There was an error creating the self-hosted model. Please try again.',
+      'AdminSelfHostedModels|There was an error saving the self-hosted model. Please try again.',
     ),
     missingDeploymentNameError: s__('AdminSelfHostedModels|Please enter a deployment name.'),
     missingEndpointError: s__('AdminSelfHostedModels|Please enter an endpoint.'),
@@ -46,6 +54,9 @@ export default {
   },
   formId: 'self-hosted-model-form',
   data() {
+    const { name = '', model = '', endpoint = '', apiToken = '' } = this.initialFormValues;
+    const modelToUpperCase = model.toUpperCase();
+
     return {
       fields: {
         name: {
@@ -60,17 +71,19 @@ export default {
           label: s__('AdminSelfHostedModels|Endpoint'),
           validators: [formValidators.required(this.$options.i18n.missingEndpointError)],
         },
-        apiToken: {
-          label: s__('AdminSelfHostedModels|API Key (optional)'),
-        },
       },
-      formValues: {
-        name: '',
-        model: '',
-        endpoint: '',
-        apiToken: '',
+      baseFormValues: {
+        name,
+        endpoint,
+        model: modelToUpperCase,
       },
-      selectedModel: { modelValue: '', modelName: '' },
+      apiToken,
+      selectedModel: {
+        modelValue: model || '',
+        modelName:
+          this.modelOptions.find(({ modelValue }) => modelValue === model.toUpperCase())
+            ?.modelName || '',
+      },
       serverValidations: {},
       isSaving: false,
     };
@@ -87,10 +100,13 @@ export default {
     },
     hasValidInput() {
       return (
-        this.formValues.name !== '' &&
-        this.formValues.model !== '' &&
-        this.formValues.endpoint !== ''
+        this.baseFormValues.name !== '' &&
+        this.baseFormValues.model !== '' &&
+        this.baseFormValues.endpoint !== ''
       );
+    },
+    isEditing() {
+      return Boolean(this.initialFormValues.id);
     },
   },
   methods: {
@@ -99,12 +115,24 @@ export default {
 
       const { mutation } = this.mutationData;
 
+      const formValues = {
+        apiToken: this.apiToken,
+        ...this.baseFormValues,
+        ...(this.isEditing
+          ? {
+              id: convertToGraphQLId('Ai::SelfHostedModel', this.initialFormValues.id),
+            }
+          : {}),
+      };
+
       this.isSaving = true;
       try {
         const { data } = await this.$apollo.mutate({
           mutation,
           variables: {
-            input: { ...this.formValues },
+            input: {
+              ...formValues,
+            },
           },
         });
         if (data) {
@@ -131,7 +159,7 @@ export default {
     onSelect(model) {
       this.onInputField({ name: 'model' });
       this.selectedModel = this.modelOptions.find((item) => item.modelValue === model);
-      this.formValues.model = this.selectedModel.modelValue;
+      this.baseFormValues.model = this.selectedModel.modelValue;
     },
     // clears the validation error
     onInputField({ name }) {
@@ -177,12 +205,12 @@ export default {
 <template>
   <gl-form :id="$options.formId" class="gl-max-w-48" @submit.prevent="onSubmit">
     <gl-form-fields
-      v-model="formValues"
+      v-model="baseFormValues"
       :fields="fields"
       :form-id="$options.formId"
       :server-validations="serverValidations"
       @input-field="onInputField"
-      @submit="$emit('submit', formValues)"
+      @submit="$emit('submit', baseFormValues)"
     >
       <template #input(model)>
         <gl-collapsible-listbox
@@ -195,6 +223,14 @@ export default {
         />
       </template>
     </gl-form-fields>
+    <input-copy-toggle-visibility
+      v-model="apiToken"
+      :value="apiToken"
+      :label="s__('AdminSelfHostedModels|API Key (optional)')"
+      :initial-visibility="false"
+      :disabled="isSaving"
+      :show-copy-button="false"
+    />
     <div class="gl-pt-5">
       <gl-button
         type="submit"
