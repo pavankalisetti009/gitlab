@@ -19,6 +19,8 @@ module AuditEvents
       return if audit_event.nil?
 
       AuditEvents::ExternalDestinationStreamer.new(audit_operation, audit_event).stream_to_destinations
+
+      log_extra_metadata_on_done(:audit_event_type, audit_operation)
     end
 
     private
