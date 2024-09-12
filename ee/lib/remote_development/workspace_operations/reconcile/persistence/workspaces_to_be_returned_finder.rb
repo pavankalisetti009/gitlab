@@ -41,7 +41,6 @@ module RemoteDevelopment
                        .workspaces.desired_state_not_terminated
                        .or(agent.workspaces.actual_state_not_terminated)
                        .order_id_asc
-                       .all
             end
 
             # For a PARTIAL update, return:
