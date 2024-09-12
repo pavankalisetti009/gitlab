@@ -27,6 +27,7 @@ import {
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
   SORT_OPTIONS,
+  DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
@@ -72,7 +73,7 @@ export default {
         before: null,
       },
       filterOptions: {},
-      sort: null,
+      sort: DEFAULT_SORT_OPTION,
     };
   },
   apollo: {

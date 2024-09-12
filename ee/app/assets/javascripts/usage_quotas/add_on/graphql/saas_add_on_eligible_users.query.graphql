@@ -4,6 +4,7 @@ query getAddOnEligibleUsers(
   $fullPath: ID!
   $addOnType: GitlabSubscriptionsAddOnType!
   $addOnPurchaseIds: [GitlabSubscriptionsAddOnPurchaseID!]!
+  $sort: GitlabSubscriptionsUserSort!
   $search: String
   $first: Int
   $last: Int
@@ -14,6 +15,7 @@ query getAddOnEligibleUsers(
     id
     addOnEligibleUsers(
       addOnType: $addOnType
+      sort: $sort
       search: $search
       first: $first
       last: $last

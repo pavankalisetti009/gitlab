@@ -4,10 +4,11 @@ module GitlabSubscriptions
   class AddOnEligibleUsersFinder
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(group, add_on_type:, search_term: nil)
+    def initialize(group, add_on_type:, search_term: nil, sort: nil)
       @group = group
       @add_on_type = add_on_type
       @search_term = search_term
+      @sort = sort
     end
 
     def execute
@@ -23,12 +24,12 @@ module GitlabSubscriptions
                 .id_in(members.select(:user_id))
                 .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/426357")
 
-      search_term ? users.search(search_term) : users.ordered_by_id_desc
+      search_term ? users.search(search_term) : users.sort_by_attribute(sort)
     end
 
     private
 
-    attr_reader :group, :add_on_type, :search_term
+    attr_reader :group, :add_on_type, :search_term, :sort
 
     def member_relations
       [

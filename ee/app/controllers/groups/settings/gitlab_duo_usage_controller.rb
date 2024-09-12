@@ -10,6 +10,10 @@ module Groups
 
       include ::Nav::GitlabDuoUsageSettingsPage
 
+      before_action do
+        push_frontend_feature_flag(:enable_add_on_users_filtering, group)
+      end
+
       def index
         render_404 unless show_gitlab_duo_usage_menu_item?(group)
       end

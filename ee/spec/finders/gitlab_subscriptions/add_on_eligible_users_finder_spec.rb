@@ -144,5 +144,50 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
         expect(finder.execute).to match_array([user_2])
       end
     end
+
+    context 'when supplied a valid sort term' do
+      let_it_be(:user1) { create(:user, name: 'A User', last_activity_on: 1.day.ago) }
+      let_it_be(:user2) { create(:user, name: 'B User', last_activity_on: 2.days.ago) }
+      let_it_be(:user3) { create(:user, name: 'C User', last_activity_on: 3.days.ago) }
+      let(:finder) { described_class.new(root_namespace, add_on_type: :code_suggestions, sort: sort_term) }
+
+      before_all do
+        root_namespace.add_owner(user1)
+        subgroup.add_developer(user2)
+        subgroup.add_developer(user3)
+      end
+
+      context 'when sorting by name(ASC)' do
+        let(:sort_term) { 'name_asc' }
+
+        it 'filters the eligible users by search term' do
+          expect(finder.execute).to eq([user1, user2, user3])
+        end
+      end
+
+      context 'when sorting by name(DESC)' do
+        let(:sort_term) { 'name_desc' }
+
+        it 'filters the eligible users by search term' do
+          expect(finder.execute).to eq([user3, user2, user1])
+        end
+      end
+
+      context 'when sorting by last_activity(ASC)' do
+        let(:sort_term) { 'last_activity_on_asc' }
+
+        it 'filters the eligible users by search term' do
+          expect(finder.execute).to eq([user3, user2, user1])
+        end
+      end
+
+      context 'when sorting by last_activity(DESC)' do
+        let(:sort_term) { 'last_activity_on_desc' }
+
+        it 'filters the eligible users by search term' do
+          expect(finder.execute).to eq([user1, user2, user3])
+        end
+      end
+    end
   end
 end
