@@ -28,6 +28,7 @@ module Search
         pending: 0,
         initializing: 1,
         ready: 10,
+        orphaned: 230,
         pending_deletion: 240,
         failed: 255
       }
@@ -37,6 +38,12 @@ module Search
       scope :for_project_id, ->(project_id) { where(project_identifier: project_id) }
 
       scope :for_replica_id, ->(replica_id) { joins(:zoekt_index).where(zoekt_index: { zoekt_replica_id: replica_id }) }
+
+      scope :should_be_marked_as_orphaned, -> { where(project_id: nil).where.not(state: :orphaned) }
+
+      scope :should_be_deleted, -> do
+        where(state: [:orphaned, :pending_deletion])
+      end
 
       def self.create_tasks(project_id:, zoekt_index:, task_type:, perform_at:)
         project = Project.find_by_id(project_id)

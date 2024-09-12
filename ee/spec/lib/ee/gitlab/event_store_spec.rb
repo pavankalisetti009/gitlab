@@ -47,7 +47,9 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::Users::ActivityEvent,
         Sbom::SbomIngestedEvent,
         Search::Zoekt::IndexMarkedAsToDeleteEvent,
-        Search::Zoekt::OrphanedIndexEvent
+        Search::Zoekt::OrphanedIndexEvent,
+        Search::Zoekt::RepoMarkedAsToDeleteEvent,
+        Search::Zoekt::OrphanedRepoEvent
       ])
     end
   end

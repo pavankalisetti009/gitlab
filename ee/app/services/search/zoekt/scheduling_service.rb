@@ -17,6 +17,8 @@ module Search
         report_metrics
         index_should_be_marked_as_orphaned_check
         index_to_delete_check
+        repo_should_be_marked_as_orphaned_check
+        repo_to_delete_check
       ].freeze
 
       BUFFER_FACTOR = 3
@@ -369,6 +371,30 @@ module Search
             Gitlab::EventStore.publish(
               Search::Zoekt::IndexMarkedAsToDeleteEvent.new(
                 data: { index_ids: batch.pluck_primary_key }
+              )
+            )
+          end
+        end
+      end
+
+      def repo_should_be_marked_as_orphaned_check
+        execute_every 10.minutes, cache_key: :repo_should_be_marked_as_orphaned_check do
+          Search::Zoekt::Repository.should_be_marked_as_orphaned.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::OrphanedRepoEvent.new(
+                data: { zoekt_repo_ids: batch.pluck_primary_key }
+              )
+            )
+          end
+        end
+      end
+
+      def repo_to_delete_check
+        execute_every 10.minutes, cache_key: :repo_to_delete_check do
+          Search::Zoekt::Repository.should_be_deleted.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::RepoMarkedAsToDeleteEvent.new(
+                data: { zoekt_repo_ids: batch.pluck_primary_key }
               )
             )
           end

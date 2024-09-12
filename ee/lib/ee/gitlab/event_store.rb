@@ -156,6 +156,12 @@ module EE
 
           store.subscribe ::Search::Zoekt::IndexMarkedAsToDeleteEventWorker,
             to: ::Search::Zoekt::IndexMarkedAsToDeleteEvent
+
+          store.subscribe ::Search::Zoekt::OrphanedRepoEventWorker,
+            to: ::Search::Zoekt::OrphanedRepoEvent
+
+          store.subscribe ::Search::Zoekt::RepoMarkedAsToDeleteEventWorker,
+            to: ::Search::Zoekt::RepoMarkedAsToDeleteEvent
         end
       end
     end
