@@ -23741,6 +23741,9 @@ msgstr ""
 msgid "Full log"
 msgstr ""
 
+msgid "Function `labels` can only take a maximum of 10 parameters."
+msgstr ""
+
 msgid "GCP region configured"
 msgstr ""
 
