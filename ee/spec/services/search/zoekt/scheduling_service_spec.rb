@@ -634,4 +634,40 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         .with(expected_data)
     end
   end
+
+  describe '#repo_should_be_marked_as_orphaned_check' do
+    let(:task) { :repo_should_be_marked_as_orphaned_check }
+
+    it 'publishes an OrphanedRepoEvent with repositories that should be marked as orphaned' do
+      stubbed_orphaned_repos = Search::Zoekt::Repository.all
+
+      expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_marked_as_orphaned,
+        :each_batch).and_yield(stubbed_orphaned_repos)
+      expect(stubbed_orphaned_repos).to receive(:pluck_primary_key).and_return([1, 2, 3])
+
+      expected_data = { zoekt_repo_ids: [1, 2, 3] }
+
+      expect { execute_task }
+        .to publish_event(Search::Zoekt::OrphanedRepoEvent)
+        .with(expected_data)
+    end
+  end
+
+  describe '#repo_to_delete_check' do
+    let(:task) { :repo_to_delete_check }
+
+    it 'publishes an RepoMarkedAsToDeleteEvent with repos that should be deleted' do
+      stubbed_orphaned_repos = Search::Zoekt::Repository.all
+
+      expect(Search::Zoekt::Repository).to receive_message_chain(:should_be_deleted,
+        :each_batch).and_yield(stubbed_orphaned_repos)
+      expect(stubbed_orphaned_repos).to receive(:pluck_primary_key).and_return([4, 5, 6])
+
+      expected_data = { zoekt_repo_ids: [4, 5, 6] }
+
+      expect { execute_task }
+        .to publish_event(Search::Zoekt::RepoMarkedAsToDeleteEvent)
+        .with(expected_data)
+    end
+  end
 end
