@@ -138,7 +138,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-absolute gl-z-9999 -gl-mx-3" :style="rootStyle">
+  <div class="gl-absolute gl-z-3 -gl-mx-3" :style="rootStyle">
     <gl-button
       v-show="shouldShowButton"
       v-gl-tooltip
