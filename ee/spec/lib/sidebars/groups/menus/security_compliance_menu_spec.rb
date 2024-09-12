@@ -135,26 +135,24 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
     describe 'Credentials', :saas do
       let(:item_id) { :credentials }
 
-      context 'when credentials_inventory feature is enabled' do
+      context 'when credentials_inventory feature is not licensed' do
+        it { is_expected.to be_nil }
+      end
+
+      context 'when credentials_inventory feature is licensed' do
         before do
           stub_licensed_features(credentials_inventory: true)
         end
 
-        context 'when group magement is not enforced' do
-          specify { is_expected.to be_nil }
-        end
+        it_behaves_like 'menu access rights'
 
-        context 'when group magement is enforced' do
+        context 'when the feature flag is disabled' do
           before do
-            allow(group).to receive(:enforced_group_managed_accounts?).and_return(true)
+            stub_feature_flags(group_credentials_inventory: false)
           end
 
-          it_behaves_like 'menu access rights'
+          it { is_expected.to be_nil }
         end
-      end
-
-      context 'when credentials_inventory feature is not enabled' do
-        specify { is_expected.to be_nil }
       end
     end
 

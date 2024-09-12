@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Groups::Security::CredentialsController, :saas, feature_category: :user_management do
-  let_it_be(:group_with_managed_accounts) { create(:group_with_managed_accounts, :private) }
-  let_it_be(:managed_users) { create_list(:user, 2, :group_managed, managing_group: group_with_managed_accounts) }
-  let_it_be(:owner) { managed_users.first }
-  let_it_be(:maintainer) { managed_users.last }
-  let_it_be(:group_id) { group_with_managed_accounts.to_param }
+  let_it_be(:group) { create(:group, :private) }
+  let_it_be(:enterprise_users) { create_list(:enterprise_user, 2, enterprise_group: group) }
+  let_it_be(:owner) { enterprise_users.first }
+  let_it_be(:maintainer) { enterprise_users.last }
+  let_it_be(:group_id) { group.to_param }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: maintainer) }
 
   before do
@@ -15,8 +15,8 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
       allow(sso_enforcer).to receive(:active_session?).and_return(true)
     end
 
-    group_with_managed_accounts.add_owner(owner)
-    group_with_managed_accounts.add_maintainer(maintainer)
+    group.add_owner(owner)
+    group.add_maintainer(maintainer)
 
     login_as(owner)
   end
@@ -41,7 +41,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
 
           context 'filtering by type of credential' do
             before do
-              managed_users.each do |user|
+              enterprise_users.each do |user|
                 create(:personal_access_token, user: user)
               end
             end
@@ -50,7 +50,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
               it do
                 subject
 
-                expect(assigns(:credentials)).to match_array(PersonalAccessToken.where(user: managed_users))
+                expect(assigns(:credentials)).to match_array(PersonalAccessToken.where(user: enterprise_users))
               end
             end
 
@@ -86,7 +86,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
               let(:filter) { 'ssh_keys' }
 
               before do
-                managed_users.each do |user|
+                enterprise_users.each do |user|
                   create(:personal_key, user: user)
                 end
               end
@@ -94,7 +94,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
               it 'filters by ssh keys' do
                 subject
 
-                expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: managed_users))
+                expect(assigns(:credentials)).to match_array(Key.regular_keys.where(user: enterprise_users))
               end
             end
           end
@@ -140,7 +140,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
   describe 'DELETE #destroy' do
     let(:credentials_path) { group_security_credentials_path(filter: 'ssh_keys') }
 
-    it_behaves_like 'credentials inventory delete SSH key', group_managed_account: true
+    it_behaves_like 'credentials inventory delete SSH key', group_credentials_inventory: true
   end
 
   describe 'PUT #revoke' do
@@ -170,12 +170,12 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
       end
     end
 
-    context 'when `credentials_inventory` feature is enabled' do
+    context 'when `credentials_inventory` feature is enabled', :saas do
       before do
-        stub_licensed_features(credentials_inventory: true, group_saml: true)
+        stub_licensed_features(credentials_inventory: true, group_saml: true, domain_verification: true)
       end
 
-      context 'for a group that enforces group managed accounts' do
+      context 'for a group with enterprise users' do
         context 'for a user with access to view credentials inventory' do
           context 'non-existent personal access token specified' do
             let(:token_id) { 999999999999999999999999999999999 }

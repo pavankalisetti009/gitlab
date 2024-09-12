@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::SecurityFeaturesHelper do
+RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_management do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:group, refind: true) { create(:group) }
@@ -33,27 +33,41 @@ RSpec.describe Groups::SecurityFeaturesHelper do
     end
   end
 
-  describe '#group_level_credentials_inventory_available?' do
-    where(:credentials_inventory_feature_enabled, :enforced_group_managed_accounts, :read_group_credentials_inventory_permission, :result) do
-      true  | false | false | false
-      true  | true  | false | false
-      true  | false | true  | false
-      true  | true  | true  | true
-      false | false | false | false
-      false | false | false | false
-      false | false | true  | false
-      false | true  | true  | false
+  describe '#group_level_credentials_inventory_available?', :aggregate_failures, feature_category: :system_access do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:group_owner?, :saas?, :licensed?, :feature_flag_enabled?, :result) do
+      false | false | false | false | false
+      false | false | false | true  | false
+      false | false | true  | false | false
+      false | false | true  | true  | false
+      false | true  | false | false | false
+      false | true  | false | true  | false
+      false | true  | true  | false | false
+      false | true  | true  | true  | false
+      true  | false | false | false | false
+      true  | false | false | true  | false
+      true  | false | true  | false | false
+      true  | false | true  | true  | false
+      true  | true  | false | false | false
+      true  | true  | false | true  | false
+      true  | true  | true  | false | false
+      true  | true  | true  | true  | true
     end
+
+    subject { helper.group_level_credentials_inventory_available?(group) }
 
     with_them do
       before do
-        stub_licensed_features(credentials_inventory: credentials_inventory_feature_enabled)
-        allow(group).to receive(:enforced_group_managed_accounts?).and_return(enforced_group_managed_accounts)
-        allow(helper).to receive(:can?).with(user, :read_group_credentials_inventory, group).and_return(read_group_credentials_inventory_permission)
+        access_level = group_owner? ? :owner : :maintainer
+        group.add_member(user, access_level)
+        stub_licensed_features(credentials_inventory: licensed?)
+        stub_feature_flags(group_credentials_inventory: feature_flag_enabled?)
+        allow(helper).to receive(:can?).with(user, :read_group_credentials_inventory, group).and_call_original
       end
 
-      it 'returns the expected result' do
-        expect(helper.group_level_credentials_inventory_available?(group)).to eq(result)
+      context 'for user', saas: params[:saas?] do
+        it { is_expected.to eq(result) }
       end
     end
   end

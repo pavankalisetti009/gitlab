@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples_for 'credentials inventory delete SSH key' do |group_managed_account: false|
+RSpec.shared_examples_for 'credentials inventory delete SSH key' do |group_credentials_inventory: false|
   include AdminModeHelper
 
-  let_it_be(:user) { group_managed_account ? managed_users.last : create(:user, name: 'abc') }
+  let_it_be(:user) { group_credentials_inventory ? enterprise_users.last : create(:user, name: 'abc') }
   let_it_be(:ssh_key) { create(:personal_key, user: user) }
 
   let(:ssh_key_id) { ssh_key.id }
 
-  if group_managed_account
-    subject { delete group_security_credential_path(group_id: group_with_managed_accounts.to_param, id: ssh_key_id) }
+  if group_credentials_inventory
+    subject { delete group_security_credential_path(group_id: group.to_param, id: ssh_key_id) }
   else
     subject { delete admin_credential_path(id: ssh_key_id) }
   end
 
-  context 'admin user' do
+  context 'admin user', saas: group_credentials_inventory do
     before do
-      unless group_managed_account
+      unless group_credentials_inventory
         sign_in(admin)
         enable_admin_mode!(admin)
       end
@@ -24,7 +24,7 @@ RSpec.shared_examples_for 'credentials inventory delete SSH key' do |group_manag
 
     context 'when `credentials_inventory` feature is enabled' do
       before do
-        if group_managed_account
+        if group_credentials_inventory
           stub_licensed_features(credentials_inventory: true, group_saml: true)
         else
           stub_licensed_features(credentials_inventory: true)
