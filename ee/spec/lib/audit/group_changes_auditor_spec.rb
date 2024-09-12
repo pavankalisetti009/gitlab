@@ -7,6 +7,7 @@ RSpec.describe Audit::GroupChangesAuditor do
     let!(:user) { create(:user) }
     let!(:group) { create(:group, visibility_level: 0) }
     let(:foo_instance) { described_class.new(user, group) }
+    let_it_be(:audited_group_column_keys) { described_class::EVENT_NAME_PER_COLUMN.keys }
 
     before do
       stub_licensed_features(extended_audit_events: true, external_audit_events: true)
@@ -42,7 +43,7 @@ RSpec.describe Audit::GroupChangesAuditor do
 
       it 'creates an event when attributes change' do
         # Exclude special cases covered from above
-        columns = described_class::EVENT_NAME_PER_COLUMN.keys -
+        columns = audited_group_column_keys -
           described_class::COLUMN_HUMAN_NAME.keys - [:project_creation_level]
 
         columns.each do |column|
@@ -74,9 +75,7 @@ RSpec.describe Audit::GroupChangesAuditor do
       end
 
       it 'does not create event when there is no change in attribute value' do
-        columns = described_class::EVENT_NAME_PER_COLUMN.keys
-
-        columns.each do |column|
+        audited_group_column_keys.each do |column|
           group.update_attribute(column, group.attributes[column.to_s])
 
           expect(AuditEvents::AuditEventStreamingWorker).not_to receive(:perform_async)
@@ -84,26 +83,19 @@ RSpec.describe Audit::GroupChangesAuditor do
         end
       end
 
-      context 'when namespace setting is updated' do
-        context 'when experiment_features_enabled is changed' do
-          before do
-            stub_ee_application_setting(should_check_namespace_plan: true)
-            allow(group).to receive(:licensed_feature_available?).with(:experimental_features).and_return(true)
-            group.namespace_settings.update!(experiment_features_enabled: true)
-          end
+      it 'audits all the columns except the ones denylisted' do
+        columns_not_to_audit = %w[created_at updated_at id owner_id type avatar ldap_sync_status
+          ldap_sync_error ldap_sync_last_update_at ldap_sync_last_successful_update_at ldap_sync_last_sync_at
+          description_html parent_id cached_markdown_version runners_token file_template_project_id
+          saml_discovery_token runners_token_encrypted custom_project_templates_group_id auto_devops_enabled
+          extra_shared_runners_minutes_limit last_ci_minutes_notification_at last_ci_minutes_usage_notification_level
+          subgroup_creation_level max_pages_size max_artifacts_size default_branch_protection
+          max_personal_access_token_lifetime push_rule_id shared_runners_enabled
+          allow_descendants_override_disabled_shared_runners traversal_ids organization_id]
 
-          it 'creates an audit event' do
-            group.namespace_settings.update!(experiment_features_enabled: false)
+        columns_to_audit = audited_group_column_keys.map(&:to_s)
 
-            expect { foo_instance.execute }.to change { AuditEvent.count }.by(1)
-          end
-
-          it 'does not create audit event if the value is unchanged' do
-            group.namespace_settings.update!(experiment_features_enabled: true)
-
-            expect { foo_instance.execute }.not_to change(AuditEvent, :count)
-          end
-        end
+        expect(Group.columns.map(&:name) - columns_not_to_audit).to match_array(columns_to_audit)
       end
     end
   end
