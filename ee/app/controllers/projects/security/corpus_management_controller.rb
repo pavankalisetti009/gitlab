@@ -11,8 +11,7 @@ module Projects
 
       feature_category :fuzz_testing
 
-      def show
-      end
+      def show; end
     end
   end
 end

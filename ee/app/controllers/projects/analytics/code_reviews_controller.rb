@@ -16,8 +16,7 @@ module Projects
       feature_category :value_stream_management
       urgency :low
 
-      def index
-      end
+      def index; end
 
       def tracking_namespace_source
         project.namespace

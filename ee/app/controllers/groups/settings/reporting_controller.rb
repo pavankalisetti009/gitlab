@@ -11,8 +11,7 @@ module Groups
       feature_category :insider_threat
       urgency :low
 
-      def show
-      end
+      def show; end
 
       private
 

@@ -9,8 +9,7 @@ class Admin::PushRulesController < Admin::ApplicationController
 
   feature_category :source_code_management
 
-  def show
-  end
+  def show; end
 
   def update
     @push_rule.update(push_rule_params.merge(organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID))

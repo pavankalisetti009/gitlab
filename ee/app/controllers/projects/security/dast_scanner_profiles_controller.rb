@@ -12,8 +12,7 @@ module Projects
       feature_category :dynamic_application_security_testing
       urgency :low
 
-      def new
-      end
+      def new; end
 
       def edit
         @scanner_profile = @project

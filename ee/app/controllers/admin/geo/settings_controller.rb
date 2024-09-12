@@ -7,8 +7,7 @@ class Admin::Geo::SettingsController < Admin::ApplicationSettingsController
   feature_category :geo_replication
   urgency :low
 
-  def show
-  end
+  def show; end
 
   protected
 
