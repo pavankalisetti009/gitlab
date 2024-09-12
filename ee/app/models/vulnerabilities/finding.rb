@@ -64,7 +64,7 @@ module Vulnerabilities
       CWE-770
       CWE-1004
       CWE-1275
-    ].freeze
+    ].to_set.freeze
 
     paginates_per FINDINGS_PER_PAGE
 
