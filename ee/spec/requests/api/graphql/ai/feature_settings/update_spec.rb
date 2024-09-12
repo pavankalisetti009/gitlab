@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_models" do
+RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
