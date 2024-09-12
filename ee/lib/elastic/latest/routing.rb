@@ -10,6 +10,11 @@ module Elastic
       def routing_options(options)
         return {} if routing_disabled?(options)
 
+        if options[:root_ancestor_ids].present?
+          return { routing: build_routing(options[:root_ancestor_ids],
+            prefix: 'group') }
+        end
+
         ids = if options[:project_id]
                 [options[:project_id]]
               elsif options[:project_ids]

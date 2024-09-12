@@ -347,7 +347,6 @@ module Gitlab
       def work_item_scope_options
         base_options.merge(
           {
-            routing_disabled: true,
             klass: Issue, # For rendering the UI
             index_name: ::Search::Elastic::References::WorkItem.index,
             not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
