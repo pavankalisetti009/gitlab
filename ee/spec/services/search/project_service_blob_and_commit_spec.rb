@@ -36,6 +36,17 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
         let(:search) { 'initial' }
       end
 
+      context 'when search_query_authorization_refactor feature flag is false' do
+        before do
+          stub_feature_flags(search_query_authorization_refactor: false)
+        end
+
+        it_behaves_like 'search respects visibility' do
+          let(:scope) { 'blobs' }
+          let(:search) { '.gitmodules' }
+        end
+      end
+
       it_behaves_like 'search respects visibility' do
         let(:scope) { 'blobs' }
         let(:search) { '.gitmodules' }

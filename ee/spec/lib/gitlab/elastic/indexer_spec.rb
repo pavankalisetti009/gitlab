@@ -557,7 +557,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
       files = indexed_file_paths_for('file')
       expect(files).to include('small_file.txt', 'large_file.txt')
 
-      blobs = Repository.elastic_search('large_file', type: 'blob')[:blobs][:results].response
+      blobs = Repository.elastic_search('large_file', type: 'blob', options: { current_user: user, search_level: 'global' })[:blobs][:results].response
       large_file_blob = blobs.find do |blob|
         'large_file.txt' == blob['_source']['blob']['path']
       end
@@ -728,7 +728,8 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
   def indexed_file_paths_for(term)
     blobs = Repository.elastic_search(
       term,
-      type: 'blob'
+      type: 'blob',
+      options: { search_level: 'global', current_user: user }
     )[:blobs][:results].response
 
     blobs.map do |blob|

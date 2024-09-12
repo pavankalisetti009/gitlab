@@ -82,7 +82,7 @@ module Elastic
           filters << {
             terms: {
               _name: context.name(type, :related, :repositories),
-              (options[:project_id_field] || "#{type}.rid") => repository_ids
+              options[:project_id_field] || "#{type}.rid" => repository_ids
             }
           }
         end
@@ -305,11 +305,14 @@ module Elastic
           count_only: options[:count_only]
         )
 
-        # If there is a :current_user set in the `options`, we can assume
-        # we need to do a project visibility check.
-        #
-        # Note that `:current_user` might be `nil` for a anonymous user
-        if options.key?(:current_user)
+        if Feature.enabled?(:search_query_authorization_refactor, options[:current_user])
+          query_hash = ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash,
+            options: options)
+        elsif options.key?(:current_user)
+          # If there is a :current_user set in the `options`, we can assume
+          # we need to do a project visibility check.
+          #
+          # Note that `:current_user` might be `nil` for a anonymous user
           query_hash = context.name(:blob, :authorized) do
             authorization_filter(query_hash, options.merge(traversal_ids_prefix: :traversal_ids))
           end

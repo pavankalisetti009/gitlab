@@ -88,38 +88,54 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
   context 'blobs', :sidekiq_inline do
     let(:scope) { 'blobs' }
 
-    context 'filter by language' do
-      let_it_be(:project) { create(:project, :public, :repository, group: group) }
+    shared_examples 'a blob scoped search result' do
+      context 'filter by language' do
+        let_it_be(:project) { create(:project, :public, :repository, group: group) }
 
-      it_behaves_like 'search results filtered by language'
-    end
-
-    it_behaves_like 'namespace ancestry_filter for aggregations'
-
-    context 'filter by archived' do
-      before do
-        unarchived_project.repository.index_commits_and_blobs
-        archived_project.repository.index_commits_and_blobs
-
-        ensure_elasticsearch_index!
-
-        allow(Gitlab::Search::FoundBlob).to receive(:new).and_return(instance_double(Gitlab::Search::FoundBlob))
-
-        allow(Gitlab::Search::FoundBlob).to receive(:new)
-          .with(a_hash_including(project_id: unarchived_project.id, ref: unarchived_project.commit.id)).and_return(unarchived_result)
-
-        allow(Gitlab::Search::FoundBlob).to receive(:new)
-          .with(a_hash_including(project_id: archived_project.id, ref: archived_project.commit.id)).and_return(archived_result)
+        it_behaves_like 'search results filtered by language'
       end
 
-      let_it_be(:unarchived_project) { create(:project, :public, :repository, group: group) }
-      let_it_be(:archived_project) { create(:project, :archived, :repository, :public, group: group) }
+      context 'filter by archived' do
+        before do
+          unarchived_project.repository.index_commits_and_blobs
+          archived_project.repository.index_commits_and_blobs
 
-      let(:unarchived_result) { instance_double(Gitlab::Search::FoundBlob, project: unarchived_project) }
-      let(:archived_result) { instance_double(Gitlab::Search::FoundBlob, project: archived_project) }
-      let(:query) { 'something went wrong' }
+          ensure_elasticsearch_index!
 
-      include_examples 'search results filtered by archived', nil, nil
+          allow(Gitlab::Search::FoundBlob).to receive(:new).and_return(instance_double(Gitlab::Search::FoundBlob))
+
+          allow(Gitlab::Search::FoundBlob).to receive(:new)
+            .with(a_hash_including(project_id: unarchived_project.id, ref: unarchived_project.commit.id)).and_return(unarchived_result)
+
+          allow(Gitlab::Search::FoundBlob).to receive(:new)
+            .with(a_hash_including(project_id: archived_project.id, ref: archived_project.commit.id)).and_return(archived_result)
+        end
+
+        let_it_be(:unarchived_project) { create(:project, :public, :repository, group: group) }
+        let_it_be(:archived_project) { create(:project, :archived, :repository, :public, group: group) }
+
+        let(:unarchived_result) { instance_double(Gitlab::Search::FoundBlob, project: unarchived_project) }
+        let(:archived_result) { instance_double(Gitlab::Search::FoundBlob, project: archived_project) }
+        let(:query) { 'something went wrong' }
+
+        include_examples 'search results filtered by archived', nil, nil
+      end
+    end
+
+    context 'when search_query_authorization_refactor ff is false' do
+      before do
+        stub_feature_flags(search_query_authorization_refactor: false)
+      end
+
+      it_behaves_like 'a blob scoped search result'
+
+      it_behaves_like 'namespace ancestry_filter for aggregations'
+    end
+
+    it_behaves_like 'a blob scoped search result'
+
+    it_behaves_like 'namespace ancestry_filter for aggregations' do
+      let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
     end
   end
 
