@@ -202,6 +202,10 @@ module EE
       form_data[:promotion_management_available] = promotion_management_available.to_s
       if promotion_management_available
         form_data[:enable_member_promotion_management] = @application_setting[:enable_member_promotion_management].to_s
+        form_data[:can_disable_member_promotion_management] =
+          ::GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder.new(current_user)
+            .execute.empty?.to_s
+        form_data[:role_promotion_requests_path] = admin_role_promotion_requests_path
       end
 
       form_data

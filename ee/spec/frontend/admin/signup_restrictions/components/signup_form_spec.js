@@ -23,7 +23,12 @@ describe('Signup Form', () => {
 
   describe('form data', () => {
     beforeEach(() => {
-      mountComponent();
+      mountComponent({
+        injectedProps: {
+          canDisableMemberPromotionManagement: false,
+          rolePromotionRequestsPath: '',
+        },
+      });
     });
 
     it.each`

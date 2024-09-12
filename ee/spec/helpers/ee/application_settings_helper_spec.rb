@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
+  include Devise::Test::ControllerHelpers
   describe '.visible_attributes' do
     it 'contains personal access token parameters' do
       expect(visible_attributes).to include(*%i[max_personal_access_token_lifetime])
@@ -103,6 +104,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
 
   describe '.signup_form_data' do
     let_it_be(:application_setting) { build(:application_setting) }
+    let_it_be(:current_user) { build_stubbed(:admin) }
     let(:promotion_management_available) { true }
 
     before do
@@ -117,7 +119,9 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       it 'sets promotion_management_available and enable_member_promotion_management values' do
         is_expected.to match(hash_including({
           promotion_management_available: promotion_management_available.to_s,
-          enable_member_promotion_management: true.to_s
+          enable_member_promotion_management: true.to_s,
+          can_disable_member_promotion_management: true.to_s,
+          role_promotion_requests_path: '/admin/role_promotion_requests'
         }))
       end
 
