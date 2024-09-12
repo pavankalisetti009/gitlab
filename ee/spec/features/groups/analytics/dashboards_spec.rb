@@ -72,8 +72,6 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
         end
 
         it_behaves_like 'VSD renders as an analytics dashboard'
-        it_behaves_like 'renders link to the feedback survey'
-        it_behaves_like 'renders usage overview background aggregation not enabled alert'
       end
 
       context 'with valid custom configuration' do
@@ -88,14 +86,17 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
           visit_group_value_streams_dashboard(group, 'Custom VSD')
         end
 
-        it_behaves_like 'renders link to the feedback survey'
-
-        it 'renders custom title and description' do
+        it 'renders custom VSD' do
           within find_by_testid('dashboard-description') do |panel|
             expect(panel).to have_content _('VSD from fixture')
           end
           within find_by_testid('gridstack-grid') do |panel|
             expect(panel).to have_content _('Custom Panel 1')
+          end
+          within find_by_testid('vsd-feedback-survey') do |feedback_survey|
+            expect(feedback_survey).to be_visible
+            expect(feedback_survey).to have_content _("To help us improve the Value Stream Management Dashboard, " \
+              "please share feedback about your experience in this survey.")
           end
         end
 
