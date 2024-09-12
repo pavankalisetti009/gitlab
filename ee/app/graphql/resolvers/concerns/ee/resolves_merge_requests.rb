@@ -8,6 +8,8 @@ module EE
 
     def preloads
       super.tap do |h|
+        h[:approved] = [*approved_mergeability_check_preloads, *security_policy_evaluation_check_preloads]
+
         h[:mergeable] += [
           *approved_mergeability_check_preloads,
           *blocked_by_other_mrs_mergeability_check_preloads,
