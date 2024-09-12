@@ -119,14 +119,42 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
     end
 
     context 'when merge request is not in a mergeable state' do
-      before do
-        merge_request.update!(title: merge_request.draft_title)
+      context 'when merge request is a draft' do
+        before do
+          merge_request.update!(title: merge_request.draft_title)
+        end
+
+        it_behaves_like 'drops the merge request from the merge train' do
+          let(:expected_reason) do
+            'the merge request is marked as draft. ' \
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+          end
+        end
       end
 
-      it_behaves_like 'drops the merge request from the merge train' do
-        let(:expected_reason) do
-          'the merge request is not mergeable. ' \
-            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+      context 'when merge request is not open' do
+        before do
+          allow(merge_request).to receive(:open?).and_return(false)
+        end
+
+        it_behaves_like 'drops the merge request from the merge train' do
+          let(:expected_reason) do
+            'the merge request is closed. ' \
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+          end
+        end
+      end
+
+      context 'when merge request is broken' do
+        before do
+          allow(merge_request).to receive(:broken?).and_return(true)
+        end
+
+        it_behaves_like 'drops the merge request from the merge train' do
+          let(:expected_reason) do
+            'the merge request is broken. ' \
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+          end
         end
       end
     end
