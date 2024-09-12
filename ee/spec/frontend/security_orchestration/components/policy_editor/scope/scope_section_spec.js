@@ -330,6 +330,68 @@ describe('PolicyScope', () => {
         });
       });
 
+      describe('project level with policy group scope', () => {
+        it('does not renders group selector when SPP has linked items but flag is disabled', async () => {
+          await createComponentForSPP();
+
+          await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
+          expect(findScopeGroupSelector().exists()).toBe(false);
+        });
+
+        it('renders group selector when SPP has linked items', async () => {
+          await createComponentForSPP({
+            provide: {
+              glFeatures: {
+                policyGroupScopeProject: true,
+              },
+            },
+          });
+
+          await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
+          expect(findScopeGroupSelector().exists()).toBe(true);
+          expect(findScopeGroupSelector().props('fullPath')).toBe('gitlab-org');
+        });
+
+        it('selects policy group scope on project level for SPP', async () => {
+          await createComponentForSPP({
+            provide: {
+              glFeatures: {
+                policyGroupScopeProject: true,
+              },
+            },
+          });
+
+          await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
+          await findScopeGroupSelector().vm.$emit('changed', {
+            groups: {
+              including: [{ id: 1 }, { id: 2 }],
+            },
+          });
+
+          expect(wrapper.emitted('changed')).toEqual([
+            [{ projects: { excluding: [] } }],
+            [{ groups: { including: [] } }],
+            [{ groups: { including: [{ id: 1 }, { id: 2 }] } }],
+          ]);
+        });
+
+        it('does not renders group selector when SPP has no linked items but flag is enabled', async () => {
+          createComponent({
+            provide: {
+              namespaceType: NAMESPACE_TYPES.PROJECT,
+              glFeatures: {
+                policyGroupScopeProject: true,
+              },
+            },
+          });
+
+          await waitForPromises();
+
+          expect(findProjectScopeTypeDropdown().exists()).toBe(false);
+          expect(findPolicyScopeProjectText().text()).toBe('Apply this policy to current project.');
+        });
+      });
+
       describe('existing policy', () => {
         describe('no existing policy scope', () => {
           beforeEach(async () => {
@@ -619,6 +681,9 @@ describe('PolicyScope', () => {
 
         expect(findScopeProjectSelector().exists()).toBe(false);
         expect(findScopeGroupSelector().exists()).toBe(true);
+        expect(findScopeGroupSelector().props('fullPath')).toBe(
+          defaultAssignedPolicyProject.fullPath,
+        );
 
         findScopeGroupSelector().vm.$emit('changed', {
           groups: {
