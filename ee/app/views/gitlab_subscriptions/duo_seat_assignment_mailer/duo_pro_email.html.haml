@@ -1,4 +1,4 @@
-- code_suggestions_help_page_link = link_to('', help_page_url('user/project/repository/code_suggestions/index'), target: '_blank', rel: 'noopener noreferrer')
+- code_suggestions_help_page_link = link_to('', help_page_url('user/gitlab_duo/index', anchor: 'code-suggestions'), target: '_blank', rel: 'noopener noreferrer')
 - duo_chat_help_page_link = link_to('', help_page_url('user/gitlab_duo_chat/index'), target: '_blank', rel: 'noopener noreferrer')
 :css
   a {color: #A989F5 }
@@ -60,31 +60,31 @@
                   %table{ role: "presentation", style: "color: #ffffff; width: 540px" }
                     %tr
                       %td{ style: "vertical-align: top; padding: 0px 15px 20px 40px" }
-                        %a{ href: help_page_url('user/project/repository/code_suggestions/index') }
+                        %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'code-suggestions') }
                           %img{ alt: "Code Suggestions", src: image_url('duo_pro/code_suggestions_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/project/repository/code_suggestions/index') }
+                          %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'code-suggestions') }
                             = s_('CodeSuggestions|Code Suggestions')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Automatically generate new lines of code, including full functions, from single and multi-line comments as well as comment blocks')
                     %tr
                       %td{ style: "vertical-align: top; padding: 20px 15px 0px 40px" }
-                        %a{ href: help_page_url('user/gitlab_duo_chat/examples', anchor: "explain-selected-code") }
+                        %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'code-explanation') }
                           %img{ alt: "Code Explanations", src: image_url('duo_pro/code_explanations_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle; padding: 20px 15px 0px 0px" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/gitlab_duo_chat/examples', anchor: "explain-selected-code") }
+                          %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'code-explanation') }
                             = s_('CodeSuggestions|Code Explanations')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Helps you get up to speed quickly by explaining source code')
                     %tr
                       %td{ style: "vertical-align: top; padding: 20px 15px 20px 40px" }
-                        %a{ href: help_page_url('user/gitlab_duo_chat/examples', anchor: "write-tests-in-the-ide") }
+                        %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'test-generation') }
                           %img{ alt: "Test Generation", src: image_url('duo_pro/test_generation_feature_icon'), width: "60" }
                       %td{ align: "left", style: "vertical-align: middle; padding: 20px 15px 20px 0px" }
                         %h3{ style: "line-height: 20px; margin: 0;" }
-                          %a{ href: help_page_url('user/gitlab_duo_chat/examples', anchor: "write-tests-in-the-ide") }
+                          %a{ href: help_page_url('user/gitlab_duo/index', anchor: 'test-generation') }
                             = s_('CodeSuggestions|Test Generation')
                         %p{ style: "margin: 13px 0px" }
                           = s_('CodeSuggestions|Automate your repetitive tasks and catch bugs early')
@@ -93,7 +93,7 @@
               / border-based button purple
               %tr
                 %td{ align: "left", style: "padding: 10px 40px 30px 40px; font-family: 'Source Sans Pro', helvetica, arial, sans-serif;" }
-                  %a{ href: new_session_path(:user), style: "font-weight: bold; font-family: 'Source Sans Pro', helvetica, arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 3px;  border-top: 10px solid #7759c2; border-bottom: 10px solid #7759c2; border-right: 25px solid #7759c2; border-left: 25px solid #7759c2; background-color: #7759c2; display: inline-block;", target: "_blank", rel: "noopener noreferrer nofollow" }
+                  %a{ href: help_page_url('user/gitlab_duo/index'), style: "font-weight: bold; font-family: 'Source Sans Pro', helvetica, arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 3px;  border-top: 10px solid #7759c2; border-bottom: 10px solid #7759c2; border-right: 25px solid #7759c2; border-left: 25px solid #7759c2; background-color: #7759c2; display: inline-block;", target: "_blank", rel: "noopener noreferrer nofollow" }
                     = _('Get started')
               / /border-based button purple
 
