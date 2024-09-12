@@ -163,18 +163,6 @@ RSpec.describe Gitlab::Ci::Pipeline::JobsInjector, feature_category: :security_p
               )
             end
           end
-
-          context 'when feature flag "pipeline_execution_policy_suffix" is disabled' do
-            before do
-              stub_feature_flags(pipeline_execution_policy_suffix: false)
-            end
-
-            it 'injects the job with the same name' do
-              expect { inject }.to raise_error(
-                ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError, 'job names must be unique (test-job)'
-              )
-            end
-          end
         end
       end
     end

@@ -197,16 +197,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       YAML
     end
 
-    shared_examples_for 'duplicate job pipeline error' do |job_name|
-      it 'responds with error', :aggregate_failures do
-        expect(execute).to be_error
-        expect(execute.payload.errors.full_messages)
-          .to contain_exactly(
-            "Pipeline execution policy error: job names must be unique (#{job_name})"
-          )
-      end
-    end
-
     shared_examples_for 'suffixed job added into pipeline' do
       it 'keeps both project job and the policy job, adding suffix for the conflicting job name', :aggregate_failures do
         expect(execute).to be_success
@@ -312,15 +302,13 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
           }] })
       end
 
-      it_behaves_like 'duplicate job pipeline error', 'policy_job'
-    end
-
-    context 'when feature flag "pipeline_execution_policies_suffix" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_suffix: false)
+      it 'responds with error', :aggregate_failures do
+        expect(execute).to be_error
+        expect(execute.payload.errors.full_messages)
+          .to contain_exactly(
+            "Pipeline execution policy error: job names must be unique (policy_job)"
+          )
       end
-
-      it_behaves_like 'duplicate job pipeline error', 'policy_job'
     end
   end
 
