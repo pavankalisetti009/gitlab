@@ -181,10 +181,13 @@ export default {
   },
   computed: {
     assignedPolicyProjectPath() {
-      return this.assignedPolicyProject?.fullPath;
+      return this.isGroupLevel ? this.assignedPolicyProject?.fullPath : this.namespacePath;
     },
     showPolicyGroupScope() {
-      return this.glFeatures.policyGroupScope;
+      return (
+        this.glFeatures.policyGroupScope ||
+        (this.glFeatures.policyGroupScopeProject && this.hasMultipleProjectsLinked)
+      );
     },
     scopeItems() {
       return [
