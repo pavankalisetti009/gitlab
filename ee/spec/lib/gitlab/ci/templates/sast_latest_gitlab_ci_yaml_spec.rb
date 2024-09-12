@@ -154,7 +154,9 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
           'Python with disabled advanced SAST'     | { 'app.py' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
           'Ruby with disabled advanced SAST'       | { 'config/routes.rb' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
           'Javascript with disabled advanced SAST' | { 'app.js' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
-          'C# with disabled advanced SAST'         | { 'app.cs' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                          | %w[semgrep-sast]
+          'C# with disabled advanced SAST'         | { 'app.cs' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'Python with Static Reachability'        | { 'app.py' => '' }           | { 'STATIC_REACHABILITY_ENABLED' => 'true' }                  | %w[gitlab-static-reachability enrich-cdx-results semgrep-sast]
+          'Python with Static Reachability and advanced SAST' | { 'app.py' => '' } | { 'STATIC_REACHABILITY_ENABLED' => 'true', 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' } | %w[gitlab-static-reachability enrich-cdx-results gitlab-advanced-sast]
         end
 
         with_them do
