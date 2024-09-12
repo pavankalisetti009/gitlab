@@ -6,6 +6,11 @@ module Resolvers
       include Gitlab::Graphql::Authorize::AuthorizeResource
       include ::GitlabSubscriptions::CodeSuggestionsHelper
 
+      argument :sort,
+        type: Types::GitlabSubscriptions::UserSortEnum,
+        required: false,
+        description: 'Sort the user list.'
+
       argument :search,
         type: GraphQL::Types::String,
         required: false,
@@ -21,13 +26,14 @@ module Resolvers
 
       alias_method :namespace, :object
 
-      def resolve(add_on_type:, search: nil)
+      def resolve(add_on_type:, search: nil, sort: nil)
         authorize!(namespace)
 
         users = ::GitlabSubscriptions::AddOnEligibleUsersFinder.new(
           namespace,
           add_on_type: add_on_type,
-          search_term: search
+          search_term: search,
+          sort: sort
         ).execute
 
         offset_pagination(users)

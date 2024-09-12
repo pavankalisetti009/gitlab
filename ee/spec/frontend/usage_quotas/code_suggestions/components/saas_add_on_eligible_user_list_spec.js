@@ -24,6 +24,7 @@ import {
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
   SORT_OPTIONS,
+  DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   OPERATORS_IS,
@@ -57,7 +58,7 @@ describe('Add On Eligible User List', () => {
     last: null,
     after: null,
     before: null,
-    sort: null,
+    sort: DEFAULT_SORT_OPTION,
   };
 
   const defaultQueryVariables = {
@@ -305,6 +306,15 @@ describe('Add On Eligible User List', () => {
 
     beforeEach(() => {
       return createComponent();
+    });
+
+    it('fetches users list with the default sorting value', async () => {
+      await waitForPromises();
+
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        sort: DEFAULT_SORT_OPTION,
+      });
     });
 
     it('fetches users list matching the search term', async () => {
