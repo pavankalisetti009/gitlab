@@ -46,6 +46,9 @@ export default {
     },
   },
   computed: {
+    showGroupScope() {
+      return this.glFeatures.policyGroupScope || this.glFeatures.policyGroupScopeProject;
+    },
     isGroup() {
       return isGroup(this.namespaceType);
     },
@@ -85,7 +88,7 @@ export default {
       return this.policyHasProjects && this.showScopeSection;
     },
     showGroups() {
-      return policyScopeHasGroups(this.policyScope) && this.glFeatures.policyGroupScope;
+      return policyScopeHasGroups(this.policyScope) && this.showGroupScope;
     },
     showDefaultLabel() {
       return this.isDefaultMode && this.showScopeSection;

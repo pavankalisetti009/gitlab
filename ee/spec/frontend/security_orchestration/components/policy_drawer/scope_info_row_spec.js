@@ -17,6 +17,8 @@ describe('ScopeInfoRow', () => {
   let wrapper;
   let requestHandler;
 
+  const items = [{ id: 1 }, { id: 2 }];
+
   const createMockApolloProvider = (handler) => {
     Vue.use(VueApollo);
     requestHandler = handler;
@@ -130,8 +132,6 @@ describe('ScopeInfoRow', () => {
     });
 
     describe('group scope', () => {
-      const items = [{ id: 1 }, { id: 2 }];
-
       it('does not render group scope when ff is off', () => {
         createComponent({
           propsData: {
@@ -252,6 +252,31 @@ describe('ScopeInfoRow', () => {
       expect(findPolicyScopeProjectText().text()).toBe(
         'This policy is applied to current project.',
       );
+    });
+
+    it('renders group scope when groups and project exceptions are provided on project level', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+            excludingProjects: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          namaspaceType: NAMESPACE_TYPES.PROJECT,
+          glFeatures: {
+            policyGroupScope: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(true);
+      expect(findGroupsToggleList().props('groups')).toEqual(items);
+      expect(findGroupsToggleList().props('projects')).toEqual(items);
     });
   });
 });
