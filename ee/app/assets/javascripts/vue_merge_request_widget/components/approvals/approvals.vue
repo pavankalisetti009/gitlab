@@ -1,6 +1,7 @@
 <script>
 import Approvals from '~/vue_merge_request_widget/components/approvals/approvals.vue';
 import approvalsMixin from '~/vue_merge_request_widget/mixins/approvals';
+import assignReviewersActionButton from '../../mixins/assign_reviewers_action_button';
 import ApprovalsAuth from './approvals_auth.vue';
 import ApprovalsFooter from './approvals_footer.vue';
 
@@ -11,7 +12,7 @@ export default {
     ApprovalsAuth,
     ApprovalsFooter,
   },
-  mixins: [approvalsMixin],
+  mixins: [assignReviewersActionButton, approvalsMixin],
   props: {
     mr: {
       type: Object,
@@ -67,6 +68,7 @@ export default {
     :modal-id="modalId"
     :collapsed="collapsed"
     :has-all-approvals="hasAllApprovals"
+    :action-buttons="tertiaryActionsButtons"
     @toggle="toggleCollapsed"
   >
     <template v-if="!isBasic" #default="{ isApproving, approveWithAuth, hasApprovalAuthError }">

@@ -83,16 +83,36 @@ export default {
 
       return [
         {
-          key: 'code_owner',
-          label: __('Code Owners'),
-          rules: codeOwners,
+          key: 'required',
+          sections: [
+            {
+              key: 'regular',
+              label: __('Approval Rules'),
+              rules: regular.filter((r) => r.approvalsRequired),
+            },
+            {
+              key: 'code_owner',
+              label: __('Code Owners'),
+              rules: codeOwners.filter((r) => r.approvalsRequired),
+            },
+          ].filter(({ rules }) => rules.length),
         },
         {
-          key: 'regular',
-          label: __('Approval Rules'),
-          rules: regular,
+          key: 'optional',
+          sections: [
+            {
+              key: 'regular',
+              label: __('Approval Rules'),
+              rules: regular.filter((r) => !r.approvalsRequired),
+            },
+            {
+              key: 'code_owner',
+              label: __('Code Owners'),
+              rules: codeOwners.filter((r) => !r.approvalsRequired),
+            },
+          ].filter(({ rules }) => rules.length),
         },
-      ].filter(({ rules }) => rules.length);
+      ].filter(({ sections }) => sections.length);
     },
   },
 };
@@ -105,12 +125,14 @@ export default {
     <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
     <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
   </div>
-  <div v-else>
+  <div v-else class="!gl-p-0">
     <approval-rules
       v-for="group in mappedApprovalRules"
       :key="group.key"
       :reviewers="reviewers"
       :group="group"
+      @request-review="(data) => $emit('request-review', data)"
+      @remove-reviewer="(data) => $emit('remove-reviewer', data)"
     />
   </div>
 </template>

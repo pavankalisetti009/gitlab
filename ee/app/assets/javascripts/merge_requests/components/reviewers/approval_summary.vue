@@ -41,6 +41,18 @@ export default {
     },
   },
   inject: ['projectPath', 'issuableId', 'issuableIid', 'multipleApprovalRulesAvailable'],
+  props: {
+    hideIfOptional: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    shortText: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
   data() {
     return {
       mergeRequest: null,
@@ -69,7 +81,7 @@ export default {
         return s__('mrWidget|Approval is optional');
       }
 
-      if (this.rulesLeft.length) {
+      if (this.rulesLeft.length && !this.shortText) {
         return sprintf(
           n__(
             'Requires %{count} approval from %{names}.',
@@ -84,6 +96,10 @@ export default {
         );
       }
 
+      if (this.shortText) {
+        return n__('Requires %d approval', 'Requires %d approvals', this.approvalsLeft);
+      }
+
       return n__(
         'Requires %d approval from eligible users.',
         'Requires %d approvals from eligible users.',
@@ -95,11 +111,13 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="isLoading"
-    class="gl-animate-skeleton-loader gl-mt-3 gl-h-4 gl-w-full gl-rounded-base"
-  ></div>
-  <p v-else-if="mergeRequest" :class="{ 'text-muted': approvalsOptional }" class="gl-mb-0 gl-mt-3">
-    {{ approvalsLeftMessage }}
-  </p>
+  <div class="gl-flex gl-items-center">
+    <div v-if="isLoading" class="gl-animate-skeleton-loader gl-h-4 gl-w-full gl-rounded-base"></div>
+    <template v-else-if="mergeRequest && multipleApprovalRulesAvailable">
+      <p :class="{ 'text-muted': approvalsOptional }" class="gl-mb-0 gl-inline-block">
+        {{ approvalsLeftMessage }}
+      </p>
+      <slot></slot>
+    </template>
+  </div>
 </template>

@@ -1,18 +1,32 @@
 <script>
-import { GlButton, GlSprintf, GlTableLite } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import ReviewerDropdown from '~/merge_requests/components/reviewers/reviewer_dropdown.vue';
 import EmptyRuleApprovers from 'ee/approvals/components/rules/empty_rule_approvers.vue';
+import UncollapsedReviewerList from '~/sidebar/components/reviewers/uncollapsed_reviewer_list.vue';
+import userPermissionsQuery from '~/merge_requests/components/reviewers/queries/user_permissions.query.graphql';
 import { RULE_TYPE_ANY_APPROVER, RULE_TYPE_CODE_OWNER } from 'ee/approvals/constants';
 
 export default {
+  apollo: {
+    userPermissions: {
+      query: userPermissionsQuery,
+      variables() {
+        return {
+          fullPath: this.projectPath,
+          iid: this.issuableIid,
+        };
+      },
+      update: (data) => data.project?.mergeRequest?.userPermissions || {},
+    },
+  },
   components: {
     GlButton,
-    GlSprintf,
-    GlTableLite,
     ReviewerDropdown,
     EmptyRuleApprovers,
+    UncollapsedReviewerList,
   },
+  inject: ['projectPath', 'issuableIid'],
   props: {
     group: {
       type: Object,
@@ -25,24 +39,21 @@ export default {
   },
   data() {
     return {
-      showingOptional: false,
+      userPermissions: {},
+      showApprovalSections: this.group.key !== 'optional',
     };
   },
   computed: {
-    filteredRules() {
-      return this.group.rules
-        .filter(({ approvalsRequired }) => {
-          return this.showingOptional ? true : approvalsRequired;
-        })
-        .sort((a, b) => b.approvalsRequired - a.approvalsRequired);
-    },
-    optionalRulesLength() {
-      return this.group.rules.filter(({ approvalsRequired }) => !approvalsRequired).length;
+    relativeUrlRoot() {
+      return gon.relative_url_root ?? '';
     },
   },
   methods: {
-    toggleOptionalRules() {
-      this.showingOptional = !this.showingOptional;
+    mappedRules(rules) {
+      return rules.map((rule) => ({
+        ...rule,
+        reviewers: this.reviewersForApprovalRule(rule),
+      }));
     },
     getApprovalsLeftText(rule) {
       return sprintf(__('%{approvals} of %{approvalRequired}'), {
@@ -50,75 +61,113 @@ export default {
         approvalRequired: rule.approvalsRequired,
       });
     },
+    reviewersForApprovalRule(rule) {
+      return this.reviewers.filter((r) =>
+        r.mergeRequestInteraction.applicableApprovalRules.find((a) => a.id === rule.id),
+      );
+    },
+    toggleApprovalSections() {
+      this.showApprovalSections = !this.showApprovalSections;
+    },
   },
-  fields: [
-    {
-      key: 'rule_name',
-      thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-60p',
-      class: '!gl-px-0 !gl-pr-4 !gl-py-4 gl-break-words',
-    },
-    {
-      key: 'rule_approvals',
-      thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-30p',
-      class: '!gl-px-0 !gl-py-4',
-    },
-    {
-      key: 'dropdown',
-      label: '',
-      thClass: '!gl-border-t-0 w-30p',
-      class: '!gl-px-0 !gl-py-4',
-    },
-  ],
   ANY_APPROVER: RULE_TYPE_ANY_APPROVER.toUpperCase(),
   CODE_OWNERS: RULE_TYPE_CODE_OWNER.toUpperCase(),
 };
 </script>
 
 <template>
-  <div class="gl-mb-2">
-    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0 gl-table-fixed">
-      <template #head(rule_name)>{{ group.label }}</template>
-      <template #head(rule_approvals)>{{ __('Approvals') }}</template>
-
-      <template #cell(rule_name)="{ item }">
-        <empty-rule-approvers
-          v-if="item.type === $options.ANY_APPROVER"
-          popover-id="sidebar-pop-approver"
-          popover-container-id="sidebar-popover-container"
-        />
-        <template v-else>
-          <span
-            v-if="item.section && item.section !== 'codeowners'"
-            class="gl-block"
-            data-testid="section-name"
-          >
-            {{ item.section }}
-          </span>
-          <span :class="{ 'gl-text-sm gl-font-monospace': item.type === $options.CODE_OWNERS }">
-            {{ item.name }}
-          </span>
-        </template>
-      </template>
-      <template #cell(rule_approvals)="{ item }">{{ getApprovalsLeftText(item) }}</template>
-      <template #cell(dropdown)="{ item }">
-        <div class="gl-flex gl-justify-end">
-          <reviewer-dropdown :selected-reviewers="reviewers" :users="item.eligibleApprovers" />
-        </div>
-      </template>
-    </gl-table-lite>
-    <div v-if="optionalRulesLength" class="gl-border-b gl-py-3">
+  <div>
+    <div
+      v-if="group.key === 'optional'"
+      class="gl-border-b-1 gl-border-b-gray-100 gl-px-5 gl-py-3 gl-border-b-solid"
+    >
       <gl-button
         category="tertiary"
         size="small"
-        :icon="showingOptional ? 'chevron-up' : 'chevron-right'"
+        :icon="showApprovalSections ? 'chevron-down' : 'chevron-right'"
         data-testid="optional-rules-toggle"
-        @click="toggleOptionalRules(group)"
+        @click="toggleApprovalSections"
       >
-        <gl-sprintf :message="__('%{count} optional %{label}.')">
-          <template #count>{{ optionalRulesLength }}</template>
-          <template #label>{{ group.label.toLowerCase() }}</template>
-        </gl-sprintf>
+        {{ __('Optional approvals') }}
       </gl-button>
     </div>
+    <template v-if="showApprovalSections">
+      <table
+        v-for="section in group.sections"
+        :key="section.key"
+        class="!gl-mb-0 gl-w-full gl-table-fixed"
+      >
+        <thead>
+          <tr class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid">
+            <th class="w-60p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-secondary">
+              {{ section.label }}
+            </th>
+            <th class="w-30p gl-px-5 gl-py-3 gl-text-sm gl-font-semibold gl-text-secondary">
+              {{ __('Approvals') }}
+            </th>
+            <th class="w-30p gl-px-5 gl-py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-for="rule in mappedRules(section.rules)">
+            <tr
+              :key="rule.id"
+              class="gl-border-b-1 gl-bg-gray-10"
+              :class="{
+                'gl-border-b-gray-100 gl-border-b-solid': !rule.reviewers.length,
+              }"
+            >
+              <td class="gl-px-5 gl-py-3">
+                <empty-rule-approvers
+                  v-if="rule.type === $options.ANY_APPROVER"
+                  popover-id="sidebar-pop-approver"
+                  popover-container-id="sidebar-popover-container"
+                />
+                <template v-else>
+                  <span
+                    v-if="rule.section && rule.section !== 'codeowners'"
+                    class="gl-block"
+                    data-testid="section-name"
+                  >
+                    {{ rule.section }}
+                  </span>
+                  <span
+                    :class="{ 'gl-text-sm gl-font-monospace': rule.type === $options.CODE_OWNERS }"
+                  >
+                    {{ rule.name }}
+                  </span>
+                </template>
+              </td>
+              <td class="gl-px-5 gl-py-3">
+                {{ getApprovalsLeftText(rule) }}
+              </td>
+              <td class="gl-px-5 gl-py-3">
+                <div class="gl-flex gl-justify-end">
+                  <reviewer-dropdown
+                    :selected-reviewers="reviewers"
+                    :users="rule.eligibleApprovers"
+                  />
+                </div>
+              </td>
+            </tr>
+            <tr
+              v-if="rule.reviewers.length"
+              :key="`${rule.id}-reviewers`"
+              class="gl-border-b-1 gl-border-b-gray-100 gl-bg-gray-10 gl-border-b-solid"
+            >
+              <td colspan="3" class="gl-px-5 gl-pb-3">
+                <uncollapsed-reviewer-list
+                  :users="rule.reviewers"
+                  :root-path="relativeUrlRoot"
+                  :is-editable="userPermissions.adminMergeRequest"
+                  @request-review="(data) => $emit('request-review', data)"
+                  @remove-reviewer="(data) => $emit('remove-reviewer', data)"
+                />
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </template>
   </div>
 </template>

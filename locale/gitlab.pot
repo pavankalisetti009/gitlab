@@ -685,14 +685,6 @@ msgid_plural "%{count} Participants"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%{count} Reviewer"
-msgid_plural "%{count} Reviewers"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "%{count} Reviewers"
-msgstr ""
-
 msgid "%{count} approval required from %{name}"
 msgid_plural "%{count} approvals required from %{name}"
 msgstr[0] ""
@@ -752,9 +744,6 @@ msgid "%{count} of %{required} approvals from %{name}"
 msgstr ""
 
 msgid "%{count} of %{total}"
-msgstr ""
-
-msgid "%{count} optional %{label}."
 msgstr ""
 
 msgid "%{count} project"
@@ -7557,9 +7546,6 @@ msgid "Assign to commenting user"
 msgstr ""
 
 msgid "Assign to me"
-msgstr ""
-
-msgid "Assign yourself"
 msgstr ""
 
 msgid "Assigned"
@@ -33799,6 +33785,9 @@ msgstr ""
 msgid "MergeChecks|All threads must be resolved"
 msgstr ""
 
+msgid "MergeChecks|Assign reviewers"
+msgstr ""
+
 msgid "MergeChecks|Enable \"Pipelines must succeed\" first."
 msgstr ""
 
@@ -33961,9 +33950,6 @@ msgstr ""
 msgid "MergeRequests|started a thread on commit %{linkStart}%{commitDisplay}%{linkEnd}"
 msgstr ""
 
-msgid "MergeRequest|Add or edit reviewers"
-msgstr ""
-
 msgid "MergeRequest|Awaiting review"
 msgstr ""
 
@@ -34001,9 +33987,6 @@ msgid "MergeRequest|Failed to load the page"
 msgstr ""
 
 msgid "MergeRequest|No files found"
-msgstr ""
-
-msgid "MergeRequest|Quick add reviewers"
 msgstr ""
 
 msgid "MergeRequest|Remove reviewer"
@@ -36181,9 +36164,6 @@ msgstr ""
 msgid "No results found."
 msgstr ""
 
-msgid "No reviewers assigned"
-msgstr ""
-
 msgid "No runner executable"
 msgstr ""
 
@@ -37974,6 +37954,9 @@ msgid "Optimize your workflow with CI/CD Pipelines"
 msgstr ""
 
 msgid "Optional"
+msgstr ""
+
+msgid "Optional approvals"
 msgstr ""
 
 msgid "Optionally, you can %{link_to_customize} how FogBugz email addresses and usernames are imported into GitLab."
@@ -46028,6 +46011,11 @@ msgstr ""
 
 msgid "Requirement|Requirements have become work items and the legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
+
+msgid "Requires %d approval"
+msgid_plural "Requires %d approvals"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Requires %d approval from eligible users."
 msgid_plural "Requires %d approvals from eligible users."

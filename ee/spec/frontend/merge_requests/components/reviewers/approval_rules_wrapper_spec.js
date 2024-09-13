@@ -60,10 +60,14 @@ describe('Reviewer drawer approval rules wrapper component', () => {
 
     expect(rule.props('group')).toEqual(
       expect.objectContaining({
-        key: 'regular',
-        label: 'Approval Rules',
-        rules: expect.arrayContaining([
-          expect.objectContaining({ type: 'REGULAR', approvalsRequired: 2 }),
+        key: 'required',
+        sections: expect.arrayContaining([
+          expect.objectContaining({
+            key: 'regular',
+            rules: expect.arrayContaining([
+              expect.objectContaining({ type: 'REGULAR', approvalsRequired: 2 }),
+            ]),
+          }),
         ]),
       }),
     );
