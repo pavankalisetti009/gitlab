@@ -13437,6 +13437,9 @@ msgstr ""
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
+msgid "Collapse all files"
+msgstr ""
+
 msgid "Collapse eligible approvers"
 msgstr ""
 
