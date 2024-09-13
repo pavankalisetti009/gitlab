@@ -39,6 +39,7 @@ describe('diffs/components/app', () => {
       },
     };
     store.getters['findingsDrawer/activeDrawer'] = {};
+    store.getters['diffs/diffFiles'] = [];
     store.getters['diffs/flatBlobsList'] = [];
     store.getters['diffs/isBatchLoading'] = false;
     store.getters['diffs/isBatchLoadingError'] = false;
