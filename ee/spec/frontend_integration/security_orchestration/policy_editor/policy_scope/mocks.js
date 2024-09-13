@@ -21,11 +21,14 @@ const FALLBACK = `fallback_behavior:
   fail: closed
 `;
 
-export const mockScanExecutionActionManifest = `type: scan_execution_policy
+const BASE_POLICY = (type) => `type: ${type}
 name: ''
 description: ''
 enabled: true
-policy_scope:
+`;
+
+export const mockScanExecutionActionManifest = BASE_POLICY('scan_execution_policy')
+  .concat(`policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
@@ -35,17 +38,14 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`;
+`);
 
 export const mockScanExecutionActionProjectManifest = putPolicyScopeComplianceFrameworksToEndOfYaml(
   mockScanExecutionActionManifest,
 );
 
-export const mockPipelineExecutionActionManifest = `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_ci
+export const mockPipelineExecutionActionManifest = BASE_POLICY('pipeline_execution_policy')
+  .concat(`pipeline_config_strategy: inject_ci
 content:
   include:
     - project: ''
@@ -53,13 +53,11 @@ policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
-`;
+`);
 
-export const mockApprovalActionManifest = `type: approval_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
+export const mockApprovalActionManifest = BASE_POLICY('approval_policy')
+  .concat(
+    `policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
@@ -70,7 +68,8 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`
+`,
+  )
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -79,11 +78,7 @@ export const mockApprovalActionProjectManifest = putPolicyScopeComplianceFramewo
 );
 
 export const EXCLUDING_PROJECTS_MOCKS = {
-  SCAN_EXECUTION: `type: scan_execution_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
+  SCAN_EXECUTION: BASE_POLICY('scan_execution_policy').concat(`policy_scope:
   projects:
     excluding:
       - id: 1
@@ -94,12 +89,9 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`,
-  PIPELINE_EXECUTION: `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_ci
+`),
+  PIPELINE_EXECUTION: BASE_POLICY('pipeline_execution_policy')
+    .concat(`pipeline_config_strategy: inject_ci
 content:
   include:
     - project: ''
@@ -108,12 +100,10 @@ policy_scope:
     excluding:
       - id: 1
       - id: 2
-`,
-  APPROVAL_POLICY: `type: approval_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
+`),
+  APPROVAL_POLICY: BASE_POLICY('approval_policy')
+    .concat(
+      `policy_scope:
   projects:
     excluding:
       - id: 1
@@ -125,7 +115,8 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`
+`,
+    )
     .concat(SETTINGS)
     .concat(FALLBACK),
 };
@@ -159,11 +150,7 @@ const removeExcludingProjects = (value) =>
   );
 
 export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
-  SCAN_EXECUTION: `type: scan_execution_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
+  SCAN_EXECUTION: BASE_POLICY('scan_execution_policy').concat(`policy_scope:
   groups:
     including:
       - id: 1
@@ -178,12 +165,9 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`,
-  PIPELINE_EXECUTION: `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_ci
+`),
+  PIPELINE_EXECUTION: BASE_POLICY(`pipeline_execution_policy`)
+    .concat(`pipeline_config_strategy: inject_ci
 content:
   include:
     - project: ''
@@ -196,12 +180,10 @@ policy_scope:
     excluding:
       - id: 1
       - id: 2
-`,
-  APPROVAL_POLICY: `type: approval_policy
-name: ''
-description: ''
-enabled: true
-policy_scope:
+`),
+  APPROVAL_POLICY: BASE_POLICY('approval_policy')
+    .concat(
+      `policy_scope:
   groups:
     including:
       - id: 1
@@ -217,7 +199,8 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`
+`,
+    )
     .concat(SETTINGS)
     .concat(FALLBACK),
 };
