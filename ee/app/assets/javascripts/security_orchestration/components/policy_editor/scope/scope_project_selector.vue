@@ -45,6 +45,11 @@ export default {
       required: false,
       default: WITHOUT_EXCEPTIONS,
     },
+    isDirty: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     payloadKey() {
@@ -72,6 +77,9 @@ export default {
     },
     projectsEmpty() {
       return this.projectIds.length === 0;
+    },
+    isFieldValid() {
+      return !this.projectsEmpty || !this.isDirty;
     },
   },
   methods: {
@@ -107,7 +115,7 @@ export default {
       :disabled="disabled"
       :group-full-path="groupFullPath"
       :selected="projectIds"
-      :state="!projectsEmpty"
+      :state="isFieldValid"
       @projects-query-error="emitError"
       @select="setSelectedProjects"
     />

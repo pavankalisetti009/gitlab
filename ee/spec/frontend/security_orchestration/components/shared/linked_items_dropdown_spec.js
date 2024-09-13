@@ -60,6 +60,7 @@ describe('LinkedItemsDropdown', () => {
 
       await waitForPromises();
       expect(wrapper.emitted('linked-items-query-error')).toHaveLength(1);
+      expect(wrapper.emitted('loaded')).toEqual([[[]]]);
     });
   });
 
@@ -138,6 +139,7 @@ describe('LinkedItemsDropdown', () => {
       await waitForPromises();
 
       expect(findPopover().exists()).toBe(false);
+      expect(wrapper.emitted('loaded')).toEqual([[groups]]);
     });
 
     it('does not render popover when there are no groups but loading is in progress', () => {
@@ -146,6 +148,7 @@ describe('LinkedItemsDropdown', () => {
       });
 
       expect(findPopover().exists()).toBe(false);
+      expect(findDropdown().props('disabled')).toBe(false);
     });
 
     it('renders popover when there are no groups', async () => {
@@ -155,7 +158,10 @@ describe('LinkedItemsDropdown', () => {
       await waitForPromises();
 
       expect(findPopover().exists()).toBe(true);
+      expect(findPopover().props('show')).toBe(true);
+      expect(findDropdown().props('disabled')).toBe(true);
       expect(findPopover().text()).toContain('No linked groups');
+      expect(wrapper.emitted('loaded')).toEqual([[[]]]);
       expect(findPopover().findComponent(GlLink).attributes('href')).toBe(
         '/help/user/application_security/policies/index.md#security-policy-project',
       );

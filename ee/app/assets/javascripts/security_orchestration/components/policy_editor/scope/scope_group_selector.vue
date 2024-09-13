@@ -50,6 +50,11 @@ export default {
       required: false,
       default: () => ({}),
     },
+    isDirty: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     groupFullPath: {
       type: String,
       required: false,
@@ -65,6 +70,11 @@ export default {
       required: false,
       default: WITHOUT_EXCEPTIONS,
     },
+  },
+  data() {
+    return {
+      showExceptionListbox: true,
+    };
   },
   computed: {
     selectedExceptionTypeText() {
@@ -86,6 +96,9 @@ export default {
     },
     mappedProjectIds() {
       return this.projectIds.map(this.mapToRegularId);
+    },
+    isFieldValid() {
+      return !this.groupsEmpty || !this.isDirty;
     },
     groupsEmpty() {
       return this.groupsIds.length === 0;
@@ -143,6 +156,9 @@ export default {
         }),
       );
     },
+    toggleExceptionListbox(items) {
+      this.showExceptionListbox = items.length !== 0;
+    },
   },
 };
 </script>
@@ -155,12 +171,14 @@ export default {
       :full-path="fullPath"
       :disabled="disabled"
       :selected="groupsIds"
-      :state="!groupsEmpty"
+      :state="isFieldValid"
+      @loaded="toggleExceptionListbox"
       @linked-items-query-error="emitError($options.i18n.groupErrorDescription)"
       @select="setSelectedGroups"
     />
 
     <gl-collapsible-listbox
+      v-if="showExceptionListbox"
       data-testid="exception-type"
       :disabled="disabled"
       :items="$options.EXCEPTION_TYPE_LISTBOX_ITEMS"

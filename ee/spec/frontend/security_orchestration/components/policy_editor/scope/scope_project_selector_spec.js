@@ -136,6 +136,25 @@ describe('ScopeProjectSelector', () => {
 
       expect(wrapper.emitted('error')).toEqual([['Failed to load group projects']]);
     });
+
+    it('does not render initial error state for a dropdown', () => {
+      createComponent({
+        projects: {
+          including: mappedProjects,
+        },
+      });
+      expect(findGroupProjectsDropdown().props('state')).toBe(true);
+    });
+
+    it('renders error state for a dropdown when form is dirty', () => {
+      createComponent({
+        isDirty: true,
+        projects: {
+          including: [],
+        },
+      });
+      expect(findGroupProjectsDropdown().props('state')).toBe(false);
+    });
   });
 
   describe('select exceptions', () => {

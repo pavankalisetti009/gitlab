@@ -39,17 +39,19 @@ export default {
         const {
           securityPolicyProjectLinkedGroups: {
             nodes: linkedGroups = [],
-            pageInfo: namespacePageInfo,
-          },
+            pageInfo: namespacePageInfo = {},
+          } = {},
         } = data?.project || {};
 
         const descendants = this.flatMapDescendantGroups(linkedGroups);
-
         this.items = uniqBy([...this.items, ...linkedGroups, ...descendants], 'id');
         this.pageInfo = namespacePageInfo;
+
+        this.$emit('loaded', this.items);
       },
       error() {
         this.$emit(this.$options.ERROR_KEY);
+        this.$emit('loaded', this.items);
       },
     },
   },
@@ -93,6 +95,9 @@ export default {
     },
     variant() {
       return this.state ? 'default' : 'danger';
+    },
+    dropdownDisabled() {
+      return this.disabled || this.showPopover;
     },
     loading() {
       return this.$apollo.queries.linkedSppItems.loading;
@@ -174,7 +179,15 @@ export default {
 
 <template>
   <div>
-    <gl-popover v-if="showPopover" triggers="click blur" target="linked-groups">
+    <gl-popover
+      v-if="showPopover"
+      boundary="viewport"
+      triggers="manual blur"
+      target="linked-groups"
+      placement="bottom"
+      show-close-button
+      :show="true"
+    >
       <p>{{ $options.i18n.popoverTitle }}</p>
       <gl-link :href="$options.SECURITY_POLICY_PROJECT_PATH" target="_blank">
         {{ $options.i18n.popoverLink }}
@@ -186,7 +199,7 @@ export default {
       multiple
       :category="category"
       :variant="variant"
-      :disabled="disabled"
+      :disabled="dropdownDisabled"
       :loading="loading"
       :header-text="$options.i18n.groupDropdownHeader"
       :items="listBoxItems"
