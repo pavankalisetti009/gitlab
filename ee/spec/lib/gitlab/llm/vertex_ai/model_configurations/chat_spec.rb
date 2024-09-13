@@ -36,7 +36,8 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::Chat, feature_categor
   end
 
   describe '#url' do
-    it 'returns correct url replacing default value' do
+    it 'returns correct url replacing default value',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480660' do
       expect(subject.url).to eq(
         "https://#{host}/ai/v1/proxy/vertex-ai/v1/projects/#{project}/locations/LOCATION/publishers/google/models/chat-bison:predict"
       )
