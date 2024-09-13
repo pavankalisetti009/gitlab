@@ -13,11 +13,10 @@ RSpec.describe 'Protected Branches', :js, feature_category: :source_code_managem
     let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
     let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, group: group) }
 
-    let(:success_message) { s_('ProtectedBranch|Protected branch was sucessfully created') }
+    let(:success_message) { s_('ProtectedBranch|Protected branch was successfully created') }
 
     before do
       stub_licensed_features(custom_roles: true)
-
       sign_in(user)
     end
 

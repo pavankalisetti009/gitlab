@@ -13,7 +13,7 @@ RSpec.describe 'Projects > Settings > Repository settings using custom role', :j
   let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
   let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: current_user, group: group) }
 
-  let(:success_message) { s_('ProtectedBranch|Protected branch was sucessfully created') }
+  let(:success_message) { s_('ProtectedBranch|Protected branch was successfully created') }
 
   context 'when user is a guest with custom roles that enables handling protected branches' do
     before do

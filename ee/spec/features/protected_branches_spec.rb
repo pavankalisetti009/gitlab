@@ -58,6 +58,9 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
     include_context 'with scan result policy preventing force pushing'
 
     before do
+      # Maximize window to accommodate dropdown
+      page.driver.browser.manage.window.maximize
+
       project.repository.add_branch(project.creator, branch_name, 'HEAD')
 
       visit repository_settings_page
