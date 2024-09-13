@@ -81,6 +81,9 @@ end
 
 RSpec::Matchers.define :match_schema do |schema, dir: nil, **options|
   match do |data|
+    # NOTE: https://github.com/rspec/rspec-support/pull/591 broke kwarg parsing
+    schema ||= options
+
     schema = SchemaPath.expand(schema, dir)
     schema = Pathname.new(schema) if schema.is_a?(String)
     validator = SchemaPath.validator(schema)
