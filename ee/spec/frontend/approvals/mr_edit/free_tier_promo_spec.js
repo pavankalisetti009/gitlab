@@ -131,7 +131,7 @@ describe('FreeTierPromo component', () => {
       it('shows the promo image', () => {
         const promoImage = findCollapse().findByAltText('some promo image');
 
-        expect(promoImage.attributes('src')).toBe('/some-image.svg');
+        expect(promoImage.element.src).toBe('/some-image.svg');
       });
     });
 
