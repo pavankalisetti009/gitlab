@@ -5815,6 +5815,9 @@ msgstr ""
 msgid "An error occurred fetching the public deploy keys. Please try again."
 msgstr ""
 
+msgid "An error occurred loading the project counts."
+msgstr ""
+
 msgid "An error occurred loading the projects. Please refresh the page to try again."
 msgstr ""
 
