@@ -169,9 +169,29 @@ describe('ScopeGroupSelector', () => {
 
       expect(wrapper.emitted('error')).toEqual([['Failed to load projects']]);
     });
+
+    it('does not render initial error state for a dropdown', () => {
+      createComponent();
+      expect(findGroupsDropdown().props('state')).toBe(true);
+    });
+
+    it('renders error state for a dropdown when form is dirty', () => {
+      createComponent({
+        isDirty: true,
+      });
+      expect(findGroupsDropdown().props('state')).toBe(false);
+    });
   });
 
   describe('exception type', () => {
+    it('does not render exception list box when there are no groups', async () => {
+      createComponent();
+
+      await findGroupsDropdown().vm.$emit('loaded', []);
+
+      expect(findExceptionTypeSelector().exists()).toBe(false);
+    });
+
     it('should select exception type EXCEPT_PROJECTS', () => {
       createComponent();
 

@@ -181,7 +181,7 @@ export default {
   },
   computed: {
     assignedPolicyProjectPath() {
-      return this.isGroupLevel ? this.assignedPolicyProject?.fullPath : this.namespacePath;
+      return this.isGroupLevel ? this.assignedPolicyProject?.fullPath || '' : this.namespacePath;
     },
     showPolicyGroupScope() {
       return (
@@ -408,6 +408,7 @@ export default {
                   title: $options.i18n.defaultModePopover,
                   disabled: !disableScopeSelector,
                 }"
+                fluid-width
                 data-testid="project-scope-type"
                 :items="scopeItems"
                 :selected="selectedProjectScopeType"
@@ -443,6 +444,7 @@ export default {
               <scope-group-selector
                 v-if="showScopeGroupSelector && showPolicyGroupScope"
                 class="gl-basis-full"
+                :is-dirty="isFormDirty"
                 :exception-type="selectedExceptionType"
                 :groups="groups"
                 :projects="projects"
@@ -455,6 +457,7 @@ export default {
               <scope-project-selector
                 v-if="showGroupProjectsDropdown"
                 :disabled="disableScopeSelector"
+                :is-dirty="isFormDirty"
                 :exception-type="selectedExceptionType"
                 :projects="projects"
                 :group-full-path="groupProjectsFullPath"
