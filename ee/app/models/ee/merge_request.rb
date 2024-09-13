@@ -540,6 +540,10 @@ module EE
       requested_changes.where(user_id: user.id).delete_all
     end
 
+    def requested_changes_for_users(user_ids)
+      requested_changes.where(user_id: user_ids)
+    end
+
     def ai_review_merge_request_allowed?(user)
       ::Feature.enabled?(:ai_review_merge_request, user) &&
         project.licensed_feature_available?(:ai_review_mr) &&

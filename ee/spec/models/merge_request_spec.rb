@@ -2677,6 +2677,24 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#requested_changes_for_users' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+    let_it_be(:requested_changes) do
+      create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project, user: user)
+    end
+
+    before do
+      create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project, user: create(:user))
+    end
+
+    it 'returns requested changes for user IDs' do
+      expect(merge_request.requested_changes_for_users([user.id])).to contain_exactly(
+        requested_changes
+      )
+    end
+  end
+
   describe '#ai_review_merge_request_allowed?' do
     let_it_be(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
