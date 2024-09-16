@@ -60,13 +60,14 @@ RSpec.describe Projects::Analytics::DashboardsController, type: :request, featur
       context 'with the licensed feature' do
         where(:access_level, :example_to_run) do
           nil         | 'returns not found'
-          :reporter   | 'returns not found'
+          :guest      | 'returns not found'
+          :reporter   | 'returns success'
           :developer  | 'returns success'
           :maintainer | 'returns success'
         end
 
         with_them do
-          let(:user) { create(:user) }
+          let(:user) { create(:user, :with_namespace) }
 
           before do
             stub_licensed_features(combined_project_analytics_dashboards: true)

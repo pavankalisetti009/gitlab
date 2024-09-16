@@ -6,7 +6,7 @@ module Resolvers
       include Gitlab::Graphql::Authorize::AuthorizeResource
 
       authorizes_object!
-      authorize :developer_access
+      authorize :read_product_analytics
       type ::Types::ProductAnalytics::StateEnum, null: true
 
       def resolve

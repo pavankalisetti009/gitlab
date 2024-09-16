@@ -21,9 +21,9 @@ RSpec.describe Resolvers::ProductAnalytics::StateResolver, feature_category: :pr
       stub_feature_flags(product_analytics_billing_override: false)
     end
 
-    context 'when user has developer access' do
+    context 'when user has reporter access' do
       before do
-        project.add_developer(user)
+        project.add_reporter(user)
       end
 
       %w[disabled create_instance loading_instance waiting_for_events complete].each do |state|

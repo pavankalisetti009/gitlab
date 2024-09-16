@@ -26,7 +26,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   context 'basic permissions' do
     let(:additional_guest_permissions) { %i[read_limit_alert] }
     let(:additional_reporter_permissions) do
-      %i[read_software_license_policy admin_value_stream]
+      %i[read_software_license_policy admin_value_stream read_product_analytics]
     end
 
     let(:additional_developer_permissions) do

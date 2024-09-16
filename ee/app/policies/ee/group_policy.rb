@@ -281,6 +281,7 @@ module EE
         enable :admin_issue_board_list
         enable :view_productivity_analytics
         enable :download_wiki_code
+        enable :read_product_analytics
       end
 
       rule { maintainer }.policy do
@@ -345,7 +346,7 @@ module EE
         @user.assigned_to_duo_enterprise?(@subject)
       end
 
-      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
+      rule { can?(:read_product_analytics) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { reporter & group_repository_analytics_available }
         .enable :read_group_repository_analytics
@@ -485,7 +486,6 @@ module EE
         enable :create_wiki
         enable :admin_merge_request
         enable :read_group_audit_events
-        enable :read_product_analytics
       end
 
       rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do

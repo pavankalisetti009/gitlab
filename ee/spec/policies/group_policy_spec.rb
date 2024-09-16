@@ -330,6 +330,21 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     it { is_expected.not_to be_allowed(:read_dora4_analytics) }
   end
 
+  describe ':read_product_analytics', :enable_admin_mode do
+    where(:role, :allowed) do
+      :guest     | false
+      :reporter  | true
+      :developer | true
+      :admin     | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      it { is_expected.to(allowed ? be_allowed(:read_product_analytics) : be_disallowed(:read_product_analytics)) }
+    end
+  end
+
   describe ':read_ai_analytics' do
     context 'when on SAAS', :saas do
       let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }

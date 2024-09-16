@@ -7,7 +7,8 @@ module Resolvers
 
       calls_gitaly!
       authorizes_object!
-      authorize :developer_access
+      authorize :read_product_analytics
+
       type [::Types::ProductAnalytics::DashboardType], null: true
 
       argument :slug, GraphQL::Types::String,
