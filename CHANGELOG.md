@@ -2917,6 +2917,10 @@ No changes.
 
 - [Update Web IDE dependency to receive duo fixes](gitlab-org/gitlab@47323c05565dd32ea4de9f999adbd9f7aa8748e3) ([merge request](gitlab-org/gitlab!154064))
 
+## 17.0.8 (2024-09-16)
+
+No changes.
+
 ## 17.0.7 (2024-09-10)
 
 ### Fixed (2 changes)
