@@ -87,28 +87,36 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     let_it_be(:project) { create(:project) }
     let(:options) { { current_user: current_user } }
 
+    before do
+      stub_licensed_features(pre_receive_secret_detection: true)
+    end
+
     shared_examples 'returning nil' do
       it 'returns nil' do
         expect(subject[:pre_receive_secret_detection_enabled]).to be(nil)
       end
     end
 
-    context 'when user is guest' do
-      let(:current_user) { guest }
+    context 'when user does not have access' do
+      context 'when project does not have proper license' do
+        let(:current_user) { developer }
 
-      it_behaves_like 'returning nil'
-    end
-
-    context 'when user is developer' do
-      let(:current_user) { developer }
-
-      context 'when project does not have security settings' do
         before do
-          allow(project).to receive(:security_setting).and_return(nil)
+          stub_licensed_features(pre_receive_secret_detection: false)
         end
 
         it_behaves_like 'returning nil'
       end
+
+      context 'when user is guest' do
+        let(:current_user) { guest }
+
+        it_behaves_like 'returning nil'
+      end
+    end
+
+    context 'when user is developer' do
+      let(:current_user) { developer }
 
       it 'returns a boolean' do
         expect(subject[:pre_receive_secret_detection_enabled]).to be_in([true, false])

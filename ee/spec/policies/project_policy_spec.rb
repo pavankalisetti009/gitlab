@@ -3984,11 +3984,18 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     with_them do
       before do
+        stub_licensed_features(pre_receive_secret_detection: true)
         stub_feature_flags(pre_receive_secret_detection_push_check: pre_receive_secret_detection_actor)
         stub_application_setting(gitlab_dedicated_instance: dedicated_instance)
       end
 
       it { is_expected.to match_expected_result }
+    end
+
+    describe 'when the project does not have the correct license' do
+      let(:current_user) { owner }
+
+      it { is_expected.to be_disallowed(:enable_pre_receive_secret_detection) }
     end
   end
 
@@ -4059,6 +4066,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     with_them do
+      before do
+        stub_licensed_features(pre_receive_secret_detection: true)
+      end
+
       it { is_expected.to match_expected_result }
     end
   end

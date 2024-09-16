@@ -795,7 +795,8 @@ module EE
       rule { ~clickhouse_main_database_available }.prevent :read_runner_usage
 
       condition(:pre_receive_secret_detection_available) do
-        ::Gitlab::CurrentSettings.gitlab_dedicated_instance? || ::Feature.enabled?(:pre_receive_secret_detection_push_check, @subject)
+        @subject.licensed_feature_available?(:pre_receive_secret_detection) &&
+          (::Gitlab::CurrentSettings.gitlab_dedicated_instance? || ::Feature.enabled?(:pre_receive_secret_detection_push_check, @subject))
       end
 
       # At present, the security_setting feature is exclusively accessible for projects.
