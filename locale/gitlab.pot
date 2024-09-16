@@ -15033,6 +15033,9 @@ msgstr ""
 msgid "ContainerRegistry|Manifest digest: %{digest}"
 msgstr ""
 
+msgid "ContainerRegistry|Manifest media type: %{mediaType}"
+msgstr ""
+
 msgid "ContainerRegistry|Minimum access level for delete"
 msgstr ""
 
@@ -15218,12 +15221,6 @@ msgstr ""
 msgid "ContainerRegistry|This project's cleanup policy for tags is not enabled."
 msgstr ""
 
-msgid "ContainerRegistry|This tag points to a Docker manifest list, which references multiple container images"
-msgstr ""
-
-msgid "ContainerRegistry|This tag points to a OCI index, which references multiple container images"
-msgstr ""
-
 msgid "ContainerRegistry|To widen your search, change or remove the filters above."
 msgstr ""
 
@@ -15255,6 +15252,9 @@ msgid "ContainerRegistry|You are about to remove %{item}. Are you sure?"
 msgstr ""
 
 msgid "ContainerRegistry|You can add an image to this registry with the following commands:"
+msgstr ""
+
+msgid "ContainerRegistry|index"
 msgstr ""
 
 msgid "Containers"
