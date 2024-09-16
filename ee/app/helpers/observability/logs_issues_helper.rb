@@ -18,6 +18,7 @@ module Observability
         [Log details](#{params['fullUrl']}) \\
         Service: `#{params['service']}` \\
         Trace ID: `#{params['traceId']}` \\
+        Log Fingerprint: `#{params['fingerprint']}` \\
         Severity Number: `#{params['severityNumber']}` \\
         Timestamp: `#{params['timestamp']}` \\
         Message:

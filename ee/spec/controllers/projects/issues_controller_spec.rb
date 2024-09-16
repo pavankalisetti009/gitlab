@@ -462,6 +462,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
                 [Log details](http://gdk.test:3443/flightjs/Flight/-/logs?search=&service[]=frauddetectionservice&severityNumber[]=9&traceId[]=72b72def-09b3-e29f-e195-7c6db5ee599f&fingerprint[]=8d6c44aebc683e3c&timestamp=2024-07-04T14%3A52%3A22.693752628Z&drawerOpen=true) \\
                 Service: `frauddetectionservice` \\
                 Trace ID: `72b72def-09b3-e29f-e195-7c6db5ee599f` \\
+                Log Fingerprint: `8d6c44aebc683e3c` \\
                 Severity Number: `9` \\
                 Timestamp: `2024-07-04T14:52:22.693752628Z` \\
                 Message:
