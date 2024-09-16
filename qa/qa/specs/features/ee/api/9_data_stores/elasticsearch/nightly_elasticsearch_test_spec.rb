@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'airborne'
-
 module QA
   RSpec.describe 'Data Stores', product_group: :global_search do
     describe(
@@ -10,6 +8,7 @@ module QA
       :elasticsearch,
       only: { pipeline: :nightly }
     ) do
+      include Support::API
       include_context 'advanced search active'
 
       p1_threshold = 15
@@ -32,11 +31,14 @@ module QA
       ) do
         start_time = Time.now
         while (Time.now - start_time) / 60 < p1_threshold
-          get(Runtime::Search.create_search_request(api_client, 'blobs', project_file_content).url)
-          expect_status(QA::Support::API::HTTP_STATUS_OK)
+          response = Support::API.get(Runtime::Search.create_search_request(api_client, 'blobs',
+            project_file_content).url)
+          response_body = parse_body(response)
+          expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
 
-          break if !json_body.empty? && json_body[0][:data].match(project_file_content) && json_body[0][:project_id]
-                                                                                             .equal?(project.id)
+          break if !response_body.empty? &&
+            response_body[0][:data].match(project_file_content) &&
+            response_body[0][:project_id].equal?(project.id)
 
           sleep 10
         end

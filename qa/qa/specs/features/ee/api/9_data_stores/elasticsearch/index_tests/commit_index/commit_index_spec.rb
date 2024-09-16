@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'airborne'
-
 module QA
   RSpec.describe 'Data Stores', product_group: :global_search do
     describe(
@@ -10,6 +8,7 @@ module QA
       :elasticsearch,
       except: :production
     ) do
+      include Support::API
       include_context 'advanced search active'
 
       let(:api_client) { Runtime::API::Client.new(:gitlab) }
@@ -28,15 +27,17 @@ module QA
         QA::Support::Retrier.retry_on_exception(
           max_attempts: Runtime::Search::RETRY_MAX_ITERATION,
           sleep_interval: Runtime::Search::RETRY_SLEEP_INTERVAL) do
-          get(Runtime::Search.create_search_request(api_client, 'commits', commit.commit_message).url)
+          response = Support::API.get(Runtime::Search.create_search_request(api_client, 'commits',
+            commit.commit_message).url)
+          response_body = parse_body(response)
 
           aggregate_failures do
-            expect_status(QA::Support::API::HTTP_STATUS_OK)
-            expect(json_body).not_to be_empty, 'Expected a commit to be returned by search'
+            expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
+            expect(response_body).not_to be_empty, 'Expected a commit to be returned by search'
           end
 
-          expect(json_body[0][:title]).to eq(commit.commit_message)
-          expect(json_body[0][:short_id]).to eq(commit.short_id)
+          expect(response_body[0][:title]).to eq(commit.commit_message)
+          expect(response_body[0][:short_id]).to eq(commit.short_id)
         end
       end
     end
