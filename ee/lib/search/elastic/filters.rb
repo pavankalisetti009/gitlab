@@ -952,7 +952,7 @@ module Search
           end
 
           membership_filters.minimum_should_match = 1
-          add_filter(membership_filters, :must) do
+          add_filter(membership_filters, :filter) do
             { bool: feature_access_level_filter.to_h }
           end
         end
