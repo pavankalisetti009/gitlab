@@ -27,7 +27,7 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
       end
     end
 
-    context 'when licensed ai features are available' do
+    context 'when licensed ai features are available and feature flag is available' do
       it 'renders the experiment settings' do
         allow(group).to receive(:licensed_ai_features_available?).and_return(true)
 
@@ -120,7 +120,18 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
       end
     end
 
-    context 'when experiment settings for group is enabled' do
+    context 'when feature flag is not available ' do
+      it 'renders nothing' do
+        stub_feature_flags(early_access_program_toggle: false)
+
+        render
+
+        expect(rendered).to render_template('groups/settings/_experimental_settings')
+        expect(rendered).not_to have_content('GitLab Duo experiment and beta features')
+      end
+    end
+
+    context 'when experiment settings for group is enabled and feature flag is available' do
       it 'renders the experiment settings' do
         allow(group).to receive(:experiment_settings_allowed?).and_return(true)
 
