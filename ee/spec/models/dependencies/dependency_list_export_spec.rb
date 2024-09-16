@@ -234,4 +234,32 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       it { is_expected.to be_truthy }
     end
   end
+
+  context 'with loose foreign key on dependency_list_exports.user_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:dependency_list_export, author: parent) }
+    end
+  end
+
+  context 'with loose foreign key on dependency_list_exports.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dependency_list_export, project: parent) }
+    end
+  end
+
+  context 'with loose foreign key on dependency_list_exports.group_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:namespace) }
+      let_it_be(:model) { create(:dependency_list_export, group_id: parent.id) }
+    end
+  end
+
+  context 'with loose foreign key on dependency_list_exports.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:dependency_list_export, group: nil, project: nil, author: nil, organization: parent) }
+    end
+  end
 end

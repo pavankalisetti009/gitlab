@@ -48,4 +48,11 @@ RSpec.describe Dependencies::DependencyListExport::Part, feature_category: :depe
       expect(sbom_occurrences).to contain_exactly(occurrence)
     end
   end
+
+  context 'with loose foreign key on dependency_list_export_parts.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:dependency_list_export_part, organization: parent) }
+    end
+  end
 end
