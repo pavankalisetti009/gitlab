@@ -30,6 +30,38 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
     end
   end
 
+  shared_examples_for 'creates a new pipeline' do
+    it 'delegates the pipeline creation to Security::SecurityOrchestrationPolicies::CreatePipelineService' do
+      expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
+        receive(:new)
+          .with(project: project, current_user: current_user, params: params)
+          .and_call_original)
+
+      run_worker
+    end
+  end
+
+  shared_examples_for 'does not creates a new pipeline' do
+    it 'does not invokes CreatePipelineService' do
+      expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).not_to(
+        receive(:new)
+          .with(project: project, current_user: current_user, params: params)
+          .and_call_original)
+
+      run_worker
+    end
+  end
+
+  shared_examples_for 'reschedules the worker' do
+    it 'reschedules the worker' do
+      expect(described_class).to receive(:perform_in)
+        .with(Gitlab::ConditionalConcurrencyLimitControl::DEFAULT_RESCHEDULE_INTERVAL,
+          project_id, current_user_id, schedule_id, branch)
+
+      run_worker
+    end
+  end
+
   describe '#perform' do
     before do
       allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |instance|
@@ -59,6 +91,124 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
             .and_call_original)
 
         run_worker
+      end
+
+      context 'when the number of active security policy scheduled scans exceeds the limit' do
+        before do
+          stub_application_setting(security_policy_scheduled_scans_max_concurrency: 2)
+        end
+
+        context 'when the scans are from the same scheduled policy' do
+          before do
+            create_list(:ci_build, 2,
+              :running,
+              created_at: 1.minute.ago,
+              updated_at: 1.minute.ago,
+              pipeline: create(:ci_pipeline, source: :security_orchestration_policy),
+              project: project)
+          end
+
+          context 'when feature flag `scan_execution_pipeline_concurrency_control` is disabled' do
+            before do
+              stub_feature_flags(scan_execution_pipeline_concurrency_control: false)
+            end
+
+            it_behaves_like 'creates a new pipeline'
+          end
+
+          context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
+            it_behaves_like 'does not creates a new pipeline'
+
+            it_behaves_like 'reschedules the worker'
+          end
+
+          context 'when the policy is defined at group level' do
+            let_it_be(:group) { create(:group) }
+            let_it_be(:project) { create(:project, namespace: group) }
+            let_it_be(:another_project) { create(:project, namespace: group) }
+
+            context 'when the active scans are from different projects in the group' do
+              before do
+                create(:ci_build,
+                  :running,
+                  created_at: 1.minute.ago,
+                  updated_at: 1.minute.ago,
+                  pipeline: create(:ci_pipeline, source: :security_orchestration_policy),
+                  project: project)
+
+                create_list(:ci_build, 2,
+                  :running,
+                  created_at: 1.minute.ago,
+                  updated_at: 1.minute.ago,
+                  pipeline: create(:ci_pipeline, source: :security_orchestration_policy),
+                  project: another_project)
+              end
+
+              context 'when the worker is running for one of the projects in the group ' do
+                let(:security_orchestration_policy_configuration) do
+                  create(:security_orchestration_policy_configuration, :namespace, namespace: group)
+                end
+
+                let(:schedule) do
+                  create(:security_orchestration_policy_rule_schedule,
+                    security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+                end
+
+                it 'does not invokes CreatePipelineService' do
+                  [project, another_project].each do |project|
+                    expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).not_to(
+                      receive(:new)
+                        .with(project: project, current_user: current_user, params: params)
+                        .and_call_original)
+
+                    described_class.new.perform(project.id, current_user_id, schedule_id, branch)
+                  end
+                end
+
+                it_behaves_like 'reschedules the worker'
+              end
+
+              context 'when the worker is running for a project outside of the group' do
+                let_it_be(:project) { create(:project) }
+
+                context 'when feature flag `scan_execution_pipeline_concurrency_control` is disabled' do
+                  before do
+                    stub_feature_flags(scan_execution_pipeline_concurrency_control: false)
+                  end
+
+                  it_behaves_like 'creates a new pipeline'
+                end
+
+                context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
+                  it_behaves_like 'creates a new pipeline'
+                end
+              end
+            end
+          end
+        end
+
+        context 'when the scans are from the another scheduled policy' do
+          before do
+            create_list(:ci_build, 2,
+              :running,
+              created_at: 1.minute.ago,
+              updated_at: 1.minute.ago,
+              pipeline: create(:ci_pipeline, source: :security_orchestration_policy),
+              project: create(:project))
+          end
+
+          context 'when feature flag `scan_execution_pipeline_concurrency_control` is disabled' do
+            before do
+              stub_feature_flags(scan_execution_pipeline_concurrency_control: false)
+            end
+
+            it_behaves_like 'creates a new pipeline'
+          end
+
+          context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
+            it_behaves_like 'creates a new pipeline'
+          end
+        end
       end
 
       context 'when create pipeline service returns errors' do
