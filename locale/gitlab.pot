@@ -36147,6 +36147,12 @@ msgstr ""
 msgid "No regions configured"
 msgstr ""
 
+msgid "No related branches found"
+msgstr ""
+
+msgid "No related tags found"
+msgstr ""
+
 msgid "No repository"
 msgstr ""
 
