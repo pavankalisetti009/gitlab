@@ -151,7 +151,7 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
       post_graphql_mutation(mutation, current_user: current_user)
 
       last_message = Gitlab::Llm::ChatStorage.new(current_user).messages.last
-      expect(last_message.additional_context).to eq(expected_additional_context.map(&:stringify_keys))
+      expect(last_message.extras['additional_context']).to eq(expected_additional_context.map(&:stringify_keys))
     end
   end
 end

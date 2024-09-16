@@ -58,7 +58,9 @@ RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
       .last_conversation.reverse.find { |message| message.role == 'user' }
 
     expect(last_user_message.content).to eq(content)
-    expect(last_user_message.additional_context).to eq(completions_params[:additional_context].map(&:stringify_keys))
+    expect(last_user_message.extras['additional_context']).to eq(
+      completions_params[:additional_context].map(&:stringify_keys)
+    )
   end
 
   context 'with a referer URL' do

@@ -22,11 +22,13 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
         role
         timestamp
         errors
-        additionalContext {
-          category
-          id
-          content
-          metadata
+        extras {
+          additionalContext {
+            category
+            id
+            content
+            metadata
+          }
         }
       }
     GRAPHQL
@@ -48,9 +50,11 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
       role: 'user',
       content: 'question 1',
       user: user,
-      additional_context: [
-        { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: '{"file_name":"hello.rb"}' }
-      ]
+      extras: {
+        additional_context: [
+          { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: '{"file_name":"hello.rb"}' }
+        ]
+      }
     )
     create(:ai_chat_message, request_id: 'uuid1', role: 'assistant', content: response_content, user: user)
     # should not be included in response because it's for other user
@@ -81,14 +85,16 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
           'role' => 'USER',
           'errors' => [],
           'timestamp' => Time.current.iso8601,
-          'additionalContext' => [
-            {
-              'category' => 'FILE',
-              'id' => 'hello.rb',
-              'content' => 'puts "hello"',
-              'metadata' => '{"file_name":"hello.rb"}'
-            }
-          ]
+          'extras' => {
+            'additionalContext' => [
+              {
+                'category' => 'FILE',
+                'id' => 'hello.rb',
+                'content' => 'puts "hello"',
+                'metadata' => '{"file_name":"hello.rb"}'
+              }
+            ]
+          }
         },
         {
           'requestId' => 'uuid1',
@@ -98,7 +104,9 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
           'role' => 'ASSISTANT',
           'errors' => [],
           'timestamp' => Time.current.iso8601,
-          'additionalContext' => []
+          'extras' => {
+            'additionalContext' => nil
+          }
         }
       ])
     end

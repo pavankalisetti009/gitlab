@@ -20,6 +20,12 @@ module Types
         null: true,
         scopes: [:api, :read_api, :ai_features],
         description: "Whether the user has provided feedback for the mesage."
+
+      field :additional_context,
+        [Types::Ai::AdditionalContextType],
+        null: true,
+        scopes: [:api, :read_api, :ai_features],
+        description: 'Additional context for the message.'
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end
