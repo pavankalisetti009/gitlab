@@ -98,7 +98,7 @@ describe('FrameworkInfoDrawer component', () => {
           'Use the compliance framework ID in configuration or API requests. Learn more.',
         );
         expect(findIdPopover().findComponent(GlLink).attributes('href')).toBe(
-          `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies-to-projects`,
+          `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies`,
         );
       });
 
