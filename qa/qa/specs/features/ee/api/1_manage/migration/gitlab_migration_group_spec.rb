@@ -46,7 +46,7 @@ module QA
         end
 
         it(
-          'imports group epics and iterations',
+          'imports group epics and iterations', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347639'
         ) do
           expect_group_import_finished_successfully
