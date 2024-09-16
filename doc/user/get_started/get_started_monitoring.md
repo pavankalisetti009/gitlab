@@ -89,6 +89,9 @@ Choose a guide based on your programming language or framework:
 
 - [Ruby on Rails](../../tutorials/observability/observability_rails_tutorial.md)
 - [Node JS](../../tutorials/observability/observability_nodejs_tutorial.md)
+- [Python Django](../../tutorials/observability/observability_django_tutorial.md)
+- [Java Spring](../../tutorials/observability/observability_java_tutorial.md)
+- [.NET](../../tutorials/observability/observability_dotnet_tutorial.md)
 
 For other languages, use the appropriate [OpenTelemetry API or SDK](https://opentelemetry.io/docs/languages/).
 
