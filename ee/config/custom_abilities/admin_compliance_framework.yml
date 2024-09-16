@@ -1,4 +1,5 @@
 ---
+title: Manage and assign compliance frameworks
 name: admin_compliance_framework
 description: Create, read, update, and delete compliance frameworks. Users with this permission can also assign a compliance framework label to a project, and set the default framework of a group.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/411502

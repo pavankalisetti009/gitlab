@@ -1,4 +1,5 @@
 ---
+title: Manage web hooks
 name: admin_web_hook
 description: Manage webhooks
 introduced_by_issue: https://gitlab.com/gitlab-org/quality/triage-ops/-/issues/1373

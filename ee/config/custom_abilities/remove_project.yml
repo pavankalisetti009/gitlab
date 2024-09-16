@@ -1,4 +1,5 @@
 ---
+title: Delete project
 name: remove_project
 description: Allows deletion of projects.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/425959

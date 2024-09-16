@@ -1,4 +1,5 @@
 ---
+title: View CRM contact
 name: read_crm_contact
 description: Read CRM contact.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/443268

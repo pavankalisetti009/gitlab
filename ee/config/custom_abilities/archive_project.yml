@@ -1,4 +1,5 @@
 ---
+title: Archive project
 name: archive_project
 description: Allows archiving of projects.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/425957
