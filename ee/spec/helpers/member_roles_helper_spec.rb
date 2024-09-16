@@ -58,7 +58,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       end
     end
 
-    context 'when on SaaS' do
+    context 'when on SaaS', :saas do
       context 'when on group page' do
         subject(:data) { helper.member_roles_data(source) }
 
@@ -102,11 +102,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
   describe '#manage_member_roles_path' do
     subject { helper.manage_member_roles_path(source) }
 
-    context 'when on SaaS' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
+    context 'when on SaaS', :saas do
       it { is_expected.to be_nil }
 
       context 'as owner' do
@@ -127,10 +123,6 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     end
 
     context 'when in admin mode', :enable_admin_mode do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: false)
-      end
-
       it { is_expected.to be_nil }
 
       context 'as admin' do
@@ -151,27 +143,33 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
 
   describe '#member_role_edit_path' do
     context 'when on self-managed' do
-      subject(:data) { helper.member_role_edit_path(role) }
+      subject { helper.member_role_edit_path(role) }
 
       let_it_be(:role) { build_stubbed(:member_role, id: 5) }
-
-      before do
-        stub_saas_features(gitlab_com_subscriptions: false)
-      end
 
       it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
     end
 
-    context 'when on Saas' do
-      subject(:data) { helper.member_role_edit_path(role) }
+    context 'when on Saas', :saas do
+      subject { helper.member_role_edit_path(role) }
 
       let_it_be(:role) { build_stubbed(:member_role, id: 5, namespace: source) }
 
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
       it { is_expected.to eq(edit_group_settings_roles_and_permission_path(source, role)) }
+    end
+  end
+
+  describe '#member_role_details_path' do
+    subject { helper.member_role_details_path(role) }
+
+    let_it_be(:role) { build_stubbed(:member_role, id: 5, namespace: root_group) }
+
+    context 'when on self-managed' do
+      it { is_expected.to eq(admin_application_settings_roles_and_permission_path(role)) }
+    end
+
+    context 'when on Saas', :saas do
+      it { is_expected.to eq(group_settings_roles_and_permission_path(root_group, role)) }
     end
   end
 end

@@ -13,6 +13,7 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
           accessLevel
           name
           membersCount
+          detailsPath
         }
       }
     }
@@ -43,12 +44,43 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
 
     it 'returns all standard-level roles with counts' do
       expected_result = [
-        { 'accessLevel' => 5, 'name' => 'Minimal Access', 'membersCount' => 0 },
-        { 'accessLevel' => 10, 'name' => 'Guest', 'membersCount' => 2 },
-        { 'accessLevel' => 20, 'name' => 'Reporter', 'membersCount' => 0 },
-        { 'accessLevel' => 30, 'name' => 'Developer', 'membersCount' => 0 },
-        { 'accessLevel' => 40, 'name' => 'Maintainer', 'membersCount' => 1 },
-        { 'accessLevel' => 50, 'name' => 'Owner', 'membersCount' => 1 } # one owner is created during project creation
+        {
+          'accessLevel' => 5,
+          'name' => 'Minimal Access',
+          'membersCount' => 0,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/MINIMAL_ACCESS'
+        },
+        {
+          'accessLevel' => 10,
+          'name' => 'Guest',
+          'membersCount' => 2,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/GUEST'
+        },
+        {
+          'accessLevel' => 20,
+          'name' => 'Reporter',
+          'membersCount' => 0,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/REPORTER'
+        },
+        {
+          'accessLevel' => 30,
+          'name' => 'Developer',
+          'membersCount' => 0,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/DEVELOPER'
+        },
+        {
+          'accessLevel' => 40,
+          'name' => 'Maintainer',
+          'membersCount' => 1,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/MAINTAINER'
+        },
+        # one owner is created during project creation
+        {
+          'accessLevel' => 50,
+          'name' => 'Owner',
+          'membersCount' => 1,
+          'detailsPath' => '/admin/application_settings/roles_and_permissions/OWNER'
+        }
       ]
 
       expect(roles).to eq(expected_result)

@@ -51,6 +51,12 @@ module Types
         alpha: { milestone: '16.11' },
         description: 'Web UI path to edit the custom role.'
 
+      field :details_path,
+        GraphQL::Types::String,
+        null: false,
+        alpha: { milestone: '17.4' },
+        description: 'URL path to the role details webpage.'
+
       field :created_at,
         Types::TimeType,
         null: false,
@@ -64,6 +70,10 @@ module Types
 
       def edit_path
         member_role_edit_path(object)
+      end
+
+      def details_path
+        member_role_details_path(object)
       end
     end
     # rubocop: enable Graphql/AuthorizeTypes

@@ -13,7 +13,7 @@ module Resolvers
           row = counts.find { |c| c.access_level == access_level }
           count = row ? row.members_count : 0
 
-          { name: name, access_level: access_level, members_count: count }
+          { name: name, access_level: access_level, members_count: count, group: object }
         end
 
         result.sort_by { |role| role[:access_level] }
@@ -34,6 +34,7 @@ module Resolvers
           Member.count_by_role
         end
       end
+      strong_memoize_attr :counts
     end
   end
 end
