@@ -4,6 +4,7 @@ import {
   REGEXES,
   SUPPORTED_IDENTIFIER_TYPE_CWE,
   SUPPORTED_IDENTIFIER_TYPE_OWASP,
+  VULNERABILITY_TAB_INDEX_TO_NAME,
 } from './constants';
 
 // Get the issue in the format expected by the descendant components of related_issues_block.vue.
@@ -111,4 +112,41 @@ export const getRefFromBlobPath = (path) => {
     return match ? match[1] : '';
   }
   return '';
+};
+
+/**
+ *  Determines the tab index for code flow based on the route query parameters.
+ */
+export const getTabIndexForCodeFlowPage = (route) => {
+  if (route?.query?.tab) {
+    return 1;
+  }
+  return 0;
+};
+
+/**
+ * @typedef {Object} TabNavigationParams
+ * @property {string} path - The current route path.
+ * @property {number} index - The index of the tab to be set.
+ * @property {number} [selectedIndex] - The currently selected tab index. This is optional as it might be undefined.
+ */
+
+/**
+ * Updates the route to reflect the selected tab index.
+ * This function is used to update the URL when switching between different views
+ * of the vulnerability, between 'details' and 'code flow'
+ * @param {Object} router - The router object used for navigation.
+ * @param {TabNavigationParams} routeProps - The route properties including path and tab indices.
+ */
+export const setTabIndexForCodeFlowPage = (router, routeProps) => {
+  const { path, index, selectedIndex } = routeProps;
+
+  // Don't set the tab index if it's the same. This prevents some querystring bugs.
+  if (index === selectedIndex) {
+    return;
+  }
+  router.push({
+    path,
+    query: { tab: VULNERABILITY_TAB_INDEX_TO_NAME[index] },
+  });
 };
