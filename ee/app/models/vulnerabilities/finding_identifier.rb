@@ -12,5 +12,7 @@ module Vulnerabilities
     validates :finding, presence: true
     validates :identifier, presence: true
     validates :identifier_id, uniqueness: { scope: [:occurrence_id] }
+
+    scope :by_finding_id, ->(finding_ids) { where(finding: finding_ids) }
   end
 end

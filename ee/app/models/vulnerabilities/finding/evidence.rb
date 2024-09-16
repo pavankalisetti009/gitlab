@@ -12,6 +12,8 @@ module Vulnerabilities
         optional: false
 
       validates :data, length: { maximum: 16_000_000 }, presence: true
+
+      scope :by_finding_id, ->(finding_ids) { where(finding: finding_ids) }
     end
   end
 end

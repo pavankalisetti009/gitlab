@@ -183,6 +183,22 @@ RSpec.describe ProjectStatistics do
     end
   end
 
+  describe 'decrease_vulnerability_counter!' do
+    let_it_be(:project) { create(:project) }
+
+    let(:statistics) { project.statistics }
+
+    subject(:decrease_vulnerability_counter) { statistics.decrease_vulnerability_counter!(1) }
+
+    before do
+      statistics.update_column(:vulnerability_count, 2)
+    end
+
+    it 'decreases the `vulnerability_count` attribute by given number' do
+      expect { decrease_vulnerability_counter }.to change { statistics.reload.vulnerability_count }.by(-1)
+    end
+  end
+
   def create_fork(plan:, fork_visibility:, **attributes)
     group = plan == :none ? create(:group) : create(:group_with_plan, plan: plan)
     project_fork = create(:project, fork_visibility, group: group)
