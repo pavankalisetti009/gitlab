@@ -23,6 +23,12 @@ RSpec.describe 'Setting Project and Group Pre Receive Secret Detection', feature
       )
     end
 
+    before do
+      stub_licensed_features(
+        pre_receive_secret_detection: true
+      )
+    end
+
     context 'when the user does not have permission' do
       it_behaves_like 'a mutation that returns a top-level access error'
 
@@ -55,6 +61,19 @@ RSpec.describe 'Setting Project and Group Pre Receive Secret Detection', feature
         end
       end
     end
+
+    context 'when Secret Push Protection is not available for the project' do
+      before do
+        stub_licensed_features(pre_receive_secret_detection: false)
+      end
+
+      it_behaves_like 'a mutation that returns a top-level access error'
+
+      it 'does not enable pre receive secret detection' do
+        expect { post_graphql_mutation(mutation, current_user: current_user) }
+          .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
+      end
+    end
   end
 
   context 'with group' do
@@ -79,6 +98,9 @@ RSpec.describe 'Setting Project and Group Pre Receive Secret Detection', feature
     context 'when the user has permission' do
       before do
         group.add_maintainer(current_user)
+        stub_licensed_features(
+          pre_receive_secret_detection: true
+        )
       end
 
       it 'raises ResourceNotAvailable' do
