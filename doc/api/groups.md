@@ -1873,8 +1873,8 @@ The following criteria must be met:
   - Personal access token
   - Group access token
   - Project access token
-  - Group Deploy Token
-  - User Feed Tokens
+  - Group deploy token
+  - User feed tokens
 
 Additional token types may be supported at a later date.
 
