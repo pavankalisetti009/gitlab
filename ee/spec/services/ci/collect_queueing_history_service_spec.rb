@@ -14,7 +14,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
   let(:percentiles) { [50, 75, 90, 95, 99] }
   let(:runner_type) { nil }
   let(:from_time) { starting_time }
-  let(:to_time) { starting_time + 3.hours }
+  let(:to_time) { 3.hours.after(starting_time) }
   let(:owner_namespace) { nil }
 
   let(:service) do
@@ -200,13 +200,13 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
       builds = [from_time - 1.second,
         from_time,
         to_time,
-        to_time + 5.minutes + 1.second].map do |started_at|
+        (5.minutes + 1.second).after(to_time)].map do |started_at|
         build_stubbed(:ci_build,
           :success,
-          created_at: started_at - 1.minute,
-          queued_at: started_at - 1.minute,
+          created_at: 1.minute.before(started_at),
+          queued_at: 1.minute.before(started_at),
           started_at: started_at,
-          finished_at: started_at + 10.minutes,
+          finished_at: 10.minutes.after(started_at),
           runner: runner,
           runner_manager: runner.runner_managers.first)
       end
@@ -264,7 +264,7 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
     end
 
     context 'when requesting more that TIME_BUCKETS_LIMIT' do
-      let(:to_time) { starting_time + 190.minutes }
+      let(:to_time) { 190.minutes.after(starting_time) }
 
       it 'returns error' do
         expect(result.error?).to eq(true)
