@@ -21,8 +21,11 @@ export default {
     },
   },
   computed: {
+    dataPointsByValue() {
+      return this.dataPoints.toSorted((a, b) => b.value - a.value);
+    },
     itemsWithTracingUrl() {
-      return this.dataPoints.map((dataPoint) => ({
+      return this.dataPointsByValue.map((dataPoint) => ({
         ...dataPoint,
         url: this.getTracesUrl(dataPoint),
       }));
