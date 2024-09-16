@@ -27,7 +27,7 @@ RSpec.describe 'Start trial from external site without confirmation', :with_defa
     user = build_stubbed(:user)
     visit new_trial_registration_path(glm_params)
 
-    fill_in_sign_up_form(user, 'Continue')
+    fill_in_sign_up_form(user)
 
     select 'Software Developer', from: 'user_role'
     choose 'My company or team'

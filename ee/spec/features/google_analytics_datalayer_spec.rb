@@ -22,7 +22,7 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
 
         prevent_submit_for('#new_new_user')
 
-        fill_in_sign_up_form(new_user, 'Continue')
+        fill_in_sign_up_form(new_user)
 
         data_layer = execute_script('return window.dataLayer')
         last_event_in_data_layer = data_layer[-1]

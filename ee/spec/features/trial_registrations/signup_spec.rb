@@ -33,7 +33,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
       let(:signup_path) { new_trial_registration_path }
       let(:user_email) { new_user.email }
       let(:fill_and_submit_signup_form) do
-        fill_in_sign_up_form(new_user, 'Continue')
+        fill_in_sign_up_form(new_user)
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
       it 'creates the user' do
         visit new_trial_registration_path
 
-        expect { fill_in_sign_up_form(new_user, 'Continue') }.to change { User.count }
+        expect { fill_in_sign_up_form(new_user) }.to change { User.count }
       end
 
       context 'when reCAPTCHA verification fails' do
@@ -58,7 +58,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
         it 'does not create the user' do
           visit new_trial_registration_path
 
-          expect { fill_in_sign_up_form(new_user, 'Continue') }.not_to change { User.count }
+          expect { fill_in_sign_up_form(new_user) }.not_to change { User.count }
           expect(page).to have_content(_('There was an error with the reCAPTCHA. Please solve the reCAPTCHA again.'))
         end
       end

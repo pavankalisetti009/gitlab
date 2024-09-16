@@ -11,20 +11,6 @@
 = render "layouts/google_tag_manager_body"
 - @body_class = 'marketing-background-gradient'
 
-- content_for :omniauth_providers_top do
-  .gl-pt-5
-    %label.gl-font-normal
-      = _('Sign up for your free trial with:')
-    .gl-flex.gl-gap-3
-      - popular_enabled_button_based_providers.each do |provider|
-        = render 'devise/shared/signup_omniauth_provider_button',
-          href: omniauth_authorize_path(:user, provider, register_omniauth_params(trial: true)),
-          provider: provider,
-          tracking_label: preregistration_tracking_label
-
-  .gl-my-5.gl-font-bold
-    = _('Or create your own GitLab account')
-
 .row.marketing-styling
   .col-md-8.gl-flex.gl-flex-col
     - upper_tag = tag.span(class: 'gl-text-size-h2-xl')
@@ -43,7 +29,25 @@
           tag_pair(lower_tag, :lower_start, :lower_end))
 
     .signup-box.gl-max-w-75
-      = render 'signup_box', tracking_label: preregistration_tracking_label
+      .gl-mb-3.gl-p-6.gl-border-gray-100.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-white
+        = render 'signup_box_form',
+          url: trial_registrations_path(glm_tracking_params),
+          button_text: _('Continue'),
+          button_class: 'black-btn'
+
+        - if social_signin_enabled?
+          .gl-pt-5
+            = render 'shared/divider', text: _('or')
+          .gl-flex.gl-justify-center
+            %label.gl-font-normal
+              = _('Continue with:')
+          .gl-flex.gl-gap-3.gl-justify-center
+            - popular_enabled_button_based_providers.each do |provider|
+              = render 'devise/shared/omniauth_provider_button',
+                href: omniauth_authorize_path(:user, provider, register_omniauth_params(trial: true)),
+                provider: provider,
+                classes: 'js-track-omni-auth',
+                data: { provider: provider, track_action: "#{provider}_sso", track_label: preregistration_tracking_label }
 
       .additional-links.gl-mt-6
         = render 'devise/shared/sign_in_link',

@@ -98,7 +98,7 @@ module SaasRegistrationHelpers
 
     visit new_user_registration_path(params)
 
-    fill_in_sign_up_form(new_user, 'Register')
+    fill_in_sign_up_form(new_user)
   end
 
   def user_signs_up_with_sso(params = {}, provider: 'google_oauth2', name: 'Registering User')
@@ -203,7 +203,7 @@ module SaasRegistrationHelpers
     new_user = build(:user, name: 'Registering User', email: user_email)
 
     perform_enqueued_jobs do
-      fill_in_sign_up_form(new_user, 'Continue')
+      fill_in_sign_up_form(new_user)
     end
   end
 
@@ -228,7 +228,7 @@ module SaasRegistrationHelpers
     visit new_subscriptions_path(plan_id: 'bronze_id')
 
     perform_enqueued_jobs do
-      fill_in_sign_up_form(new_user, 'Register')
+      fill_in_sign_up_form(new_user)
     end
   end
 
