@@ -12,6 +12,9 @@ export const i18n = {
   SETTINGS_FORM_CREATED: s__(
     "CreateValueStreamForm|'%{name}' Value Stream has been successfully created.",
   ),
+  SETTINGS_FORM_UPDATED: s__(
+    "CreateValueStreamForm|'%{name}' Value Stream has been successfully saved.",
+  ),
   RECOVER_HIDDEN_STAGE: s__('CreateValueStreamForm|Recover hidden stage'),
   RESTORE_HIDDEN_STAGE: s__('CreateValueStreamForm|Restore stage'),
   RESTORE_DEFAULTS: s__('CreateValueStreamForm|Restore defaults'),

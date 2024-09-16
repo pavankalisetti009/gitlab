@@ -33,8 +33,12 @@ export const updateValueStream = (
 
   return apiUpdateValueStream({ namespacePath, valueStreamId, data })
     .then(({ data: newValueStream }) => {
-      commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
-      return dispatch('fetchCycleAnalyticsData');
+      if (!gon.features?.vsaStandaloneSettingsPage) {
+        commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
+        return dispatch('fetchCycleAnalyticsData');
+      }
+
+      return commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
     })
     .catch(({ response } = {}) => {
       const { data: { message, payload: { errors } } = null } = response;

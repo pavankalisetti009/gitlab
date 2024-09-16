@@ -84,8 +84,7 @@ export default {
     },
     valueStreamPath: {
       type: String,
-      required: false,
-      default: null,
+      required: true,
     },
   },
   data() {
@@ -155,6 +154,17 @@ export default {
     currentValueStreamStageNames() {
       return this.stages.map(({ name }) => cleanStageName(name));
     },
+    submissionSuccessfulAlert() {
+      const id = this.isEditing ? 'value-stream-updated-success' : 'value-stream-created-success';
+      const message = sprintf(
+        this.isEditing
+          ? this.$options.i18n.SETTINGS_FORM_UPDATED
+          : this.$options.i18n.SETTINGS_FORM_CREATED,
+        { name: this.name },
+      );
+
+      return { id, message, variant: 'success' };
+    },
   },
   methods: {
     ...mapActions(['createValueStream', 'updateValueStream']),
@@ -193,24 +203,9 @@ export default {
         this.track('submit_form', {
           label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
         });
+        this.isRedirecting = true;
 
-        if (this.isEditing) {
-          this.$toast.show(sprintf(this.$options.i18n.FORM_EDITED, { name: this.name }));
-
-          return;
-        }
-
-        if (this.valueStreamPath) {
-          this.isRedirecting = true;
-
-          visitUrlWithAlerts(this.valueStreamPath, [
-            {
-              id: 'value-stream-created-success',
-              message: sprintf(this.$options.i18n.SETTINGS_FORM_CREATED, { name: this.name }),
-              variant: 'success',
-            },
-          ]);
-        }
+        visitUrlWithAlerts(this.valueStreamPath, [this.submissionSuccessfulAlert]);
       });
     },
     stageGroupLabel(index) {
