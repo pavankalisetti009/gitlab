@@ -31,6 +31,14 @@ module MemberRolesHelper
     end
   end
 
+  def member_role_details_path(role)
+    if gitlab_com_subscription?
+      Gitlab::Routing.url_helpers.group_settings_roles_and_permission_path(role.namespace, role)
+    else
+      Gitlab::Routing.url_helpers.admin_application_settings_roles_and_permission_path(role)
+    end
+  end
+
   private
 
   def new_role_path(source)
