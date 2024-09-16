@@ -35,6 +35,7 @@ describe('WorkItemLabels component', () => {
         workItemIid,
         canUpdate,
         workItemType: 'epic',
+        isGroup: false,
       },
     });
   };
