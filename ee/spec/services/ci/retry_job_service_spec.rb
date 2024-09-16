@@ -31,11 +31,7 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
         let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project) }
 
         before do
-          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
-            .allow_cross_database_modification_within_transaction(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706') do
-            build.update!(dast_site_profile: dast_site_profile, dast_scanner_profile: dast_scanner_profile)
-          end
+          build.update!(dast_site_profile: dast_site_profile, dast_scanner_profile: dast_scanner_profile)
         end
 
         it 'clones the profile associations', :aggregate_failures do

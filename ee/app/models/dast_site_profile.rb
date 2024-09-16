@@ -23,11 +23,7 @@ class DastSiteProfile < Gitlab::Database::SecApplicationRecord
   validate :excluded_urls_contains_valid_strings
   validate :scan_file_path_contains_valid_url
 
-  scope :with_dast_site_and_validation, -> do
-    includes(dast_site: :dast_site_validation)
-      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014')
-  end
-
+  scope :with_dast_site_and_validation, -> { includes(dast_site: :dast_site_validation) }
   scope :with_name, ->(name) { where(name: name) }
   scope :with_project_id, ->(project_id) { where(project_id: project_id) }
   scope :with_project, -> { includes(:project) }
