@@ -45,7 +45,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       {
         prompt: user_input,
         options: {
-          chat_history: "",
+          chat_history: [],
           context: {
             type: issue_resource.current_page_type,
             content: issue_resource.current_page_short_description

@@ -210,7 +210,6 @@ module Gitlab
           def conversation
             Utils::ChatConversation.new(context.current_user)
               .truncated_conversation_list
-              .join(", ")
           end
 
           def current_resource_params
