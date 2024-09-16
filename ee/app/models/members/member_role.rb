@@ -27,8 +27,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   validate :validate_requirements
   validate :ensure_at_least_one_permission_is_enabled
 
-  validates_associated :members
-
   before_save :set_occupies_seat
 
   scope :elevating, -> do
