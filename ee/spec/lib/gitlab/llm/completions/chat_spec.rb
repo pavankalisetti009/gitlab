@@ -294,6 +294,8 @@ client_subscription_id: 'someid' }
           .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
           .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+          .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
 
         subject
       end
@@ -322,6 +324,8 @@ client_subscription_id: 'someid' }
           .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
          .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+         .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
 
         subject
       end
