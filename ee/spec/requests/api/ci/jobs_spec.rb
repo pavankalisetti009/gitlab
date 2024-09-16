@@ -149,7 +149,7 @@ RSpec.describe API::Ci::Jobs, feature_category: :continuous_integration do
           it 'does not allow to see that artfiact is present' do
             subject
 
-            expect(response).to have_gitlab_http_status(:not_found)
+            expect(response).to have_gitlab_http_status(:forbidden)
           end
         end
       end
