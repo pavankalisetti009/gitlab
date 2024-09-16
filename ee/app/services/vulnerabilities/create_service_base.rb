@@ -40,7 +40,6 @@ module Vulnerabilities
           description
                  state
                  severity
-                 confidence
                  detected_at
                  confirmed_at
                  resolved_at
@@ -123,7 +122,6 @@ module Vulnerabilities
         vulnerability: vulnerability,
         name: vulnerability.title,
         severity: vulnerability.severity,
-        confidence: vulnerability.confidence,
         report_type: vulnerability.report_type,
         project_fingerprint: Digest::SHA1.hexdigest(identifiers.first.name),
         location: location,

@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_management do
-  it { is_expected.to define_enum_for(:confidence) }
   it { is_expected.to define_enum_for(:report_type) }
   it { is_expected.to define_enum_for(:severity) }
   it { is_expected.to define_enum_for(:detection_method) }
@@ -597,29 +596,6 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
       context 'without found record' do
         let(:param) { described_class.severities[:unknown] }
-
-        it 'returns empty collection' do
-          is_expected.to be_empty
-        end
-      end
-    end
-
-    describe '.by_confidences' do
-      let!(:vulnerability_high) { create(:vulnerabilities_finding, confidence: :high) }
-      let!(:vulnerability_low) { create(:vulnerabilities_finding, confidence: :low) }
-
-      subject { described_class.by_confidences(param) }
-
-      context 'with matching param' do
-        let(:param) { described_class.confidences[:low] }
-
-        it 'returns found record' do
-          is_expected.to contain_exactly(vulnerability_low)
-        end
-      end
-
-      context 'with non-matching param' do
-        let(:param) { described_class.confidences[:unknown] }
 
         it 'returns empty collection' do
           is_expected.to be_empty

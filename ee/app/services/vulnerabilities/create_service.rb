@@ -62,7 +62,6 @@ module Vulnerabilities
         state: @state || finding.state,
         severity: finding.severity,
         severity_overridden: false,
-        confidence: finding.confidence,
         confidence_overridden: false,
         report_type: finding.report_type,
         dismissed_at: determine_dismissed_at,

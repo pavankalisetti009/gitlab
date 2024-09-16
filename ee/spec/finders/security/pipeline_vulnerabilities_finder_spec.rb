@@ -61,26 +61,20 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
 
       context 'by order' do
         let(:params) { { report_type: %w[sast] } }
-        let!(:high_high) { build(:vulnerabilities_finding, confidence: :high, severity: :high) }
-        let!(:critical_medium) { build(:vulnerabilities_finding, confidence: :medium, severity: :critical) }
-        let!(:critical_high) { build(:vulnerabilities_finding, confidence: :high, severity: :critical) }
-        let!(:unknown_high) { build(:vulnerabilities_finding, confidence: :high, severity: :unknown) }
-        let!(:unknown_medium) { build(:vulnerabilities_finding, confidence: :medium, severity: :unknown) }
-        let!(:unknown_low) { build(:vulnerabilities_finding, confidence: :low, severity: :unknown) }
+        let!(:high) { build(:vulnerabilities_finding, severity: :high) }
+        let!(:critical) { build(:vulnerabilities_finding, severity: :critical) }
+        let!(:unknown) { build(:vulnerabilities_finding, severity: :unknown) }
 
-        it 'orders by severity and confidence' do
+        it 'orders by severity' do
           allow_next_instance_of(described_class) do |pipeline_vulnerabilities_finder|
             allow(pipeline_vulnerabilities_finder).to receive(:filter).and_return(
               [
-                unknown_low,
-                unknown_medium,
-                critical_high,
-                unknown_high,
-                critical_medium,
-                high_high
+                unknown,
+                high,
+                critical
               ])
 
-            expect(subject.findings).to eq([critical_high, critical_medium, high_high, unknown_high, unknown_medium, unknown_low])
+            expect(subject.findings).to eq([critical, high, unknown])
           end
         end
       end
@@ -353,24 +347,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
       end
     end
 
-    context 'by confidence' do
-      context 'when unscoped' do
-        subject { described_class.new(pipeline: pipeline).execute }
-
-        it 'returns all vulnerability confidence levels' do
-          expect(subject.findings.map(&:confidence).uniq).to match_array %w[unknown low medium high]
-        end
-      end
-
-      context 'when `medium`' do
-        subject { described_class.new(pipeline: pipeline, params: { confidence: 'medium' }).execute }
-
-        it 'returns only medium-confidence vulnerabilities' do
-          expect(subject.findings.map(&:confidence).uniq).to match_array(%w[medium])
-        end
-      end
-    end
-
     context 'by scanner' do
       context 'when unscoped' do
         subject { described_class.new(pipeline: pipeline).execute }
@@ -538,7 +514,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
           expect(subject.findings.count).to eq(cs_count + dast_count + ds_count + sast_count)
           expect(subject.findings.map(&:scanner).map(&:external_id).uniq).to match_array %w[find_sec_bugs gemnasium-maven trivy zaproxy]
           expect(subject.findings.map(&:scanner).map(&:project).uniq).to match_array([project])
-          expect(subject.findings.map(&:confidence).uniq).to match_array(%w[unknown low medium high])
           expect(subject.findings.map(&:severity).uniq).to match_array(%w[unknown low medium high critical info])
           expect(subject.findings.map(&:details).find(&:present?)).to eq(expected_details)
         end
@@ -609,8 +584,8 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
     context 'when being tested for sort stability' do
       let(:params) { { report_type: %w[sast] } }
 
-      it 'maintains the order of the findings having the same severity and confidence' do
-        select_proc = proc { |o| o.severity == 'medium' && o.confidence == 'high' }
+      it 'maintains the order of the findings having the same severity' do
+        select_proc = proc { |o| o.severity == 'medium' }
         report_findings = pipeline.security_reports.reports['sast'].findings.select(&select_proc)
 
         found_findings = subject.findings.select(&select_proc)

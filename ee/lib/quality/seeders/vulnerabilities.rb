@@ -58,7 +58,6 @@ module Quality
           author: author,
           title: 'Cypher with no integrity',
           severity: random_severity_level,
-          confidence: random_confidence_level,
           report_type: random_report_type
         )
       end
@@ -72,7 +71,6 @@ module Quality
           project: project,
           scanner: scanner,
           severity: random_severity_level,
-          confidence: random_confidence_level,
           primary_identifier: primary_identifier,
           project_fingerprint: random_fingerprint,
           location_fingerprint: random_fingerprint,
@@ -125,10 +123,6 @@ module Quality
           vulnerability: vulnerability,
           issue: issue
         )
-      end
-
-      def random_confidence_level
-        ::Enums::Vulnerability.confidence_levels.keys.sample
       end
 
       def random_severity_level

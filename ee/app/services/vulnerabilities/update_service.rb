@@ -30,7 +30,6 @@ module Vulnerabilities
       {
         title: finding.name.truncate(::Issuable::TITLE_LENGTH_MAX),
         severity: vulnerability.severity_overridden? ? vulnerability.severity : finding.severity,
-        confidence: vulnerability.confidence_overridden? ? vulnerability.confidence : finding.confidence,
         resolved_on_default_branch: resolved_on_default_branch.nil? ? vulnerability.resolved_on_default_branch : resolved_on_default_branch
       }
     end

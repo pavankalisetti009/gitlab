@@ -7,6 +7,9 @@ module Vulnerabilities
     include Presentable
     include ::VulnerabilityFindingHelpers
     include EachBatch
+    include IgnorableColumns
+
+    ignore_columns :confidence, remove_with: '17.4', remove_after: '2024-09-22'
 
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed
@@ -119,7 +122,6 @@ module Vulnerabilities
     attr_writer :sha
     attr_accessor :scan, :found_by_pipeline
 
-    enum confidence: ::Enums::Vulnerability.confidence_levels, _prefix: :confidence
     enum report_type: ::Enums::Vulnerability.report_types
     enum severity: ::Enums::Vulnerability.severity_levels, _prefix: :severity
     enum detection_method: ::Enums::Vulnerability.detection_methods
@@ -163,7 +165,6 @@ module Vulnerabilities
     scope :by_projects, ->(values) { where(project_id: values) }
     scope :by_scanners, ->(values) { where(scanner_id: values) }
     scope :by_severities, ->(values) { where(severity: values) }
-    scope :by_confidences, ->(values) { where(confidence: values) }
     scope :by_location_fingerprints, ->(values) { where(location_fingerprint: values) }
     scope :by_uuid, ->(uuids) { where(uuid: uuids) }
     scope :excluding_uuids, ->(uuids) { where.not(uuid: uuids) }
@@ -471,10 +472,6 @@ module Vulnerabilities
 
     def severity_value
       self.class.severities[self.severity]
-    end
-
-    def confidence_value
-      self.class.confidences[self.confidence]
     end
 
     # We will eventually have only UUIDv5 values for the `uuid`
