@@ -76,6 +76,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
         confidentialityMock,
       ]),
       propsData: {
+        isGroup: false,
         fullPath: 'group/project',
         workItem,
       },
