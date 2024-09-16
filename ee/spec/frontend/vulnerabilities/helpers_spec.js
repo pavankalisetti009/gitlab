@@ -5,6 +5,9 @@ import {
   normalizeGraphQLLastStateTransition,
   formatIdentifierExternalIds,
   isSupportedIdentifier,
+  getRefFromBlobPath,
+  getTabIndexForCodeFlowPage,
+  setTabIndexForCodeFlowPage,
 } from 'ee/vulnerabilities/helpers';
 
 describe('Vulnerabilities helpers', () => {
@@ -139,6 +142,88 @@ describe('Vulnerabilities helpers', () => {
       ${'CVE'}   | ${false}
     `('renders $expected for $type', ({ type, expected }) => {
       expect(isSupportedIdentifier(type)).toBe(expected);
+    });
+  });
+
+  describe('getRefFromBlobPath', () => {
+    it('should extract the Git SHA from a valid blob path', () => {
+      const path = '/group/project/-/blob/cdeda7ae724a332e008d17245209d5edd9ba6499/src/file.js';
+      expect(getRefFromBlobPath(path)).toBe('cdeda7ae724a332e008d17245209d5edd9ba6499');
+    });
+
+    it('should return an empty string for a path without a valid Git SHA', () => {
+      const path = '/group/project/-/blob/master/src/file.js';
+      expect(getRefFromBlobPath(path)).toBe('');
+    });
+
+    it('should return an empty string for a path without "blob/"', () => {
+      const path = '/group/project/-/tree/cdeda7ae724a332e008d17245209d5edd9ba6499/src/file.js';
+      expect(getRefFromBlobPath(path)).toBe('');
+    });
+
+    it('should return an empty string for an empty path', () => {
+      expect(getRefFromBlobPath('')).toBe('');
+    });
+
+    it('should return an empty string for a non-string input', () => {
+      expect(getRefFromBlobPath(null)).toBe('');
+      expect(getRefFromBlobPath(undefined)).toBe('');
+      expect(getRefFromBlobPath(123)).toBe('');
+      expect(getRefFromBlobPath({})).toBe('');
+    });
+
+    it("should extract the Git SHA even if it's not at the end of the path", () => {
+      const path =
+        '/group/project/-/blob/cdeda7ae724a332e008d17245209d5edd9ba6499/src/file.js?ref_type=heads';
+      expect(getRefFromBlobPath(path)).toBe('cdeda7ae724a332e008d17245209d5edd9ba6499');
+    });
+  });
+
+  describe('getTabIndexForCodeFlowPage', () => {
+    it('should return 1 when tab query parameter is present', () => {
+      const route = { query: { tab: 'code_flow' } };
+      expect(getTabIndexForCodeFlowPage(route)).toBe(1);
+    });
+
+    it('should return 0 when tab query parameter is not present', () => {
+      const route = { query: {} };
+      expect(getTabIndexForCodeFlowPage(route)).toBe(0);
+    });
+
+    it('should return 0 when route is undefined', () => {
+      expect(getTabIndexForCodeFlowPage(undefined)).toBe(0);
+    });
+
+    it('should return 0 when query is undefined', () => {
+      const route = {};
+      expect(getTabIndexForCodeFlowPage(route)).toBe(0);
+    });
+  });
+
+  describe('setTabIndexForCodeFlowPage', () => {
+    let mockRouter;
+
+    beforeEach(() => {
+      mockRouter = {
+        push: jest.fn(),
+      };
+    });
+
+    it('should call router.push with correct parameters when index is different', () => {
+      setTabIndexForCodeFlowPage(mockRouter, { path: '/vulnerability/123', index: 1 });
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        path: '/vulnerability/123',
+        query: { tab: 'code_flow' },
+      });
+    });
+
+    it('should not call router.push when index is the same as selectedIndex', () => {
+      setTabIndexForCodeFlowPage(mockRouter, {
+        path: '/vulnerability/123',
+        index: 1,
+        selectedIndex: 1,
+      });
+      expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
 });
