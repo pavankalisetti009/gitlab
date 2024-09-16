@@ -1,23 +1,16 @@
 - page_title _('Domain Verification')
 
-%h1.page-title.gl-text-size-h-display
-  = _('Domain Verification')
+= render ::Layouts::PageHeadingComponent.new(_('Domain Verification')) do |c|
+  - c.with_description do
+    = s_('DomainVerification|The following domains are configured for projects in this group. Users with email addresses that match a verified domain do not need to confirm their account.')
+    = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/index', anchor: 'verified-domains-for-groups')
 
-%p.gl-text-secondary
-  = s_('DomainVerification|The following domains are configured for projects in this group. Users with email addresses that match a verified domain do not need to confirm their account.')
-  = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/index.md', anchor: 'verified-domains-for-groups')
-
-= render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card js-toggle-container' }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
-  - c.with_header do
-    .gl-new-card-title-wrapper
-      %h3.gl-new-card-title
-        = _('Domains')
-      .gl-new-card-count
-        = sprite_icon('link', css_class: 'gl-mr-2')
-        = @domains.size
-    .gl-new-card-actions
-      = render Pajamas::ButtonComponent.new(size: :small, href: new_group_settings_domain_verification_path(@group)) do
-        = s_("DomainVerification|Add Domain")
+= render ::Layouts::CrudComponent.new(_('Domains'),
+  icon: 'link',
+  count: @domains.size) do |c|
+  - c.with_actions do
+    = render Pajamas::ButtonComponent.new(size: :small, href: new_group_settings_domain_verification_path(@group)) do
+      = s_("DomainVerification|Add Domain")
   - c.with_body do
     .table-holder
       %table.table.b-table.gl-table.b-table-stacked-md{ role: 'table' }
