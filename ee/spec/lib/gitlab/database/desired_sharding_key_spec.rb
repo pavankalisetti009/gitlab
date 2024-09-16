@@ -79,21 +79,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         'vulnerability_merge_request_links' => {
           'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
-        'dast_site_validations' => {
-          'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985'
-        },
-        'dast_scanner_profiles_builds' => {
-          'dast_scanner_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/479866'
-        },
-        'dast_site_profiles_builds' => {
-          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706'
-        },
-        'dast_site_profile_secret_variables' => {
-          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014'
-        },
-        'dast_pre_scan_verifications' => {
-          'dast_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/481764'
-        },
         'sbom_occurrences_vulnerabilities' => {
           'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058',
           'sbom_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
