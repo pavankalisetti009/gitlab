@@ -1676,6 +1676,10 @@ No changes.
 - [Remove "use_remote_mirror_destroy_service" feature flag](https://gitlab.com/gitlab-org/gitlab/-/commit/74e1e921d003960afd6f259384aee2dfec18f30e) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155852))
 - [Protected containers: Cleanup renaming of protected_up_to_access_level](https://gitlab.com/gitlab-org/gitlab/-/commit/4606b5ef64f75acdd581258a0b93034195626e83) by @gerardo-navarro ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146177))
 
+## 17.1.8 (2024-09-16)
+
+No changes.
+
 ## 17.1.7 (2024-09-11)
 
 ### Fixed (2 changes)
