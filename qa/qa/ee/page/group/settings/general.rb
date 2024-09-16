@@ -47,7 +47,7 @@ module QA
                 end
 
                 view 'ee/app/views/groups/settings/_experimental_settings.haml' do
-                  element 'use-experimental-features-checkbox'
+                  element 'use-early-access-program-checkbox'
                 end
               end
             end
@@ -87,7 +87,7 @@ module QA
 
             def set_experimental_features_enabled
               expand_content('permissions-settings') do
-                check_element('use-experimental-features-checkbox', true)
+                check_element('use-early-access-program-checkbox', true)
                 click_element('save-permissions-changes-button')
               end
             end
@@ -106,7 +106,7 @@ module QA
 
             def set_use_experimental_features_enabled
               expand_content('permissions-settings')
-              check_element('use-experimental-features-checkbox', true)
+              check_element('use-early-access-program-checkbox', true)
               check_element('use-product-analytics-checkbox', true) if has_element?('use-product-analytics-checkbox')
               click_element('save-permissions-changes-button')
             end
