@@ -2,7 +2,7 @@
 
 module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an existing module
   class DependencyListExport
-    class Part < ApplicationRecord
+    class Part < Gitlab::Database::SecApplicationRecord
       include FileStoreMounter
 
       self.table_name = 'dependency_list_export_parts'

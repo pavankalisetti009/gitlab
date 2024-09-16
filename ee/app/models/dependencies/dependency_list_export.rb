@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Dependencies
-  class DependencyListExport < ApplicationRecord
+  class DependencyListExport < Gitlab::Database::SecApplicationRecord
     include FileStoreMounter
 
     MAX_EXPORT_DURATION = 24.hours
