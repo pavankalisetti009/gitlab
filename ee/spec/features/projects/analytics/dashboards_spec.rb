@@ -4,7 +4,7 @@ require 'spec_helper'
 require_relative '../product_analytics/dashboards_shared_examples'
 
 RSpec.describe 'Analytics Dashboard - Product Analytics', :js, feature_category: :product_analytics_data_management do
-  let_it_be(:current_user) { create(:user) }
+  let_it_be(:current_user) { create(:user, :with_namespace) }
   let_it_be(:user) { current_user }
   let_it_be(:group) { create(:group, :with_organization) }
   let_it_be(:project) { create(:project, :repository, namespace: group) }

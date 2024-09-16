@@ -10,5 +10,5 @@ RSpec.describe GitlabSchema.types['CustomizableDashboard'], feature_category: :p
   subject { described_class }
 
   it { is_expected.to have_graphql_fields(expected_fields) }
-  it { is_expected.to require_graphql_authorizations(:developer_access) }
+  it { is_expected.to require_graphql_authorizations(:read_product_analytics) }
 end

@@ -99,14 +99,6 @@ RSpec.shared_examples 'product analytics dashboards' do
             project.add_reporter(user)
           end
 
-          it_behaves_like 'does not render the product analytics list item'
-        end
-
-        context 'with developer permissions' do
-          before do
-            project.add_developer(user)
-          end
-
           it 'renders the onboarding list item' do
             visit_page
             expect(page).to have_content(s_('Product Analytics'))

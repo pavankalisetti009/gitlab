@@ -334,6 +334,7 @@ module EE
 
       rule { can?(:reporter_access) }.policy do
         enable :admin_issue_board
+        enable :read_product_analytics
       end
 
       rule { monitor_disabled }.policy do
@@ -350,7 +351,6 @@ module EE
         enable :admin_issue_board
         enable :admin_feature_flags_issue_links
         enable :read_project_audit_events
-        enable :read_product_analytics
         enable :create_workspace
         enable :enable_continuous_vulnerability_scans
         enable :read_project_security_exclusions
@@ -685,7 +685,7 @@ module EE
         @user.assigned_to_duo_enterprise?(@subject)
       end
 
-      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
+      rule { can?(:read_product_analytics) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 
