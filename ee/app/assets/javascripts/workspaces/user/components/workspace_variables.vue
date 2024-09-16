@@ -121,68 +121,65 @@ export default {
         __('Add variable')
       }}</gl-button>
     </template>
-    <gl-table
-      v-if="hasVariables"
-      :fields="$options.fields"
-      :items="variables"
-      show-empty
-      stacked="sm"
-    >
-      <template #cell(key)="{ item, index }">
-        <gl-form-group
-          :optional="false"
-          optional-text=""
-          :label-for="`key_${index}`"
-          label="Variable Key"
-          label-sr-only
-          invalid-feedback="This field is required."
-          :state="getStateValue(item)"
-        >
-          <gl-form-input
-            :id="`key_${index}`"
-            data-testid="key"
-            :value="item.key"
-            type="text"
-            @input="updateVariable($event, item, 'key')"
+
+    <template v-if="hasVariables" #default>
+      <gl-table :fields="$options.fields" :items="variables" show-empty stacked="sm">
+        <template #cell(key)="{ item, index }">
+          <gl-form-group
+            :optional="false"
+            optional-text=""
+            :label-for="`key_${index}`"
+            label="Variable Key"
+            label-sr-only
+            invalid-feedback="This field is required."
+            :state="getStateValue(item)"
+          >
+            <gl-form-input
+              :id="`key_${index}`"
+              data-testid="key"
+              :value="item.key"
+              type="text"
+              @input="updateVariable($event, item, 'key')"
+            />
+          </gl-form-group>
+        </template>
+        <template #cell(value)="{ item, index }">
+          <gl-form-group
+            :optional="true"
+            optional-text=""
+            :label-for="`value_${index}`"
+            label="Variable Value"
+            label-sr-only
+            invalid-feedback="This field is required."
+          >
+            <gl-form-input
+              :id="`value_${index}`"
+              data-testid="value"
+              :value="item.value"
+              type="text"
+              @input="updateVariable($event, item, 'value')"
+            />
+          </gl-form-group>
+        </template>
+        <template #cell(type)="{ item }">
+          <gl-badge variant="neutral">{{ item.type }}</gl-badge>
+        </template>
+        <template #cell(action)="{ item }">
+          <gl-button
+            v-gl-tooltip
+            icon="remove"
+            size="small"
+            category="tertiary"
+            data-testid="remove-variable"
+            :aria-label="__('Remove variable')"
+            :title="__('Remove variable')"
+            @click="removeVariable(item)"
           />
-        </gl-form-group>
-      </template>
-      <template #cell(value)="{ item, index }">
-        <gl-form-group
-          :optional="true"
-          optional-text=""
-          :label-for="`value_${index}`"
-          label="Variable Value"
-          label-sr-only
-          invalid-feedback="This field is required."
-        >
-          <gl-form-input
-            :id="`value_${index}`"
-            data-testid="value"
-            :value="item.value"
-            type="text"
-            @input="updateVariable($event, item, 'value')"
-          />
-        </gl-form-group>
-      </template>
-      <template #cell(type)="{ item }">
-        <gl-badge variant="neutral">{{ item.type }}</gl-badge>
-      </template>
-      <template #cell(action)="{ item }">
-        <gl-button
-          v-gl-tooltip
-          icon="remove"
-          size="small"
-          category="tertiary"
-          data-testid="remove-variable"
-          :aria-label="__('Remove variable')"
-          :title="__('Remove variable')"
-          @click="removeVariable(item)"
-        />
-      </template>
-    </gl-table>
-    <div v-else class="gl-new-card-empty gl-px-3 gl-py-4">
+        </template>
+      </gl-table>
+    </template>
+    <template v-else #empty>
       {{ __('There are no variables yet.') }}
-    </div>
+    </template>
   </crud-component>
 </template>
