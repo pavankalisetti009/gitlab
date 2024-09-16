@@ -1,4 +1,5 @@
 ---
+title: Manage push rules
 name: admin_push_rules
 description: Configure push rules for repositories at the group or project level.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/421786

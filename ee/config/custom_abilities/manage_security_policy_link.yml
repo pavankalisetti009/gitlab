@@ -1,4 +1,5 @@
 ---
+title: Link to a security policy project
 name: manage_security_policy_link
 description: Allows linking security policy projects.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/440226

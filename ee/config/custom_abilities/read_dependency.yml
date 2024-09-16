@@ -1,4 +1,5 @@
 ---
+title: View dependency list
 name: read_dependency
 description: Allows read-only access to the dependencies and licenses.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/415255

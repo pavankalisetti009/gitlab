@@ -1,4 +1,5 @@
 ---
+title: Manage CI/CD variables
 name: admin_cicd_variables
 description: Create, read, update, and delete CI/CD variables.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/437947

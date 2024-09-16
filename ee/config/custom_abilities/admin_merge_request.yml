@@ -1,4 +1,5 @@
 ---
+title: Approve merge request
 name: admin_merge_request
 description: Allows approval of merge requests.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/412708
