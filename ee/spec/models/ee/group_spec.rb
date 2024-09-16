@@ -3858,6 +3858,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.seats_available_for?([user.id.to_s], ::Gitlab::Access::DEVELOPER, nil)).to eq(true)
       end
 
+      it 'considers if users are already consuming a seat when the seat count is exceeded' do
+        group.gitlab_subscription.update!(seats: 1)
+        group.add_developer(user)
+        group.add_developer(create(:user))
+
+        expect(group.seats_available_for?([user.id.to_s], ::Gitlab::Access::MAINTAINER, nil)).to eq(true)
+      end
+
       it 'returns true if passed an empty array' do
         expect(group.seats_available_for?([], ::Gitlab::Access::DEVELOPER, nil)).to eq(true)
       end

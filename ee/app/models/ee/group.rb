@@ -615,6 +615,8 @@ module EE
 
       new_invites = invites.map(&:to_s) - billable_ids
 
+      return true if new_invites.empty?
+
       gitlab_subscription.seats >= (billable_ids.count + new_invites.count)
     end
 
