@@ -4,12 +4,14 @@ require 'spec_helper'
 
 RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_projects do
   let_it_be(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization, users: [user]) }
   let(:current_user) { user }
   let(:group_params) do
     {
       name: 'GitLab',
       path: 'group_path',
-      visibility_level: Gitlab::VisibilityLevel::PUBLIC
+      visibility_level: Gitlab::VisibilityLevel::PUBLIC,
+      organization_id: organization.id
     }.merge(extra_params)
   end
 
@@ -46,7 +48,7 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
   end
 
   context 'when created group is a sub-group' do
-    let_it_be(:group) { create(:group, owners: user) }
+    let_it_be(:group) { create(:group, organization: organization, owners: user) }
     let(:extra_params) { { parent_id: group.id } }
 
     include_examples 'sends streaming audit event'

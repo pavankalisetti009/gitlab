@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group', feature_category: :groups_and_projects do
+RSpec.describe 'Group', :with_current_organization, feature_category: :groups_and_projects do
   include NamespaceStorageHelpers
   include FreeUserCapHelpers
 
@@ -187,7 +187,12 @@ RSpec.describe 'Group', feature_category: :groups_and_projects do
   end
 
   describe 'identity verification', :js, :saas do
-    let_it_be_with_reload(:user) { create(:user, :identity_verification_eligible, :with_sign_ins) }
+    let_it_be_with_reload(:user) do
+      create(
+        :user, :identity_verification_eligible, :with_sign_ins,
+        organizations: [current_organization]
+      )
+    end
 
     before do
       sign_in(user)
@@ -239,7 +244,7 @@ RSpec.describe 'Group', feature_category: :groups_and_projects do
       end
 
       context 'when creating a subgroup' do
-        let_it_be(:group) { create(:group, path: 'parent', owners: user) }
+        let_it_be(:group) { create(:group, path: 'parent', organization: current_organization, owners: user) }
 
         before do
           visit new_group_path(parent_id: group.id, anchor: 'create-group-pane')

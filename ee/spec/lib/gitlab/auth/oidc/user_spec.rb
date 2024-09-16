@@ -30,10 +30,6 @@ RSpec.describe Gitlab::Auth::Oidc::User, feature_category: :system_access do
       extra: extra_hash)
   end
 
-  around do |example|
-    Namespace.with_disabled_organization_validation { example.run }
-  end
-
   before do
     allow(Gitlab.config.omniauth).to receive_messages(block_auto_created_users: false)
 

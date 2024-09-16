@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Registration group and project creation flow', :js, feature_category: :onboarding do
+RSpec.describe 'Registration group and project creation flow', :with_current_organization, :js, feature_category: :onboarding do
   include SaasRegistrationHelpers
 
-  let_it_be(:user) { create(:user, onboarding_in_progress: true) }
+  let_it_be(:user) { create(:user, onboarding_in_progress: true, organizations: [current_organization]) }
 
   before do
     # https://gitlab.com/gitlab-org/gitlab/-/issues/340302
