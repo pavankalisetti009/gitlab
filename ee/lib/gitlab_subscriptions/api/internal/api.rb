@@ -27,10 +27,6 @@ module GitlabSubscriptions
         mount ::API::GitlabSubscriptions::AddOnPurchases
         mount ::API::Ci::Minutes
         mount ::API::GitlabSubscriptions::Subscriptions
-
-        # this API is deprecated, it will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/473625.
-        # Please use GitlabSubscriptions::API::Internal::UpcomingReconciliations instead.
-        mount ::API::Internal::UpcomingReconciliations
       end
     end
   end

@@ -2,8 +2,6 @@
 
 module GitlabSubscriptions
   class UpcomingReconciliation < ApplicationRecord
-    include BulkInsertSafe
-
     self.table_name = 'upcoming_reconciliations'
 
     belongs_to :namespace, inverse_of: :upcoming_reconciliation, optional: true
