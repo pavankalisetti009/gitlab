@@ -10,7 +10,7 @@ module QA
           def self.included(base)
             super
 
-            base.view 'ee/app/views/subscriptions/trials/_alert.html.haml' do
+            base.view 'ee/app/views/gitlab_subscriptions/trials/_alert.html.haml' do
               element 'trial-activated-content'
             end
           end

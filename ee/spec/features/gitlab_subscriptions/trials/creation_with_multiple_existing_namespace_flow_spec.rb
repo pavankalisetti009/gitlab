@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Trial lead submission and creation with multiple eligible namespaces', :saas_trial, :js, feature_category: :acquisition do
-  let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup
-  let_it_be(:group) do # rubocop:disable Gitlab/RSpec/AvoidSetup
+  let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
+  let_it_be(:group) do # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
     create(:group, owners: user)
     create(:group, name: 'gitlab', owners: user)
   end
