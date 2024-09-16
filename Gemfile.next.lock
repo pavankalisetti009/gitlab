@@ -505,7 +505,7 @@ GEM
       thor (>= 0.19, < 2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
-    devfile (0.0.26.pre.alpha1)
+    devfile (0.0.28.pre.alpha1)
     device_detector (1.0.0)
     devise (4.9.3)
       bcrypt (~> 3.0)
@@ -1251,9 +1251,9 @@ GEM
     omniauth-oauth2-generic (0.2.8)
       omniauth-oauth2 (~> 1.0)
       rake
-    omniauth-saml (2.1.0)
-      omniauth (~> 2.0)
-      ruby-saml (~> 1.12)
+    omniauth-saml (2.2.1)
+      omniauth (~> 2.1)
+      ruby-saml (~> 1.17)
     omniauth-shibboleth-redux (2.0.0)
       omniauth (>= 2.0.0)
     omniauth_openid_connect (0.8.0)
@@ -1678,7 +1678,7 @@ GEM
       prism (>= 0.29.0, < 0.31)
       rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
-    ruby-lsp-rails (0.3.14)
+    ruby-lsp-rails (0.3.15)
       ruby-lsp (>= 0.17.12, < 0.18.0)
     ruby-lsp-rspec (0.1.12)
       ruby-lsp (~> 0.17.0)
@@ -1687,7 +1687,7 @@ GEM
     ruby-openai (3.7.0)
       httparty (>= 0.18.1)
     ruby-progressbar (1.11.0)
-    ruby-saml (1.15.0)
+    ruby-saml (1.17.0)
       nokogiri (>= 1.13.10)
       rexml
     ruby-statistics (3.0.0)
@@ -2035,7 +2035,7 @@ DEPENDENCIES
   declarative_policy (~> 1.1.0)
   deprecation_toolkit (~> 1.5.1)
   derailed_benchmarks
-  devfile (~> 0.0.26.pre.alpha1)
+  devfile (~> 0.0.28.pre.alpha1)
   device_detector
   devise (~> 4.9.3)
   devise-pbkdf2-encryptable (~> 0.0.0)!
@@ -2200,7 +2200,7 @@ DEPENDENCIES
   omniauth-google-oauth2 (~> 1.1)
   omniauth-oauth2-generic (~> 0.2.2)
   omniauth-salesforce (~> 1.0.5)!
-  omniauth-saml (~> 2.1.0)
+  omniauth-saml (~> 2.2.1)
   omniauth-shibboleth-redux (~> 2.0)
   omniauth_crowd (~> 2.4.0)!
   omniauth_openid_connect (~> 0.8.0)
@@ -2284,7 +2284,7 @@ DEPENDENCIES
   ruby-magic (~> 0.6)
   ruby-openai (~> 3.7)
   ruby-progressbar (~> 1.10)
-  ruby-saml (~> 1.15.0)
+  ruby-saml (~> 1.17.0)
   rubyzip (~> 2.3.2)
   rugged (~> 1.6)
   sanitize (~> 6.0.2)
