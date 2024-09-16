@@ -119,23 +119,26 @@ export default {
 </script>
 <template>
   <gl-card
-    class="gl-new-card gl-mb-5 gl-bg-white"
-    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-bg-white"
-    body-class="gl-new-card-body gl-p-0"
+    class="gl-mb-5"
+    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-gap-3 gl-px-5 gl-bg-default"
+    body-class="gl-p-0"
   >
     <template #header>
       <gl-icon
         :name="healthCheckUI.icon"
         :variant="healthCheckUI.variant"
-        class="gl-mr-3"
         data-testid="health-check-icon"
       />
-      <h4 :class="{ 'gl-text-gray-500': isLoading }" data-testid="health-check-title">
+      <h2
+        class="gl-m-0 gl-items-center gl-text-lg gl-leading-24"
+        :class="{ 'gl-text-subtle': isLoading }"
+        data-testid="health-check-title"
+      >
         {{ healthCheckUI.title }}
-      </h4>
+      </h2>
 
       <gl-button
-        class="gl-ml-auto gl-w-full sm:gl-w-auto"
+        class="gl-ml-auto gl-w-full sm:-gl-my-2 sm:gl-w-auto"
         :loading="isLoading"
         :disabled="isLoading"
         data-testid="run-health-check-button"
