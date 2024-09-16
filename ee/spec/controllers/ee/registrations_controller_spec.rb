@@ -124,10 +124,6 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
     let(:params) { {} }
     let(:session) { {} }
 
-    around do |example|
-      Namespace.with_disabled_organization_validation { example.run }
-    end
-
     subject(:post_create) { post :create, params: params.merge(user_params), session: session }
 
     def identity_verification_exempt_for_user?

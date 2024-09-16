@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe API::ServiceAccounts, :aggregate_failures, feature_category: :user_management do
-  let(:user)  { create(:user) }
-  let(:admin) { create(:admin) }
+RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_failures, feature_category: :user_management do
+  let(:user)  { create(:user, organizations: [current_organization]) }
+  let(:admin) { create(:admin, organizations: [current_organization]) }
   let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
   describe "POST /service_accounts" do

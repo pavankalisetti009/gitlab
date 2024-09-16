@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :js, feature_category: :acquisition do
-  let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup
+RSpec.describe 'Trial lead submission, group and trial creation', :with_current_organization, :saas_trial, :js, feature_category: :acquisition do
+  let_it_be(:user) { create(:user, organizations: [current_organization]) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- We need to ensure user is member of current organization
 
   context 'when creating lead, group and applying trial is successful' do
     it 'fills out form, testing validations, submits and lands on the group page' do
