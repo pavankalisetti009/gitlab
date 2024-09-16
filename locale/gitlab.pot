@@ -44652,6 +44652,18 @@ msgstr ""
 msgid "Random"
 msgstr ""
 
+msgid "RapidDiffs|Diff line"
+msgstr ""
+
+msgid "RapidDiffs|Diff line number"
+msgstr ""
+
+msgid "RapidDiffs|Original line"
+msgstr ""
+
+msgid "RapidDiffs|Original line number"
+msgstr ""
+
 msgid "Rate Limits"
 msgstr ""
 
