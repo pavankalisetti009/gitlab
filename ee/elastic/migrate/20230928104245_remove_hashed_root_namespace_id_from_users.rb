@@ -20,3 +20,5 @@ class RemoveHashedRootNamespaceIdFromUsers < Elastic::Migration
     'hashed_root_namespace_id'
   end
 end
+
+RemoveHashedRootNamespaceIdFromUsers.prepend ::Elastic::MigrationObsolete
