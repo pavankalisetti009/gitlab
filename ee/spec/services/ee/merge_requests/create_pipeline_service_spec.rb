@@ -69,11 +69,11 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
         expect(merge_request.all_pipelines.last).to be_merged_result_pipeline
         expect(merge_request.all_pipelines.last).not_to be_detached_merge_request_pipeline
       end
-    end
 
-    it 'responds with success', :aggregate_failures do
-      expect(subject).to be_success
-      expect(subject.payload).to eq(Ci::Pipeline.last)
+      it 'responds with success', :aggregate_failures do
+        expect(subject).to be_success
+        expect(subject.payload).to eq(Ci::Pipeline.last)
+      end
     end
 
     context 'when push options contain ci.skip' do
