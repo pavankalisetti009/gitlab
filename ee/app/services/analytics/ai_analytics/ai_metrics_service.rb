@@ -28,10 +28,15 @@ module Analytics
       def add_duo_pro_assigned(data)
         return data unless fields.include?(:duo_pro_assigned_users_count)
 
-        users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
+        # TODO: Refactor after https://gitlab.com/gitlab-org/gitlab/-/issues/489759 is done.
+        # current code assumes that addons are mutually exclusive
+        pro_users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
           current_user, namespace, add_on_name: :code_suggestions).execute
 
-        data.merge(duo_pro_assigned_users_count: users.count)
+        enterprise_users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
+          current_user, namespace, add_on_name: :duo_enterprise).execute
+
+        data.merge(duo_pro_assigned_users_count: pro_users.count + enterprise_users.count)
       end
 
       def add_code_suggestions_usage(data)

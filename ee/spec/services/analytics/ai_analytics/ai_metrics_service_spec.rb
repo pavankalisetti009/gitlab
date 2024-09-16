@@ -52,7 +52,12 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
 
       allow_next_instance_of(GitlabSubscriptions::AddOnAssignedUsersFinder,
         current_user, container, add_on_name: :code_suggestions) do |instance|
-        allow(instance).to receive(:execute).and_return([:foo, :bar, :baz])
+        allow(instance).to receive(:execute).and_return([:foo, :bar])
+      end
+
+      allow_next_instance_of(GitlabSubscriptions::AddOnAssignedUsersFinder,
+        current_user, container, add_on_name: :duo_enterprise) do |instance|
+        allow(instance).to receive(:execute).and_return([:baz])
       end
     end
 
