@@ -48,14 +48,17 @@ RSpec.shared_examples 'anthropic client' do
   let(:http_status) { 200 }
   let(:response_headers) { { 'Content-Type' => 'application/json' } }
   let(:logger) { instance_double('Gitlab::Llm::Logger') }
+  let(:ai_gateway_url) { 'https://cloud.example.com/ai' }
 
   before do
+    stub_env('AI_GATEWAY_URL', ai_gateway_url)
+
     available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: api_key,
       enabled_by_namespace_ids: enabled_by_namespace_ids)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
       .and_return(available_service_data)
 
-    stub_request(:post, "https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/complete")
+    stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
       .with(
         body: expected_request_body,
         headers: expected_request_headers
@@ -101,7 +104,7 @@ RSpec.shared_examples 'anthropic client' do
 
       context 'when request is retried once' do
         before do
-          stub_request(:post, 'https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/complete')
+          stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
             .to_return(status: 429, body: '', headers: response_headers)
             .then.to_return(status: 200, body: response_body, headers: response_headers)
 
@@ -369,16 +372,16 @@ RSpec.shared_examples 'anthropic client' do
     let(:response_body) { expected_messages_response.to_json }
 
     before do
-      stub_request(:post, 'https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/messages')
-      .with(
-        body: expected_request_body,
-        headers: expected_request_headers
-      )
-      .to_return(
-        status: http_status,
-        body: response_body,
-        headers: response_headers
-      )
+      stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
+        .with(
+          body: expected_request_body,
+          headers: expected_request_headers
+        )
+        .to_return(
+          status: http_status,
+          body: response_body,
+          headers: response_headers
+        )
     end
 
     subject(:messages_complete) do
@@ -419,7 +422,7 @@ RSpec.shared_examples 'anthropic client' do
 
       context 'when request is retried once' do
         before do
-          stub_request(:post, 'https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/messages')
+          stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
             .to_return(status: 429, body: '', headers: response_headers)
             .then.to_return(status: 200, body: response_body, headers: response_headers)
 
@@ -479,7 +482,7 @@ RSpec.shared_examples 'anthropic client' do
 
     context 'when forbidden' do
       before do
-        stub_request(:post, 'https://cloud.gitlab.com/ai/v1/proxy/anthropic/v1/messages')
+        stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
           .to_return(status: 403, body: '', headers: response_headers)
       end
 
