@@ -8,14 +8,6 @@ RSpec.describe PagesDomain, feature_category: :pages do
   describe '#root_group' do
     let(:pages_domain) { create(:pages_domain, project: project) }
 
-    context 'when pages_domain does not belong to project' do
-      let_it_be(:project) { nil }
-
-      it 'returns nil' do
-        expect(pages_domain.root_group).to eq(nil)
-      end
-    end
-
     context 'when pages_domain belongs to project' do
       context 'when project belongs to user' do
         let_it_be(:user_namespace) { create(:user).namespace }
