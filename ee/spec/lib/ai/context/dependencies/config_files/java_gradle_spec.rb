@@ -26,7 +26,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaGradle, feature_categ
 
         dependencies { // Comment
             implementation 'org.codehaus.groovy:groovy:3.+'
-            testImplementation "com.google.guava:guava:29.0.1"
+            testImplementation "com.google.guava:guava:29.0.1" // Inline comment
             "implementation" 'org.ow2.asm:asm:9.6'
 
             implementation group: "org.neo4j", name: "neo4j-jmx", version: "1.3"
@@ -55,7 +55,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaGradle, feature_categ
         'neo4j-jmx (1.3)',
         'junit (4.11)',
         'ant (1.10.14)',
-        'arcgis-java ($arcgisVersion)'
+        'arcgis-java'
       ]
     end
   end
