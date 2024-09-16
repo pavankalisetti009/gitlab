@@ -622,22 +622,24 @@ describe('ValueStreamFormContent', () => {
           });
         });
 
-        it('displays a toast message', () => {
-          expect(mockToastShow).toHaveBeenCalledWith(`'${initialData.name}' Value Stream saved`);
+        it('form header should be in loading state', () => {
+          expect(findFormActions().props('isLoading')).toBe(true);
+        });
+
+        it('redirects to the updated value stream page', () => {
+          expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
+            {
+              id: 'value-stream-updated-success',
+              message: `'${initialData.name}' Value Stream has been successfully saved.`,
+              variant: 'success',
+            },
+          ]);
         });
 
         it('sends tracking information', () => {
           expect(trackingSpy).toHaveBeenCalledWith(undefined, 'submit_form', {
             label: 'edit_value_stream',
           });
-        });
-
-        it('does not redirect to the value stream page', () => {
-          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
-        });
-
-        it('form header should not be in loading state', () => {
-          expect(findFormActions().props('isLoading')).toBe(false);
         });
       });
 

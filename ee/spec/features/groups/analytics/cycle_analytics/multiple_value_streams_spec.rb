@@ -43,10 +43,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
     wait_for_requests
   end
 
-  # TODO: Remove this action in https://gitlab.com/gitlab-org/gitlab/-/issues/451560
-  def click_cancel_button(on_settings_page = true)
-    return unless on_settings_page
-
+  def click_cancel_button
     click_link _('Cancel')
     wait_for_requests
   end
@@ -71,6 +68,26 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
       expect(page).to have_text(_("'%{name}' Value Stream has been successfully created.") % { name: value_stream_name })
     else
       expect(page).to have_text(_("'%{name}' Value Stream created") % { name: value_stream_name })
+    end
+  end
+
+  def expect_successful_update(value_stream_name, expect_redirect)
+    if expect_redirect
+      expect(page).to have_text(_("'%{name}' Value Stream has been successfully saved.") % { name: value_stream_name })
+    else
+      expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: value_stream_name })
+    end
+  end
+
+  shared_examples 'goes back to Value Streams page when `Cancel` link button is selected' do |value_stream_name, on_settings_page = false|
+    before do
+      skip '`Cancel` link button only available on settings pages' unless on_settings_page
+    end
+
+    it 'goes back to Value Streams page when `Cancel` link button is selected' do
+      click_cancel_button
+
+      expect(page).to have_text(value_stream_name)
     end
   end
 
@@ -134,6 +151,8 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       expect_successful_save(custom_value_stream_name, on_settings_page)
     end
+
+    it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', 'default', on_settings_page
   end
 
   shared_examples 'update a value stream' do |custom_value_stream_name, with_aggregation, on_settings_page|
@@ -151,8 +170,6 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       click_save_value_stream_button
       wait_for_requests
-
-      click_cancel_button(on_settings_page)
 
       expect(path_nav_stage_names_without_median).to eq(["Overview", "Plan", "Issue", "Code", "Test", "Review", "Cool custom stage - name 7", "Staging"])
     end
@@ -172,9 +189,9 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         fill_in 'create-value-stream-name', with: edited_name
 
         click_save_value_stream_button
-        wait_for_requests
+        wait_for_all_requests
 
-        expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: edited_name })
+        expect_successful_update(edited_name, on_settings_page)
       end
 
       it 'can add and remove custom stages' do
@@ -182,9 +199,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         add_custom_label_stage_to_form(on_settings_page)
 
         click_save_value_stream_button
-        wait_for_requests
-
-        click_cancel_button(on_settings_page)
+        wait_for_all_requests
 
         expect(path_nav_elem).to have_text("Cool custom stage - name")
 
@@ -201,8 +216,6 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        click_cancel_button(on_settings_page)
-
         expect(path_nav_elem).not_to have_text("Cool custom stage - name")
       end
 
@@ -214,9 +227,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: custom_value_stream_name })
-
-        click_cancel_button(on_settings_page)
+        expect_successful_update(custom_value_stream_name, on_settings_page)
 
         expect(path_nav_elem).not_to have_text("Staging")
         expect(path_nav_elem).not_to have_text("Review")
@@ -229,10 +240,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         click_save_value_stream_button
         wait_for_requests
 
-        expect(page).to have_text(_("'%{name}' Value Stream saved") % { name: custom_value_stream_name })
-
-        click_cancel_button(on_settings_page)
-
+        expect_successful_update(custom_value_stream_name, on_settings_page)
         expect(path_nav_elem).to have_text("Test")
       end
 
@@ -250,6 +258,8 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
         expect(page).to have_text _("Stage name already exists")
       end
+
+      it_behaves_like 'goes back to Value Streams page when `Cancel` link button is selected', custom_value_stream_name, on_settings_page
     end
   end
 
@@ -319,6 +329,14 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
       it 'navigates to the `New value stream` settings page' do
         expect(page).to have_current_path(new_group_analytics_cycle_analytics_value_stream_path(group))
         expect(page).to have_text('New value stream')
+      end
+
+      context '`Cancel` link button is selected' do
+        before do
+          click_cancel_button
+        end
+
+        it_behaves_like 'empty state'
       end
     end
 

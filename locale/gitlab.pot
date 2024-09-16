@@ -16267,6 +16267,9 @@ msgstr ""
 msgid "CreateValueStreamForm|'%{name}' Value Stream has been successfully created."
 msgstr ""
 
+msgid "CreateValueStreamForm|'%{name}' Value Stream has been successfully saved."
+msgstr ""
+
 msgid "CreateValueStreamForm|'%{name}' Value Stream saved"
 msgstr ""
 
