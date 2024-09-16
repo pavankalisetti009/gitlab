@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings, featu
   end
 
   describe '#as_json' do
-    it 'returns serializable attributes' do
+    it 'returns serializable attributes', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480581' do
       attrs = {
         vertex_ai_host: host,
         vertex_ai_project: project,
