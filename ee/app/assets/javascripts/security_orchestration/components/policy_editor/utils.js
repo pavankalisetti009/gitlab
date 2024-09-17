@@ -658,9 +658,8 @@ export const getMergeRequestConfig = (params = {}, context = {}) => {
   if (!frameworkName || !frameworkIdString || !path || !namespacePath) {
     return null;
   }
-
   const frameworkLink = joinPaths(
-    gon.relative_url_root || '/',
+    gon.gitlab_url,
     'groups',
     namespacePath,
     '/-/security/compliance_dashboard/frameworks',
