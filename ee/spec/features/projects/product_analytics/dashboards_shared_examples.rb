@@ -45,11 +45,8 @@ RSpec.shared_examples 'product analytics dashboards' do
   end
 
   shared_examples 'renders the product analytics dashboards' do
-    before do
-      visit_page
-    end
-
     it do
+      visit_page
       expect(page).to have_content('Understand your audience')
     end
   end
@@ -102,12 +99,10 @@ RSpec.shared_examples 'product analytics dashboards' do
           it 'renders the onboarding list item' do
             visit_page
             expect(page).to have_content(s_('Product Analytics'))
+            expect(page).to have_content(s_('Additional permissions required'))
           end
 
           it 'does not allow onboarding' do
-            visit_page
-            expect(page).to have_content(s_('Additional permissions required'))
-
             visit project_analytics_dashboards_path(project, vueroute: 'product-analytics-onboarding')
             wait_for_requests
             expect(page).to have_content(s_('Dashboard not found'))
@@ -199,7 +194,6 @@ RSpec.shared_examples 'product analytics dashboards' do
             context 'when the clickhouse database does not exist' do
               before do
                 stub_cube_no_database_error
-                visit_page
               end
 
               it_behaves_like 'renders the setup view'
@@ -216,7 +210,6 @@ RSpec.shared_examples 'product analytics dashboards' do
             context 'when the cube API returns data' do
               before do
                 stub_cube_proxy_success
-                visit_page
               end
 
               it_behaves_like 'renders the product analytics dashboards'

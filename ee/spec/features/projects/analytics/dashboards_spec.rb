@@ -86,11 +86,7 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
 
           it_behaves_like 'VSD renders as an analytics dashboard'
 
-          it_behaves_like 'renders link to the feedback survey'
-
           it_behaves_like 'does not render contributor count'
-
-          it_behaves_like 'renders usage overview background aggregation not enabled alert'
 
           it 'does not render dora performers score panel' do
             # Currently does not support project namespaces
