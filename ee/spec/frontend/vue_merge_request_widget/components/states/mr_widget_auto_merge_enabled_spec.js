@@ -85,8 +85,18 @@ describe('MRWidgetAutoMergeEnabled', () => {
     describe('status', () => {
       it('should return "to start a merge train..." if MTWPS is selected and there is no existing merge train', () => {
         factory({
-          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-          mergeTrainsCount: 0,
+          mergeRequest: {
+            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+          },
+          mergeTrains: {
+            nodes: [
+              {
+                cars: {
+                  count: 0,
+                },
+              },
+            ],
+          },
         });
 
         expect(getStatusText()).toContain('to start a merge train when the pipeline succeeds');
@@ -94,8 +104,18 @@ describe('MRWidgetAutoMergeEnabled', () => {
 
       it('should return "to be added to the merge train..." if MTWPS is selected and there is an existing merge train', () => {
         factory({
-          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-          mergeTrainsCount: 1,
+          mergeRequest: {
+            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+          },
+          mergeTrains: {
+            nodes: [
+              {
+                cars: {
+                  count: 1,
+                },
+              },
+            ],
+          },
         });
 
         expect(getStatusText()).toContain(
@@ -104,19 +124,49 @@ describe('MRWidgetAutoMergeEnabled', () => {
       });
 
       it('should return "to be merged automatically..." if MWPS is selected', () => {
-        factory({ autoMergeStrategy: MWPS_MERGE_STRATEGY });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MWPS_MERGE_STRATEGY,
+          },
+        });
 
         expect(getStatusText()).toContain('to be merged automatically when the pipeline succeeds');
       });
 
       it('should return "to be merged automatically..." if MWCP is selected', () => {
-        factory({ autoMergeStrategy: MWCP_MERGE_STRATEGY });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MWCP_MERGE_STRATEGY,
+          },
+          mergeTrains: {
+            nodes: [
+              {
+                cars: {
+                  count: 1,
+                },
+              },
+            ],
+          },
+        });
 
         expect(getStatusText()).toContain('to be merged automatically when all merge checks pass');
       });
 
       it('should return "to be added to the merge train..." if MTWCP is selected', () => {
-        factory({ autoMergeStrategy: MTWCP_MERGE_STRATEGY, mergeTrainsCount: 1 });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MTWCP_MERGE_STRATEGY,
+          },
+          mergeTrains: {
+            nodes: [
+              {
+                cars: {
+                  count: 1,
+                },
+              },
+            ],
+          },
+        });
 
         expect(getStatusText()).toContain(
           'to be added to the merge train when all merge checks pass',
@@ -124,7 +174,20 @@ describe('MRWidgetAutoMergeEnabled', () => {
       });
 
       it('should return "start a merge train..." if MTWCP is selected', () => {
-        factory({ autoMergeStrategy: MTWCP_MERGE_STRATEGY, mergeTrainsCount: 0 });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MTWCP_MERGE_STRATEGY,
+          },
+          mergeTrains: {
+            nodes: [
+              {
+                cars: {
+                  count: 0,
+                },
+              },
+            ],
+          },
+        });
 
         expect(getStatusText()).toContain('to start a merge train when all merge checks pass');
       });
@@ -132,19 +195,31 @@ describe('MRWidgetAutoMergeEnabled', () => {
 
     describe('cancelButtonText', () => {
       it('should return "Cancel start merge train" if MTWPS is selected', () => {
-        factory({ autoMergeStrategy: MTWPS_MERGE_STRATEGY });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+          },
+        });
 
         expect(vm.cancelButtonText).toBe('Cancel auto-merge');
       });
 
       it('should return "Remove from merge train" if the pipeline has been added to the merge train', () => {
-        factory({ autoMergeStrategy: MT_MERGE_STRATEGY });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MT_MERGE_STRATEGY,
+          },
+        });
 
         expect(vm.cancelButtonText).toBe('Remove from merge train');
       });
 
       it('should return "Cancel" if MWPS is selected', () => {
-        factory({ autoMergeStrategy: MWPS_MERGE_STRATEGY });
+        factory({
+          mergeRequest: {
+            autoMergeStrategy: MWPS_MERGE_STRATEGY,
+          },
+        });
 
         expect(vm.cancelButtonText).toBe('Cancel auto-merge');
       });
@@ -153,7 +228,11 @@ describe('MRWidgetAutoMergeEnabled', () => {
 
   describe('template', () => {
     it('should render the cancel button as "Cancel" if MTWPS is selected', () => {
-      factory({ autoMergeStrategy: MTWPS_MERGE_STRATEGY });
+      factory({
+        mergeRequest: {
+          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+        },
+      });
 
       const cancelButtonText = wrapper.find('.js-cancel-auto-merge').text();
 
@@ -162,7 +241,11 @@ describe('MRWidgetAutoMergeEnabled', () => {
   });
 
   it('should render the cancel button as "Remove from merge train" if the pipeline has been added to the merge train', () => {
-    factory({ autoMergeStrategy: MT_MERGE_STRATEGY });
+    factory({
+      mergeRequest: {
+        autoMergeStrategy: MT_MERGE_STRATEGY,
+      },
+    });
 
     const cancelButtonText = wrapper.find('.js-cancel-auto-merge').text();
 

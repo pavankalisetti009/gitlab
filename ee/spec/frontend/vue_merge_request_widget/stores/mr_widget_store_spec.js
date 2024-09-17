@@ -52,9 +52,17 @@ describe('MergeRequestStore', () => {
 
     it('sets mergeTrainsCount', () => {
       store.setGraphqlData({
+        mergeTrains: {
+          nodes: [
+            {
+              cars: {
+                count: 2,
+              },
+            },
+          ],
+        },
         mergeRequest: {
           ...mergeRequest,
-          mergeTrainsCount: 2,
         },
       });
 
@@ -65,6 +73,19 @@ describe('MergeRequestStore', () => {
   describe('setGraphqlSubscriptionData', () => {
     it('sets mergeTrainsCount', () => {
       store.setGraphqlSubscriptionData({
+        mergeRequest: {
+          project: {
+            mergeTrains: {
+              nodes: [
+                {
+                  cars: {
+                    count: 2,
+                  },
+                },
+              ],
+            },
+          },
+        },
         mergeTrainsCount: 2,
       });
 

@@ -10,7 +10,10 @@ import {
 export default {
   computed: {
     statusText() {
-      const { mergeTrainsCount, autoMergeStrategy } = this.state;
+      const { mergeTrains, mergeRequest } = this.state;
+
+      const mergeTrainsCount = mergeTrains?.nodes[0]?.cars?.count || 0;
+      const { autoMergeStrategy } = mergeRequest;
 
       if (autoMergeStrategy === MT_MERGE_STRATEGY) {
         return s__('mrWidget|Added to the merge train by %{merge_author}');
@@ -44,7 +47,7 @@ export default {
       return CEAutoMergeMixin.computed.statusText.call(this);
     },
     cancelButtonText() {
-      if (this.state.autoMergeStrategy === MT_MERGE_STRATEGY) {
+      if (this.state?.mergeRequest?.autoMergeStrategy === MT_MERGE_STRATEGY) {
         return s__('mrWidget|Remove from merge train');
       }
 
