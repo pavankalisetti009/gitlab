@@ -101,6 +101,7 @@ module Gitlab
         def perform_completion_request(prompt:, options:)
           logger.info(message: "Performing request to Anthropic", options: options)
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
+          stream = options.fetch(:stream, false)
 
           Gitlab::HTTP.post(
             "#{url}/v1/complete",
@@ -108,8 +109,10 @@ module Gitlab
             body: request_body(prompt: prompt, options: options).to_json,
             timeout: timeout,
             allow_local_requests: true,
-            stream_body: options.fetch(:stream, false)
+            stream_body: stream
           ) do |fragment|
+            next unless stream
+
             parse_sse_events(fragment).each do |parsed_event|
               yield parsed_event if block_given?
             end
@@ -119,6 +122,7 @@ module Gitlab
         def perform_messages_request(messages:, options:)
           logger.info(message: "Performing request to Anthropic", options: options)
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
+          stream = options.fetch(:stream, false)
 
           response = Gitlab::HTTP.post(
             "#{url}/v1/messages",
@@ -126,8 +130,10 @@ module Gitlab
             body: request_body_for_messages(messages: messages, options: options).to_json,
             timeout: timeout,
             allow_local_requests: true,
-            stream_body: options.fetch(:stream, false)
+            stream_body: stream
           ) do |fragment|
+            next unless stream
+
             parse_sse_events(fragment).each do |parsed_event|
               yield parsed_event if block_given?
             end
