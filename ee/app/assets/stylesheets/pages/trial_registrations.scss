@@ -13,7 +13,7 @@
     background-color: $brand-charcoal !important;
 
     &:not(:focus) {
-      box-shadow: inset 0 0 0 1px $brand-charcoal !important;
+      border-color: $brand-charcoal !important;
     }
 
     &:hover {
