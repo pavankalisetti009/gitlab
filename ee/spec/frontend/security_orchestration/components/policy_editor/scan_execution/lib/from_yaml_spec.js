@@ -20,6 +20,8 @@ import {
   mockTemplateScanExecutionManifest,
   mockTemplateScanExecutionObject,
   mockInvalidTemplateScanExecutionManifest,
+  mockScanSettingsScanExecutionManifest,
+  mockScanSettingsScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
@@ -36,6 +38,7 @@ describe('fromYaml', () => {
     ${'returns the policy object for project scope'}                                                     | ${{ manifest: mockPolicyScopeExecutionManifest, validateRuleMode: true }}         | ${mockPolicyScopeScanExecutionObject}      | ${{}}
     ${'returns the policy object for valid template value'}                                              | ${{ manifest: mockTemplateScanExecutionManifest, validateRuleMode: true }}        | ${mockTemplateScanExecutionObject}         | ${{}}
     ${'returns error object for a policy with invalid template value'}                                   | ${{ manifest: mockInvalidTemplateScanExecutionManifest, validateRuleMode: true }} | ${{ error: true }}                         | ${{}}
+    ${'returns the policy object for a scan with settings'}                                              | ${{ manifest: mockScanSettingsScanExecutionManifest, validateRuleMode: true }}    | ${mockScanSettingsScanExecutionObject}     | ${{}}
   `('$title', ({ input, output, features }) => {
     window.gon = { features };
     expect(fromYaml(input)).toStrictEqual(output);

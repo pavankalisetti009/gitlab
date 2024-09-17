@@ -300,3 +300,17 @@ export const mockTemplateScanExecutionObject = {
 export const mockInvalidTemplateScanExecutionManifest = mockDastScanExecutionManifest.concat(
   `    template: not-valid-value\n`,
 );
+
+export const mockScanSettingsScanExecutionManifest = mockScheduleScanExecutionManifest.concat(
+  `    scan_settings:\n      ignore_default_before_after_script: true`,
+);
+
+export const mockScanSettingsScanExecutionObject = {
+  ...mockScheduleScanExecutionObject,
+  actions: [
+    {
+      ...mockScheduleScanExecutionObject.actions[0],
+      scan_settings: { ignore_default_before_after_script: true },
+    },
+  ],
+};

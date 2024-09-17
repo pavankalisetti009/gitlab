@@ -85,6 +85,7 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
       ];
       const actionsKeys = [
         'scan',
+        'scan_settings',
         'site_profile',
         'scanner_profile',
         'variables',
