@@ -20,14 +20,14 @@ module Mutations
 
         chat_storage.set_has_feedback(message)
 
-        track_snowplow_event(args[:tracking_event])
+        track_snowplow_event(args[:tracking_event], message)
 
         { errors: [] }
       end
 
       private
 
-      def track_snowplow_event(event)
+      def track_snowplow_event(event, message)
         return unless event
 
         extra = event.extra.is_a?(Hash) ? event.extra.slice('improveWhat', 'didWhat', 'promptLocation') : {}
@@ -38,6 +38,7 @@ module Mutations
           user: current_user,
           label: event.label,
           property: event.property,
+          requestId: message.request_id,
           **extra
         )
       end

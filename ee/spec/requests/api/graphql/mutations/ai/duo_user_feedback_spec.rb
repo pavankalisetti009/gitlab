@@ -13,6 +13,7 @@ RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
   let(:ai_message_id) { messages.first.id }
   let(:input) { { agent_version_id: agent_version.to_gid, ai_message_id: ai_message_id } }
   let(:mutation) { graphql_mutation(:duo_user_feedback, input) }
+  let(:request_id) { messages.first.request_id }
 
   subject(:resolve) { post_graphql_mutation(mutation, current_user: current_user) }
 
@@ -55,6 +56,7 @@ RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
         label: label,
         property: property,
         user: current_user,
+        requestId: request_id,
         **extra
       )
     end
@@ -64,7 +66,7 @@ RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
         { 'improveWhat' => 'more examples', 'user' => '1' }
       end
 
-      it 'ommits the unexpected keys' do
+      it 'omits the unexpected keys' do
         resolve
 
         expect_snowplow_event(
@@ -73,6 +75,7 @@ RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
           label: label,
           property: property,
           user: current_user,
+          requestId: request_id,
           'improveWhat' => 'more examples'
         )
       end
