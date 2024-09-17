@@ -35,7 +35,9 @@ module Types
       def details_path
         access_level = object[:access_level]
         access_enum = access_enums[access_level].upcase
-        access_enum.define_singleton_method(:namespace) { object[:group] }
+
+        group = object[:group]
+        access_enum.define_singleton_method(:namespace) { group }
 
         member_role_details_path(access_enum)
       end
