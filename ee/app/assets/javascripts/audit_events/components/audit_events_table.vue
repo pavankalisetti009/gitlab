@@ -1,6 +1,6 @@
 <script>
-import { GlPagination, GlTable, GlEmptyState } from '@gitlab/ui';
-
+import { GlPagination, GlTable } from '@gitlab/ui';
+import EmptyResult from '~/vue_shared/components/empty_result.vue';
 import { getParameterValues, setUrlParams } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
@@ -16,7 +16,7 @@ export default {
     HtmlTableCell,
     GlTable,
     GlPagination,
-    GlEmptyState,
+    EmptyResult,
     UrlTableCell,
     UserDate,
   },
@@ -120,10 +120,5 @@ export default {
       class="gl-w-full"
     />
   </div>
-  <gl-empty-state
-    v-else
-    :svg-path="'/assets/illustrations/empty-state/empty-activity-md.svg'"
-    :title="__('Sorry, your filter produced no results')"
-    :description="__('To widen your search, change or remove filters above.')"
-  />
+  <empty-result v-else type="filter" />
 </template>

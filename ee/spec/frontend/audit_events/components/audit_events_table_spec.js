@@ -1,7 +1,8 @@
-import { GlPagination, GlTable, GlEmptyState } from '@gitlab/ui';
+import { GlPagination, GlTable } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 
 import { nextTick } from 'vue';
+import EmptyResult from '~/vue_shared/components/empty_result.vue';
 import AuditEventsTable from 'ee/audit_events/components/audit_events_table.vue';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import createEvents from '../mock_data';
@@ -35,7 +36,7 @@ describe('AuditEventsTable component', () => {
     it('should show the empty state if there is no data', async () => {
       wrapper.setProps({ events: [] });
       await nextTick();
-      expect(wrapper.findComponent(GlEmptyState).exists()).toBe(true);
+      expect(wrapper.findComponent(EmptyResult).exists()).toBe(true);
     });
   });
 
