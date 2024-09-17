@@ -51,6 +51,16 @@ module EE
 
         ::Epics::UpdateDatesService.new([issue.epic_issue.epic]).execute
       end
+
+      override :after_commit_tasks
+      def after_commit_tasks(_user, issue)
+        super
+
+        issue.run_after_commit do
+          # issue.namespace_id can point to either a project through project namespace or a group.
+          ::Onboarding::ProgressTrackingWorker.perform_async(issue.namespace_id, 'issue_created')
+        end
+      end
     end
   end
 end

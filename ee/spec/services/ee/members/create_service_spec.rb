@@ -116,7 +116,27 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     include_examples 'sends streaming audit event'
   end
 
-  describe 'when auto assigning a duo pro seat' do
+  context 'with onboarding progress' do
+    context 'when member creation is successful' do
+      it 'schedules an onboarding progress update' do
+        expect(Onboarding::ProgressTrackingWorker).to receive(:perform_async).with(project.namespace_id, 'user_added')
+
+        execute_service
+      end
+    end
+
+    context 'when member creation fails' do
+      let(:invites) { '' }
+
+      it 'does not schedule an onboarding progress update' do
+        expect(Onboarding::ProgressTrackingWorker).not_to receive(:perform_async)
+
+        execute_service
+      end
+    end
+  end
+
+  context 'when auto assigning a duo pro seat' do
     subject(:execute_service) { described_class.new(user, params).execute }
 
     let_it_be(:group) { root_ancestor }
