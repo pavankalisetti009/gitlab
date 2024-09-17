@@ -78,6 +78,7 @@ module Gitlab
                 error: error,
                 context: context,
                 content: _("I'm sorry, I couldn't respond in time. Please try again."),
+                source: "chat_v1",
                 error_code: 'A1000'
               )
             rescue Gitlab::Llm::AiGateway::Client::ConnectionError => error
@@ -85,6 +86,7 @@ module Gitlab
               Answer.error_answer(
                 error: error,
                 context: context,
+                source: "chat_v1",
                 error_code: "A1001"
               )
             end

@@ -64,12 +64,14 @@ module Gitlab
                 error: error,
                 context: context,
                 content: _("I'm sorry, I couldn't respond in time. Please try again."),
+                source: "chat_v2",
                 error_code: "A1000"
               )
             when Gitlab::Llm::AiGateway::Client::ConnectionError
               Answer.error_answer(
                 error: error,
                 context: context,
+                source: "chat_v2",
                 error_code: "A1001"
               )
             when EmptyEventsError
@@ -77,6 +79,7 @@ module Gitlab
                 error: error,
                 context: context,
                 content: _("I'm sorry, I couldn't respond in time. Please try again."),
+                source: "chat_v2",
                 error_code: "A1002"
               )
             when ExhaustedLoopError
@@ -85,6 +88,7 @@ module Gitlab
               Answer.error_answer(
                 error: error,
                 context: context,
+                source: "chat_v2",
                 error_code: "A9999"
               )
             end
