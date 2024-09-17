@@ -20,6 +20,12 @@ code_completions:
     - codellama_13b_code
     - codestral
     - deepseekcoder
+    - mistral
+    - mixtral
+    - mixtral_8x22b
+    - mistral_text
+    - mixtral_text
+    - mixtral_8x22b_text
 duo_chat:
   title: Duo Chat
   release_state: BETA

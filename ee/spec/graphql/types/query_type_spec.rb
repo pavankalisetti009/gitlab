@@ -46,6 +46,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :audit_events_instance_streaming_destinations,
       :self_managed_users_queued_for_role_promotion,
       :ai_self_hosted_models,
+      :ai_self_hosted_model_feature_settings,
       :cloud_connector_status,
       :project_secrets_manager,
       :components
