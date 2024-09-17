@@ -58,7 +58,6 @@ RSpec.describe 'Every GitLab uploader' do
       {
         DeletedObjectUploader => "Used by Ci::DeletedObject. We don't want to replicate this since the files are physically the same files referenced by Ci::JobArtifact.",
         DependencyProxy::FileUploader => "We do want to replicate this, see https://gitlab.com/groups/gitlab-org/-/epics/8833.",
-        Packages::Composer::CacheUploader => "Might not be needed, see https://gitlab.com/gitlab-org/gitlab/-/issues/328491#note_600822092.",
         Packages::Debian::ComponentFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/333611.",
         Packages::Debian::DistributionReleaseFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/333615.",
         Packages::Rpm::RepositoryFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/379055.",
