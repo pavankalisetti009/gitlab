@@ -257,8 +257,13 @@ export default {
       </template>
 
       <template #cell(actions)="{ item }">
+        <div v-if="item.isLoading" ref="actions">
+          <gl-skeleton-loader :height="$options.cellHeight" :width="cellWidth('actions')">
+            <rect height="20" rx="4" ry="4" :width="cellWidth('actions')" />
+          </gl-skeleton-loader>
+        </div>
         <pipeline-operations
-          v-if="!item.isLoading"
+          v-else
           :pipeline="item"
           @cancel-pipeline="onCancelPipeline"
           @refresh-pipelines-table="onRefreshPipelinesTable"
