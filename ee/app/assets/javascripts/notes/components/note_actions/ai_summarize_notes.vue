@@ -4,8 +4,6 @@ import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
-import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
-import { MAX_REQUEST_TIMEOUT } from 'ee/notes/constants';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 
 export default {
@@ -47,42 +45,10 @@ export default {
         return;
       }
 
-      if (this.glFeatures.summarizeNotesWithDuo) {
-        sendDuoChatCommand({
-          question: '/summarize_comments',
-          resourceId: this.resourceGlobalId,
-        });
-      } else {
-        this.$parent.$emit('set-ai-loading', true);
-
-        this.errorAlert?.dismiss();
-        this.timeout = window.setTimeout(this.handleError, MAX_REQUEST_TIMEOUT);
-
-        this.$apollo
-          .mutate({
-            mutation: aiActionMutation,
-            variables: {
-              input: {
-                summarizeComments: { resourceId: this.resourceGlobalId },
-                clientSubscriptionId: this.summarizeClientSubscriptionId,
-              },
-            },
-          })
-          .then(({ data: { aiAction } }) => {
-            const errors = aiAction?.errors || [];
-
-            // in some cases the tooltip can get stuck
-            // open when clicking the button, so hide again just in case
-            this.hideTooltips();
-
-            if (errors[0]) {
-              this.handleError(new Error(errors[0]));
-            }
-
-            clearTimeout(this.timeout);
-          })
-          .catch(this.handleError);
-      }
+      sendDuoChatCommand({
+        question: '/summarize_comments',
+        resourceId: this.resourceGlobalId,
+      });
     },
     hideTooltips() {
       this.$nextTick(() => {
