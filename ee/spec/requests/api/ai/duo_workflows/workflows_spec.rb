@@ -206,6 +206,162 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
     end
   end
 
+  describe 'POST /ai/duo_workflows/workflows/:id/events' do
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events" }
+    let(:params) do
+      {
+        event_type: 'message',
+        message: 'Hello, World!'
+      }
+    end
+
+    context 'when success' do
+      it 'creates a new event' do
+        expect do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+        end.to change { workflow.events.count }.by(1)
+        expect(json_response['id']).to eq(Ai::DuoWorkflows::Event.last.id)
+        expect(json_response['event_type']).to eq('message')
+        expect(json_response['message']).to eq('Hello, World!')
+        expect(json_response['event_status']).to eq('queued')
+      end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it 'is successful' do
+          expect do
+            post api(path, oauth_access_token: oauth_token), params: params
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { workflow.events.count }.by(1)
+        end
+      end
+    end
+
+    context 'when required parameters are missing' do
+      it 'returns bad request when event_type is missing' do
+        post api(path, user), params: params.except(:event_type)
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include("event_type is missing")
+      end
+
+      it 'returns bad request when message is missing' do
+        post api(path, user), params: params.except(:message)
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include("message is missing")
+      end
+    end
+
+    context 'when invalid event_type is provided' do
+      it 'returns bad request' do
+        post api(path, user), params: params.merge(event_type: 'invalid_event_type')
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include("event_type does not have a valid value")
+      end
+    end
+
+    context 'with a workflow belonging to a different user' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it 'returns 404' do
+        post api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET /ai/duo_workflows/workflows/:id/events' do
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events" }
+
+    it 'returns queued events for the workflow' do
+      event1 = create(:duo_workflows_event, workflow: workflow, event_status: :queued)
+      event2 = create(:duo_workflows_event, workflow: workflow, event_status: :queued)
+
+      get api(path, user)
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response.size).to eq(2)
+      # rubocop:disable Rails/Pluck -- json_response is an array of hashes, we can't use pluck
+      expect(json_response.map { |e| e['id'] }).to contain_exactly(event1.id, event2.id)
+      expect(json_response.map { |e| e['event_status'] }).to all(eq('queued'))
+      # rubocop:enable Rails/Pluck
+    end
+
+    it 'returns empty array if no queued events' do
+      create(:duo_workflows_event, workflow: workflow, event_status: :delivered)
+
+      get api(path, user)
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response).to be_empty
+    end
+
+    context 'with a workflow belonging to a different user' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it 'returns 404' do
+        get api(path, user)
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'PUT /ai/duo_workflows/workflows/:id/events/:event_id' do
+    let(:event) { create(:duo_workflows_event, workflow: workflow, event_status: :queued) }
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events/#{event.id}" }
+    let(:params) { { event_status: 'delivered' } }
+
+    context 'when success' do
+      it 'updates the event status' do
+        put api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(event.id)
+        expect(json_response['event_status']).to eq('delivered')
+        expect(event.reload.event_status).to eq('delivered')
+      end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it 'is successful' do
+          put api(path, oauth_access_token: oauth_token), params: params
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+    end
+
+    context 'when invalid event_status is provided' do
+      it 'returns bad request' do
+        put api(path, user), params: { event_status: 'InvalidStatus' }
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to include("event_status does not have a valid value")
+      end
+    end
+
+    context 'when the event does not exist' do
+      let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events/0" }
+
+      it 'returns 404' do
+        put api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'with a workflow belonging to a different user' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it 'returns 404' do
+        put api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'with an event belonging to a different workflow' do
+      let(:other_workflow) { create(:duo_workflows_workflow, user: user, project: project) }
+      let(:event) { create(:duo_workflows_event, workflow: other_workflow) }
+
+      it 'returns 404' do
+        put api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'POST /ai/duo_workflows/direct_access' do
     let(:path) { '/ai/duo_workflows/direct_access' }
 
