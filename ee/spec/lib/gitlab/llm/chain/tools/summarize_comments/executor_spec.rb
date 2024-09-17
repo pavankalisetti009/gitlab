@@ -83,17 +83,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         end
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(summarize_notes_with_duo: false)
-        end
-
-        it 'returns error answer' do
-          expect(tool.execute.content)
-            .to eq(_('This feature is not enabled yet.'))
-        end
-      end
-
       context 'when response is successful' do
         before do
           allow(tool).to receive(:request).and_return('successful response')

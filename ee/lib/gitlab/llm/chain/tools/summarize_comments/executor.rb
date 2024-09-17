@@ -71,11 +71,7 @@ module Gitlab
             end
 
             def perform
-              error_message = if disabled?
-                                _('This feature is not enabled yet.')
-                              elsif !notes.any?
-                                _("This resource has no comments to summarize")
-                              end
+              error_message = _("This resource has no comments to summarize") unless notes.any?
 
               return error_with_message(error_message) if error_message
 
@@ -122,10 +118,6 @@ module Gitlab
 
             def authorize
               can_summarize? && Utils::ChatAuthorizer.context(context: context).allowed?
-            end
-
-            def disabled?
-              Feature.disabled?(:summarize_notes_with_duo, context.current_user)
             end
 
             def resource
