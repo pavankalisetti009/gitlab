@@ -4,6 +4,7 @@ query getSelfManagedAddOnEligibleUsers(
   $addOnType: GitlabSubscriptionsAddOnType!
   $addOnPurchaseIds: [GitlabSubscriptionsAddOnPurchaseID!]!
   $search: String
+  $sort: GitlabSubscriptionsUserSort!
   $first: Int
   $last: Int
   $after: String
@@ -12,6 +13,7 @@ query getSelfManagedAddOnEligibleUsers(
   selfManagedAddOnEligibleUsers(
     addOnType: $addOnType
     search: $search
+    sort: $sort
     first: $first
     last: $last
     after: $after

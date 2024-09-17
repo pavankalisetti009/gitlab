@@ -2,6 +2,7 @@
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DEFAULT_PER_PAGE } from '~/api';
 import { fetchPolicies } from '~/lib/graphql';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/self_managed_add_on_eligible_users.query.graphql';
 import {
   ADD_ON_ELIGIBLE_USERS_FETCH_ERROR_CODE,
@@ -14,6 +15,8 @@ import {
   ADD_ON_DUO_ENTERPRISE,
   DUO_PRO,
   DUO_ENTERPRISE,
+  SORT_OPTIONS,
+  DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
 
@@ -24,6 +27,7 @@ export default {
     ErrorAlert,
     AddOnEligibleUserList,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     addOnPurchaseId: {
       type: String,
@@ -50,6 +54,7 @@ export default {
         before: null,
       },
       filterOptions: {},
+      sort: DEFAULT_SORT_OPTION,
     };
   },
   apollo: {
@@ -70,11 +75,15 @@ export default {
     },
   },
   computed: {
+    sortOptions() {
+      return this.glFeatures.enableAddOnUsersFiltering ? SORT_OPTIONS : [];
+    },
     queryVariables() {
       return {
         addOnType:
           this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS,
         addOnPurchaseIds: [this.addOnPurchaseId],
+        sort: this.sort,
         ...this.filterOptions,
         ...this.pagination,
       };
@@ -113,6 +122,9 @@ export default {
       };
       this.filterOptions = filterOptions;
     },
+    handleSort(sort) {
+      this.sort = sort;
+    },
   },
 };
 </script>
@@ -129,7 +141,11 @@ export default {
     @prev="handlePrev"
   >
     <template #search-and-sort-bar>
-      <search-and-sort-bar @onFilter="handleFilter" />
+      <search-and-sort-bar
+        :sort-options="sortOptions"
+        @onFilter="handleFilter"
+        @onSort="handleSort"
+      />
     </template>
     <template #error-alert>
       <error-alert

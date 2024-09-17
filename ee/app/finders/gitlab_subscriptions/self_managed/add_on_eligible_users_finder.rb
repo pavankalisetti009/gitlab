@@ -3,11 +3,12 @@
 module GitlabSubscriptions
   module SelfManaged
     class AddOnEligibleUsersFinder
-      attr_reader :add_on_type, :search_term
+      attr_reader :add_on_type, :search_term, :sort
 
-      def initialize(add_on_type:, search_term: nil)
+      def initialize(add_on_type:, search_term: nil, sort: nil)
         @add_on_type = add_on_type
         @search_term = search_term
+        @sort = sort
       end
 
       def execute
@@ -15,7 +16,7 @@ module GitlabSubscriptions
 
         users = ::User.active.without_bots.without_ghosts
 
-        search_term ? users.search(search_term) : users.ordered_by_id_desc
+        search_term ? users.search(search_term) : users.sort_by_attribute(sort)
       end
     end
   end
