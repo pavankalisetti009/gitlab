@@ -51,16 +51,6 @@ FactoryBot.define do
       end
     end
 
-    after(:create) do |finding, evaluator|
-      if evaluator.pipeline
-        create(
-          :vulnerabilities_finding_pipeline,
-          finding: finding,
-          pipeline: evaluator.pipeline
-        )
-      end
-    end
-
     transient do
       pipeline { nil }
       vulnerability_project { vulnerability&.project || pipeline&.project || project }
