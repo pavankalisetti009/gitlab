@@ -18,3 +18,5 @@ class ReindexAllIssues < Elastic::Migration
     :project
   end
 end
+
+ReindexAllIssues.prepend ::Elastic::MigrationObsolete
