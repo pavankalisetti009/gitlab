@@ -93,7 +93,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
           expect { update_members }.not_to change { Members::MemberApproval.count }
           expect(update_members[:status]).to eq(:error)
           expect(update_members[:members].first.errors[:base].first).to eq(
-            "Invalid record while queuing users for approval."
+            "Unable to send approval request to administrator."
           )
           expect(update_members[:members]).to contain_exactly(members.first)
         end

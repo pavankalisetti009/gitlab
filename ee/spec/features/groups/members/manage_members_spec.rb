@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Members > Manage members', :saas, :js, feature_category: :groups_and_projects do
+RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :groups_and_projects do
   include Features::MembersHelpers
   include Features::InviteMembersModalHelpers
   include Spec::Support::Helpers::ModalHelpers
@@ -28,7 +28,14 @@ RSpec.describe 'Groups > Members > Manage members', :saas, :js, feature_category
     create(:callout, user: user1, feature_name: :duo_chat_callout)
   end
 
-  context 'with overage modal concerns' do
+  context 'with queued users' do
+    it_behaves_like 'queued users' do
+      let_it_be(:subentity) { create(:group, parent: group) }
+      let_it_be(:subentity_members_page_path) { group_group_members_path(subentity) }
+    end
+  end
+
+  context 'with overage modal concerns', :saas do
     let_it_be(:premium_plan) { create(:premium_plan) }
 
     shared_examples "adding one user by email with a given role doesn't trigger an overage modal" do |role|
@@ -230,7 +237,7 @@ RSpec.describe 'Groups > Members > Manage members', :saas, :js, feature_category
     end
   end
 
-  context 'with enterprise users' do
+  context 'with enterprise users', :saas do
     before do
       sign_in(user1)
     end
@@ -265,7 +272,7 @@ RSpec.describe 'Groups > Members > Manage members', :saas, :js, feature_category
     end
   end
 
-  context 'with banned members' do
+  context 'with banned members', :saas do
     let_it_be(:sub_group) { create(:group, parent: group) }
 
     let(:licensed_feature_available) { true }

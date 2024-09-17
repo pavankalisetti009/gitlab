@@ -10,11 +10,13 @@ module EE
       def initialize(*args)
         super
 
+        @queued_users = {}
         @added_member_ids_with_users = []
       end
 
       private
 
+      attr_reader :queued_users
       attr_accessor :added_member_ids_with_users
 
       def create_params
@@ -178,6 +180,22 @@ module EE
 
       def add_on_purchase
         @add_on_purchase ||= GitlabSubscriptions::DuoPro.add_on_purchase_for_namespace(source.root_ancestor)
+      end
+
+      override :process_result
+      def process_result(member)
+        if member.errors.added?(:base, :queued)
+          queued_users[member.user.username] = member.errors.delete(:base, :queued).first
+        end
+
+        super(member)
+      end
+
+      override :result
+      def result(pass_back = {})
+        pass_back[:queued_users] = queued_users if queued_users.any?
+
+        super(pass_back)
       end
     end
   end

@@ -57,7 +57,7 @@ RSpec.shared_examples 'billable promotion management feature' do
           member = add_member
         end.to change { Members::MemberApproval.count }.by(1)
 
-        expect(member.errors[:base].first).to eq("Request Queued For Admin Approval.")
+        expect(member.errors[:base].first).to eq("Request queued for administrator approval.")
       end
     end
 
@@ -73,7 +73,7 @@ RSpec.shared_examples 'billable promotion management feature' do
           member = add_member
         end.not_to change { Members::MemberApproval.count }
 
-        expect(member.errors[:base].first).to eq("Invalid record while queuing users for approval.")
+        expect(member.errors[:base].first).to eq("Unable to send approval request to administrator.")
       end
     end
 
@@ -174,7 +174,7 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
           members = add_members
         end.to change { Members::MemberApproval.count }.by(1)
 
-        expect(members.first.errors[:base].first).to eq("Request Queued For Admin Approval.")
+        expect(members.first.errors[:base].first).to eq("Request queued for administrator approval.")
         expect(members.second.access_level).to eq(Gitlab::Access.sym_options_with_owner[access_level])
         expect(members.second.errors[:base]).to be_empty
       end
@@ -217,8 +217,8 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
           members = add_members
         end.to change { Members::MemberApproval.count }.by(2)
 
-        expect(members.first.errors[:base].first).to eq("Request Queued For Admin Approval.")
-        expect(members.second.errors[:base].first).to eq("Request Queued For Admin Approval.")
+        expect(members.first.errors[:base].first).to eq("Request queued for administrator approval.")
+        expect(members.second.errors[:base].first).to eq("Request queued for administrator approval.")
       end
     end
   end

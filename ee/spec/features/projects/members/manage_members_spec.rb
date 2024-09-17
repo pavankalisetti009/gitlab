@@ -70,6 +70,16 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
     end
   end
 
+  context 'with queued users' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:user1) { create(:user) }
+
+    it_behaves_like 'queued users' do
+      let_it_be(:subentity) { create(:project, namespace: group) }
+      let_it_be(:subentity_members_page_path) { project_project_members_path(subentity) }
+    end
+  end
+
   context 'with an active trial', :saas do
     let_it_be(:group) { create(:group, :private, name: 'active-trial-group') }
     let_it_be(:project) { create(:project, :private, group: group, name: 'active-trial-project') }

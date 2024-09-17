@@ -566,4 +566,77 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       end
     end
   end
+
+  context 'with billable promotion management' do
+    let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let(:params) do
+      {
+        user_id: invites,
+        access_level: Gitlab::Access::DEVELOPER,
+        invite_source: '_invite_source_'
+      }
+    end
+
+    before do
+      stub_application_setting(enable_member_promotion_management: true)
+      allow(License).to receive(:current).and_return(license)
+    end
+
+    context 'when feature is disabled' do
+      before do
+        stub_feature_flags(member_promotion_management: false)
+      end
+
+      it { expect { execute_service }.to change { project.members.count }.by(2) }
+    end
+
+    context 'when setting is disabled' do
+      before do
+        stub_application_setting(enable_member_promotion_management: false)
+      end
+
+      it { expect { execute_service }.to change { project.members.count }.by(2) }
+    end
+
+    context 'when license is not Ultimate' do
+      let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+      it { expect { execute_service }.to change { project.members.count }.by(2) }
+    end
+
+    context 'queues member for admin approval' do
+      it { expect { execute_service }.not_to change { project.members.count } }
+
+      it { expect { execute_service }.to change { ::Members::MemberApproval.count }.by(2) }
+
+      it 'returns queued_users in the response' do
+        expect(execute_service).to eq({
+          status: :success,
+          queued_users: {
+            project_users[0].username => 'Request queued for administrator approval.',
+            project_users[1].username => 'Request queued for administrator approval.'
+          }
+        })
+      end
+
+      context 'with error and queued users' do
+        before do
+          root_ancestor.add_owner(project_users[0])
+        end
+
+        it 'returns message and queued_users in the response' do
+          error_message = "#{project_users[0].username}: Access level should be greater than or equal to " \
+            "Owner inherited membership from group #{root_ancestor.name}"
+
+          expect(execute_service).to eq({
+            status: :error,
+            message: error_message,
+            queued_users: {
+              project_users[1].username => 'Request queued for administrator approval.'
+            }
+          })
+        end
+      end
+    end
+  end
 end

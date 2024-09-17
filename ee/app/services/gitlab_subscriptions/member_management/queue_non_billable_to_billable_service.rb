@@ -120,12 +120,6 @@ module GitlabSubscriptions
       end
 
       def build_non_billable_to_billable_members_with_service_errors(non_billable_to_billable_users, error)
-        message = if error
-                    "Invalid record while queuing users for approval."
-                  else
-                    "Request Queued For Admin Approval."
-                  end
-
         # Build members with service errors to pass back to consumers
         # as we wont be updating/adding these members until Admin Approval
         non_billable_to_billable_users.map do |user|
@@ -133,7 +127,11 @@ module GitlabSubscriptions
           member.access_level = new_access_level
           member.member_role_id = member_role_id
 
-          member.errors.add(:base, message)
+          if error
+            member.errors.add(:base, :invalid, message: _("Unable to send approval request to administrator."))
+          else
+            member.errors.add(:base, :queued, message: _("Request queued for administrator approval."))
+          end
 
           member
         end
