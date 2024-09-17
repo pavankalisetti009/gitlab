@@ -18,3 +18,5 @@ class ReindexAllEpics < Elastic::Migration
     :group
   end
 end
+
+ReindexAllEpics.prepend ::Elastic::MigrationObsolete
