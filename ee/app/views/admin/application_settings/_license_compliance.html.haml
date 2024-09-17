@@ -10,4 +10,4 @@
       = hidden_field_tag 'application_setting[package_metadata_purl_types][]'
       - sync_purl_types_checkboxes(f).each do |checkbox|
         = checkbox
-  = f.submit _('Save changes'), pajamas_button: true
+  = f.submit _('Save changes'), pajamas_button: true, data: { testid: 'save-package-registry-button' }

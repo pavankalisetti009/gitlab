@@ -241,7 +241,8 @@ module EE
         form.gitlab_ui_checkbox_component(
           :package_metadata_purl_types,
           name,
-          checkbox_options: { checked: checked, multiple: true, autocomplete: 'off' },
+          checkbox_options: { checked: checked, multiple: true, autocomplete: 'off',
+                              data: { testid: "#{name}-checkbox" } },
           checked_value: numeric,
           unchecked_value: nil
         )
