@@ -22,7 +22,6 @@ module Security
 
       def add_violation(policy_id, data, context: nil)
         add([policy_id], [])
-        return if ::Feature.disabled?(:save_policy_violation_data, project)
 
         @violation_data[policy_id] ||= {}
         @violation_data[policy_id].deep_merge!({ context: context, violations: { report_type => data } }.compact_blank)
@@ -30,7 +29,6 @@ module Security
 
       def add_error(policy_id, error, **extra_data)
         add([policy_id], [])
-        return if ::Feature.disabled?(:save_policy_violation_data, project)
 
         violation_data[policy_id] ||= {}
         violation_data[policy_id][:errors] ||= []

@@ -18,9 +18,8 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
       { 'report_type' => report_type, 'violated_policy' => violated_policy, 'requires_approval' => requires_approval }
     end
 
-    let(:expected_violation_note_simplified) { 'Policy violation(s) detected' }
     let(:expected_optional_approvals_note) { 'Consider including optional reviewers' }
-    let(:expected_violation_note_detailed) { 'ask eligible approvers of each policy to approve this merge request' }
+    let(:expected_violation_note) { 'ask eligible approvers of each policy to approve this merge request' }
     let(:expected_fixed_note) { 'Security policy violations have been resolved' }
     let_it_be(:policy) { create(:scan_result_policy_read, project: project) }
 
@@ -91,7 +90,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
         it_behaves_like 'successful service response'
 
         it 'creates a comment' do
-          expect(last_note.note).to include(expected_violation_note_detailed, report_type)
+          expect(last_note.note).to include(expected_violation_note, report_type)
           expect(last_note.author).to eq(bot_user)
         end
       end
@@ -152,10 +151,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
           ].join("\n"))
       end
 
-      let(:save_policy_violation_data_enabled) { true }
-
       before do
-        stub_feature_flags(save_policy_violation_data: save_policy_violation_data_enabled)
         execute
         bot_comment.reload
       end
@@ -166,7 +162,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
         it_behaves_like 'successful service response'
 
         it 'updates the comment with a violated note' do
-          expect(bot_comment.note).to include(expected_violation_note_detailed)
+          expect(bot_comment.note).to include(expected_violation_note)
         end
 
         context 'when the existing violation was from another report_type' do
@@ -174,17 +170,8 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
           let(:report_type) { 'scan_finding' }
 
           it 'updates the comment with a violated note and overwrites existing violated reports' do
-            expect(bot_comment.note).to include(expected_violation_note_detailed)
+            expect(bot_comment.note).to include(expected_violation_note)
             expect(bot_comment.note).to include('scan_finding')
-          end
-
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            let(:save_policy_violation_data_enabled) { false }
-
-            it 'updates the comment with a violated note and extends existing violated reports' do
-              expect(bot_comment.note).to include(expected_violation_note_simplified)
-              expect(bot_comment.note).to include('license_scanning,scan_finding')
-            end
           end
         end
 
@@ -200,17 +187,8 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
           end
 
           it 'updates the comment and removes the optional approvals section' do
-            expect(bot_comment.note).to include(expected_violation_note_detailed)
+            expect(bot_comment.note).to include(expected_violation_note)
             expect(bot_comment.note).not_to include('<!-- optional_approvals')
-          end
-
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            let(:save_policy_violation_data_enabled) { false }
-
-            it 'updates the comment with a violated note and extends existing violated reports' do
-              expect(bot_comment.note).to include(expected_violation_note_simplified)
-              expect(bot_comment.note).not_to include('<!-- optional_approvals')
-            end
           end
         end
       end
@@ -233,15 +211,6 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
             expect(bot_comment.note).to include(expected_optional_approvals_note)
             expect(bot_comment.note).to include('scan_finding')
           end
-
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            let(:save_policy_violation_data_enabled) { false }
-
-            it 'updates the comment with a violated note and extends existing violated reports' do
-              expect(bot_comment.note).to include(expected_violation_note_simplified)
-              expect(bot_comment.note).to include('license_scanning,scan_finding')
-            end
-          end
         end
       end
 
@@ -261,15 +230,6 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
           it 'updates the comment with an fixed note and overwrites violated reports' do
             expect(bot_comment.note).to include(expected_fixed_note)
           end
-
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            let(:save_policy_violation_data_enabled) { false }
-
-            it 'updates the comment with an expected violation note and keeps existing violated reports' do
-              expect(bot_comment.note).to include(expected_violation_note_simplified)
-              expect(bot_comment.note).to include('license_scanning')
-            end
-          end
         end
       end
     end
@@ -288,7 +248,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
         bot_comment = merge_request.notes.last
 
         expect(other_bot_comment.note).to eq('Previous comment')
-        expect(bot_comment.note).to include(expected_violation_note_detailed)
+        expect(bot_comment.note).to include(expected_violation_note)
       end
     end
 
@@ -307,21 +267,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
         bot_comment = merge_request.notes.last
 
         expect(merge_request.notes.count).to eq(2)
-        expect(bot_comment.note).to include(expected_violation_note_detailed)
-      end
-    end
-
-    context 'when feature flag "save_policy_violation_data" is disabled' do
-      let(:violated_policy) { true }
-
-      before do
-        stub_feature_flags(save_policy_violation_data: false)
-      end
-
-      it 'uses simplified model to generate body' do
-        expect(Security::ScanResultPolicies::PolicyViolationComment).to receive(:new).and_call_original
-        execute
-        expect(merge_request.notes.last.note).to include(expected_violation_note_simplified)
+        expect(bot_comment.note).to include(expected_violation_note)
       end
     end
   end

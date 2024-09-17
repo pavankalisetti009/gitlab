@@ -75,9 +75,7 @@ module EE
         field :policy_violations,
           type: ::Types::SecurityOrchestration::PolicyViolationDetailsType,
           null: true,
-          alpha: { milestone: '17.0' },
-          description: 'Policy violations reported on the merge request. ' \
-            'Returns `null` if `save_policy_violation_data` feature flag is disabled.',
+          description: 'Policy violations reported on the merge request. ',
           resolver: ::Resolvers::SecurityOrchestration::PolicyViolationsResolver
       end
 

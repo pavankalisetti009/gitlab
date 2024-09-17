@@ -156,18 +156,6 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
                               .to('violations' => { 'any_merge_request' => { 'commits' => expected_violation } })
           end
 
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            before do
-              stub_feature_flags(save_policy_violation_data: false)
-            end
-
-            it 'does not persist violation details' do
-              execute
-
-              expect(merge_request.scan_result_policy_violations.last.violation_data).to be_nil
-            end
-          end
-
           it_behaves_like 'when no policy is applicable due to the policy scope' do
             it_behaves_like 'does not update approval rules'
           end
