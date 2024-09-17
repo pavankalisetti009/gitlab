@@ -3,17 +3,10 @@
 RSpec.describe Gitlab::Backup::Cli::Context::OmnibusContext do
   subject(:context) { described_class.new }
 
-  let(:fake_gitlab_basepath) { Pathname.new(Dir.mktmpdir('gitlab', temp_path)) }
   let(:fake_omnibus_config_basepath) { Pathname.new(Dir.mktmpdir('omnibus', temp_path)) }
   let(:omnibus_config_path) { fake_omnibus_config_basepath.join('gitlab-backup-cli-config.yml') }
 
-  before do
-    allow(context).to receive(:gitlab_basepath).and_return(fake_gitlab_basepath)
-    FileUtils.mkdir fake_gitlab_basepath.join('config')
-  end
-
   after do
-    fake_gitlab_basepath.rmtree
     fake_omnibus_config_basepath.rmtree
   end
 
@@ -69,6 +62,18 @@ RSpec.describe Gitlab::Backup::Cli::Context::OmnibusContext do
     end
   end
 
+  it_behaves_like 'context exposing all common configuration methods' do
+    before do
+      custom_config = {
+        gitlab: {
+          config_path: "#{fake_gitlab_basepath}/config/gitlab.yml"
+        }
+      }
+
+      patch_omnibus_config_fixture!('gitlab-backup-cli-config.yml', custom_config)
+    end
+  end
+
   def stub_omnibus_config_env(value)
     stub_env(described_class::OMNIBUS_CONFIG_ENV, value)
   end
@@ -78,5 +83,22 @@ RSpec.describe Gitlab::Backup::Cli::Context::OmnibusContext do
     FileUtils.copy(omnibus_yml_fixture, omnibus_config_path)
 
     stub_omnibus_config_env(omnibus_config_path)
+  end
+
+  def patch_omnibus_config_fixture!(fixture, custom_config)
+    use_omnibus_config_fixture(fixture)
+
+    config = Psych.safe_load_file(omnibus_config_path, symbolize_names: true)
+    config.merge!(custom_config)
+
+    serialize_to_yaml(config, omnibus_config_path)
+  end
+
+  def serialize_to_yaml(content, filename)
+    content.deep_stringify_keys!
+
+    File.open(filename, File::RDWR) do |file|
+      file.write(content.to_yaml)
+    end
   end
 end
