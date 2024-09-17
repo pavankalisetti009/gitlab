@@ -36,7 +36,7 @@ RSpec.describe Sidebars::Groups::SuperSidebarPanel, feature_category: :navigatio
     stub_licensed_features(code_suggestions: true)
     add_on = create(:gitlab_subscription_add_on)
     create(:gitlab_subscription_add_on_purchase, quantity: 50, namespace: group, add_on: add_on)
-    # Needed for Roles and Permissions
+    # Needed for Roles and permissions
     stub_saas_features(gitlab_com_subscriptions: true)
   end
 

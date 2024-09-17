@@ -16,13 +16,13 @@ RSpec.describe 'admin/application_settings/roles_and_permissions/show', feature_
   end
 
   it 'sets the breadcrumbs' do
-    expect(view).to have_received(:add_to_breadcrumbs).with('Roles and Permissions',
+    expect(view).to have_received(:add_to_breadcrumbs).with('Roles and permissions',
       admin_application_settings_roles_and_permissions_path)
     expect(view).to have_received(:breadcrumb_title).with(role.name)
   end
 
   it 'sets the page title' do
-    expect(view).to have_received(:page_title).with(role.name, 'Roles and Permissions')
+    expect(view).to have_received(:page_title).with(role.name, 'Roles and permissions')
   end
 
   it 'renders frontend placeholder' do
