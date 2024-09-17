@@ -23,6 +23,7 @@ module QA
       end
 
       let(:token) { Resource::PersonalAccessToken.fabricate!.token }
+      let(:direct_access) { fetch_direct_connection_details(token) }
 
       shared_examples 'code suggestions API' do |testcase|
         it 'returns a suggestion', testcase: testcase do
@@ -35,10 +36,18 @@ module QA
 
       shared_examples 'direct code completion' do |testcase|
         it 'returns a completion directly from AI gateway', testcase: testcase do
-          response = get_direct_completion(prompt_data)
+          response = get_direct_suggestion(prompt_data)
 
           expect_status_code(200, response)
           verify_suggestion(response, expected_response_data)
+        end
+      end
+
+      shared_examples 'direct code generation' do |testcase|
+        it 'refuses a code generation request directly from AI gateway', testcase: testcase do
+          response = get_direct_suggestion(prompt_data, 'generations')
+
+          expect_status_code(403, response)
         end
       end
 
@@ -104,6 +113,7 @@ module QA
           only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
           it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
+          it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
         end
 
         context 'on Self-managed', :orchestrated do
@@ -112,6 +122,7 @@ module QA
               context 'when seat is assigned', :ai_gateway do
                 it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
                 it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
+                it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
               end
             end
           end
@@ -184,14 +195,12 @@ module QA
       end
 
       def get_suggestion(prompt_data)
-        generate_code_completions(url: "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
+        request_code_suggestion(url: "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
           token: token, prompt_data: prompt_data)
       end
 
-      def get_direct_completion(prompt_data)
-        direct_access = fetch_direct_connection_details(token)
-
-        generate_code_completions(url: "#{direct_access[:base_url]}/v2/code/completions", token: direct_access[:token],
+      def get_direct_suggestion(prompt_data, type = 'completions')
+        request_code_suggestion(url: "#{direct_access[:base_url]}/v2/code/#{type}", token: direct_access[:token],
           headers: direct_access[:headers], prompt_data: prompt_data)
       end
 
@@ -210,7 +219,7 @@ module QA
         direct_connection_details
       end
 
-      def generate_code_completions(url:, token:, prompt_data:, headers: {})
+      def request_code_suggestion(url:, token:, prompt_data:, headers: {})
         response = Support::API.post(
           url,
           JSON.dump(prompt_data),
