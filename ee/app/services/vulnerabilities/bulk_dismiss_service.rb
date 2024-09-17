@@ -17,7 +17,14 @@ module Vulnerabilities
       ensure_authorized_projects!
 
       vulnerability_ids.each_slice(MAX_BATCH).each do |ids|
-        dismiss(Vulnerability.id_in(ids))
+        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            notes
+            vulnerability_state_transitions
+          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486990'
+        ) do
+          dismiss(Vulnerability.id_in(ids))
+        end
       end
       refresh_statistics
 
