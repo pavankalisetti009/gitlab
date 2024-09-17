@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class StateTransition < ApplicationRecord
+  class StateTransition < Gitlab::Database::SecApplicationRecord
     include EachBatch
     include BulkInsertSafe
     include IgnorableColumns

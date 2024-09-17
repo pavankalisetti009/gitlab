@@ -100,4 +100,18 @@ RSpec.describe Vulnerabilities::StateTransition, type: :model, feature_category:
       is_expected.to contain_exactly(dismissed_state_transition)
     end
   end
+
+  context 'with loose foreign key on vulnerability_state_transitions.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerability_state_transition, project_id: parent.id) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_state_transitions.author_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:vulnerability_state_transition, author: parent) }
+    end
+  end
 end

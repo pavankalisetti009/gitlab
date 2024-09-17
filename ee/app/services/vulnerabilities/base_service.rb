@@ -13,23 +13,24 @@ module Vulnerabilities
     private
 
     def update_vulnerability_with(params)
-      @vulnerability.transaction do
-        yield if block_given?
+      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+        %w[
+          notes
+          system_note_metadata
+          vulnerability_user_mentions
+          vulnerability_state_transitions
+          vulnerability_feedback
+          vulnerabilities
+        ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482672'
+      ) do
+        @vulnerability.transaction do
+          yield if block_given?
 
-        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[
-            vulnerability_state_transitions
-            vulnerabilities
-            notes
-            system_note_metadata
-            vulnerability_user_mentions
-          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482672'
-        ) do
           update_with_note(params)
         end
-      end
 
-      update_statistics
+        update_statistics
+      end
     end
 
     def update_with_note(params)
