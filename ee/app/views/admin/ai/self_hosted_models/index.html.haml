@@ -5,22 +5,20 @@
   #js-self-hosted-models{ data: { base_path: admin_ai_self_hosted_models_path, new_self_hosted_model_path: new_admin_ai_self_hosted_model_path } }
 - else
   - if @self_hosted_models.present?
-    = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card labels other-labels js-toggle-container js-admin-labels-container' }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
-      - c.with_header do
-        .gl-new-card-title-wrapper.gl-flex-col
-          %h2.h5.gl-new-card-title
-            = s_('AdminSelfHostedModels|Self-hosted models')
-            .gl-new-card-count
-              %span.js-admin-labels-count= @self_hosted_models.count
-          .gl-new-card-description
-            = s_('AdminSelfHostedModels|Add self-hosted language models to use as backups for GitLab Duo features.')
-        .gl-new-card-actions
-          = render Pajamas::ButtonComponent.new(variant: :default,
-            size: :small,
-            href: new_admin_ai_self_hosted_model_path) do
-            = s_('AdminSelfHostedModels|New self-hosted model')
+    = render ::Layouts::CrudComponent.new(s_('AdminSelfHostedModels|Self-hosted models'),
+      icon: 'container-image',
+      count: @self_hosted_models.count,
+      options: { class: 'gl-mt-5 labels other-labels js-toggle-container js-admin-labels-container' },
+      count_options: { class: 'js-admin-labels-count' }) do |c|
+      - c.with_description do
+        = s_('AdminSelfHostedModels|Add self-hosted language models to use as backups for GitLab Duo features.')
+      - c.with_actions do
+        = render Pajamas::ButtonComponent.new(variant: :default,
+          size: :small,
+          href: new_admin_ai_self_hosted_model_path) do
+          = s_('AdminSelfHostedModels|New self-hosted model')
       - c.with_body do
-        %ul.manage-labels-list.js-other-labels.gl-px-3
+        %ul.content-list.manage-labels-list.js-other-labels
           = render partial: 'self_hosted_model', collection: @self_hosted_models, as: :self_hosted_model
   .js-admin-labels-empty-state{ class: ('gl-hidden' if @self_hosted_models.present?) }
     = render Pajamas::EmptyStateComponent.new(svg_path: 'illustrations/empty-state/empty-labels-md.svg',
