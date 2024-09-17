@@ -21,6 +21,7 @@ module BranchRules
           reason: :not_found
         )
       end
+      alias_method :execute_on_all_branches_rule, :execute_on_branch_rule
 
       def external_status_check
         @external_status_check ||= project.external_status_checks.find(params[:id])

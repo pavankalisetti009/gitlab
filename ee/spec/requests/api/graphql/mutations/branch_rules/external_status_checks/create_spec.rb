@@ -83,17 +83,40 @@ RSpec.describe 'Create an external status check', feature_category: :source_code
         expect(graphql_errors).to be_nil
       end
 
-      context 'when the service to create external checks return an error' do
+      context 'when the service to create external checks fails' do
         before do
           allow_next_instance_of(MergeRequests::ExternalStatusCheck) do |instance|
             allow(instance).to receive(:save).and_raise('Error!')
           end
         end
 
-        it 'creates the external status check' do
+        it 'returns an error' do
           expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
 
           expect(graphql_errors).to include(a_hash_including('message' => a_string_including('Error!')))
+        end
+      end
+
+      context 'when the branch rule is an Projects::AllBranchesRule' do
+        let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
+
+        it 'creates the external status check' do
+          expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(1)
+
+          expect(mutation_response['externalStatusCheck']['name']).to eq(status_check_name)
+          expect(mutation_response['externalStatusCheck']['externalUrl']).to eq(external_url)
+          expect(graphql_errors).to be_nil
+        end
+      end
+
+      context 'when the branch rule is a Projects::AllProtectedBranchesRule' do
+        let(:branch_rule) { ::Projects::AllProtectedBranchesRule.new(project) }
+
+        it 'returns an error' do
+          expect { mutation_request }.to change { MergeRequests::ExternalStatusCheck.count }.by(0)
+
+          expect(mutation_response['errors']).to include('All protected branches not allowed')
+          expect(graphql_errors).to be_nil
         end
       end
     end

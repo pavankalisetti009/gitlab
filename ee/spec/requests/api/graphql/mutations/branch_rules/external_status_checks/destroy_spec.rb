@@ -64,6 +64,34 @@ RSpec.describe 'Destroy an external status check', feature_category: :source_cod
         expect(graphql_errors).to be_nil
       end
 
+      context 'when the branch rule is an Projects::AllBranchesRule' do
+        let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
+        let(:external_status_check) do
+          create(:external_status_check, project: project, protected_branches: [])
+        end
+
+        it 'destroys the external status check' do
+          mutation_request
+          expect { external_status_check.reload }.to raise_error(ActiveRecord::RecordNotFound)
+          expect(graphql_errors).to be_nil
+        end
+      end
+
+      context 'when the branch rule is a Projects::AllProtectedBranchesRule' do
+        let(:branch_rule) { ::Projects::AllProtectedBranchesRule.new(project) }
+        let(:external_status_check) do
+          create(:external_status_check, project: project, protected_branches: [])
+        end
+
+        it 'returns an error' do
+          mutation_request
+
+          expect(mutation_response['errors']).to include('All protected branches not allowed')
+          expect { external_status_check.reload }.not_to raise_error
+          expect(graphql_errors).to be_nil
+        end
+      end
+
       context 'when the service to destroy external checks returns an error' do
         it 'does not destroy the external status check' do
           allow_next_found_instance_of(MergeRequests::ExternalStatusCheck) do |instance|

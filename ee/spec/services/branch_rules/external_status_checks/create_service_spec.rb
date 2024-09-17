@@ -30,7 +30,12 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
     stub_licensed_features(audit_events: true)
   end
 
-  it_behaves_like 'create external status services'
+  context 'when the given branch rule is a Projects::AllBranchesRule' do
+    let(:branch_rule) { Projects::AllBranchesRule.new(project) }
+    let(:protected_branch) { nil }
+
+    it_behaves_like 'create external status services'
+  end
 
   describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
     before do
@@ -46,7 +51,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
     end
   end
 
-  context 'when the given branch rule is not and instance of Projects::BranchRule' do
+  context 'when the given branch rule is an invalid type' do
     let(:branch_rule) { create(:protected_branch) }
 
     it 'is unsuccessful' do
@@ -62,19 +67,9 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
     end
   end
 
-  context 'with ::Projects::AllBranchesRule' do
-    let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
-
-    it 'responds with the expected errors' do
-      expect(execute.error?).to be true
-      expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
-      expect(execute.message).to eq('All branch rules cannot configure external status checks')
-      expect(execute.payload[:errors]).to contain_exactly('All branch rules not allowed')
-    end
-  end
-
   context 'with ::Projects::AllProtectedBranchesRule' do
     let(:branch_rule) { ::Projects::AllProtectedBranchesRule.new(project) }
+    let(:protected_branch) { nil }
 
     it 'responds with the expected errors' do
       expect(execute.error?).to be true
