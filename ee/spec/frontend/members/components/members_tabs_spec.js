@@ -93,10 +93,13 @@ describe('MembersTabs', () => {
       expect(membersApps[1].props('namespace')).toBe(MEMBERS_TAB_TYPES.banned);
     });
 
-    it('renders the custom component for Promotion Requests', () => {
+    it('renders the custom component for Promotion Requests', async () => {
       const promotionsTabMeta = TABS.find(
         (tab) => tab.namespace === MEMBERS_TAB_TYPES.promotionRequest,
       );
+      // the promotion-request-tab is lazy loaded, triggering the tab before checking the actual component
+      await wrapper.findByTestId('promotion-request-tab').trigger('click');
+
       expect(wrapper.findComponent(promotionsTabMeta.component).exists()).toBe(true);
     });
   });

@@ -9,10 +9,12 @@ export const TABS = [
   {
     namespace: MEMBERS_TAB_TYPES.promotionRequest,
     title: __('Promotions'),
+    attrs: { 'data-testid': 'promotion-request-tab' },
     queryParamValue: TAB_QUERY_PARAM_VALUES.promotionRequest,
     component: PromotionRequestsTabApp,
     store: promotionRequestsTabStore,
     hideExportButton: true,
+    lazy: true,
   },
   {
     namespace: MEMBERS_TAB_TYPES.banned,
