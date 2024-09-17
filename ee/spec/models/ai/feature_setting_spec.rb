@@ -51,6 +51,42 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     end
   end
 
+  describe '.for_self_hosted_model' do
+    let_it_be(:self_hosted_model) do
+      create(:ai_self_hosted_model, name: 'model', model: :mistral)
+    end
+
+    let_it_be(:feature_setting) do
+      create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :code_completions,
+        provider: :self_hosted)
+    end
+
+    let_it_be(:other_self_hosted_model) do
+      create(:ai_self_hosted_model, name: 'other_model', model: :mixtral)
+    end
+
+    let_it_be(:other_feature_setting) do
+      create(:ai_feature_setting, self_hosted_model: other_self_hosted_model, feature: :code_generations,
+        provider: :self_hosted)
+    end
+
+    context 'when the self-hosted model exists' do
+      it 'returns feature settings for the specified self-hosted model' do
+        result = described_class.for_self_hosted_model(self_hosted_model.id)
+
+        expect(result).to match_array([feature_setting])
+      end
+    end
+
+    context 'when the self-hosted model does not exist' do
+      it 'returns an empty collection' do
+        result = described_class.for_self_hosted_model(non_existing_record_id)
+
+        expect(result).to be_empty
+      end
+    end
+  end
+
   describe '.feature_flagged_features' do
     let_it_be(:stable_features) { Ai::FeatureSetting::STABLE_FEATURES.dup.stringify_keys }
     let_it_be(:feature_flagged_features) { Ai::FeatureSetting::FLAGGED_FEATURES.dup.stringify_keys }

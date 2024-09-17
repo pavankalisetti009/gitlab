@@ -201,6 +201,13 @@ module EE
           resolver: ::Resolvers::Ai::SelfHostedModels::SelfHostedModelsResolver,
           alpha: { milestone: '17.1' }
 
+        field :ai_self_hosted_model_feature_settings,
+          ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
+          null: true,
+          description: 'List of AI feature settings for a given self-hosted model',
+          resolver: ::Resolvers::Ai::SelfHostedModels::FeatureSettingsResolver,
+          alpha: { milestone: '17.5' }
+
         field :cloud_connector_status,
           ::Types::CloudConnector::StatusType,
           null: true,

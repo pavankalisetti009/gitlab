@@ -39,6 +39,7 @@ module Ai
     validate :validate_model, if: :self_hosted?
 
     scope :find_or_initialize_by_feature, ->(feature) { find_or_initialize_by(feature: feature) }
+    scope :for_self_hosted_model, ->(self_hosted_model_id) { where(ai_self_hosted_model_id: self_hosted_model_id) }
 
     enum provider: {
       disabled: 0,
