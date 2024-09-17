@@ -49,8 +49,7 @@ module MergeRequests
       end
 
       def check_inactive?
-        ::Feature.disabled?(:locked_paths_mergeability_check, project) ||
-          !project.licensed_feature_available?(:file_locks) ||
+        !project.licensed_feature_available?(:file_locks) ||
           merge_request.target_branch != project.default_branch
       end
       strong_memoize_attr :check_inactive?
