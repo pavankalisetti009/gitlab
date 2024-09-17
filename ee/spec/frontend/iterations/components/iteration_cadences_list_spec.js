@@ -1,4 +1,4 @@
-import { GlKeysetPagination, GlLoadingIcon } from '@gitlab/ui';
+import { GlKeysetPagination, GlLoadingIcon, GlEmptyState } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import IterationCadenceListItem from 'ee/iterations/components/iteration_cadence_list_item.vue';
@@ -166,7 +166,9 @@ describe('Iteration cadences list', () => {
 
       expect(findLoadingIcon().exists()).toBe(false);
       expect(findPagination().exists()).toBe(false);
-      expect(wrapper.text()).toContain('No iteration cadences to show');
+      expect(wrapper.findComponent(GlEmptyState).props('title')).toBe(
+        'No iteration cadences to show',
+      );
     });
 
     it('shows cadences after loading', async () => {

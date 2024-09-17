@@ -1,5 +1,14 @@
 <script>
-import { GlAlert, GlButton, GlLoadingIcon, GlKeysetPagination, GlTab, GlTabs } from '@gitlab/ui';
+import EMPTY_STATE_SVG_URL from '@gitlab/svgs/dist/illustrations/status/status-nothing-md.svg?url';
+import {
+  GlAlert,
+  GlButton,
+  GlLoadingIcon,
+  GlKeysetPagination,
+  GlTab,
+  GlTabs,
+  GlEmptyState,
+} from '@gitlab/ui';
 import produce from 'immer';
 import {
   STATUS_ALL,
@@ -31,6 +40,7 @@ export default {
     GlKeysetPagination,
     GlTab,
     GlTabs,
+    GlEmptyState,
   },
   apollo: {
     workspace: {
@@ -162,6 +172,7 @@ export default {
         });
     },
   },
+  EMPTY_STATE_SVG_URL,
 };
 </script>
 
@@ -193,9 +204,11 @@ export default {
             @delete-cadence="deleteCadence"
           />
         </ul>
-        <p v-else class="nothing-here-block">
-          {{ s__('Iterations|No iteration cadences to show.') }}
-        </p>
+        <gl-empty-state
+          v-else
+          :svg-path="$options.EMPTY_STATE_SVG_URL"
+          :title="s__('Iterations|No iteration cadences to show')"
+        />
         <div
           v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage"
           class="gl-mt-3 gl-flex gl-justify-center"
