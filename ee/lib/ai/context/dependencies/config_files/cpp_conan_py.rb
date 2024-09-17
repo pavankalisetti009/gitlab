@@ -91,7 +91,9 @@ module Ai
               libs << line.split(',').map { |l| parse_line(l) }
 
               next if LINE_CONTINUATION_REGEX.match?(line)
-              break unless has_opening_brackets && !CLOSING_BRACKETS_REGEX.match?(line)
+              next if has_opening_brackets && !CLOSING_BRACKETS_REGEX.match?(line)
+
+              break
             end
 
             libs.flatten.compact

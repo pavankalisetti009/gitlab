@@ -10,6 +10,10 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::GoModules, feature_catego
   it_behaves_like 'parsing a valid dependency config file' do
     let(:config_file_content) do
       <<~CONTENT
+        module github.com/my-mod/my-mod
+
+        go 1.22
+
         require golang.org/x/mod v0.15.0
         require github.com/pmezard/go-difflib v1.0.0 // indirect
 
@@ -20,6 +24,10 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::GoModules, feature_catego
 
         require (
           github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
+        )
+
+        exclude (
+          example.com/other-module v1.3.0
         )
       CONTENT
     end
