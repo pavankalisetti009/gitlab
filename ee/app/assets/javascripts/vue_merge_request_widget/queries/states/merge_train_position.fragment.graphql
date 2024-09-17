@@ -1,6 +1,15 @@
 fragment MergeTrainPosition on MergeRequest {
   id
-  mergeTrainsCount
+  project {
+    id
+    mergeTrains {
+      nodes {
+        cars {
+          count
+        }
+      }
+    }
+  }
   mergeTrainCar {
     id
     index
