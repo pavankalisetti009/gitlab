@@ -45,12 +45,8 @@ module Security
       end
 
       def comment
-        @comment ||= comment_klass.new(existing_comment, merge_request).tap do |violation_comment|
-          if ::Feature.enabled?(:save_policy_violation_data, project)
-            initialize_comment(violation_comment)
-          else
-            initialize_comment_legacy(violation_comment)
-          end
+        @comment ||= PolicyViolationComment.new(existing_comment, merge_request).tap do |violation_comment|
+          initialize_comment(violation_comment)
         end
       end
 
@@ -66,24 +62,11 @@ module Security
         end
       end
 
-      def initialize_comment_legacy(violation_comment)
-        violation_comment.remove_report_type(report_type)
-        violation_comment.add_report_type(report_type, requires_approval) if violated_policy
-      end
-
       def scan_result_policy_rules
         merge_request.approval_rules.applicable_to_branch(merge_request.target_branch)
                      .index_by(&:scan_result_policy_id)
       end
       strong_memoize_attr :scan_result_policy_rules
-
-      def comment_klass
-        if ::Feature.enabled?(:save_policy_violation_data, project)
-          DetailedPolicyViolationComment
-        else
-          PolicyViolationComment
-        end
-      end
 
       def existing_comment
         @existing_comment ||= merge_request.notes

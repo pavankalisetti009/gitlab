@@ -111,18 +111,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             'context' => expected_context
           )
       end
-
-      context 'when feature flag "save_policy_violation_data" is disabled' do
-        before do
-          stub_feature_flags(save_policy_violation_data: false)
-        end
-
-        it 'does not persist violation details' do
-          execute
-
-          expect(last_violation.violation_data).to be_nil
-        end
-      end
     end
 
     context 'without persisted policy' do
@@ -232,18 +220,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
               'missing_scans' => ['dependency_scanning']
             }])
         end
-
-        context 'when feature flag "save_policy_violation_data" is disabled' do
-          before do
-            stub_feature_flags(save_policy_violation_data: false)
-          end
-
-          it 'does not persist the error in violation data' do
-            execute
-
-            expect(last_violation.violation_data).to be_nil
-          end
-        end
       end
 
       context 'when scan type does not match the approval rule scanners' do
@@ -290,14 +266,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
 
           it_behaves_like 'does not trigger policy bot comment'
-
-          context 'when feature flag "save_policy_violation_data" is disabled' do
-            before do
-              stub_feature_flags(save_policy_violation_data: false)
-            end
-
-            it_behaves_like 'triggers policy bot comment', :scan_finding, true
-          end
         end
       end
     end

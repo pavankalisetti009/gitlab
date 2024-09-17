@@ -177,17 +177,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
           })
       end
     end
-
-    context 'when feature flag "save_policy_violation_data" is disabled' do
-      before do
-        stub_feature_flags(save_policy_violation_data: false)
-      end
-
-      it 'only adds violated policy without data' do
-        expect(violation_data).to be_nil
-        expect(service.violated_policy_ids).to contain_exactly(policy_a.id)
-      end
-    end
   end
 
   describe '#add_error' do
@@ -221,17 +210,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       it 'saves extra data' do
         expect(violation_data)
           .to eq({ errors: [{ error: 'SCAN_REMOVED', missing_scans: ['sast'] }] })
-      end
-    end
-
-    context 'when feature flag "save_policy_violation_data" is disabled' do
-      before do
-        stub_feature_flags(save_policy_violation_data: false)
-      end
-
-      it 'only adds violated policy without data' do
-        expect(violation_data).to be_nil
-        expect(service.violated_policy_ids).to contain_exactly(policy_a.id)
       end
     end
   end

@@ -18,15 +18,11 @@ module Security
       end
 
       def violations_populated?(merge_request)
-        return true if ::Feature.disabled?(:save_policy_violation_data, merge_request.project)
-
         !merge_request.scan_result_policy_violations.without_violation_data.exists?
       end
 
       def violations_exist?(merge_request, approval_rules)
-        scope = merge_request.scan_result_policy_violations.for_approval_rules(approval_rules)
-        scope = scope.with_violation_data if ::Feature.enabled?(:save_policy_violation_data, merge_request.project)
-        scope.exists?
+        merge_request.scan_result_policy_violations.for_approval_rules(approval_rules).with_violation_data.exists?
       end
 
       def rules_requiring_approval?(approval_rules)

@@ -98,8 +98,6 @@ module Security
       end
 
       def save_violations(approval_rule, vulnerabilities)
-        return if ::Feature.disabled?(:save_policy_violation_data, project)
-
         violated_uuids = vulnerabilities.with_findings
                                         .limit(Security::ScanResultPolicyViolation::MAX_VIOLATIONS)
                                         .map(&:finding_uuid)

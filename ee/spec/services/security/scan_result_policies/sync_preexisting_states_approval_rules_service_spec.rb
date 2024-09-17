@@ -137,18 +137,6 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
           expect(violation_data.dig('violations', 'scan_finding', 'uuids', 'previously_existing'))
             .to match_array(uuids)
         end
-
-        context 'when feature flag "save_policy_violation_data" is disabled' do
-          before do
-            stub_feature_flags(save_policy_violation_data: false)
-          end
-
-          it 'does not persist violation details' do
-            execute
-
-            expect(merge_request.scan_result_policy_violations.last.violation_data).to be_nil
-          end
-        end
       end
 
       context 'when vulnerabilities count does not match the pre-existing states' do
@@ -187,14 +175,6 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
             end
 
             it_behaves_like 'does not trigger policy bot comment'
-
-            context 'when feature flag "save_policy_violation_data" is disabled' do
-              before do
-                stub_feature_flags(save_policy_violation_data: false)
-              end
-
-              it_behaves_like 'triggers policy bot comment', :scan_finding, true
-            end
           end
         end
       end

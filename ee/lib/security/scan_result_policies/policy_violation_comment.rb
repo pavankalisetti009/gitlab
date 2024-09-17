@@ -14,23 +14,10 @@ module Security
         scan_finding: 'scan_finding',
         any_merge_request: 'any_merge_request'
       }.freeze
-      MESSAGE_REQUIRES_APPROVAL = <<~MARKDOWN
-Security and compliance scanners enforced by your organization have completed and identified that approvals
-are required due to one or more policy violations.
-Review the policy's rules in the MR widget and assign reviewers to proceed.
 
-Several factors can lead to a violation or required approval in your merge request:
-
-- If merge request approval policies enforced on your project include a scanner in the conditions, the scanner must be properly configured to run in both the source and target branch, the required jobs must complete, and a job artifact containing the scan results must be produced (even if empty).
-- If any violation of a merge request approval policy's rules are found, approval is required.
-- Approvals are assumed required until all pipelines associated with the merge base commit in the target branch, and all pipelines associated with the latest commit in the source branch, are complete and it's confirmed that no policy violations have occurred.
-      MARKDOWN
-
-      MESSAGE_REQUIRES_NO_APPROVAL = <<~TEXT.squish
-        Security and compliance scanners enforced by your organization have completed and identified one or more
-        policy violations.
-        Consider including optional reviewers based on the policy rules in the MR widget.
-      TEXT
+      MORE_VIOLATIONS_DETECTED = 'More violations have been detected in addition to the list above.'
+      VIOLATIONS_BLOCKING_TITLE = ':warning: **Violations blocking this merge request**'
+      VIOLATIONS_DETECTED_TITLE = ':warning: **Violations detected in this merge request**'
 
       attr_reader :reports, :optional_approval_reports, :existing_comment, :merge_request
 
@@ -89,14 +76,6 @@ Several factors can lead to a violation or required approval in your merge reque
         'Security policy violations have been resolved.'
       end
 
-      def links_approvals_required
-        <<~MARKDOWN
-
-          [View policies enforced on your project](#{project_security_policies_url(project)}).<br>
-          [View further troubleshooting guidance](#{help_page_url('user/application_security/policies/index', anchor: 'troubleshooting-common-issues-configuring-security-policies')}).
-        MARKDOWN
-      end
-
       def reports_header
         optional_approvals_sorted_list = optional_approval_reports.sort.join(',')
 
@@ -109,25 +88,189 @@ Several factors can lead to a violation or required approval in your merge reque
       def body_message
         return fixed_note_body if reports.empty?
 
-        message, links = if only_optional_approvals?
-                           [MESSAGE_REQUIRES_NO_APPROVAL, '']
-                         else
-                           [MESSAGE_REQUIRES_APPROVAL, links_approvals_required]
-                         end
-
-        <<~MARKDOWN
-          #{reports_header}
-          :warning: **Policy violation(s) detected**
-
-          #{message}#{links}
-
-          #{format('Learn more about [Security and compliance policies](%{url}).',
-            url: help_page_url('user/application_security/policies/index'))}
-        MARKDOWN
+        [
+          summary,
+          newly_introduced_violations,
+          previously_existing_violations,
+          any_merge_request_commits,
+          license_scanning_violations,
+          error_messages,
+          comparison_pipelines
+        ].compact.join("\n")
       end
 
       def only_optional_approvals?
         reports == optional_approval_reports
+      end
+
+      def details
+        ::Security::ScanResultPolicies::PolicyViolationDetails.new(merge_request)
+      end
+      strong_memoize_attr :details
+
+      def summary
+        <<~MARKDOWN
+        #{reports_header}
+        #{merge_request.author.name}, this merge request has policy violations and errors.
+        #{only_optional_approvals? ? '' : "**To unblock this merge request, fix these items:**\n"}
+        #{violation_summary}
+
+        #{
+          if only_optional_approvals?
+            'Consider including optional reviewers based on the policy rules in the MR widget.'
+          else
+            "If you think these items shouldn't be violations, ask eligible approvers of each policy to approve this merge request."
+          end
+        }
+
+        #{
+          if [newly_introduced_violations, previously_existing_violations, any_merge_request_commits].any?(&:present?)
+            only_optional_approvals? ? VIOLATIONS_DETECTED_TITLE : VIOLATIONS_BLOCKING_TITLE
+          else
+            ''
+          end
+        }
+        MARKDOWN
+      end
+
+      def violation_summary
+        all_policies = details.unique_policy_names
+        any_merge_request_policies = details.unique_policy_names(:any_merge_request)
+        license_scanning_policies = details.unique_policy_names(:license_scanning)
+        errors = details.errors
+        summary = ["Resolve all violations in the following merge request approval policies" \
+          "#{all_policies.present? ? ": #{all_policies.join(', ')}." : '.'}"]
+
+        if any_merge_request_policies.present?
+          summary << "Acquire approvals from eligible approvers defined in the following " \
+            "merge request approval policies: #{any_merge_request_policies.join(', ')}."
+        end
+
+        if license_scanning_policies.present? && license_scanning_violations.present?
+          summary << ("Remove all denied licenses identified by the following merge request approval policies: " \
+            "#{license_scanning_policies.join(', ')}")
+        end
+
+        summary << 'Resolve the errors and re-run the pipeline.' if errors.present?
+
+        summary.map { |list_item| "- #{list_item}" }.join("\n")
+      end
+
+      def newly_introduced_violations
+        scan_finding_violations(details.new_scan_finding_violations, 'This merge request introduces these violations')
+      end
+      strong_memoize_attr :newly_introduced_violations
+
+      def previously_existing_violations
+        scan_finding_violations(details.previous_scan_finding_violations, 'Previously existing vulnerabilities')
+      end
+      strong_memoize_attr :previously_existing_violations
+
+      def scan_finding_violations(violations, title)
+        list = violations.map do |violation|
+          build_scan_finding_violation_line(violation)
+        end
+        return if list.empty?
+
+        <<~MARKDOWN
+        ---
+
+        #{title}:
+
+        #{violations_list(list)}
+        MARKDOWN
+      end
+
+      def license_scanning_violations
+        list = details.license_scanning_violations.map do |violation|
+          dependencies = violation.dependencies
+          "1. #{violation.url.present? ? "[#{violation.license}](#{violation.url})" : violation.license}: " \
+            "Used by #{dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).join(', ')}" \
+            "#{dependencies.size > Security::ScanResultPolicyViolation::MAX_VIOLATIONS ? ', …and more' : ''}"
+        end
+        return if list.empty?
+
+        <<~MARKDOWN
+        :warning: **Out-of-policy licenses:**
+
+        #{violations_list(list)}
+        MARKDOWN
+      end
+
+      def build_scan_finding_violation_line(violation)
+        line = "1."
+        line += " #{violation.severity.capitalize} **·**" if violation.severity
+        line += " #{violation.name}" if violation.name
+
+        if violation.path.present?
+          location = violation.location
+          start_line = location[:start_line]
+          line += " **·** [#{start_line.present? ? "Line #{start_line} " : ''}#{location[:file]}](#{violation.path})"
+        end
+
+        line += " (#{violation.report_type.humanize})" if violation.report_type
+        line
+      end
+
+      def any_merge_request_commits
+        list = details.any_merge_request_violations.flat_map do |violation|
+          next unless violation.commits.is_a?(Array)
+
+          violation.commits.map { |commit| "1. [`#{commit}`](#{project_commit_url(project, commit)})" }
+        end.compact
+        return if list.empty?
+
+        <<~MARKDOWN
+        ---
+
+        Unsigned commits:
+
+        #{violations_list(list)}
+        MARKDOWN
+      end
+      strong_memoize_attr :any_merge_request_commits
+
+      def violations_list(list)
+        [
+          list.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).join("\n"),
+          list.size > Security::ScanResultPolicyViolation::MAX_VIOLATIONS ? "\n#{MORE_VIOLATIONS_DETECTED}" : nil
+        ].compact.join("\n")
+      end
+
+      def error_messages
+        errors = details.errors
+        return if errors.blank?
+
+        <<~MARKDOWN
+        :exclamation: **Errors**
+
+        #{errors.map { |error| "- #{error.message}" }.join("\n")}
+        MARKDOWN
+      end
+
+      def comparison_pipelines
+        pipelines = details.comparison_pipelines
+        return if pipelines.blank?
+
+        render_title = pipelines.many? # rubocop:disable CodeReuse/ActiveRecord -- pipelines is an array
+        <<~MARKDOWN
+        :information_source: **Comparison pipelines**
+
+        #{pipelines.map { |pipeline| build_comparison_pipelines_info(pipeline, render_title) }.join("\n")}
+        MARKDOWN
+      end
+
+      def build_comparison_pipelines_info(pipeline, render_title)
+        pipeline_to_link = ->(id) { "[##{id}](#{project_pipeline_url(project, id)})" }
+        source_pipeline_links = pipeline.source.map(&pipeline_to_link)
+        target_pipeline_links = pipeline.target.map(&pipeline_to_link)
+
+        info = <<~MARKDOWN
+        - Target branch (`#{merge_request.target_branch}`): #{target_pipeline_links.join(', ').presence || 'None'}
+        - Source branch (`#{merge_request.source_branch}`): #{source_pipeline_links.join(', ').presence || 'None'}
+        MARKDOWN
+
+        [(pipeline.report_type.humanize if render_title), info].compact.join("\n")
       end
     end
   end

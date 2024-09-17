@@ -1,9 +1,0 @@
----
-name: save_policy_violation_data
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/433390
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/144883
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/455820
-milestone: '16.10'
-group: group::security policies
-type: beta
-default_enabled: true

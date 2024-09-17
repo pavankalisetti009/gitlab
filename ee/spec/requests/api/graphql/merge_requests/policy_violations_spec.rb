@@ -234,18 +234,5 @@ RSpec.describe 'Query.project.mergeRequest.policyViolations', feature_category: 
         end
       end
     end
-
-    context 'when feature flag "save_policy_violation_data" is disabled' do
-      before do
-        stub_feature_flags(save_policy_violation_data: false)
-        post_graphql(query, current_user: user)
-      end
-
-      it 'raises an exception' do
-        expect(result).to be_nil
-        expect(graphql_errors)
-          .to include(a_hash_including('message' => "`save_policy_violation_data` feature flag is disabled."))
-      end
-    end
   end
 end

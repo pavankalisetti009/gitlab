@@ -25728,7 +25728,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestmilestone"></a>`milestone` | [`Milestone`](#milestone) | Milestone of the merge request. |
 | <a id="mergerequestname"></a>`name` | [`String`](#string) | Name or title of this object. |
 | <a id="mergerequestparticipants"></a>`participants` | [`MergeRequestParticipantConnection`](#mergerequestparticipantconnection) | Participants in the merge request. This includes the author, assignees, reviewers, and users mentioned in notes. (see [Connections](#connections)) |
-| <a id="mergerequestpolicyviolations"></a>`policyViolations` **{warning-solid}** | [`PolicyViolationDetails`](#policyviolationdetails) | **Introduced** in GitLab 17.0. **Status**: Experiment. Policy violations reported on the merge request. Returns `null` if `save_policy_violation_data` feature flag is disabled. |
+| <a id="mergerequestpolicyviolations"></a>`policyViolations` | [`PolicyViolationDetails`](#policyviolationdetails) | Policy violations reported on the merge request. |
 | <a id="mergerequestpreparedat"></a>`preparedAt` | [`Time`](#time) | Timestamp of when the merge request was prepared. |
 | <a id="mergerequestproject"></a>`project` | [`Project!`](#project) | Alias for target_project. |
 | <a id="mergerequestprojectid"></a>`projectId` | [`Int!`](#int) | ID of the merge request project. |
