@@ -45,12 +45,20 @@ module QA
               end
 
               def panel_value_content(panel_index:)
+                wait_until do
+                  within_element_by_index('grid-stack-panel', panel_index) { has_element?('displayValue') }
+                end
+
                 within_element_by_index('grid-stack-panel', panel_index) do
                   find_element('displayValue').text.to_i
                 end
               end
 
               def table_value(panel_index:, cell_index:)
+                wait_until do
+                  within_element_by_index('grid-stack-panel', panel_index) { has_element?('td[role=cell]') }
+                end
+
                 within_element_by_index('grid-stack-panel', panel_index) do
                   all_elements('td[role=cell]', minimum: 1)[cell_index].text.to_i
                 end
