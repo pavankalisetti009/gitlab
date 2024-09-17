@@ -36,7 +36,7 @@ module QA
     end
 
     context 'Cloud activation code' do
-      it 'activates instance with correct subscription details',
+      it 'activates instance with correct subscription details', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350294' do
         EE::Page::Admin::Subscription.perform do |subscription|
           aggregate_failures do
