@@ -64,13 +64,13 @@ export default {
     {
       key: 'changeInPercent',
       label: '%',
-      thClass: CLASS_TEXT_RIGHT,
+      thAlignRight: true,
       tdClass: TD_CLASS_TEXT_RIGHT,
     },
     {
       key: 'currentVulnerabilitiesCount',
       label: '#',
-      thClass: CLASS_TEXT_RIGHT,
+      thAlignRight: true,
       tdClass: TD_CLASS_TEXT_RIGHT,
     },
   ],

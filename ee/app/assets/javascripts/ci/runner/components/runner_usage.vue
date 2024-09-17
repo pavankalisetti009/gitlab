@@ -112,7 +112,8 @@ export default {
       return {
         key: 'ciMinutesUsed',
         label: s__('Runners|Usage (min)'),
-        thClass: [...thClass, 'gl-text-right'],
+        thAlignRight: true,
+        thClass,
         tdClass: 'gl-text-right',
       };
     },
