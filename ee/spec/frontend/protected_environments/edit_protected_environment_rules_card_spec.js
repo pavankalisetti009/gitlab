@@ -33,6 +33,22 @@ describe('ee/protected_environments/edit_protected_environment_rules_card.vue', 
       scopedSlots,
     });
 
+  describe('empty state slot', () => {
+    it('exists when approval rules are empty', () => {
+      wrapper = createComponent({
+        environment: { deploy_access_levels: [] },
+      });
+
+      expect(wrapper.findByTestId('empty-state').exists()).toBe(true);
+    });
+
+    it('does not exist when approval rules are present', () => {
+      wrapper = createComponent();
+
+      expect(wrapper.findByTestId('empty-state').exists()).toBe(false);
+    });
+  });
+
   describe('rule slot', () => {
     beforeEach(() => {
       wrapper = createComponent({

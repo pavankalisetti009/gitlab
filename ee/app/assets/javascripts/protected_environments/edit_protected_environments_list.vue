@@ -7,6 +7,7 @@ import {
   GlIcon,
   GlTooltipDirective as GlTooltip,
   GlToggle,
+  GlSprintf,
 } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions, mapGetters } from 'vuex';
@@ -14,6 +15,7 @@ import { s__, __ } from '~/locale';
 import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
 import ShowMore from '~/vue_shared/components/show_more.vue';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { ACCESS_LEVELS, DEPLOYER_RULE_KEY, APPROVER_RULE_KEY, INHERITED_GROUPS } from './constants';
 import EditProtectedEnvironmentRulesCard from './edit_protected_environment_rules_card.vue';
 import AddRuleModal from './add_rule_modal.vue';
@@ -35,6 +37,8 @@ export default {
     AddRuleModal,
     AddApprovers,
     ShowMore,
+    GlSprintf,
+    HelpPageLink,
   },
   directives: {
     GlTooltip,
@@ -114,6 +118,9 @@ export default {
     inheritanceLabel: s__('ProtectedEnvironments|Enable group inheritance'),
     inheritanceTooltip: s__(
       'ProtectedEnvironments|If a group is invited to the current project, its parent and members inherit the permissions of the invited group.',
+    ),
+    approvalRulesEmptyStateMessage: s__(
+      'ProtectedEnvironments|This environment has no approval rules set up. %{linkStart}Learn more about deployment approvals.%{linkEnd}',
     ),
   },
   ACCESS_LEVELS,
@@ -240,6 +247,15 @@ export default {
                 class="gl-ml-2"
               />
             </div>
+          </template>
+          <template #empty-state>
+            <gl-sprintf :message="$options.i18n.approvalRulesEmptyStateMessage">
+              <template #link="{ content }">
+                <help-page-link href="ci/environments/deployment_approvals">{{
+                  content
+                }}</help-page-link>
+              </template>
+            </gl-sprintf>
           </template>
           <template #rule="{ rule, ruleKey }">
             <span class="gl-w-3/10" data-testid="rule-description">

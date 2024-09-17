@@ -1,4 +1,4 @@
-import { GlAvatar, GlButton, GlToggle } from '@gitlab/ui';
+import { GlAvatar, GlButton, GlToggle, GlSprintf } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
@@ -21,6 +21,7 @@ import {
   APPROVER_RULE_KEY,
   INHERITED_GROUPS,
 } from 'ee/protected_environments/constants';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { MAINTAINER_ACCESS_LEVEL, DEVELOPER_ACCESS_LEVEL } from './constants';
 
 const DEFAULT_ENVIRONMENTS = [
@@ -80,6 +81,13 @@ const DEFAULT_ENVIRONMENTS = [
   },
 ];
 
+const NO_APPROVAL_RULES_ENVIRONMENTS = [
+  {
+    ...DEFAULT_ENVIRONMENTS[0],
+    approval_rules: [],
+  },
+];
+
 const DEFAULT_PROJECT_ID = '8';
 const DEFAULT_ACCESS_LEVELS_DATA = [
   {
@@ -104,7 +112,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
   let wrapper;
   let mock;
 
-  const createComponent = async ({ entityType = 'projects' } = {}) => {
+  const createComponent = async ({ entityType = 'projects', stubGlSprintf = false } = {}) => {
     store = createStore({ entityId: DEFAULT_PROJECT_ID, entityType });
 
     wrapper = mountExtended(EditProtectedEnvironmentsList, {
@@ -114,6 +122,9 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         apiLink: API_LINK,
         docsLink: DOCS_LINK,
         entityType,
+      },
+      stubs: {
+        GlSprintf: stubGlSprintf,
       },
     });
 
@@ -192,6 +203,30 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
       descriptions.forEach((description, i) => {
         expect(description.text()).toBe(ruleDescriptions[i]);
+      });
+    });
+
+    describe('approvals empty state', () => {
+      beforeEach(() => {
+        mock
+          .onGet('/api/v4/projects/8/protected_environments/')
+          .reply(HTTP_STATUS_OK, NO_APPROVAL_RULES_ENVIRONMENTS);
+      });
+
+      it('has a copy', async () => {
+        await createComponent({ stubGlSprintf: true });
+
+        expect(wrapper.findComponent(GlSprintf).attributes('message')).toBe(
+          'This environment has no approval rules set up. %{linkStart}Learn more about deployment approvals.%{linkEnd}',
+        );
+      });
+
+      it('has a link', async () => {
+        await createComponent();
+
+        expect(wrapper.findComponent(HelpPageLink).attributes('href')).toBe(
+          '/help/ci/environments/deployment_approvals',
+        );
       });
     });
 
@@ -516,6 +551,30 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
     it('requests the protected environments for the group', () => {
       expect(mock.history.get[0].url).toBe('/api/v4/groups/8/protected_environments/');
+    });
+
+    describe('approvals empty state', () => {
+      beforeEach(() => {
+        mock
+          .onGet('/api/v4/groups/8/protected_environments/')
+          .reply(HTTP_STATUS_OK, NO_APPROVAL_RULES_ENVIRONMENTS);
+      });
+
+      it('has a copy', async () => {
+        await createComponent({ entityType: 'groups', stubGlSprintf: true });
+
+        expect(wrapper.findComponent(GlSprintf).attributes('message')).toBe(
+          'This environment has no approval rules set up. %{linkStart}Learn more about deployment approvals.%{linkEnd}',
+        );
+      });
+
+      it('has a link', async () => {
+        await createComponent({ entityType: 'groups' });
+
+        expect(wrapper.findComponent(HelpPageLink).attributes('href')).toBe(
+          '/help/ci/environments/deployment_approvals',
+        );
+      });
     });
 
     describe('add deployer rule', () => {
