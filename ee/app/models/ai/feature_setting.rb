@@ -105,7 +105,10 @@ module Ai
 
       return if compatible_llms.include?(selected_model)
 
-      errors.add(:self_hosted_model, "Model #{selected_model} is incompatible with the #{title} feature")
+      message = format(s_('AdminAiPoweredFeatures|%{selected_model} is incompatible with the %{title} feature'),
+        selected_model: selected_model.capitalize,
+        title: title)
+      errors.add(:base, message)
     end
   end
 end

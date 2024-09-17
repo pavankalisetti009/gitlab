@@ -227,8 +227,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
             incompatible_model = :codegemma_7b
             self_hosted_model.model = incompatible_model
             feature_setting.validate
-            expect(feature_setting.errors[:self_hosted_model])
-              .to include("Model #{incompatible_model} is incompatible with the #{feature_setting.title} feature")
+            expect(feature_setting.errors[:base])
+              .to include("#{incompatible_model.capitalize} is incompatible with the #{feature_setting.title} feature")
           end
         end
       end
