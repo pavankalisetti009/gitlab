@@ -180,11 +180,11 @@ module Members
       member_created_namespace_id.present?
     end
 
-    def result
+    def result(pass_back = {})
       if errors.any?
-        error(formatted_errors, http_status)
+        error(formatted_errors, http_status, pass_back: pass_back)
       else
-        success
+        success(pass_back)
       end
     end
 

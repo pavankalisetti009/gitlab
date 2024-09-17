@@ -312,9 +312,9 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
 
             expect(response).to have_gitlab_http_status(:created)
             expect(json_response).to eq({
-              'status' => 'error',
-              'message' => {
-                user.username => 'Request Queued For Admin Approval.'
+              'status' => 'success',
+              'queued_users' => {
+                user.username => 'Request queued for administrator approval.'
               }
             })
           end

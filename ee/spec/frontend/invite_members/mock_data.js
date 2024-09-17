@@ -116,3 +116,27 @@ export const mockInstanceMemberRoles = {
     },
   },
 };
+
+export const GROUPS_INVITATIONS_PATH = '/api/v4/groups/1/invitations';
+
+const MEMBER_PENDING_APPROVAL = {
+  status: 'success',
+  queued_users: {
+    'email@example.com': 'Request queued for administrator approval.',
+  },
+};
+
+const ERROR_AND_PENDING_APPROVAL = {
+  status: 'error',
+  queued_users: {
+    'email@example.com': 'Request queued for administrator approval.',
+  },
+  message: {
+    john_smith: 'Something is wrong for this member.',
+  },
+};
+
+export const invitationsApiResponse = {
+  MEMBER_PENDING_APPROVAL,
+  ERROR_AND_PENDING_APPROVAL,
+};

@@ -130,6 +130,40 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
           end
         end
       end
+
+      context 'with billable promotion management' do
+        let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+        let_it_be(:new_members) { create_list(:user, 2) }
+        let(:access_level) { Gitlab::Access::DEVELOPER }
+
+        subject(:post_members) do
+          post api("/groups/#{group.id}/members", owner),
+            params: { user_id: new_members.map(&:id).join(','), access_level: access_level }
+        end
+
+        before do
+          stub_feature_flags(member_promotion_management: true)
+          stub_application_setting(enable_member_promotion_management: true)
+          allow(License).to receive(:current).and_return(license)
+        end
+
+        it 'queues users invite for admin approval' do
+          expect do
+            post_members
+          end.not_to change { group.all_group_members.count }
+
+          expect(::Members::MemberApproval.count).to eq(2)
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to eq({
+            'status' => 'success',
+            'queued_users' => {
+              new_members[0].username => 'Request queued for administrator approval.',
+              new_members[1].username => 'Request queued for administrator approval.'
+            }
+          })
+        end
+      end
     end
 
     describe 'PUT /groups/:id/members/:user_id' do
