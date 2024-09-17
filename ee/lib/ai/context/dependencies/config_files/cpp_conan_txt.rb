@@ -35,14 +35,14 @@ module Ai
 
             content.each_line do |line|
               line.strip!
-              next unless line.present?
+              next if line.blank? || COMMENT_ONLY_REGEX.match?(line)
 
-              if START_SECTION_REGEX.match?(line)
-                in_deps_section = true
-              elsif in_deps_section && START_NEXT_SECTION_REGEX.match?(line)
-                break
-              elsif in_deps_section && !COMMENT_ONLY_REGEX.match?(line)
+              if in_deps_section
+                break if START_NEXT_SECTION_REGEX.match?(line)
+
                 libs << parse_lib(line)
+              elsif START_SECTION_REGEX.match?(line)
+                in_deps_section = true
               end
             end
 
