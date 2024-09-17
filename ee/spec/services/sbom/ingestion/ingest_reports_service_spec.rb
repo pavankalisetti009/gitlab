@@ -42,20 +42,6 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
       end
     end
 
-    context 'when feature flag store_sbom_report_ingestion_errors is disabled' do
-      before do
-        stub_feature_flags(store_sbom_report_ingestion_errors: false)
-      end
-
-      it 'does not set the ingestion errors' do
-        allow(pipeline).to receive(:set_sbom_report_ingestion_errors)
-
-        execute
-
-        expect(pipeline).not_to have_received(:set_sbom_report_ingestion_errors)
-      end
-    end
-
     context 'when a report source is container_scanning_for_registry' do
       let_it_be(:registry_sources) { create(:ci_reports_sbom_source, :container_scanning_for_registry) }
       let_it_be(:reports) { [create(:ci_reports_sbom_report, source: registry_sources)] }

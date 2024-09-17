@@ -60,8 +60,7 @@ module Sbom
       end
 
       def track_sbom_report_errors
-        return unless Feature.enabled?(:store_sbom_report_ingestion_errors,
-          project) && sbom_report_errors
+        return unless sbom_report_errors
 
         pipeline.set_sbom_report_ingestion_errors(sbom_report_errors)
       end
