@@ -350,6 +350,7 @@ describe('Vulnerability Header', () => {
           canCreateMergeRequest: actionsEnabled,
           canDownloadPatch: actionsEnabled,
           aiResolutionAvailable: actionsEnabled,
+          aiResolutionEnabled: actionsEnabled,
         }),
         glAbilities: {
           resolveVulnerabilityWithAi: actionsEnabled,
@@ -363,9 +364,10 @@ describe('Vulnerability Header', () => {
         loading: false,
         showDownloadPatch: actionsEnabled,
         showCreateMergeRequest: actionsEnabled,
-        showExplainWithAi: actionsEnabled,
-        showResolveWithAi: actionsEnabled,
+        explainWithAiAbility: actionsEnabled,
+        resolveWithAiAbility: actionsEnabled,
         aiResolutionAvailable: actionsEnabled,
+        aiResolutionEnabled: actionsEnabled,
       });
     });
   });

@@ -83,6 +83,7 @@ module VulnerabilitiesHelper
       data[:solution_html] = markdown(vulnerability.present.solution)
       data[:ai_explanation_available] = vulnerability.finding.ai_explanation_available?
       data[:ai_resolution_available] = vulnerability.finding.ai_resolution_available?
+      data[:ai_resolution_enabled] = vulnerability.finding.ai_resolution_enabled?
       data
     end
   end

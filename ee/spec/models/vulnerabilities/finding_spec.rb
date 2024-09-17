@@ -1701,20 +1701,33 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
   describe '#ai_resolution_available?' do
     let(:finding) { build(:vulnerabilities_finding) }
 
-    it 'returns true when the finding is a supported CWE' do
-      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-23')
+    it 'returns true if the finding is a SAST finding' do
       expect(finding.ai_resolution_available?).to be true
-    end
-
-    it 'returns false when the finding is an unsupported CWE' do
-      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-1')
-      expect(finding.ai_resolution_available?).to be false
     end
 
     it 'returns false if the finding is not a SAST finding' do
       finding.report_type = 'dast'
-      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-23')
       expect(finding.ai_resolution_available?).to be false
+    end
+  end
+
+  describe '#ai_resolution_enabled?' do
+    using RSpec::Parameterized::TableSyntax
+    let(:finding) { build(:vulnerabilities_finding) }
+
+    where(:finding_report_type, :cwe, :enabled_value) do
+      'sast' | 'CWE-1'  | false
+      'sast' | 'CWE-23' | true
+      'dast' | 'CWE-1'  | false
+      'dast' | 'CWE-23' | false
+    end
+
+    with_them do
+      it 'returns the expected value for enabled' do
+        finding.report_type = finding_report_type
+        finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
+        expect(finding.ai_resolution_enabled?).to be enabled_value
+      end
     end
   end
 
