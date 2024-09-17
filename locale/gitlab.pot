@@ -16447,9 +16447,6 @@ msgstr ""
 msgid "Created a branch and a merge request to resolve this issue."
 msgstr ""
 
-msgid "Created at"
-msgstr ""
-
 msgid "Created branch '%{branch_name}' and a merge request to resolve this issue."
 msgstr ""
 
@@ -45011,9 +45008,6 @@ msgid "ReleaseAssetLinkType|Runbooks"
 msgstr ""
 
 msgid "Released"
-msgstr ""
-
-msgid "Released at"
 msgstr ""
 
 msgid "Released date"
