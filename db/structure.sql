@@ -1833,6 +1833,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_a465de38164e() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "p_ci_job_artifacts"
+  WHERE "p_ci_job_artifacts"."id" = NEW."job_artifact_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_a4e4fb2451d9() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -8100,6 +8116,7 @@ CREATE TABLE ci_job_artifact_states (
     verification_checksum bytea,
     verification_failure text,
     partition_id bigint NOT NULL,
+    project_id bigint,
     CONSTRAINT check_df832b66ea CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -33041,6 +33058,8 @@ CREATE TRIGGER trigger_9f3745f8fe32 BEFORE INSERT OR UPDATE ON merge_requests_cl
 CREATE TRIGGER trigger_a1bc7c70cbdf BEFORE INSERT OR UPDATE ON vulnerability_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_a1bc7c70cbdf();
 
 CREATE TRIGGER trigger_a253cb3cacdf BEFORE INSERT OR UPDATE ON dora_daily_metrics FOR EACH ROW EXECUTE FUNCTION trigger_a253cb3cacdf();
+
+CREATE TRIGGER trigger_a465de38164e BEFORE INSERT OR UPDATE ON ci_job_artifact_states FOR EACH ROW EXECUTE FUNCTION trigger_a465de38164e();
 
 CREATE TRIGGER trigger_a4e4fb2451d9 BEFORE INSERT OR UPDATE ON epic_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_a4e4fb2451d9();
 
