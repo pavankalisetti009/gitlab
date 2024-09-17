@@ -2990,7 +2990,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             public_and_internal_and_enabled_filter,
             {
               bool: {
-                must: [
+                filter: [
                   {
                     bool: {
                       should: contain_exactly(
@@ -3029,7 +3029,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       {
         bool: {
-          must: [
+          filter: [
             {
               bool: {
                 should: match_array([
