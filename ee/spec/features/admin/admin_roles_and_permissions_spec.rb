@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Roles and Permissions', feature_category: :user_management do
+RSpec.describe 'Roles and permissions', feature_category: :user_management do
   let(:admin) { create(:admin) }
 
   before do

@@ -48,7 +48,7 @@ module EE
             return ::Sidebars::NilMenuItem.new(item_id: :roles_and_permissions) unless custom_roles_enabled?
 
             ::Sidebars::MenuItem.new(
-              title: _('Roles and Permissions'),
+              title: _('Roles and permissions'),
               link: group_settings_roles_and_permissions_path(context.group),
               active_routes: { controller: :roles_and_permissions },
               item_id: :roles_and_permissions

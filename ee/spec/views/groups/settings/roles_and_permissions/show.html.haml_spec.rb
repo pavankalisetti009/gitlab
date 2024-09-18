@@ -17,12 +17,12 @@ RSpec.describe 'groups/settings/roles_and_permissions/show', feature_category: :
   end
 
   it 'sets the breadcrumbs' do
-    expect(view).to have_received(:add_to_breadcrumbs).with('Roles and Permissions', 'list/path')
+    expect(view).to have_received(:add_to_breadcrumbs).with('Roles and permissions', 'list/path')
     expect(view).to have_received(:breadcrumb_title).with(role.name)
   end
 
   it 'sets the page title' do
-    expect(view).to have_received(:page_title).with(role.name, 'Roles and Permissions')
+    expect(view).to have_received(:page_title).with(role.name, 'Roles and permissions')
   end
 
   it 'renders frontend placeholder' do
