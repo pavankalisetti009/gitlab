@@ -3,7 +3,6 @@ import { GlAccordion, GlAccordionItem, GlAlert, GlCollapsibleListbox, GlForm } f
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import Component from 'ee/subscriptions/groups/new/components/subscription_group_selector.vue';
-import { stubComponent } from 'helpers/stub_component';
 import { visitUrl } from '~/lib/utils/url_utility';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getGroupPathAvailability } from '~/rest_api';
@@ -23,10 +22,10 @@ describe('SubscriptionGroupSelector component', () => {
   let wrapper;
 
   const eligibleGroups = [
-    { id: 1, name: 'Group one' },
-    { id: 2, name: 'Group two' },
-    { id: 3, name: 'Group three' },
-    { id: 4, name: 'Group four' },
+    { id: 1, name: 'Group one', fullPath: 'group-one' },
+    { id: 2, name: 'Group two', fullPath: 'group-two' },
+    { id: 3, name: 'Group three', fullPath: 'group-three' },
+    { id: 4, name: 'Group four', fullPath: 'group-four' },
   ];
 
   const plansData = {
@@ -39,14 +38,16 @@ describe('SubscriptionGroupSelector component', () => {
 
   const defaultPropsData = { eligibleGroups, plansData, rootUrl };
 
-  const closeMock = jest.fn();
-
   const groupNameErrorMessage = `can contain only letters, digits, emoji, '_', '.', dash, space, parenthesis. It must start with letter, digit, emoji or '_'`;
   const groupPathErrorMessage = `has already been taken`;
 
   const findAccordion = () => wrapper.findComponent(GlAccordion);
   const findAccordionItem = () => wrapper.findComponent(GlAccordionItem);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findAllGroupNames = () =>
+    wrapper.findAllByTestId('group-name').wrappers.map((w) => w.text());
+  const findAllGroupPaths = () =>
+    wrapper.findAllByTestId('group-path').wrappers.map((w) => w.text());
   const findGroupNameInput = () => wrapper.findByTestId('subscription-group-name-input');
   const findCreateNewGroupButton = () => wrapper.findByTestId('show-new-group-form-button');
   const findGroupUrl = () => wrapper.findByTestId('group-url');
@@ -106,14 +107,6 @@ describe('SubscriptionGroupSelector component', () => {
         ...defaultPropsData,
         ...propsData,
       },
-      stubs: {
-        GlCollapsibleListbox: stubComponent(GlCollapsibleListbox, {
-          template: `<div><slot name="footer"></slot></div>`,
-          methods: {
-            close: closeMock,
-          },
-        }),
-      },
     });
   };
 
@@ -145,9 +138,18 @@ describe('SubscriptionGroupSelector component', () => {
     });
 
     it('renders collapsible list box with correct options', () => {
-      const expectedResult = eligibleGroups.map(({ id, name }) => ({ value: id, text: name }));
+      const expectedResult = eligibleGroups.map(({ id, name, fullPath }) => ({
+        value: id,
+        text: name,
+        secondaryText: `/${fullPath}`,
+      }));
 
       expect(findCollapsibleListbox().props().items).toEqual(expectedResult);
+    });
+
+    it('renders group name and path', () => {
+      expect(findAllGroupNames()).toEqual(eligibleGroups.map((group) => group.name));
+      expect(findAllGroupPaths()).toEqual(eligibleGroups.map((group) => `/${group.fullPath}`));
     });
 
     it('renders collapsible list box with correct variant', () => {
@@ -228,8 +230,11 @@ describe('SubscriptionGroupSelector component', () => {
 
   describe('new group creation', () => {
     describe('when choosing to create a new group', () => {
+      let spy;
+
       beforeEach(async () => {
         createComponent();
+        spy = jest.spyOn(wrapper.vm.$refs.collapsibleList, 'close');
         await showNewGroupForm();
       });
 
@@ -250,7 +255,7 @@ describe('SubscriptionGroupSelector component', () => {
       });
 
       it('closes the collapsible list box', () => {
-        expect(closeMock).toHaveBeenCalled();
+        expect(spy).toHaveBeenCalled();
       });
     });
 
