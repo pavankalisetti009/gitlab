@@ -173,6 +173,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
       allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: token,
         enabled_by_namespace_ids: enabled_by_namespace_ids })
+      stub_feature_flags(use_codestral_for_code_completions: false)
     end
 
     shared_examples 'code completions endpoint' do

@@ -38,14 +38,16 @@ module CodeSuggestions
     def code_completion_task
       CodeSuggestions::Tasks::CodeCompletion.new(
         params: params,
-        unsafe_passthrough_params: unsafe_passthrough_params
+        unsafe_passthrough_params: unsafe_passthrough_params,
+        current_user: current_user
       )
     end
 
     def code_generation_task(instruction)
       CodeSuggestions::Tasks::CodeGeneration.new(
         params: code_generation_params(instruction),
-        unsafe_passthrough_params: unsafe_passthrough_params
+        unsafe_passthrough_params: unsafe_passthrough_params,
+        current_user: current_user
       )
     end
 

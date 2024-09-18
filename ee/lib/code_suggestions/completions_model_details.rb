@@ -25,8 +25,8 @@ module CodeSuggestions
 
     def codestral_model_details
       {
-        model_provider: 'vertex-ai',
-        model_name: 'codestral@2405'
+        model_provider: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_PROVIDER,
+        model_name: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_NAME
       }
     end
 
