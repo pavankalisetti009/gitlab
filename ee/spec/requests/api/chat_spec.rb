@@ -313,11 +313,13 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
         end
 
         context 'with additional context' do
-          let(:additional_context) { [{ type: "file", name: "test.py", content: "print('hello world')" }] }
+          let(:additional_context) do
+            [{ category: "file", id: "test.py", content: "print('hello world')", metadata: {} }]
+          end
+
           let(:options) { { additional_context: additional_context } }
 
-          xit 'sends additional context to the chat' do
-            pending 'Fix in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164944/'
+          it 'sends additional context to the chat' do
             expect(chat_message).to receive(:save!)
             expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
             expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
