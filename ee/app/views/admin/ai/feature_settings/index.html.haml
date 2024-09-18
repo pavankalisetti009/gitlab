@@ -4,13 +4,10 @@
 - if Feature.enabled?(:custom_models_feature_settings_vue_app, current_user)
   #js-ai-powered-features{ data: { view_model: { models: @self_hosted_models, newSelfHostedModelPath: new_admin_ai_self_hosted_model_path }.to_json } }
 - else
-  = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card labels other-labels js-toggle-container js-admin-labels-container' }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
-    - c.with_header do
-      .gl-new-card-title-wrapper.gl-flex-col
-        .gl-new-card-title
-          = s_('AdminAIPoweredFeatures|AI-powered features')
-        .gl-new-card-description
-          = s_('AdminAIPoweredFeatures|AI-powered features that can be enabled, disabled, or linked to a cloud-based or self-hosted model.')
+  = render ::Layouts::CrudComponent.new(s_('AdminAIPoweredFeatures|AI-powered features'),
+    options: { class: 'gl-mt-5' }) do |c|
+    - c.with_description do
+      = s_('AdminAIPoweredFeatures|AI-powered features that can be enabled, disabled, or linked to a cloud-based or self-hosted model.')
     - c.with_body do
-      %ul.manage-labels-list.gl-px-3
+      %ul.content-list.manage-labels-list
         = render partial: 'feature_setting', collection: @feature_settings, as: :feature_setting
