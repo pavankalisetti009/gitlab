@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Geo::JobArtifactState, :geo, type: :model, feature_category: :geo_replication do
   include Ci::PartitioningHelpers
 
-  describe 'partitioning', :ci_partitionable do
+  describe 'partitioning' do
     let_it_be(:job_artifact) { build(:ee_ci_job_artifact, partition_id: ci_testing_partition_id) }
     let_it_be(:state) { build(:geo_job_artifact_state, job_artifact: job_artifact) }
 

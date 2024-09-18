@@ -182,7 +182,7 @@ RSpec.describe(
         create(:ee_ci_job_artifact,
           :sast_with_signatures_and_vulnerability_flags,
           job_id: ci_build.id,
-          partition_id: ci_testing_partition_id_for_check_constraints)
+          partition_id: ci_testing_partition_id)
         # rubocop:enable RSpec/FactoriesInMigrationSpecs
         security_scan = create_security_scan(ci_build, sast_scan_type, project_id: project.id)
         @security_finding = create_security_finding(security_scan, scanner, uuid: known_uuid)
@@ -423,7 +423,7 @@ RSpec.describe(
 
   def create_ci_pipeline(overrides = {})
     attrs = {
-      partition_id: ci_testing_partition_id_for_check_constraints
+      partition_id: ci_testing_partition_id
     }.merge(overrides)
     ci_pipelines.create!(attrs)
   end
@@ -431,7 +431,7 @@ RSpec.describe(
   def create_ci_build(overrides = {})
     attrs = {
       type: 'Ci::Build',
-      partition_id: ci_testing_partition_id_for_check_constraints
+      partition_id: ci_testing_partition_id
     }.merge(overrides)
     ci_builds.create!(attrs)
   end
@@ -441,7 +441,7 @@ RSpec.describe(
       project_id: project.id,
       file_type: file_type,
       job_id: build.id,
-      partition_id: ci_testing_partition_id_for_check_constraints
+      partition_id: ci_testing_partition_id
     }.merge(overrides)
 
     ci_job_artifacts.create!(attrs)

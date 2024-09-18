@@ -21,18 +21,18 @@ RSpec.describe Ci::Sources::Project, feature_category: :continuous_integration d
     end
   end
 
-  describe 'partitioning', :ci_partitionable do
+  describe 'partitioning' do
     include Ci::PartitioningHelpers
 
     let(:pipeline) { create(:ci_pipeline) }
     let(:project_source) { create(:ci_sources_project, pipeline: pipeline) }
 
     before do
-      stub_current_partition_id(ci_testing_partition_id_for_check_constraints)
+      stub_current_partition_id(ci_testing_partition_id)
     end
 
     it 'assigns the same partition id as the one that pipeline has' do
-      expect(project_source.partition_id).to eq(ci_testing_partition_id_for_check_constraints)
+      expect(project_source.partition_id).to eq(ci_testing_partition_id)
     end
   end
 end
