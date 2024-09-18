@@ -57684,9 +57684,6 @@ msgstr ""
 msgid "Try all GitLab has to offer for 30 days. No credit card required."
 msgstr ""
 
-msgid "Try changing or removing filters."
-msgstr ""
-
 msgid "Try grouping with different labels"
 msgstr ""
 
@@ -63589,9 +63586,6 @@ msgid "Your requirements will be imported in the background. After it's finished
 msgstr ""
 
 msgid "Your resource access tokens will expire in %{days_to_expire} or less"
-msgstr ""
-
-msgid "Your search didn't match any commits."
 msgstr ""
 
 msgid "Your search didn't match any commits. Try a different query."
