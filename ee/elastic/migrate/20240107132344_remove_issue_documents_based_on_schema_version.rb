@@ -14,3 +14,5 @@ class RemoveIssueDocumentsBasedOnSchemaVersion < Elastic::Migration
     23_12
   end
 end
+
+RemoveIssueDocumentsBasedOnSchemaVersion.prepend ::Elastic::MigrationObsolete
