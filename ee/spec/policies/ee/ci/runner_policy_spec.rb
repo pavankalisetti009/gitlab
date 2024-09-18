@@ -60,9 +60,9 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
       stub_licensed_features(custom_roles: true)
     end
 
-    where(:custom_permission, :feature_flag, :abilities) do
-      :admin_runners | true | [:assign_runner, :read_runner, :update_runner, :delete_runner]
-      :read_runners | false | [:read_runner]
+    where(:custom_permission, :abilities) do
+      :admin_runners | [:assign_runner, :read_runner, :update_runner, :delete_runner]
+      :read_runners | [:read_runner]
     end
 
     with_them do
@@ -77,17 +77,6 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
             let!(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
 
             it { expect_allowed(*abilities) }
-
-            context "with the feature flag disabled" do
-              before do
-                stub_feature_flags("custom_ability_#{custom_permission}": false)
-              end
-
-              it do
-                skip "feature flag 'custom_ability_#{custom_permission}' does not exist" unless feature_flag
-                expect_disallowed(*abilities)
-              end
-            end
 
             context "with the custom roles feature disabled" do
               before do

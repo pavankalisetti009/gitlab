@@ -11,4 +11,3 @@ group_ability: true
 project_ability: true
 requirements: []
 available_from_access_level:
-feature_flag: custom_ability_admin_runners
