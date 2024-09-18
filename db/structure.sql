@@ -20942,7 +20942,9 @@ CREATE TABLE zoekt_repositories (
     state smallint DEFAULT 0 NOT NULL,
     size_bytes bigint DEFAULT 0 NOT NULL,
     index_file_count integer DEFAULT 0 NOT NULL,
-    CONSTRAINT c_zoekt_repositories_on_project_id_and_project_identifier CHECK (((project_id IS NULL) OR (project_identifier = project_id)))
+    retries_left smallint DEFAULT 10 NOT NULL,
+    CONSTRAINT c_zoekt_repositories_on_project_id_and_project_identifier CHECK (((project_id IS NULL) OR (project_identifier = project_id))),
+    CONSTRAINT c_zoekt_repositories_on_retries_left CHECK (((retries_left > 0) OR ((retries_left = 0) AND (state >= 200))))
 );
 
 CREATE SEQUENCE zoekt_repositories_id_seq

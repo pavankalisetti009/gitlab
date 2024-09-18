@@ -57,6 +57,10 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
       end
 
       context 'when the task type is index' do
+        before do
+          index_zoekt_task.zoekt_repository.update!(retries_left: 2)
+        end
+
         let(:task_type) { 'index' }
         let(:task_id) { index_zoekt_task.id }
 
@@ -67,6 +71,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
                 .and change { index_zoekt_task.zoekt_repository.state }.to('ready')
                   .and change { index_zoekt_task.zoekt_repository.index_file_count }.to(1)
                     .and change { index_zoekt_task.zoekt_repository.size_bytes }.to(582790)
+                      .and change { index_zoekt_task.zoekt_repository.retries_left }.from(2).to(10)
           end
         end
       end
@@ -112,6 +117,12 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
         it 'updates the task state to failed' do
           expect { execute }.to change { zoekt_task.reload.retries_left }.from(1).to(0)
             .and change { zoekt_task.state }.to('failed')
+        end
+
+        it 'publishes a TaskFailed event with zoekt_repository_id' do
+          expected_data = { zoekt_repository_id: zoekt_task.zoekt_repository_id }
+
+          expect { service.execute }.to publish_event(Search::Zoekt::TaskFailedEvent).with(expected_data)
         end
       end
     end
