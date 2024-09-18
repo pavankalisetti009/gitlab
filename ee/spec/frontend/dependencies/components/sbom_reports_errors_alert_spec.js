@@ -11,10 +11,11 @@ const TEST_ERRORS = [
 describe('SbomReportsErrorsAlert component', () => {
   let wrapper;
 
-  const createWrapper = () =>
+  const createWrapper = ({ propsData } = {}) =>
     shallowMountExtended(SbomReportsErrorsAlert, {
       propsData: {
         errors: TEST_ERRORS,
+        ...propsData,
       },
       stubs: {
         GlSprintf,
@@ -27,6 +28,7 @@ describe('SbomReportsErrorsAlert component', () => {
   const findAccordionItemWithTitle = (title) =>
     findAllAccordionItems().wrappers.find((item) => item.props('title') === title);
   const findErrorList = () => wrapper.findByRole('list');
+  const findSbomErrorDescription = () => wrapper.findByTestId('sbom-error-description');
 
   beforeEach(() => {
     wrapper = createWrapper();
@@ -36,6 +38,21 @@ describe('SbomReportsErrorsAlert component', () => {
     expect(findHelpPageLink().props()).toEqual({
       href: 'user/application_security/dependency_list/index',
       anchor: 'prerequisites',
+    });
+  });
+
+  describe('error description text', () => {
+    it('renders the value provided via the props', () => {
+      wrapper = createWrapper({ propsData: { errorDescription: 'custom description' } });
+
+      expect(findSbomErrorDescription().text()).toBe('custom description');
+    });
+
+    it('renders the default value when none is provided', () => {
+      const defaultDescription =
+        'The following SBOM reports could not be parsed. Therefore the list of components may be incomplete.';
+
+      expect(findSbomErrorDescription().text()).toBe(defaultDescription);
     });
   });
 

@@ -32,7 +32,14 @@ export const createAppOptions = (selector, apolloProvider, router) => {
     });
   }
 
+  const props = {
+    sbomReportsErrors: dataset.sbomReportsErrors ? JSON.parse(dataset.sbomReportsErrors) : [],
+  };
+
   return merge({}, appOptionsCE, {
-    provide: vulnerabilityReportProvides,
+    provide: { ...vulnerabilityReportProvides },
+    render(createElement) {
+      return appOptionsCE.render(createElement, props);
+    },
   });
 };

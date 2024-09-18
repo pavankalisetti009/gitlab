@@ -10,6 +10,7 @@ import ReportItem from '~/ci/reports/components/report_item.vue';
 import ReportSection from '~/ci/reports/components/report_section.vue';
 import { LOADING, ERROR, SUCCESS } from '~/ci/reports/constants';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import {
   allowedLicense,
   deniedLicense,
@@ -58,6 +59,7 @@ describe('License Report MR Widget', () => {
     fullReportPath: `${TEST_HOST}/path/to/the/full/report`,
     apiUrl,
     licenseComplianceDocsPath,
+    sbomReportsErrors: [],
   };
 
   const defaultActions = {
@@ -428,6 +430,19 @@ describe('License Report MR Widget', () => {
 
       expect(findLicenseComplianceHelpLink().exists()).toBe(true);
       expect(licenseComplianceHelpLink.attributes('href')).toBe(licenseComplianceDocsPath);
+    });
+  });
+
+  describe('given SBOM report errors are present', () => {
+    const sbomErrors = [['Invalid SBOM report']];
+
+    it('passes the correct props to the sbom-report-errort alert', () => {
+      const props = { ...defaultProps, sbomReportsErrors: sbomErrors };
+      mountComponent({ props });
+
+      const componentWrapper = wrapper.findComponent(SbomReportsErrorsAlert);
+      expect(componentWrapper.exists()).toBe(true);
+      expect(componentWrapper.props('errors')).toEqual(sbomErrors);
     });
   });
 });

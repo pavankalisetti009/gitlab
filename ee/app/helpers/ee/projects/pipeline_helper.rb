@@ -20,7 +20,8 @@ module EE
           licenses_api_path: licenses_api_path(project, pipeline),
           security_policies_path: security_policies_path(project),
           vulnerability_report_data: vulnerability_report_data(project, pipeline, user).to_json,
-          dismissal_descriptions: dismissal_descriptions.to_json
+          dismissal_descriptions: dismissal_descriptions.to_json,
+          sbom_reports_errors: sbom_reports_errors(pipeline).to_json
         )
       end
 
@@ -84,6 +85,10 @@ module EE
         ).user_can_run_jobs?
 
         pipeline.user_not_verified? && !user_can_run_pipelines
+      end
+
+      def sbom_reports_errors(pipeline)
+        pipeline.sbom_report_ingestion_errors || []
       end
     end
   end

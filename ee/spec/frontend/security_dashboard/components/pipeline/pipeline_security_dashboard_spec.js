@@ -17,6 +17,7 @@ import SecurityReportsSummary from 'ee/security_dashboard/components/pipeline/se
 import { DOC_PATH_SECURITY_CONFIGURATION } from 'ee/security_dashboard/constants';
 import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
 import { dismissalDescriptions } from 'ee_jest/vulnerabilities/mock_data';
+import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import {
   pipelineSecurityReportSummary,
   pipelineSecurityReportSummaryWithErrors,
@@ -47,7 +48,7 @@ describe('Pipeline Security Dashboard component', () => {
   const findScanAlerts = () => wrapper.findComponent(ScanAlerts);
   const findReportStatusAlert = () => wrapper.findComponent(ReportStatusAlert);
 
-  const factory = ({ stubs, provide, apolloProvider } = {}) => {
+  const factory = ({ stubs, provide, propsData, apolloProvider } = {}) => {
     wrapper = shallowMountExtended(PipelineSecurityDashboard, {
       apolloProvider,
       store,
@@ -65,6 +66,8 @@ describe('Pipeline Security Dashboard component', () => {
       },
       propsData: {
         dismissalDescriptions,
+        sbomReportsErrors: [],
+        ...propsData,
       },
       stubs: { PipelineVulnerabilityReport: true, ...stubs },
     });
@@ -340,6 +343,24 @@ describe('Pipeline Security Dashboard component', () => {
             pick(obj, 'vulnerabilitiesCount', 'scannedResourcesCsvPath', 'scans', '__typename'),
         ),
       });
+    });
+  });
+
+  describe('given SBOM report errors are present', () => {
+    const sbomErrors = [['Invalid SBOM report']];
+
+    beforeEach(() => {
+      factory({
+        propsData: {
+          sbomReportsErrors: sbomErrors,
+        },
+      });
+    });
+
+    it('passes the correct props to the sbom-report-errort alert', () => {
+      const componentWrapper = wrapper.findComponent(SbomReportsErrorsAlert);
+      expect(componentWrapper.exists()).toBe(true);
+      expect(componentWrapper.props('errors')).toEqual(sbomErrors);
     });
   });
 });

@@ -3,10 +3,12 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { GlLink, GlIcon, GlButton } from '@gitlab/ui';
 import api from '~/api';
+import { s__ } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { componentNames, iconComponentNames } from 'ee/ci/reports/components/issue_body';
 import { LICENSE_MANAGEMENT } from 'ee/vue_shared/license_compliance/store/constants';
 import reportsMixin from 'ee/vue_shared/security_reports/mixins/reports_mixin';
+import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import ReportItem from '~/ci/reports/components/report_item.vue';
 import ReportSection from '~/ci/reports/components/report_section.vue';
 import SmartVirtualList from '~/vue_shared/components/smart_virtual_list.vue';
@@ -23,6 +25,7 @@ export default {
     ReportSection,
     SmartVirtualList,
     GlIcon,
+    SbomReportsErrorsAlert,
   },
   mixins: [reportsMixin, InternalEvents.mixin()],
   props: {
@@ -69,6 +72,10 @@ export default {
       required: false,
       default: '',
     },
+    sbomReportsErrors: {
+      type: Array,
+      required: true,
+    },
   },
   typicalReportItemHeight: 26,
   maxShownReportItems: 20,
@@ -91,6 +98,14 @@ export default {
     showActionButtons() {
       return this.securityPoliciesPath !== null || this.fullReportPath !== null;
     },
+    showSbomErrors() {
+      return this.sbomReportsErrors.length > 0;
+    },
+  },
+  i18n: {
+    sbomReportsErrorsDescription: s__(
+      'LicenseScanningReport|The following SBOM reports could not be parsed. Therefore the list of components and their licenses may be incomplete.',
+    ),
   },
   watch: {
     licenseReport() {
@@ -131,6 +146,13 @@ export default {
 </script>
 <template>
   <div>
+    <sbom-reports-errors-alert
+      v-if="showSbomErrors"
+      :errors="sbomReportsErrors"
+      :error-description="$options.i18n.sbomReportsErrorsDescription"
+      class="gl-mt-5"
+    />
+
     <report-section
       :status="licenseReportStatus"
       :loading-text="licenseSummaryText"

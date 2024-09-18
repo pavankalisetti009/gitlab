@@ -42,6 +42,12 @@ export default {
     'pipelineIid',
     'securityPoliciesPath',
   ],
+  props: {
+    sbomReportsErrors: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
       activeTab: this.defaultTabValue,
@@ -106,7 +112,7 @@ export default {
       lazy
       @click="navigateToSecurity"
     >
-      <router-view />
+      <router-view :sbom-reports-errors="sbomReportsErrors" />
     </gl-tab>
     <gl-tab
       v-if="showLicenseTab"
@@ -131,6 +137,7 @@ export default {
         :can-manage-licenses="canManageLicenses"
         :always-open="true"
         report-section-class="split-report-section"
+        :sbom-reports-errors="sbomReportsErrors"
         @updateBadgeCount="updateLicenseCount"
       />
     </gl-tab>

@@ -38,7 +38,8 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         pipeline_path: pipeline_path(pipeline),
         pipeline_project_path: project.full_path,
         security_policies_path: kind_of(String),
-        total_job_count: pipeline.total_size
+        total_job_count: pipeline.total_size,
+        sbom_reports_errors: '[]'
       })
       expect(Gitlab::Json.parse(pipeline_tabs_data[:vulnerability_report_data])).to include({
         "empty_state_svg_path" => match_asset_path("illustrations/user-not-logged-in.svg"),
@@ -74,6 +75,18 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         Gitlab::I18n.with_locale(:zh_CN) do
           expect(subject[:dismissal_descriptions]).to eq(dismissal_descriptions_json)
         end
+      end
+    end
+
+    context 'with sbom reports errors' do
+      let(:sbom_errors) { [["Unsupported CycloneDX spec version. Must be one of: 1.4, 1.5"]] }
+
+      before do
+        allow(pipeline).to receive(:sbom_report_ingestion_errors).and_return(sbom_errors)
+      end
+
+      it 'includes sbom reports errors' do
+        expect(subject[:sbom_reports_errors]).to eq(sbom_errors.to_json)
       end
     end
   end
