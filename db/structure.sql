@@ -26761,6 +26761,12 @@ CREATE INDEX idx_group_audit_events_on_project_created_at_id ON ONLY group_audit
 
 CREATE INDEX idx_headers_instance_external_audit_event_destination_id ON instance_audit_events_streaming_headers USING btree (instance_external_audit_event_destination_id);
 
+CREATE UNIQUE INDEX idx_import_placeholder_memberships_on_source_user_group_id ON import_placeholder_memberships USING btree (source_user_id, group_id);
+
+CREATE INDEX idx_import_placeholder_memberships_on_source_user_id_and_id ON import_placeholder_memberships USING btree (source_user_id, id);
+
+CREATE UNIQUE INDEX idx_import_placeholder_memberships_on_source_user_project_id ON import_placeholder_memberships USING btree (source_user_id, project_id);
+
 CREATE INDEX idx_installable_conan_pkgs_on_project_id_id ON packages_packages USING btree (project_id, id) WHERE ((package_type = 3) AND (status = ANY (ARRAY[0, 1])));
 
 CREATE INDEX idx_installable_helm_pkgs_on_project_id_id ON packages_packages USING btree (project_id, id);
@@ -28646,8 +28652,6 @@ CREATE INDEX index_import_placeholder_memberships_on_group_id ON import_placehol
 CREATE INDEX index_import_placeholder_memberships_on_namespace_id ON import_placeholder_memberships USING btree (namespace_id);
 
 CREATE INDEX index_import_placeholder_memberships_on_project_id ON import_placeholder_memberships USING btree (project_id);
-
-CREATE INDEX index_import_placeholder_memberships_on_source_user_id ON import_placeholder_memberships USING btree (source_user_id);
 
 CREATE INDEX index_import_source_user_placeholder_references_on_namespace_id ON import_source_user_placeholder_references USING btree (namespace_id);
 
