@@ -103,6 +103,24 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
       end
     end
 
+    context 'when data size of unknown event exceeds buffer size of Gitlab::HTTP' do
+      before do
+        allow(Gitlab::HTTP).to receive(:post).and_yield(
+          '{"type": "unknown",'
+        ).and_yield(
+          '"data": {"text": "indeterministic response"}}'
+        ).and_return(response)
+      end
+
+      it 'streams events' do
+        events = agent.step(params)
+
+        expect(events.count).to eq(1)
+        expect(events.first).to be_instance_of(Gitlab::Duo::Chat::AgentEvents::Unknown)
+        expect(events.first.text).to eq('indeterministic response')
+      end
+    end
+
     context 'when got forbidden response' do
       before do
         allow(response).to receive(:success?).and_return(false)

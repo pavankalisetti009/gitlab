@@ -16,7 +16,7 @@ module Gitlab
           end
 
           unless event && event['type'].present?
-            logger.error(message: "Failed to parse a chunk from Duo Chat Agent", chunk: chunk)
+            logger.warn(message: "Failed to parse a chunk from Duo Chat Agent", chunk: chunk)
             return
           end
 

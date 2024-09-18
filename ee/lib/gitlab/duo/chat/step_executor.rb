@@ -26,12 +26,22 @@ module Gitlab
 
           params = update_params(params)
 
-          perform_agent_request(params) do |chunk|
-            event = event_parser.parse(chunk)
+          # V2 Chat Agent in AI Gateway streams events as response, however,
+          # Gitlab::HTTP_V2::BufferedIo (or Net::BufferedIo) splits the event further
+          # per `BUFSIZE = 1024 * 16`, hence if the size of the event exceeds the buffer size,
+          # it will yield incomplete event data.
+          # Ref: https://github.com/ruby/net-protocol/blob/master/lib/net/protocol.rb#L214
+          chunks_for_event = ""
 
-            logger.info_or_debug(user, message: "Received an event from v2/chat/agent", event: event)
+          perform_agent_request(params) do |chunk|
+            chunks_for_event += chunk
+            event = event_parser.parse(chunks_for_event)
 
             next unless event
+
+            chunks_for_event = ""
+
+            logger.info_or_debug(user, message: "Received an event from v2/chat/agent", event: event)
 
             yield event if block_given?
 

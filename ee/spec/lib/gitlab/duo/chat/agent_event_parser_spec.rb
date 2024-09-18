@@ -55,7 +55,7 @@ RSpec.describe Gitlab::Duo::Chat::AgentEventParser, feature_category: :duo_chat 
       let(:chunk) { 'invalid json' }
 
       it 'logs an error' do
-        expect(logger).to receive(:error).with(
+        expect(logger).to receive(:warn).with(
           message: "Failed to parse a chunk from Duo Chat Agent",
           chunk: chunk
         )
