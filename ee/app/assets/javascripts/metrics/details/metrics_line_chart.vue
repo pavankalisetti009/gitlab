@@ -4,8 +4,16 @@ import { s__ } from '~/locale';
 import { formatDate, convertNanoToMs } from '~/lib/utils/datetime_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 
-const SYMBOL_SIZE_DEFAULT = 5;
-const SYMBOL_SIZE_HIGHLIGHTED = 10;
+const SYMBOL_SIZE_DEFAULT = 6;
+const SYMBOL_SIZE_HIGHLIGHTED = 12;
+
+/**
+ * The SVG has been taken from https://gitlab.com/gitlab-org/gitlab-svgs/blob/main/sprite_icons/status_created.svg?plain=1
+ * and converted to a path.
+ */
+const BULLSYEYE_ICON_SVG_PATH =
+  'path://M11.25 8c0 1.79-1.46 3.25-3.25 3.25S4.75 9.79 4.75 8 6.21 4.75 8 4.75 11.25 6.21 11.25 8ZM14 8c0-3.31-2.69-6-6-6S2 4.69 2 8s2.69 6 6 6 6-2.69 6-6ZM1 8c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7-7-3.13-7-7Z';
+
 export default {
   components: {
     GlLineChart,
@@ -36,9 +44,17 @@ export default {
     return {
       tooltipTitle: '',
       tooltipContent: [],
+      selectedTimestamp: null,
     };
   },
   computed: {
+    bgColor() {
+      return this.$refs.rootContainer
+        ? window
+            .getComputedStyle(this.$refs.rootContainer)
+            .getPropertyValue('--gl-background-color-default')
+        : '#fff';
+    },
     chartData() {
       return this.metricData.map((metric) => {
         const data = metric.values.map((value) => [
@@ -56,7 +72,11 @@ export default {
             .join(', '),
           data,
           // https://echarts.apache.org/en/option.html#series-line.symbolSize
-          symbolSize: (_, p) => (hasTraces(p.data) ? SYMBOL_SIZE_HIGHLIGHTED : SYMBOL_SIZE_DEFAULT),
+          symbolSize: (_, p) => {
+            if (hasTraces(p.data)) return SYMBOL_SIZE_HIGHLIGHTED;
+            return SYMBOL_SIZE_DEFAULT;
+          },
+          symbol: (_, p) => (hasTraces(p.data) ? BULLSYEYE_ICON_SVG_PATH : 'circle'),
         };
       });
     },
@@ -77,6 +97,17 @@ export default {
           name: yAxisTitle,
         },
       };
+    },
+    chartAnnotations() {
+      if (this.selectedTimestamp) {
+        return [
+          {
+            min: new Date(this.selectedTimestamp),
+            max: new Date(this.selectedTimestamp),
+          },
+        ];
+      }
+      return [];
     },
   },
   methods: {
@@ -104,6 +135,8 @@ export default {
       });
     },
     chartItemClicked({ chart, params: { data } }) {
+      if (data.name === 'annotations') return;
+
       const xValue = data[0];
       const visibleSeriesIndices = chart.getModel().getCurrentSeriesIndices();
       const datapoints =
@@ -125,7 +158,7 @@ export default {
             return undefined;
           })
           .filter(Boolean) || [];
-
+      this.selectedTimestamp = xValue;
       this.$emit('selected', datapoints);
     },
   },
@@ -133,13 +166,14 @@ export default {
 </script>
 
 <template>
-  <div class="gl-relative">
+  <div ref="rootContainer" class="gl-relative">
     <gl-line-chart
       disabled
       :class="{ 'gl-opacity-3': loading || cancelled }"
       :option="chartOption"
       :data="chartData"
       responsive
+      :annotations="chartAnnotations"
       :format-tooltip-text="formatTooltipText"
       @chartItemClicked="chartItemClicked"
     >
