@@ -65,7 +65,7 @@ export default {
       return {
         text: s__('AdminSelfHostedModels|Delete model'),
         extraAttrs: {
-          class: 'gl-text-danger',
+          class: '!gl-text-danger',
         },
       };
     },

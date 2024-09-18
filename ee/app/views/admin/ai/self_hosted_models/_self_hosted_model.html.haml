@@ -1,6 +1,6 @@
-%li.js-label-list-item.gl-list-none.gl-py-3.gl-border-b.gl-last-of-type-border-b-0{ id: dom_id(self_hosted_model) }
+%li.list-item.js-label-list-item{ id: dom_id(self_hosted_model) }
   .gl-flex.gl-justify-between
-    .gl-flex-grow.md:gl-flex.gl-flex-wrap.gl-px-3.gl-rounded-base.gl-gap-5
+    .gl-flex-grow.md:gl-flex.gl-flex-wrap.gl-rounded-base.gl-gap-5
       .gl-py-2{ class: 'gl-basis-1/4' }
         = self_hosted_model.name
       .gl-py-2{ class: 'gl-basis-1/4' }
@@ -27,4 +27,5 @@
                 data: { confirm: _('Are you sure?'), 'confirm-btn-variant': 'danger' },
                 method: :delete,
                 variant: :danger,
-                size: :small
+                size: :small,
+                class: '!gl-text-danger'
