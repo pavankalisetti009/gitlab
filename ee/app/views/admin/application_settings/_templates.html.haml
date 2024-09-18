@@ -7,7 +7,7 @@
     expanded: expanded) do |c|
     - c.with_description do
       = _('Select a repository containing templates for common files.')
-      = link_to _('What templates can I create?'), help_page_path('administration/settings/instance_template_repository', anchor: 'supported-file-types-and-locations'), target: '_blank', rel: 'noopener noreferrer'
+      = link_to _('What templates can I create?'), help_page_path('administration/settings/instance_template_repository.md', anchor: 'supported-file-types-and-locations'), target: '_blank', rel: 'noopener noreferrer'
     - c.with_body do
       = gitlab_ui_form_for @application_setting, url: templates_admin_application_settings_path, html: { class: 'fieldset-form' } do |f|
         = form_errors(@application_setting)

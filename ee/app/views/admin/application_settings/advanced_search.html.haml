@@ -4,10 +4,10 @@
 - add_page_specific_style 'page_bundles/search'
 - @force_desktop_expanded_sidebar = true
 
-- help_link_start = "<a class='gl-link' href='#{help_page_path('integration/advanced_search/elasticsearch')}#%{anchor}' target='_blank' rel='noopener noreferrer'>"
+- help_link_start = "<a class='gl-link' href='#{help_page_path('integration/advanced_search/elasticsearch.md')}#%{anchor}' target='_blank' rel='noopener noreferrer'>"
 - help_zero_downtime_reindexing_link_start = help_link_start.html_safe % { anchor: "zero-downtime-reindexing" }
 - help_advanced_search_migrations_link_start = help_link_start.html_safe % { anchor: "advanced-search-migrations" }
-- help_troubleshooting_link_start = "<a class='gl-link' href='#{help_page_path('integration/advanced_search/elasticsearch_troubleshooting')}#%{anchor}' target='_blank' rel='noopener noreferrer'>"
+- help_troubleshooting_link_start = "<a class='gl-link' href='#{help_page_path('integration/advanced_search/elasticsearch_troubleshooting.md')}#%{anchor}' target='_blank' rel='noopener noreferrer'>"
 - help_recreate_index_link_start = help_troubleshooting_link_start.html_safe % { anchor: "last-resort-to-recreate-an-index" }
 
 %div{ data: { event_tracking_load: 'true', event_tracking: 'view_admin_application_settings_advanced_search_pageload' } }
@@ -20,7 +20,7 @@
         variant: :danger) do |c|
         - c.with_body do
           = s_('AdvancedSearch|Pause indexing and upgrade Elasticsearch to a supported version.')
-          = link_to _('Learn more.'), help_page_path('integration/advanced_search/elasticsearch', anchor: 'version-requirements')
+          = link_to _('Learn more.'), help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'version-requirements')
 
 - if @search_outdated_code_analyzer_detected
   - content_for :page_level_alert do

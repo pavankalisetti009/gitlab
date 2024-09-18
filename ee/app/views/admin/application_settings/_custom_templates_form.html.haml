@@ -4,7 +4,7 @@
     testid: 'custom-project-template-container',
     expanded: expanded_by_default?) do |c|
     - c.with_description do
-      - link = link_to('', help_page_path('administration/custom_project_templates'))
+      - link = link_to('', help_page_path('administration/custom_project_templates.md'))
       = safe_format(s_('AdminSettings|Select a group to use as a source of custom templates for new projects. %{link_start}Learn more%{link_end}.'), tag_pair(link, :link_start, :link_end))
     - c.with_body do
       = gitlab_ui_form_for @application_setting, url: templates_admin_application_settings_path(anchor: 'js-custom-project-templates-settings') do |f|
