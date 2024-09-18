@@ -16,7 +16,7 @@
   pipeline_configuration_full_path_enabled: can?(current_user, :admin_compliance_pipeline_configuration, group).to_s,
   base_path: group_security_compliance_dashboard_path(group),
   pipeline_configuration_enabled: group.licensed_feature_available?(:compliance_pipeline_configuration).to_s,
-  migrate_pipeline_to_policy_path: help_page_path('user/application_security/policies/pipeline_execution_policies'),
+  migrate_pipeline_to_policy_path: help_page_path('user/group/compliance_pipelines', anchor: 'pipeline-execution-policies-migration'),
   pipeline_execution_policy_path: new_group_security_policy_url(group, type: :pipeline_execution_policy),
   group_security_policies_path: group_security_policies_path(group),
   disable_scan_policy_update: !can_modify_security_policy?(group).to_s,
