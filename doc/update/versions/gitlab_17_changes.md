@@ -181,6 +181,13 @@ For more information, see [issue 480328](https://gitlab.com/gitlab-org/gitlab/-/
 
 ## 17.5.0
 
+- The [Linux Package](https://docs.gitlab.com/omnibus/) upgrades OpenSSL from v1.1.1w to v3.0.0.
+
+- Cloud Native GitLab (CNG) already upgraded to OpenSSL 3 in GitLab 16.7.0. If you are using Cloud Native GitLab, no
+  action is needed. However, note that [Cloud Native Hybrid](../../administration/reference_architectures/index.md#recommended-cloud-providers-and-services) installations
+  use the Linux packages for stateful components, such as Gitaly. For those components, you will need to verify
+  the TLS versions, ciphers, and certificates that are used work with the security level changes discussed below.
+
 With the upgrade to OpenSSL version 3:
 
 - GitLab requires TLS 1.2 or higher for all outgoing and incoming TLS connections.
