@@ -15,6 +15,10 @@ module QA
                 element 'new-epic-button'
               end
 
+              view 'app/assets/javascripts/work_items/components/work_item_title.vue' do
+                element 'work-item-title-input'
+              end
+
               def click_new_epic
                 click_element('new-epic-button', EE::Page::Group::WorkItem::Epic::New)
               end

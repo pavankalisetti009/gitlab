@@ -3,6 +3,8 @@
 module QA
   RSpec.describe 'Plan', :blocking, product_group: :product_planning do
     describe 'promote issue to epic' do
+      include_context 'work item epics migration'
+
       let(:project) do
         create(:project, name: 'promote-issue-to-epic', description: 'Project to promote issue to epic')
       end
@@ -28,10 +30,19 @@ module QA
           show.comment('/promote ')
         end
 
+        work_item_epics_enabled = work_item_epics_enabled_for_group?(project.group)
+
         project.group.visit!
         Page::Group::Menu.perform(&:go_to_epics)
-        QA::EE::Page::Group::Epic::Index.perform do |index|
-          expect(index).to have_epic_title(issue.title)
+
+        if work_item_epics_enabled
+          QA::EE::Page::Group::WorkItem::Epic::Index.perform do |index|
+            expect(index).to have_epic_title(issue.title)
+          end
+        else
+          QA::EE::Page::Group::Epic::Index.perform do |index|
+            expect(index).to have_epic_title(issue.title)
+          end
         end
       end
     end
