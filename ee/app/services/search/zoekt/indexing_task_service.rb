@@ -39,10 +39,7 @@ module Search
       attr_reader :project_id, :project, :node_id, :root_namespace_id, :force, :task_type, :delay
 
       def preflight_check?
-        return true if task_type == :delete_repo
-        return false unless project && Feature.enabled?(:zoekt_create_indexing_tasks, project)
-
-        true
+        task_type == :delete_repo || project.present?
       end
 
       def random_force_reindexing?
