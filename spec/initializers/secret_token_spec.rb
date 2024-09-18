@@ -11,20 +11,19 @@ RSpec.describe 'create_tokens' do
   let(:rsa_key) { /\A-----BEGIN RSA PRIVATE KEY-----\n.+\n-----END RSA PRIVATE KEY-----\n\Z/m }
 
   before do
-    allow(Rails).to receive_message_chain(:application, :secrets).and_return(secrets)
+    allow(Rails).to receive_message_chain(:application, :credentials).and_return(secrets)
     allow(Rails).to receive_message_chain(:root, :join) { |string| string }
 
     allow(File).to receive(:write).and_call_original
     allow(File).to receive(:write).with(Rails.root.join('config/secrets.yml'))
-    allow(File).to receive(:delete).and_call_original
-    allow(File).to receive(:delete).with(Rails.root.join('.secret'))
     allow(self).to receive(:warn)
     allow(self).to receive(:exit)
   end
 
   describe 'ensure acknowledged secrets in any installations' do
     let(:acknowledged_secrets) do
-      %w[secret_key_base otp_key_base db_key_base openid_connect_signing_key encrypted_settings_key_base rotated_encrypted_settings_key_base]
+      %w[secret_key_base otp_key_base db_key_base openid_connect_signing_key encrypted_settings_key_base
+        rotated_encrypted_settings_key_base]
     end
 
     it 'does not allow to add a new secret without a proper handling' do
@@ -50,7 +49,6 @@ RSpec.describe 'create_tokens' do
     context 'when none of the secrets exist' do
       before do
         stub_env('SECRET_KEY_BASE', nil)
-        allow(File).to receive(:exist?).with('.secret').and_return(false)
         allow(File).to receive(:exist?).with('config/secrets.yml').and_return(false)
         allow(self).to receive(:warn_missing_secret)
       end
@@ -95,12 +93,6 @@ RSpec.describe 'create_tokens' do
 
         create_tokens
       end
-
-      it 'does not write a .secret file' do
-        expect(File).not_to receive(:write).with('.secret')
-
-        create_tokens
-      end
     end
 
     context 'when the other secrets all exist' do
@@ -108,9 +100,6 @@ RSpec.describe 'create_tokens' do
         secrets.db_key_base = 'db_key_base'
         secrets.openid_connect_signing_key = 'openid_connect_signing_key'
         secrets.encrypted_settings_key_base = 'encrypted_settings_key_base'
-
-        allow(File).to receive(:exist?).with('.secret').and_return(true)
-        stub_file_read('.secret', content: 'file_key')
       end
 
       context 'when secret_key_base exists in the environment and secrets.yml' do
@@ -162,12 +151,6 @@ RSpec.describe 'create_tokens' do
           expect(secrets.openid_connect_signing_key).to eq('openid_connect_signing_key')
           expect(secrets.encrypted_settings_key_base).to eq('encrypted_settings_key_base')
         end
-
-        it 'deletes the .secret file' do
-          expect(File).to receive(:delete).with('.secret')
-
-          create_tokens
-        end
       end
 
       context 'when secret_key_base and otp_key_base do not exist' do
@@ -175,21 +158,6 @@ RSpec.describe 'create_tokens' do
           allow(File).to receive(:exist?).with('config/secrets.yml').and_return(true)
           allow(YAML).to receive(:load_file).with('config/secrets.yml').and_return('test' => secrets.to_h.stringify_keys)
           allow(self).to receive(:warn_missing_secret)
-        end
-
-        it 'uses the file secret' do
-          expect(File).to receive(:write) do |filename, contents, options|
-            new_secrets = YAML.safe_load(contents)[Rails.env]
-
-            expect(new_secrets['secret_key_base']).to eq('file_key')
-            expect(new_secrets['otp_key_base']).to eq('file_key')
-            expect(new_secrets['db_key_base']).to eq('db_key_base')
-            expect(new_secrets['openid_connect_signing_key']).to eq('openid_connect_signing_key')
-          end
-
-          create_tokens
-
-          expect(secrets.otp_key_base).to eq('file_key')
         end
 
         it 'keeps the other secrets as they were' do
@@ -201,12 +169,6 @@ RSpec.describe 'create_tokens' do
         it 'warns about the missing secrets' do
           expect(self).to receive(:warn_missing_secret).with('secret_key_base')
           expect(self).to receive(:warn_missing_secret).with('otp_key_base')
-
-          create_tokens
-        end
-
-        it 'deletes the .secret file' do
-          expect(File).to receive(:delete).with('.secret')
 
           create_tokens
         end
@@ -249,15 +211,6 @@ RSpec.describe 'create_tokens' do
 
       it 'warns about updating db_key_base' do
         expect(self).to receive(:warn_missing_secret).with('db_key_base')
-
-        create_tokens
-      end
-
-      it 'warns about the blank value existing in secrets.yml and exits' do
-        expect(self).to receive(:warn) do |warning|
-          expect(warning).to include('db_key_base')
-          expect(warning).to include('<%= an_erb_expression %>')
-        end
 
         create_tokens
       end

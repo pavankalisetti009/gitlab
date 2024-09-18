@@ -10,43 +10,45 @@
 
 require 'securerandom'
 
-# Transition material in .secret to the secret_key_base key in config/secrets.yml.
-# Historically, ENV['SECRET_KEY_BASE'] takes precedence over .secret, so we maintain that
-# behavior.
-#
-# It also used to be the case that the key material in ENV['SECRET_KEY_BASE'] or .secret
-# was used to encrypt OTP (two-factor authentication) data so if present, we copy that key
-# material into config/secrets.yml under otp_key_base.
-#
-# Finally, if we have successfully migrated all secrets to config/secrets.yml, delete the
-# .secret file to avoid confusion.
-#
 def create_tokens
-  secret_file = Rails.root.join('.secret')
-  file_secret_key = File.read(secret_file).chomp if File.exist?(secret_file)
-  env_secret_key = ENV['SECRET_KEY_BASE']
+  # Inspired by https://github.com/rails/rails/blob/v7.0.8.4/railties/lib/rails/secrets.rb#L25-L36
+  raw_secrets = begin
+    YAML.safe_load(File.read(Rails.root.join('config/secrets.yml')))
+  rescue Errno::ENOENT, Psych::SyntaxError
+    {}
+  end
+  raw_secrets ||= {}
 
-  # Ensure environment variable always overrides secrets.yml.
-  Rails.application.secrets.secret_key_base = env_secret_key if env_secret_key.present?
+  secrets = {}
+  secrets.merge!(raw_secrets["shared"].deep_symbolize_keys) if raw_secrets["shared"]
+  secrets.merge!(raw_secrets[Rails.env].deep_symbolize_keys) if raw_secrets[Rails.env]
+
+  # Copy secrets into credentials since Rails.application.secrets is populated from config/secrets.yml
+  # Later, once config/secrets.yml won't be read automatically, we'll need to do it manually, and set
+  secrets.each do |key, value|
+    Rails.application.credentials[key] = value
+  end
+
+  # Historically, ENV['SECRET_KEY_BASE'] takes precedence over secrets.yml, so we maintain that
+  # behavior by ensuring the environment variable always overrides secrets.yml.
+  env_secret_key = ENV['SECRET_KEY_BASE']
+  Rails.application.credentials.secret_key_base = env_secret_key if env_secret_key.present?
 
   defaults = {
-    secret_key_base: file_secret_key || generate_new_secure_token,
-    otp_key_base: env_secret_key || file_secret_key || generate_new_secure_token,
+    secret_key_base: generate_new_secure_token,
+    otp_key_base: generate_new_secure_token,
     db_key_base: generate_new_secure_token,
     openid_connect_signing_key: generate_new_rsa_private_key
   }
 
   # encrypted_settings_key_base is optional for now
-  defaults[:encrypted_settings_key_base] = generate_new_secure_token if ENV['GITLAB_GENERATE_ENCRYPTED_SETTINGS_KEY_BASE']
+  if ENV['GITLAB_GENERATE_ENCRYPTED_SETTINGS_KEY_BASE']
+    defaults[:encrypted_settings_key_base] =
+      generate_new_secure_token
+  end
 
   missing_secrets = set_missing_keys(defaults)
   write_secrets_yml(missing_secrets) unless missing_secrets.empty?
-
-  begin
-    File.delete(secret_file) if file_secret_key
-  rescue StandardError => e
-    warn "Error deleting useless .secret file: #{e}"
-  end
 end
 
 def generate_new_secure_token
@@ -60,15 +62,15 @@ end
 def warn_missing_secret(secret)
   return if Rails.env.test?
 
-  warn "Missing Rails.application.secrets.#{secret} for #{Rails.env} environment. The secret will be generated and stored in config/secrets.yml."
+  warn "Missing Rails.application.credentials.#{secret} for #{Rails.env} environment. The secret will be generated and stored in config/secrets.yml."
 end
 
 def set_missing_keys(defaults)
   defaults.stringify_keys.each_with_object({}) do |(key, default), missing|
-    next if Rails.application.secrets[key].present?
+    next if Rails.application.credentials.public_send(key).present?
 
     warn_missing_secret(key)
-    missing[key] = Rails.application.secrets[key] = default
+    missing[key] = Rails.application.credentials[key] = default
   end
 end
 
@@ -79,26 +81,8 @@ def write_secrets_yml(missing_secrets)
   secrets ||= {}
   secrets[rails_env] ||= {}
 
-  secrets[rails_env].merge!(missing_secrets) do |key, old, new|
-    # Previously, it was possible this was set to the literal contents of an Erb
-    # expression that evaluated to an empty value. We don't want to support that
-    # specifically, just ensure we don't break things further.
-    #
-    if old.present?
-      warn <<EOM
-Rails.application.secrets.#{key} was blank, but the literal value in config/secrets.yml was:
-  #{old}
-
-This probably isn't the expected value for this secret. To keep using a literal Erb string in config/secrets.yml, replace `<%` with `<%%`.
-EOM
-
-      exit 1 # rubocop:disable Rails/Exit
-    end
-
-    new
-  end
-
-  File.write(secrets_yml, YAML.dump(secrets), mode: 'w', perm: 0600)
+  secrets[rails_env].merge!(missing_secrets)
+  File.write(secrets_yml, YAML.dump(secrets), mode: 'w', perm: 0o600)
 end
 
 create_tokens

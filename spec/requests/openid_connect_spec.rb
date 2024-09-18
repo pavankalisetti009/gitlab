@@ -192,7 +192,8 @@ RSpec.describe 'OpenID Connect requests', feature_category: :system_access do
       end
 
       it 'does not include any unknown properties' do
-        expect(@payload.keys).to eq %w[iss sub aud exp iat auth_time sub_legacy name nickname preferred_username email email_verified website profile picture groups_direct]
+        expect(@payload.keys).to eq %w[iss sub aud exp iat auth_time sub_legacy name nickname preferred_username email
+          email_verified website profile picture groups_direct]
       end
 
       it 'does include groups' do
