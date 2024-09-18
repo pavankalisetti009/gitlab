@@ -5,6 +5,397 @@ require 'spec_helper'
 RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { create(:user) }
 
+  describe '#allowed_to_use?' do
+    let(:ai_feature) { :my_feature }
+    let(:service_name) { ai_feature }
+    let(:maturity) { :ga }
+    let(:free_access) { true }
+    let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro]) }
+    let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
+    let_it_be(:expired_gitlab_purchase) do
+      create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_add_on)
+    end
+
+    let_it_be_with_reload(:active_gitlab_purchase) do
+      create(:gitlab_subscription_add_on_purchase, add_on: gitlab_add_on)
+    end
+
+    before do
+      stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", { ai_feature => { maturity: maturity } })
+
+      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
+      allow(service).to receive(:free_access?).and_return(free_access)
+    end
+
+    subject { user.allowed_to_use?(ai_feature) }
+
+    shared_examples_for 'checking assigned seats' do
+      context 'when the service data is missing' do
+        let(:service) { CloudConnector::MissingServiceData.new }
+
+        it { is_expected.to be false }
+      end
+
+      context 'when the user has an active assigned seat' do
+        before do
+          create(
+            :gitlab_subscription_user_add_on_assignment,
+            user: user,
+            add_on_purchase: active_gitlab_purchase
+          )
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context "when the user doesn't have an active assigned seat and free access is not available" do
+        let(:free_access) { false }
+
+        it { is_expected.to be false }
+
+        context 'when the user has an expired seat' do
+          before do
+            create(
+              :gitlab_subscription_user_add_on_assignment,
+              user: user,
+              add_on_purchase: expired_gitlab_purchase
+            )
+          end
+
+          it { is_expected.to be false }
+        end
+      end
+    end
+
+    context 'when on Gitlab.com instance', :saas do
+      before do
+        active_gitlab_purchase.namespace.add_owner(user)
+      end
+
+      include_examples 'checking assigned seats'
+
+      context "when the user doesn't have a seat but the service has free access" do
+        context "when the user doesn't belong to any namespaces with eligible plans" do
+          it { is_expected.to be false }
+        end
+
+        context "when the user belongs to groups with eligible plans" do
+          let_it_be_with_reload(:group) do
+            create(:group_with_plan, plan: :ultimate_plan)
+          end
+
+          let_it_be_with_reload(:group_without_experiment_features_enabled) do
+            create(:group_with_plan, plan: :ultimate_plan)
+          end
+
+          before_all do
+            group.add_guest(user)
+            group_without_experiment_features_enabled.add_guest(user)
+          end
+
+          include_context 'with ai features enabled for group'
+
+          shared_examples 'checking available groups' do
+            it { is_expected.to be true }
+
+            context 'when the feature is not GA' do
+              let(:maturity) { :beta }
+
+              it { is_expected.to be true }
+
+              context "when none of the user groups have experiment features enabled" do
+                before do
+                  group.namespace_settings.update!(experiment_features_enabled: false)
+                end
+
+                it { is_expected.to be false }
+              end
+            end
+          end
+
+          it_behaves_like 'checking available groups'
+
+          context 'when specifying a service name' do
+            let(:service_name) { :my_service }
+
+            subject { user.allowed_to_use?(ai_feature, service_name: service_name) }
+
+            it_behaves_like 'checking available groups'
+          end
+
+          context "when any of the user's groups requires a seat" do
+            before do
+              stub_feature_flags(duo_chat_requires_licensed_seat: group)
+            end
+
+            it { is_expected.to be false }
+          end
+        end
+      end
+    end
+
+    context 'when on Self managed instance' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be_with_reload(:active_gitlab_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)
+      end
+
+      include_examples 'checking assigned seats'
+
+      context "when the user doesn't have a seat but the service has free access" do
+        shared_examples 'when checking licensed features' do
+          let(:licensed_feature) { :ai_features }
+
+          where(:licensed_feature_available, :allowed_to_use) do
+            true  | true
+            false | false
+          end
+
+          with_them do
+            before do
+              stub_licensed_features(licensed_feature => licensed_feature_available)
+            end
+
+            it { is_expected.to be(allowed_to_use) }
+          end
+        end
+
+        it_behaves_like 'when checking licensed features'
+
+        context 'when specifying a licensed feature name' do
+          it_behaves_like 'when checking licensed features' do
+            let(:licensed_feature) { :generate_commit_message }
+
+            subject(:allowed_to_use?) { user.allowed_to_use?(ai_feature, licensed_feature: licensed_feature) }
+          end
+        end
+      end
+    end
+  end
+
+  describe '#any_group_with_ai_available?', :saas, :use_clean_rails_redis_caching do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan) }
+    let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
+    let_it_be_with_reload(:group_without_plan) { create(:group) }
+    let_it_be_with_reload(:trial_group) do
+      create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now)
+    end
+
+    let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
+    let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group) }
+
+    subject(:group_with_ai_enabled) { user.any_group_with_ai_available? }
+
+    where(:group, :result) do
+      ref(:bronze_group)       | false
+      ref(:free_group)         | false
+      ref(:group_without_plan) | false
+      ref(:ultimate_group)     | true
+      ref(:trial_group)        | true
+    end
+
+    with_them do
+      context 'when member of the root group' do
+        before do
+          group.add_guest(user)
+        end
+
+        context 'when ai features are enabled' do
+          include_context 'with ai features enabled for group'
+
+          it { is_expected.to eq(result) }
+
+          it 'caches the result' do
+            group_with_ai_enabled
+
+            expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to eq(result)
+          end
+        end
+
+        context 'when ai features are not enabled' do
+          it { is_expected.to eq(false) }
+        end
+      end
+    end
+
+    context 'when member of a sub-group only' do
+      include_context 'with ai features enabled for group'
+
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+
+        before_all do
+          ultimate_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { bronze_group }
+
+        before_all do
+          bronze_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+
+    context 'when member of a project only' do
+      include_context 'with ai features enabled for group'
+
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+        let_it_be(:project) { create(:project, group: ultimate_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { bronze_group }
+        let_it_be(:project) { create(:project, group: bronze_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
+  describe '#any_group_with_ga_ai_available?', :saas, :use_clean_rails_redis_caching do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user) }
+    let_it_be(:service_name) { :test }
+    let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan) }
+    let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan) }
+    let_it_be_with_reload(:group_without_plan) { create(:group) }
+    let_it_be_with_reload(:trial_group) do
+      create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: 1.day.from_now)
+    end
+
+    let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group) }
+    let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group) }
+    let_it_be_with_reload(:free_sub_group) { create(:group, parent: free_group) }
+
+    subject(:group_with_ga_ai_enabled) { user.any_group_with_ga_ai_available?(service_name) }
+
+    where(:group, :result) do
+      ref(:bronze_group)       | false
+      ref(:free_group)         | false
+      ref(:group_without_plan) | false
+      ref(:ultimate_group)     | true
+      ref(:trial_group)        | true
+    end
+
+    with_them do
+      context 'when duo chat requires licensed seat feature flag is enabled' do
+        before do
+          group.add_guest(user)
+          stub_feature_flags(duo_chat_requires_licensed_seat: true)
+        end
+
+        context 'when user has a duo pro seat' do
+          before do
+            allow(::CloudConnector::AvailableServices)
+              .to receive_message_chain(:find_by_name, :allowed_for?)
+                    .with(service_name)
+                    .with(user)
+                    .and_return(true)
+          end
+
+          it { is_expected.to eq(result) }
+        end
+
+        context 'when user does not have a duo pro seat' do
+          before do
+            allow(::CloudConnector::AvailableServices)
+              .to receive_message_chain(:find_by_name, :allowed_for?)
+                    .with(service_name)
+                    .with(user)
+                    .and_return(false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when member of the root group' do
+        before do
+          group.add_guest(user)
+          stub_feature_flags(duo_chat_requires_licensed_seat: false)
+        end
+
+        it { is_expected.to eq(result) }
+
+        it 'caches the result' do
+          group_with_ga_ai_enabled
+
+          expect(Rails.cache.fetch(['users', user.id, 'group_with_ga_ai_enabled'])).to eq(result)
+        end
+      end
+    end
+
+    context 'when member of a sub-group only' do
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+
+        before_all do
+          ultimate_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { free_group }
+
+        before_all do
+          free_sub_group.add_guest(user)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+
+    context 'when member of a project only' do
+      context 'with eligible group' do
+        let(:group) { ultimate_group }
+        let_it_be(:project) { create(:project, group: ultimate_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'with not eligible group' do
+        let(:group) { free_group }
+        let_it_be(:project) { create(:project, group: free_group) }
+
+        before_all do
+          project.add_guest(user)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
   describe '#duo_pro_add_on_available_namespace_ids', :saas do
     let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on) }
 

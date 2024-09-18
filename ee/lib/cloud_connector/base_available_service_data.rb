@@ -23,6 +23,17 @@ module CloudConnector
       add_on_purchases_assigned_to(user).any?
     end
 
+    # Returns the active add-on purchases for the add-on names associated with this service
+    #
+    # namespace - Namespace
+    def add_on_purchases(namespace = nil)
+      results = GitlabSubscriptions::AddOnPurchase.by_add_on_name(@add_on_names).active
+
+      results = results.by_namespace(namespace.self_and_ancestor_ids) if namespace
+
+      results
+    end
+
     # Returns the list of namespaces that allow the user access to the service, if any
     #
     # user - User
@@ -64,15 +75,6 @@ module CloudConnector
 
     def add_on_purchases_assigned_to(user)
       add_on_purchases.assigned_to_user(user)
-    end
-
-    def add_on_purchases(namespace = nil)
-      results = GitlabSubscriptions::AddOnPurchase
-        .by_add_on_name(@add_on_names)
-        .active
-      results = results.by_namespace(namespace.self_and_ancestor_ids) if namespace
-
-      results
     end
   end
 end

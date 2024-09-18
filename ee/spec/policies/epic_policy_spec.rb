@@ -457,16 +457,12 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
     context 'when user is logged in' do
       before do
         stub_licensed_features(epics: true)
-        allow(::CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-          :free_access?).and_return(cloud_connector_free_access)
-        allow(::CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-          :allowed_for?).and_return(cloud_connector_user_access)
+        allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
         allow(authorizer).to receive(:allowed?).and_return(true)
       end
 
       context "when feature is authorized" do
-        let(:cloud_connector_free_access) { true }
         let(:cloud_connector_user_access) { true }
 
         context "when user can read epic" do
@@ -495,43 +491,9 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
           group.add_guest(user)
         end
 
-        let(:cloud_connector_free_access) { false }
         let(:cloud_connector_user_access) { false }
 
         it { is_expected.to be_disallowed(:summarize_comments) }
-      end
-
-      context 'when instance is on the correct plan' do
-        let(:cloud_connector_free_access) { true }
-        let(:cloud_connector_user_access) { false }
-
-        before do
-          group.add_guest(user)
-          stub_licensed_features(ai_features: true, epics: true)
-          allow(authorizer).to receive(:allowed?).and_return(true)
-        end
-
-        it { is_expected.to be_allowed(:summarize_comments) }
-      end
-
-      context "on saas", :saas do
-        let(:cloud_connector_free_access) { true }
-        let(:cloud_connector_user_access) { false }
-
-        before do
-          group.add_guest(user)
-          allow(authorizer).to receive(:allowed?).and_return(true)
-        end
-
-        it { is_expected.to be_disallowed(:summarize_comments) }
-
-        context 'if user is in the group that enables AI features' do
-          before do
-            allow(user).to receive(:any_group_with_ai_available?).and_return(true)
-          end
-
-          it { is_expected.to be_allowed(:summarize_comments) }
-        end
       end
     end
   end
