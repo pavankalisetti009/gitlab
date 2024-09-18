@@ -125,6 +125,20 @@ describe('EditorComponent', () => {
       });
     });
 
+    it('uses absolute links in description', async () => {
+      factory();
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      const {
+        extraMergeRequestInput: { description },
+      } = goToPolicyMR.mock.calls.at(-1)[0];
+
+      expect(description).toContain(
+        `[Foo](http://test.host/groups/path/to/project/-/security/compliance_dashboard/frameworks/1)`,
+      );
+    });
+
     afterEach(() => {
       window.location.search = '';
     });
