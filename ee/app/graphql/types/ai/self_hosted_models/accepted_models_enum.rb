@@ -25,6 +25,14 @@ module Types
           value: 'mixtral_text'
         value 'MIXTRAL_8X22B_TEXT', description: 'Mixtral-8x22B Text: Suitable for code completion.',
           value: 'mixtral_8x22b_text'
+        value 'LLAMA3', description: 'LLaMA 3 - 8B: Suitable for code generation and completion.',
+          value: 'llama3'
+        value 'LLAMA3_TEXT', description: 'LLaMA 3 Text - 8B: Suitable for code generation and completion.',
+          value: 'llama3_text'
+        value 'LLAMA3_70B', description: 'LLaMA 3 - 70B: Suitable for code generation and completion.',
+          value: 'llama3_70b'
+        value 'LLAMA3_70B_TEXT', description: 'LLaMA 3 Text - 70B Text: Suitable for code generation and completion.',
+          value: 'llama3_70b_text'
       end
     end
   end
