@@ -48,6 +48,7 @@ module EE
           #    - geo node update route
           #    - geo resync designs route
           #    - geo custom sign_out route
+          #    - jwt auth route
           # - on Geo primary
           #    - geo node status update route
           # - on Geo secondary with maintenance mode off
@@ -61,7 +62,8 @@ module EE
               geo_sign_out_route? ||
               admin_settings_update? ||
               geo_node_status_update_route? ||
-              geo_graphql_query?
+              geo_graphql_query? ||
+              jwt_auth_route?
 
             return true if allowed
             return sign_in_route? if ::Gitlab.maintenance_mode?
@@ -150,6 +152,10 @@ module EE
             end
 
             ALLOWLISTED_GIT_LFS_LOCKS_ROUTES[route_hash[:controller]]&.include?(route_hash[:action])
+          end
+
+          def jwt_auth_route?
+            request.post? && request.path.start_with?('/jwt/auth')
           end
 
           override :read_only?
