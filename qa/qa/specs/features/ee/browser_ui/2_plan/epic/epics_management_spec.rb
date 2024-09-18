@@ -4,6 +4,8 @@ module QA
   # Add :smoke back once proven reliable
   RSpec.describe 'Plan', product_group: :product_planning do
     describe 'Epics Management' do
+      include_context 'work item epics migration'
+
       let(:group) { create(:group, name: "group-to-test-epics-#{SecureRandom.hex(4)}") }
 
       before do
@@ -12,7 +14,7 @@ module QA
 
       it 'creates an epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do
         epic_title = 'Epic created via GUI'
-        if work_item_epics_enabled_for_group?
+        if work_item_epics_enabled_for_group?(group)
           EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
             epic.group = group
             epic.title = epic_title
@@ -29,7 +31,7 @@ module QA
 
       it 'creates a confidential epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347979' do
         epic_title = 'Confidential epic created via GUI'
-        if work_item_epics_enabled_for_group?
+        if work_item_epics_enabled_for_group?(group)
           EE::Resource::WorkItemEpic.fabricate_via_browser_ui! do |epic|
             epic.group = group
             epic.title = epic_title
@@ -173,12 +175,6 @@ module QA
             response_check.code == 200
           end
         end
-      end
-
-      def work_item_epics_enabled_for_group?
-        group.visit!
-        QA::Page::Group::Menu.perform(&:go_to_epics)
-        EE::Page::Group::WorkItem::Epic::Index.perform(&:work_item_epics_enabled?)
       end
     end
   end
