@@ -61,19 +61,30 @@ module API
           end
           optional :additional_context, type: Array, allow_blank: true,
             desc: 'List of additional context to be passed for the chat' do
-            requires :type, type: String,
+            requires :category, type: String,
               values: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.values,
-              desc: 'Type of the additional context.'
-            requires :name, type: String,
+              desc: 'Category of the additional context.'
+            requires :id, type: String,
               limit: ::API::CodeSuggestions::MAX_CONTEXT_NAME_SIZE, allow_blank: false,
-              desc: 'Name of the additional context.'
+              desc: 'ID of the additional context.'
             requires :content, type: String,
               limit: ::API::CodeSuggestions::MAX_BODY_SIZE, allow_blank: false,
               desc: 'Content of the additional context.'
+            optional :metadata, type: Hash, allow_blank: true,
+              desc: 'Metadata of the additional context.'
           end
         end
         post do
           safe_params = declared_params(include_missing: false)
+
+          if safe_params[:additional_context].present?
+            safe_params[:additional_context].map do |context|
+              context.tap do |c|
+                c["metadata"] ||= {}
+              end
+            end
+          end
+
           resource = find_resource(safe_params)
 
           not_found! unless user_allowed?(resource)
