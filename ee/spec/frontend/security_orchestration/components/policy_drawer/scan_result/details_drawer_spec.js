@@ -53,6 +53,13 @@ describe('DetailsDrawer component', () => {
         'This policy enforces critical vulnerability CS approvals',
       );
     });
+
+    it('renders layout if yaml is invalid', () => {
+      factory({ props: { policy: {} } });
+
+      expect(findPolicyDrawerLayout().exists()).toBe(true);
+      expect(findPolicyDrawerLayout().props('description')).toBe('');
+    });
   });
 
   describe('summary', () => {

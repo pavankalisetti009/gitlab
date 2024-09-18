@@ -35,7 +35,7 @@ describe('PipelineExecutionDrawer', () => {
       );
     });
 
-    it('renders layout if yam is invalid', () => {
+    it('renders layout if yaml is invalid', () => {
       createComponent({ propsData: { policy: {} } });
 
       expect(findPolicyDrawerLayout().exists()).toBe(true);

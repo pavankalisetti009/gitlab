@@ -1,4 +1,5 @@
 import DetailsDrawer from 'ee/security_orchestration/components/policy_drawer/scan_execution/details_drawer.vue';
+import PolicyDrawerLayout from 'ee/security_orchestration/components/policy_drawer/drawer_layout.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
@@ -21,6 +22,8 @@ describe('DetailsDrawer component', () => {
     });
   };
 
+  const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
+
   describe.each`
     title                                   | propsData
     ${'default policy'}                     | ${{ policy: mockProjectScanExecutionPolicy }}
@@ -35,6 +38,15 @@ describe('DetailsDrawer component', () => {
 
     it('renders the correct policy action message', () => {
       expect(findSummary().element).toMatchSnapshot();
+    });
+  });
+
+  describe('empty policy', () => {
+    it('renders layout if yaml is invalid', () => {
+      factory({ propsData: { policy: {} } });
+
+      expect(findPolicyDrawerLayout().exists()).toBe(true);
+      expect(findPolicyDrawerLayout().props('description')).toBe('');
     });
   });
 });
