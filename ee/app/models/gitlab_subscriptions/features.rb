@@ -266,6 +266,7 @@ module GitlabSubscriptions
       vulnerability_finding_signatures
       container_scanning_for_registry
       security_exclusions
+      security_scans_api
     ].freeze
 
     STARTER_FEATURES_WITH_USAGE_PING = %i[

@@ -123,3 +123,9 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       observability:
         unit_primitives:
           - observability_all
+  sast:
+    backend: 'gitlab-security-gateway'
+    bundled_with:
+      _irrelevant_: # not checked when cut_off_date is null
+        unit_primitives:
+          - security_scans
