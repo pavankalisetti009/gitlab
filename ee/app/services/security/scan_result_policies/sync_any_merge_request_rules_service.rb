@@ -30,20 +30,20 @@ module Security
                                         .including_approval_merge_request_rules
         return if related_policies.empty?
 
-        violated_policies_ids, unviolated_policies_ids = evaluate_policy_violations(related_policies)
+        violated_policies, unviolated_policies = evaluate_policy_violations(related_policies)
 
-        violated_rules, unviolated_rules = rules_for_violated_policies(violated_policies_ids)
+        violated_rules, unviolated_rules = rules_for_violated_policies(violated_policies)
         violated_rules, unviolated_rules = update_required_approvals(violated_rules, unviolated_rules)
 
         log_violated_rules(violated_rules)
         # rubocop:disable CodeReuse/ActiveRecord
-        violated_policies_ids -= unviolated_rules.pluck(:scan_result_policy_id)
+        violated_policies -= unviolated_rules.map(&:scan_result_policy_read)
         violations.add(
-          violated_policies_ids,
-          unviolated_policies_ids + unviolated_rules.pluck(:scan_result_policy_id)
+          violated_policies,
+          unviolated_policies + unviolated_rules.map(&:scan_result_policy_read)
         )
         # rubocop:enable CodeReuse/ActiveRecord
-        save_violation_data(violated_policies_ids)
+        save_violation_data(violated_policies)
         violations.execute
         generate_policy_bot_comment(merge_request, violated_rules, :any_merge_request)
       end
@@ -62,7 +62,7 @@ module Security
               targets_any_commits ? true : Security::ScanResultPolicyViolation.trim_violations(unsigned_commits)
           end
         end
-        [violated.pluck(:id), unviolated.pluck(:id)] # rubocop:disable CodeReuse/ActiveRecord
+        [violated, unviolated]
       end
 
       def active_policies
@@ -105,10 +105,10 @@ module Security
       end
       strong_memoize_attr :any_merge_request_rules
 
-      def rules_for_violated_policies(violated_policies_ids)
+      def rules_for_violated_policies(violated_policies)
         approval_rules_for_target_branch = any_merge_request_rules.applicable_to_branch(merge_request.target_branch)
 
-        violated_rules = approval_rules_for_policies(approval_rules_for_target_branch, violated_policies_ids)
+        violated_rules = approval_rules_for_policies(approval_rules_for_target_branch, violated_policies)
         unviolated_rules = any_merge_request_rules - violated_rules
 
         [violated_rules, unviolated_rules]
@@ -120,8 +120,8 @@ module Security
         [updated_violated_rules, unviolated_rules]
       end
 
-      def approval_rules_for_policies(approval_rules, policies_ids)
-        approval_rules.select { |rule| policies_ids.include? rule.scan_result_policy_id }
+      def approval_rules_for_policies(approval_rules, policies)
+        approval_rules.select { |rule| policies.map(&:id).include? rule.scan_result_policy_id }
       end
 
       def log_violated_rules(rules)
@@ -146,9 +146,9 @@ module Security
         Gitlab::AppJsonLogger.info(message: 'Updating MR approval rule', **default_attributes.merge(attributes))
       end
 
-      def save_violation_data(violated_policy_ids)
-        violated_policy_ids.each do |policy_id|
-          violations.add_violation(policy_id, { commits: violations_by_policy[policy_id] })
+      def save_violation_data(violated_policies)
+        violated_policies.each do |policy|
+          violations.add_violation(policy, { commits: violations_by_policy[policy.id] })
         end
       end
     end

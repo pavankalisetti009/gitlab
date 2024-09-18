@@ -45,6 +45,7 @@ module Security
     validates :content, exclusion: { in: [nil] }
 
     scope :undeleted, -> { where('policy_index >= 0') }
+    scope :order_by_index, -> { order(policy_index: :asc) }
 
     def self.checksum(policy_hash)
       Digest::SHA256.hexdigest(policy_hash.to_json)

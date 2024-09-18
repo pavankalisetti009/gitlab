@@ -112,6 +112,121 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
   end
 
+  describe '#approval_policy_rule' do
+    let(:scan_result_policy) { create(:scan_result_policy_read) }
+    let(:policy_configuration) { scan_result_policy.security_orchestration_policy_configuration }
+
+    context 'when real_policy_index is negative' do
+      before do
+        allow(scan_result_policy).to receive(:real_policy_index).and_return(-1)
+      end
+
+      it 'returns nil' do
+        expect(scan_result_policy.approval_policy_rule).to be_nil
+      end
+    end
+
+    context 'when real_policy_index is non-negative' do
+      let(:real_policy_index) { 1 }
+      let(:rule_idx) { 2 }
+      let(:approval_policy_rule) { instance_double(Security::ApprovalPolicyRule) }
+
+      before do
+        allow(scan_result_policy).to receive(:real_policy_index).and_return(real_policy_index)
+        allow(scan_result_policy).to receive(:rule_idx).and_return(rule_idx)
+        allow(Security::ApprovalPolicyRule).to receive(:by_policy_rule_index).and_return(approval_policy_rule)
+      end
+
+      it 'calls Security::ApprovalPolicyRule.by_policy_rule_index with correct arguments' do
+        expect(Security::ApprovalPolicyRule).to receive(:by_policy_rule_index)
+          .with(policy_configuration, policy_index: real_policy_index, rule_index: rule_idx)
+
+        scan_result_policy.approval_policy_rule
+      end
+
+      it 'returns the result from Security::ApprovalPolicyRule.by_policy_rule_index' do
+        expect(scan_result_policy.approval_policy_rule).to eq(approval_policy_rule)
+      end
+    end
+  end
+
+  describe '#real_policy_index' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:scan_result_policy_read) do
+      create(:scan_result_policy_read,
+        project: project,
+        security_orchestration_policy_configuration: policy_configuration,
+        orchestration_policy_idx: 1)
+    end
+
+    let_it_be(:policy_0) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 0,
+        enabled: true)
+    end
+
+    let_it_be(:policy_1) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1,
+        enabled: false)
+    end
+
+    let_it_be(:policy_2) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 2,
+        enabled: true)
+    end
+
+    let_it_be(:policy_3) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 3,
+        enabled: true)
+    end
+
+    let(:policy_scope_checker) { instance_double(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) }
+
+    before do
+      allow(Security::SecurityOrchestrationPolicies::PolicyScopeChecker).to receive(:new)
+        .with(project: project).and_return(policy_scope_checker)
+      scan_result_policy_read.clear_memoization(:real_policy_index)
+    end
+
+    context 'when all policies are applicable' do
+      before do
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).and_return(true)
+      end
+
+      it 'returns the correct index' do
+        expect(scan_result_policy_read.real_policy_index).to eq(2)
+      end
+    end
+
+    context 'when some policies are not applicable' do
+      before do
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).and_return(true)
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).with(policy_2).and_return(false)
+      end
+
+      it 'returns the correct index' do
+        expect(scan_result_policy_read.real_policy_index).to eq(3)
+      end
+    end
+
+    context 'when the target policy is not found' do
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read,
+          project: project,
+          security_orchestration_policy_configuration: policy_configuration,
+          orchestration_policy_idx: 10)
+      end
+
+      before do
+        allow(policy_scope_checker).to receive(:security_policy_applicable?).and_return(true)
+      end
+
+      it 'returns negative index' do
+        expect(scan_result_policy_read.real_policy_index).to eq(-1)
+      end
+    end
+  end
+
   describe '.for_project' do
     let_it_be(:project) { create(:project) }
     let_it_be(:scan_result_policy_read_1) { create(:scan_result_policy_read, project: project) }

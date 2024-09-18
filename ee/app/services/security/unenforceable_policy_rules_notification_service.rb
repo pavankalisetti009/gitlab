@@ -11,8 +11,10 @@ module Security
     end
 
     def execute
-      notify_for_report_type(merge_request, :scan_finding, merge_request.approval_rules.scan_finding)
-      notify_for_report_type(merge_request, :license_scanning, merge_request.approval_rules.license_scanning)
+      approval_rules = merge_request.approval_rules.including_scan_result_policy_read
+
+      notify_for_report_type(merge_request, :scan_finding, approval_rules.scan_finding)
+      notify_for_report_type(merge_request, :license_scanning, approval_rules.license_scanning)
     end
 
     private
@@ -30,9 +32,9 @@ module Security
 
       violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, report_type)
       applicable_rules.each do |rule|
-        next if rule.scan_result_policy_read&.fail_open?
+        next if rule.scan_result_policy_read.nil? || rule.scan_result_policy_read&.fail_open?
 
-        violations.add_error(rule.scan_result_policy_id, :artifacts_missing)
+        violations.add_error(rule.scan_result_policy_read, :artifacts_missing)
       end
       violations.execute
 

@@ -38,7 +38,10 @@ module Security
         violated_rules, unviolated_rules = partition_rules(approval_rules_with_newly_detected_states)
 
         update_required_approvals(violated_rules, unviolated_rules)
-        violations.add(violated_rules.pluck(:scan_result_policy_id), unviolated_rules.pluck(:scan_result_policy_id)) # rubocop:disable CodeReuse/ActiveRecord
+        violations.add(
+          violated_rules.filter_map(&:scan_result_policy_read),
+          unviolated_rules.filter_map(&:scan_result_policy_read)
+        )
         violations.execute
         generate_policy_bot_comment(
           merge_request,
@@ -79,9 +82,8 @@ module Security
               approval_rule_name: approval_rule.name,
               missing_scans: missing_scans(approval_rule)
             )
-            violations.add_error(
-              approval_rule.scan_result_policy_id, :scan_removed, missing_scans: missing_scans(approval_rule)
-            )
+            violations.add_error(approval_rule.scan_result_policy_read, :scan_removed,
+              missing_scans: missing_scans(approval_rule))
             next true
           end
 
@@ -173,8 +175,10 @@ module Security
       end
 
       def add_violation_data(rule, newly_detected: nil, previously_existing: nil)
+        return unless rule.scan_result_policy_read
+
         violations.add_violation(
-          rule.scan_result_policy_id,
+          rule.scan_result_policy_read,
           {
             uuids: {
               newly_detected: Security::ScanResultPolicyViolation.trim_violations(newly_detected),

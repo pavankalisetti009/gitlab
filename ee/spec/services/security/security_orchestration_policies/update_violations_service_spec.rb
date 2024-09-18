@@ -9,8 +9,34 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     create(:merge_request, source_project: project, target_project: project)
   end
 
-  let_it_be(:policy_a) { create(:scan_result_policy_read, project: project) }
-  let_it_be(:policy_b) { create(:scan_result_policy_read, project: project) }
+  let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+
+  let_it_be(:security_policy_a) do
+    create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 0)
+  end
+
+  let_it_be(:security_policy_b) do
+    create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
+  end
+
+  let_it_be(:policy_a) do
+    create(:scan_result_policy_read, project: project,
+      security_orchestration_policy_configuration: policy_configuration, orchestration_policy_idx: 0, rule_idx: 0)
+  end
+
+  let_it_be(:policy_b) do
+    create(:scan_result_policy_read, project: project,
+      security_orchestration_policy_configuration: policy_configuration, orchestration_policy_idx: 1, rule_idx: 0)
+  end
+
+  let_it_be(:approval_policy_rule_a) do
+    create(:approval_policy_rule, security_policy: security_policy_a, rule_index: 0)
+  end
+
+  let_it_be(:approval_policy_rule_b) do
+    create(:approval_policy_rule, security_policy: security_policy_b, rule_index: 0)
+  end
+
   let(:violated_policies) { violations.map(&:scan_result_policy_read) }
 
   subject(:violations) { merge_request.scan_result_policy_violations }
@@ -23,32 +49,51 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     describe 'attributes' do
       subject(:attrs) { project.scan_result_policy_violations.last.attributes }
 
+      let(:security_policies_sync_enabled) { true }
+
       before do
-        service.add([policy_b.id], [])
+        stub_feature_flags(security_policies_sync: security_policies_sync_enabled)
+        service.add([policy_a], [])
         service.execute
       end
 
       specify do
         is_expected.to include(
-          "scan_result_policy_id" => kind_of(Numeric),
-          "merge_request_id" => kind_of(Numeric),
-          "project_id" => kind_of(Numeric))
+          "scan_result_policy_id" => policy_a.id,
+          "merge_request_id" => merge_request.id,
+          "project_id" => project.id,
+          "approval_policy_rule_id" => approval_policy_rule_a.id
+        )
+      end
+
+      context 'when security_policies_sync is disabled' do
+        let(:security_policies_sync_enabled) { false }
+
+        specify do
+          is_expected.to include(
+            "scan_result_policy_id" => policy_a.id,
+            "merge_request_id" => merge_request.id,
+            "project_id" => project.id,
+            "approval_policy_rule_id" => nil
+          )
+        end
       end
     end
 
     context 'without pre-existing violations' do
       before do
-        service.add([policy_b.id], [])
+        service.add([policy_b], [])
       end
 
       it 'creates violations' do
         service.execute
 
         expect(violated_policies).to contain_exactly(policy_b)
+        expect(last_violation.approval_policy_rule).to eq(approval_policy_rule_b)
       end
 
       it 'stores the correct status' do
-        service.add_violation(policy_b.id, { uuid: { newly_detected: [123] } })
+        service.add_violation(policy_b, { uuid: { newly_detected: [123] } })
         service.execute
 
         expect(last_violation.status).to eq("completed")
@@ -56,7 +101,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       it 'can persist violation data' do
-        service.add_violation(policy_b.id, { uuid: { newly_detected: [123] } })
+        service.add_violation(policy_b, { uuid: { newly_detected: [123] } })
         service.execute
 
         expect(last_violation.violation_data)
@@ -67,19 +112,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
     context 'with pre-existing violations' do
       before do
-        service.add_violation(policy_a.id, { uuids: { newly_detected: [123] } })
+        service.add_violation(policy_a, { uuids: { newly_detected: [123] } })
         service.execute
       end
 
       it 'clears existing violations' do
-        service.add([policy_b.id], [policy_a.id])
+        service.add([policy_b], [policy_a])
         service.execute
 
         expect(violated_policies).to contain_exactly(policy_b)
+        expect(last_violation.approval_policy_rule).to eq(approval_policy_rule_b)
       end
 
       it 'can add error to existing violation data' do
-        service.add_error(policy_a.id, :scan_removed, missing_scans: ['sast'])
+        service.add_error(policy_a, :scan_removed, missing_scans: ['sast'])
 
         expect { service.execute }
           .to change { last_violation.violation_data }.to match(
@@ -90,7 +136,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       it 'stores the correct status' do
-        service.add_error(policy_a.id, :scan_removed, missing_scans: ['sast'])
+        service.add_error(policy_a, :scan_removed, missing_scans: ['sast'])
         service.execute
 
         expect(last_violation.status).to eq("completed")
@@ -99,7 +145,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
       context 'with identical state' do
         it 'does not clear violations' do
-          service.add([policy_a.id], [])
+          service.add([policy_a], [])
 
           expect { service.execute }.not_to change { last_violation.violation_data }
           expect(violated_policies).to contain_exactly(policy_a)
@@ -114,7 +160,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       before do
-        service.add([], [policy_b.id])
+        service.add([], [policy_b])
       end
 
       it 'removes only violations provided in unviolated ids' do
@@ -135,7 +181,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
   describe '#add_violation' do
     subject(:violation_data) do
-      service.add_violation(policy_a.id, data, context: context)
+      service.add_violation(policy_a, data, context: context)
       service.violation_data[policy_a.id]
     end
 
@@ -148,7 +194,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     end
 
     it 'stores the correct status' do
-      service.add_error(policy_a.id, :scan_removed, missing_scans: ['sast'])
+      service.add_error(policy_a, :scan_removed, missing_scans: ['sast'])
       service.execute
 
       expect(last_violation.status).to eq("completed")
@@ -157,7 +203,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
     context 'when other data is present' do
       before do
-        service.add_violation(policy_a.id, { uuid: { previously_existing: [456] } })
+        service.add_violation(policy_a, { uuid: { previously_existing: [456] } })
       end
 
       it 'merges the data for report_type' do
@@ -181,7 +227,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
   describe '#add_error' do
     subject(:violation_data) do
-      service.add_error(policy_a.id, error, **extra_data)
+      service.add_error(policy_a, error, **extra_data)
       service.violation_data[policy_a.id]
     end
 
@@ -195,7 +241,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
     context 'when other error is present' do
       before do
-        service.add_error(policy_a.id, :artifacts_missing)
+        service.add_error(policy_a, :artifacts_missing)
       end
 
       it 'merges the errors' do

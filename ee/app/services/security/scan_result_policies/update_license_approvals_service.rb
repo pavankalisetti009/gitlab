@@ -57,11 +57,7 @@ module Security
         merge_request.reset_required_approvals(violated_rules)
         ApprovalMergeRequestRule.remove_required_approved(unviolated_rules)
 
-        # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- pluck on already loaded records
-        violations.add(
-          violated_rules.pluck(:scan_result_policy_id), unviolated_rules.pluck(:scan_result_policy_id)
-        )
-        # rubocop:enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
+        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules)
         violations.execute
 
         violated_rules.each do |approval_rule|
@@ -135,7 +131,7 @@ module Security
                                               .transform_values do |dependencies|
           Security::ScanResultPolicyViolation.trim_violations(dependencies)
         end
-        violations.add_violation(rule.scan_result_policy_id, trimmed_license_list, context: validation_context)
+        violations.add_violation(rule.scan_result_policy_read, trimmed_license_list, context: validation_context)
       end
 
       def fail_open?(scan_result_policy_read)
