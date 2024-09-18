@@ -84,23 +84,40 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
     end
 
     context 'when cloning work item with success' do
-      it 'increases the target namespace work items count by 1' do
-        expect do
-          service.execute
-        end.to change { target_namespace.work_items.count }.by(1)
-      end
-
-      it 'returns a new work item with the same attributes' do
-        new_work_item = service.execute
-        expect(new_work_item).to be_persisted
-        expect(new_work_item).to have_attributes(
+      let(:expected_original_work_item_state) { Issue.available_states[:opened] }
+      let!(:original_work_item_attrs) do
+        {
           title: original_work_item.title,
           description: original_work_item.description,
           author: current_user,
           work_item_type: original_work_item.work_item_type,
-          project: nil,
+          state_id: Issue.available_states[:opened],
+          updated_by: current_user,
+          last_edited_at: nil,
+          last_edited_by: nil,
+          closed_at: nil,
+          closed_by: nil,
+          duplicated_to_id: nil,
+          moved_to_id: nil,
+          promoted_to_epic_id: nil,
+          external_key: nil,
+          upvotes_count: 0,
+          blocking_issues_count: 0,
+          project: target_namespace.try(:project),
           namespace: target_namespace
-        )
+        }
+      end
+
+      it_behaves_like 'cloneable and moveable work item'
+
+      context 'with specific widgets' do
+        let!(:assignees) { [source_namespace_member, target_namespace_member, namespaces_member] }
+
+        def set_assignees
+          original_work_item.assignee_ids = assignees.map(&:id)
+        end
+
+        it_behaves_like 'cloneable and moveable widget data'
       end
     end
   end

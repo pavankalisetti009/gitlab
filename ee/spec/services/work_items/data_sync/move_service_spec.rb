@@ -6,7 +6,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }
-  let_it_be(:issue_work_item) { create(:work_item, :group_level, namespace: group) }
+  let_it_be_with_reload(:issue_work_item) { create(:work_item, :group_level, namespace: group) }
   let_it_be(:source_namespace_member) { create(:user, reporter_of: group) }
   let_it_be(:target_namespace_member) { create(:user, reporter_of: target_group) }
   let_it_be(:namespaces_member) { create(:user, developer_of: [group, target_group]) }
@@ -84,24 +84,38 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
     end
 
     context 'when cloning work item with success' do
-      it 'increases the target namespace work items count by 1' do
-        expect do
-          service.execute
-        end.to change { target_namespace.work_items.count }.by(1)
-      end
-
-      it 'returns a new work item with the same attributes' do
-        new_work_item = service.execute
-
-        expect(new_work_item).to be_persisted
-        expect(new_work_item).to have_attributes(
+      let(:expected_original_work_item_state) { Issue.available_states[:closed] }
+      let!(:original_work_item_attrs) do
+        {
           title: original_work_item.title,
           description: original_work_item.description,
           author: original_work_item.author,
           work_item_type: original_work_item.work_item_type,
-          project: nil,
+          state_id: original_work_item.state_id,
+          created_at: original_work_item.reload.created_at,
+          updated_by: original_work_item.updated_by,
+          updated_at: original_work_item.reload.updated_at,
+          last_edited_at: original_work_item.last_edited_at,
+          last_edited_by: original_work_item.last_edited_by,
+          closed_at: original_work_item.closed_at,
+          closed_by: original_work_item.closed_by,
+          duplicated_to_id: original_work_item.duplicated_to_id,
+          moved_to_id: original_work_item.moved_to_id,
+          promoted_to_epic_id: original_work_item.promoted_to_epic_id,
+          external_key: original_work_item.external_key,
+          upvotes_count: original_work_item.upvotes_count,
+          blocking_issues_count: original_work_item.blocking_issues_count,
+          project: target_namespace.try(:project),
           namespace: target_namespace
-        )
+        }
+      end
+
+      it_behaves_like 'cloneable and moveable work item'
+
+      context 'with specific widgets' do
+        let!(:assignees) { [source_namespace_member, target_namespace_member, namespaces_member] }
+
+        it_behaves_like 'cloneable and moveable widget data'
       end
     end
   end
