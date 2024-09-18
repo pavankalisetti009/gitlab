@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Govern', :runner, product_group: :security_policies do
+  RSpec.describe 'Govern', :runner, except: { subdomain: 'pre' }, product_group: :security_policies do
     describe 'Group Level Scan Execution Policy' do
       let(:group) { create(:group, path: "scan-execution-policy-group-#{SecureRandom.hex(4)}") }
 
