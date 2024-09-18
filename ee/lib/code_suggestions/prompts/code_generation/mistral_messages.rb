@@ -3,7 +3,7 @@
 module CodeSuggestions
   module Prompts
     module CodeGeneration
-      class MistralMessages < AiGatewayCodeGenerationMessage
+      class MistralMessages < AiGatewaySelfHostedMessages
         GATEWAY_PROMPT_VERSION = 3
 
         private
