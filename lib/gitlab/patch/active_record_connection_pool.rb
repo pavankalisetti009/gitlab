@@ -148,7 +148,7 @@ module Gitlab
       end
 
       def checkout_with_no_verify(c) # rubocop:disable Naming/MethodParameterName -- This is an upstream method
-        c._run_checkout_callbacks
+        c._run_checkout_callbacks {} # rubocop:disable Lint/EmptyBlock -- Added to be safe to preserve previous behavior
         c
       rescue # rubocop:disable Style/RescueStandardError -- This is in the upstream code
         remove c
