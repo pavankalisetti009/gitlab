@@ -56,7 +56,7 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       expect(last.ai_action).to eq('chat')
       expect(last.timestamp).not_to be_nil
       expect(last.referer_url).to eq('http://127.0.0.1:3000')
-      expect(last.additional_context.to_a).to eq(payload[:additional_context].to_a)
+      expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
     end
 
     context 'with MAX_MESSAGES limit' do
@@ -99,7 +99,7 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
     end
 
     it 'a message contains additional context' do
-      expect(subject.messages.last.additional_context.to_a).to eq(payload[:additional_context].to_a)
+      expect(subject.messages.last.extras['additional_context']).to eq(payload[:additional_context].to_a)
     end
   end
 
