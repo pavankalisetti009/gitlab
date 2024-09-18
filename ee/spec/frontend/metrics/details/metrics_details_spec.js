@@ -128,7 +128,7 @@ describe('MetricsDetails', () => {
         env: 'production',
       },
       values: [
-        [1700118610000, 0.25595267476015443],
+        [1700118610000, 0.25595267476015443, ['trace-1', 'trace-2']],
         [1700118660000, 0.1881374588830907],
         [1700118720000, 0.28915416028993485],
       ],
@@ -590,6 +590,23 @@ describe('MetricsDetails', () => {
     expect(findRelatedTraces().props()).toStrictEqual({
       dataPoints: [],
       tracingIndexUrl,
+    });
+  });
+
+  describe('when the metric has no related traces', () => {
+    beforeEach(async () => {
+      observabilityClientMock.fetchMetric.mockResolvedValue([
+        {
+          ...mockMetricData[0],
+          values: [[1700118660000, 0.1881374588830907]],
+        },
+      ]);
+
+      await mountComponent();
+    });
+
+    it('does not render the related traces component', () => {
+      expect(findRelatedTraces().exists()).toBe(false);
     });
   });
 
