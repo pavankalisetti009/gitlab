@@ -66,6 +66,17 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetHierarchy {
     hasChildren
     hasParent
+    rolledUpCountsByType {
+      countsByState {
+        all
+        closed
+      }
+      workItemType {
+        id
+        name
+        iconName
+      }
+    }
     parent {
       id
       iid
@@ -155,6 +166,15 @@ fragment WorkItemWidgets on WorkItemWidget {
             }
           }
         }
+      }
+    }
+  }
+
+  ... on WorkItemWidgetLinkedItems {
+    linkedItems {
+      nodes {
+        linkId
+        linkType
       }
     }
   }

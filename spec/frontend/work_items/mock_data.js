@@ -1343,6 +1343,7 @@ export const workItemResponseFactory = ({
               __typename: 'WorkItemWidgetHierarchy',
               type: 'HIERARCHY',
               hasChildren: true,
+              rolledUpCountsByType: [],
               hasParent,
               children: {
                 nodes: [
@@ -4687,6 +4688,7 @@ export const createWorkItemQueryResponse = {
             hasChildren: false,
             parent: null,
             hasParent: false,
+            rolledUpCountsByType: [],
             children: {
               nodes: [],
               __typename: 'WorkItemConnection',
