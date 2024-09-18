@@ -5,9 +5,15 @@ module Ai
     module Dependencies
       module ConfigFiles
         module Constants
-          # List classes by language (alphabetically), then by precedence. Lock files
-          # should always appear first before non-lock files. This ordering affects
-          # the result of ConfigFileParser#find_config_file_paths_with_class.
+          # When adding a new class to this list:
+          # 1. Order by language (alaphabetically), then by precedence. Lock files
+          #    should appear first before their non-lock file counterparts.
+          # 2. Update doc/user/project/repository/code_suggestions/repository_xray.md
+          #    #supported-languages-and-package-managers.
+          #
+          # This ordering affects the result of
+          # ConfigFileParser#find_config_file_paths_with_class.
+          #
           CONFIG_FILE_CLASSES = [
             ConfigFiles::CppConanPy,
             ConfigFiles::CppConanTxt,

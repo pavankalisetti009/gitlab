@@ -56,11 +56,11 @@ module Ai
               line.strip!
               line.gsub!(INLINE_COMMENT_REGEX, '')
 
-              if START_SECTION_REGEX.match?(line)
-                in_deps_section = true
-              elsif in_deps_section
+              if in_deps_section
                 libs << parse_lib(line) if self.class::PREFIX_REGEX.match?(line)
                 break if END_SECTION_REGEX.match?(line)
+              elsif START_SECTION_REGEX.match?(line)
+                in_deps_section = true
               end
             end
 

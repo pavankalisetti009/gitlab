@@ -33,16 +33,16 @@ module Ai
           #
           def extract_libs
             libs = []
-            in_require_section = false
+            in_deps_section = false
 
             content.each_line do |line|
               line.strip!
 
               if START_SECTION_REGEX.match?(line)
-                in_require_section = true
+                in_deps_section = true
               elsif END_SECTION_REGEX.match?(line)
-                in_require_section = false
-              elsif in_require_section || SINGLE_LINE_REGEX.match?(line)
+                in_deps_section = false
+              elsif in_deps_section || SINGLE_LINE_REGEX.match?(line)
                 libs << parse_lib(line) unless line.include?(EXCLUDE_KEYWORD)
               end
             end
