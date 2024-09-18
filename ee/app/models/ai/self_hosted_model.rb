@@ -29,7 +29,11 @@ module Ai
       codegemma_7b: 9,
       mistral_text: 10,
       mixtral_text: 11,
-      mixtral_8x22b_text: 12
+      mixtral_8x22b_text: 12,
+      llama3: 13,
+      llama3_text: 14,
+      llama3_70b: 15,
+      llama3_70b_text: 16
     }
 
     # For now, only OpenAI API format is supported, this method will be potentially

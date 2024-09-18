@@ -45,4 +45,8 @@ export const SELF_HOSTED_MODEL_OPTIONS = [
   { modelValue: 'MISTRAL_TEXT', modelName: 'Mistral Text 7B' },
   { modelValue: 'MIXTRAL_TEXT', modelName: 'Mixtral Text 8x7B' },
   { modelValue: 'MIXTRAL_8X22B_TEXT', modelName: 'Mixtral Text 8X22B' },
+  { modelValue: 'LLAMA3', modelName: 'LLaMA 3 - 13B' },
+  { modelValue: 'LLAMA3_TEXT', modelName: 'LLaMA 3 - 13B Text' },
+  { modelValue: 'LLAMA3_70B', modelName: 'LLaMA 3 - 70B' },
+  { modelValue: 'LLAMA3_70B_TEXT', modelName: 'LLaMA 3 - 70B Text' },
 ];

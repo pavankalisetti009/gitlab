@@ -99,6 +99,10 @@ describe('SelfHostedModelForm', () => {
         'Mistral Text 7B',
         'Mixtral Text 8x7B',
         'Mixtral Text 8X22B',
+        'LLaMA 3 - 13B',
+        'LLaMA 3 - 13B Text',
+        'LLaMA 3 - 70B',
+        'LLaMA 3 - 70B Text',
       ]);
     });
 

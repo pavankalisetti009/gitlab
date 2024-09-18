@@ -10,6 +10,10 @@ code_generations:
     - mistral
     - mixtral
     - mixtral_8x22b
+    - llama3
+    - llama3_text
+    - llama3_70b
+    - llama3_70b_text
 code_completions:
   title: Code Completion
   release_state: GA
@@ -26,6 +30,10 @@ code_completions:
     - mistral_text
     - mixtral_text
     - mixtral_8x22b_text
+    - llama3
+    - llama3_text
+    - llama3_70b
+    - llama3_70b_text
 duo_chat:
   title: Duo Chat
   release_state: BETA
