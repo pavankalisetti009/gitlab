@@ -145,6 +145,7 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
           ...List
           ...Table
           ...NamedList
+          ...CodeFlows
         }
         dismissedAt
         dismissedBy {

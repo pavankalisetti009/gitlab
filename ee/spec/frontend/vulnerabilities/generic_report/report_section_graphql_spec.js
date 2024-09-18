@@ -4,8 +4,13 @@ import ReportSection from 'ee/vulnerabilities/components/generic_report/report_s
 import { vulnerabilityDetails } from 'ee_jest/security_dashboard/components/pipeline/mock_data';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
+const keysToExclude = ['codeFlows'];
+const filteredValues = Object.entries(vulnerabilityDetails)
+  .filter(([key]) => !keysToExclude.includes(key))
+  .map(([, value]) => value);
+
 const TEST_DATA = {
-  supportedTypes: Object.values(vulnerabilityDetails),
+  supportedTypes: filteredValues,
   unsupportedTypes: [
     {
       type: 'Unsupported',

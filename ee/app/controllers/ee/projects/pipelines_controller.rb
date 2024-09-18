@@ -14,6 +14,8 @@ module EE
           push_frontend_feature_flag(:pipeline_security_dashboard_graphql, project, type: :development)
           push_frontend_feature_flag(:dora_charts_forecast, project.namespace)
           push_frontend_feature_flag(:use_holt_winters_forecast_for_deployment_frequency, project)
+          push_frontend_feature_flag(:vulnerability_code_flow, project)
+          push_frontend_feature_flag(:pipeline_vulnerability_code_flow, project)
         end
 
         feature_category :software_composition_analysis, [:licenses, :license_count]
