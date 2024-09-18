@@ -240,20 +240,6 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
           expect(response).to have_gitlab_http_status(:unauthorized)
         end.to not_change { group.reload.name }
       end
-
-      context "with the `custom_ability_admin_runners` feature flag disabled" do
-        before do
-          stub_feature_flags(custom_ability_admin_runners: false)
-        end
-
-        it "is forbidden" do
-          put api("/groups/#{group.id}", user), params: {
-            shared_runners_setting: 'disabled_and_unoverridable'
-          }
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
-      end
     end
   end
 
