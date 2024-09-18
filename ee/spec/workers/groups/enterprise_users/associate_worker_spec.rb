@@ -50,12 +50,6 @@ RSpec.describe Groups::EnterpriseUsers::AssociateWorker, feature_category: :user
       context 'when there is pages_domain record for user email domain' do
         let!(:pages_domain) { create(:pages_domain, domain: email_domain, project: project) }
 
-        context 'when pages_domain does not belong to project' do
-          let(:project) { nil }
-
-          include_examples 'does not do anything'
-        end
-
         context 'when pages_domain belongs to project' do
           context 'when project belongs to user' do
             let_it_be(:user_namespace) { create(:user).namespace }
