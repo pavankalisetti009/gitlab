@@ -3,6 +3,7 @@
 module Security
   class ScanResultPolicyRead < ApplicationRecord
     include EachBatch
+    include ::Gitlab::Utils::StrongMemoize
 
     self.table_name = 'scan_result_policies'
 
@@ -66,5 +67,34 @@ module Security
     def bot_message_disabled?
       send_bot_message['enabled'] == false
     end
+
+    def approval_policy_rule
+      return if real_policy_index < 0
+
+      Security::ApprovalPolicyRule.by_policy_rule_index(
+        security_orchestration_policy_configuration, policy_index: real_policy_index, rule_index: rule_idx
+      )
+    end
+    strong_memoize_attr :approval_policy_rule
+
+    def real_policy_index
+      real_index = -1
+      active_policy_index = 0
+      policies = security_orchestration_policy_configuration.security_policies.type_approval_policy.order_by_index
+
+      policies.each_with_index do |policy, index|
+        next unless policy.enabled? && policy.scope_applicable?(project)
+
+        if active_policy_index == orchestration_policy_idx
+          real_index = index
+          break
+        end
+
+        active_policy_index += 1
+      end
+
+      real_index
+    end
+    strong_memoize_attr :real_policy_index
   end
 end

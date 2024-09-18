@@ -82,6 +82,18 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.order_by_index' do
+    let_it_be(:policy1) { create(:security_policy, policy_index: 2) }
+    let_it_be(:policy2) { create(:security_policy, policy_index: 1) }
+    let_it_be(:policy3) { create(:security_policy, policy_index: 3) }
+
+    it 'orders policies by policy_index in ascending order' do
+      ordered_policies = described_class.order_by_index
+
+      expect(ordered_policies).to match_array([policy2, policy1, policy3])
+    end
+  end
+
   describe '.upsert_policy' do
     shared_examples 'upserts policy' do |policy_type, assoc_name|
       let(:policy_configuration) { create(:security_orchestration_policy_configuration) }

@@ -24,7 +24,7 @@ module Security
       delegate :project, to: :merge_request, private: true
 
       def sync_required_approvals
-        all_scan_finding_rules = merge_request.approval_rules.scan_finding
+        all_scan_finding_rules = merge_request.approval_rules.scan_finding.including_scan_result_policy_read
         rules_with_preexisting_states = all_scan_finding_rules.reject do |rule|
           include_newly_detected?(rule)
         end
@@ -47,7 +47,7 @@ module Security
         ApprovalMergeRequestRule.remove_required_approved(unviolated_rules) if unviolated_rules.any?
 
         log_violated_rules(violated_rules)
-        violations.add(violated_rules.map(&:scan_result_policy_id), unviolated_rules.map(&:scan_result_policy_id))
+        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules)
         violations.execute
       end
 
@@ -101,10 +101,9 @@ module Security
         violated_uuids = vulnerabilities.with_findings
                                         .limit(Security::ScanResultPolicyViolation::MAX_VIOLATIONS)
                                         .map(&:finding_uuid)
-        violations.add_violation(
-          approval_rule.scan_result_policy_id,
-          { uuids: { previously_existing: violated_uuids } }
-        )
+        violations.add_violation(approval_rule.scan_result_policy_read, {
+          uuids: { previously_existing: violated_uuids }
+        })
       end
     end
   end
