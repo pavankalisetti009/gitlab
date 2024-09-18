@@ -10,6 +10,7 @@ import {
   GlSprintf,
   GlTooltipDirective as GlTooltip,
   GlToggle,
+  GlTableLite,
 } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -68,6 +69,7 @@ export default {
     GlToggle,
     AccessDropdown,
     GroupsAccessDropdown,
+    GlTableLite,
   },
   directives: { GlTooltip },
   inject: {
@@ -237,6 +239,25 @@ export default {
     ),
     invalidFeedback: s__('ProtectedEnvironments|This rule already exists.'),
   },
+  fields: [
+    {
+      key: 'approvers',
+      label: s__('ProtectedEnvironments|Approvers'),
+    },
+    {
+      key: 'approvals',
+      label: s__('ProtectedEnvironments|Approvals required'),
+    },
+    {
+      key: 'inheritance',
+      label: s__('ProtectedEnvironments|Enable group inheritance'),
+    },
+    {
+      key: 'remove',
+      label: '',
+      tdClass: 'gl-text-right',
+    },
+  ],
 };
 </script>
 <template>
@@ -281,24 +302,15 @@ export default {
       </template>
     </gl-form-group>
     <gl-collapse :visible="hasSelectedApprovers">
-      <span class="gl-font-bold">{{ $options.i18n.approvalRulesLabel }}</span>
-      <div
+      <div class="gl-mb-5 gl-font-bold">{{ $options.i18n.approvalRulesLabel }}</div>
+      <gl-table-lite
+        :fields="$options.fields"
+        :items="approverInfo"
         data-testid="approval-rules"
-        class="protected-environment-approvers gl-grid gl-items-center gl-gap-5"
+        stacked="md"
+        class="-gl-mb-5 md:gl-mb-0"
       >
-        <span class="protected-environment-approvers-label">{{ __('Approvers') }}</span>
-        <span>{{ __('Approvals required') }}</span>
-        <div class="gl-flex gl-gap-2">
-          <span>{{ $options.i18n.inheritanceLabel }}</span>
-          <gl-icon
-            v-gl-tooltip
-            :title="$options.i18n.inheritanceTooltip"
-            :aria-label="$options.i18n.inheritanceTooltip"
-            name="question-o"
-          />
-        </div>
-        <span></span>
-        <template v-for="(approver, index) in approverInfo">
+        <template #cell(approvers)="{ item: approver, index }">
           <gl-avatar
             v-if="approver.avatarShape"
             :key="`${index}-avatar`"
@@ -313,7 +325,9 @@ export default {
             {{ approver.name }}
           </gl-link>
           <span v-else :key="`${index}-name`">{{ approver.name }}</span>
+        </template>
 
+        <template #cell(approvals)="{ item: approver, index }">
           <gl-form-group
             :key="`${index}-approvals`"
             :state="isApprovalValid(approver.approvals)"
@@ -340,7 +354,18 @@ export default {
               </span>
             </template>
           </gl-form-group>
+        </template>
 
+        <template #head(inheritance)="data">
+          <span>{{ data.label }}</span>
+          <gl-icon
+            v-gl-tooltip
+            :title="$options.i18n.inheritanceTooltip"
+            :aria-label="$options.i18n.inheritanceTooltip"
+            name="question-o"
+          />
+        </template>
+        <template #cell(inheritance)="{ item: approver, index }">
           <gl-toggle
             v-if="isGroupRule(approver)"
             :id="inheritanceId(index)"
@@ -353,6 +378,9 @@ export default {
             @change="updateApproverInheritance(approver, $event)"
           />
           <span v-else :key="`${index}-inheritance`"></span>
+        </template>
+
+        <template #cell(remove)="{ item: approver, index }">
           <gl-button
             :key="`${index}-remove`"
             v-gl-tooltip
@@ -363,7 +391,7 @@ export default {
             @click="removeApprover(approver)"
           />
         </template>
-      </div>
+      </gl-table-lite>
     </gl-collapse>
   </div>
 </template>
