@@ -22,9 +22,9 @@ describe('MetricsLineChart', () => {
       unit: 's',
       attributes: { foo: 'bar', baz: 'def' },
       values: [
-        [`${1700119020000 * 1e6}`, '1.2658100987444416', []],
-        [`${1700119080000 * 1e6}`, '3.0604918827864345', []],
-        [`${1700119140000 * 1e6}`, '3.0205790879854124', []],
+        [`${1700118610000 * 1e6}`, '1.2658100987444416', []],
+        [`${1700118660000 * 1e6}`, '3.0604918827864345', []],
+        [`${1700118720000 * 1e6}`, '3.0205790879854124', []],
       ],
     },
   ];
@@ -42,6 +42,27 @@ describe('MetricsLineChart', () => {
   };
 
   const findChart = () => wrapper.findComponent(GlLineChart);
+
+  const getSymbolSizeFn = () => findChart().props('data')[0].symbolSize;
+  const mockSymbolSize = (datapoint) =>
+    parseFloat(getSymbolSizeFn()(null, { data: datapoint }).toFixed(2));
+
+  const getDatapoint = (seriesIndex, datapointIndex) =>
+    findChart().props('data')[seriesIndex].data[datapointIndex];
+
+  const datapointWithTracingData = () => getDatapoint(0, 0);
+  const datapointWithNoTracingData = () => getDatapoint(1, 0);
+
+  const chartItemClicked = ({ series = [], timestamp, activeSeriesIndexes }) =>
+    findChart().vm.$emit('chartItemClicked', {
+      chart: {
+        getModel: () => ({
+          getSeries: () => series,
+          getCurrentSeriesIndices: () => activeSeriesIndexes ?? series.map((_, i) => i),
+        }),
+      },
+      params: { data: [timestamp] },
+    });
 
   beforeEach(() => {
     mountComponent();
@@ -77,6 +98,7 @@ describe('MetricsLineChart', () => {
           ],
           name: 'foo: bar, baz: abc',
           symbolSize: expect.any(Function),
+          symbol: expect.any(Function),
         },
         {
           data: [
@@ -101,15 +123,14 @@ describe('MetricsLineChart', () => {
           ],
           name: 'foo: bar, baz: def',
           symbolSize: expect.any(Function),
+          symbol: expect.any(Function),
         },
       ]);
     });
 
-    it('sets the symbol size depending on whethe traceIds is empty', () => {
-      const { symbolSize } = findChart().props('data')[0];
-      const mockSymbolSize = (traceIds) => symbolSize(null, { data: [0, 0, {}, { traceIds }] });
-      expect(mockSymbolSize(['a'])).toBe(10);
-      expect(mockSymbolSize([])).toBe(5);
+    it('sets the symbol size based on whether tracing data is available', () => {
+      expect(mockSymbolSize(datapointWithTracingData())).toBe(12);
+      expect(mockSymbolSize(datapointWithNoTracingData())).toBe(6);
     });
   });
 
@@ -126,17 +147,6 @@ describe('MetricsLineChart', () => {
   });
 
   describe('chartItemClicked', () => {
-    const chartItemClicked = ({ series, timestamp, activeSeriesIndexes }) =>
-      findChart().vm.$emit('chartItemClicked', {
-        chart: {
-          getModel: () => ({
-            getSeries: () => series,
-            getCurrentSeriesIndices: () => activeSeriesIndexes ?? series.map((_, i) => i),
-          }),
-        },
-        params: { data: [timestamp] },
-      });
-
     const mockSeries = (color, name, data) => ({
       option: { data, itemStyle: { color } },
       name,
@@ -198,6 +208,36 @@ describe('MetricsLineChart', () => {
           },
         ],
       ]);
+    });
+
+    it('sets annotation based on the selected timestamp', async () => {
+      expect(findChart().props('annotations')).toEqual([]);
+
+      await chartItemClicked({
+        series: [
+          mockSeries('color-1', 'series-1', [
+            [new Date('2024-09-01').getTime(), 'val-1', {}, { traceIds: ['trace-1'] }],
+            [5678, 'val-2', {}, { traceIds: ['trace-2'] }],
+          ]),
+          mockSeries('color-0', 'series-0', [
+            [new Date('2024-09-01').getTime(), 'val-3', {}, { traceIds: ['trace-3'] }],
+            [5678, 'val-4', {}, { traceIds: ['trace-4'] }],
+          ]),
+        ],
+        timestamp: new Date('2024-09-01').getTime(),
+      });
+
+      expect(findChart().props('annotations')).toEqual([
+        { min: new Date('2024-09-01'), max: new Date('2024-09-01') },
+      ]);
+    });
+
+    it('ignores clicks on the annotations', () => {
+      findChart().vm.$emit('chartItemClicked', {
+        chart: {},
+        params: { data: { name: 'annotations' } },
+      });
+      expect(wrapper.emitted('selected')).toBeUndefined();
     });
   });
 
