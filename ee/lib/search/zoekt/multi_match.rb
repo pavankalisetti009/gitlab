@@ -38,7 +38,7 @@ module Search
           chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches], file[:FileName])
           results[current_page] << {
             path: file[:FileName],
-            project_id: file[:Repository].to_i,
+            project_id: file[:RepositoryID].to_i,
             chunks: chunks,
             match_count_total: file[:LineMatches].inject(0) { |sum, line| sum + line[:LineFragments].count },
             match_count: match_count

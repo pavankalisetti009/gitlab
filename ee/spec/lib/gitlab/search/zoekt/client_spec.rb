@@ -152,7 +152,7 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, :clean_gitlab_redis_cach
         "files/ruby/regex.rb", "files/markdown/ruby-style-guide.md"
       )
 
-      expect(search.result[:Files].map { |r| r[:Repository].to_i }.uniq).to contain_exactly(
+      expect(search.result[:Files].map { |r| r[:RepositoryID].to_i }.uniq).to contain_exactly(
         project_1.id, project_2.id
       )
     end
