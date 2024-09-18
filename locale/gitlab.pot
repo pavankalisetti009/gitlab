@@ -18303,9 +18303,6 @@ msgstr ""
 msgid "Dependencies|Error exporting the dependency list. Please reload the page."
 msgstr ""
 
-msgid "Dependencies|Error parsing SBOM reports"
-msgstr ""
-
 msgid "Dependencies|Export as CSV"
 msgstr ""
 
@@ -18348,9 +18345,6 @@ msgstr ""
 msgid "Dependencies|The component dependency path is based on the lock file. There may be several paths. In these cases, the longest path is displayed."
 msgstr ""
 
-msgid "Dependencies|The following SBOM reports could not be parsed, and the list of components may be incomplete. Please investigate the provided reports and ensure they conform to %{helpPageLinkStart}the requirements for SBOM documents%{helpPageLinkEnd}."
-msgstr ""
-
 msgid "Dependencies|There may be multiple paths"
 msgstr ""
 
@@ -18382,9 +18376,6 @@ msgid "Dependencies|Unknown path"
 msgstr ""
 
 msgid "Dependencies|Vulnerable components"
-msgstr ""
-
-msgid "Dependencies|report-%{index} (%{length})"
 msgstr ""
 
 msgid "Dependencies|unknown"
@@ -32124,6 +32115,9 @@ msgid "LicenseManagement|Denied"
 msgstr ""
 
 msgid "LicenseManagement|Uncategorized"
+msgstr ""
+
+msgid "LicenseScanningReport|The following SBOM reports could not be parsed. Therefore the list of components and their licenses may be incomplete."
 msgstr ""
 
 msgid "Licensed Enterprise Edition features can be used if the project namespace's plan includes the feature, or if the project is public."
@@ -47669,6 +47663,18 @@ msgstr ""
 msgid "Saving project."
 msgstr ""
 
+msgid "SbomErrors|Error parsing SBOM reports"
+msgstr ""
+
+msgid "SbomErrors|Please investigate the provided reports and ensure they conform to %{helpPageLinkStart}the requirements for SBOM documents%{helpPageLinkEnd}."
+msgstr ""
+
+msgid "SbomErrors|The following SBOM reports could not be parsed. Therefore the list of components may be incomplete."
+msgstr ""
+
+msgid "SbomErrors|report-%{index} (%{length})"
+msgstr ""
+
 msgid "Scan pushed document contents for policy breaks. %{docs_link}"
 msgstr ""
 
@@ -50158,6 +50164,9 @@ msgid "SecurityReports|The Activity filter now defaults to showing only vulnerab
 msgstr ""
 
 msgid "SecurityReports|The Vulnerability Report shows results of successful scans on your project's default branch, manually added vulnerability records, and vulnerabilities found from scanning operational environments. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
+msgid "SecurityReports|The following SBOM reports could not be parsed. Therefore the list of reported vulnerabilities may be incomplete."
 msgstr ""
 
 msgid "SecurityReports|The following security reports contain one or more vulnerability findings that could not be parsed and were not recorded. To investigate a report, download the artifacts in the job output. Ensure the security report conforms to the relevant %{helpPageLinkStart}JSON schema%{helpPageLinkEnd}."

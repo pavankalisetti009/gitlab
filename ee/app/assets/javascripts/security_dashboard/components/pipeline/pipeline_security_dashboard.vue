@@ -7,6 +7,7 @@ import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DOC_PATH_SECURITY_CONFIGURATION } from 'ee/security_dashboard/constants';
+import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import ScanAlerts, { TYPE_ERRORS, TYPE_WARNINGS } from './scan_alerts.vue';
 import ReportStatusAlert, { STATUS_PURGED } from './report_status_alert.vue';
 import SecurityReportsSummary from './security_reports_summary.vue';
@@ -26,6 +27,7 @@ export default {
     PipelineVulnerabilityReport: () => import('./pipeline_vulnerability_report.vue'),
     GlSprintf,
     GlLink,
+    SbomReportsErrorsAlert,
   },
   mixins: [glFeatureFlagMixin()],
   provide() {
@@ -46,6 +48,10 @@ export default {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    sbomReportsErrors: {
+      type: Array,
+      required: true,
     },
   },
   data() {
@@ -129,6 +135,9 @@ export default {
     showScanWarnings() {
       return this.scansWithWarnings.length > 0 && !this.hasPurgedScans;
     },
+    showSbomErrors() {
+      return this.sbomReportsErrors.length > 0;
+    },
   },
   i18n: {
     parsingErrorAlertTitle: s__('SecurityReports|Error parsing security reports'),
@@ -138,6 +147,9 @@ export default {
     parsingWarningAlertTitle: s__('SecurityReports|Warning parsing security reports'),
     parsingWarningAlertDescription: s__(
       'SecurityReports|Check the messages generated while parsing the following security reports, as they may prevent the results from being ingested by GitLab. Ensure the security report conforms to a supported %{helpPageLinkStart}JSON schema%{helpPageLinkEnd}.',
+    ),
+    sbomReportsErrorsDescription: s__(
+      'SecurityReports|The following SBOM reports could not be parsed. Therefore the list of reported vulnerabilities may be incomplete.',
     ),
     pageDescription: s__(
       'SecurityReports|Results show vulnerability findings from the latest successful %{helpPageLinkStart}pipeline%{helpPageLinkEnd}.',
@@ -160,6 +172,13 @@ export default {
         </template>
       </gl-sprintf>
     </p>
+
+    <sbom-reports-errors-alert
+      v-if="showSbomErrors"
+      :errors="sbomReportsErrors"
+      :error-description="$options.i18n.sbomReportsErrorsDescription"
+      class="gl-mb-5"
+    />
 
     <div v-if="hasScans" class="gl-mb-5">
       <scan-alerts
