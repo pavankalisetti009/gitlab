@@ -10,17 +10,13 @@ module Vulnerabilities
       end
 
       def execute
-        Gitlab::Database.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480163'
-        ) do
-          return success_response if remediations.blank? # rubocop:disable Cop/AvoidReturnFromBlocks -- Temp for decomp
-          raise argument_error unless remediations.is_a?(ActiveRecord::Relation)
+        return success_response if remediations.blank?
+        raise argument_error unless remediations.is_a?(ActiveRecord::Relation)
 
-          remediations
-            .tap { |remediations| destroy_uploads!(remediations) }
-            .then(&:delete_all)
-            .then { |deleted_count| success_response(deleted_count) }
-        end
+        remediations
+          .tap { |remediations| destroy_uploads!(remediations) }
+          .then(&:delete_all)
+          .then { |deleted_count| success_response(deleted_count) }
       end
 
       private
@@ -35,7 +31,7 @@ module Vulnerabilities
         # rubocop: disable CodeReuse/ActiveRecord -- couldn't find a Finder to use
         Upload.where(
           model_type: Vulnerabilities::Remediation,
-          model_id: remediations,
+          model_id: remediations.pluck_primary_key,
           uploader: AttachmentUploader
         ).then { |uploads| [uploads, uploads.begin_fast_destroy] }
           .tap { |uploads, _| uploads.delete_all }
