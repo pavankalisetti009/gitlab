@@ -296,6 +296,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         package_manager: occurrence_map.packager,
         pipeline_id: pipeline.id,
         project_id: project.id,
+        reachability: occurrence_map.reachability,
         source_id: occurrence_map.source_id,
         source_package_id: occurrence_map.source_package_id,
         traversal_ids: project.namespace.traversal_ids

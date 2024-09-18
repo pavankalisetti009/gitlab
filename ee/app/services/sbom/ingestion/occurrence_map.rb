@@ -51,7 +51,7 @@ module Sbom
       end
 
       delegate :image_name, :image_tag, to: :report_source, allow_nil: true
-      delegate :name, :version, :source_package_name, :ancestors, to: :report_component
+      delegate :name, :version, :source_package_name, :ancestors, :reachability, to: :report_component
 
       private
 
