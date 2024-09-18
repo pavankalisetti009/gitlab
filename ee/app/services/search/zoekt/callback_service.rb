@@ -43,6 +43,7 @@ module Search
             index_file_count = params.dig(:additional_payload, :repo_stats, :index_file_count)
             repo.size_bytes = size_bytes if size_bytes
             repo.index_file_count = index_file_count if index_file_count
+            repo.retries_left = Repository.columns_hash['retries_left'].default
             repo.save!
           end
 
@@ -55,6 +56,12 @@ module Search
         return task.update!(retries_left: task.retries_left.pred) if task.retries_left > 1
 
         task.update!(state: :failed, retries_left: 0)
+        publish_task_failed_event_for(task)
+      end
+
+      def publish_task_failed_event_for(task)
+        event = TaskFailedEvent.new(data: { zoekt_repository_id: task.zoekt_repository_id })
+        Gitlab::EventStore.publish(event)
       end
     end
   end

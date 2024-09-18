@@ -47,6 +47,7 @@ module EE
             if: ->(_) {
                   ::Gitlab::CurrentSettings.zoekt_indexing_enabled? && ::License.feature_available?(:zoekt_code_search)
                 }
+          store.subscribe ::Search::Zoekt::TaskFailedEventWorker, to: ::Search::Zoekt::TaskFailedEvent
           store.subscribe ::PackageMetadata::GlobalAdvisoryScanWorker, to: ::PackageMetadata::IngestedAdvisoryEvent
           store.subscribe ::Sbom::ProcessVulnerabilitiesWorker, to: ::Sbom::SbomIngestedEvent
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::NamespaceSettings::AiRelatedSettingsChangedEvent
