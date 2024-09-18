@@ -196,7 +196,7 @@ module Search
           results = {}
           i = 0
           response.each_file do |file|
-            project_id = file[:Repository].to_i
+            project_id = file[:RepositoryID].to_i
 
             cont = file[:LineMatches].each do |match|
               current_page = i / per_page
