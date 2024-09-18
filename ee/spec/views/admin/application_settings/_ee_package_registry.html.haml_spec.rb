@@ -28,7 +28,8 @@ RSpec.describe 'admin/application_settings/_ee_package_registry.html.haml', feat
       expect(rendered).to have_content(
         s_('PackageRegistry|There are security risks if packages are deleted while request forwarding is enabled.'))
       expect(rendered).to have_link('What are the risks?',
-        href: help_page_path('user/packages/package_registry/supported_functionality', { anchor: 'deleting-packages' }))
+        href: help_page_path('user/packages/package_registry/supported_functionality.md',
+          { anchor: 'deleting-packages' }))
     end
   end
 end
