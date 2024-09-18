@@ -82,7 +82,8 @@ module Sbom
                 vulnerability_count: vulnerability_data.count,
                 traversal_ids: project.namespace.traversal_ids,
                 archived: project.archived,
-                ancestors: occurrence_map.ancestors
+                ancestors: occurrence_map.ancestors,
+                reachability: occurrence_map.reachability
               }
 
               occurrence_map.vulnerability_ids = vulnerability_data.vulnerability_ids
