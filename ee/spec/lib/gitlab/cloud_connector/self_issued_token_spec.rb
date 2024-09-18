@@ -63,7 +63,7 @@ RSpec.describe Gitlab::CloudConnector::SelfIssuedToken, feature_category: :cloud
 
     context 'when signing key is missing' do
       before do
-        allow(Rails.application.secrets).to receive(:openid_connect_signing_key).and_return(nil)
+        allow(Rails.application.credentials).to receive(:openid_connect_signing_key).and_return(nil)
       end
 
       it 'raises NoSigningKeyError' do
