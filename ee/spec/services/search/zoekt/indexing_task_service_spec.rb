@@ -20,18 +20,6 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
   end
 
   describe '#execute' do
-    context 'when FF zoekt_create_indexing_tasks is disabled' do
-      let(:service) { described_class.new(project, :index_repo) }
-
-      before do
-        stub_feature_flags(zoekt_create_indexing_tasks: false)
-      end
-
-      it 'does not creates and Search::Zoekt::Task record' do
-        expect { service.execute }.not_to change { Search::Zoekt::Task.count }
-      end
-    end
-
     context 'when task_type is delete_repo' do
       let(:service) { described_class.new(project, :delete_repo) }
 

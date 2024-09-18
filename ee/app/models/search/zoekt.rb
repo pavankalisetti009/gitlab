@@ -34,18 +34,14 @@ module Search
       end
 
       def index_async(project_id, _options = {})
-        IndexingTaskWorker.perform_async(project_id, :index_repo) if create_indexing_tasks_enabled?(project_id)
+        IndexingTaskWorker.perform_async(project_id, :index_repo)
       end
 
       def index_in(delay, project_id, _options = {})
-        return unless create_indexing_tasks_enabled?(project_id)
-
         IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
       end
 
       def delete_async(project_id, root_namespace_id:, node_id: nil)
-        return unless create_indexing_tasks_enabled?(project_id)
-
         Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
           node_ids: [node_id]).map do |node|
           options = { root_namespace_id: root_namespace_id, node_id: node.id }
@@ -54,8 +50,6 @@ module Search
       end
 
       def delete_in(delay, project_id, root_namespace_id:, node_id: nil)
-        return unless create_indexing_tasks_enabled?(project_id)
-
         Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
           node_ids: [node_id]).map do |node|
           options = {
@@ -66,10 +60,6 @@ module Search
       end
 
       private
-
-      def create_indexing_tasks_enabled?(project_id)
-        Feature.enabled?(:zoekt_create_indexing_tasks, Project.actor_from_id(project_id))
-      end
 
       def fetch_root_namespace_id(container)
         case container
