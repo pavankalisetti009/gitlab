@@ -3,8 +3,6 @@
 module QA
   RSpec.describe 'Package', :skip_live_env, :orchestrated, :group_saml, requires_admin: 'for various user admin functions' do
     describe 'Dependency Proxy Group SSO', product_group: :container_registry do
-      include Support::API
-
       let!(:group) do
         Resource::Sandbox.fabricate! do |sandbox_group|
           sandbox_group.path = "saml_sso_group_with_dependency_proxy_#{SecureRandom.hex(8)}"
@@ -54,15 +52,11 @@ module QA
 
       after do
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
-
         remove_user
-        group.remove_via_api!
         runner.remove_via_api!
       end
 
       it "pulls an image using the dependency proxy on a group enforced SSO", :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347612' do
-        project.group.visit!
-
         create(:commit, project: project, commit_message: 'Add .gitlab-ci.yml', actions: [
           {
             action: 'create',
@@ -89,22 +83,15 @@ module QA
         ])
 
         project.visit!
-        Flow::Pipeline.visit_latest_pipeline
-
-        Page::Project::Pipeline::Show.perform do |pipeline|
-          pipeline.click_job('dependency-proxy-pull-test')
-        end
-
+        Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
+        project.visit_job('dependency-proxy-pull-test')
         Page::Project::Job::Show.perform do |job|
           expect(job).to be_successful(timeout: 800)
         end
 
         Flow::Login.sign_in
-
         project.group.visit!
-
         Page::Group::Menu.perform(&:go_to_dependency_proxy)
-
         Page::Group::DependencyProxy.perform do |index|
           expect(index).to have_blob_count(/Contains [1-9]\d* blobs of images/)
         end
