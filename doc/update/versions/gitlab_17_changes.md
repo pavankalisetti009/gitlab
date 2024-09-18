@@ -210,6 +210,10 @@ Check the [GitLab documentation for the upgrade to OpenSSL 3](https://docs.gitla
     new environment as the database restore removes the existing database schema definition and uses the definition
     that's stored as part of the backup.
 - Git 2.46.0 and later is required by Gitaly. For installations from source, you should use the [Git version provided by Gitaly](../../install/installation.md#git).
+- S3 object storage uploads in Workhorse are now handled by default using the [AWS SDK v2 for Go](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164597). If you experience issues
+  with S3 object storage uploads, you can downgrade to v1 of by disabling the `workhorse_use_aws_sdk_v2` [feature flag](../../administration/feature_flags.md#enable-or-disable-the-feature).
+- GitLab Runner v17.4.0 also [switched from the MinIO S3 client to the AWS SDK v2 for Go](https://gitlab.com/gitlab-org/gitlab-runner/-/merge_requests/4987) for distributed cache access.
+  The MinIO client can be enabled again by setting the `FF_USE_LEGACY_S3_CACHE_ADAPTER` [GitLab Runner feature flag](https://docs.gitlab.com/runner/configuration/feature-flags.html) to `true`.
 
 ## 17.3.0
 
