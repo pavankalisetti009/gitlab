@@ -1,7 +1,9 @@
 <script>
-import { GlTabs, GlTab, GlBadge } from '@gitlab/ui';
+import { GlTabs, GlTab, GlBadge, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import ProjectSecurityExclusionQuery from 'ee/security_configuration/project_security_exclusions/project_security_exclusions.query.graphql';
 import EmptyState from './empty_state.vue';
+import ExclusionList from './exclusion_list.vue';
 
 export default {
   components: {
@@ -9,6 +11,8 @@ export default {
     GlTab,
     GlBadge,
     EmptyState,
+    GlLoadingIcon,
+    ExclusionList,
   },
   inject: ['projectFullPath'],
   i18n: {
@@ -16,12 +20,25 @@ export default {
   },
   data() {
     return {
-      count: 0,
+      exclusions: [],
     };
   },
+  apollo: {
+    exclusions: {
+      query: ProjectSecurityExclusionQuery,
+      variables() {
+        return {
+          fullPath: this.projectFullPath,
+        };
+      },
+      update(data) {
+        return data?.project?.exclusions?.nodes || [];
+      },
+    },
+  },
   computed: {
-    showEmtpyState() {
-      return !this.count;
+    isLoading() {
+      return this.$apollo.queries.exclusions.loading;
     },
   },
 };
@@ -34,11 +51,15 @@ export default {
       <gl-tab>
         <template #title>
           <span>{{ __('Exclusions') }}</span>
-          <gl-badge class="gl-tab-counter-badge" variant="neutral">{{ count }}</gl-badge>
+          <gl-badge class="gl-tab-counter-badge" variant="neutral">{{
+            exclusions.length
+          }}</gl-badge>
         </template>
 
-        <div class="gl-mt-8">
-          <empty-state v-if="showEmtpyState" />
+        <div class="gl-mt-3">
+          <empty-state v-if="!isLoading && !exclusions.length" />
+          <gl-loading-icon v-else-if="isLoading" size="lg" class="gl-mt-5" />
+          <exclusion-list v-else :exclusions="exclusions" />
         </div>
       </gl-tab>
     </gl-tabs>
