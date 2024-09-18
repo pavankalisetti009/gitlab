@@ -121,13 +121,6 @@ RSpec.describe Issue, :elastic_delete_by_query, feature_category: :global_search
       expect(keys).to match_array(expected_keys)
     end
 
-    context 'when add_work_item_type_id_to_issues migration is not finished' do
-      it 'does not include work_item_type_id' do
-        set_elasticsearch_migration_to :add_work_item_type_id_to_issues, including: false
-        expect(issue.__elasticsearch__.as_indexed_json).not_to include('work_item_type_id')
-      end
-    end
-
     context 'when add_routing_to_issues migration is not finished' do
       it 'does not include routing' do
         set_elasticsearch_migration_to :add_routing_to_issues, including: false

@@ -3,8 +3,6 @@
 require 'spec_helper'
 require File.expand_path('ee/elastic/migrate/20231130152447_add_work_item_type_id_to_issues.rb')
 
-RSpec.describe AddWorkItemTypeIdToIssues, :elastic, feature_category: :global_search do
-  let(:version) { 20231130152447 }
-
-  include_examples 'migration adds mapping'
+RSpec.describe AddWorkItemTypeIdToIssues, feature_category: :global_search do
+  it_behaves_like 'a deprecated Advanced Search migration', 20231130152447
 end

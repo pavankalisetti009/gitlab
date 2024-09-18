@@ -35,10 +35,7 @@ module Elastic
 
         data['hashed_root_namespace_id'] = target.project.namespace.hashed_root_namespace_id
         data['archived'] = target.project.archived?
-
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_type_id_to_issues)
-          data['work_item_type_id'] = target.work_item_type_id
-        end
+        data['work_item_type_id'] = target.work_item_type_id
 
         data['routing'] = es_parent if ::Elastic::DataMigrationService.migration_has_finished?(:add_routing_to_issues)
 
