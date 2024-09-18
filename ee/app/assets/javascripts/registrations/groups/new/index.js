@@ -37,6 +37,7 @@ const mountGroupProjectFields = (el, store) => {
     templateName,
     initializeWithReadme,
     rootUrl,
+    trackActionForErrors,
   } = el.dataset;
 
   return new Vue({
@@ -53,6 +54,7 @@ const mountGroupProjectFields = (el, store) => {
           templateName: templateName || '',
           initializeWithReadme: parseBoolean(initializeWithReadme),
           rootUrl,
+          trackActionForErrors,
         },
       });
     },

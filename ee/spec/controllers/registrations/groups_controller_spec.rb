@@ -261,12 +261,19 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
             allow(controller).to receive(:experiment).and_return(experiment)
           end
 
-          it 'does not track submission event' do
+          it 'tracks error event and does not track submission event' do
             expect(experiment).to receive(:publish)
             expect(experiment).not_to receive(:track).with(:assignment, namespace: an_instance_of(Group))
             expect(experiment).not_to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
 
             post_create
+
+            expect_snowplow_event(
+              category: described_class.name,
+              action: 'track_free_registration_error',
+              label: 'group_name_can_t_be_blank',
+              user: user
+            )
           end
         end
       end
@@ -284,6 +291,17 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
           expect { post_create }.to change { Group.count }
           expect { post_create }.not_to change { Project.count }
           expect(assigns(:project).errors).not_to be_blank
+        end
+
+        it 'tracks error event' do
+          post_create
+
+          expect_snowplow_event(
+            category: described_class.name,
+            action: 'track_free_registration_error',
+            label: 'project_name_can_t_be_blank',
+            user: user
+          )
         end
 
         it { is_expected.to have_gitlab_http_status(:ok) }

@@ -21,15 +21,17 @@ module Registrations
 
     urgency :low, [:create]
 
+    helper_method :tracking_label
+
     def new
       @group = Group.new(visibility_level: Gitlab::CurrentSettings.default_group_visibility)
       @project = Project.new(namespace: @group)
       @initialize_with_readme = true
 
       experiment(:project_templates_during_registration, user: current_user)
-        .track(:render_groups_new, label: onboarding_status.tracking_label)
+        .track(:render_groups_new, label: tracking_label)
 
-      track_event('view_new_group_action')
+      track_event('view_new_group_action', tracking_label)
     end
 
     def create
@@ -40,6 +42,14 @@ module Registrations
       else
         @group = result.payload[:group]
         @project = result.payload[:project]
+
+        @group.errors.full_messages.each do |error|
+          track_event("track_#{tracking_label}_error", "group_#{error.parameterize.underscore}")
+        end
+
+        @project.errors.full_messages.each do |error|
+          track_event("track_#{tracking_label}_error", "project_#{error.parameterize.underscore}")
+        end
 
         unless import? # imports do not have project params
           @template_name = project_params[:template_name]
@@ -85,9 +95,12 @@ module Registrations
       general_params[:import_url].present?
     end
 
-    def track_event(action)
-      ::Gitlab::Tracking
-        .event(self.class.name, action, user: current_user, label: onboarding_status.tracking_label)
+    def tracking_label
+      onboarding_status.tracking_label
+    end
+
+    def track_event(action, label)
+      ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: label)
     end
 
     def track_project_registration_submission(project)
@@ -97,7 +110,7 @@ module Registrations
       experiment_project_templates_during_registration(
         project,
         :successfully_submitted_form,
-        onboarding_status.tracking_label
+        tracking_label
       )
 
       template_name = project_params[:template_name]
@@ -106,7 +119,7 @@ module Registrations
       experiment_project_templates_during_registration(
         project,
         "select_project_template_#{template_name}",
-        onboarding_status.tracking_label
+        tracking_label
       )
     end
 

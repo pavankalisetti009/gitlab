@@ -40,7 +40,8 @@
                 project_name: @project.name,
                 template_name: @template_name,
                 initialize_with_readme: @initialize_with_readme.to_s,
-                root_url: root_url } }
+                root_url: root_url,
+                track_action_for_errors: tracking_label } }
 
               = f.submit _('Create project'),
                 class: 'btn-block',
@@ -57,7 +58,8 @@
                   group_persisted: @group.persisted?.to_s,
                   group_id: @group.id,
                   group_name: @group.name,
-                  root_url: root_url } }
+                  root_url: root_url,
+                  track_action_for_errors: tracking_label } }
 
                 = hidden_field_tag :import_url, nil, class: 'js-import-url'
                 = submit_tag nil, class: 'gl-hidden'

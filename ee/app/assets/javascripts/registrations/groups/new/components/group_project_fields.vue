@@ -60,6 +60,10 @@ export default {
       type: String,
       required: true,
     },
+    trackActionForErrors: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -192,11 +196,12 @@ export default {
           :id="groupInputAttr('group_name')"
           v-gl-tooltip="{ placement, title: $options.i18n.tooltipTitle }"
           required
-          class="js-group-name-field"
+          class="js-group-name-field js-track-error"
           name="group[name]"
           data-testid="group-name"
           data-placement="right"
           data-show="true"
+          :data-track-action-for-errors="trackActionForErrors"
           :value="groupName || storeGroupName"
           @update="onGroupUpdate"
         />
@@ -220,6 +225,7 @@ export default {
       >
         <gl-form-input
           id="blank_project_name"
+          class="js-track-error"
           required
           name="project[name]"
           data-testid="project-name"
@@ -227,6 +233,7 @@ export default {
           data-track-action="activate_form_input"
           data-track-property="project_name"
           data-track-value=""
+          :data-track-action-for-errors="trackActionForErrors"
           :value="projectName"
           @update="onProjectUpdate"
         />
