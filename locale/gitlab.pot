@@ -27542,6 +27542,9 @@ msgstr ""
 msgid "IdentityVerification|Enter a valid code."
 msgstr ""
 
+msgid "IdentityVerification|Enter a verified email address associated with this account. A new code will be sent to this address."
+msgstr ""
+
 msgid "IdentityVerification|For added security, you'll need to verify your identity."
 msgstr ""
 
@@ -27566,13 +27569,16 @@ msgstr ""
 msgid "IdentityVerification|Help us protect your account"
 msgstr ""
 
+msgid "IdentityVerification|If you don't have access to the primary email address, you can %{sendToSecondaryEmailButtonStart}%{sendToSecondaryEmailButtonEnd}, or you can %{supportLinkStart}try to verify another way.%{supportLinkEnd}"
+msgstr ""
+
 msgid "IdentityVerification|If you have not recently tried to sign into GitLab, we recommend %{password_link_start}changing your password%{link_end} and %{two_fa_link_start}setting up Two-Factor Authentication%{link_end} to keep your account safe. Your verification code expires after %{expires_in_minutes} minutes."
 msgstr ""
 
 msgid "IdentityVerification|If you have not recently tried to sign into GitLab, we recommend changing your password (%{password_link}) and setting up Two-Factor Authentication (%{two_fa_link}) to keep your account safe."
 msgstr ""
 
-msgid "IdentityVerification|If you've lost access to the email associated to this account or having trouble with the code, %{link_start}here are some other steps you can take.%{link_end}"
+msgid "IdentityVerification|If you've lost access to the email associated to this account or having trouble with the code, %{supportLinkStart}here are some other steps you can take.%{supportLinkEnd}"
 msgstr ""
 
 msgid "IdentityVerification|Maximum login attempts exceeded. Wait %{interval} and try again."
@@ -27702,6 +27708,9 @@ msgid "IdentityVerification|Your account has been successfully verified. You'll 
 msgstr ""
 
 msgid "IdentityVerification|Your verification code expires after %{expires_in_minutes} minutes."
+msgstr ""
+
+msgid "IdentityVerification|send a code to another address associated with this account"
 msgstr ""
 
 msgid "Identity|Active"
