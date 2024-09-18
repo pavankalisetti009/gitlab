@@ -1,5 +1,6 @@
 <script>
 import { GlLink, GlLoadingIcon, GlTable, GlIcon, GlSprintf } from '@gitlab/ui';
+import VisibilityIcon from '~/vue_shared/components/visibility_icon.vue';
 
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import { i18n } from '../constants';
@@ -15,6 +16,7 @@ export default {
     GlTable,
     GlIcon,
     GlSprintf,
+    VisibilityIcon,
   },
   props: {
     complianceFramework: {
@@ -32,19 +34,19 @@ export default {
       key: 'name',
       label: i18n.projectsTableFields.name,
       thClass: 'gl-w-1 !gl-border-t-0',
-      tdClass: '!gl-bg-white',
+      tdClass: '!gl-bg-white !gl-border-b-white',
+    },
+    {
+      key: 'path',
+      label: i18n.projectsTableFields.path,
+      thClass: 'gl-w-1 !gl-border-t-0',
+      tdClass: '!gl-bg-white !gl-border-b-white',
     },
     {
       key: 'description',
-      label: i18n.policiesTableFields.desc,
+      label: i18n.projectsTableFields.description,
       thClass: 'gl-w-1 !gl-border-t-0',
-      tdClass: '!gl-bg-white',
-    },
-    {
-      key: 'edit',
-      label: '',
-      thClass: 'gl-w-1 !gl-border-t-0',
-      tdClass: 'gl-text-right !gl-bg-white',
+      tdClass: '!gl-bg-white !gl-border-b-white',
     },
   ],
   i18n,
@@ -70,15 +72,20 @@ export default {
       selected-variant="primary"
     >
       <template #cell(name)="{ item }">
-        {{ item.name }}
+        <div class="gl-align-center gl-flex">
+          <gl-link :href="item.webUrl">{{ item.name }}</gl-link>
+          <visibility-icon
+            v-if="item.visibility"
+            class="gl-ml-2"
+            :visibility-level="item.visibility"
+          />
+        </div>
+      </template>
+      <template #cell(path)="{ item }">
+        {{ item.fullPath }}
       </template>
       <template #cell(description)="{ item }">
         {{ item.description }}
-      </template>
-      <template #cell(edit)="{ item }">
-        <gl-link :href="item.webUrl">
-          {{ __('View') }}
-        </gl-link>
       </template>
 
       <template #table-busy>
