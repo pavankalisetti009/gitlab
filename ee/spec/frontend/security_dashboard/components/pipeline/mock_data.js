@@ -444,6 +444,25 @@ export const vulnerabilityDetails = {
     name: 'List',
     items: [],
   },
+  codeFlows: {
+    type: 'VulnerabilityDetailCodeFlows',
+    name: 'CodeFlows',
+    items: [
+      [
+        {
+          type: 'VulnerabilityDetailCodeFlowNode',
+          nodeType: 'source',
+          fileLocation: {
+            type: 'VulnerabilityDetailFileLocation',
+            name: null,
+            fileName: 'path/test.py',
+            lineStart: 1,
+            lineEnd: 2,
+          },
+        },
+      ],
+    ],
+  },
 };
 
 export const pipelineSecurityReportFinding = {

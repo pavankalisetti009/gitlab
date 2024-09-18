@@ -93,3 +93,5 @@ export const SEVERITY_GROUPS = [
     severityLevels: [severityLevels.NONE],
   },
 ];
+
+export const VULNERABILITY_DETAIL_CODE_FLOWS = 'VulnerabilityDetailCodeFlows';
