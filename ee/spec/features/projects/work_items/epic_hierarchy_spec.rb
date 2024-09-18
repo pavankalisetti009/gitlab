@@ -8,7 +8,7 @@ RSpec.describe 'Work item hierarchy', :js, feature_category: :portfolio_manageme
   let_it_be(:organization) { create(:organization) }
   let(:user) { create(:user, name: 'Sherlock Holmes') }
   let(:group) { create(:group, :public, organization: organization) }
-  let(:epic) { create(:work_item, :epic, namespace: group) }
+  let(:epic) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
 
   before do
     group.add_developer(user)
@@ -45,9 +45,9 @@ RSpec.describe 'Work item hierarchy', :js, feature_category: :portfolio_manageme
   end
 
   describe 'nested children' do
-    let(:child1) { create(:work_item, :epic, namespace: group, title: 'Child 1') }
-    let(:child2) { create(:work_item, :epic, namespace: group, title: 'Child 2') }
-    let(:child1a) { create(:work_item, :epic, namespace: group, title: 'Child a') }
+    let(:child1) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 1') }
+    let(:child2) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 2') }
+    let(:child1a) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child a') }
 
     before do
       create(:parent_link, work_item_parent: epic, work_item: child1)

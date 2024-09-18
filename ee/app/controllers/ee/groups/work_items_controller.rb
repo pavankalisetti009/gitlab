@@ -21,10 +21,8 @@ module EE
       end
 
       def show
-        # Once we rollout epic work items, links to `/work_items/:iid` might be already used. However there could be the
-        # scenario where we rollback the feature flag to enable epic work items. In this case, we want users to still
-        # see their epics and therefore redirect them to `/epics/:iid`.
-        return redirect_to group_epic_path(group, issuable.iid) if epic_work_item? && !namespace_work_items_enabled?
+        # We want to keep the experience for users to use the /epics/:iid URL even when they use /work_items/:iid
+        return redirect_to group_epic_path(group, issuable.iid) if epic_work_item?
 
         super
       end
