@@ -9,12 +9,10 @@ RSpec.describe MergeRequests::Mergeability::CheckPathLocksService, feature_categ
   let_it_be(:merge_request) { build(:merge_request, source_project: project) }
   let(:params) { { skip_locked_paths_check: skip_check } }
   let(:skip_check) { false }
-  let(:feature_flag_enabled) { true }
   let(:file_locks_enabled) { true }
   let(:target_branch) { project.default_branch }
 
   before do
-    stub_feature_flags(locked_paths_mergeability_check: feature_flag_enabled)
     stub_licensed_features(file_locks: file_locks_enabled)
     allow(merge_request).to receive(:target_branch).and_return(target_branch)
   end
@@ -119,12 +117,6 @@ RSpec.describe MergeRequests::Mergeability::CheckPathLocksService, feature_categ
       end
 
       it { expect(cache_key).to eq(expected_cache_key) }
-    end
-
-    context 'when the feature flag is disabled' do
-      let(:feature_flag_enabled) { false }
-
-      it { expect(cache_key).to eq('inactive_path_locks_mergeability_check') }
     end
 
     context 'when file locks is disabled' do

@@ -34,7 +34,7 @@
     window.gl.mrWidgetData.commit_path_template = '#{commit_path_template(@project)}';
     window.gl.mrWidgetData.merge_trains_path = '#{namespace_project_merge_trains_path}';
 
-- if @project.licensed_feature_available?(:file_locks) && ::Feature.enabled?(:locked_paths_mergeability_check, @project)
+- if @project.licensed_feature_available?(:file_locks)
   = javascript_tag do
     :plain
       window.gl.mrWidgetData.path_locks_path = '#{project_path_locks_path(@project)}'
