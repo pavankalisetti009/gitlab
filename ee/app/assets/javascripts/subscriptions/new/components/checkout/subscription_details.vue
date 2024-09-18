@@ -17,7 +17,6 @@ import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
 import { __, s__, sprintf } from '~/locale';
 import autoFocusOnShow from '~/vue_shared/directives/autofocusonshow';
 import Tracking from '~/tracking';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 
 export default {
@@ -307,8 +306,7 @@ export default {
     minimumSeatMessage: s__('Checkout|You must buy a minimum of %{seatLimit} seat.'),
   },
   stepId: STEP_SUBSCRIPTION_DETAILS,
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  qsrReconciliationLink: helpPagePath(QSR_RECONCILIATION_PATH),
+  qsrReconciliationLink: QSR_RECONCILIATION_PATH,
 };
 </script>
 <template>
