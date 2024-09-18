@@ -76,9 +76,8 @@ export default {
     EMPTY_STATE_FILTER_ERROR_TITLE,
     EMPTY_STATE_FILTER_ERROR_DESCRIPTION,
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
   docsPath: helpPagePath('user/group/value_stream_analytics/index', {
-    anchor: 'custom-value-streams',
+    anchor: 'create-a-value-stream',
   }),
 };
 </script>

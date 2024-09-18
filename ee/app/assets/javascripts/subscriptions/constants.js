@@ -1,4 +1,5 @@
 import { __, s__ } from '~/locale';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const ZUORA_SCRIPT_URL = 'https://static.zuora.com/Resources/libs/hosted/1.3.1/zuora-min.js';
 
@@ -34,7 +35,7 @@ export const STEPS = [
 
 export const TRACK_SUCCESS_MESSAGE = 'Success';
 
-export const QSR_RECONCILIATION_PATH = 'subscriptions/quarterly_reconciliation.html';
+export const QSR_RECONCILIATION_PATH = helpPagePath('subscriptions/quarterly_reconciliation');
 
 export const COUNTRIES_WITH_STATES_REQUIRED = Object.freeze(['US', 'CA']);
 
