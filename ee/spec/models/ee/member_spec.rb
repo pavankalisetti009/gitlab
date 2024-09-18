@@ -857,18 +857,45 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       let(:group) { shared_group }
     end
 
-    where(:invited_group, :member, :expected_access_level, :expected_member_role) do
-      ref(:sre_group) | ref(:kate)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
-      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:developer_lead)
-      ref(:sre_group) | ref(:mark)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
-      ref(:sre_group) | ref(:jake)  | Gitlab::Access::DEVELOPER | nil
-      ref(:sre_group) | ref(:mary)  | Gitlab::Access::GUEST | nil
-      ref(:developers_group) | ref(:sarah) | Gitlab::Access::DEVELOPER | nil
-      ref(:developers_group) | ref(:bob)   | Gitlab::Access::DEVELOPER | nil
-      ref(:developers_group) | ref(:owen)  | Gitlab::Access::GUEST | nil
+    where(:invited_group_access, :invited_group_member_role, :member, :expected_access_level, :expected_member_role) do
+      Gitlab::Access::GUEST | nil | ref(:user_a) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | nil | ref(:user_b) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | nil | ref(:user_c) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | nil | ref(:user_d) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | nil | ref(:user_e) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_c) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_d) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_e) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_c) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_d) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_e) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::DEVELOPER | nil | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::DEVELOPER | nil | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::DEVELOPER | nil | ref(:user_c) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::DEVELOPER | nil | ref(:user_d) | Gitlab::Access::DEVELOPER | nil
+      Gitlab::Access::DEVELOPER | nil | ref(:user_e) | Gitlab::Access::DEVELOPER | nil
+      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_a) | Gitlab::Access::GUEST | ref(:guest_read_runners)
+      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_b) | Gitlab::Access::GUEST | ref(:guest_read_vulnerability)
+      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_c) | Gitlab::Access::GUEST | nil
+      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_d) | Gitlab::Access::DEVELOPER | nil
+      Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_e) | Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability)
     end
 
     with_them do
+      before do
+        create(
+          :group_group_link,
+          group_access: invited_group_access,
+          member_role: invited_group_member_role,
+          shared_group: shared_group,
+          shared_with_group: invited_group
+        )
+      end
+
       context 'when `custom_role_for_group_link_enabled` is true' do
         it 'returns minimum access level and expected member role' do
           members = invited_group
