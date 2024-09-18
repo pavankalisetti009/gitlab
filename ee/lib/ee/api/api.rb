@@ -74,6 +74,7 @@ module EE
         mount ::API::CodeSuggestions
         mount ::API::Chat
         mount ::API::DuoCodeReview
+        mount ::API::SecurityScans
 
         mount ::API::Internal::AppSec::Dast::SiteValidations
         mount ::API::Internal::Search::Zoekt

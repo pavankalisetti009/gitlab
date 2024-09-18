@@ -99,6 +99,12 @@ module EE
         @subject.feature_available?(:security_dashboard)
       end
 
+      condition(:security_scans_api_enabled, scope: :subject) do
+        # We use free_access? to check that the backend is globally availabile
+        security_scans_service.free_access? &&
+          @subject.licensed_feature_available?(:security_scans_api)
+      end
+
       condition(:coverage_fuzzing_enabled, scope: :subject) do
         @subject.feature_available?(:coverage_fuzzing)
       end
@@ -400,6 +406,10 @@ module EE
 
       rule { security_dashboard_enabled & can?(:developer_access) }.policy do
         enable :read_security_resource
+      end
+
+      rule { security_scans_api_enabled & can?(:developer_access) }.policy do
+        enable :access_security_scans_api
       end
 
       rule { coverage_fuzzing_enabled & can?(:developer_access) }.policy do
@@ -974,6 +984,10 @@ module EE
       return false if ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
 
       super
+    end
+
+    def security_scans_service
+      CloudConnector::AvailableServices.find_by_name(:sast)
     end
   end
 end

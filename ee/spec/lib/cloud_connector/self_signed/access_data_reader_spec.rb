@@ -15,6 +15,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
 
     let_it_be(:backend) { 'gitlab-ai-gateway' }
     let_it_be(:gob_backend) { 'gitlab-observability-backend' }
+    let_it_be(:sast_backend) { 'gitlab-security-gateway' }
 
     let_it_be(:self_hosted_models_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:self_hosted_models_bundled_with) { { "duo_enterprise" => [:code_suggestions, :duo_chat] } }
@@ -118,6 +119,14 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
       }
     end
 
+    let_it_be(:sast_bundled_with) do
+      {
+        "_irrelevant_" => %i[
+          security_scans
+        ]
+      }
+    end
+
     include_examples 'access data reader' do
       let_it_be(:available_service_data_class) { CloudConnector::SelfSigned::AvailableServiceData }
       let_it_be(:arguments_map) do
@@ -135,7 +144,8 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
             backend],
           summarize_comments: [nil, summarize_comments_bundled_with, backend],
           observability_all: [nil, observability_all_bundled_with, gob_backend],
-          troubleshoot_job: [nil, troubleshoot_job_bundled_with, backend]
+          troubleshoot_job: [nil, troubleshoot_job_bundled_with, backend],
+          sast: [nil, sast_bundled_with, sast_backend]
         }
       end
     end
