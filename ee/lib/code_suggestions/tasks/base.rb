@@ -5,10 +5,11 @@ module CodeSuggestions
     class Base
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
-      def initialize(params: {}, unsafe_passthrough_params: {})
+      def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil)
         @feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_setting_name)
         @params = params
         @unsafe_passthrough_params = unsafe_passthrough_params
+        @current_user = current_user
       end
 
       def base_url
@@ -41,7 +42,7 @@ module CodeSuggestions
 
       private
 
-      attr_reader :params, :unsafe_passthrough_params, :feature_setting
+      attr_reader :params, :unsafe_passthrough_params, :feature_setting, :current_user
 
       def endpoint_name
         raise NotImplementedError

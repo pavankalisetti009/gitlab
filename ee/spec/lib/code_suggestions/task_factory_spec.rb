@@ -67,6 +67,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       let(:expected_class) { ::CodeSuggestions::Tasks::CodeCompletion }
       let(:expected_params) do
         {
+          current_user: current_user,
           params: params,
           unsafe_passthrough_params: {}
         }
@@ -84,6 +85,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         let(:expected_class) { ::CodeSuggestions::Tasks::CodeCompletion }
         let(:expected_params) do
           {
+            current_user: current_user,
             params: params,
             unsafe_passthrough_params: {}
           }
@@ -101,6 +103,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       let(:expected_class) { ::CodeSuggestions::Tasks::CodeGeneration }
       let(:expected_params) do
         {
+          current_user: current_user,
           params: params,
           unsafe_passthrough_params: {}
         }
@@ -154,6 +157,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         let(:expected_class) { ::CodeSuggestions::Tasks::CodeGeneration }
         let(:expected_params) do
           {
+            current_user: current_user,
             params: params,
             unsafe_passthrough_params: {}
           }
@@ -169,6 +173,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       context 'when code_suggestions_context feature flag is off' do
         let(:expected_params) do
           {
+            current_user: current_user,
             params: params.except(:user_instruction, :context).merge(
               instruction: instruction,
               prefix: prefix,
