@@ -32,8 +32,8 @@ RSpec.describe GitlabSchema.types['Project'] do
       dependencies merge_requests_disable_committers_approval has_jira_vulnerability_issue_creation_enabled
       ci_subscriptions_projects ci_subscribed_projects ai_agents ai_agent duo_features_enabled
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
-      is_adjourned_deletion_enabled permanent_deletion_date ai_metrics saved_reply merge_trains
-      pending_member_approvals observability_logs_links observability_metrics_links
+      is_adjourned_deletion_enabled permanent_deletion_date ai_metrics ai_usage_data ai_user_metrics saved_reply
+      merge_trains pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence
     ]

@@ -273,6 +273,13 @@ module EE
           resolver_method: :object,
           alpha: { milestone: '17.5' }
 
+        field :ai_user_metrics,
+          ::Types::Analytics::AiMetrics::UserMetricsType.connection_type,
+          null: true,
+          description: 'AI-related user metrics.',
+          resolver: ::Resolvers::Analytics::AiMetrics::UserMetricsResolver,
+          alpha: { milestone: '17.5' }
+
         field :security_training_urls,
           [::Types::Security::TrainingUrlType],
           null: true,
