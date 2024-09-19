@@ -137,7 +137,8 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         context: context,
         content: "error",
         error_code: error_code,
-        error: error
+        error: error,
+        source: "chat_v2"
       )
     end
 
@@ -173,7 +174,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         answer
 
         expect(logger).to have_received(:error).with(error: "error", error_code: error_code,
-          message: 'hello world')
+          message: 'hello world', source: "chat_v2")
       end
 
       context 'when error has no message' do
@@ -183,7 +184,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
           answer
 
           expect(logger).to have_received(:error).with(error: "error", error_code: error_code,
-            message: 'StandardError')
+            message: 'StandardError', source: "chat_v2")
         end
       end
 
@@ -199,7 +200,8 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         it 'logs the error code' do
           answer
 
-          expect(logger).to have_received(:error).with(message: "Error", error: "error", error_code: error_code)
+          expect(logger).to have_received(:error).with(message: "Error", error: "error", error_code: error_code,
+            source: nil)
         end
       end
     end

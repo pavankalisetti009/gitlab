@@ -68,8 +68,8 @@ module Gitlab
             "Please try a more specific request or enter /clear to start a new chat.")
         end
 
-        def self.error_answer(context:, error_code: nil, content: default_error_answer, error: nil)
-          logger.error(message: error ? error.message : "Error", error: content, error_code: error_code)
+        def self.error_answer(context:, error_code: nil, content: default_error_answer, error: nil, source: nil)
+          logger.error(message: error ? error.message : "Error", error: content, error_code: error_code, source: source)
           track_event(context, 'error_answer')
 
           new(
