@@ -12,6 +12,7 @@ module EE
           ai_vertex_embeddings
           experimentation
           marketing_google_tag_manager
+          marketing_site_language
           namespaces_storage_limit
           onboarding
           purchases_additional_minutes
