@@ -29,7 +29,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
   end
 
   before do
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
     stub_licensed_features(epics: true)
   end
 
@@ -341,7 +340,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
 
         before do
-          stub_feature_flags(enforce_check_group_level_work_items_license: true)
           stub_licensed_features(epics: true, issuable_health_status: true)
 
           work_item.update_attribute(:health_status, :at_risk)

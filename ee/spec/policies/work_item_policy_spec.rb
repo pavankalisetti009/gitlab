@@ -18,10 +18,6 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
     described_class.new(user, work_item)
   end
 
-  before do
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
-  end
-
   context 'when work item has a synced epic' do
     let_it_be_with_reload(:work_item) { create(:epic, :with_synced_work_item, group: group).work_item }
 

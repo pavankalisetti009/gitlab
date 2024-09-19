@@ -64,10 +64,6 @@ RSpec.describe 'Adding a Note to an Epic', feature_category: :portfolio_manageme
     context 'with work item epic' do
       let_it_be(:noteable) { create(:work_item, :epic, namespace: group) }
 
-      before do
-        stub_feature_flags(enforce_check_group_level_work_items_license: true)
-      end
-
       it_behaves_like 'a Note mutation that creates a Note'
 
       context 'without group level work item license' do

@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Issues::CloseService, feature_category: :team_planning do
   describe '#execute' do
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true)
     end
 

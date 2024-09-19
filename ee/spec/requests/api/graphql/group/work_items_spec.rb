@@ -190,6 +190,10 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
   context 'when work_item_epics feature flag is disabled' do
     let_it_be(:group_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
 
+    before do
+      stub_licensed_features(epics: true)
+    end
+
     context 'when namespace_level_work_items feature flag is enabled' do
       before do
         stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
@@ -226,10 +230,6 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     let(:container_name) { 'group' }
     let(:container) { group }
     let(:count_path) { ['data', container_name, field_name, 'count'] }
-
-    before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
-    end
 
     context 'with group level work items' do
       context 'with group level work item license' do

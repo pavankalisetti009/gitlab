@@ -54,7 +54,6 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
 
     context 'with a group level work items license' do
       before do
-        stub_feature_flags(enforce_check_group_level_work_items_license: true)
         stub_licensed_features(epics: true)
       end
 
@@ -75,7 +74,6 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
 
     context 'without a group level work items license' do
       before do
-        stub_feature_flags(enforce_check_group_level_work_items_license: true)
         stub_licensed_features(epics: false)
       end
 

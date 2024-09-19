@@ -24,7 +24,6 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
     subject(:update_work_item) { service.execute(work_item) }
 
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true)
     end
 

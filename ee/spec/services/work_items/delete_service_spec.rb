@@ -16,7 +16,6 @@ RSpec.describe WorkItems::DeleteService, feature_category: :team_planning do
   before_all do
     # note necessary to test note removal as part of work item deletion
     create(:note, project: project, noteable: work_item)
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
   end
 
   describe '#execute' do

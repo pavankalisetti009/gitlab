@@ -37,7 +37,6 @@ RSpec.describe Issuable::Callbacks::TimeTracking, feature_category: :team_planni
   let(:callback) { described_class.new(issuable: issuable, current_user: current_user, params: params) }
 
   before do
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
     stub_licensed_features(epics: true)
   end
 

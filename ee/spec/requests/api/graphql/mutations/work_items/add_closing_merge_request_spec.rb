@@ -48,10 +48,6 @@ RSpec.describe 'Add a closing merge request to a work item', feature_category: :
   context 'when work item belongs to a group' do
     let_it_be_with_refind(:work_item) { create(:work_item, :group_level, namespace: group) }
 
-    before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
-    end
-
     context 'with group level work item license' do
       before do
         stub_licensed_features(epics: true)

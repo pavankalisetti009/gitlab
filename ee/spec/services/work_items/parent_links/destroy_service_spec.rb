@@ -19,7 +19,6 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
     let(:params) { {} }
 
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true, subepics: true)
     end
 

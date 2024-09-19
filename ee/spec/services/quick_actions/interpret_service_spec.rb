@@ -860,10 +860,6 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
         let(:service) { described_class.new(container: group, current_user: current_user) }
 
-        before do
-          stub_feature_flags(enforce_check_group_level_work_items_license: true)
-        end
-
         context 'with group level work items license' do
           before do
             stub_licensed_features(epics: true)
