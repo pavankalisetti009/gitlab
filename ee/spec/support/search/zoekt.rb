@@ -28,10 +28,14 @@ module Search
       def zoekt_ensure_namespace_indexed!(namespace)
         root_namespace = namespace.root_ancestor
         zoekt_enabled_namespace = ::Search::Zoekt::EnabledNamespace.find_or_create_by!(namespace: root_namespace)
+        replica = Replica.for_enabled_namespace!(zoekt_enabled_namespace)
+        replica.ready!
+
         index = ::Search::Zoekt::Index.find_or_create_by!(zoekt_enabled_namespace: zoekt_enabled_namespace,
           node: zoekt_node,
           namespace_id: root_namespace.id,
-          replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace))
+          replica: replica)
+
         index.update!(state: :ready)
       end
 
