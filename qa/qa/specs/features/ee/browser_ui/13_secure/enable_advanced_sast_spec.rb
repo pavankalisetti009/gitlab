@@ -21,7 +21,7 @@ module QA
     end
 
     let(:vulnerability_name) do
-      'Uncontrolled resource consumption'
+      'Allocation of resources without limits or throttling'
     end
 
     let(:scanner_name) do
