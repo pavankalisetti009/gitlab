@@ -16,7 +16,11 @@ module Gitlab
           end
 
           unless event && event['type'].present?
-            logger.warn(message: "Failed to parse a chunk from Duo Chat Agent", chunk: chunk)
+            # Possibilities:
+            # 1. AI Gateway issue ... Event data was sent from AI Gateway, but it's corrupted (e.g. not JSON).
+            # 2. GitLab-Rails issue ... Event data was sent from AI Gateway correctly,
+            #    but the data is split abruptly by Net::BufferedIo.
+            logger.warn(message: "Failed to parse a chunk from Duo Chat Agent", chunk_size: chunk.length)
             return
           end
 
