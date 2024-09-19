@@ -59,7 +59,7 @@ module Resolvers
     argument :subscribed, Types::Issuables::SubscriptionStatusEnum,
       description: 'Epics the current user is subscribed to. Is ignored if ' \
         '`filter_subscriptions` feature flag is disabled.',
-      alpha: { milestone: '17.4' },
+      alpha: { milestone: '17.5' },
       required: false
 
     argument :created_after, Types::TimeType,

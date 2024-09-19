@@ -2,7 +2,7 @@
 
 class AddIndexToSubscriptions < Gitlab::Database::Migration[2.2]
   disable_ddl_transaction!
-  milestone '17.4'
+  milestone '17.5'
 
   INDEX_NAME = 'index_subscriptions_on_user_and_project'
 
