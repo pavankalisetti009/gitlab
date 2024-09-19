@@ -123,20 +123,12 @@ module Resolvers
 
       private
 
-      def filter_subscriptions_enabled?
-        if respond_to?(:resource_parent, true)
-          ::Feature.enabled?(:filter_subscriptions, resource_parent)
-        else
-          ::Feature.enabled?(:filter_subscriptions) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- no resource
-        end
-      end
-
       def prepare_finder_params(args)
         params = super(args)
         params[:not] = params[:not].to_h if params[:not]
         params[:or] = params[:or].to_h if params[:or]
         params[:iids] ||= [params.delete(:iid)].compact if params[:iid]
-        params.delete(:subscribed) unless filter_subscriptions_enabled?
+        params.delete(:subscribed) if Feature.disabled?(:filter_subscriptions, current_user)
 
         rewrite_param_name(params[:or], :author_usernames, :author_username)
         rewrite_param_name(params[:or], :label_names, :label_name)

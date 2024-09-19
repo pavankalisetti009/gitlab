@@ -82,7 +82,7 @@ module WorkItems
     def prepare_finder_params(args)
       params = super(args)
 
-      params.delete(:subscribed) unless filter_subscriptions_enabled?
+      params.delete(:subscribed) if Feature.disabled?(:filter_subscriptions, current_user)
 
       rewrite_param_name(params, :assignee_usernames, :assignee_username)
       rewrite_param_name(params[:or], :assignee_usernames, :assignee_username)
@@ -97,10 +97,6 @@ module WorkItems
 
     def rewrite_param_name(params, old_name, new_name)
       params[new_name] = params.delete(old_name) if params && params[old_name].present?
-    end
-
-    def filter_subscriptions_enabled?
-      ::Feature.enabled?(:filter_subscriptions, resource_parent)
     end
   end
 end

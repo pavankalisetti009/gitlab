@@ -133,10 +133,6 @@ module Resolvers
       group.licensed_feature_available?(:epics)
     end
 
-    def filter_subscriptions_enabled?
-      ::Feature.enabled?(:filter_subscriptions, resource_parent)
-    end
-
     def transform_args(args)
       transformed = args.dup
       transformed[:group_id] = group
@@ -149,7 +145,7 @@ module Resolvers
       params = transform_args(args)
       params[:not] = params[:not].to_h if params[:not]
       params[:or] = params[:or].to_h if params[:or]
-      params.delete(:subscribed) unless filter_subscriptions_enabled?
+      params.delete(:subscribed) if Feature.disabled?(:filter_subscriptions, current_user)
 
       rewrite_param_name(params[:or], :author_usernames, :author_username)
       rewrite_param_name(params[:or], :label_names, :label_name)

@@ -853,10 +853,14 @@ RSpec.shared_examples 'issues or work items finder' do |factory, execute_context
           end
         end
 
-        context 'user leaves out subscription filtering' do
-          let(:params) { { subscribed: nil } }
+        context 'when filter_subscriptions FF is disabled' do
+          let(:params) { { subscribed: :explicitly_subscribed } }
 
-          it 'returns only unsubscribed items' do
+          before do
+            stub_feature_flags(filter_subscriptions: false)
+          end
+
+          it 'does not apply filter' do
             expect(items)
               .to contain_exactly(item1, item2, item3, item4, item5, subscribed_item, unsubscribed_item, regular_item)
           end

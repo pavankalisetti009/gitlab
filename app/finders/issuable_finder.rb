@@ -501,13 +501,14 @@ class IssuableFinder
   end
 
   def by_subscribed(items)
-    return items if params[:subscribed].nil? || !current_user
+    return items unless current_user
+    return items unless Feature.enabled?(:filter_subscriptions, current_user)
 
     case params[:subscribed]
     when :explicitly_subscribed
-      items.subscribed(current_user)
+      items.explicitly_subscribed(current_user)
     when :explicitly_unsubscribed
-      items.unsubscribed(current_user)
+      items.explicitly_unsubscribed(current_user)
     else
       items
     end

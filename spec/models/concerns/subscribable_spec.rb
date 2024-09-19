@@ -72,22 +72,21 @@ RSpec.describe Subscribable, 'Subscribable' do
 
   context 'with subscription scopes' do
     let(:resource_2) { create(:issue, project: project) }
-    let(:resource_3) { create(:issue, project: project) }
 
     before do
       resource.subscriptions.create!(user: user_1, subscribed: true)
       resource_2.subscriptions.create!(user: user_1, project: project, subscribed: false)
     end
 
-    describe '.subscribed' do
+    describe '.explicitly_subscribed' do
       it 'returns subscribed issues' do
-        expect(project.issues.subscribed(user_1)).to contain_exactly(resource)
+        expect(project.issues.explicitly_subscribed(user_1)).to contain_exactly(resource)
       end
     end
 
-    describe '.unsubscribed' do
+    describe '.explicitly_unsubscribed' do
       it 'returns unsubscribed issues' do
-        expect(project.issues.unsubscribed(user_1)).to contain_exactly(resource_2)
+        expect(project.issues.explicitly_unsubscribed(user_1)).to contain_exactly(resource_2)
       end
     end
   end
