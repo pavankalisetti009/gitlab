@@ -1,32 +1,24 @@
 # frozen_string_literal: true
 
-#   What does this test do
-#
 #   This is an e2e test that sets up the entire workspaces environment from scratch as mentioned in this documentation
 #   https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/-/blob/main/doc/local-development-environment-setup.md
-#   This test creates project, devfile, agents and workspaces on the fly
-#   The other test ee/browser_ui/3_create/remote_development/with_prerequisite_done/
-#   workspace_actions_with_prerequisite_done_spec.rb is used for local testing and requires an existing agent and
-#   devfile project
+#   This test creates a project, devfile, agent and workspace. It enables the agent via the Workspaces settings.
+#   For local testing where the pre-requisites have already been met please use the following test:
+#   `ee/browser_ui/3_create/remote_development/with_prerequisite_done/workspace_actions_with_prerequisite_done_spec.rb`
 #
-#   How to run the test
+#   How to run the test locally against staging:
+#   1. The following pre-requisites are required to be installed:
+#     - gcloud CLI https://cloud.google.com/sdk/docs/install
+#     - google-cloud-sdk-gke-gcloud-auth-plugin `gcloud components install gke-gcloud-auth-plugin`
+#     - Helm https://helm.sh/docs/intro/install/
 #
-#   1. Run the test against staging environment
-#      The full list of env variable and their values to run this test can be found in 1password "Run workspaces tests
-#      against staging"
+#   2. To run the test against staging environment, use the full list of environment variables which can be found in
+#      1password under "Run workspaces tests against staging" and run:
 #      bundle exec bin/qa Test::Instance::All https://staging.gitlab.com -- -- qa/specs/features/ee/browser_ui/3_create
 #      /remote_development/workspace_actions_spec.rb
-#   2. When the test is run locally, it will try to install helm (requires local password) and if unnoticed the script
-#      would fail eventually. To overcome this, install helm manually using the installation steps in
-#      https://gitlab.com/gitlab-org/gitlab/-/blob/6bb010046a9f8922f827eb035d05e28954352311/qa/qa/service/cluster_provider/gcloud.rb#L129-135
-#      then run the test using step 1
 
 module QA
-  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :remote_development,
-    quarantine: {
-      type: :broken,
-      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463416'
-    } do
+  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :remote_development do
     describe 'Remote Development' do
       include Runtime::Fixtures
 
@@ -76,6 +68,10 @@ module QA
           cluster.install_kubernetes_agent(agent_token.token, kubernetes_agent.name)
           cluster.update_dns_with_load_balancer_ip
           Flow::Login.sign_in
+
+          parent_group.visit!
+          Page::Group::Menu.perform(&:go_to_workspaces_settings)
+          EE::Page::Group::Settings::Workspaces.perform(&:allow_agent)
         end
 
         after do

@@ -16,7 +16,6 @@ module QA
           def click_workspace_action(workspace, action)
             within_element("#{workspace}-action".to_sym, skip_finished_loading_check: true) do
               click_element("workspace-#{action}-button", skip_finished_loading_check: true)
-              Support::WaitForRequests.wait_for_requests(skip_finished_loading_check: false, finish_loading_wait: 180)
             end
           end
         end
