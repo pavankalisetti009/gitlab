@@ -109,7 +109,7 @@ RSpec.describe Gitlab::Database::LoadBalancing::Host, feature_category: :databas
 
   describe '#offline!' do
     it 'marks the host as offline' do
-      expect(host.pool).to receive(:disconnect!)
+      expect(host.pool).to receive(:disconnect_without_verify!)
 
       expect(Gitlab::Database::LoadBalancing::Logger).to receive(:warn)
         .with(hash_including(event: :host_offline))

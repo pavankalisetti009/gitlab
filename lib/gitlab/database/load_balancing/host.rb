@@ -125,7 +125,7 @@ module Gitlab
           )
 
           @online = false
-          @pool.disconnect!
+          pool_disconnect!
         end
 
         # Returns true if the host is online.
