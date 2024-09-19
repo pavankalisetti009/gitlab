@@ -30,6 +30,14 @@ module Types
       field :active, GraphQL::Types::Boolean,
         null: false,
         description: 'Whether the exclusion is active.'
+
+      field :created_at, Types::TimeType,
+        null: false,
+        description: 'Timestamp of when the exclusion was created.'
+
+      field :updated_at, Types::TimeType,
+        null: false,
+        description: 'Timestamp of when the exclusion was updated.'
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end
