@@ -65,7 +65,7 @@ module GitlabSubscriptions
       end
 
       def trial_params
-        params.permit(:namespace_id, :trial_entity, :glm_source, :glm_content).to_h
+        params.permit(*::Onboarding::Status::GLM_PARAMS, :namespace_id, :trial_entity).to_h
       end
 
       def success_flash_message

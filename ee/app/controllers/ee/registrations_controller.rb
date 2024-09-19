@@ -11,7 +11,6 @@ module EE
     prepended do
       include Arkose::ContentSecurityPolicy
       include Arkose::TokenVerifiable
-      include RegistrationsTracking
       include GoogleAnalyticsCSP
       include GoogleSyndicationCSP
 
@@ -169,11 +168,6 @@ module EE
           registration_details: user.registration_audit_details
         }
       })
-    end
-
-    override :registration_path_params
-    def registration_path_params
-      glm_tracking_params.to_h
     end
 
     def record_arkose_data(user)

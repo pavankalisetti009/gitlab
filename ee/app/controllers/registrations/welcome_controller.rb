@@ -8,7 +8,6 @@ module Registrations
     include ::Gitlab::Utils::StrongMemoize
     include ::Onboarding::Redirectable
     include ::Onboarding::SetRedirect
-    include RegistrationsTracking
 
     layout 'minimal'
 
@@ -76,7 +75,7 @@ module Registrations
     def passed_through_params
       update_params.slice(:role, :registration_objective)
                    .merge(params.permit(:jobs_to_be_done_other))
-                   .merge(glm_tracking_params)
+                   .merge(::Onboarding::Status.glm_tracking_params(params))
     end
 
     def iterable_params

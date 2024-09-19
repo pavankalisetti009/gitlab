@@ -5,7 +5,6 @@ module GitlabSubscriptions
   class TrialsController < ApplicationController
     include OneTrustCSP
     include GoogleAnalyticsCSP
-    include RegistrationsTracking
 
     layout 'minimal'
 
@@ -74,18 +73,22 @@ module GitlabSubscriptions
     def authenticate_user!
       return if current_user
 
-      redirect_to new_trial_registration_path(glm_tracking_params), alert: I18n.t('devise.failure.unauthenticated')
+      redirect_to(
+        new_trial_registration_path(::Onboarding::Status.glm_tracking_params(params)),
+        alert: I18n.t('devise.failure.unauthenticated')
+      )
     end
 
     def lead_params
       params.permit(
+        *::Onboarding::Status::GLM_PARAMS,
         :company_name, :company_size, :first_name, :last_name, :phone_number,
-        :country, :state, :website_url, :glm_content, :glm_source
+        :country, :state, :website_url
       ).to_h
     end
 
     def trial_params
-      params.permit(:new_group_name, :namespace_id, :trial_entity, :glm_source, :glm_content)
+      params.permit(*::Onboarding::Status::GLM_PARAMS, :new_group_name, :namespace_id, :trial_entity)
       .with_defaults(organization_id: Current.organization_id).to_h
     end
 

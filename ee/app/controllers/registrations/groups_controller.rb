@@ -159,11 +159,11 @@ module Registrations
     end
 
     def general_params
-      params.permit(:import_url).merge(glm_params)
+      params.permit(*::Onboarding::Status::GLM_PARAMS, :import_url)
     end
 
     def glm_params
-      params.permit(:glm_source, :glm_content)
+      ::Onboarding::Status.glm_tracking_params(params) # rubocop:disable Rails/StrongParams -- strong params are used in the method being called.
     end
   end
 end

@@ -5,7 +5,6 @@ module Registrations
     include OneTrustCSP
     include GoogleAnalyticsCSP
     include GoogleSyndicationCSP
-    include RegistrationsTracking
     include ::Onboarding::SetRedirect
 
     layout 'minimal'
@@ -26,8 +25,9 @@ module Registrations
       if result.success?
         track_event('successfully_submitted_form')
 
-        response = Onboarding::StatusStepUpdateService
-                     .new(current_user, new_users_sign_up_group_path(glm_tracking_params)).execute
+        response = Onboarding::StatusStepUpdateService.new(
+          current_user, new_users_sign_up_group_path(::Onboarding::Status.glm_tracking_params(params))
+        ).execute
 
         redirect_to response[:step_url]
       else
@@ -40,6 +40,7 @@ module Registrations
 
     def permitted_params
       params.permit(
+        *::Onboarding::Status::GLM_PARAMS,
         :company_name,
         :company_size,
         :first_name,
@@ -52,7 +53,7 @@ module Registrations
         :role,
         :registration_objective,
         :jobs_to_be_done_other
-      ).merge(glm_tracking_params)
+      )
     end
 
     def track_event(action)

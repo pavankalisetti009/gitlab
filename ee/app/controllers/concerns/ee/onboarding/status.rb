@@ -10,6 +10,8 @@ module EE
         ::Onboarding::REGISTRATION_TYPE[:subscription] => ::Onboarding::SubscriptionRegistration
       }.freeze
 
+      GLM_PARAMS = [:glm_source, :glm_content].freeze
+
       attr_reader :registration_type
 
       # string delegations
@@ -22,6 +24,25 @@ module EE
       delegate :show_opt_in_to_email?, :show_joining_project?, :apply_trial?, to: :registration_type
       delegate :hide_setup_for_company_field?, :pre_parsed_email_opt_in?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
+
+      module ClassMethods
+        extend ::Gitlab::Utils::Override
+
+        def glm_tracking_params(params)
+          params.permit(*GLM_PARAMS)
+        end
+
+        override :registration_path_params
+        def registration_path_params(params:, extra_params: {})
+          return super unless ::Onboarding.enabled?
+
+          glm_tracking_params(params).to_h.merge(extra_params)
+        end
+      end
+
+      def self.prepended(base)
+        base.singleton_class.prepend(ClassMethods)
+      end
 
       def initialize(*)
         super

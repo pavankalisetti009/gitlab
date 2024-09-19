@@ -49,7 +49,7 @@ module GitlabSubscriptions
 
     def glm_params
       strong_memoize(:glm_params) do
-        params.slice(:glm_source, :glm_content).to_unsafe_h
+        params.slice(*::Onboarding::Status::GLM_PARAMS).to_unsafe_h
       end
     end
 
