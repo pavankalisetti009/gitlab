@@ -119,10 +119,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     # Stub value for current partition to return one value for the first call (project pipeline)
     # and a different value for subsequent calls (policy pipelines)
     allow(::Ci::Pipeline).to receive(:current_partition_value)
-                               .and_return(ci_testing_partition_id_for_check_constraints)
+                               .and_return(ci_testing_partition_id)
 
     builds = execute.payload.builds
-    expect(builds.map(&:partition_id)).to all(eq(ci_testing_partition_id_for_check_constraints))
+    expect(builds.map(&:partition_id)).to all(eq(ci_testing_partition_id))
   end
 
   context 'when policy pipeline stage is not defined in the main pipeline' do
