@@ -6308,6 +6308,10 @@ No changes.
 - [Add sharding keys for system_access](gitlab-org/gitlab@62c2fd4788e62e46f1469e2f18d178840e8e3df2) ([merge request](gitlab-org/gitlab!142501))
 - [Add sharding keys for purchase](gitlab-org/gitlab@9c3843da74714c72483c17489d5d3d68ceffd2c8) ([merge request](gitlab-org/gitlab!142505))
 
+## 16.9.11 (2024-09-19)
+
+No changes.
+
 ## 16.9.10 (2024-07-23)
 
 ### Added (1 change)
