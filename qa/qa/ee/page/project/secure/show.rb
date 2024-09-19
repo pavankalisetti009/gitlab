@@ -8,10 +8,6 @@ module QA
           class Show < QA::Page::Base
             include Page::Component::SecureReport
 
-            view 'ee/app/assets/javascripts/security_dashboard/components/pipeline/security_dashboard_table.vue' do
-              element 'security-report-content', required: true
-            end
-
             view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_list.vue' do
               element 'false-positive-vulnerability'
             end

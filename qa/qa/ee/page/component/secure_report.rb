@@ -11,10 +11,6 @@ module QA
             super
 
             base.class_eval do
-              view 'ee/app/assets/javascripts/security_dashboard/components/security_dashboard_table.vue' do
-                element 'security-report-content'
-              end
-
               view 'ee/app/assets/javascripts/security_dashboard/components/shared/filters/activity_filter.vue' do
                 element 'filter-activity-dropdown'
               end
@@ -145,13 +141,6 @@ module QA
           def has_vulnerability?(name)
             retry_until(reload: true, sleep_interval: 10, max_attempts: 6, message: "Retry for vulnerability text") do
               has_element?(:vulnerability, text: name)
-            end
-          end
-
-          def has_vulnerability_info_content?(name)
-            retry_until(reload: true, sleep_interval: 2, max_attempts: 2, message: 'Finding "Security Finding" text') do
-              has_element?('vulnerability-info-content', text: name,
-                wait: 1) || has_element?('vulnerability', text: name, wait: 1)
             end
           end
 

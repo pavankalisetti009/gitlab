@@ -86,24 +86,24 @@ module QA
           pipeline.click_on_security
 
           filter_report_and_perform(page: pipeline, filter_report: "Dependency Scanning") do
-            expect(pipeline).to have_vulnerability_info_content dependency_scan_example_vuln
+            expect(pipeline).to have_vulnerability dependency_scan_example_vuln
           end
 
           filter_report_and_perform(page: pipeline, filter_report: "Container Scanning") do
-            expect(pipeline).to have_vulnerability_info_content container_scan_example_vuln
+            expect(pipeline).to have_vulnerability container_scan_example_vuln
           end
 
           filter_report_and_perform(page: pipeline, filter_report: "SAST") do
-            expect(pipeline).to have_vulnerability_info_content sast_scan_example_vuln
-            expect(pipeline).to have_vulnerability_info_content sast_scan_fp_example_vuln
+            expect(pipeline).to have_vulnerability sast_scan_example_vuln
+            expect(pipeline).to have_vulnerability sast_scan_fp_example_vuln
           end
 
           filter_report_and_perform(page: pipeline, filter_report: "DAST") do
-            expect(pipeline).to have_vulnerability_info_content dast_scan_example_vuln
+            expect(pipeline).to have_vulnerability dast_scan_example_vuln
           end
 
           filter_report_and_perform(page: pipeline, filter_report: "Secret Detection") do
-            expect(pipeline).to have_vulnerability_info_content secret_detection_vuln
+            expect(pipeline).to have_vulnerability secret_detection_vuln
           end
         end
       end
