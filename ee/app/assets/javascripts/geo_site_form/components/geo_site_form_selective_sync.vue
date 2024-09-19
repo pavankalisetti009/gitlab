@@ -121,7 +121,7 @@ export default {
       <geo-site-form-namespaces
         id="site-synchronization-namespaces-field"
         :selected-namespaces="siteData.selectiveSyncNamespaceIds"
-        @updateSyncOptions="$emit('updateSyncOptions', arguments[0])"
+        @updateSyncOptions="$emit('updateSyncOptions', $event)"
       />
     </gl-form-group>
     <gl-form-group
@@ -133,7 +133,7 @@ export default {
         id="site-synchronization-shards-field"
         :selected-shards="siteData.selectiveSyncShards"
         :sync-shards-options="syncShardsOptions"
-        @updateSyncOptions="$emit('updateSyncOptions', arguments[0])"
+        @updateSyncOptions="$emit('updateSyncOptions', $event)"
       />
     </gl-form-group>
     <gl-form-group
