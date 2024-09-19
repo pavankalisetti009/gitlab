@@ -37,14 +37,23 @@ export default {
     },
   },
   computed: {
+    actions() {
+      return this.parsedYaml?.actions || [];
+    },
+    rules() {
+      return this.parsedYaml?.rules || [];
+    },
+    description() {
+      return this.parsedYaml?.description || '';
+    },
     policyScope() {
       return this.policy?.policyScope;
     },
     humanizedActions() {
-      return humanizeActions(this.parsedYaml.actions);
+      return humanizeActions(this.actions);
     },
     humanizedRules() {
-      return humanizeRules(this.parsedYaml.rules);
+      return humanizeRules(this.rules);
     },
     parsedYaml() {
       return fromYaml({ manifest: this.policy.yaml });
@@ -64,7 +73,7 @@ export default {
 <template>
   <drawer-layout
     key="scan_execution_policy"
-    :description="parsedYaml.description"
+    :description="description"
     :policy="policy"
     :policy-scope="policyScope"
     :type="$options.i18n.scanExecution"

@@ -34,7 +34,7 @@ export default {
       return this.parsedYaml?.actions;
     },
     description() {
-      return this.parsedYaml?.description;
+      return this.parsedYaml?.description || '';
     },
     fallbackBehaviorText() {
       switch (this.parsedYaml?.fallback_behavior?.fail) {
