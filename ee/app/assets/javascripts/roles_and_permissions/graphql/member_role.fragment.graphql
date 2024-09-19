@@ -4,13 +4,4 @@ fragment MemberRole on MemberRole {
   description
   membersCount
   editPath
-  baseAccessLevel {
-    humanAccess
-  }
-  enabledPermissions {
-    nodes {
-      name
-      value
-    }
-  }
 }

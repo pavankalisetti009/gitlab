@@ -34,10 +34,6 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
     click_button s_('MemberRole|Create role')
   end
 
-  def created_role(id, name, description, access_level, permissions)
-    [id, name, description, access_level, *permissions].join(' ')
-  end
-
   shared_examples 'creates a new custom role' do
     it 'and displays it' do
       create_role(access_level, name, description, permissions)
@@ -46,15 +42,14 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
 
       expect(created_member_role).not_to be_nil
 
-      role = created_role(created_member_role.id, name, description, access_level, permissions)
-      expect(page).to have_content(role)
+      expect(page).to have_content("#{created_member_role.name} Custom role #{created_member_role.description}")
     end
   end
 
   shared_examples 'deletes a custom role' do
     context 'when no user is assigned to the role' do
       it 'deletes the custom role' do
-        click_button s_('MemberRole|Actions')
+        page.all('td .gl-disclosure-dropdown').last.click
         click_button s_('MemberRole|Delete role')
 
         wait_for_requests
@@ -75,7 +70,7 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
       end
 
       it 'disables the delete role button' do
-        click_button s_('MemberRole|Actions')
+        page.all('td .gl-disclosure-dropdown').last.click
         expect(page).to have_button s_('MemberRole|Delete role'), disabled: true
       end
     end

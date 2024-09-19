@@ -1,9 +1,14 @@
+#import "./standard_roles.fragment.graphql"
 #import "./member_role.fragment.graphql"
 
 query getInstanceMemberRoles {
+  standardRoles {
+    ...StandardRoles
+  }
   memberRoles {
     nodes {
       ...MemberRole
+      detailsPath
     }
   }
 }

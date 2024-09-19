@@ -1,0 +1,8 @@
+fragment StandardRoles on StandardRoleConnection {
+  nodes {
+    name
+    accessLevel
+    membersCount
+    detailsPath
+  }
+}
