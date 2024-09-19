@@ -58,32 +58,37 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   end
 
   describe 'group search', :elastic do
-    let(:term) { "RandomName" }
-    let(:nested_group) { create(:group, :nested) }
+    let_it_be(:term) { "RandomName" }
+    let_it_be(:nested_group) { create(:group, :nested) }
 
     # These projects shouldn't be found
-    let(:outside_project) { create(:project, :public, name: "Outside #{term}") }
-    let(:private_project) { create(:project, :private, namespace: nested_group, name: "Private #{term}") }
-    let(:other_project)   { create(:project, :public, namespace: nested_group, name: 'OtherProject') }
+    let_it_be(:outside_project) { create(:project, :public, name: "Outside #{term}") }
+    let_it_be(:private_project) do
+      create(:project, :private, namespace: nested_group, name: "Private #{term}")
+    end
+
+    let_it_be(:other_project) { create(:project, :public, namespace: nested_group, name: 'OtherProject') }
 
     # These projects should be found
-    let(:project1) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1") }
-    let(:project2) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2") }
-    let(:project3) { create(:project, :internal, namespace: nested_group.parent, name: "Outer #{term}") }
+    let_it_be(:project1) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1") }
+    let_it_be(:project2) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2") }
+    let_it_be(:project3) do
+      create(:project, :internal, namespace: nested_group.parent, name: "Outer #{term}")
+    end
 
     let(:results) { described_class.new(user, search_group, search: term).execute }
 
     before do
       # Ensure these are present when the index is refreshed
-      _ = [
+      Elastic::ProcessInitialBookkeepingService.track!(
         outside_project, private_project, other_project,
         project1, project2, project3
-      ]
+      )
 
       ensure_elasticsearch_index!
     end
 
-    context 'finding projects by name' do
+    context 'when finding projects by name' do
       subject { results.objects('projects') }
 
       context 'in parent group' do
@@ -220,7 +225,8 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
     context 'when basic search is requested' do
       let(:service) do
-        described_class.new(user, group, search: 'foobar', scope: scope, page: page, source: source, search_type: 'basic')
+        described_class.new(user, group, search: 'foobar', scope: scope,
+          page: page, source: source, search_type: 'basic')
       end
 
       it 'does not search with Zoekt' do
@@ -310,19 +316,22 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
   end
 
-  context 'visibility', :elastic_delete_by_query, :sidekiq_inline do
+  describe 'visibility', :elastic_delete_by_query do
     include_context 'ProjectPolicyTable context'
 
-    let_it_be_with_reload(:project) { create(:project, namespace: group) }
-    let_it_be_with_reload(:project2) { create(:project) }
+    let_it_be_with_refind(:project) { create(:project, :repository, namespace: group) }
+    let_it_be_with_refind(:project2) { create(:project, :repository) }
 
     let(:user) { create_user_from_membership(project, membership) }
     let(:projects) { [project, project2] }
     let(:search_level) { group }
 
-    context 'merge request' do
-      let!(:merge_request) { create :merge_request, target_project: project, source_project: project }
-      let!(:merge_request2) do
+    context 'for merge requests' do
+      let_it_be_with_reload(:merge_request) do
+        create :merge_request, target_project: project, source_project: project
+      end
+
+      let_it_be_with_reload(:merge_request2) do
         create :merge_request, target_project: project2, source_project: project2, title: merge_request.title
       end
 
@@ -334,21 +343,29 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
 
       with_them do
+        before do
+          Elastic::ProcessInitialBookkeepingService.track!(merge_request, merge_request2)
+          ensure_elasticsearch_index!
+        end
+
         it_behaves_like 'search respects visibility'
       end
     end
 
-    context 'note' do
+    context 'for notes' do
       let(:scope) { 'notes' }
       let(:search) { note.note }
 
       context 'on issues' do
-        let!(:note) { create :note_on_issue, project: project }
-        let!(:note2) { create :note_on_issue, project: project2, note: note.note }
-        let!(:confidential_note) do
-          note_author_and_assignee = user || project.creator
-          issue = create(:issue, project: project, assignees: [note_author_and_assignee])
-          create(:note, note: note.note, confidential: true, project: project, noteable: issue, author: note_author_and_assignee)
+        let_it_be(:issue) { create(:issue, project: project) }
+        let_it_be(:issue2) { create(:issue, project: project2) }
+        let_it_be(:note) { create :note, noteable: issue, project: project }
+        let_it_be(:note2) { create :note, noteable: issue2, project: project2, note: note.note }
+        let_it_be(:confidential_note) do
+          note_author_and_assignee = project.creator
+          issue2 = create(:issue, project: project, assignees: [note_author_and_assignee])
+          create(:note, note: note.note, confidential: true,
+            project: project, noteable: issue2, author: note_author_and_assignee)
         end
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
@@ -356,147 +373,100 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         end
 
         with_them do
+          before do
+            Elastic::ProcessInitialBookkeepingService.track!(note, note2, confidential_note)
+            ensure_elasticsearch_index!
+          end
+
           it_behaves_like 'search respects visibility'
         end
       end
 
       context 'on merge requests' do
-        let!(:note) { create :note_on_merge_request, project: project }
-        let!(:note2) { create :note_on_merge_request, project: project2, note: note.note }
+        let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+        let_it_be(:merge_request2) { create(:merge_request, target_project: project2, source_project: project2) }
+        let_it_be(:note) { create :note, noteable: merge_request, project: project }
+        let_it_be(:note2) { create :note, noteable: merge_request2, project: project2, note: note.note }
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
           permission_table_for_reporter_feature_access
         end
 
         with_them do
+          before do
+            Elastic::ProcessInitialBookkeepingService.track!(note, note2)
+            ensure_elasticsearch_index!
+          end
+
           it_behaves_like 'search respects visibility'
         end
       end
 
       context 'on commits' do
-        let_it_be_with_reload(:project) { create(:project, :repository, namespace: group) }
-        let_it_be_with_reload(:project2) { create(:project, :repository) }
-
-        let!(:note) { create :note_on_commit, project: project }
-        let!(:note2) { create :note_on_commit, project: project2, note: note.note }
+        let_it_be(:note) { create :note_on_commit, project: project }
+        let_it_be(:note2) { create :note_on_commit, project: project2, note: note.note }
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
           permission_table_for_guest_feature_access_and_non_private_project_only
         end
 
         with_them do
+          before do
+            Elastic::ProcessInitialBookkeepingService.track!(note, note2)
+            ensure_elasticsearch_index!
+          end
+
           it_behaves_like 'search respects visibility'
         end
       end
 
       context 'on snippets' do
-        let!(:note) { create :note_on_project_snippet, project: project }
-        let!(:note2) { create :note_on_project_snippet, project: project2, note: note.note }
+        let_it_be(:note) { create :note_on_project_snippet, project: project }
+        let_it_be(:note2) { create :note_on_project_snippet, project: project2, note: note.note }
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
           permission_table_for_guest_feature_access
         end
 
         with_them do
+          before do
+            Elastic::ProcessInitialBookkeepingService.track!(note, note2)
+            ensure_elasticsearch_index!
+          end
+
           it_behaves_like 'search respects visibility'
         end
       end
     end
 
-    context 'issue' do
+    context 'for issues' do
       let(:scope) { 'issues' }
 
       [:work_item, :issue].each do |document_type|
         context "when we have document_type as #{document_type}" do
-          let!(:issue) { create(document_type, project: project) }
-          let!(:issue2) { create(document_type, project: project2, title: issue.title) }
+          let_it_be(:issue) { create(document_type, project: project) }
+          let_it_be(:issue2) { create(document_type, project: project2, title: issue.title) }
           let(:search) { issue.title }
-
-          before do
-            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-          end
 
           where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
             permission_table_for_guest_feature_access
           end
 
           with_them do
+            before do
+              stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+
+              Elastic::ProcessInitialBookkeepingService.track!(issue, issue2)
+              ensure_elasticsearch_index!
+            end
+
             it_behaves_like 'search respects visibility'
           end
         end
       end
     end
 
-    context 'wiki' do
-      let(:scope) { 'wiki_blobs' }
-      let(:search) { 'term' }
-
-      it 'adds correct routing field in the elasticsearch request' do
-        described_class.new(nil, search_level, search: search).execute.objects(scope)
-        assert_routing_field("n_#{search_level.root_ancestor.id}")
-      end
-
-      context 'for project wikis' do
-        let_it_be_with_reload(:project) { create(:project, :wiki_repo, :in_group) }
-
-        let(:group) { project.namespace }
-        let(:project_wiki) { create(:project_wiki, project: project, user: user) }
-        let(:projects) { [project] }
-
-        where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-          permission_table_for_guest_feature_access
-        end
-
-        with_them do
-          before do
-            project_wiki.create_page('test.md', "# term")
-            project.wiki.index_wiki_blobs
-          end
-
-          it_behaves_like 'search respects visibility'
-        end
-      end
-
-      context 'for group wikis' do
-        let_it_be_with_reload(:group) { create(:group, :public, :wiki_enabled) }
-        let_it_be_with_reload(:sub_group) { create(:group, :public, :wiki_enabled, parent: group) }
-        let(:user) { create_user_from_membership(group, membership) }
-        let_it_be(:group_wiki) { create(:group_wiki, container: group) }
-        let_it_be(:sub_group_wiki) { create(:group_wiki, container: sub_group) }
-
-        where(:group_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-          permission_table_for_guest_feature_access
-        end
-
-        with_them do
-          before do
-            [group_wiki, sub_group_wiki].each do |wiki|
-              wiki.create_page('test.md', "# term")
-              wiki.index_wiki_blobs
-            end
-          end
-
-          it 'respects visibility' do
-            enable_admin_mode!(user) if admin_mode
-            sub_group.update!(
-              visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s),
-              wiki_access_level: feature_access_level.to_s
-            )
-            group.update!(
-              visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s),
-              wiki_access_level: feature_access_level.to_s
-            )
-            ensure_elasticsearch_index!
-
-            expect_search_results(user, scope, expected_count: expected_count * 2) do |user|
-              described_class.new(user, search_level, search: search).execute
-            end
-          end
-        end
-      end
-    end
-
-    context 'milestone' do
+    context 'for milestones' do
       let_it_be_with_reload(:milestone) { create :milestone, project: project }
 
       before do
@@ -526,7 +496,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'project' do
+    context 'for projects' do
       let_it_be_with_reload(:project) { create(:project, namespace: group) }
 
       where(:project_level, :membership, :expected_count) do
@@ -537,7 +507,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         it "respects visibility" do
           project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
-          ElasticCommitIndexerWorker.new.perform(project.id)
+          Elastic::ProcessInitialBookkeepingService.track!(project)
           ensure_elasticsearch_index!
 
           expected_objects = expected_count == 1 ? [project] : []
@@ -555,26 +525,33 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
   end
 
-  context 'sorting', :elastic do
-    context 'issues' do
+  context 'when sorting', :elastic do
+    context 'for issues' do
+      let_it_be(:project) { create(:project, :public, group: group) }
+
+      let_it_be(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
+      let_it_be(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
+      let_it_be(:very_old_result) do
+        create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago)
+      end
+
+      let_it_be(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
+      let_it_be(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
+      let_it_be(:very_old_updated) do
+        create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago)
+      end
+
+      let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
+      let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
+
       [:work_item, :issue].each do |document_type|
         context "when we have document_type as #{document_type}" do
           let(:scope) { 'issues' }
-          let_it_be(:project) { create(:project, :public, group: group) }
-
-          let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
-          let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
-          let!(:very_old_result) { create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago) }
-
-          let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
-          let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
-          let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
-
-          let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
-          let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
 
           before do
             stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+
+            Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
             ensure_elasticsearch_index!
           end
 
@@ -583,41 +560,42 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'merge requests' do
+    context 'for merge requests' do
       let(:scope) { 'merge_requests' }
-      let!(:project) { create(:project, :public, group: group) }
+      let_it_be(:project) { create(:project, :public, group: group) }
 
-      let!(:new_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'new-1', title: 'sorted recent',
-          created_at: 1.day.ago)
+      let_it_be(:new_result) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'new-1', title: 'sorted recent', created_at: 1.day.ago)
       end
 
-      let!(:old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'old-1', title: 'sorted old',
-          created_at: 1.month.ago)
+      let_it_be(:old_result) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'old-1', title: 'sorted old', created_at: 1.month.ago)
       end
 
-      let!(:very_old_result) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'very-old-1', title: 'sorted very old',
-          created_at: 1.year.ago)
+      let_it_be(:very_old_result) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'very-old-1', title: 'sorted very old', created_at: 1.year.ago)
       end
 
-      let!(:new_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-new-1', title: 'updated recent',
-          updated_at: 1.day.ago)
+      let_it_be(:new_updated) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'updated-new-1', title: 'updated recent', updated_at: 1.day.ago)
       end
 
-      let!(:old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-old-1', title: 'updated old',
-          updated_at: 1.month.ago)
+      let_it_be(:old_updated) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'updated-old-1', title: 'updated old', updated_at: 1.month.ago)
       end
 
-      let!(:very_old_updated) do
-        create(:merge_request, :opened, source_project: project, source_branch: 'updated-very-old-1',
-          title: 'updated very old', updated_at: 1.year.ago)
+      let_it_be(:very_old_updated) do
+        create(:merge_request, :opened, source_project: project,
+          source_branch: 'updated-very-old-1', title: 'updated very old', updated_at: 1.year.ago)
       end
 
       before do
+        Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
         ensure_elasticsearch_index!
       end
 
@@ -627,23 +605,30 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'epics' do
+    context 'for epics' do
       let(:scope) { 'epics' }
       let_it_be(:member) { create(:group_member, :owner, group: group, user: user) }
 
-      let!(:old_result) { create(:epic, group: group, title: 'sorted old', created_at: 1.month.ago) }
-      let!(:new_result) { create(:epic, group: group, title: 'sorted recent', created_at: 1.day.ago) }
-      let!(:very_old_result) { create(:epic, group: group, title: 'sorted very old', created_at: 1.year.ago) }
+      let_it_be(:old_result) { create(:epic, group: group, title: 'sorted old', created_at: 1.month.ago) }
+      let_it_be(:new_result) { create(:epic, group: group, title: 'sorted recent', created_at: 1.day.ago) }
+      let_it_be(:very_old_result) do
+        create(:epic, group: group, title: 'sorted very old', created_at: 1.year.ago)
+      end
 
-      let!(:old_updated) { create(:epic, group: group, title: 'updated old', updated_at: 1.month.ago) }
-      let!(:new_updated) { create(:epic, group: group, title: 'updated recent', updated_at: 1.day.ago) }
-      let!(:very_old_updated) { create(:epic, group: group, title: 'updated very old', updated_at: 1.year.ago) }
+      let_it_be(:old_updated) { create(:epic, group: group, title: 'updated old', updated_at: 1.month.ago) }
+      let_it_be(:new_updated) { create(:epic, group: group, title: 'updated recent', updated_at: 1.day.ago) }
+      let_it_be(:very_old_updated) do
+        create(:epic, group: group, title: 'updated very old', updated_at: 1.year.ago)
+      end
 
       let(:results_created) { described_class.new(user, group, search: 'sorted', sort: sort).execute }
       let(:results_updated) { described_class.new(user, group, search: 'updated', sort: sort).execute }
 
       before do
         stub_licensed_features(epics: true)
+        Elastic::ProcessInitialBookkeepingService.track!(old_result, new_result, very_old_result,
+          old_updated, new_updated, very_old_updated
+        )
         ensure_elasticsearch_index!
       end
 
@@ -684,7 +669,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
         it { is_expected.to include('blobs') }
 
-        context 'but the group does is not enabled for zoekt' do
+        context 'and the group does is not enabled for zoekt' do
           before do
             allow(::Search::Zoekt).to receive(:search?).with(group).and_return(false)
           end
@@ -699,7 +684,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         stub_licensed_features(epics: epics_available)
       end
 
-      context 'epics available' do
+      context 'when epics available' do
         let(:epics_available) { true }
 
         it 'does include epics to allowed_scopes' do
@@ -707,7 +692,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         end
       end
 
-      context 'epics is not available' do
+      context 'when epics is not available' do
         let(:epics_available) { false }
 
         it 'does not include epics to allowed_scopes' do
