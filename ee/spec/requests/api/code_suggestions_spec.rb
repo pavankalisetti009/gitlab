@@ -146,7 +146,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     let(:file_name) { 'test.py' }
-
+    let(:service_name) { :code_suggestions }
     let(:additional_params) { {} }
     let(:body) do
       {
@@ -209,9 +209,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-      allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: token,
+      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
+      allow(service).to receive_messages({ access_token: token, name: service_name,
         enabled_by_namespace_ids: enabled_by_namespace_ids })
+      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
       stub_feature_flags(use_codestral_for_code_completions: false)
     end
 
@@ -704,34 +705,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 expect(response).to have_gitlab_http_status(:bad_request)
               end
             end
-
-            context 'when code suggestions feature is self hosted' do
-              let_it_be(:feature_setting) { create(:ai_feature_setting) }
-
-              before do
-                allow(service).to receive_messages({ free_access?: true, allowed_for?: false, access_token: token })
-              end
-
-              context 'and requested before cut off date' do
-                it 'is unauthorized' do
-                  post_api
-
-                  expect(response).to have_gitlab_http_status(:unauthorized)
-                end
-
-                context 'when self_hosted_models_beta_ended is disabled' do
-                  before do
-                    stub_feature_flags(self_hosted_models_beta_ended: false)
-                  end
-
-                  it 'is unauthorized' do
-                    post_api
-
-                    expect(response).to have_gitlab_http_status(:ok)
-                  end
-                end
-              end
-            end
           end
 
           it_behaves_like 'code completions endpoint'
@@ -767,6 +740,37 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           _, params = workhorse_send_data
           expect(params['Header']).not_to have_key('X-Gitlab-Saas-Namespace-Ids')
           expect(params['Header']).to include('X-Gitlab-Rails-Send-Start' => [Time.now.to_f.to_s])
+        end
+
+        context 'when code suggestions feature is self hosted and requested before cut off date without seats' do
+          let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_completions) }
+
+          let(:service_name) { :self_hosted_models }
+
+          before do
+            stub_licensed_features(ai_features: true)
+
+            allow(service).to receive_messages(free_access?: true)
+            allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(false)
+          end
+
+          it 'is unauthorized' do
+            post_api
+
+            expect(response).to have_gitlab_http_status(:unauthorized)
+          end
+
+          context 'when self_hosted_models_beta_ended is disabled' do
+            before do
+              stub_feature_flags(self_hosted_models_beta_ended: false)
+            end
+
+            it 'is authorized' do
+              post_api
+
+              expect(response).to have_gitlab_http_status(:ok)
+            end
+          end
         end
       end
 

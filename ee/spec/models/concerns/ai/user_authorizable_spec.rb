@@ -163,6 +163,32 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
         it_behaves_like 'when checking licensed features'
 
+        context 'when specifying a service name' do
+          let(:service_name) { :my_service }
+
+          before do
+            stub_licensed_features(ai_features: true)
+          end
+
+          subject { user.allowed_to_use?(ai_feature, service_name: service_name) }
+
+          it { is_expected.to be true }
+
+          context 'when service_name is self_hosted_models' do
+            let(:service_name) { :self_hosted_models }
+
+            it { is_expected.to be false }
+
+            context 'when self_hosted_models_beta_ended is disabled' do
+              before do
+                stub_feature_flags(self_hosted_models_beta_ended: false)
+              end
+
+              it { is_expected.to be true }
+            end
+          end
+        end
+
         context 'when specifying a licensed feature name' do
           it_behaves_like 'when checking licensed features' do
             let(:licensed_feature) { :generate_commit_message }

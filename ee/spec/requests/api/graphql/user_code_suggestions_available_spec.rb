@@ -36,34 +36,38 @@ RSpec.describe 'Querying user code suggestions access',
         .to receive(:allowed?).and_call_original
 
       stub_licensed_features(code_suggestions: true)
+
+      service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData', name: :code_suggestions,
+        free_access?: false)
+      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
+      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?)
+        .and_return(user_has_add_on_purchases)
     end
 
     context 'when user has access to code suggestions' do
-      it 'returns true' do
-        expect(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-          :allowed_for?).and_return(true)
+      let(:user_has_add_on_purchases) { true }
 
+      it 'returns true' do
         post_graphql(query, current_user: current_user)
 
         expect(graphql_response).to eq(true)
       end
+
+      context 'when feature flag is off' do
+        before do
+          stub_feature_flags(ai_duo_code_suggestions_switch: false)
+        end
+
+        it 'returns false' do
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_response).to eq(false)
+        end
+      end
     end
 
     context 'when user does not have access to code suggestions' do
-      it 'returns false' do
-        expect(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-          :allowed_for?).and_return(false)
-
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_response).to eq(false)
-      end
-    end
-
-    context 'when feature flag is off' do
-      before do
-        stub_feature_flags(ai_duo_code_suggestions_switch: false)
-      end
+      let(:user_has_add_on_purchases) { false }
 
       it 'returns false' do
         post_graphql(query, current_user: current_user)
