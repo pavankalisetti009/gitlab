@@ -3902,6 +3902,18 @@ RSpec.describe User, feature_category: :system_access do
         end
       end
 
+      context 'with other project memberships in the hierarchy' do
+        before do
+          project_a.add_guest(user)
+
+          create(:group_member, :guest, member_role: admin_runners_a, source: group_aa, user: user)
+        end
+
+        it 'does not include ancestor groups of other project' do
+          is_expected.to contain_exactly(group_aa_runner, group_aaa_runner)
+        end
+      end
+
       context "with another user a member of the `admin_runners` role in the same group hierarchy" do
         before do
           other_role = create(:member_role, :guest, :read_code, namespace: group_a)

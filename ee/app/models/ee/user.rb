@@ -727,14 +727,11 @@ module EE
     private
 
     def ci_namespace_mirrors_permitted_to(permission)
-      ::Ci::NamespaceMirror.contains_traversal_ids(
-        authorized_groups.where(
-          'traversal_ids[1] IN (?)',
-          group_members
-            .joins(:member_role)
-            .merge(::MemberRole.permissions_where(permission => true))
-            .select('member_roles.namespace_id')
-        ).shortest_traversal_ids_prefixes
+      ::Ci::NamespaceMirror.by_group_and_descendants(
+        group_members
+          .joins(:member_role)
+          .merge(::MemberRole.permissions_where(permission => true))
+          .pluck('members.source_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
       )
     end
 
