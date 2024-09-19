@@ -30150,7 +30150,7 @@ msgstr ""
 msgid "Iterations|No closed iterations."
 msgstr ""
 
-msgid "Iterations|No iteration cadences to show."
+msgid "Iterations|No iteration cadences to show"
 msgstr ""
 
 msgid "Iterations|No iterations found"
