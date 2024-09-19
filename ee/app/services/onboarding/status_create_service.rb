@@ -12,7 +12,7 @@ module Onboarding
     def execute
       return ServiceResponse.error(message: 'Onboarding is not enabled', payload: payload) unless ::Onboarding.enabled?
 
-      if user.update(onboarding_in_progress: true, onboarding_status: onboarding_status)
+      if user.update(user_attributes)
         ServiceResponse.success(payload: payload)
       else
         ServiceResponse.error(message: user.errors.full_messages, payload: payload)
@@ -29,11 +29,12 @@ module Onboarding
       { user: user.reset }
     end
 
-    def onboarding_status
+    def user_attributes
       {
-        step_url: step_url,
-        initial_registration_type: registration_type,
-        registration_type: registration_type
+        onboarding_in_progress: true,
+        onboarding_status_step_url: step_url,
+        onboarding_status_initial_registration_type: registration_type,
+        onboarding_status_registration_type: registration_type
       }
     end
 
