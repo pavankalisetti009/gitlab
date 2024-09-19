@@ -1,19 +1,9 @@
-#import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "./project_security_exclusion.fragment.graphql"
 
-query ProjectSecurityExclusions(
-  $fullPath: ID!
-  $first: Int
-  $last: Int
-  $after: String
-  $before: String
-) {
+query ProjectSecurityExclusions($fullPath: ID!) {
   project(fullPath: $fullPath) {
     id
-    securityExclusions(first: $first, last: $last, after: $after, before: $before) {
-      pageInfo {
-        ...PageInfo
-      }
+    exclusions: securityExclusions {
       nodes {
         ...ProjectSecurityExclusionFragment
       }

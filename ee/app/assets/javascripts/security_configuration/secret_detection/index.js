@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import apolloProvider from 'ee/vue_shared/security_configuration/graphql/provider';
 import App from './components/app.vue';
 
 export default function init() {
@@ -12,6 +13,7 @@ export default function init() {
 
   return new Vue({
     el,
+    apolloProvider,
     provide: {
       projectFullPath,
     },
