@@ -11,7 +11,7 @@ import { createAlert } from '~/alert';
 import Autosave from '~/autosave';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { WORKSPACE_GROUP } from '~/issues/constants';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
@@ -111,9 +111,9 @@ export default {
         title: this.title,
         description: this.description,
         confidential: this.confidential,
-        startDateFixed: this.startDateFixed ? formatDate(this.startDateFixed, 'yyyy-mm-dd') : null,
+        startDateFixed: this.startDateFixed ? toISODateFormat(this.startDateFixed) : null,
         startDateIsFixed: Boolean(this.startDateFixed),
-        dueDateFixed: this.dueDateFixed ? formatDate(this.dueDateFixed, 'yyyy-mm-dd') : null,
+        dueDateFixed: this.dueDateFixed ? toISODateFormat(this.dueDateFixed) : null,
         dueDateIsFixed: Boolean(this.dueDateFixed),
       };
 

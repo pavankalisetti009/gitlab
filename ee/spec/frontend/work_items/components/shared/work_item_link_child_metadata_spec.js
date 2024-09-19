@@ -1,6 +1,6 @@
 import { GlIcon, GlTooltip } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import WorkItemLinkChildMetadata from 'ee/work_items/components/shared/work_item_link_child_metadata.vue';
@@ -68,7 +68,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
     it('renders lastUpdatedTimestamp in muted', () => {
       expect(wrapper.findByTestId('lastUpdatedTimestamp').text().trim()).toContain(
-        formatDate(PROGRESS.updatedAt).toString(),
+        localeDateFormat.asDateTimeFull.format(newDate(PROGRESS.updatedAt)),
       );
     });
   });

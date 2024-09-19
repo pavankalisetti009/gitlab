@@ -12,7 +12,7 @@ import {
   WIDGET_TYPE_START_AND_DUE_DATE,
   WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
-import { formatDate, humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
+import { humanTimeframe, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { getIterationPeriod } from 'ee/iterations/utils';
 
@@ -122,7 +122,7 @@ export default {
   },
   methods: {
     getTimestamp(rawTimestamp) {
-      return rawTimestamp ? formatDate(new Date(rawTimestamp)) : '';
+      return rawTimestamp ? localeDateFormat.asDateTimeFull.format(newDate(rawTimestamp)) : '';
     },
     getTimestampInWords(rawTimestamp) {
       return rawTimestamp ? this.timeFormatted(rawTimestamp) : '';
