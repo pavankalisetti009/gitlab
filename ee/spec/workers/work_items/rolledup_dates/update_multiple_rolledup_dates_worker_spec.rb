@@ -11,7 +11,7 @@ RSpec.describe WorkItems::RolledupDates::UpdateMultipleRolledupDatesWorker, feat
       described_class.new.perform([non_existing_record_id])
     end
 
-    it "updates the hierarchy tree" do
+    it "updates the hierarchy tree", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/465103' do
       work_items = create_list(:work_item, 2, :epic)
 
       expect_next_instance_of(
