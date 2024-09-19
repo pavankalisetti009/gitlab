@@ -15,10 +15,6 @@ RSpec.describe WorkItems::Callbacks::CrmContacts, feature_category: :service_des
   context 'when work item belongs to a group' do
     let(:work_item) { create(:work_item, :group_level, namespace: group) }
 
-    before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
-    end
-
     context 'with group level work item license' do
       before do
         stub_licensed_features(epics: true)

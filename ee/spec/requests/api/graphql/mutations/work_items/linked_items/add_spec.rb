@@ -51,10 +51,6 @@ RSpec.describe "Add linked items to a work item", feature_category: :portfolio_m
     let(:ids_to_link) { [related1.to_global_id.to_s, related2.to_global_id.to_s] }
     let(:link_type) { 'RELATED' }
 
-    before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
-    end
-
     context 'with a group level work items license' do
       before do
         stub_licensed_features(epics: true)

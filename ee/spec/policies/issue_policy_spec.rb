@@ -31,10 +31,6 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     described_class.new(user, issue)
   end
 
-  before do
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
-  end
-
   describe 'summarize_comments', :with_cloud_connector do
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
 

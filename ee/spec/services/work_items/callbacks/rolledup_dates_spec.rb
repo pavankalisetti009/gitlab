@@ -24,7 +24,6 @@ RSpec.describe WorkItems::Callbacks::RolledupDates, feature_category: :portfolio
         due_date_fixed: due_date,
         due_date_is_fixed: true)
 
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
     stub_licensed_features(epics: true)
   end
 

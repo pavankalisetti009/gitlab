@@ -27,7 +27,6 @@ RSpec.describe WorkItems::Callbacks::HealthStatus, feature_category: :team_plann
 
     context 'when issuable_health_status feature is licensed' do
       before do
-        stub_feature_flags(enforce_check_group_level_work_items_license: true)
         stub_licensed_features(epics: true, issuable_health_status: true)
       end
 

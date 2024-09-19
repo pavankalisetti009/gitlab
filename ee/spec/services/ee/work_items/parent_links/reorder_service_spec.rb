@@ -125,7 +125,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
     end
 
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true, work_item_epics: true)
+      stub_feature_flags(work_item_epics: true)
     end
 
     context 'when adjacent_work_item parent link is missing' do

@@ -39,7 +39,7 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
 
       context 'when group_bulk_edit feature is available' do
         before do
-          stub_licensed_features(group_bulk_edit: true)
+          stub_licensed_features(epics: true, group_bulk_edit: true)
         end
 
         it 'updates only specified work items that belong to the group hierarchy' do
@@ -67,7 +67,7 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
 
       context 'when group_bulk_edit feature is not available' do
         before do
-          stub_licensed_features(group_bulk_edit: false)
+          stub_licensed_features(epics: true, group_bulk_edit: false)
         end
 
         it 'returns a resource not available message' do

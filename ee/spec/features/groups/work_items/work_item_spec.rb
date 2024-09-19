@@ -10,10 +10,6 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
   let_it_be(:group) { create(:group, :nested, developers: user) }
   let(:work_items_path) { group_work_item_path(group, work_item.iid) }
 
-  before do
-    stub_feature_flags(enforce_check_group_level_work_items_license: true)
-  end
-
   context 'for signed in user' do
     before do
       sign_in(user)

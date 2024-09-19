@@ -138,7 +138,6 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
 
   describe 'fetching notes for issue' do
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true)
     end
 

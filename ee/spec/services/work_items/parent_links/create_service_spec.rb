@@ -19,7 +19,6 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     subject(:create_link) { described_class.new(parent_work_item, user, params).execute }
 
     before do
-      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true, subepics: true)
     end
 
