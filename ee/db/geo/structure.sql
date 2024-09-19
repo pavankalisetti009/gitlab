@@ -744,7 +744,11 @@ CREATE INDEX index_design_management_repository_registry_on_state ON design_mana
 
 CREATE UNIQUE INDEX index_design_repo_registry_on_design_repo_id ON design_management_repository_registry USING btree (design_management_repository_id);
 
+CREATE INDEX index_file_registry_file_id ON file_registry USING btree (file_id);
+
 CREATE INDEX index_file_registry_on_retry_at ON file_registry USING btree (retry_at);
+
+CREATE INDEX index_file_registry_state ON file_registry USING btree (state);
 
 CREATE UNIQUE INDEX index_g_wiki_repository_registry_on_group_wiki_repository_id ON group_wiki_repository_registry USING btree (group_wiki_repository_id);
 
@@ -755,6 +759,8 @@ CREATE INDEX index_group_wiki_repository_registry_on_state ON group_wiki_reposit
 CREATE INDEX index_job_artifact_registry_on_artifact_id ON job_artifact_registry USING btree (artifact_id);
 
 CREATE INDEX index_job_artifact_registry_on_retry_at ON job_artifact_registry USING btree (retry_at);
+
+CREATE INDEX index_job_artifact_registry_state ON job_artifact_registry USING btree (state);
 
 CREATE UNIQUE INDEX index_lfs_object_registry_on_lfs_object_id ON lfs_object_registry USING btree (lfs_object_id);
 
