@@ -53,3 +53,5 @@ class ReindexAndRemoveLeftoverNotesFromMainIndex < Elastic::Migration
     Elastic::Latest::Config.index_name
   end
 end
+
+ReindexAndRemoveLeftoverNotesFromMainIndex.prepend ::Elastic::MigrationObsolete
