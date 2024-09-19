@@ -398,6 +398,7 @@ module API
       mount ::API::UsageDataNonSqlMetrics
       mount ::API::VsCode::Settings::VsCodeSettingsSync
       mount ::API::Ml::Mlflow::Entrypoint
+      mount ::API::Ml::MlflowArtifacts::Entrypoint
     end
 
     mount ::API::Internal::AutoFlow
