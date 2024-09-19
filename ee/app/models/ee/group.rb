@@ -593,7 +593,7 @@ module EE
 
     override :block_seat_overages?
     def block_seat_overages?
-      ::Feature.enabled?(:block_seat_overages, self, type: :gitlab_com_derisk) &&
+      ::Feature.enabled?(:block_seat_overages, self, type: :beta) &&
         ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
         namespace_settings.seat_control_block_overages?
     end
