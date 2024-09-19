@@ -22,7 +22,7 @@ module QA
           end
 
           def has_empty_workspace?
-            has_element?('new-workspace-button')
+            has_element?('new-workspace-button', skip_finished_loading_check: true)
           end
 
           def create_workspace(agent, project)
@@ -71,9 +71,7 @@ module QA
 
           def has_workspace_state?(workspace, state)
             within_element(workspace.to_s.to_sym, skip_finished_loading_check: true) do
-              Support::Retrier.retry_until(sleep_interval: 5, max_attempts: 10) do
-                has_element?('workspace-state-indicator', title: state)
-              end
+              has_element?('workspace-state-indicator', title: state, skip_finished_loading_check: true, wait: 360)
             end
           end
         end
