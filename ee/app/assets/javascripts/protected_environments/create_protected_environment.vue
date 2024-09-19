@@ -260,7 +260,6 @@ export default {
         </gl-form-group>
         <add-approvers
           :project-id="entityId"
-          :approval-rules="approvers"
           @change="updateApprovers"
           @error="errorMessage = $event"
         />
