@@ -9,6 +9,14 @@ module EE
 
       attr_accessor :blocking_merge_requests_params, :suggested_reviewer_ids
 
+      override :handle_reviewers_change
+      def handle_reviewers_change(merge_request, old_reviewers)
+        super
+        new_reviewers = merge_request.reviewers - old_reviewers
+        capture_suggested_reviewers_accepted(merge_request)
+        set_requested_changes(merge_request, new_reviewers) if new_reviewers.any?
+      end
+
       override :execute_external_hooks
       def execute_external_hooks(merge_request, merge_data)
         merge_request.project.execute_external_compliance_hooks(merge_data)
@@ -39,6 +47,13 @@ module EE
         return if suggested_reviewer_ids_from_params.blank?
 
         self.suggested_reviewer_ids = suggested_reviewer_ids_from_params & params[:reviewer_ids]
+      end
+
+      def set_requested_changes(merge_request, new_reviewers)
+        requested_changes_users = merge_request.requested_changes_for_users(new_reviewers.map(&:id))
+
+        merge_request.merge_request_reviewers_with(requested_changes_users.select(:user_id))
+          .update_all(state: :requested_changes)
       end
 
       def reset_approvals?(merge_request, _newrev)
@@ -91,7 +106,6 @@ module EE
         )
       end
 
-      override :capture_suggested_reviewers_accepted
       def capture_suggested_reviewers_accepted(merge_request)
         return if suggested_reviewer_ids.blank?
 

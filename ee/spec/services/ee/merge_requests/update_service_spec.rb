@@ -434,6 +434,16 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
         update_merge_request(reviewer_ids: [user.id, user2.id])
       end
+
+      it 'sets reviewer state as requested changes if user has previously requested changes' do
+        create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project,
+          user: user)
+
+        update_merge_request(reviewer_ids: [user.id, user2.id])
+
+        expect(merge_request.find_reviewer(user)).to be_requested_changes
+        expect(merge_request.find_reviewer(user2)).to be_unreviewed
+      end
     end
 
     describe 'capture suggested_reviewer_ids', feature_category: :code_review_workflow do
