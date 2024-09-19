@@ -101,7 +101,7 @@ export default {
       {{ errorMessage }}
     </gl-alert>
 
-    <gl-form class="gl-mb-8" @submit.prevent="onSubmit" @reset.prevent="onReset">
+    <gl-form class="gl-mb-6" @submit.prevent="onSubmit" @reset.prevent="onReset">
       <gl-form-fields v-model="formValues" :fields="fields" :form-id="$options.formId">
         <template #input(prompt)="{ id, value, input }">
           <gl-form-textarea

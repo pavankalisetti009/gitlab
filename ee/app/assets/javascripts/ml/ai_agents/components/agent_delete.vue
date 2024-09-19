@@ -1,13 +1,14 @@
 <script>
-import { GlCard, GlButton, GlSprintf, GlModal, GlModalDirective } from '@gitlab/ui';
+import { GlButton, GlSprintf, GlModal, GlModalDirective } from '@gitlab/ui';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { __, s__ } from '~/locale';
 
 export default {
   components: {
-    GlCard,
     GlButton,
     GlSprintf,
     GlModal,
+    CrudComponent,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -61,16 +62,11 @@ export default {
 </script>
 
 <template>
-  <gl-card
-    class="gl-new-card"
-    header-class="gl-new-card-header"
-    body-class="gl-bg-red-50 gl-px-5 gl-py-4"
+  <crud-component
+    :title="$options.i18n.sectionTitle"
+    title-class="gl-text-danger"
+    body-class="gl-bg-red-50 !gl-m-0 gl-px-5 gl-py-4"
   >
-    <template #header>
-      <div class="gl-new-card-title-wrapper">
-        <h4 class="gl-new-card-title danger-title">{{ $options.i18n.sectionTitle }}</h4>
-      </div>
-    </template>
     <p>
       <gl-sprintf :message="$options.i18n.sectionBody">
         <template #code>
@@ -100,5 +96,5 @@ export default {
         </template>
       </gl-sprintf>
     </gl-modal>
-  </gl-card>
+  </crud-component>
 </template>
