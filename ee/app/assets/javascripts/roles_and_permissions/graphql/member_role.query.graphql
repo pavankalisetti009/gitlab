@@ -6,6 +6,12 @@ query memberRole($id: MemberRoleID!) {
     createdAt
     baseAccessLevel {
       stringValue
+      humanAccess
+    }
+    enabledPermissions {
+      nodes {
+        value
+      }
     }
   }
 }

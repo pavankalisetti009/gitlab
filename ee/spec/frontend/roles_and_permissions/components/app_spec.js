@@ -1,19 +1,21 @@
-import { GlLoadingIcon, GlButton, GlAlert } from '@gitlab/ui';
+import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-
 import groupMemberRolesQuery from 'ee/roles_and_permissions/graphql/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from 'ee/roles_and_permissions/graphql/instance_member_roles.query.graphql';
-
 import RolesApp from 'ee/roles_and_permissions/components/app.vue';
-import CustomRolesEmptyState from 'ee/roles_and_permissions/components/custom_roles_empty_state.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
-
-import { mockEmptyMemberRoles, mockMemberRoles, mockInstanceMemberRoles } from '../mock_data';
+import { createAlert } from '~/alert';
+import {
+  standardRoles,
+  memberRoles,
+  groupMemberRolesResponse,
+  instanceMemberRolesResponse,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -22,13 +24,9 @@ jest.mock('~/alert');
 describe('Roles app', () => {
   let wrapper;
 
-  const mockCustomRoleToDelete = mockMemberRoles.data.namespace.memberRoles.nodes[0];
-
   const mockToastShow = jest.fn();
-  const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(mockMemberRoles);
-  const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(mockInstanceMemberRoles);
-
-  const errorHandler = jest.fn().mockRejectedValue('error');
+  const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(groupMemberRolesResponse);
+  const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(instanceMemberRolesResponse);
 
   const createComponent = ({
     groupRolesQueryHandler = groupRolesSuccessQueryHandler,
@@ -45,129 +43,118 @@ describe('Roles app', () => {
         documentationPath: 'http://foo.bar',
         newRolePath: 'new/role/path',
       },
-      mocks: {
-        $toast: {
-          show: mockToastShow,
-        },
-      },
+      stubs: { GlSprintf },
+      mocks: { $toast: { show: mockToastShow } },
     });
 
     return waitForPromises();
   };
 
-  const findEmptyState = () => wrapper.findComponent(CustomRolesEmptyState);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findTable = () => wrapper.findComponent(RolesTable);
-  const findHeader = () => wrapper.find('header');
-  const findCount = () => wrapper.findByTestId('custom-roles-count');
-  const findButton = () => wrapper.findComponent(GlButton);
+  const findRolesTable = () => wrapper.findComponent(RolesTable);
+  const findRoleCounts = () => wrapper.findByTestId('role-counts');
   const findDeleteModal = () => wrapper.findComponent(DeleteRoleModal);
 
-  describe('on creation', () => {
+  describe('common behavior', () => {
     beforeEach(() => {
       createComponent();
     });
 
-    it('renders the loading icon', () => {
-      expect(findLoadingIcon().exists()).toBe(true);
+    it('shows the title', () => {
+      expect(wrapper.find('h2').text()).toBe('Roles and permissions');
+    });
+
+    it('shows the New role button', () => {
+      const button = wrapper.findComponent(GlButton);
+
+      expect(button.text()).toBe('New role');
+      expect(button.props('variant')).toBe('confirm');
+      expect(button.attributes('href')).toBe('new/role/path');
+    });
+
+    describe('sub-title', () => {
+      it('shows the sub-title', () => {
+        expect(wrapper.find('p').text()).toBe(
+          'Manage which actions users can take with roles and permissions.',
+        );
+      });
+
+      it('links to the docs page', () => {
+        const link = wrapper.findComponent(GlLink);
+
+        expect(link.text()).toBe('roles and permissions');
+        expect(link.attributes()).toMatchObject({ href: 'http://foo.bar', target: '_blank' });
+      });
+    });
+
+    describe('roles table busy state', () => {
+      it('shows table as busy on page load', () => {
+        expect(findRolesTable().props('busy')).toBe(true);
+      });
+
+      it('shows table as not busy after roles data is loaded', async () => {
+        await waitForPromises();
+
+        expect(findRolesTable().props('busy')).toBe(false);
+      });
     });
   });
 
-  describe('when data has loaded', () => {
-    describe('and there are no custom roles', () => {
-      beforeEach(() =>
-        createComponent({
-          groupRolesQueryHandler: jest.fn().mockResolvedValue(mockEmptyMemberRoles),
-        }),
+  describe.each`
+    type          | groupFullPath   | queryHandler                        | expectedQueryData
+    ${'group'}    | ${'test-group'} | ${groupRolesSuccessQueryHandler}    | ${{ fullPath: 'test-group' }}
+    ${'instance'} | ${null}         | ${instanceRolesSuccessQueryHandler} | ${{}}
+  `('for $type-level roles', ({ groupFullPath, queryHandler, expectedQueryData }) => {
+    beforeEach(() => createComponent({ groupFullPath }));
+
+    it('fetches roles', () => {
+      expect(queryHandler).toHaveBeenCalledWith(expectedQueryData);
+    });
+
+    it('shows expected role counts', () => {
+      expect(findRoleCounts().text()).toBe('Roles: 2 Custom 5 Default');
+    });
+
+    // Remove the Minimal Access role from standardRoles with slice(), it shouldn't be shown.
+    it.each(standardRoles.slice(1))(`passes '$name' role to roles table`, (role) => {
+      expect(findRolesTable().props('roles')).toContainEqual(role);
+    });
+
+    it.each(memberRoles)(`passes '$name' to roles table`, (role) => {
+      expect(findRolesTable().props('roles')).toContainEqual(role);
+    });
+
+    it('does not show Minimal Access role', () => {
+      expect(findRolesTable().props('roles')).not.toContainEqual(
+        expect.objectContaining({ name: 'Minimal Access' }),
       );
-
-      it('renders the empty state', () => {
-        expect(findEmptyState().exists()).toBe(true);
-      });
     });
+  });
 
-    describe('and there group-level custom roles', () => {
-      beforeEach(createComponent);
+  describe('when there is a query error', () => {
+    it('shows an error message', async () => {
+      await createComponent({ groupRolesQueryHandler: jest.fn().mockRejectedValue() });
 
-      it('fetches group-level member roles', () => {
-        expect(groupRolesSuccessQueryHandler).toHaveBeenCalledWith({
-          fullPath: 'test-group',
-        });
-      });
-
-      it('renders the title', () => {
-        expect(findHeader().text()).toContain('Custom roles');
-      });
-
-      it('renders the new role button', () => {
-        expect(findButton().text()).toContain('New role');
-        expect(findButton().attributes('href')).toBe('new/role/path');
-      });
-
-      it('renders the number of roles', () => {
-        expect(findCount().text()).toBe('2 Custom roles');
-      });
-
-      it('renders the table', () => {
-        expect(findTable().exists()).toBe(true);
-
-        expect(findTable().props('roles')).toEqual(
-          mockMemberRoles.data.namespace.memberRoles.nodes,
-        );
-      });
-    });
-
-    describe('and there instance-level custom roles', () => {
-      beforeEach(() => createComponent({ groupFullPath: null }));
-
-      it('fetches instance-level member roles', () => {
-        expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({});
-      });
-
-      it('renders the table', () => {
-        expect(findTable().exists()).toBe(true);
-
-        expect(findTable().props('roles')).toEqual(mockInstanceMemberRoles.data.memberRoles.nodes);
-      });
-    });
-
-    describe('and there is an error fetching the data', () => {
-      beforeEach(() => createComponent({ groupRolesQueryHandler: errorHandler }));
-
-      it('renders the error message', () => {
-        const alert = wrapper.findComponent(GlAlert);
-
-        expect(alert.text()).toBe('Failed to fetch roles.');
-        expect(alert.props()).toMatchObject({
-          variant: 'danger',
-          dismissible: false,
-        });
-      });
-
-      it('does not render empty state', () => {
-        expect(findEmptyState().exists()).toBe(false);
-      });
-
-      it('does not render table', () => {
-        expect(findTable().exists()).toBe(false);
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Failed to fetch roles.',
+        dismissible: false,
       });
     });
   });
 
   describe('delete role modal', () => {
-    beforeEach(createComponent);
+    beforeEach(() => createComponent());
 
-    it('renders delete modal', () => {
+    it('renders modal', () => {
       expect(findDeleteModal().exists()).toBe(true);
     });
 
     describe('when table wants to delete a role', () => {
       beforeEach(() => {
-        findTable().vm.$emit('delete-role', mockCustomRoleToDelete);
+        findRolesTable().vm.$emit('delete-role', memberRoles[0]);
       });
 
       it('passes role to delete modal', () => {
-        expect(findDeleteModal().props('role')).toBe(mockCustomRoleToDelete);
+        expect(findDeleteModal().props('role')).toBe(memberRoles[0]);
       });
 
       it('closes modal when modal emits close event', async () => {

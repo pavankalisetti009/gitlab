@@ -1,45 +1,48 @@
 <script>
-import { GlLoadingIcon, GlSprintf, GlLink, GlButton, GlIcon, GlAlert } from '@gitlab/ui';
-import { s__, n__ } from '~/locale';
+import { GlSprintf, GlLink, GlButton } from '@gitlab/ui';
+import { keyBy } from 'lodash';
+import { s__ } from '~/locale';
+import { ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER, BASE_ROLES } from '~/access_level/constants';
+import { createAlert } from '~/alert';
 import groupMemberRolesQuery from '../graphql/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from '../graphql/instance_member_roles.query.graphql';
-import CustomRolesEmptyState from './custom_roles_empty_state.vue';
 import RolesTable from './roles_table.vue';
 import DeleteRoleModal from './delete_role_modal.vue';
+
+// keyBy creates an object where the key is the access level integer and the value is the base role object. We use this
+// to get the description for a base role.
+const BASE_ROLES_BY_ACCESS_LEVEL = keyBy(BASE_ROLES, 'accessLevel');
 
 export default {
   name: 'RolesApp',
   i18n: {
-    title: s__('MemberRole|Custom roles'),
+    title: s__('MemberRole|Roles and permissions'),
     description: s__(
-      'MemberRole|You can create a custom role by adding specific %{linkStart}permissions to a base role.%{linkEnd}',
+      'MemberRole|Manage which actions users can take with %{linkStart}roles and permissions%{linkEnd}.',
+    ),
+    roleCount: s__(
+      `MemberRole|%{rolesStart}Roles:%{rolesEnd} %{customCount} Custom %{defaultCount} Default`,
     ),
     newRoleText: s__('MemberRole|New role'),
     fetchRolesError: s__('MemberRole|Failed to fetch roles.'),
     roleDeletedText: s__('MemberRole|Role successfully deleted.'),
   },
   components: {
-    GlLoadingIcon,
     GlSprintf,
     GlLink,
     GlButton,
-    GlIcon,
-    GlAlert,
-    CustomRolesEmptyState,
     RolesTable,
     DeleteRoleModal,
   },
   inject: ['documentationPath', 'groupFullPath', 'newRolePath'],
   data() {
     return {
-      customRoles: null,
-      isDeletingRole: false,
+      rolesData: null,
       roleToDelete: null,
-      error: null,
     };
   },
   apollo: {
-    customRoles: {
+    rolesData: {
       query() {
         return this.groupFullPath ? groupMemberRolesQuery : instanceMemberRolesQuery;
       },
@@ -47,76 +50,76 @@ export default {
         return this.groupFullPath ? { fullPath: this.groupFullPath } : {};
       },
       update(data) {
-        const nodes = this.groupFullPath
-          ? data?.namespace?.memberRoles?.nodes
-          : data?.memberRoles?.nodes;
-
-        return nodes || [];
+        return this.groupFullPath ? data.group : data;
       },
       error() {
-        this.error = this.$options.i18n.fetchRolesError;
+        createAlert({ message: this.$options.i18n.fetchRolesError, dismissible: false });
       },
     },
   },
   computed: {
     isLoading() {
-      return this.$apollo.queries.customRoles.loading;
+      return this.$apollo.queries.rolesData.loading;
     },
-    isLoadingInitial() {
-      // Whether the custom roles are loading for the first time rather than a refetch.
-      return this.isLoading && !this.customRoles;
+    defaultRoles() {
+      // Don't show the Minimal Access role (business requirement) and add the description to each role (backend doesn't
+      // have descriptions for default roles).
+      return (this.rolesData?.standardRoles.nodes || [])
+        .filter((role) => role.accessLevel > ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER)
+        .map((role) => ({
+          ...role,
+          description: BASE_ROLES_BY_ACCESS_LEVEL[role.accessLevel].description,
+        }));
     },
-    customRolesCount() {
-      return n__('%d Custom role', '%d Custom roles', this.customRoles.length);
+    customRoles() {
+      return this.rolesData?.memberRoles.nodes || [];
+    },
+    roles() {
+      return [...this.defaultRoles, ...this.customRoles];
     },
   },
   methods: {
     processRoleDeletion() {
       this.roleToDelete = null;
       this.$toast.show(this.$options.i18n.roleDeletedText);
-      this.$apollo.queries.customRoles.refetch();
+      this.$apollo.queries.rolesData.refetch();
     },
   },
 };
 </script>
 
 <template>
-  <gl-loading-icon v-if="isLoadingInitial" size="md" class="gl-mt-5" />
+  <section>
+    <h2 class="gl-mb-2">{{ $options.i18n.title }}</h2>
 
-  <gl-alert v-else-if="error" variant="danger" class="gl-mt-5" :dismissible="false">
-    {{ error }}
-  </gl-alert>
+    <p class="gl-mb-5 gl-text-gray-700">
+      <gl-sprintf :message="$options.i18n.description">
+        <template #link="{ content }">
+          <gl-link :href="documentationPath" target="_blank">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </p>
 
-  <custom-roles-empty-state v-else-if="!customRoles.length" />
-
-  <section v-else>
-    <header>
-      <div class="page-title gl-mb-2 gl-flex gl-flex-wrap gl-items-start gl-gap-2">
-        <h1 class="gl-m-0 gl-mr-auto gl-whitespace-nowrap gl-text-size-h-display">
-          {{ $options.i18n.title }}
-        </h1>
-        <gl-button :href="newRolePath" variant="confirm">
-          {{ $options.i18n.newRoleText }}
-        </gl-button>
-      </div>
-
-      <p class="gl-mb-7">
-        <gl-sprintf :message="$options.i18n.description">
-          <template #link="{ content }">
-            <gl-link :href="documentationPath" target="_blank">
-              {{ content }}
-            </gl-link>
+    <div class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between gl-gap-3">
+      <span data-testid="role-counts">
+        <gl-sprintf :message="$options.i18n.roleCount">
+          <template #roles="{ content }">
+            <span class="gl-font-bold">{{ content }}</span>
+          </template>
+          <template #customCount>
+            <span class="gl-font-bold">{{ customRoles.length }}</span>
+          </template>
+          <template #defaultCount>
+            <span class="gl-ml-2 gl-font-bold">{{ defaultRoles.length }}</span>
           </template>
         </gl-sprintf>
-      </p>
-    </header>
+      </span>
 
-    <div class="gl-mb-4 gl-font-bold" data-testid="custom-roles-count">
-      <gl-icon name="shield" class="gl-mr-2" />
-      <span>{{ customRolesCount }}</span>
+      <gl-button :href="newRolePath" variant="confirm">{{ $options.i18n.newRoleText }}</gl-button>
     </div>
 
-    <roles-table :roles="customRoles" :busy="isLoading" @delete-role="roleToDelete = $event" />
+    <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
+
     <delete-role-modal
       :role="roleToDelete"
       @deleted="processRoleDeletion"

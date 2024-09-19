@@ -1,22 +1,14 @@
 <script>
-import { GlTable, GlLoadingIcon } from '@gitlab/ui';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { GlTable, GlBadge, GlLoadingIcon, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import RoleActions from './role_actions.vue';
 
 export const TABLE_FIELDS = [
-  { key: 'id', label: s__('MemberRole|ID') },
   { key: 'name', label: s__('MemberRole|Name') },
   { key: 'description', label: s__('MemberRole|Description') },
-  { key: 'baseRole', label: s__('MemberRole|Base role') },
-  {
-    key: 'permissions',
-    label: s__('MemberRole|Custom permissions'),
-    tdClass: 'gl-whitespace-nowrap',
-  },
   {
     key: 'membersCount',
-    label: s__('MemberRole|Member count'),
+    label: s__('MemberRole|Direct users assigned'),
     thClass: 'gl-w-12 gl-whitespace-nowrap',
     tdClass: 'gl-text-right',
   },
@@ -29,7 +21,7 @@ export const TABLE_FIELDS = [
 ];
 
 export default {
-  components: { GlTable, GlLoadingIcon, RoleActions },
+  components: { GlTable, GlBadge, GlLoadingIcon, GlLink, RoleActions },
   props: {
     roles: {
       type: Array,
@@ -41,7 +33,6 @@ export default {
     },
   },
   TABLE_FIELDS,
-  getIdFromGraphQLId,
 };
 </script>
 
@@ -51,23 +42,18 @@ export default {
       <gl-loading-icon size="md" />
     </template>
 
-    <template #cell(id)="{ item: { id } }">
-      {{ $options.getIdFromGraphQLId(id) }}
+    <template #cell(name)="{ item }">
+      <div class="gl-items-center gl-whitespace-nowrap md:gl-flex">
+        <gl-link :href="item.detailsPath">{{ item.name }}</gl-link>
+        <gl-badge v-if="item.id" class="gl-ml-3">
+          {{ s__('MemberRole|Custom role') }}
+        </gl-badge>
+      </div>
     </template>
 
     <template #cell(description)="{ item: { description } }">
       <template v-if="description">{{ description }}</template>
       <span v-else class="gl-text-subtle">{{ s__('MemberRole|No description') }}</span>
-    </template>
-
-    <template #cell(baseRole)="{ item: { baseAccessLevel } }">
-      {{ baseAccessLevel.humanAccess }}
-    </template>
-
-    <template #cell(permissions)="{ item: { enabledPermissions } }">
-      <div v-for="{ value, name } in enabledPermissions.nodes" :key="value" class="gl-mb-2">
-        {{ name }}
-      </div>
     </template>
 
     <template #cell(actions)="{ item }">

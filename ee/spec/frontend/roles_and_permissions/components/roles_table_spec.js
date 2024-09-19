@@ -1,83 +1,101 @@
+import { GlTable, GlLoadingIcon, GlLink, GlBadge } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
+import RolesTable, { TABLE_FIELDS } from 'ee/roles_and_permissions/components/roles_table.vue';
 import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
-import { mockMemberRoles } from '../mock_data';
+import { stubComponent } from 'helpers/stub_component';
+import { standardRoles, memberRoles } from '../mock_data';
 
 describe('Roles table', () => {
   let wrapper;
+  const roles = [...standardRoles, ...memberRoles];
 
-  const roles = mockMemberRoles.data.namespace.memberRoles.nodes;
-
-  const createComponent = () => {
+  const createComponent = ({ busy = false, stubs } = {}) => {
     wrapper = mountExtended(RolesTable, {
-      propsData: { roles },
+      propsData: { roles, busy },
+      stubs,
     });
   };
 
-  const findHeaders = () => wrapper.find('thead').find('tr').findAll('th');
-  const findRowCell = ({ row = 0, cell }) =>
-    wrapper.findAll('tbody tr').at(row).findAll('td').at(cell);
-  const findActions = () => wrapper.findComponent(RoleActions);
+  const findTable = () => wrapper.findComponent(GlTable);
+  const findTableLoadingIcon = () => findTable().findComponent(GlLoadingIcon);
+  const findRowCell = ({ row, cell }) => wrapper.findAll('tbody tr').at(row).findAll('td').at(cell);
+  const findRoleCell = (role, cell) => findRowCell({ row: roles.indexOf(role), cell });
+  const findCustomRoleBadge = (role) => findRoleCell(role, 0).findComponent(GlBadge);
+  const findRoleActions = (role) => findRoleCell(role, 3).findComponent(RoleActions);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  describe('on creation', () => {
-    it('renders the header', () => {
-      expect(findHeaders().at(0).text()).toBe('ID');
-      expect(findHeaders().at(1).text()).toBe('Name');
-      expect(findHeaders().at(2).text()).toBe('Description');
-      expect(findHeaders().at(3).text()).toBe('Base role');
-      expect(findHeaders().at(4).text()).toBe('Custom permissions');
-      expect(findHeaders().at(5).text()).toBe('Member count');
-      expect(findHeaders().at(6).text()).toBe('Actions');
-    });
-
-    it('renders the id', () => {
-      expect(findRowCell({ cell: 0 }).text()).toContain('1');
-    });
-
-    it('renders the name', () => {
-      expect(findRowCell({ cell: 1 }).text()).toContain('Test');
-    });
-
-    it.each`
-      row  | expectedDescription
-      ${0} | ${'Test description'}
-      ${1} | ${'No description'}
-    `(
-      'renders the description "$expectedDescription" for row $row',
-      ({ row, expectedDescription }) => {
-        expect(findRowCell({ row, cell: 2 }).text()).toBe(expectedDescription);
-      },
+  describe('roles table', () => {
+    beforeEach(() =>
+      createComponent({
+        stubs: { GlTable: stubComponent(GlTable, { props: ['fields', 'items'] }) },
+      }),
     );
 
-    it('renders the base access level', () => {
-      expect(findRowCell({ cell: 3 }).text()).toContain('Reporter');
+    it('shows table fields', () => {
+      expect(findTable().props('fields')).toBe(TABLE_FIELDS);
     });
 
-    it('renders the permissions', () => {
-      expect(findRowCell({ cell: 4 }).text()).toContain('Read code');
-      expect(findRowCell({ cell: 4 }).text()).toContain('Read vulnerability');
-    });
-
-    it('renders the member count', () => {
-      expect(findRowCell({ cell: 5 }).text()).toContain('0');
-    });
-
-    it('renders the actions', () => {
-      expect(findActions().exists()).toBe(true);
+    it('shows items', () => {
+      expect(findTable().props('items')).toBe(roles);
     });
   });
 
-  describe('when `delete` event is emitted', () => {
-    beforeEach(async () => {
-      await findActions().vm.$emit('delete');
+  describe('table busy state', () => {
+    it('shows loading icon when table is busy', () => {
+      createComponent({ busy: true });
+
+      expect(findTableLoadingIcon().props('size')).toBe('md');
     });
 
-    it('emits `delete-role` event', () => {
-      expect(wrapper.emitted('delete-role')[0][0]).toBe(roles[0]);
+    it('does not show loading icon when table is not busy', () => {
+      createComponent({ busy: false });
+
+      expect(findTableLoadingIcon().exists()).toBe(false);
+    });
+  });
+
+  describe.each(roles)('for $name role', (role) => {
+    beforeEach(() => createComponent());
+
+    it('shows role name', () => {
+      const link = findRoleCell(role, 0).findComponent(GlLink);
+
+      expect(link.text()).toBe(role.name);
+      expect(link.attributes('href')).toBe(role.detailsPath);
+    });
+
+    it('shows description', () => {
+      expect(findRoleCell(role, 1).text()).toBe(role.description);
+    });
+
+    it('shows members count', () => {
+      expect(findRoleCell(role, 2).text()).toBe(`${role.membersCount}`);
+    });
+
+    it('shows role actions', () => {
+      expect(findRoleActions(role).props('role')).toBe(role);
+    });
+
+    it('emits delete-role event when role actions emits delete event', () => {
+      findRoleActions(role).vm.$emit('delete');
+
+      expect(wrapper.emitted('delete-role')).toHaveLength(1);
+      expect(wrapper.emitted('delete-role')[0][0]).toBe(role);
+    });
+  });
+
+  describe.each(standardRoles)('for default role $name', (role) => {
+    beforeEach(() => createComponent());
+
+    it('does not show custom role badge', () => {
+      expect(findCustomRoleBadge(role).exists()).toBe(false);
+    });
+  });
+
+  describe.each(memberRoles)('for custom role $name', (role) => {
+    beforeEach(() => createComponent());
+
+    it('shows custom role badge', () => {
+      expect(findCustomRoleBadge(role).text()).toBe('Custom role');
     });
   });
 });
