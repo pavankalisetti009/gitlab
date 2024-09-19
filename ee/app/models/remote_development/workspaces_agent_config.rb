@@ -49,6 +49,11 @@ module RemoteDevelopment
         only_integer: true, greater_than_or_equal_to: MINIMUM_HOURS_BEFORE_TERMINATION,
         less_than_or_equal_to: :max_hours_before_termination_limit
       }
+    validates :allow_privilege_escalation, inclusion: { in: [true, false] }
+    validates :use_kubernetes_user_namespaces, inclusion: { in: [true, false] }
+    validates :default_runtime_class, 'remote_development/default_runtime_class': true
+    validates :annotations, 'remote_development/annotations': true
+    validates :labels, 'remote_development/labels': true
 
     validate :validate_allow_privilege_escalation
 
