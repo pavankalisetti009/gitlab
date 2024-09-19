@@ -189,6 +189,60 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
         end
       end
 
+      context 'with deploy key' do
+        let(:deploy_key) do
+          create(:deploy_key, deploy_keys_projects: [create(:deploy_keys_project, :write_access, project: project)])
+        end
+
+        it 'adds a deploy key for allowed to push option' do
+          patch api(route, user), params: { allowed_to_push: [{ deploy_key_id: deploy_key.id }] }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['push_access_levels']).to match_array(
+            [
+              a_hash_including('id' => push_access_level.id, 'access_level' => push_access_level.access_level),
+              a_hash_including('access_level_description' => deploy_key.title, 'deploy_key_id' => deploy_key.id)
+            ]
+          )
+        end
+
+        it 'does not support a deploy key for other options' do
+          patch api(route, user), params: { allowed_to_merge: [{ deploy_key_id: deploy_key.id }] }
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        end
+
+        it 'updates an existing access level' do
+          patch api(route, user), params: {
+            allowed_to_push: [{ id: push_access_level.id, deploy_key_id: deploy_key.id }]
+          }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['push_access_levels']).to match_array(
+            a_hash_including(
+              'id' => push_access_level.id,
+              'access_level_description' => deploy_key.title,
+              'deploy_key_id' => deploy_key.id
+            )
+          )
+        end
+
+        context 'when deploy key is already set' do
+          let!(:deploy_key_access_level) do
+            create(:protected_branch_push_access_level, protected_branch: protected_branch, deploy_key: deploy_key)
+          end
+
+          it 'deletes a deploy key' do
+            patch api(route, user), params: { allowed_to_push: [{ id: deploy_key_access_level.id, _destroy: true }] }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['push_access_levels']).to match_array(
+              a_hash_including('id' => push_access_level.id, 'access_level' => push_access_level.access_level)
+            )
+          end
+        end
+      end
+
       context "when the feature is enabled" do
         before do
           stub_licensed_features(code_owner_approval_required: true)
@@ -339,6 +393,30 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(response.body).to include('unprotect_access_level does not have a valid value')
+      end
+
+      context 'with deploy key' do
+        let(:deploy_key) do
+          create(:deploy_key, deploy_keys_projects: [create(:deploy_keys_project, :write_access, project: project)])
+        end
+
+        it 'adds a deploy key for allowed to push option' do
+          post post_endpoint, params: { name: branch_name, allowed_to_push: [{ deploy_key_id: deploy_key.id }] }
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['push_access_levels']).to match_array(
+            a_hash_including('access_level_description' => deploy_key.title, 'deploy_key_id' => deploy_key.id)
+          )
+        end
+
+        it 'ignores a deploy key for other options' do
+          post post_endpoint, params: { name: branch_name, allowed_to_merge: [{ deploy_key_id: deploy_key.id }] }
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['merge_access_levels']).to match_array(
+            a_hash_including('access_level' => Gitlab::Access::MAINTAINER)
+          )
+        end
       end
 
       context "code_owner_approval_required" do

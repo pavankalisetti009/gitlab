@@ -23,6 +23,7 @@ module EE
             optional :allowed_to_push, type: Array[JSON], desc: 'An array of users/groups allowed to push' do
               optional :access_level, type: Integer, values: ::ProtectedBranch::PushAccessLevel.allowed_access_levels
 
+              optional :deploy_key_id, type: Integer, documentation: { example: 1 }
               use :shared_params
             end
 
