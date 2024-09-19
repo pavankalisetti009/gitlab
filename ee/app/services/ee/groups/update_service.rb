@@ -62,7 +62,7 @@ module EE
           params.delete(:insight_attributes) unless group_projects.exists?(insight_project_id) # rubocop:disable CodeReuse/ActiveRecord
         end
 
-        if ::Feature.disabled?(:block_seat_overages, group) && params[:seat_control] == 'block_overages'
+        if ::Feature.disabled?(:block_seat_overages, group, type: :beta) && params[:seat_control] == 'block_overages'
           params.delete(:seat_control)
         end
 
