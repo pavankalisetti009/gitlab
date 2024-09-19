@@ -143,6 +143,9 @@ export default {
       );
       createAlert({ message, variant: VARIANT_INFO });
     },
+    setSearchTerm(value) {
+      this.searchTerm = value;
+    },
   },
   TASKS_BY_TYPE_FILTERS,
 };
@@ -160,7 +163,7 @@ export default {
       icon="settings"
       searchable
       multiple
-      @search="searchTerm = arguments[0]"
+      @search="setSearchTerm"
     >
       <template #list-item="{ item: { text, color } }">
         <span :style="{ backgroundColor: color }" class="dropdown-label-box gl-inline-block">
