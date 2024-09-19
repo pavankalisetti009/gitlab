@@ -52,6 +52,14 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
     end
 
+    shared_examples 'without ultimate trial cta alert' do
+      it 'does not render the component' do
+        render
+
+        expect(rendered).not_to have_link('Start a free Ultimate trial')
+      end
+    end
+
     context 'with free plan' do
       it 'renders the billing page' do
         render
@@ -84,8 +92,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(scoped_node).to have_content('Ultimate')
         expect(scoped_node).to have_content('For enterprises looking to deliver software faster')
         expect(scoped_node).to have_link('Upgrade to Ultimate')
-
-        expect(rendered).to have_link('Start a free Ultimate trial', href: new_trial_path(namespace_id: group.id))
       end
 
       it 'has tracking items set as expected' do
@@ -93,11 +99,11 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
 
         expect_to_have_tracking(action: 'render')
         expect_to_have_tracking(action: 'click_button', label: 'view_all_groups')
-        expect_to_have_tracking(action: 'click_button', label: 'start_trial')
       end
 
       it_behaves_like 'without duo pro component'
       it_behaves_like 'with duo enterprise trial alert'
+      it_behaves_like 'without ultimate trial cta alert'
 
       context 'when duo_enterprise_trials is disabled' do
         before do
@@ -105,6 +111,13 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         end
 
         it_behaves_like 'without duo enterprise trial alert'
+
+        it 'renders the ultimate trial cta alert' do
+          render
+
+          expect(rendered).to have_link('Start a free Ultimate trial', href: new_trial_path(namespace_id: group.id))
+          expect_to_have_tracking(action: 'click_button', label: 'start_trial')
+        end
       end
 
       def expect_to_have_tracking(action:, label: nil)
@@ -117,12 +130,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       context 'with an expired trial' do
         let_it_be(:group) { create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.yesterday) }
 
-        it 'omits the trial CTA' do
-          render
-
-          expect(rendered).not_to have_link('Start a free Ultimate trial')
-        end
-
+        it_behaves_like 'without ultimate trial cta alert'
         it_behaves_like 'without duo pro component'
         it_behaves_like 'with duo enterprise trial alert'
 
@@ -132,6 +140,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
           end
 
           it_behaves_like 'without duo enterprise trial alert'
+          it_behaves_like 'without ultimate trial cta alert'
         end
       end
     end
@@ -139,15 +148,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     context 'with an active trial' do
       let_it_be(:group) { create(:group_with_plan, plan: :ultimate_trial_plan, trial_ends_on: 10.days.from_now) }
 
-      it 'renders the billing page without the trial CTA' do
-        render
-
-        expect(rendered).to have_selector('#js-billing-plans')
-        expect(rendered).to have_text('Your GitLab.com Ultimate trial will expire after')
-
-        expect(rendered).not_to have_link('Start a free Ultimate trial')
-      end
-
+      it_behaves_like 'without ultimate trial cta alert'
       it_behaves_like 'without duo pro component'
       it_behaves_like 'without duo enterprise trial alert'
 
@@ -157,6 +158,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         end
 
         it_behaves_like 'with duo pro component'
+        it_behaves_like 'without ultimate trial cta alert'
       end
     end
 
