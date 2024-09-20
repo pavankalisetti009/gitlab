@@ -87,7 +87,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
       end
 
       it 'does not exceed query limit' do
-        expect { subject }.not_to exceed_query_limit(29)
+        expect { subject }.not_to exceed_query_limit(31)
       end
 
       it 'increases vulnerability count by 1' do
@@ -254,6 +254,18 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
               expect(vulnerability.send("#{state}_at")).to eq(Time.zone.now)
             end
           end
+        end
+      end
+
+      context 'when the project does not have vulnerability quota' do
+        let(:mock_vulnerability_quota) { instance_double(Vulnerabilities::Quota, validate!: false) }
+
+        before do
+          allow(project).to receive(:vulnerability_quota).and_return(mock_vulnerability_quota)
+        end
+
+        it 'does not create the vulnerability' do
+          expect { subject }.not_to change(Vulnerability, :count)
         end
       end
 

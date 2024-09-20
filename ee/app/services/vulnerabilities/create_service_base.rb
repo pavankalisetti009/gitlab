@@ -18,8 +18,14 @@ module Vulnerabilities
 
     attr_reader :project, :original_archived_value, :original_traversal_ids_value
 
+    delegate :vulnerability_quota, to: :project, private: true
+
     def authorized?
       can?(@author, :admin_vulnerability, @project)
+    end
+
+    def validate_quota!
+      vulnerability_quota.validate!
     end
 
     def location_fingerprint(_location_hash)

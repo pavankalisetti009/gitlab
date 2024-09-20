@@ -27,6 +27,12 @@ module Vulnerabilities
         solution: @params[:vulnerability][:solution]
       )
 
+      unless validate_quota!
+        return ServiceResponse.error(
+          message: "Vulnerability count has passed its limit. Vulnerabilities cannot be created."
+        )
+      end
+
       response = nil
       Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
         %w[

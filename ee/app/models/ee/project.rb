@@ -1399,6 +1399,10 @@ module EE
     end
     strong_memoize_attr :prevent_blocking_non_deployment_jobs?
 
+    def vulnerability_quota
+      @vulnerability_quota ||= Vulnerabilities::Quota.new(self)
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key
