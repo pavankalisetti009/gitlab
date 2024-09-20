@@ -26,6 +26,8 @@ RSpec.describe ContainerRegistry::ContainerRegistryHelper, feature_category: :co
 
       expect(project_container_registry_template_data).to include(
         security_configuration_path: helper.project_security_configuration_path(project),
+        vulnerability_report_path: helper.project_security_vulnerability_report_index_path(project,
+          tab: :CONTAINER_REGISTRY),
         container_scanning_for_registry_docs_path:
           help_page_path('user/application_security/continuous_vulnerability_scanning/index')
       )

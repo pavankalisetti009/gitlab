@@ -1,8 +1,11 @@
 <script>
 import { GlSkeletonLoader, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { fetchPolicies } from '~/lib/graphql';
+import { REPORT_TYPE_PRESETS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
+import { VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
 import getProjectContainerScanning from '../../graphql/queries/get_project_container_scanning.query.graphql';
+
+const { detected, confirmed } = VULNERABILITY_STATE_OBJECTS;
 
 export default {
   components: {
@@ -20,14 +23,17 @@ export default {
         return {
           fullPath: this.config.projectPath,
           securityConfigurationPath: this.config.securityConfigurationPath,
+          reportType: REPORT_TYPE_PRESETS.CONTAINER_REGISTRY,
+          state: [detected.searchParamValue, confirmed.searchParamValue],
         };
       },
-      // We need this for handling loading state when using frontend cache
-      // See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106004#note_1217325202 for details
-      fetchPolicy: fetchPolicies.CACHE_ONLY,
-      notifyOnNetworkStatusChange: true,
       update(data) {
-        return data.project.containerScanningForRegistry ?? { isEnabled: false, isVisible: false };
+        return (
+          data.project.containerScanningForRegistry ?? {
+            isEnabled: false,
+            isVisible: false,
+          }
+        );
       },
     },
   },

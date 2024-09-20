@@ -64050,6 +64050,9 @@ msgstr[1] ""
 msgid "ci secure files"
 msgstr ""
 
+msgid "ciReport|%{criticalStart}critical%{criticalEnd}, %{highStart}high%{highEnd} and %{otherStart}other%{otherEnd} vulnerabilities detected."
+msgstr ""
+
 msgid "ciReport|%{criticalStart}critical%{criticalEnd}, %{highStart}high%{highEnd} and %{otherStart}others%{otherEnd}"
 msgstr ""
 
@@ -64258,6 +64261,9 @@ msgstr ""
 msgid "ciReport|Resolve with scanner suggestion"
 msgstr ""
 
+msgid "ciReport|Runs against latest tags only"
+msgstr ""
+
 msgid "ciReport|SAST"
 msgstr ""
 
@@ -64321,6 +64327,9 @@ msgid "ciReport|View all pipeline findings"
 msgstr ""
 
 msgid "ciReport|View full report"
+msgstr ""
+
+msgid "ciReport|View vulnerabilities"
 msgstr ""
 
 msgid "ciReport|in"
