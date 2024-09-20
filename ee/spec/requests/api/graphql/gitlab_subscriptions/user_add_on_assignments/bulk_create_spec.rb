@@ -154,14 +154,6 @@ RSpec.describe 'UserAddOnAssignmentBulkCreate', feature_category: :seat_cost_man
       namespace.add_developer(assignee_user_2)
     end
 
-    context 'with feature flag disabled' do
-      before do
-        stub_feature_flags(gitlab_com_duo_pro_bulk_user_assignment: false)
-      end
-
-      it_behaves_like 'empty response'
-    end
-
     it_behaves_like 'validates the query'
 
     context 'with enough seats' do

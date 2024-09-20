@@ -15,7 +15,6 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
   let(:feature_flags) do
     [
       :summarize_my_code_review,
-      :gitlab_com_duo_pro_bulk_user_assignment,
       :enable_hamilton_in_user_preferences,
       :allow_organization_creation
     ]
