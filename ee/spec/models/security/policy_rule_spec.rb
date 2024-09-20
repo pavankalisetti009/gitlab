@@ -18,6 +18,12 @@ RSpec.describe Security::PolicyRule, feature_category: :security_policy_manageme
       it { is_expected.to be(Security::ScanExecutionPolicyRule) }
     end
 
+    context 'for vulnerability management policy' do
+      let(:policy_type) { :vulnerability_management_policy }
+
+      it { is_expected.to be(Security::VulnerabilityManagementPolicyRule) }
+    end
+
     context 'for unrecognized policy type' do
       let(:policy_type) { :foobar }
 

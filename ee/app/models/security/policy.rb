@@ -13,13 +13,16 @@ module Security
     POLICY_CONTENT_FIELDS = {
       approval_policy: %i[actions approval_settings fallback_behavior],
       scan_execution_policy: %i[actions],
-      pipeline_execution_policy: %i[content pipeline_config_strategy suffix]
+      pipeline_execution_policy: %i[content pipeline_config_strategy suffix],
+      vulnerability_management_policy: %i[actions]
     }.freeze
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
     has_many :approval_policy_rules, class_name: 'Security::ApprovalPolicyRule', foreign_key: 'security_policy_id',
       inverse_of: :security_policy
     has_many :scan_execution_policy_rules, class_name: 'Security::ScanExecutionPolicyRule',
+      foreign_key: 'security_policy_id', inverse_of: :security_policy
+    has_many :vulnerability_management_policy_rules, class_name: 'Security::VulnerabilityManagementPolicyRule',
       foreign_key: 'security_policy_id', inverse_of: :security_policy
     has_many :security_policy_project_links, class_name: 'Security::PolicyProjectLink',
       foreign_key: :security_policy_id, inverse_of: :security_policy
@@ -29,7 +32,8 @@ module Security
     enum type: {
       approval_policy: 0,
       scan_execution_policy: 1,
-      pipeline_execution_policy: 2
+      pipeline_execution_policy: 2,
+      vulnerability_management_policy: 3
     }, _prefix: true
 
     validates :security_orchestration_policy_configuration_id,
@@ -42,6 +46,8 @@ module Security
     validates :content, json_schema: { filename: "pipeline_execution_policy_content" },
       if: :type_pipeline_execution_policy?
     validates :content, json_schema: { filename: "scan_execution_policy_content" }, if: :type_scan_execution_policy?
+    validates :content, json_schema: { filename: "vulnerability_management_policy_content" },
+      if: :type_vulnerability_management_policy?
 
     validates :content, exclusion: { in: [nil] }
 
@@ -108,7 +114,7 @@ module Security
       content_hash = content.deep_symbolize_keys.slice(*POLICY_CONTENT_FIELDS[type.to_sym])
 
       case type
-      when 'approval_policy', 'scan_execution_policy'
+      when 'approval_policy', 'scan_execution_policy', 'vulnerability_management_policy'
         content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
       when 'pipeline_execution_policy'
         content_hash
@@ -120,6 +126,8 @@ module Security
         approval_policy_rules.undeleted
       elsif type_scan_execution_policy?
         scan_execution_policy_rules.undeleted
+      elsif type_vulnerability_management_policy?
+        vulnerability_management_policy_rules.undeleted
       else
         []
       end

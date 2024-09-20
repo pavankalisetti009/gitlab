@@ -8,6 +8,7 @@ module Security
       case policy_type
       when :approval_policy then Security::ApprovalPolicyRule
       when :scan_execution_policy then Security::ScanExecutionPolicyRule
+      when :vulnerability_management_policy then Security::VulnerabilityManagementPolicyRule
       else raise ArgumentError, "unrecognized policy_type"
       end
     end

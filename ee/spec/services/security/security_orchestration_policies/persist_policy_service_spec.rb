@@ -489,6 +489,61 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
   end
 
+  describe "vulnerability management policies" do
+    let(:policy_type) { :vulnerability_management_policy }
+
+    let(:vulnerability_management_policy) do
+      build(:vulnerability_management_policy, :with_policy_scope)
+    end
+
+    let(:policies) do
+      [vulnerability_management_policy]
+    end
+
+    context 'without pre-existing policies' do
+      include_examples 'succeeds'
+
+      it 'creates policies' do
+        expect { persist }.to change {
+          policy_configuration.security_policies.reload.type_vulnerability_management_policy.count
+        }.by(1)
+      end
+
+      context 'on exception' do
+        let(:msg) { "foobar" }
+
+        before do
+          allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
+        end
+
+        it 'errors' do
+          expect(persist).to include(status: :error, message: msg)
+        end
+      end
+
+      describe 'persisted attributes' do
+        include_examples 'persists attributes' do
+          let(:relation) { Security::Policy.type_vulnerability_management_policy.order(policy_index: :asc) }
+          let(:expected_attributes) do
+            [
+              {
+                security_orchestration_policy_configuration_id: policy_configuration.id,
+                policy_index: 0,
+                name: vulnerability_management_policy[:name],
+                type: 'vulnerability_management_policy',
+                description: vulnerability_management_policy[:description],
+                checksum: Security::Policy.checksum(vulnerability_management_policy),
+                enabled: true,
+                scope: vulnerability_management_policy[:policy_scope].deep_stringify_keys,
+                content: vulnerability_management_policy.slice(:actions).deep_stringify_keys
+              }
+            ]
+          end
+        end
+      end
+    end
+  end
+
   describe "successive calls with differing policy types" do
     let(:approval_policy) { build(:scan_result_policy) }
     let(:scan_execution_policy) { build(:scan_execution_policy) }
