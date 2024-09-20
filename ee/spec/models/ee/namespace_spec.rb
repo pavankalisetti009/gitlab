@@ -20,6 +20,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:ci_minutes_additional_packs) }
   it { is_expected.to have_many(:member_roles) }
   it { is_expected.to have_many(:subscription_add_on_purchases).class_name('GitlabSubscriptions::AddOnPurchase') }
+  it { is_expected.to have_one :onboarding_progress }
   it { is_expected.to have_one(:audit_event_http_namespace_filter) }
   it { is_expected.to have_one(:audit_event_http_instance_namespace_filter) }
   it { is_expected.to have_one(:zoekt_enabled_namespace) }

@@ -246,7 +246,6 @@ RSpec/ExpectChange:
     - 'spec/models/namespace_spec.rb'
     - 'spec/models/note_spec.rb'
     - 'spec/models/oauth_access_grant_spec.rb'
-    - 'spec/models/onboarding/progress_spec.rb'
     - 'spec/models/project_spec.rb'
     - 'spec/models/release_spec.rb'
     - 'spec/models/snippet_spec.rb'

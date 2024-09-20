@@ -114,14 +114,14 @@ RSpec.describe Onboarding::Progress, feature_category: :onboarding do
     subject(:onboard) { described_class.onboard(namespace) }
 
     it 'adds a record for the namespace' do
-      expect { onboard }.to change(described_class, :count).from(0).to(1)
+      expect { onboard }.to change { described_class.count }.from(0).to(1)
     end
 
     context 'when not given a namespace' do
       let(:namespace) { nil }
 
       it 'does not add a record for the namespace' do
-        expect { onboard }.not_to change(described_class, :count).from(0)
+        expect { onboard }.not_to change { described_class.count }.from(0)
       end
     end
 
@@ -129,7 +129,7 @@ RSpec.describe Onboarding::Progress, feature_category: :onboarding do
       let(:namespace) { create(:group, parent: build(:group)) }
 
       it 'does not add a record for the namespace' do
-        expect { onboard }.not_to change(described_class, :count).from(0)
+        expect { onboard }.not_to change { described_class.count }.from(0)
       end
     end
   end
