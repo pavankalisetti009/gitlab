@@ -227,12 +227,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
   describe '#add_error' do
     subject(:violation_data) do
-      service.add_error(policy_a, error, **extra_data)
+      service.add_error(policy_a, error, context: context, **extra_data)
       service.violation_data[policy_a.id]
     end
 
     let(:error) { :scan_removed }
     let(:extra_data) { {} }
+    let(:context) { nil }
 
     it 'adds error into violation data' do
       expect(violation_data)
@@ -256,6 +257,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       it 'saves extra data' do
         expect(violation_data)
           .to eq({ errors: [{ error: 'SCAN_REMOVED', missing_scans: ['sast'] }] })
+      end
+    end
+
+    context 'with context' do
+      let(:context) { { pipeline_ids: [1999], target_pipeline_ids: [2000] } }
+
+      it 'adds context into violation data' do
+        expect(violation_data)
+          .to eq({ errors: [{ error: 'SCAN_REMOVED' }],
+                   context: { pipeline_ids: [1999], target_pipeline_ids: [2000] } })
       end
     end
   end

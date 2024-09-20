@@ -27,7 +27,7 @@ module Security
         @violation_data[policy.id].deep_merge!({ context: context, violations: { report_type => data } }.compact_blank)
       end
 
-      def add_error(policy, error, **extra_data)
+      def add_error(policy, error, context: nil, **extra_data)
         add([policy], [])
 
         violation_data[policy.id] ||= {}
@@ -36,6 +36,7 @@ module Security
           error: Security::ScanResultPolicyViolation::ERRORS[error],
           **extra_data
         }
+        violation_data[policy.id].deep_merge!({ context: context }) if context.present?
       end
 
       def execute

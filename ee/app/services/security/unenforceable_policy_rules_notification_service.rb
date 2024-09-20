@@ -4,6 +4,7 @@ module Security
   class UnenforceablePolicyRulesNotificationService
     include Gitlab::Utils::StrongMemoize
     include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
+    include ::Security::ScanResultPolicies::RelatedPipelines
 
     def initialize(merge_request)
       @merge_request = merge_request
@@ -34,7 +35,8 @@ module Security
       applicable_rules.each do |rule|
         next if rule.scan_result_policy_read.nil? || rule.scan_result_policy_read&.fail_open?
 
-        violations.add_error(rule.scan_result_policy_read, :artifacts_missing)
+        violations.add_error(rule.scan_result_policy_read, :artifacts_missing,
+          context: related_pipelines_context(pipeline, merge_request, report_type))
       end
       violations.execute
 
@@ -55,11 +57,7 @@ module Security
     end
 
     def related_pipelines
-      related_pipelines_id = Security::RelatedPipelinesFinder.new(pipeline, {
-        sources: Enums::Ci::Pipeline.ci_and_security_orchestration_sources.values
-      }).execute
-
-      project.all_pipelines.id_in(related_pipelines_id)
+      project.all_pipelines.id_in(related_pipeline_ids(pipeline))
     end
     strong_memoize_attr :related_pipelines
 

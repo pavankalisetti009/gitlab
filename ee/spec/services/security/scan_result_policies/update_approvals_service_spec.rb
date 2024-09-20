@@ -218,7 +218,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             .to eq('errors' => [{
               'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
               'missing_scans' => ['dependency_scanning']
-            }])
+            }], 'context' => {
+              'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [target_pipeline.id]
+            })
         end
       end
 
@@ -328,7 +330,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             .to eq('errors' => [{
               'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
               'missing_scans' => ['container_scanning']
-            }])
+            }],
+              'context' => { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] }
+            )
         end
       end
     end
