@@ -19,7 +19,9 @@ module QA
             end
 
             def click_start_your_free_trial
-              click_element('start-your-free-trial-button')
+              within_element('duo-enterprise-trial-alert') do
+                click_link_with_text("Start free trial of GitLab Ultimate and GitLab Duo Enterprise")
+              end
             end
           end
         end
