@@ -3,6 +3,7 @@
 module Security
   class ApprovalPolicyRule < ApplicationRecord
     include PolicyRule
+    include EachBatch
 
     self.table_name = 'approval_policy_rules'
 

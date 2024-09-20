@@ -3,6 +3,7 @@
 module Security
   class ScanExecutionPolicyRule < ApplicationRecord
     include PolicyRule
+    include EachBatch
 
     self.table_name = 'scan_execution_policy_rules'
 
