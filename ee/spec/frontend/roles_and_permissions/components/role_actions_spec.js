@@ -117,7 +117,8 @@ describe('Role actions', () => {
       });
 
       it('emits delete event when clicked', async () => {
-        await findDeleteRoleItem().find('button').trigger('click');
+        findDeleteRoleItem().vm.$emit('action');
+        await nextTick();
 
         expect(wrapper.emitted('delete')).toHaveLength(1);
       });

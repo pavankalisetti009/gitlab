@@ -5,6 +5,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import memberRolePermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
+import { isCustomRole } from '../utils';
 
 export default {
   components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader },
@@ -43,8 +44,7 @@ export default {
       return new Set(this.role.enabledPermissions.nodes.map(({ value }) => value));
     },
     isCustomRole() {
-      // Base roles don't have a baseAccessLevel property.
-      return Boolean(this.role.baseAccessLevel);
+      return isCustomRole(this.role);
     },
     idLabel() {
       return this.isCustomRole ? s__('MemberRole|Role ID') : s__('MemberRole|Access level');

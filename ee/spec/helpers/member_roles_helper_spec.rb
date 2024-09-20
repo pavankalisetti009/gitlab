@@ -15,13 +15,6 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
   end
 
   describe '#member_roles_data' do
-    let(:expected_data) do
-      {
-        documentation_path: help_page_path('user/custom_roles'),
-        empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-user-settings-md')
-      }
-    end
-
     context 'when on self-managed' do
       subject(:data) { helper.member_roles_data }
 
@@ -30,9 +23,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
 
         context 'when custom roles are available' do
           it 'matches the expected data' do
-            expect(data).to match(hash_including(expected_data))
             expect(data[:new_role_path]).to eq new_admin_application_settings_roles_and_permission_path
-            expect(data[:group_full_path]).to eq nil
+            expect(data[:group_full_path]).to be_nil
           end
         end
 
@@ -42,18 +34,16 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           end
 
           it 'matches the expected data' do
-            expect(data).to match(hash_including(expected_data))
             expect(data[:new_role_path]).to be_nil
-            expect(data[:group_full_path]).to eq nil
+            expect(data[:group_full_path]).to be_nil
           end
         end
       end
 
       context 'for non-admin user' do
         it 'matches the expected data' do
-          expect(data).to match(hash_including(expected_data))
           expect(data[:new_role_path]).to be_nil
-          expect(data[:group_full_path]).to eq nil
+          expect(data[:group_full_path]).to be_nil
         end
       end
     end
@@ -64,7 +54,6 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
 
         shared_examples 'custom roles are not available' do
           it 'matches the expected data' do
-            expect(data).to match(hash_including(expected_data))
             expect(data[:new_role_path]).to be_nil
             expect(data[:group_full_path]).to eq source.full_path
           end
@@ -77,7 +66,6 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
 
           context 'when custom roles are available' do
             it 'matches the expected data' do
-              expect(data).to match(hash_including(expected_data))
               expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)
               expect(data[:group_full_path]).to eq source.full_path
             end

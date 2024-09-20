@@ -2,6 +2,7 @@
 import { GlTable, GlBadge, GlLoadingIcon, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import RoleActions from './role_actions.vue';
+import { isCustomRole } from './utils';
 
 export const TABLE_FIELDS = [
   { key: 'name', label: s__('MemberRole|Name') },
@@ -32,6 +33,7 @@ export default {
       required: true,
     },
   },
+  methods: { isCustomRole },
   TABLE_FIELDS,
 };
 </script>
@@ -45,7 +47,7 @@ export default {
     <template #cell(name)="{ item }">
       <div class="gl-items-center gl-whitespace-nowrap md:gl-flex">
         <gl-link :href="item.detailsPath">{{ item.name }}</gl-link>
-        <gl-badge v-if="item.id" class="gl-ml-3">
+        <gl-badge v-if="isCustomRole(item)" class="gl-ml-3">
           {{ s__('MemberRole|Custom role') }}
         </gl-badge>
       </div>
