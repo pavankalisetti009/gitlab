@@ -182,7 +182,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
       expect(page).to have_content('A problem has occurred')
       expect(page).to have_link(
         'What is the supported syntax',
-        href: help_page_path('user/search/exact_code_search', anchor: 'syntax')
+        href: help_page_path('user/search/exact_code_search.md', anchor: 'syntax')
       )
     end
 

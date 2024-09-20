@@ -6,7 +6,7 @@
 
 %p.gl-text-secondary
   = s_('AdminSelfHostedModels|Self-hosted models are an experimental feature.')
-  = link_to _('Learn more.'), help_page_path('administration/self_hosted_models/install_infrastructure')
+  = link_to _('Learn more.'), help_page_path('administration/self_hosted_models/install_infrastructure.md')
 
 = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_ai_terms_and_conditions_url, method: :post) do
   = s_('AdminSelfHostedModels|Enable self-hosted models')

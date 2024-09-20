@@ -4,7 +4,7 @@
 - can_unprotect = protected_branch_presenter.can_unprotect_branch?
 - can_push = allow_protected_branch_push?(@branches_protected_from_push, protected_branch, protected_branch_entity)
 - protected_from_deletion = protected_branch.protected_from_deletion
-- tag_pair_security_policies_docs = tag_pair(link_to('', help_page_path('user/application_security/policies/scan-result-policies'), target: '_blank', rel: 'noopener noreferrer'), :learn_more_link_start, :learn_more_link_end)
+- tag_pair_security_policies_docs = tag_pair(link_to('', help_page_path('user/application_security/policies/scan-result-policies.md'), target: '_blank', rel: 'noopener noreferrer'), :learn_more_link_start, :learn_more_link_end)
 - tag_pair_security_policies_page = tag_pair(link_to('', security_policies_path(protected_branch), target: '_blank', rel: 'noopener noreferrer'), :security_policies_link_start, :security_policies_link_end)
 - popover_content = safe_format(s_("SecurityOrchestration|You can't unprotect this branch because its protection is enforced by one or more %{security_policies_link_start}security policies%{security_policies_link_end}. %{learn_more_link_start}Learn more%{learn_more_link_end}."), tag_pair_security_policies_docs, tag_pair_security_policies_page)
 

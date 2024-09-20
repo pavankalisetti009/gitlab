@@ -26,5 +26,5 @@
         %p
           = _("There are no custom project templates set up for this GitLab instance. They are enabled from GitLab's Admin area. Contact your GitLab instance administrator to setup custom project templates.")
       - c.with_actions do
-        = render Pajamas::ButtonComponent.new(href: help_page_path("administration/custom_project_templates")) do
+        = render Pajamas::ButtonComponent.new(href: help_page_path("administration/custom_project_templates.md")) do
           = _("Learn more about custom project templates")

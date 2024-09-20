@@ -5,7 +5,7 @@
 
 - unless can_push
   - security_policies_link = link_to('', security_policies_path(protected_branch.entity), target: '_blank', rel: 'noopener noreferrer nofollow')
-  - learn_more_link = link_to('', help_page_path('user/application_security/policies/scan-result-policies'), target: '_blank', rel: 'noopener noreferrer nofollow')
+  - learn_more_link = link_to('', help_page_path('user/application_security/policies/scan-result-policies.md'), target: '_blank', rel: 'noopener noreferrer nofollow')
   - popover_content = safe_format(s_("SecurityOrchestration|You can't unprotect this branch because its protection is enforced by one or more %{security_policies_link_start}security policies%{security_policies_link_end}. %{learn_more_link_start}Learn more%{learn_more_link_end}."), tag_pair(learn_more_link, :learn_more_link_start, :learn_more_link_end), tag_pair(security_policies_link, :security_policies_link_start, :security_policies_link_end))
   - popover_data = can_update ? { container: 'body', toggle: 'popover', html: 'true', triggers: 'hover focus', content: popover_content } : {}
 

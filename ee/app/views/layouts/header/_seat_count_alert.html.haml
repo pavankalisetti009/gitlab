@@ -9,6 +9,6 @@
   - c.with_body do
     = n_('Your subscription has %{remaining_seat_count} out of %{total_seat_count} seat remaining.', 'Your subscription has %{remaining_seat_count} out of %{total_seat_count} seats remaining.', total_seat_count) % { remaining_seat_count: remaining_seat_count, total_seat_count: total_seat_count }
     = _('Even if you reach the number of seats in your subscription, you can continue to add users, and GitLab will bill you for the overage.')
-    = link_to _('Learn more.'), help_page_path('subscriptions/quarterly_reconciliation'), target: '_blank', rel: 'noopener noreferrer'
+    = link_to _('Learn more.'), help_page_path('subscriptions/quarterly_reconciliation.md'), target: '_blank', rel: 'noopener noreferrer'
   - c.with_actions do
     = link_button_to _('View seat usage'), usage_quotas_path(namespace, anchor: 'seats-quota-tab'), class: 'gl-alert-action', variant: :confirm
