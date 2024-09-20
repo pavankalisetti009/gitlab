@@ -2145,6 +2145,7 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '#assigned_to_duo_enterprise?' do
+    let_it_be(:namespace) { create(:group) }
     let_it_be(:user) { create(:user) }
 
     subject { user.assigned_to_duo_enterprise?(namespace) }
@@ -2170,8 +2171,6 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     context 'on self-managed' do
-      let_it_be(:namespace) { nil }
-
       it { is_expected.to eq(false) }
 
       context 'when user is assigned to a duo enterprise seat on instance' do
