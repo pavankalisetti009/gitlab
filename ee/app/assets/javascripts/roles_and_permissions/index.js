@@ -19,24 +19,20 @@ export const initCustomRolesApp = () => {
     return null;
   }
 
-  const { documentationPath, emptyStateSvgPath, groupFullPath, newRolePath } = el.dataset;
+  const { groupFullPath, newRolePath } = el.dataset;
 
   return new Vue({
     el,
     name: 'CustomRolesRoot',
     apolloProvider,
     mixins: [InternalEvents.mixin()],
-    provide: {
-      documentationPath,
-      emptyStateSvgPath,
-      groupFullPath,
-      newRolePath,
-    },
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
     render(createElement) {
-      return createElement(CustomRolesApp);
+      return createElement(CustomRolesApp, {
+        props: { groupFullPath, newRolePath },
+      });
     },
   });
 };

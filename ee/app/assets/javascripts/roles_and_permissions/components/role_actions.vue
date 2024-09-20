@@ -8,6 +8,7 @@ import {
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { isCustomRole } from './utils';
 
 export default {
   i18n: {
@@ -34,7 +35,7 @@ export default {
   },
   computed: {
     isCustomRole() {
-      return Boolean(this.role.id);
+      return isCustomRole(this.role);
     },
     hasAssignedUsers() {
       return this.role.membersCount > 0;
@@ -56,7 +57,6 @@ export default {
     deleteRoleItem() {
       return {
         text: this.$options.i18n.deleteRoleText,
-        action: () => this.$emit('delete'),
         extraAttrs: {
           disabled: this.hasAssignedUsers,
           class: this.hasAssignedUsers ? '' : '!gl-text-red-500',
@@ -99,6 +99,7 @@ export default {
         v-gl-tooltip.left.viewport.d0="deleteTooltip"
         data-testid="delete-role-item"
         :item="deleteRoleItem"
+        @action="$emit('delete')"
       />
     </template>
   </gl-disclosure-dropdown>

@@ -3,6 +3,7 @@ import { GlSprintf, GlLink, GlButton } from '@gitlab/ui';
 import { keyBy } from 'lodash';
 import { s__ } from '~/locale';
 import { ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER, BASE_ROLES } from '~/access_level/constants';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import groupMemberRolesQuery from '../graphql/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from '../graphql/instance_member_roles.query.graphql';
@@ -34,7 +35,17 @@ export default {
     RolesTable,
     DeleteRoleModal,
   },
-  inject: ['documentationPath', 'groupFullPath', 'newRolePath'],
+  props: {
+    groupFullPath: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    newRolePath: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       rolesData: null,
@@ -85,6 +96,7 @@ export default {
       this.$apollo.queries.rolesData.refetch();
     },
   },
+  userPermissionsDocPath: helpPagePath('user/permissions'),
 };
 </script>
 
@@ -95,7 +107,7 @@ export default {
     <p class="gl-mb-5 gl-text-gray-700">
       <gl-sprintf :message="$options.i18n.description">
         <template #link="{ content }">
-          <gl-link :href="documentationPath" target="_blank">{{ content }}</gl-link>
+          <gl-link :href="$options.userPermissionsDocPath" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
     </p>

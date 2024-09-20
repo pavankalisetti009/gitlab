@@ -38,11 +38,7 @@ describe('Roles app', () => {
         [groupMemberRolesQuery, groupRolesQueryHandler],
         [instanceMemberRolesQuery, instanceRolesQueryHandler],
       ]),
-      provide: {
-        groupFullPath,
-        documentationPath: 'http://foo.bar',
-        newRolePath: 'new/role/path',
-      },
+      propsData: { groupFullPath, newRolePath: 'new/role/path' },
       stubs: { GlSprintf },
       mocks: { $toast: { show: mockToastShow } },
     });
@@ -82,7 +78,10 @@ describe('Roles app', () => {
         const link = wrapper.findComponent(GlLink);
 
         expect(link.text()).toBe('roles and permissions');
-        expect(link.attributes()).toMatchObject({ href: 'http://foo.bar', target: '_blank' });
+        expect(link.attributes()).toMatchObject({
+          href: '/help/user/permissions',
+          target: '_blank',
+        });
       });
     });
 

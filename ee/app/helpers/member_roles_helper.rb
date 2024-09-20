@@ -5,8 +5,6 @@ module MemberRolesHelper
 
   def member_roles_data(group = nil)
     {
-      documentation_path: help_page_path('user/custom_roles'),
-      empty_state_svg_path: image_path('illustrations/empty-state/empty-user-settings-md.svg'),
       new_role_path: new_role_path(group),
       group_full_path: group&.full_path
     }
