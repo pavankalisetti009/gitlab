@@ -68,6 +68,10 @@ class Vulnerabilities::FindingEntity < Grape::Entity
     expose(:iid) { |finding| finding.found_by_pipeline&.iid }
   end
 
+  expose :ai_resolution_enabled?, as: :ai_resolution_enabled, if: ->(finding, _) {
+                                                                    finding.respond_to?(:ai_resolution_enabled?)
+                                                                  }
+
   alias_method :occurrence, :object
 
   def current_user

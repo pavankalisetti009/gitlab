@@ -86,6 +86,7 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
       expect(subject).to include(:assets, :evidence_source, :supporting_messages)
       expect(subject).to include(:uuid)
       expect(subject).to include(:details)
+      expect(subject).to include(:ai_resolution_enabled)
     end
 
     context 'false-positive' do
