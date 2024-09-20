@@ -49,7 +49,7 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
         title = find_by_testid('crud-title')
         empty_message = find_by_testid('crud-empty')
         expect(title).to have_content('Linked epics')
-        expect(empty_message).to have_link('', href: '/help/user/group/epics/linked_epics')
+        expect(empty_message).to have_link('', href: '/help/user/group/epics/linked_epics.md')
         actions = find_by_testid('crud-actions')
         expect(actions).to have_selector('button', text: 'Add')
       end

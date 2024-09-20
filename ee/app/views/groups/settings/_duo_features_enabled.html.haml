@@ -1,6 +1,6 @@
 - return unless @group.licensed_ai_features_available?
 
-- link = link_to('', help_page_path('user/ai_features'), target: '_blank', rel: 'noopener noreferrer')
+- link = link_to('', help_page_path('user/ai_features.md'), target: '_blank', rel: 'noopener noreferrer')
 - duo_features_enabled_locked = cascading_namespace_setting_locked?(:duo_features_enabled, @group)
 
 %h5

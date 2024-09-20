@@ -3,7 +3,7 @@
 = render ::Layouts::SettingsSectionComponent.new(s_('GroupSettings|Analytics Dashboards'), id: 'js-analytics-dashboards-settings') do |c|
   - c.with_description do
     = safe_format(s_('GroupSettings|Select the project containing %{link_start}Analytics Dashboards%{link_end} configuration files.'), tag_pair(dashboards_link, :link_start, :link_end))
-    = link_to(s_('GroupSettings|What is Analytics Dashboards?'), help_page_path('user/analytics/value_streams_dashboard'))
+    = link_to(s_('GroupSettings|What is Analytics Dashboards?'), help_page_path('user/analytics/value_streams_dashboard.md'))
   - c.with_body do
     = gitlab_ui_form_for @group, url: group_settings_analytics_path(@group, anchor: 'js-analytics-dashboards-settings'), html: { class: 'fieldset-form', data: { testid: 'analytics-dashboards-settings' } } do |form|
       = form_errors(@group)
