@@ -9,7 +9,10 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let_it_be(:cs_bundled_with) { { "duo_enterprise" => cs_unit_primitives, "duo_pro" => cs_unit_primitives } }
 
     let_it_be(:duo_chat_unit_primitives) { [:duo_chat, :documentation_search] }
-    let_it_be(:duo_chat_ent_unit_primitives) { duo_chat_unit_primitives + [:ask_epic, :ask_issue, :ask_merge_request] }
+    let_it_be(:duo_chat_ent_unit_primitives) do
+      duo_chat_unit_primitives + [:ask_commit, :ask_epic, :ask_issue, :ask_merge_request]
+    end
+
     let_it_be(:duo_chat_bundled_with) do
       { "duo_enterprise" => duo_chat_ent_unit_primitives, "duo_pro" => duo_chat_unit_primitives }
     end

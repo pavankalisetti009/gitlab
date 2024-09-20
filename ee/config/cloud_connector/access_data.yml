@@ -38,6 +38,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         unit_primitives:
           - duo_chat
           - documentation_search
+          - ask_commit
           - ask_epic
           - ask_issue
           - ask_merge_request
