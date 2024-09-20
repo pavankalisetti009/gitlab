@@ -290,7 +290,13 @@ module Search
 
       def zoekt_targets
         sha = OpenSSL::Digest.hexdigest('SHA256', limit_project_ids.sort.join(','))
-        cache_key = [self.class.name, :zoekt_targets, current_user&.id, sha]
+        cache_key = [
+          self.class.name,
+          :zoekt_targets,
+          current_user&.id,
+          sha,
+          Feature.enabled?(:zoekt_search_with_replica, Project.actor_from_id(limit_project_ids.first))
+        ]
 
         Rails.cache.fetch(cache_key, expires_in: ZOEKT_TARGETS_CACHE_EXPIRES_IN) do
           ::Search::Zoekt::RoutingService.execute(projects)
