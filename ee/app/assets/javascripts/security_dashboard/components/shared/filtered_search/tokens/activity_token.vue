@@ -10,10 +10,24 @@ import {
 import { without } from 'lodash';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
-import { ITEMS } from '../../filters/activity_filter.vue';
+import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
 import eventHub from '../event_hub';
+
+const ITEMS = {
+  ...ACTIVITY_FILTER_ITEMS,
+  AI_RESOLUTION_AVAILABLE: {
+    value: 'AI_RESOLUTION_AVAILABLE',
+    text: s__('SecurityReports|Vulnerability Resolution available'),
+  },
+  AI_RESOLUTION_UNAVAILABLE: {
+    value: 'AI_RESOLUTION_UNAVAILABLE',
+    text: s__('SecurityReports|Vulnerability Resolution unavailable'),
+  },
+};
 
 const OPTIONS = Object.values(ITEMS);
 
@@ -64,6 +78,7 @@ export default {
     GlIcon,
     QuerystringSync,
   },
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   props: {
     config: {
       type: Object,
@@ -105,6 +120,26 @@ export default {
         maxOptionsShown: 2,
       });
     },
+    showAiResolutionFilter() {
+      return (
+        this.glFeatures.vulnerabilityReportVrFilter && this.glAbilities.resolveVulnerabilityWithAi
+      );
+    },
+    activityTokenGroups() {
+      return [
+        ...GROUPS,
+        ...(this.showAiResolutionFilter
+          ? [
+              {
+                text: s__('SecurityReports|GitLab Duo (AI)'),
+                options: [ITEMS.AI_RESOLUTION_AVAILABLE, ITEMS.AI_RESOLUTION_UNAVAILABLE],
+                icon: 'tanuki-ai',
+                variant: 'info',
+              },
+            ]
+          : []),
+      ];
+    },
   },
   methods: {
     resetSelected() {
@@ -125,6 +160,14 @@ export default {
         hasIssues: this.setSelectedValue('HAS_ISSUE', 'DOES_NOT_HAVE_ISSUE'),
         hasMergeRequest: this.setSelectedValue('HAS_MERGE_REQUEST', 'DOES_NOT_HAVE_MERGE_REQUEST'),
         hasRemediations: this.setSelectedValue('HAS_SOLUTION', 'DOES_NOT_HAVE_SOLUTION'),
+        ...(this.showAiResolutionFilter
+          ? {
+              hasAiResolution: this.setSelectedValue(
+                'AI_RESOLUTION_AVAILABLE',
+                'AI_RESOLUTION_UNAVAILABLE',
+              ),
+            }
+          : {}),
       });
     },
     updateSelectedFromQS(selected) {
@@ -146,7 +189,7 @@ export default {
       this.emitFiltersChanged();
     },
     getGroupFromItem(value) {
-      return this.$options.GROUPS.find((group) =>
+      return this.activityTokenGroups.find((group) =>
         group.options.map((option) => option.value).includes(value),
       );
     },
@@ -212,7 +255,7 @@ export default {
         {{ toggleText }}
       </template>
       <template #suggestions>
-        <template v-for="(group, index) in $options.GROUPS">
+        <template v-for="(group, index) in activityTokenGroups">
           <gl-dropdown-section-header v-if="group.text" :key="group.text"
             ><div
               v-if="group.icon"
@@ -238,7 +281,7 @@ export default {
             </div>
           </gl-filtered-search-suggestion>
           <gl-dropdown-divider
-            v-if="index < $options.GROUPS.length - 1"
+            v-if="index < activityTokenGroups.length - 1"
             :key="`${group.text}-divider`"
           />
         </template>
