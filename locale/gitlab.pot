@@ -64643,6 +64643,9 @@ msgstr[1] ""
 msgid "has already been linked to another vulnerability"
 msgstr ""
 
+msgid "has already been published"
+msgstr ""
+
 msgid "has already been taken"
 msgstr ""
 
