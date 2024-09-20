@@ -190,10 +190,10 @@ module EE
           alpha: { milestone: '15.10' }
 
         field :ai_metrics,
-          ::Types::Analytics::AiMetrics,
+          ::Types::Analytics::AiMetrics::NamespaceMetricsType,
           null: true,
           description: 'AI-related metrics.',
-          resolver: ::Resolvers::Analytics::AiMetricsResolver,
+          resolver: ::Resolvers::Analytics::AiMetrics::NamespaceMetricsResolver,
           extras: [:lookahead],
           alpha: { milestone: '16.11' }
 
