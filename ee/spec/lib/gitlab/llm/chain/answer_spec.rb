@@ -201,7 +201,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
           answer
 
           expect(logger).to have_received(:error).with(
-            a_hash_including(message: "Error", error: "error", error_code: error_code, source: nil)
+            a_hash_including(message: "Error", error: "error", error_code: error_code, source: "unknown")
           )
         end
       end

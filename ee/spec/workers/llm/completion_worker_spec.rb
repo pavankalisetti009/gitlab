@@ -21,8 +21,9 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
   it_behaves_like 'worker with data consistency', described_class, data_consistency: :sticky
 
   describe '#perform' do
-    subject { described_class.new.perform(described_class.serialize_message(prompt_message), options) }
+    subject { worker.perform(described_class.serialize_message(prompt_message), options) }
 
+    let(:worker) { described_class.new }
     let(:session) { ActionController::TestSession.new }
 
     def expect_completion_service_call
@@ -42,6 +43,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
 
     it 'calls Llm::Internal::CompletionService and tracks event' do
       expect_completion_service_call
+      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
 
       subject
 
@@ -58,6 +60,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
     context 'when warden.user.user.key is nil' do
       it 'simulates it' do
         expect_completion_service_call
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
 
         Gitlab::Session.with_session(session) do
           subject
@@ -69,6 +72,7 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
       context 'when sessionless' do
         it 'does nothing' do
           expect_completion_service_call
+          expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
 
           subject
 
