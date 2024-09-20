@@ -11,9 +11,9 @@ import {
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, __, n__ } from '~/locale';
 import {
-  EXCLUSION_TYPES,
   STATUS_TYPES,
   ExclusionType,
+  EXCLUSION_TYPE_MAP,
   StatusType,
   ExclusionScannerEnum,
 } from '../constants';
@@ -39,7 +39,7 @@ export default {
   },
   data() {
     return {
-      typeOptions: EXCLUSION_TYPES,
+      typeOptions: Object.values(EXCLUSION_TYPE_MAP),
       statusOptions: STATUS_TYPES,
       form: {
         type: this.exclusion.type || ExclusionType.PATH,

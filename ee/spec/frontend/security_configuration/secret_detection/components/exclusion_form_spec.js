@@ -15,7 +15,7 @@ import projectSecurityExclusionCreateMutation from 'ee/security_configuration/se
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExclusionForm from 'ee/security_configuration/secret_detection/components/exclusion_form.vue';
 import {
-  EXCLUSION_TYPES,
+  EXCLUSION_TYPE_MAP,
   STATUS_TYPES,
 } from 'ee/security_configuration/secret_detection/constants';
 
@@ -99,7 +99,7 @@ describe('ExclusionForm', () => {
   it('renders the type radio group with correct options', () => {
     const typeRadioGroup = findTypeRadioGroup();
     expect(typeRadioGroup.exists()).toBe(true);
-    expect(typeRadioGroup.props('options')).toEqual(EXCLUSION_TYPES);
+    expect(typeRadioGroup.props('options')).toEqual(Object.values(EXCLUSION_TYPE_MAP));
   });
 
   it('renders the content textarea', () => {

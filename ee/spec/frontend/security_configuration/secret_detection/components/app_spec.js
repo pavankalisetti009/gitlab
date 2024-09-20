@@ -46,9 +46,8 @@ describe('App', () => {
     });
   };
 
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findExclusionList = () => wrapper.findComponent(ExclusionList);
 
   it('renders the component', () => {
     createComponent();
@@ -57,20 +56,18 @@ describe('App', () => {
 
   it('displays loading icon when data is being fetched', async () => {
     createComponent();
-    expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
+    expect(findLoadingIcon().exists()).toBe(true);
 
     await waitForPromises();
 
-    expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(false);
+    expect(findLoadingIcon().exists()).toBe(false);
   });
 
   it('displays security exclusions after data is fetched', async () => {
     createComponent();
     await waitForPromises();
-    expect(wrapper.findComponent(ExclusionList).exists()).toBe(true);
-    expect(wrapper.findComponent(ExclusionList).props('exclusions')).toEqual(
-      projectSecurityExclusions,
-    );
+    expect(findExclusionList().exists()).toBe(true);
+    expect(findExclusionList().props('exclusions')).toEqual(projectSecurityExclusions);
   });
 
   it('displays empty state when there are no security exclusions', async () => {
