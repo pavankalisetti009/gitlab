@@ -38,6 +38,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - documentation_search
           - ask_epic
           - ask_issue
+          - ask_merge_request
   generate_description:
     backend: 'gitlab-ai-gateway'
     bundled_with:
