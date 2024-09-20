@@ -7154,7 +7154,7 @@ msgstr ""
 msgid "Approvals|Rule cannot be approved"
 msgstr ""
 
-msgid "Approvals|Section: %section"
+msgid "Approvals|Section: %{section}"
 msgstr ""
 
 msgid "Approvals|The number of people who need to approve this is more than those who are allowed to. Please ask the project owner to update %{securityPolicy}."

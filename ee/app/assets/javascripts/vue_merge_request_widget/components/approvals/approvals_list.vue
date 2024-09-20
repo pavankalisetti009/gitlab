@@ -141,7 +141,7 @@ export default {
       });
     },
     sectionNameLabel(rule) {
-      return sprintf(s__('Approvals|Section: %section'), { section: rule.section });
+      return sprintf(s__('Approvals|Section: %{section}'), { section: rule.section });
     },
     numberOfColumns(rule) {
       return rule.type.toLowerCase() === this.$options.ruleTypeAnyApprover

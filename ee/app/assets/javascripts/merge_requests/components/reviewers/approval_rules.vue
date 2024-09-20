@@ -3,7 +3,7 @@ import { GlButton, GlSprintf, GlTableLite } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import ReviewerDropdown from '~/merge_requests/components/reviewers/reviewer_dropdown.vue';
 import EmptyRuleApprovers from 'ee/approvals/components/rules/empty_rule_approvers.vue';
-import { RULE_TYPE_ANY_APPROVER } from 'ee/approvals/constants';
+import { RULE_TYPE_ANY_APPROVER, RULE_TYPE_CODE_OWNER } from 'ee/approvals/constants';
 
 export default {
   components: {
@@ -70,6 +70,7 @@ export default {
     },
   ],
   ANY_APPROVER: RULE_TYPE_ANY_APPROVER.toUpperCase(),
+  CODE_OWNERS: RULE_TYPE_CODE_OWNER.toUpperCase(),
 };
 </script>
 
@@ -86,7 +87,16 @@ export default {
           popover-container-id="sidebar-popover-container"
         />
         <template v-else>
-          {{ item.name }}
+          <span
+            v-if="item.section && item.section !== 'codeowners'"
+            class="gl-block"
+            data-testid="section-name"
+          >
+            {{ item.section }}
+          </span>
+          <span :class="{ 'gl-text-sm gl-font-monospace': item.type === $options.CODE_OWNERS }">
+            {{ item.name }}
+          </span>
         </template>
       </template>
       <template #cell(rule_approvals)="{ item }">{{ getApprovalsLeftText(item) }}</template>

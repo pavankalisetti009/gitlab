@@ -13,7 +13,7 @@ describe('Reviewer drawer approval rules component', () => {
   const findOptionalToggle = () => wrapper.findByTestId('optional-rules-toggle');
   const findRuleRows = () => wrapper.findAll('tbody tr');
 
-  function createComponent() {
+  function createComponent(rule = null) {
     const apolloProvider = createMockApollo([
       [userPermissionsQuery, jest.fn().mockResolvedValue({ data: { project: null } })],
     ]);
@@ -52,7 +52,8 @@ describe('Reviewer drawer approval rules component', () => {
                 nodes: [{ id: 1 }],
               },
             },
-          ],
+            rule,
+          ].filter((r) => r),
         },
       },
     });
@@ -90,5 +91,33 @@ describe('Reviewer drawer approval rules component', () => {
 
     expect(findRuleRows().length).toBe(3);
     expect(findRuleRows().at(2).element).toMatchSnapshot();
+  });
+
+  describe('when codeowners rule exists', () => {
+    it('renders section name', () => {
+      createComponent({
+        approvalsRequired: 1,
+        name: 'Approved rule',
+        section: 'Frontend',
+        approvedBy: {
+          nodes: [{ id: 1 }],
+        },
+      });
+
+      expect(wrapper.findByTestId('section-name').text()).toBe('Frontend');
+    });
+
+    it('does not render section name when codeowners rule does not have a section name', () => {
+      createComponent({
+        approvalsRequired: 1,
+        name: 'Approved rule',
+        section: 'codeowners',
+        approvedBy: {
+          nodes: [{ id: 1 }],
+        },
+      });
+
+      expect(wrapper.findByTestId('section-name').exists()).toBe(false);
+    });
   });
 });

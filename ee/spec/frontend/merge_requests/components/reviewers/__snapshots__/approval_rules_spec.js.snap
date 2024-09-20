@@ -9,7 +9,9 @@ exports[`Reviewer drawer approval rules component renders non-optional rules by 
     class="!gl-pr-4 !gl-px-0 !gl-py-4 gl-break-words"
     role="cell"
   >
-    Required rule
+    <span>
+      Required rule
+    </span>
   </td>
   <td
     aria-colindex="2"
@@ -39,7 +41,9 @@ exports[`Reviewer drawer approval rules component toggles optional rows when cli
     class="!gl-pr-4 !gl-px-0 !gl-py-4 gl-break-words"
     role="cell"
   >
-    Optional rule
+    <span>
+      Optional rule
+    </span>
   </td>
   <td
     aria-colindex="2"
