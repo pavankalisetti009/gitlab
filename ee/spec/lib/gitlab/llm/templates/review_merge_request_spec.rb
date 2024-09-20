@@ -16,8 +16,8 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(user_prompt).to include(new_path)
     end
 
-    it 'includes hunk' do
-      expect(user_prompt).to include(hunk)
+    it 'includes diff' do
+      expect(user_prompt).to include(diff)
     end
 
     it 'uses Claude 3.5 Sonnet' do

@@ -7,7 +7,6 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
   let(:summary_prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
   let(:options) { {} }
-  let(:response_modifier) { double }
   let(:create_note_allowed?) { true }
 
   let(:review_start_note) do
@@ -63,7 +62,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
 
   describe '#execute' do
-    let(:review_prompt) { { messages: ['This is a review prompt'] } }
+    let(:first_review_prompt) { { messages: ['This is the first review prompt'] } }
+    let(:second_review_prompt) { { messages: ['This is the second review prompt'] } }
     let(:summary_prompt) { { messages: ['This is a summary prompt'] } }
     let(:payload_parameters) do
       {
@@ -75,8 +75,12 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     before do
-      allow_next_instance_of(review_prompt_class) do |template|
-        allow(template).to receive(:to_prompt).and_return(review_prompt)
+      allow_next_instance_of(review_prompt_class, 'UPDATED.md', anything, anything) do |first_template|
+        allow(first_template).to receive(:to_prompt).and_return(first_review_prompt)
+      end
+
+      allow_next_instance_of(review_prompt_class, 'NEW.md', anything, anything) do |second_template|
+        allow(second_template).to receive(:to_prompt).and_return(second_review_prompt)
       end
 
       allow_next_instance_of(summary_prompt_class) do |template|
@@ -89,8 +93,12 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       ) do |client|
         allow(client)
           .to receive(:messages_complete)
-          .with(review_prompt)
-          .and_return(review_response)
+          .with(first_review_prompt)
+          .and_return(first_review_response)
+        allow(client)
+          .to receive(:messages_complete)
+          .with(second_review_prompt)
+          .and_return(second_review_response)
       end
 
       allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
@@ -105,7 +113,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     context 'when generated review prompt is nil' do
-      let(:review_prompt) { nil }
+      let(:first_review_prompt) { nil }
+      let(:second_review_prompt) { nil }
 
       it 'does not make a request to AI provider' do
         expect(Gitlab::Llm::Anthropic::Client).not_to receive(:new)
@@ -115,22 +124,37 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     context 'when the chat client returns a successful response' do
-      let(:review_answer) { 'Helpful review with suggestions' }
-      let(:review_response) { { content: [{ text: review_answer }] } }
+      let(:first_review_response) { { content: [{ text: first_review_answer }] } }
+      let(:first_review_answer) do
+        %(
+          <review>
+            <comment priority="5" line="2">First comment with suggestions</comment>
+          </review>'
+        )
+      end
+
+      let(:second_review_response) { { content: [{ text: second_review_answer }] } }
+      let(:second_review_answer) do
+        %(
+          <review>
+            <comment priority="4" line="1">Second comment with suggestions</comment>
+            <comment priority="7" line="2">Third comment with suggestions</comment>
+          </review>'
+        )
+      end
 
       let(:summary_answer) { 'Helpful review summary' }
       let(:summary_response) { { content: [{ text: summary_answer }] } }
 
-      it 'creates diff notes on new and updated files',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478424' do
+      it 'sorts by priority and creates diff notes on new and updated files' do
         completion.execute
 
-        diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot)
-        expect(diff_notes.count).to eq 2
+        diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
+        expect(diff_notes.count).to eq 3
 
-        new_file_note = diff_notes[0]
-        expect(new_file_note.note).to eq review_answer
-        expect(new_file_note.position.to_h).to eq({
+        first_note = diff_notes[0]
+        expect(first_note.note).to eq 'Third comment with suggestions'
+        expect(first_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
           head_sha: diff_refs.head_sha,
@@ -143,9 +167,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           ignore_whitespace_change: false
         })
 
-        updated_file_note = diff_notes[1]
-        expect(updated_file_note.note).to eq review_answer
-        expect(updated_file_note.position.to_h).to eq({
+        second_note = diff_notes[1]
+        expect(second_note.note).to eq 'First comment with suggestions'
+        expect(second_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
           head_sha: diff_refs.head_sha,
@@ -157,13 +181,28 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           line_range: nil,
           ignore_whitespace_change: false
         })
+
+        third_note = diff_notes[2]
+        expect(third_note.note).to eq 'Second comment with suggestions'
+        expect(third_note.position.to_h).to eq({
+          base_sha: diff_refs.base_sha,
+          start_sha: diff_refs.start_sha,
+          head_sha: diff_refs.head_sha,
+          old_path: 'NEW.md',
+          new_path: 'NEW.md',
+          position_type: 'text',
+          old_line: nil,
+          new_line: 1,
+          line_range: nil,
+          ignore_whitespace_change: false
+        })
       end
 
       context 'when review note alredy exist on the same position' do
         it 'does not add more notes to the same position' do
           expect do
             described_class.new(review_prompt_message, review_prompt_class, options).execute
-          end.to change { merge_request.notes.diff_notes.count }.by(2)
+          end.to change { merge_request.notes.diff_notes.count }.by(3)
             .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
 
           expect { completion.execute }
@@ -171,6 +210,72 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
 
           expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+        end
+      end
+
+      context 'when the chat client response includes invalid comments' do
+        let(:first_review_response) { { content: [{ text: first_review_answer }] } }
+        let(:first_review_answer) do
+          %(
+            <review>
+              <comment>First comment with suggestions</comment>
+              <comment priority="1" line="2">Second comment with suggestions</comment>
+            </review>'
+          )
+        end
+
+        let(:second_review_response) { { content: [{ text: second_review_answer }] } }
+        let(:second_review_answer) do
+          %(
+            <review>
+              <comment priority="" line="1">Third comment with suggestions</comment>
+              <comment priority="7" line="">Fourth comment with suggestions</comment>
+            </review>'
+          )
+        end
+
+        it 'creates a valid comment only' do
+          completion.execute
+
+          diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
+          expect(diff_notes.count).to eq 1
+
+          first_note = diff_notes.first
+          expect(first_note.note).to eq 'Second comment with suggestions'
+          expect(first_note.position.new_line).to eq(2)
+        end
+      end
+
+      context 'when the chat client decides to return contents outside of <review> tag' do
+        let(:first_review_response) { { content: [{ text: first_review_answer }] } }
+        let(:first_review_answer) do
+          %(
+            Let me explain how awesome this review is.
+
+            <review>
+              <comment priority="1" line="2">First comment with suggestions</comment>
+            </review>'
+          )
+        end
+
+        let(:second_review_response) { { content: [{ text: second_review_answer }] } }
+        let(:second_review_answer) do
+          %(
+            <review>
+              <comment priority="7" line="1">Second comment with suggestions</comment>
+            </review>'
+          )
+        end
+
+        it 'creates a valid comment only' do
+          completion.execute
+
+          diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
+          expect(diff_notes.count).to eq 1
+
+          first_note = diff_notes.first
+          expect(first_note.note).to eq 'Second comment with suggestions'
+          expect(first_note.position.new_line).to eq(1)
         end
       end
 
@@ -186,7 +291,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when there was no comments' do
-        let(:review_response) { {} }
+        let(:first_review_response) { {} }
+        let(:second_review_response) { {} }
 
         it 'updates progress note with a success message' do
           completion.execute
@@ -196,8 +302,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
-      context 'when review response is nil' do
-        let(:review_response) { nil }
+      context 'when review response are nil' do
+        let(:first_review_response) { nil }
+        let(:second_review_response) { nil }
 
         it 'updates progress note with a success message' do
           completion.execute
@@ -239,8 +346,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 3
-            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.count).to eq 4
+            expect(merge_request.notes.diff_notes.count).to eq 3
             expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
           end
         end
@@ -251,8 +358,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 3
-            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.count).to eq 4
+            expect(merge_request.notes.diff_notes.count).to eq 3
             expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
           end
         end
@@ -263,8 +370,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 3
-            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.count).to eq 4
+            expect(merge_request.notes.diff_notes.count).to eq 3
             expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
           end
         end
@@ -280,6 +387,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           diff_notes = merge_request.notes.diff_notes
           expect(diff_notes.count).to eq 1
 
+          expect(diff_notes[0].note).to eq 'Third comment with suggestions'
           expect(diff_notes[0].position.to_h).to eq({
             base_sha: diff_refs.base_sha,
             start_sha: diff_refs.start_sha,
@@ -296,8 +404,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       end
     end
 
-    context 'when the AI response is <no_issues_found/>' do
-      let(:review_response) { { content: [{ text: ' <no_issues_found/> ' }] } }
+    context 'when the AI response is <review></review>' do
+      let(:first_review_response) { { content: [{ text: ' <review></review> ' }] } }
+      let(:second_review_response) { { content: [{ text: ' <review></review> ' }] } }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -311,7 +420,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     context 'when the chat client returns an unsuccessful response' do
-      let(:review_response) { { error: { message: 'Error' } } }
+      let(:first_review_response) { { error: { message: 'Error' } } }
+      let(:second_review_response) { { error: { message: 'Error' } } }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -321,7 +431,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     context 'when the AI response is empty' do
-      let(:review_response) { {} }
+      let(:first_review_response) { {} }
+      let(:second_review_response) { {} }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
