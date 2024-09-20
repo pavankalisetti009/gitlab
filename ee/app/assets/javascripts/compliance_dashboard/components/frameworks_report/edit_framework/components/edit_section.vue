@@ -49,7 +49,7 @@ export default {
     collapseIconName() {
       return this.isExpanded ? 'chevron-lg-down' : 'chevron-lg-right';
     },
-    collapseIconAlt() {
+    collapseButtonLabel() {
       return this.isExpanded ? __('Collapse') : __('Expand');
     },
     showItemsCount() {
@@ -102,7 +102,7 @@ export default {
         class="gl-m-4 !gl-bg-gray-50"
         category="tertiary"
         :icon="collapseIconName"
-        :alt="collapseIconAlt"
+        :aria-label="collapseButtonLabel"
       />
     </div>
     <gl-collapse :visible="isExpanded" class="gl-bg-gray-10 gl-px-5 gl-py-6">

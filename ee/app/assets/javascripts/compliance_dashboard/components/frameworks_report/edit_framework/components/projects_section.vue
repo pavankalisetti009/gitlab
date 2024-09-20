@@ -72,14 +72,12 @@ export default {
       selected-variant="primary"
     >
       <template #cell(name)="{ item }">
-        <div class="gl-align-center gl-flex">
-          <gl-link :href="item.webUrl">{{ item.name }}</gl-link>
-          <visibility-icon
-            v-if="item.visibility"
-            class="gl-ml-2"
-            :visibility-level="item.visibility"
-          />
-        </div>
+        <gl-link :href="item.webUrl">{{ item.name }}</gl-link>
+        <visibility-icon
+          v-if="item.visibility"
+          class="gl-ml-2"
+          :visibility-level="item.visibility"
+        />
       </template>
       <template #cell(path)="{ item }">
         {{ item.fullPath }}
