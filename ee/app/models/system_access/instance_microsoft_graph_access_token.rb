@@ -2,7 +2,7 @@
 
 # rubocop:disable Gitlab/BoundedContexts -- Spliting existing table
 module SystemAccess
-  class InstanceMicrosoftApplications < ApplicationRecord
+  class InstanceMicrosoftGraphAccessToken < ApplicationRecord
   end
 end
 # rubocop:enable Gitlab/BoundedContexts
