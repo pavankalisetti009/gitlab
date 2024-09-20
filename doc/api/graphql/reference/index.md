@@ -23182,6 +23182,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 AddOnPurchase associated with the namespace.
 
+DETAILS:
+**Deprecated** in GitLab 17.5.
+Use root addOnPurchases instead.
+
 Returns [`AddOnPurchase`](#addonpurchase).
 
 ###### Arguments
@@ -27879,6 +27883,10 @@ four standard [pagination arguments](#pagination-arguments):
 ##### `Namespace.addOnPurchase`
 
 AddOnPurchase associated with the namespace.
+
+DETAILS:
+**Deprecated** in GitLab 17.5.
+Use root addOnPurchases instead.
 
 Returns [`AddOnPurchase`](#addonpurchase).
 
