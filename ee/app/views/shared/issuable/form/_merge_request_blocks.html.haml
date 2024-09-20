@@ -12,7 +12,7 @@
   .col-12
     .gl-mb-2
       = _("List the merge requests that must be merged before this one.")
-      = link_to "Learn more.", url_helpers.help_page_url('user/project/merge_requests/dependencies', anchor: 'nested-dependencies')
+      = link_to "Learn more.", url_helpers.help_page_url('user/project/merge_requests/dependencies.md', anchor: 'nested-dependencies')
   .col-12
     = text_field_tag 'blocking_merge_request_refs', nil,
                      class: 'form-control',
