@@ -103,8 +103,8 @@ module Preloaders
         # choose the source role as the max role
         source_member_role = group_link_join
           .joins('JOIN member_roles ON member_roles.id = members.member_role_id')
-          .where('access_level = group_access')
-          .where.not('group_group_links.member_role_id' => nil)
+          .where('(access_level < group_access) OR ' \
+            '(access_level = group_access AND group_group_links.member_role_id IS NOT NULL)')
           .to_sql
 
         union_queries.push(invited_member_role, source_member_role)

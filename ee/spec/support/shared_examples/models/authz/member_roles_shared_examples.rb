@@ -1,58 +1,72 @@
 # frozen_string_literal: true
 
 RSpec.shared_context 'with member roles assigned to group links' do
-  let_it_be(:sre_group) { create(:group) }
-  let_it_be(:developers_group) { create(:group) }
+  let_it_be(:invited_group) { create(:group) }
 
-  let_it_be(:developer_lead) do
-    create(:member_role, :instance, manage_merge_request_settings: true, read_code: false)
+  let_it_be(:guest_read_runners) do
+    create(:member_role, :guest, :instance, read_runners: true, read_code: false)
   end
 
-  let_it_be(:platform_engineer) do
-    create(:member_role, :instance, admin_cicd_variables: true, read_code: false)
+  let_it_be(:guest_read_vulnerability) do
+    create(:member_role, :guest, :instance, read_vulnerability: true, read_code: false)
   end
 
-  let_it_be(:kate) { create(:group_member, :owner, source: sre_group) }
-  let_it_be(:joe) { create(:group_member, :developer, source: sre_group, member_role: developer_lead) }
-  let_it_be(:mark) { create(:group_member, :developer, source: sre_group, member_role: platform_engineer) }
-  let_it_be(:jake) { create(:group_member, :developer, source: sre_group) }
-  let_it_be(:mary) { create(:group_member, :guest, source: sre_group) }
+  let_it_be(:developer_admin_vulnerability) do
+    create(:member_role, :developer, :instance, admin_vulnerability: true, read_vulnerability: true, read_code: false)
+  end
 
-  let_it_be(:sarah) { create(:group_member, :developer, source: developers_group, member_role: developer_lead) }
-  let_it_be(:bob) { create(:group_member, :developer, source: developers_group) }
-  let_it_be(:owen) { create(:group_member, :guest, source: developers_group) }
-
-  before do
-    create(
-      :group_group_link,
-      shared_group: group,
-      shared_with_group: sre_group,
-      member_role: platform_engineer
-    )
-
-    create(
-      :group_group_link,
-      shared_group: group,
-      shared_with_group: developers_group
-    )
+  let_it_be(:user_a) { create(:group_member, :guest, source: invited_group, member_role: guest_read_runners) }
+  let_it_be(:user_b) { create(:group_member, :guest, source: invited_group, member_role: guest_read_vulnerability) }
+  let_it_be(:user_c) { create(:group_member, :guest, source: invited_group) }
+  let_it_be(:user_d) { create(:group_member, :developer, source: invited_group) }
+  let_it_be(:user_e) do
+    create(:group_member, :developer, source: invited_group, member_role: developer_admin_vulnerability)
   end
 end
 
 RSpec.shared_examples 'returns expected member role abilities' do
   using RSpec::Parameterized::TableSyntax
 
-  where(:member, :expected_result) do
-    ref(:kate)  | [:admin_cicd_variables]
-    ref(:joe)   | [:manage_merge_request_settings]
-    ref(:mark)  | [:admin_cicd_variables]
-    ref(:jake)  | []
-    ref(:mary)  | []
-    ref(:sarah) | []
-    ref(:bob)   | []
-    ref(:owen)  | []
+  where(:invited_group_access, :invited_group_member_role, :member, :expected_result) do
+    Gitlab::Access::GUEST | nil | ref(:user_a) | []
+    Gitlab::Access::GUEST | nil | ref(:user_b) | []
+    Gitlab::Access::GUEST | nil | ref(:user_c) | []
+    Gitlab::Access::GUEST | nil | ref(:user_d) | []
+    Gitlab::Access::GUEST | nil | ref(:user_e) | []
+    Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_a) | [:read_runners]
+    Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_b) | [:read_vulnerability]
+    Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_c) | []
+    Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_d) | [:read_runners]
+    Gitlab::Access::GUEST | ref(:guest_read_runners) | ref(:user_e) | [:read_runners]
+    Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_a) | [:read_runners]
+    Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_b) | [:read_vulnerability]
+    Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_c) | []
+    Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_d) | [:read_vulnerability]
+    Gitlab::Access::GUEST | ref(:guest_read_vulnerability) | ref(:user_e) | [:read_vulnerability]
+    Gitlab::Access::DEVELOPER | nil | ref(:user_a) | [:read_runners]
+    Gitlab::Access::DEVELOPER | nil | ref(:user_b) | [:read_vulnerability]
+    Gitlab::Access::DEVELOPER | nil | ref(:user_c) | []
+    Gitlab::Access::DEVELOPER | nil | ref(:user_d) | []
+    Gitlab::Access::DEVELOPER | nil | ref(:user_e) | []
+    Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_a) | [:read_runners]
+    Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_b) | [:read_vulnerability]
+    Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_c) | []
+    Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_d) | []
+    Gitlab::Access::DEVELOPER | ref(:developer_admin_vulnerability) | ref(:user_e) | [:read_vulnerability,
+      :admin_vulnerability]
   end
 
   with_them do
+    before do
+      create(
+        :group_group_link,
+        group_access: invited_group_access,
+        member_role: invited_group_member_role,
+        shared_group: group,
+        shared_with_group: invited_group
+      )
+    end
+
     let(:user) { member.user }
 
     context 'when on SaaS', :saas do
