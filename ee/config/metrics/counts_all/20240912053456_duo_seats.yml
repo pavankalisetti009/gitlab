@@ -1,0 +1,19 @@
+---
+data_category: standard
+key_path: duo_seats
+description: The number of Duo seats purchased and assigned to users
+product_group: provision
+value_type: object
+status: active
+milestone: "17.5"
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166037
+time_frame: none
+data_source: system
+instrumentation_class: DuoSeatsMetric
+distribution:
+  - ee
+tier:
+  - premium
+  - ultimate
+performance_indicator_type: []
+value_json_schema: "ee/config/metrics/object_schemas/duo_seats.json"
