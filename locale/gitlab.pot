@@ -1054,6 +1054,9 @@ msgstr ""
 msgid "%{linkStart}Advanced search%{linkEnd} is enabled."
 msgstr ""
 
+msgid "%{link_start}Communication Preference Center%{link_end}."
+msgstr ""
+
 msgid "%{link}How to use SSH keys%{link_end}?"
 msgstr ""
 
@@ -5100,7 +5103,13 @@ msgstr ""
 msgid "AiPowered|Direct connections"
 msgstr ""
 
+msgid "AiPowered|Early Access Program banner dismissed. You will not see it again for 7 days."
+msgstr ""
+
 msgid "AiPowered|Enabling these features is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}."
+msgstr ""
+
+msgid "AiPowered|Enroll in the Early Access Program"
 msgstr ""
 
 msgid "AiPowered|Features are available. However, any group, subgroup, or project can turn them off."
@@ -5110,6 +5119,9 @@ msgid "AiPowered|Features are not available and cannot be turned on for any grou
 msgstr ""
 
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
+msgstr ""
+
+msgid "AiPowered|Help make the next releases of GitLab better. As a member of the GitLab Early Access Program, you can take part in shaping GitLab by letting us know what you think of GitLab Duo experimental and beta features. How does this program work?"
 msgstr ""
 
 msgid "AiPowered|Ideal for lowest latency. An IDE must be able to connect to https://gitlab.com:443."
@@ -5128,6 +5140,9 @@ msgid "AiPowered|Off by default"
 msgstr ""
 
 msgid "AiPowered|On by default"
+msgstr ""
+
+msgid "AiPowered|Participate in the Early Access Program and help make GitLab better"
 msgstr ""
 
 msgid "AiPowered|Setting unavailable"
@@ -10315,6 +10330,9 @@ msgstr ""
 msgid "By default, all projects and groups use the global notifications setting."
 msgstr ""
 
+msgid "By enrolling in the Early access program, you agree that GitLab may contact you by email and telephone about products, services, and events related to the Early Access Program. You may opt-out at any time by unsubscribing in emails or visiting our "
+msgstr ""
+
 msgid "By month"
 msgstr ""
 
@@ -14653,10 +14671,16 @@ msgstr ""
 msgid "Confirm"
 msgstr ""
 
+msgid "Confirm Enrollement"
+msgstr ""
+
 msgid "Confirm approval"
 msgstr ""
 
 msgid "Confirm destroy application"
+msgstr ""
+
+msgid "Confirm enrollment in the Early Access Program"
 msgstr ""
 
 msgid "Confirm new password"
@@ -62964,6 +62988,9 @@ msgid "You have already requested access."
 msgstr ""
 
 msgid "You have been added to ticket #%{issue_iid}."
+msgstr ""
+
+msgid "You have been enrolled in the Early Access Program. Thank you for helping make GitLab better. You will receive an email with more details about the program."
 msgstr ""
 
 msgid "You have been granted access to the %{source_name} %{source_type} with the following role: %{role_name}."
