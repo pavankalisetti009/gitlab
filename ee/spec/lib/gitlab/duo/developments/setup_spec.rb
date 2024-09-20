@@ -7,7 +7,7 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
 
   let_it_be(:group) { create(:group, :with_organization, path: 'test-group') }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user, maintainer_of: project) }
+  let_it_be(:user) { create(:user, maintainer_of: project, username: 'root') }
 
   let(:task) { described_class.new(args) }
   let(:rake_task) { instance_double(Rake::Task, invoke: true) }
@@ -73,6 +73,12 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     end
   end
 
+  shared_examples 'creates add-on purchases' do
+    it 'creates add-on purchases', :aggregate_failures do
+      expect { setup }.to change { ::GitlabSubscriptions::AddOnPurchase.count }.by(2)
+    end
+  end
+
   context 'when simulating GitLabCom: passing target group as an argument', :saas do
     let(:args) { { root_group_path: group.path } }
 
@@ -85,6 +91,12 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
 
       it 'creates a new group' do
         expect { setup }.to change { ::Group.count }.by(1)
+      end
+
+      it 'adds user to group' do
+        setup
+
+        expect(Group.find_by_path('new-path').reload.users).to include(user)
       end
 
       context 'when failed to create a group' do
@@ -100,12 +112,19 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
       it 'does not create a new group' do
         expect { setup }.not_to change { ::Group.count }
       end
+
+      it 'adds user to group' do
+        setup
+
+        expect(group.reload.users).to include(user)
+      end
     end
 
     it_behaves_like 'checks for dev or test env'
     it_behaves_like 'errors when GITLAB_SIMULATE_SAAS has unexpected value', true
     it_behaves_like 'enables all necessary feature flags'
     it_behaves_like 'errors when there is no license'
+    it_behaves_like 'creates add-on purchases'
 
     context 'when updating application setting' do
       it 'changes application settings' do
@@ -139,5 +158,6 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     it_behaves_like 'checks for dev or test env'
     it_behaves_like 'enables all necessary feature flags'
     it_behaves_like 'errors when there is no license'
+    it_behaves_like 'creates add-on purchases'
   end
 end
