@@ -1097,6 +1097,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_30209d0fba3e() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "alert_management_alerts"
+  WHERE "alert_management_alerts"."id" = NEW."alert_management_alert_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_3691f9f6a69f() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -5263,7 +5279,8 @@ CREATE TABLE alert_management_alert_user_mentions (
     note_id bigint,
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
-    mentioned_groups_ids bigint[]
+    mentioned_groups_ids bigint[],
+    project_id bigint
 );
 
 CREATE SEQUENCE alert_management_alert_user_mentions_id_seq
@@ -27215,6 +27232,8 @@ CREATE INDEX index_alert_management_alert_metric_images_on_alert_id ON alert_man
 
 CREATE INDEX index_alert_management_alert_metric_images_on_project_id ON alert_management_alert_metric_images USING btree (project_id);
 
+CREATE INDEX index_alert_management_alert_user_mentions_on_project_id ON alert_management_alert_user_mentions USING btree (project_id);
+
 CREATE INDEX index_alert_management_alerts_on_domain ON alert_management_alerts USING btree (domain);
 
 CREATE INDEX index_alert_management_alerts_on_environment_id ON alert_management_alerts USING btree (environment_id) WHERE (environment_id IS NOT NULL);
@@ -33119,6 +33138,8 @@ CREATE TRIGGER trigger_25fe4f7da510 BEFORE INSERT OR UPDATE ON vulnerability_iss
 
 CREATE TRIGGER trigger_2b8fdc9b4a4e BEFORE INSERT OR UPDATE ON ml_experiment_metadata FOR EACH ROW EXECUTE FUNCTION trigger_2b8fdc9b4a4e();
 
+CREATE TRIGGER trigger_30209d0fba3e BEFORE INSERT OR UPDATE ON alert_management_alert_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_30209d0fba3e();
+
 CREATE TRIGGER trigger_3691f9f6a69f BEFORE INSERT OR UPDATE ON remote_development_agent_configs FOR EACH ROW EXECUTE FUNCTION trigger_3691f9f6a69f();
 
 CREATE TRIGGER trigger_3d1a58344b29 BEFORE INSERT OR UPDATE ON alert_management_alert_assignees FOR EACH ROW EXECUTE FUNCTION trigger_3d1a58344b29();
@@ -34067,6 +34088,9 @@ ALTER TABLE ONLY sprints
 
 ALTER TABLE ONLY alert_management_alert_metric_images
     ADD CONSTRAINT fk_80b75a6094 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY alert_management_alert_user_mentions
+    ADD CONSTRAINT fk_8175238264 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY related_epic_links
     ADD CONSTRAINT fk_8257080565 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
