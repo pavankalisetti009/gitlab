@@ -48,6 +48,7 @@ module Gitlab
           group = ensure_group
           ensure_group_subscription!(group)
           ensure_group_settings!(group)
+          ensure_group_membership!(group)
         end
 
         private
@@ -98,7 +99,7 @@ module Gitlab
 
           puts "The specified group is not found. Creating a new one..."
 
-          current_user = User.first
+          current_user = User.find_by_username('root')
           org = create_org(current_user)
           group_params = {
             name: @namespace,
@@ -132,6 +133,11 @@ module Gitlab
           group = Group.find(group.id) # Hard Reload for refreshing the cache
           group.update!(experiment_features_enabled: true)
         end
+
+        def ensure_group_membership!(group)
+          # this is needed because of the add-on creation - we need to make sure user is a member of a group.
+          group.add_owner(User.find_by_username('root'))
+        end
       end
 
       class Setup
@@ -148,7 +154,7 @@ module Gitlab
           ensure_feature_flags!
           ensure_license!
           @setup_strategy.execute
-          create_add_on_purchase!
+          create_add_on_purchases!
 
           print_result
         end
@@ -180,20 +186,43 @@ module Gitlab
           raise 'No license found' unless license
         end
 
-        def create_add_on_purchase!
-          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
+        def create_add_on_purchases!
           group = Group.find_by_full_path(@namespace) # will be nil for self-managed mode
 
           # rubocop: disable Cop/DestroyAll -- For dev
           ::GitlabSubscriptions::AddOnPurchase.destroy_all
           # rubocop: enable Cop/DestroyAll
-          resp = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
+          create_code_suggestions_purchase!(group)
+          create_enterprise_purchase!(group)
+        end
+
+        def create_code_suggestions_purchase!(group)
+          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
+
+          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
             quantity: 100,
             expires_on: 1.year.from_now,
             purchase_xid: 'C-12345'
           }).execute
 
-          raise resp.message unless resp.success?
+          raise response.message unless response.success?
+
+          puts "Code suggestions add-on added..."
+        end
+
+        def create_enterprise_purchase!(group)
+          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_enterprise)
+
+          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
+            quantity: 100,
+            expires_on: 1.year.from_now,
+            purchase_xid: 'C-98766'
+          }).execute
+
+          raise response.message unless response.success?
+
+          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
+          puts "Duo enterprise add-on added..."
         end
 
         def print_result
