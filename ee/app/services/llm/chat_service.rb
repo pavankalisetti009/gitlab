@@ -14,7 +14,18 @@ module Llm
 
     def perform
       if Feature.enabled?(:require_resource_id, @group) && invalid_slash_command_request?
-        logger.info(message: "Returning from Service due to missing resource id. Associated group: #{@group}")
+        group_info = if @group
+                       { resource: 'group',
+                         resource_id: @group.id,
+                         resource_name: @group.name }
+                     else
+                       {}
+                     end
+
+        log_info(message: 'aborting: missing resource',
+          event_name: 'missing_resource',
+          ai_component: 'duo_chat',
+                    **group_info)
         return error(MISSING_RESOURCE_ID_MESSAGE)
       end
 

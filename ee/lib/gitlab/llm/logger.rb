@@ -11,12 +11,27 @@ module Gitlab
         Gitlab::Utils.to_boolean(ENV['LLM_DEBUG']) ? ::Logger::DEBUG : ::Logger::INFO
       end
 
-      def info_or_debug(user, message)
+      def conditional_info(user, message:, klass:, event_name:, ai_component:, **options)
         if Feature.enabled?(:expanded_ai_logging, user)
-          info(message)
+          info(message: message, klass: klass, event_name: event_name, ai_component: ai_component, **options)
         else
-          debug(message)
+          info(message: message, klass: klass, event_name: event_name, ai_component: ai_component)
         end
+      end
+
+      def info(message:, klass:, event_name:, ai_component:, **options)
+        options.merge!(message: message, class: klass, ai_event_name: event_name, ai_component: ai_component)
+        super(options)
+      end
+
+      def error(message:, klass:, event_name:, ai_component:, **options)
+        options.merge!(message: message, class: klass, ai_event_name: event_name, ai_component: ai_component)
+        super(options)
+      end
+
+      def debug(message:, klass:, event_name:, ai_component:, **options)
+        options.merge!(message: message, class: klass, ai_event_name: event_name, ai_component: ai_component)
+        super(options)
       end
     end
   end

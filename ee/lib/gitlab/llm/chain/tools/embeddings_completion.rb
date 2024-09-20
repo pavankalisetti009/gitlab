@@ -7,11 +7,11 @@ module Gitlab
         class EmbeddingsCompletion
           include ::Gitlab::Loggable
           include Langsmith::RunHelpers
+          include ::Gitlab::Llm::Concerns::Logger
 
-          def initialize(current_user:, question:, logger: nil, tracking_context: {})
+          def initialize(current_user:, question:, tracking_context: {})
             @current_user = current_user
             @question = question
-            @logger = logger || Gitlab::Llm::Logger.build
             @correlation_id = Labkit::Correlation::CorrelationId.current_id
             @tracking_context = tracking_context
           end
@@ -36,7 +36,7 @@ module Gitlab
 
           private
 
-          attr_reader :current_user, :question, :logger, :correlation_id, :tracking_context
+          attr_reader :current_user, :question, :correlation_id, :tracking_context
 
           def ai_gateway_request
             @ai_gateway_request ||= ::Gitlab::Llm::Chain::Requests::AiGateway.new(current_user,
@@ -53,8 +53,16 @@ module Gitlab
               yield data if block_given?
             end
 
-            logger.info_or_debug(current_user,
-              message: "Got Final Result", prompt: final_prompt[:prompt], response: final_prompt_result)
+            log_conditional_info(current_user,
+              message: "Got Final Result for documentation question content",
+              event_name: 'response_received',
+              ai_component: 'duo_chat',
+              prompt: final_prompt[:prompt],
+              response_from_llm: final_prompt_result)
+
+            log_info(message: "Got Final Result for documentation question",
+              event_name: 'response_received',
+              ai_component: 'duo_chat')
 
             Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot.new(
               { completion: final_prompt_result }.to_json,
@@ -65,7 +73,10 @@ module Gitlab
           rescue Gitlab::Llm::AiGateway::Client::ConnectionError => error
             Gitlab::ErrorTracking.track_exception(error)
 
-            logger.info(message: "Streaming error", error: error.message)
+            log_error(message: "Streaming error",
+              event_name: 'error_response_received',
+              ai_component: 'duo_chat',
+              error: error.message)
           end
 
           def empty_response

@@ -4,11 +4,12 @@ module Gitlab
   module Llm
     module Completions
       class Base
+        include ::Gitlab::Llm::Concerns::Logger
+
         def initialize(prompt_message, ai_prompt_class, options = {})
           @prompt_message = prompt_message
           @ai_prompt_class = ai_prompt_class
           @options = options
-          @logger = Gitlab::Llm::Logger.build
         end
 
         private
@@ -46,11 +47,12 @@ module Gitlab
           }))
         end
 
-        def log_error(error)
-          @logger.error(
+        def log_local_error(error)
+          log_error(
             message: "LLM completion error",
-            error: error.to_s,
-            source: self.class.to_s
+            event_name: 'error_response_received',
+            ai_component: 'abstraction_layer',
+            error_message: error.to_s
           )
         end
       end

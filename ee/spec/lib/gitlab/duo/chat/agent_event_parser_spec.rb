@@ -3,10 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Duo::Chat::AgentEventParser, feature_category: :duo_chat do
-  let(:logger) { instance_double(Gitlab::Logger) }
-  let(:parser) { described_class.new(logger) }
+  let(:logger) { instance_double('Gitlab::Llm::Logger') }
+  let(:parser) { described_class.new }
 
   describe '#parse' do
+    before do
+      allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+    end
+
     context 'when chunk is valid JSON' do
       it 'returns a correct event' do
         chunk = '{"type": "final_answer_delta", "data": {"text": "Hello"}}'
@@ -42,10 +46,10 @@ RSpec.describe Gitlab::Duo::Chat::AgentEventParser, feature_category: :duo_chat 
         let(:chunk) { '{"type": "random_event", "data": {}}' }
 
         it 'logs an error and returns nil' do
-          expect(logger).to receive(:error).with(
+          expect(logger).to receive(:error).with(a_hash_including(
             message: "Failed to find the event class in GitLab-Rails.",
             event_type: "random_event"
-          )
+          ))
           expect(parser.parse(chunk)).to be_nil
         end
       end
@@ -55,10 +59,11 @@ RSpec.describe Gitlab::Duo::Chat::AgentEventParser, feature_category: :duo_chat 
       let(:chunk) { 'invalid json' }
 
       it 'logs an error' do
-        expect(logger).to receive(:warn).with(
+        expect(logger).to receive(:warn).with(a_hash_including(
           message: "Failed to parse a chunk from Duo Chat Agent",
           chunk_size: chunk.length
-        )
+        ))
+
         parser.parse(chunk)
       end
     end

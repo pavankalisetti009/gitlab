@@ -27,7 +27,11 @@ module Gitlab
                 user: context.current_user)
 
               unless authorizer.allowed?
-                logger.error(message: "Error finding #{resource_name}", content: json)
+                log_error(message: "Error finding #{resource_name}",
+                  klass: self.class.to_s,
+                  event_name: 'incorrect_response_received',
+                  ai_component: 'duo_chat',
+                  error_message: authorizer.message)
                 return error_with_message(authorizer.message)
               end
 
@@ -36,11 +40,18 @@ module Gitlab
 
               content = passed_content(json)
 
-              logger.info_or_debug(context.current_user, message: "Answer", class: self.class.to_s, content: content)
+              log_conditional_info(context.current_user,
+                message: "Answer received from LLM",
+                event_name: 'response_received',
+                ai_component: 'duo_chat',
+                content_of_response: content)
+
               return Answer.new(status: :ok, context: context, content: content, tool: nil)
             rescue JSON::ParserError
               error_message = "\nObservation: JSON has an invalid format. Please retry"
-              logger.error(message: "Error", class: self.class.to_s, error: error_message)
+              log_error(message: "Json parsing error",
+                event_name: 'error',
+                ai_component: 'duo_chat')
 
               options[:suggestions] += error_message
             rescue StandardError => e
@@ -105,7 +116,11 @@ module Gitlab
           def already_used_answer
             resource = context.resource
             content = "You already have identified the #{resource_name} #{resource.to_global_id}, read carefully."
-            logger.info_or_debug(context.current_user, message: "Answer", class: self.class.to_s, content: content)
+            log_conditional_info(context.current_user,
+              message: "Resource already identified",
+              event_name: 'incorrect_response_received',
+              ai_component: 'duo_chat',
+              error_message: content)
 
             ::Gitlab::Llm::Chain::Answer.new(
               status: :not_executed, context: context, content: content, tool: nil, is_final: false

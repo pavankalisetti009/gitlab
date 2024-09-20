@@ -53,7 +53,11 @@ module Gitlab
             raise RateLimitError, "Maximum number of retries (#{MAX_RETRIES}) exceeded." if retries >= MAX_RETRIES
 
             delay *= EXPONENTIAL_BASE * (1 + Random.rand)
-            logger.info(message: "Too many requests, will retry in #{delay} seconds")
+            log_info(message: "Too many requests, will retry in #{delay} seconds",
+              klass: self.class.to_s,
+              event_name: 'retrying_request',
+              ai_component: 'abstraction_layer')
+
             sleep delay
             next
           end

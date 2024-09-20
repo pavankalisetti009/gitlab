@@ -2,7 +2,7 @@
 
 module Llm
   module Internal
-    class CompletionService < BaseService
+    class CompletionService < ::Llm::BaseService
       extend ::Gitlab::Utils::Override
 
       MAX_RUN_TIME = 30.seconds
@@ -20,14 +20,12 @@ module Llm
         with_tracking(prompt_message.ai_action) do
           prompt_message.context.assign_attributes(resource: nil) unless resource_authorized?(prompt_message)
 
-          log_perform(prompt_message)
-
           options.symbolize_keys!
           options[:extra_resource] = ::Llm::ExtraResourceFinder
             .new(prompt_message.user, options.delete(:referer_url)).execute
 
           completion = ::Gitlab::Llm::CompletionsFactory.completion!(prompt_message, options)
-          logger.debug(message: "Got Completion Service from factory", class_name: completion.class.name)
+          log_perform(prompt_message, completion.class.name)
 
           completion.execute
         end
@@ -54,14 +52,17 @@ module Llm
         raise err
       end
 
-      def log_perform(prompt_message)
-        logger.debug(
+      def log_perform(prompt_message, completion_class_name)
+        log_debug(
           message: "Performing CompletionService",
+          event_name: 'completion_service_performed',
+          ai_component: 'abstraction_layer',
           user_id: prompt_message.user.to_gid,
           resource_id: prompt_message.resource&.to_gid,
           action_name: prompt_message.ai_action,
           request_id: prompt_message.request_id,
-          client_subscription_id: prompt_message.client_subscription_id
+          client_subscription_id: prompt_message.client_subscription_id,
+          completion_service_name: completion_class_name
         )
       end
 
@@ -101,10 +102,6 @@ module Llm
 
       def ai_action_enabled?(prompt_message)
         Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(prompt_message.ai_action.to_sym)
-      end
-
-      def logger
-        @logger ||= Gitlab::Llm::Logger.build
       end
     end
   end

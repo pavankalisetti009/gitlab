@@ -83,7 +83,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::Anthropic, feature_category: :duo_c
 
       it 'logs the error' do
         expect(ai_client).to receive(:messages_stream).with(expected_params).and_yield(response)
-        expect(logger).to receive(:info).with(hash_including(message: "Streaming error", error: response["error"]))
+        expect(logger).to receive(:error).with(hash_including(message: "Streaming error", error: response["error"]))
 
         request
       end

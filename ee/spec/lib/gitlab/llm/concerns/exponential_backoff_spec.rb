@@ -41,9 +41,7 @@ RSpec.describe Gitlab::Llm::Concerns::ExponentialBackoff, feature_category: :ai_
 
   let(:dummy_class) do
     Class.new do
-      def logger
-        @logger ||= Logger.new(File::NULL)
-      end
+      include Gitlab::Llm::Concerns::Logger
 
       def dummy_method(response_caller)
         retry_with_exponential_backoff do

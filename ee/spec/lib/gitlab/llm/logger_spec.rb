@@ -27,15 +27,27 @@ RSpec.describe Gitlab::Llm::Logger, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe "#info_or_debug" do
+  describe "#conditional_info" do
     let_it_be(:user) { create(:user) }
     let(:logger) { described_class.build }
 
     context 'with expanded_ai_logging switched on' do
       it 'logs on info level' do
-        expect(logger).to receive(:info).with({ message: 'test' })
+        expect(logger).to receive(:info)
+          .with({
+            message: 'test',
+            klass: 'Gitlab::Llm',
+            event_name: 'received_response',
+            ai_component: 'ai_abstraction_layer',
+            options: { prompt: 'prompt' }
+          })
 
-        logger.info_or_debug(user, message: 'test')
+        logger.conditional_info(user,
+          message: 'test',
+          klass: 'Gitlab::Llm',
+          event_name: 'received_response',
+          ai_component: 'ai_abstraction_layer',
+          options: { prompt: 'prompt' })
       end
     end
 
@@ -45,9 +57,17 @@ RSpec.describe Gitlab::Llm::Logger, feature_category: :ai_abstraction_layer do
       end
 
       it 'logs on debug level' do
-        expect(logger).to receive(:debug).with({ message: 'test' })
+        expect(logger).to receive(:info).with(message: 'test',
+          klass: 'Gitlab::Llm',
+          event_name: 'received_response',
+          ai_component: 'ai_abstraction_layer')
 
-        logger.info_or_debug(user, message: 'test')
+        logger.conditional_info(user,
+          message: 'test',
+          klass: 'Gitlab::Llm',
+          event_name: 'received_response',
+          ai_component: 'ai_abstraction_layer',
+          prompt: 'prompt')
       end
     end
   end

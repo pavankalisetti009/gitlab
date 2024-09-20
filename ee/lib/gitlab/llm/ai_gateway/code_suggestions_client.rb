@@ -5,13 +5,13 @@ module Gitlab
     module AiGateway
       class CodeSuggestionsClient
         include ::Gitlab::Utils::StrongMemoize
+        include Gitlab::Llm::Concerns::Logger
 
         COMPLETION_CHECK_TIMEOUT = 3.seconds
         DEFAULT_TIMEOUT = 30.seconds
 
         def initialize(user)
           @user = user
-          @logger = Gitlab::Llm::Logger.build
         end
 
         def test_completion
@@ -37,7 +37,11 @@ module Gitlab
         def direct_access_token
           return error('Missing instance token') unless access_token
 
-          logger.info(message: "Creating user access token")
+          log_info(message: "Creating user access token",
+            event_name: 'user_token_created',
+            ai_component: 'code_suggestion'
+          )
+
           response = Gitlab::HTTP.post(
             Gitlab::AiGateway.access_token_url,
             headers: Gitlab::AiGateway.headers(user: user, service: service),
@@ -54,7 +58,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :logger
+        attr_reader :user
 
         def error(message)
           {

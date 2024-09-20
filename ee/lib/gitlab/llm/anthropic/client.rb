@@ -7,6 +7,7 @@ module Gitlab
         include ::Gitlab::Llm::Concerns::ExponentialBackoff
         include ::Gitlab::Llm::Concerns::EventTracking
         include ::Gitlab::Llm::Concerns::AvailableModels
+        include ::Gitlab::Llm::Concerns::Logger
         include Langsmith::RunHelpers
 
         DEFAULT_TEMPERATURE = 0
@@ -17,7 +18,6 @@ module Gitlab
           @user = user
           @tracking_context = tracking_context
           @unit_primitive = unit_primitive
-          @logger = Gitlab::Llm::Logger.build
         end
 
         def complete(prompt:, **options)
@@ -30,7 +30,7 @@ module Gitlab
           end
 
           response_completion = response["completion"]
-          logger.info_or_debug(user, message: "Received response from Anthropic", response: response_completion)
+          log_response_received(response_completion, 'completion')
 
           track_prompt_size(token_size(prompt))
           track_response_size(token_size(response_completion))
@@ -49,7 +49,7 @@ module Gitlab
             yield parsed_event if block_given?
           end
 
-          logger.info_or_debug(user, message: "Received response from Anthropic", response: response_body)
+          log_response_received(response_body, 'completion')
 
           track_prompt_size(token_size(prompt))
           track_response_size(token_size(response_body))
@@ -68,7 +68,7 @@ module Gitlab
           end
 
           response_completion = response&.dig('content', 0, 'text')
-          logger.info_or_debug(user, message: "Received response from Anthropic", response: response_completion)
+          log_response_received(response_completion, 'messages')
 
           track_prompt_size(token_size(messages))
           track_response_size(token_size(response_completion))
@@ -85,7 +85,8 @@ module Gitlab
 
             yield parsed_event if block_given?
           end
-          logger.info_or_debug(user, message: "Received response from Anthropic", response: response_body)
+
+          log_response_received(response_body, 'messages')
 
           track_prompt_size(token_size(messages))
           track_response_size(token_size(response_body))
@@ -96,10 +97,11 @@ module Gitlab
 
         private
 
-        attr_reader :user, :logger, :tracking_context, :unit_primitive
+        attr_reader :user, :tracking_context, :unit_primitive
 
         def perform_completion_request(prompt:, options:)
-          logger.info(message: "Performing request to Anthropic", options: options)
+          log_performing_request('completion', options)
+
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
           stream = options.fetch(:stream, false)
 
@@ -120,7 +122,7 @@ module Gitlab
         end
 
         def perform_messages_request(messages:, options:)
-          logger.info(message: "Performing request to Anthropic", options: options)
+          log_performing_request('messages', options)
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
           stream = options.fetch(:stream, false)
 
@@ -209,6 +211,31 @@ module Gitlab
 
         def model
           CLAUDE_2_1
+        end
+
+        def log_response_received(response_body, request_type)
+          log_conditional_info(user,
+            message: 'Response content',
+            event_name: 'response_received',
+            ai_component: 'abstraction_layer',
+            ai_request_type: request_type,
+            response_from_llm: response_body,
+            unit_primitive: unit_primitive)
+
+          log_info(message: "Received response from Anthropic",
+            event_name: 'response_received',
+            ai_component: 'abstraction_layer',
+            ai_request_type: request_type,
+            unit_primitive: unit_primitive)
+        end
+
+        def log_performing_request(request_type, options)
+          log_info(message: "Performing request to Anthropic",
+            event_name: 'performing_request',
+            ai_component: 'abstraction_layer',
+            ai_request_type: request_type,
+            unit_primitive: unit_primitive,
+            options: options)
         end
       end
     end

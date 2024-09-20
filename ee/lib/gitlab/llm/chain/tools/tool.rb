@@ -7,6 +7,7 @@ module Gitlab
         class Tool
           include Gitlab::Utils::StrongMemoize
           include Langsmith::RunHelpers
+          include ::Gitlab::Llm::Concerns::Logger
 
           NAME = 'Base Tool'
           DESCRIPTION = 'Base Tool description'
@@ -33,7 +34,6 @@ module Gitlab
           def initialize(context:, options:, stream_response_handler: nil, command: nil)
             @context = context
             @options = options
-            @logger = Gitlab::Llm::Logger.build
             @stream_response_handler = stream_response_handler
             @command = command
           end
@@ -86,7 +86,7 @@ module Gitlab
 
           private
 
-          attr_reader :logger, :stream_response_handler
+          attr_reader :stream_response_handler
 
           def self.description
             self::DESCRIPTION
@@ -107,7 +107,11 @@ module Gitlab
           def already_used_answer
             content = "You already have the answer from #{self.class::NAME} tool, read carefully."
 
-            logger.info_or_debug(context.current_user, message: "Answer", class: self.class.to_s, content: content)
+            log_conditional_info(context.current_user,
+              message: "Answer already received from tool",
+              event_name: 'incorrect_response_received',
+              ai_component: 'duo_chat',
+              error_message: content)
 
             ::Gitlab::Llm::Chain::Answer.new(
               status: :not_executed, context: context, content: content, tool: nil, is_final: false
@@ -120,7 +124,12 @@ module Gitlab
 
             if context.tools_used.include?(cls)
               # detect tool cycling for specific types of questions
-              logger.info(message: "Tool cycling detected")
+              log_info(
+                message: "Tool cycling detected",
+                event_name: 'incorrect_response_received',
+                ai_component: 'duo_chat',
+                picked_tool: cls.class.to_s
+              )
               return true
             end
 

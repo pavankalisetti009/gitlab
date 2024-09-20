@@ -8,7 +8,7 @@ module Gitlab
           def self.context(context:)
             unless context.current_user
               return Response.new(allowed: false,
-                message: no_access_message(context.current_user))
+                message: no_access_message)
             end
 
             if context.resource && context.container
@@ -39,7 +39,7 @@ module Gitlab
             return response unless response.allowed?
 
             allowed = user.can?(:access_duo_chat)
-            message = no_access_message(user) unless allowed
+            message = no_access_message unless allowed
             Response.new(allowed: allowed, message: message)
           end
         end

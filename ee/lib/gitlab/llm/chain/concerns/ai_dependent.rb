@@ -5,6 +5,8 @@ module Gitlab
     module Chain
       module Concerns
         module AiDependent
+          include ::Gitlab::Llm::Concerns::Logger
+
           def prompt
             provider_prompt_class.prompt(prompt_options)
           end
@@ -13,7 +15,11 @@ module Gitlab
             prompt_str = prompt
             prompt_text = prompt_str[:prompt]
 
-            logger.info_or_debug(context.current_user, message: "Prompt", class: self.class.to_s, prompt: prompt_text)
+            log_conditional_info(context.current_user,
+              message: "Content of the prompt from chat request",
+              event_name: 'prompt_content',
+              ai_component: 'duo_chat',
+              prompt: prompt_text)
 
             if use_ai_gateway_agent_prompt?
               prompt_str[:options] ||= {}

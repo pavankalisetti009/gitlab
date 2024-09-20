@@ -13,7 +13,6 @@ module Gitlab
             @user = user
             @ai_client = ::Gitlab::Llm::Anthropic::Client.new(user,
               unit_primitive: unit_primitive, tracking_context: tracking_context)
-            @logger = Gitlab::Llm::Logger.build
           end
 
           # TODO: unit primitive param is temporarily added to provide parity with ai_gateway-related method
@@ -23,7 +22,12 @@ module Gitlab
             ai_client.messages_stream(
               **prompt
             ) do |data|
-              logger.info(message: "Streaming error", error: data&.dig("error")) if data&.dig("error")
+              if data&.dig("error")
+                log_error(message: "Streaming error",
+                  event_name: 'error_response_received',
+                  ai_component: 'abstraction_layer',
+                  error: data&.dig("error"))
+              end
 
               content = data&.dig('delta', 'text').to_s
               yield content if block_given?
@@ -32,7 +36,7 @@ module Gitlab
 
           private
 
-          attr_reader :user, :logger
+          attr_reader :user
         end
       end
     end

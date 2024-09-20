@@ -2,18 +2,21 @@
 
 module Llm
   class BaseService
+    include Gitlab::Llm::Concerns::Logger
+
     INVALID_MESSAGE = 'AI features are not enabled or resource is not permitted to be sent.'
 
     def initialize(user, resource, options = {})
       @user = user
       @resource = resource
       @options = options
-      @logger = Gitlab::Llm::Logger.build
     end
 
     def execute
       unless valid?
-        logger.info(message: "Returning from Service due to validation")
+        log_info(message: "Returning from Service due to validation",
+          event_name: 'permission_denied',
+          ai_component: 'abstraction_layer')
         return error(INVALID_MESSAGE)
       end
 
@@ -30,7 +33,7 @@ module Llm
 
     private
 
-    attr_reader :user, :resource, :options, :logger
+    attr_reader :user, :resource, :options
 
     def perform
       raise NotImplementedError
@@ -82,9 +85,11 @@ module Llm
 
       job_options[:start_time] = ::Gitlab::Metrics::System.monotonic_time
 
-      logger.info_or_debug(
+      log_conditional_info(
         message.user,
         message: "Enqueuing CompletionWorker",
+        event_name: 'worker_enqueued',
+        ai_component: 'abstraction_layer',
         user_id: message.user.id,
         resource_id: message.resource&.id,
         resource_class: message.resource&.class&.name,

@@ -79,7 +79,7 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
   describe '#request' do
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
-      allow(logger).to receive(:info_or_debug)
+      allow(logger).to receive(:conditional_info)
     end
 
     it 'passes prompt and unit primitive to the ai_client' do
@@ -141,8 +141,8 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
 
       tool.request
 
-      expect(logger).to have_received(:info_or_debug).with(context.current_user, message: "Prompt",
-        class: tool.class.to_s, prompt: expected_prompt)
+      expect(logger).to have_received(:conditional_info).with(context.current_user, a_hash_including(
+        message: "Content of the prompt from chat request", klass: tool.class.to_s, prompt: expected_prompt))
     end
   end
 end

@@ -8,6 +8,7 @@ module Gitlab
         class SingleActionExecutor
           include Gitlab::Utils::StrongMemoize
           include Langsmith::RunHelpers
+          include ::Gitlab::Llm::Concerns::Logger
 
           ToolNotFoundError = Class.new(StandardError)
           EmptyEventsError = Class.new(StandardError)
@@ -28,7 +29,6 @@ module Gitlab
             @tools = tools
             @context = context
             @iterations = 0
-            @logger = Gitlab::Llm::Logger.build
             @response_handler = response_handler
             @stream_response_handler = stream_response_handler
           end
@@ -133,7 +133,9 @@ module Gitlab
 
             return unless event
 
-            logger.warn(message: "Surface an unknown event as a final answer to the user")
+            log_warn(message: "Surface an unknown event as a final answer to the user",
+              event_name: 'unknown_event',
+              ai_component: 'duo_chat')
 
             Answer.final_answer(context: context, content: event.text)
           end
@@ -181,7 +183,10 @@ module Gitlab
 
             unless tool_class
               # Make sure that the v2/chat/agent endpoint in AI Gateway and the GitLab-Rails are compatible.
-              logger.error(message: "Failed to find a tool in GitLab Rails", tool_name: tool_name)
+              log_error(message: "Failed to find a tool in GitLab Rails",
+                event_name: 'tool_not_find',
+                ai_component: 'duo_chat',
+                tool_name: tool_name)
               raise ToolNotFoundError, tool: tool_name
             end
 
@@ -196,7 +201,7 @@ module Gitlab
             resources
           end
 
-          attr_reader :logger, :stream_response_handler
+          attr_reader :stream_response_handler
 
           def model_metadata_params
             return unless chat_feature_setting&.self_hosted?

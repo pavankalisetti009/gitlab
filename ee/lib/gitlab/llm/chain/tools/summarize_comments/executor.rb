@@ -109,8 +109,11 @@ module Gitlab
 
             def can_summarize?
               ability = Ability.allowed?(context.current_user, :summarize_comments, context.resource)
-              logger.info_or_debug(context.current_user, message: "Supported Issuable Typees Ability Allowed",
-                content: ability)
+              log_conditional_info(context.current_user,
+                message: "Supported Issuable Typees Ability Allowed",
+                event_name: 'permission',
+                ai_component: 'feature',
+                allowed: ability)
 
               ::Llm::GenerateSummaryService::SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) &&
                 ability

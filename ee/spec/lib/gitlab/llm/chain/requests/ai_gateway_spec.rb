@@ -92,7 +92,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
-      allow(logger).to receive(:info_or_debug)
+      allow(logger).to receive(:conditional_info)
       allow(instance).to receive(:ai_client).and_return(ai_client)
     end
 
@@ -106,13 +106,14 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     it 'logs the request and response' do
       expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
-      expect(logger).to receive(:info_or_debug).with(
+      expect(logger).to receive(:conditional_info).with(
         user,
-        message: "Made request to AI Client",
-        class: described_class.to_s,
-        prompt: user_prompt,
-        response: response
-      )
+        a_hash_including(
+          message: "Made request to AI Client",
+          klass: described_class.to_s,
+          prompt: user_prompt,
+          response_from_llm: response
+        ))
 
       request
     end

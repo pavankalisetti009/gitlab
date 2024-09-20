@@ -13,7 +13,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:question) { 'A question' }
   let(:answer) { 'The answer.' }
   let(:logger) { instance_double('Gitlab::Llm::Logger') }
-  let(:instance) { described_class.new(current_user: user, question: question, logger: logger) }
+  let(:instance) { described_class.new(current_user: user, question: question) }
   let(:ai_gateway_request) { ::Gitlab::Llm::Chain::Requests::AiGateway.new(user) }
   let(:attrs) { embeddings.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
   let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
@@ -39,7 +39,10 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     subject(:execute) { instance.execute }
 
     before do
-      allow(logger).to receive(:info_or_debug)
+      allow(logger).to receive(:conditional_info)
+      allow(logger).to receive(:info)
+
+      allow(::Gitlab::Llm::Logger).to receive(:build).and_return(logger)
 
       allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?).and_return(true)
 
@@ -77,7 +80,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     end
 
     it 'raises an error when request failed' do
-      expect(logger).to receive(:info).with(message: "Streaming error", error: anything)
+      expect(logger).to receive(:error).with(a_hash_including(message: "Streaming error", error: anything))
       allow(ai_gateway_request).to receive(:request).once
                                                     .and_raise(::Gitlab::Llm::AiGateway::Client::ConnectionError.new)
 
