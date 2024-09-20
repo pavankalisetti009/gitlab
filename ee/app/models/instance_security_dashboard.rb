@@ -28,7 +28,7 @@ class InstanceSecurityDashboard
   def vulnerabilities
     return Vulnerability.none if projects.empty?
 
-    Vulnerability.for_projects(projects)
+    Vulnerability.for_projects(projects).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485658')
   end
 
   def vulnerability_reads

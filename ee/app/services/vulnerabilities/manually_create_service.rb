@@ -41,6 +41,9 @@ module Vulnerabilities
           vulnerability_occurrences
           vulnerability_occurrence_identifiers
           vulnerability_reads
+          vulnerability_identifiers
+          project_settings
+          project_statistics
           vulnerability_scanners
           vulnerability_identifiers
         ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/476175'
