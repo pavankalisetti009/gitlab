@@ -17,6 +17,7 @@ module Ai
           CONFIG_FILE_CLASSES = [
             ConfigFiles::CppConanPy,
             ConfigFiles::CppConanTxt,
+            ConfigFiles::CsharpNuget,
             ConfigFiles::GoModules,
             ConfigFiles::JavaGradle,
             ConfigFiles::JavaMaven,
