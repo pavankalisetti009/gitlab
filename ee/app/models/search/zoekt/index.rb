@@ -76,6 +76,8 @@ module Search
       private
 
       def index
+        return if Feature.enabled?(:zoekt_initial_indexing_task, Feature.current_request)
+
         ::Search::Zoekt::NamespaceIndexerWorker.perform_async(zoekt_enabled_namespace.root_namespace_id, :index)
       end
 

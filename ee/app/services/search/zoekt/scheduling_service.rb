@@ -289,30 +289,8 @@ module Search
         return false if Feature.disabled?(:zoekt_initial_indexing_task)
 
         execute_every 10.minutes, cache_key: :initial_indexing do
-          Index.in_progress.preload_zoekt_enabled_namespace_and_namespace.preload_node.find_each do |index|
-            namespace = index.zoekt_enabled_namespace&.namespace
-            next unless namespace
-
-            count = namespace.all_project_ids.count
-            repo_count = index.zoekt_repositories.count
-            if repo_count >= count
-              index.initializing!
-              node = index.node
-              log_data = build_structured_payload(
-                meta: node.metadata_json.merge('zoekt.index_id' => index.id),
-                namespace_id: namespace.id, message: 'index moved to initializing',
-                repo_count: repo_count, project_count: count, task: :initial_indexing
-              )
-              logger.info(log_data)
-            end
-          end
-
-          Index.pending.each_batch do |batch, i|
-            NamespaceInitialIndexingWorker.bulk_perform_in_with_contexts(
-              i * 5.minutes, batch.preload_zoekt_enabled_namespace_and_namespace,
-              arguments_proc: ->(zoekt_index) { zoekt_index.id },
-              context_proc: ->(zoekt_index) { { namespace: zoekt_index.zoekt_enabled_namespace&.namespace } }
-            )
+          Index.pending.find_each do |index|
+            Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
           end
         end
       end
