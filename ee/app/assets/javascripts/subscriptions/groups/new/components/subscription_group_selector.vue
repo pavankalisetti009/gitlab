@@ -132,7 +132,11 @@ export default {
       return this.$options.i18n.groupSelection.placeholder;
     },
     groupOptions() {
-      return this.eligibleGroups.map(({ id, name }) => ({ text: name, value: id }));
+      return this.eligibleGroups.map(({ id, name, fullPath }) => ({
+        text: name,
+        value: id,
+        secondaryText: `/${fullPath}`,
+      }));
     },
     hasEligibleGroups() {
       return this.eligibleGroups.length > 0;
@@ -351,6 +355,16 @@ export default {
                 :variant="validation.state === false ? 'danger' : 'default'"
                 @select="input"
               >
+                <template #list-item="{ item }">
+                  <span class="gl-flex gl-flex-col">
+                    <span class="gl-whitespace-nowrap" data-testid="group-name">{{
+                      item.text
+                    }}</span>
+                    <span class="gl-text-subtle" data-testid="group-path">
+                      {{ item.secondaryText }}</span
+                    >
+                  </span>
+                </template>
                 <template #footer>
                   <div
                     class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-200 gl-p-2 gl-pt-0 gl-border-t-solid"

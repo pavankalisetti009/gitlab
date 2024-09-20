@@ -9,7 +9,9 @@ export default () => {
 
   const { rootUrl } = el.dataset;
   const plansData = convertObjectPropsToCamelCase(JSON.parse(el.dataset.plansData), { deep: true });
-  const eligibleGroups = JSON.parse(el.dataset.eligibleGroups);
+  const eligibleGroups = convertObjectPropsToCamelCase(JSON.parse(el.dataset.eligibleGroups), {
+    deep: true,
+  });
 
   return new Vue({
     el,
