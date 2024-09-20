@@ -9,3 +9,5 @@ class ReindexIssuesToUpdateAnalyzer < Elastic::Migration
     true
   end
 end
+
+ReindexIssuesToUpdateAnalyzer.prepend ::Elastic::MigrationObsolete
