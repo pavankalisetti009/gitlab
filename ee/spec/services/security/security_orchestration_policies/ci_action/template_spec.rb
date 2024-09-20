@@ -25,24 +25,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
     let(:template_cache) { Security::SecurityOrchestrationPolicies::TemplateCacheService.new }
 
     shared_examples 'with template name for scan type' do
-      context "when caching CI templates" do
-        it 'fetches template content from cache' do
-          expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
+      it 'fetches template content from cache' do
+        expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
 
-          config
-        end
-      end
-
-      context "when not caching CI templates" do
-        before do
-          stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
-        end
-
-        it 'fetches template content using ::TemplateFinder' do
-          expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: template_name).and_call_original
-
-          config
-        end
+        config
       end
 
       context 'when selected latest template' do
@@ -50,25 +36,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           action.merge!(template: 'latest')
         end
 
-        context "when caching CI templates" do
-          it 'fetches template content from cache' do
-            expect(template_cache).to receive(:fetch).with(action[:scan], latest: true).and_call_original
+        it 'fetches template content from cache' do
+          expect(template_cache).to receive(:fetch).with(action[:scan], latest: true).and_call_original
 
-            config
-          end
-        end
-
-        context "when not caching CI templates" do
-          before do
-            stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
-          end
-
-          it 'fetches template content using ::TemplateFinder' do
-            expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil,
-              name: "#{template_name}.latest").and_call_original
-
-            config
-          end
+          config
         end
       end
 
@@ -77,25 +48,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           action.merge!(template: 'default')
         end
 
-        context "when caching CI templates" do
-          it 'fetches template content from cache' do
-            expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
+        it 'fetches template content from cache' do
+          expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
 
-            config
-          end
-        end
-
-        context "when not caching CI templates" do
-          before do
-            stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
-          end
-
-          it 'fetches template content using ::TemplateFinder' do
-            expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil,
-              name: template_name).and_call_original
-
-            config
-          end
+          config
         end
       end
     end

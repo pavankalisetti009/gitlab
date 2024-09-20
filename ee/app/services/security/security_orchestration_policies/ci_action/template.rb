@@ -23,9 +23,7 @@ module Security
         end
 
         def config
-          scan_type = @action[:scan]
-          template = @action[:template]
-          ci_configuration = template_ci_configuration(scan_type, template)
+          ci_configuration = template_ci_configuration(@action[:scan])
           variables = merge_variables(ci_configuration.delete(:variables), @ci_variables)
 
           ci_configuration.reject! { |job_name, _| hidden_job?(job_name) }
@@ -44,30 +42,12 @@ module Security
 
         private
 
-        def template_ci_configuration(scan_type, template)
-          if Feature.enabled?(:scan_execution_policy_cache_ci_templates, context.project)
-            @opts[:template_cache].fetch(scan_type, latest: use_latest_template?)
-          else
-            scan_template(scan_type, template)
-          end
+        def template_ci_configuration(scan_type)
+          @opts[:template_cache].fetch(scan_type, latest: use_latest_template?)
         end
 
         def use_latest_template?
           @action[:template] == LATEST_TEMPLATE_TYPE
-        end
-
-        # TODO: Remove with `:scan_execution_policy_cache_ci_templates` feature flag
-        def scan_template(scan_type, template)
-          template = ::TemplateFinder.build(:gitlab_ci_ymls, nil, name: scan_template_path(scan_type, template)).execute
-          Gitlab::Ci::Config.new(template.content).to_hash
-        end
-
-        # TODO: Remove with `:scan_execution_policy_cache_ci_templates` feature flag
-        def scan_template_path(scan_type, template)
-          scan_template_ci_path = SCAN_TEMPLATES[scan_type]
-          return scan_template_ci_path if template != LATEST_TEMPLATE_TYPE
-
-          "#{scan_template_ci_path}.#{LATEST_TEMPLATE_TYPE}"
         end
 
         def hidden_job?(job_name)
