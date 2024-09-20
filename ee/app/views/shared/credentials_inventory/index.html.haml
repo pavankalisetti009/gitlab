@@ -11,7 +11,9 @@
   = gl_tabs_nav({ class: 'scrolling-tabs nav-links'}) do
     = gl_tab_link_to s_('CredentialsInventory|Personal access tokens'), credentials_inventory_path(filter: 'personal_access_tokens'), { item_active: active_when(show_personal_access_tokens?) }
     = gl_tab_link_to s_('CredentialsInventory|SSH Keys'), credentials_inventory_path(filter: 'ssh_keys'), { item_active: active_when(show_ssh_keys?) }
-    = gl_tab_link_to s_('CredentialsInventory|Project and group access tokens'), credentials_inventory_path(filter: 'resource_access_tokens'), { item_active: active_when(show_resource_access_tokens?) }
+
+    - if resource_access_tokens_available?
+      = gl_tab_link_to s_('CredentialsInventory|Project and group access tokens'), credentials_inventory_path(filter: 'resource_access_tokens'), { item_active: active_when(show_resource_access_tokens?) }
 
     - if gpg_keys_available?
       = gl_tab_link_to s_('CredentialsInventory|GPG Keys'), credentials_inventory_path(filter: 'gpg_keys'), { item_active: active_when(show_gpg_keys?) }

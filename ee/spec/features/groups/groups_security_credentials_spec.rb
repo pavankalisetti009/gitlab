@@ -37,12 +37,6 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
 
         expect(page).to have_content('No credentials found')
       end
-
-      it 'displays no resource access tokens credentials' do
-        visit group_security_credentials_path(group_id: group_id, filter: 'resource_access_tokens')
-
-        expect(page).to have_content('No credentials found')
-      end
     end
 
     context 'when there are enterprise users' do
@@ -81,6 +75,7 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
             expect(page).to have_link('Personal access tokens', href: group_security_credentials_path(group_id: group_id, filter: 'personal_access_tokens'))
             expect(page).to have_link('SSH Keys', href: group_security_credentials_path(group_id: group_id, filter: 'ssh_keys'))
             expect(page).not_to have_link('GPG Keys', href: group_security_credentials_path(group_id: group_id, filter: 'gpg_keys'))
+            expect(page).not_to have_link('Project and group access tokens', href: group_security_credentials_path(group_id: group_id, filter: 'resource_access_tokens'))
           end
         end
       end
@@ -101,6 +96,16 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
         context 'by GPG Keys' do
           before do
             visit group_security_credentials_path(group_id: group_id, filter: 'gpg_keys')
+          end
+
+          it 'returns a 404 not found response' do
+            expect(page.status_code).to eq(404)
+          end
+        end
+
+        context 'by resource access tokens' do
+          before do
+            visit group_security_credentials_path(group_id: group_id, filter: 'resource_access_tokens')
           end
 
           it 'returns a 404 not found response' do

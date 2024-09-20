@@ -7,10 +7,12 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
   include CredentialsInventoryActions
   include Groups::SecurityFeaturesHelper
 
-  helper_method :credentials_inventory_path, :user_detail_path, :personal_access_token_revoke_path, :ssh_key_delete_path
+  helper_method :credentials_inventory_path, :user_detail_path, :personal_access_token_revoke_path,
+    :ssh_key_delete_path, :resource_access_tokens_available?
 
   before_action :validate_group_level_credentials_inventory_available!, only: [:index, :revoke, :destroy]
   before_action :check_gpg_keys_list_enabled!, only: [:index]
+  before_action :check_resource_access_tokens_enabled!, only: [:index]
 
   feature_category :user_management
 
@@ -22,6 +24,10 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
 
   def check_gpg_keys_list_enabled!
     render_404 if show_gpg_keys?
+  end
+
+  def check_resource_access_tokens_enabled!
+    render_404 if show_resource_access_tokens?
   end
 
   override :credentials_inventory_path
@@ -42,6 +48,11 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
   override :personal_access_token_revoke_path
   def personal_access_token_revoke_path(token)
     revoke_group_security_credential_path(group, token)
+  end
+
+  override :resource_access_tokens_available?
+  def resource_access_tokens_available?
+    false
   end
 
   override :users

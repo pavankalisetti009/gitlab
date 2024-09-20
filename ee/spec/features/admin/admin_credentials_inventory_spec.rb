@@ -44,6 +44,7 @@ RSpec.describe 'Admin::CredentialsInventory', feature_category: :user_management
           expect(page).to have_link('Personal access tokens', href: admin_credentials_path(filter: 'personal_access_tokens'))
           expect(page).to have_link('SSH Keys', href: admin_credentials_path(filter: 'ssh_keys'))
           expect(page).to have_link('GPG Keys', href: admin_credentials_path(filter: 'gpg_keys'))
+          expect(page).to have_link('Project and group access tokens', href: admin_credentials_path(filter: 'resource_access_tokens'))
         end
       end
     end

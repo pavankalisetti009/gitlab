@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CredentialsInventoryHelper do
+RSpec.describe CredentialsInventoryHelper, feature_category: :user_management do
   let(:filter) { nil }
 
   before do
@@ -109,5 +109,11 @@ RSpec.describe CredentialsInventoryHelper do
 
       it { is_expected.to be_truthy }
     end
+  end
+
+  describe '#resource_access_tokens_available?' do
+    subject { resource_access_tokens_available? }
+
+    it { is_expected.to be_falsey }
   end
 end

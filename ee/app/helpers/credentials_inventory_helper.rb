@@ -25,6 +25,10 @@ module CredentialsInventoryHelper
     License.feature_available?(:credentials_inventory)
   end
 
+  def resource_access_tokens_available?
+    false
+  end
+
   def gpg_keys_available?
     false
   end
