@@ -1913,6 +1913,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_b046dd50c711() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "incident_management_oncall_schedules"
+  WHERE "incident_management_oncall_schedules"."id" = NEW."oncall_schedule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_b2612138515d() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -11982,6 +11998,7 @@ CREATE TABLE incident_management_oncall_rotations (
     ends_at timestamp with time zone,
     active_period_start time without time zone,
     active_period_end time without time zone,
+    project_id bigint,
     CONSTRAINT check_5209fb5d02 CHECK ((char_length(name) <= 200))
 );
 
@@ -28777,6 +28794,8 @@ CREATE UNIQUE INDEX index_inc_mgmnt_oncall_rotations_on_oncall_schedule_id_and_n
 
 CREATE INDEX index_incident_management_escalation_rules_on_project_id ON incident_management_escalation_rules USING btree (project_id);
 
+CREATE INDEX index_incident_management_oncall_rotations_on_project_id ON incident_management_oncall_rotations USING btree (project_id);
+
 CREATE INDEX index_incident_management_oncall_schedules_on_project_id ON incident_management_oncall_schedules USING btree (project_id);
 
 CREATE INDEX index_incident_management_oncall_shifts_on_participant_id ON incident_management_oncall_shifts USING btree (participant_id);
@@ -33219,6 +33238,8 @@ CREATE TRIGGER trigger_a7e0fb195210 BEFORE INSERT OR UPDATE ON vulnerability_fin
 
 CREATE TRIGGER trigger_af3f17817e4d BEFORE INSERT OR UPDATE ON protected_tag_create_access_levels FOR EACH ROW EXECUTE FUNCTION trigger_af3f17817e4d();
 
+CREATE TRIGGER trigger_b046dd50c711 BEFORE INSERT OR UPDATE ON incident_management_oncall_rotations FOR EACH ROW EXECUTE FUNCTION trigger_b046dd50c711();
+
 CREATE TRIGGER trigger_b2612138515d BEFORE INSERT OR UPDATE ON project_relation_exports FOR EACH ROW EXECUTE FUNCTION trigger_b2612138515d();
 
 CREATE TRIGGER trigger_b4520c29ea74 BEFORE INSERT OR UPDATE ON approval_merge_request_rule_sources FOR EACH ROW EXECUTE FUNCTION trigger_b4520c29ea74();
@@ -34538,6 +34559,9 @@ ALTER TABLE ONLY incident_management_escalation_rules
 
 ALTER TABLE ONLY packages_dependencies
     ADD CONSTRAINT fk_cea1124da7 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY incident_management_oncall_rotations
+    ADD CONSTRAINT fk_cecf1b51f9 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_cf3c0ac207 FOREIGN KEY (policy_configuration_id) REFERENCES security_orchestration_policy_configurations(id) ON DELETE CASCADE;
