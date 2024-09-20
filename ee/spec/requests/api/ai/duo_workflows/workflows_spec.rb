@@ -350,4 +350,40 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
       end
     end
   end
+
+  describe 'PATCH /ai/duo_workflows/workflows/:id' do
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}" }
+
+    context 'when update workflow status service returns error' do
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflows::UpdateWorkflowStatusService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(reason: :bad_request,
+            message: 'Cannot update workflow status'))
+        end
+      end
+
+      it 'returns http error status and error message' do
+        patch api(path, user), params: { status_event: "finish" }
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']).to eq('Cannot update workflow status')
+      end
+    end
+
+    context 'when update workflow status service returns success' do
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflows::UpdateWorkflowStatusService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: { workflow: workflow },
+            message: 'Workflow status updated'))
+        end
+      end
+
+      it 'returns http status ok' do
+        patch api(path, user), params: { status_event: "finish" }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['workflow']['id']).to eq(workflow.id)
+      end
+    end
+  end
 end

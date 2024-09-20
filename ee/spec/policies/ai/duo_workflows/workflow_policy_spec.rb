@@ -10,13 +10,14 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
   let_it_be(:developer) { create(:user, developer_of: workflow.project) }
   let(:current_user) { guest }
 
-  describe "read_duo_workflow" do
+  describe "read_duo_workflow and update_duo_workflow" do
     context "when duo_workflow FF is disabled" do
       before do
         stub_feature_flags(duo_workflow: false)
       end
 
       it { is_expected.to be_disallowed(:read_duo_workflow) }
+      it { is_expected.to be_disallowed(:update_duo_workflow) }
     end
 
     context "when  duo_workflow FF is enabled" do
@@ -26,6 +27,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
 
       context "when user is guest" do
         it { is_expected.to be_disallowed(:read_duo_workflow) }
+        it { is_expected.to be_disallowed(:update_duo_workflow) }
       end
 
       context "when user is developer" do
@@ -33,6 +35,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
 
         context "when user is not workflow owner" do
           it { is_expected.to be_disallowed(:read_duo_workflow) }
+          it { is_expected.to be_disallowed(:update_duo_workflow) }
         end
 
         context "when user is workflow owner" do
@@ -41,6 +44,7 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
           end
 
           it { is_expected.to be_allowed(:read_duo_workflow) }
+          it { is_expected.to be_allowed(:update_duo_workflow) }
         end
       end
     end

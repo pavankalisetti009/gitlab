@@ -161,6 +161,26 @@ module API
                 present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow
               end
 
+              desc 'Updates the workflow status' do
+                success code: 200
+              end
+              params do
+                requires :id, type: Integer, desc: 'The ID of the workflow', documentation: { example: 1 }
+                requires :status_event, type: String, desc: 'The status event',
+                  documentation: { example: 'finish' }
+              end
+              patch '/:id' do
+                workflow = find_workflow!(params[:id])
+
+                service = ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
+                  workflow: workflow,
+                  status_event: params[:status_event],
+                  current_user: current_user
+                )
+
+                render_response(service.execute)
+              end
+
               params do
                 requires :id, type: Integer, desc: 'The ID of the workflow'
                 requires :thread_ts, type: String, desc: 'The thread ts'
