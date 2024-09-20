@@ -37,14 +37,16 @@ module Security
             self.class::TASKS.each { |task| execute_task(task) }
           end
 
-          @finding_maps.map(&:vulnerability_id)
+          finding_maps.map(&:vulnerability_id)
         end
       end
 
       private
 
+      attr_reader :pipeline, :finding_maps
+
       def execute_task(task)
-        Tasks.const_get(task, false).execute(@pipeline, @finding_maps)
+        Tasks.const_get(task, false).execute(pipeline, finding_maps)
       end
     end
   end

@@ -4868,4 +4868,10 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       it { is_expected.to eq(false) }
     end
   end
+
+  describe '#vulnerability_quota' do
+    subject { project.vulnerability_quota }
+
+    it { is_expected.to be_an_instance_of(Vulnerabilities::Quota) }
+  end
 end

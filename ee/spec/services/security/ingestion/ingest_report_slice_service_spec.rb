@@ -39,6 +39,34 @@ RSpec.describe Security::Ingestion::IngestReportSliceService, feature_category: 
       expect(Security::Ingestion::Tasks::HooksExecution).to have_received(:execute).ordered.with(pipeline, finding_maps)
     end
 
+    context 'when the project does not have vulnerability quota' do
+      let(:mock_vulnerability_quota) { instance_double(Vulnerabilities::Quota, validate!: false) }
+
+      before do
+        allow(pipeline.project).to receive(:vulnerability_quota).and_return(mock_vulnerability_quota)
+      end
+
+      it 'does not call the tasks' do
+        ingest_report_slice
+
+        expect(Security::Ingestion::Tasks::UpdateVulnerabilityUuids).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestIdentifiers).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestFindings).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestVulnerabilities).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IncreaseCountersTask).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::AttachFindingsToVulnerabilities).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestFindingIdentifiers).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestFindingLinks).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestFindingSignatures).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestFindingEvidence).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestVulnerabilityFlags).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestVulnerabilityReads).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestVulnerabilityStatistics).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IngestRemediations).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::HooksExecution).not_to have_received(:execute)
+      end
+    end
+
     context 'when an exception happens' do
       let(:mock_task_1) { double(:task) }
       let(:mock_task_2) { double(:task) }
