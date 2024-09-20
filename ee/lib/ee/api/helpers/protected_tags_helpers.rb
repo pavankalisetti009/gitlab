@@ -12,6 +12,7 @@ module EE
               optional :access_level, type: Integer, values: ::ProtectedTag::CreateAccessLevel.allowed_access_levels
               optional :user_id, type: Integer
               optional :group_id, type: Integer
+              optional :deploy_key_id, type: Integer
             end
           end
         end
