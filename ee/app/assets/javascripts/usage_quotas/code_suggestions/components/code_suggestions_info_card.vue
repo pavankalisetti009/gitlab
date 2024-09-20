@@ -271,9 +271,9 @@ export default {
     </gl-skeleton-loader>
     <usage-statistics v-else>
       <template #description>
-        <h4 class="gl-mb-3 gl-mt-0 gl-font-bold" data-testid="title">
+        <h2 class="gl-mb-3 gl-mt-0 gl-text-lg gl-font-bold" data-testid="title">
           {{ sprintf(titleText) }}
-        </h4>
+        </h2>
       </template>
       <template #additional-info>
         <div data-testid="subscription-info">
@@ -285,7 +285,7 @@ export default {
             <span class="gl-font-bold">{{ $options.i18n.endDateText }}</span>
             <span>{{ endDate }}</span>
           </div>
-          <p class="gl-mb-0 gl-mt-4" data-testid="description">
+          <p class="gl-mb-0 gl-mt-4 gl-text-subtle" data-testid="description">
             <gl-sprintf :message="$options.i18n.description">
               <template #link="{ content }">
                 <gl-link
