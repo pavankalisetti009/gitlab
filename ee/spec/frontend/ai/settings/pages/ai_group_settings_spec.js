@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { updateGroupSettings } from 'ee/api/groups_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
@@ -11,19 +12,29 @@ jest.mock('ee/api/groups_api');
 jest.mock('~/lib/utils/url_utility');
 jest.mock('~/alert');
 
+jest.mock('ee/ai/settings/components/early_access_program_banner.vue', () => ({
+  name: 'EarlyAccessProgramBanner',
+  render: (h) => h('early-access-program-banner'),
+}));
+
 let wrapper;
 
-const createComponent = (props = {}) => {
+const createComponent = (props = {}, provide = {}) => {
   wrapper = shallowMount(AiGroupSettings, {
     propsData: {
       redirectPath: '/groups/test-group',
       updateId: '100',
       ...props,
     },
+    provide: {
+      showEarlyAccessBanner: false,
+      ...provide,
+    },
   });
 };
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
+const findEarlyAccessBanner = () => wrapper.findComponent({ name: 'EarlyAccessProgramBanner' });
 
 describe('AiGroupSettings', () => {
   beforeEach(() => {
@@ -33,6 +44,19 @@ describe('AiGroupSettings', () => {
   describe('UI', () => {
     it('renders the component', () => {
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  describe('when showEarlyAccessBanner setting is set', () => {
+    it('does not render the banner when the cookie is missing', () => {
+      expect(findEarlyAccessBanner().exists()).toBe(false);
+    });
+
+    it('is true it renders EarlyAccessProgramBanner', async () => {
+      createComponent({}, { showEarlyAccessBanner: true });
+      await nextTick();
+      await nextTick();
+      expect(findEarlyAccessBanner().exists()).toBe(true);
     });
   });
 

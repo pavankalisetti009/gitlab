@@ -12,9 +12,12 @@ RSpec.describe EE::Groups::SettingsHelper do
   end
 
   let(:group) { build(:group, namespace_settings: namespace_settings) }
+  let(:current_user) { build(:user) }
 
   before do
     helper.instance_variable_set(:@group, group)
+    allow(helper).to receive(:current_user).and_return(current_user)
+    allow(helper).to receive(:instance_variable_get).with(:@current_user).and_return(current_user)
   end
 
   describe '.unique_project_download_limit_settings_data', feature_category: :insider_threat do
@@ -33,15 +36,24 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'group_ai_settings_helper_data' do
     subject { helper.group_ai_settings_helper_data }
 
+    before do
+      allow(helper).to receive(:show_early_access_program_banner?).and_return(true)
+    end
+
     it 'returns the expected data' do
       is_expected.to eq(
-        { cascading_settings_data: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
+        {
+          cascading_settings_data: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
           duo_availability: group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
           are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
+          show_early_access_banner: "true",
           redirect_path: edit_group_path(group),
-          update_id: group.id })
+          early_access_path: group_early_access_opt_in_path(group),
+          update_id: group.id
+        }
+      )
     end
   end
 
@@ -64,6 +76,34 @@ RSpec.describe EE::Groups::SettingsHelper do
 
       it "returns expected result" do
         is_expected.to eq(result)
+      end
+    end
+  end
+
+  describe 'show_early_access_program_banner?' do
+    using RSpec::Parameterized::TableSyntax
+    subject { helper.show_early_access_program_banner? }
+
+    where(:feature_enabled, :participant, :experiment_features_enabled, :expected_result) do
+      true  | false | true  | true
+      true  | false | false | false
+      true  | true  | true  | false
+      true  | true  | false | false
+      false | false | true  | false
+      false | false | false | false
+      false | true  | true  | false
+      false | true  | false | false
+    end
+
+    with_them do
+      before do
+        stub_feature_flags(early_access_program_toggle: feature_enabled)
+        current_user.user_preference.update!(early_access_program_participant: participant)
+        allow(group).to receive(:experiment_features_enabled).and_return(experiment_features_enabled)
+      end
+
+      it 'returns the expected result' do
+        expect(helper.show_early_access_program_banner?).to eq(expected_result)
       end
     end
   end

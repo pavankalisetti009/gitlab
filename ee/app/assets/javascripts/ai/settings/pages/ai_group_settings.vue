@@ -5,10 +5,13 @@ import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 
+const EarlyAccessProgramBanner = () => import('../components/early_access_program_banner.vue');
+
 export default {
   name: 'AiGroupSettings',
   components: {
     AiCommonSettings,
+    EarlyAccessProgramBanner,
   },
   i18n: {
     successMessage: __('Group was successfully updated.'),
@@ -16,6 +19,7 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
+  inject: ['showEarlyAccessBanner'],
   props: {
     redirectPath: {
       type: String,
@@ -58,5 +62,9 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings @submit="updateSettings" />
+  <ai-common-settings @submit="updateSettings">
+    <template #ai-common-settings-top>
+      <early-access-program-banner v-if="showEarlyAccessBanner" />
+    </template>
+  </ai-common-settings>
 </template>

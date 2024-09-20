@@ -18,6 +18,8 @@ export const initAiSettings = (id, component) => {
     updateId,
     duoProVisible,
     disabledDirectConnectionMethod,
+    showEarlyAccessBanner,
+    earlyAccessPath,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -38,6 +40,8 @@ export const initAiSettings = (id, component) => {
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
       disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod),
+      showEarlyAccessBanner: parseBoolean(showEarlyAccessBanner),
+      earlyAccessPath,
     },
     render: (createElement) =>
       createElement(component, {
