@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Backup::Cli::GitlabConfig do
       end
     end
 
-    context 'when provided with a filepath that doesnt exist' do
+    context 'when provided with a filepath that does not exist' do
       let(:config_fixture) { fixtures_path.join('unknown-gitlab.yml') }
 
       it 'does not raise an exception', :silence_output do
@@ -25,7 +25,7 @@ RSpec.describe Gitlab::Backup::Cli::GitlabConfig do
       end
     end
 
-    context 'when process lack enough permission to read provided config file' do
+    context 'when the process lacks enough permission to read provided config file' do
       before do
         allow(ActiveSupport::ConfigurationFile).to receive(:parse).and_raise(Errno::EACCES)
       end

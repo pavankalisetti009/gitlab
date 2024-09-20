@@ -58,7 +58,7 @@ module Gitlab
           private
 
           def load!
-            @config = Psych.safe_load_file(@source, symbolize_names: true)
+            @config = YAML.safe_load_file(@source, symbolize_names: true)
 
           rescue Errno::ENOENT
             Gitlab::Backup::Cli::Output.error "Omnibus configuration file: #{@source} does not exist"
