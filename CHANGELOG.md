@@ -9425,6 +9425,10 @@ No changes.
 - [Remove pubsub migration helper for actioncable](gitlab-org/gitlab@763ca1305db6f1c9cf6700b8497494a81926d742) ([merge request](gitlab-org/gitlab!133066))
 - [Use partitioned table for CommitStatus](gitlab-org/gitlab@063826e042778995fae13928a2fb5de2c8855b45) ([merge request](gitlab-org/gitlab!134489))
 
+## 16.5.10 (2024-09-20)
+
+No changes.
+
 ## 16.5.9 (2024-07-23)
 
 ### Added (1 change)
