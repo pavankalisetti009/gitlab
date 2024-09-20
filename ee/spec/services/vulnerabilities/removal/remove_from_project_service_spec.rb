@@ -59,14 +59,16 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
         create(:vulnerabilities_finding_signature, finding: finding)
         create(:vulnerabilities_finding_identifier, finding: finding)
         create(:vulnerabilities_remediation, project: project, findings: [finding])
+
+        create(:vulnerability, project: project, present_on_default_branch: false)
       end
 
       it 'removes all the records from the database', :aggregate_failures do
-        expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-2)
+        expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-3)
                                          .and change { Vulnerabilities::Read.count }.by(-2)
                                          .and change { Vulnerabilities::Flag.count }.by(-1)
                                          .and change { VulnerabilityUserMention.count }.by(-2)
-                                         .and change { Vulnerabilities::Finding.count }.by(-2)
+                                         .and change { Vulnerabilities::Finding.count }.by(-3)
                                          .and change { Vulnerabilities::Feedback.count }.by(-1)
                                          .and change { Vulnerabilities::IssueLink.count }.by(-4)
                                          .and change { Vulnerabilities::Identifier.count }.by(-1)
