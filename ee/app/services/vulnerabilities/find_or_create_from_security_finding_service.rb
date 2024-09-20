@@ -16,26 +16,7 @@ module Vulnerabilities
       end
 
       with_vulnerability_finding do |vulnerability_finding|
-        # This cross db access is due to the creation of 4 records:
-        #  vuln identifiers, occurrences, occurrence identifers and finding signatures
-        ::Gitlab::Database.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved'
-        ) do
-          ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-            %i[
-              vulnerabilities
-              vulnerability_finding_evidences
-              vulnerability_finding_signatures
-              vulnerability_identifiers
-              vulnerability_occurrences
-              vulnerability_occurrence_identifiers
-              vulnerability_occurrence_pipelines
-            ],
-            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474644'
-          ) do
-            ServiceResponse.success(payload: { vulnerability: find_or_create_vulnerability(vulnerability_finding) })
-          end
-        end
+        ServiceResponse.success(payload: { vulnerability: find_or_create_vulnerability(vulnerability_finding) })
       end
     end
 
