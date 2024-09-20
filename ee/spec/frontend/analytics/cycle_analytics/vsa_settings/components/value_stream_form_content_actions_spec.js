@@ -5,10 +5,9 @@ import { valueStreamPath } from '../../mock_data';
 describe('ValueStreamFormContentActions', () => {
   let wrapper;
 
-  const findNewValueStreamBtn = () => wrapper.findByText('New value stream');
-  const findSaveValueStreamBtn = () => wrapper.findByText('Save value stream');
-  const findValueStreamCancelBtn = () => wrapper.findByText('Cancel');
-  const findAddStageBtn = () => wrapper.findByText('Add a stage');
+  const findPrimaryBtn = () => wrapper.findByTestId('primary-button');
+  const findValueStreamCancelBtn = () => wrapper.findByTestId('cancel-button');
+  const findAddStageBtn = () => wrapper.findByTestId('add-button');
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ValueStreamFormContentHeader, {
@@ -20,16 +19,17 @@ describe('ValueStreamFormContentActions', () => {
   };
 
   describe.each`
-    isEditing | findPrimaryActionBtn
-    ${false}  | ${findNewValueStreamBtn}
-    ${true}   | ${findSaveValueStreamBtn}
-  `('when `isEditing` is `$isEditing`', ({ isEditing, findPrimaryActionBtn }) => {
+    isEditing | text
+    ${false}  | ${'New value stream'}
+    ${true}   | ${'Save value stream'}
+  `('when `isEditing` is `$isEditing`', ({ isEditing, text }) => {
     beforeEach(() => {
       createComponent({ props: { isEditing } });
     });
 
     it('renders primary action correctly', () => {
-      expect(findPrimaryActionBtn().props()).toMatchObject({
+      expect(findPrimaryBtn().text()).toBe(text);
+      expect(findPrimaryBtn().props()).toMatchObject({
         variant: 'confirm',
         loading: false,
         disabled: false,
@@ -37,7 +37,7 @@ describe('ValueStreamFormContentActions', () => {
     });
 
     it('emits `clickPrimaryAction` event when primary action is selected', () => {
-      findPrimaryActionBtn().vm.$emit('click');
+      findPrimaryBtn().vm.$emit('click');
 
       expect(wrapper.emitted('clickPrimaryAction')).toHaveLength(1);
     });
@@ -67,7 +67,7 @@ describe('ValueStreamFormContentActions', () => {
       });
 
       it('sets primary action to a loading state', () => {
-        expect(findPrimaryActionBtn().props('loading')).toBe(true);
+        expect(findPrimaryBtn().props('loading')).toBe(true);
       });
 
       it('disables all other actions', () => {
