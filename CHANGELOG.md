@@ -8772,6 +8772,10 @@ No changes.
 
 - [Move export buttons next to each other](gitlab-org/gitlab@106bea7a6246cd153cf66d133936a09d46369ae3) ([merge request](gitlab-org/gitlab!137461))
 
+## 16.6.10 (2024-09-20)
+
+No changes.
+
 ## 16.6.9 (2024-07-23)
 
 ### Added (1 change)
