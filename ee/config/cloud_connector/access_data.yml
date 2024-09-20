@@ -36,6 +36,8 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         unit_primitives:
           - duo_chat
           - documentation_search
+          - ask_epic
+          - ask_issue
   generate_description:
     backend: 'gitlab-ai-gateway'
     bundled_with:
