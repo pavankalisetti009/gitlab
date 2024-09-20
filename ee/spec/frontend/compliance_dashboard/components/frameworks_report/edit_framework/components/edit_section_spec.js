@@ -1,4 +1,4 @@
-import { GlCollapse, GlIcon } from '@gitlab/ui';
+import { GlCollapse, GlButton } from '@gitlab/ui';
 import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -12,7 +12,7 @@ describe('Section', () => {
   const findTitle = () => wrapper.findByText(title);
   const findDescription = () => wrapper.findByText(description);
   const findCollapse = () => wrapper.findComponent(GlCollapse);
-  const findCollapseIcon = () => wrapper.findComponent(GlIcon);
+  const findCollapseButton = () => wrapper.findComponent(GlButton);
   const findCountBadge = () => wrapper.findByTestId('count-badge');
   const findStatusBadge = () => wrapper.findByTestId('status-badge');
 
@@ -86,17 +86,18 @@ describe('Section', () => {
       expect(findCollapse().props('visible')).toBe(true);
     });
 
-    it('renders expand icon', () => {
+    it('renders expand button with icon', () => {
       createComponent();
-      expect(findCollapseIcon().exists()).toBe(true);
-      expect(findCollapseIcon().props('name')).toBe('chevron-lg-right');
+      expect(findCollapseButton().exists()).toBe(true);
+      expect(findCollapseButton().props('icon')).toBe('chevron-lg-right');
+      expect(findCollapseButton().attributes('aria-label')).toBe('Expand');
     });
 
     it('expands collapse on clicking button', async () => {
       createComponent();
-      await findCollapseIcon().trigger('click');
+      await findCollapseButton().trigger('click');
       expect(findCollapse().props('visible')).toBe(true);
-      expect(findCollapseIcon().props('name')).toBe('chevron-lg-down');
+      expect(findCollapseButton().attributes('aria-label')).toBe('Collapse');
     });
   });
 });

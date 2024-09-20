@@ -223,7 +223,7 @@ export default {
     is-required
     :is-completed="isValid"
   >
-    <div class="gl-px-4 lg:gl-w-2/3">
+    <div class="gl-px-4">
       <gl-form-group
         :label="$options.i18n.titleInputLabel"
         label-for="name-input"
