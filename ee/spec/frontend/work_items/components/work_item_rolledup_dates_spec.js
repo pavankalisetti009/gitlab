@@ -7,6 +7,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { Mousetrap } from '~/lib/mousetrap';
+import { newDate } from '~/lib/utils/datetime/date_calculation_utility';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
@@ -335,8 +336,8 @@ describe('WorkItemRolledupDates component', () => {
         dueDateInherited: '2022-01-02',
       });
 
-      expect(findStartDatePicker().props('value')).toEqual(new Date('2022-01-01'));
-      expect(findDueDatePicker().props('value')).toEqual(new Date('2022-01-02'));
+      expect(findStartDatePicker().props('value')).toEqual(newDate('2022-01-01'));
+      expect(findDueDatePicker().props('value')).toEqual(newDate('2022-01-02'));
     });
 
     describe('start date picker', () => {
@@ -398,8 +399,8 @@ describe('WorkItemRolledupDates component', () => {
             input: {
               id: workItemId,
               rolledupDatesWidget: {
-                dueDateFixed: new Date('2022-12-31T00:00:00.000Z'),
-                startDateFixed: new Date('2022-01-01T00:00:00.000Z'),
+                dueDateFixed: '2022-12-31',
+                startDateFixed: '2022-01-01',
                 dueDateIsFixed: true,
                 startDateIsFixed: true,
               },

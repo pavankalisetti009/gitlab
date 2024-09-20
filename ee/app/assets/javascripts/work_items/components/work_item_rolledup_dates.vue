@@ -8,12 +8,11 @@ import {
 } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { newWorkItemId } from '~/work_items/utils';
-import { getDateWithUTC, newDateAsLocaleTime } from '~/lib/utils/datetime/date_calculation_utility';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import { Mousetrap } from '~/lib/mousetrap';
 import { keysFor, SIDEBAR_CLOSE_WIDGET } from '~/behaviors/shortcuts/keybindings';
-import { formatDate, pikadayToString } from '~/lib/utils/datetime_utility';
+import { formatDate, newDate, pikadayToString } from '~/lib/utils/datetime_utility';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
@@ -130,8 +129,8 @@ export default {
     datesUnchanged() {
       const dirtyDueDate = this.dirtyDueDate || nullObjectDate;
       const dirtyStartDate = this.dirtyStartDate || nullObjectDate;
-      const dueDate = this.dueDate ? newDateAsLocaleTime(this.dueDate) : nullObjectDate;
-      const startDate = this.startDate ? newDateAsLocaleTime(this.startDate) : nullObjectDate;
+      const dueDate = this.dueDate ? newDate(this.dueDate) : nullObjectDate;
+      const startDate = this.startDate ? newDate(this.startDate) : nullObjectDate;
       return (
         dirtyDueDate.getTime() === dueDate.getTime() &&
         dirtyStartDate.getTime() === startDate.getTime()
@@ -180,8 +179,8 @@ export default {
               ),
               {
                 ...workItemDatesWidget,
-                dueDate: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
-                startDate: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
+                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
               },
             ],
           },
@@ -192,13 +191,13 @@ export default {
   watch: {
     dueDate: {
       handler(newDueDate) {
-        this.dirtyDueDate = newDateAsLocaleTime(newDueDate);
+        this.dirtyDueDate = newDate(newDueDate);
       },
       immediate: true,
     },
     startDate: {
       handler(newStartDate) {
-        this.dirtyStartDate = newDateAsLocaleTime(newStartDate);
+        this.dirtyStartDate = newDate(newStartDate);
       },
       immediate: true,
     },
@@ -294,8 +293,8 @@ export default {
               rolledUpDates: {
                 dueDateIsFixed: true,
                 startDateIsFixed: true,
-                dueDateFixed: this.dirtyDueDate,
-                startDateFixed: this.dirtyStartDate,
+                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
               },
             },
           },
@@ -314,8 +313,8 @@ export default {
               rolledupDatesWidget: {
                 dueDateIsFixed: true,
                 startDateIsFixed: true,
-                dueDateFixed: getDateWithUTC(this.dirtyDueDate),
-                startDateFixed: getDateWithUTC(this.dirtyStartDate),
+                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
               },
             },
           },
