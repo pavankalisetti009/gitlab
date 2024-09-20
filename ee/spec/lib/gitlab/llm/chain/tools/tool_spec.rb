@@ -69,7 +69,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Tool, feature_category: :duo_chat do
         logger = instance_double(Gitlab::Llm::Logger)
         allow(Gitlab::Llm::Logger).to receive(:build).at_least(:once).and_return(logger)
 
-        expect(logger).to receive(:info_or_debug).at_least(:once)
+        expect(logger).to receive(:conditional_info).at_least(:once)
         expect(logger).to receive(:info).with(hash_including(message: "Tool cycling detected")).once
 
         subject.execute

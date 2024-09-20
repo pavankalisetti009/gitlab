@@ -65,7 +65,12 @@ module Gitlab
                           "#{resource_name} ##{resource.iid} has no comments to be summarized."
                         end
 
-              logger.info_or_debug(context.current_user, message: "Answer", class: self.class.to_s, content: content)
+              log_conditional_info(context.current_user,
+                message: "Answer content for summarize_comments",
+                klass: self.class.to_s,
+                event_name: 'response_received',
+                ai_component: 'feature',
+                response_from_llm: content)
 
               ::Gitlab::Llm::Chain::Answer.new(
                 status: :ok, context: context, content: content, tool: nil, is_final: false
@@ -90,11 +95,15 @@ module Gitlab
             end
 
             def can_summarize?
-              logger.info_or_debug(context.current_user, message: "Supported Issuable Typees Ability Allowed",
-                content: Ability.allowed?(context.current_user, :summarize_comments, context.resource))
+              ability = Ability.allowed?(context.current_user, :summarize_comments, context.resource)
 
-              ::Llm::GenerateSummaryService::SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) &&
-                Ability.allowed?(context.current_user, :summarize_comments, context.resource)
+              log_conditional_info(context.current_user,
+                message: "Supported Issuable Typees Ability Allowed",
+                event_name: 'permission',
+                ai_component: 'feature',
+                allowed: ability)
+
+              ::Llm::GenerateSummaryService::SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) && ability
             end
 
             def authorize

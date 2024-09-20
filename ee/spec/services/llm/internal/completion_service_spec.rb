@@ -14,6 +14,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
   let(:referer_url) { nil }
   let(:extra_resource) { {} }
   let(:completion) { instance_double(Gitlab::Llm::Completions::SummarizeAllOpenNotes) }
+  let(:logger) { instance_double(Gitlab::Llm::Logger) }
 
   let(:prompt_message) do
     build(:ai_message, user: user, resource: resource, ai_action: ai_action_name, request_id: 'uuid')
@@ -28,6 +29,12 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
   include_context 'with ai features enabled for group'
 
   describe '#execute' do
+    before do
+      allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+      allow(logger).to receive(:conditional_info)
+      allow(logger).to receive(:debug)
+    end
+
     subject(:execute) { service.execute }
 
     shared_examples 'performs successfully' do
@@ -48,6 +55,18 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           ),
             options.symbolize_keys.merge(extra_resource: extra_resource))
           .and_return(completion)
+
+        expect(logger).to receive(:debug).with(a_hash_including(
+          message: "Performing CompletionService",
+          event_name: 'completion_service_performed',
+          ai_component: 'abstraction_layer',
+          user_id: user.to_gid,
+          completion_service_name: completion.class.name,
+          request_id: 'uuid',
+          resource_id: resource&.to_gid,
+          action_name: ai_action_name,
+          client_subscription_id: nil
+        ))
 
         expect(completion).to receive(:execute)
 

@@ -5,6 +5,8 @@ module Gitlab
     module Chain
       module Requests
         class Base
+          include ::Gitlab::Llm::Concerns::Logger
+
           def self.prompt(prompt, options: {})
             { prompt: prompt, options: options }
           end

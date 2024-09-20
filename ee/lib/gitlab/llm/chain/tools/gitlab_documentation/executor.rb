@@ -28,7 +28,10 @@ module Gitlab
             def perform(&_block)
               # We can't reuse the injected client here but need to call TanukiBot as it uses the
               # embedding database and calls the VertexAI text embeddings API endpoint internally.
-              logger.info(message: "Calling TanukiBot", class: self.class.to_s)
+              log_info(message: "Calling TanukiBot",
+                klass: self.class.to_s,
+                event_name: 'documentation_question_initial_request',
+                ai_component: 'duo_chat')
               streamed_answer = StreamedDocumentationAnswer.new
 
               response_modifier = ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion.new(

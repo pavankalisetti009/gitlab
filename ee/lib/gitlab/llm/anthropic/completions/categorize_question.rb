@@ -28,7 +28,6 @@ module Gitlab
               unit_primitive: 'categorize_duo_chat_question', tracking_context: tracking_context)
             @storage = ::Gitlab::Llm::ChatStorage.new(user)
             @messages = @storage.messages_up_to(options[:message_id])
-            @logger = Gitlab::Llm::Logger.build
 
             if track(user, attributes)
               ResponseModifiers::CategorizeQuestion.new(nil)
@@ -64,8 +63,9 @@ module Gitlab
 
             data.slice(*PERMITTED_KEYS)
           rescue JSON::ParserError
-            error_message = "JSON has an invalid format."
-            @logger.error(message: "Error", class: self.class.to_s, error: error_message)
+            log_error(message: "Json parsing error during Question Categorization",
+              event_name: 'error',
+              ai_component: 'duo_chat')
             {}
           end
 
@@ -74,7 +74,9 @@ module Gitlab
 
             unless contains_categories?(attributes)
               error_message = 'Response did not contain defined categories'
-              @logger.error(message: "Error", class: self.class.to_s, error: error_message)
+              log_error(message: error_message,
+                event_name: 'error',
+                ai_component: 'duo_chat')
               return false
             end
 

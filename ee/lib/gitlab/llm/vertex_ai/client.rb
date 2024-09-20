@@ -6,10 +6,10 @@ module Gitlab
       class Client
         include ::Gitlab::Llm::Concerns::ExponentialBackoff
         include ::Gitlab::Llm::Concerns::EventTracking
+        include ::Gitlab::Llm::Concerns::Logger
         extend ::Gitlab::Utils::Override
 
         def initialize(user, unit_primitive:, retry_content_blocked_requests: false, tracking_context: {})
-          @logger = Gitlab::Llm::Logger.build
           @retry_content_blocked_requests = retry_content_blocked_requests
           @user = user
           @tracking_context = tracking_context
@@ -109,10 +109,15 @@ module Gitlab
 
         private
 
-        attr_reader :logger, :tracking_context, :user, :retry_content_blocked_requests, :unit_primitive
+        attr_reader :tracking_context, :user, :retry_content_blocked_requests, :unit_primitive
 
         def request(content:, config:, **options)
-          logger.info(message: "Performing request to Vertex", config: config)
+          log_info(message: "Performing request to Vertex",
+            klass: self.class.to_s,
+            event_name: 'performing_request',
+            ai_component: 'abstraction_layer',
+            unit_primitive: unit_primitive,
+            options: config)
 
           response = retry_with_exponential_backoff do
             Gitlab::HTTP.post(
@@ -124,12 +129,26 @@ module Gitlab
             )
           end
 
-          logger.info_or_debug(user, message: "Received response from Vertex", response: response.to_json)
+          log_conditional_info(user,
+            message: "Response content",
+            event_name: 'response_received',
+            ai_component: 'abstraction_layer',
+            unit_primitive: unit_primitive,
+            response_from_llm: response.to_json)
+
+          log_info(message: "Received response from Vertex",
+            event_name: 'response_received',
+            ai_component: 'abstraction_layer',
+            unit_primitive: unit_primitive)
 
           if response.present?
             track_token_usage(response)
           else
-            logger.error(message: "Empty response from Vertex")
+            log_error(message: "Empty response from Vertex",
+              event_name: 'empty_response_received',
+              ai_component: 'abstraction_layer',
+              unit_primitive: unit_primitive
+            )
           end
 
           response

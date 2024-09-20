@@ -42,7 +42,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
   before do
     allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
-    allow(logger).to receive(:info_or_debug)
+    allow(logger).to receive(:conditional_info)
     allow(logger).to receive(:info)
 
     stub_request(:post, url)
@@ -115,11 +115,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
                                 .and_call_original
       complete
 
-      expect(logger).to have_received(:info_or_debug)
-        .with(user, message: "Performing request to AI Gateway",
-          url: url, body: expected_body, timeout: timeout, stream: false)
-      expect(logger).to have_received(:info_or_debug)
-        .with(user, message: "Received response from AI Gateway", response: expected_response)
+      expect(logger).to have_received(:conditional_info)
+        .with(user, a_hash_including(message: "Performing request to AI Gateway", body: expected_body, timeout: timeout,
+          url: url, stream: false))
+      expect(logger).to have_received(:conditional_info)
+        .with(user, a_hash_including(message: "Received response from AI Gateway",
+          response_from_llm: expected_response))
     end
 
     context 'when calling AI Gateway with Claude 2.1 model' do
@@ -230,8 +231,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::Llm::AiGateway::Client::ConnectionError)
 
-            expect(logger).to have_received(:error).with(message: "Received error from AI gateway",
-              response: "Input is invalid")
+            expect(logger).to have_received(:error).with(a_hash_including(message: "Received error from AI gateway",
+              response_from_llm: "Input is invalid"))
           end
         end
 
@@ -243,8 +244,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::AiGateway::ForbiddenError)
 
-            expect(logger).to have_received(:error).with(message: "Received error from AI gateway",
-              response: "Input is invalid")
+            expect(logger).to have_received(:error).with(a_hash_including(message: "Received error from AI gateway",
+              response_from_llm: "Input is invalid"))
           end
         end
       end

@@ -10,6 +10,7 @@ module Gitlab
         module ZeroShot
           class Executor
             include Gitlab::Utils::StrongMemoize
+            include ::Gitlab::Llm::Concerns::Logger
             include Concerns::AiDependent
             include Langsmith::RunHelpers
 
@@ -35,7 +36,6 @@ module Gitlab
               @tools = tools
               @context = context
               @iterations = 0
-              @logger = Gitlab::Llm::Logger.build
               @response_handler = response_handler
               @stream_response_handler = stream_response_handler
             end
@@ -98,7 +98,7 @@ module Gitlab
               request(&streamed_request_handler(StreamedZeroShotAnswer.new))
             end
 
-            attr_reader :logger, :stream_response_handler
+            attr_reader :stream_response_handler
 
             # This method should not be memoized because the input variables change over time
             def base_prompt
@@ -126,7 +126,10 @@ module Gitlab
             end
 
             def picked_tool_action(tool_class)
-              logger.info(message: "Picked tool", tool: tool_class.to_s)
+              log_info(message: "Picked tool",
+                event_name: 'picked_tool',
+                ai_component: 'duo_chat',
+                duo_chat_tool: tool_class.to_s)
 
               response_handler.execute(
                 response: Gitlab::Llm::Chain::ToolResponseModifier.new(tool_class),

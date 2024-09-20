@@ -28,7 +28,6 @@ module Gitlab
             @tracking_context = tracking_context
             @ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: processed_service_name(service_name),
               tracking_context: tracking_context)
-            @logger = Gitlab::Llm::Logger.build
           end
 
           def request(prompt, unit_primitive: nil)
@@ -44,8 +43,14 @@ module Gitlab
               yield data if block_given?
             end
 
-            logger.info_or_debug(user, message: "Made request to AI Client",
-              class: self.class.to_s, prompt: prompt[:prompt], response: response)
+            log_conditional_info(user,
+              message: "Made request to AI Client",
+              klass: self.class.to_s,
+              event_name: 'response_received',
+              ai_component: 'duo_chat',
+              prompt: prompt[:prompt],
+              response_from_llm: response,
+              unit_primitive: unit_primitive)
 
             track_prompt_size(token_size(prompt[:prompt]), provider(options))
             track_response_size(token_size(response), provider(options))
@@ -55,7 +60,7 @@ module Gitlab
 
           private
 
-          attr_reader :user, :logger
+          attr_reader :user
 
           def default_options
             {

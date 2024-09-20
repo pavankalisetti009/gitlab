@@ -5,6 +5,7 @@ module Gitlab
     module Chain
       class Answer
         extend Langsmith::RunHelpers
+        include ::Gitlab::Llm::Concerns::Logger
 
         attr_accessor :status, :content, :context, :tool, :suggestions, :is_final, :extras, :error_code
         alias_method :is_final?, :is_final
@@ -28,7 +29,11 @@ module Gitlab
             return default_final_answer(context: context) unless tool
           end
 
-          logger.info_or_debug(context.current_user, message: "Answer", content: content)
+          log_conditional_info(context.current_user,
+            message: "Answer from LLM response",
+            event_name: 'answer_received',
+            ai_component: 'duo_chat',
+            llm_answer_content: content)
 
           new(
             status: :ok,
@@ -42,7 +47,10 @@ module Gitlab
         traceable :from_response, name: 'Get answer from response', run_type: 'parser', class_method: true
 
         def self.final_answer(context:, content:, extras: nil)
-          logger.info_or_debug(context.current_user, message: "Final answer", content: content)
+          log_conditional_info(context.current_user, message: "Final answer",
+            event_name: 'final_answer_received',
+            ai_component: 'duo_chat',
+            llm_answer_content: content)
 
           new(
             status: :ok,
@@ -56,7 +64,11 @@ module Gitlab
         end
 
         def self.default_final_answer(context:)
-          logger.info_or_debug(context.current_user, message: "Default final answer", error_code: "A6000")
+          log_conditional_info(context.current_user,
+            message: "Default final answer",
+            event_name: 'default_final_answer_received',
+            ai_component: 'duo_chat',
+            duo_chat_error_code: "A6000")
 
           track_event(context, 'default_answer')
 
@@ -69,7 +81,13 @@ module Gitlab
         end
 
         def self.error_answer(context:, error_code: nil, content: default_error_answer, error: nil, source: nil)
-          logger.error(message: error ? error.message : "Error", error: content, error_code: error_code, source: source)
+          log_error(message: error ? error.message : "Error",
+            event_name: 'error_returned',
+            ai_component: 'duo_chat',
+            error: content,
+            error_code: error_code,
+            source: source)
+
           track_event(context, 'error_answer')
 
           new(
@@ -97,10 +115,6 @@ module Gitlab
           @is_final = is_final
           @extras = extras
           @error_code = error_code
-        end
-
-        private_class_method def self.logger
-          Gitlab::Llm::Logger.build
         end
 
         private_class_method def self.track_event(context, action)

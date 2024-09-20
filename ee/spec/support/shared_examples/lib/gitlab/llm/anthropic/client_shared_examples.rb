@@ -69,7 +69,7 @@ RSpec.shared_examples 'anthropic client' do
         headers: response_headers
       )
     allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
-    allow(logger).to receive(:info_or_debug)
+    allow(logger).to receive(:conditional_info)
     allow(logger).to receive(:info)
   end
 
@@ -121,9 +121,11 @@ RSpec.shared_examples 'anthropic client' do
       complete
       expected_logging_response = expected_response["completion"]
 
-      expect(logger).to have_received(:info).with(message: "Performing request to Anthropic", options: options)
-      expect(logger).to have_received(:info_or_debug).with(user, message: "Received response from Anthropic",
-        response: expected_logging_response)
+      expect(logger).to have_received(:info).with(a_hash_including(message: "Performing request to Anthropic",
+        options: options))
+      expect(logger).to have_received(:conditional_info).with(user, a_hash_including(
+        message: "Response content",
+        response_from_llm: expected_logging_response))
     end
 
     context 'when feature flag and API key is set' do
@@ -215,9 +217,11 @@ RSpec.shared_examples 'anthropic client' do
           described_class.new(user, unit_primitive: unit_primitive).stream(prompt: 'anything', **options)
           expected_logging_response = "Hello"
 
-          expect(logger).to have_received(:info).with(message: "Performing request to Anthropic", options: options)
-          expect(logger).to have_received(:info_or_debug).with(user, message: "Received response from Anthropic",
-            response: expected_logging_response)
+          expect(logger).to have_received(:info).with(a_hash_including(message: "Performing request to Anthropic",
+            options: options))
+          expect(logger).to have_received(:conditional_info).with(user, a_hash_including(
+            message: "Response content",
+            response_from_llm: expected_logging_response))
         end
 
         context 'when setting a timeout' do
@@ -439,9 +443,11 @@ RSpec.shared_examples 'anthropic client' do
       messages_complete
       expected_logging_response = expected_messages_response.dig('content', 0, 'text')
 
-      expect(logger).to have_received(:info).with(message: "Performing request to Anthropic", options: options)
-      expect(logger).to have_received(:info_or_debug).with(user, message: "Received response from Anthropic",
-        response: expected_logging_response)
+      expect(logger).to have_received(:info).with(a_hash_including(message: "Performing request to Anthropic",
+        options: options))
+      expect(logger).to have_received(:conditional_info).with(user, a_hash_including(
+        message: "Response content",
+        response_from_llm: expected_logging_response))
     end
 
     context 'when feature flag and API key is set' do
@@ -495,6 +501,195 @@ RSpec.shared_examples 'anthropic client' do
       let(:api_key) { nil }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#messages_stream' do
+    let(:messages_body_params) do
+      {
+        messages: 'anything',
+        model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+        max_tokens: described_class::DEFAULT_MAX_TOKENS,
+        temperature: described_class::DEFAULT_TEMPERATURE
+      }
+    end
+
+    subject do
+      described_class.new(user, unit_primitive: unit_primitive, tracking_context: tracking_context)
+                     .messages_stream(messages: 'anything', **options)
+    end
+
+    before do
+      stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
+        .with(
+          body: expected_request_body,
+          headers: expected_request_headers
+        )
+        .to_return(
+          status: http_status,
+          body: response_body,
+          headers: response_headers
+        )
+    end
+
+    context 'when streaming the request' do
+      let(:response_body) { expected_response }
+      let(:options) { { stream: true } }
+      let(:expected_request_body) { messages_body_params.merge(stream: true) }
+
+      context 'when response is successful' do
+        let(:expected_response) do
+          <<-DOC
+          event: content_block_delta\r
+          data: {"delta": { "text": "Hello" } }\r
+          DOC
+        end
+
+        it 'provides parsed streamed response' do
+          expect do |b|
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options,
+              &b)
+          end.to yield_with_args(
+            {
+              "delta" => { "text" => "Hello" }
+            }
+          )
+        end
+
+        it 'returns response' do
+          expect(Gitlab::HTTP).to receive(:post)
+                                    .with(anything, hash_including(timeout: described_class::DEFAULT_TIMEOUT))
+                                    .and_call_original
+
+          expect(
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          ).to eq("Hello")
+        end
+
+        it 'logs the response' do
+          described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          expected_logging_response = "Hello"
+
+          expect(logger).to have_received(:info).with(a_hash_including(message: "Performing request to Anthropic",
+            options: options))
+          expect(logger).to have_received(:conditional_info).with(user, a_hash_including(
+            message: "Response content",
+            response_from_llm: expected_logging_response))
+        end
+
+        context 'when setting a timeout' do
+          let(:options) { { timeout: 50.seconds } }
+
+          it 'uses the timeout for the request' do
+            expect(Gitlab::HTTP).to receive(:post)
+                                      .with(anything, hash_including(timeout: 50.seconds))
+                                      .and_call_original
+
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          end
+        end
+
+        it_behaves_like 'tracks events for AI requests', 2, 1
+      end
+
+      context 'when response contains multiple events' do
+        let(:expected_response) do
+          <<-DOC
+          event: content_block_delta\r
+          data: {"delta": { "text": "Hello " } }\r
+          \r
+          event: content_block_delta\r
+          data: {"delta": { "text": "World" } }\r
+          \r
+          DOC
+        end
+
+        it 'provides parsed streamed response' do
+          expect do |b|
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options,
+              &b)
+          end.to yield_successive_args(
+            {
+              "delta" => { "text" => "Hello " }
+            },
+            {
+              "delta" => { "text" => "World" }
+            }
+          )
+        end
+
+        it 'returns response' do
+          expect(
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          ).to eq("Hello World")
+        end
+      end
+
+      context 'when response is an error' do
+        let(:expected_response) do
+          <<-DOC
+          event: error\r
+          data: {"error": {"type": "overloaded_error", "message": "Overloaded"}}\r
+          \r
+          DOC
+        end
+
+        it 'provides parsed streamed response' do
+          expect do |b|
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options,
+              &b)
+          end.to yield_with_args(
+            {
+              "error" => { "message" => "Overloaded", "type" => "overloaded_error" }
+            }
+          )
+        end
+
+        it 'returns empty response' do
+          expect(
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          ).to eq("")
+        end
+      end
+
+      context 'when response is a ping' do
+        let(:expected_response) do
+          <<-DOC
+          event: ping\r
+          data: {}\r
+          \r\n
+          DOC
+        end
+
+        it 'provides parsed streamed response' do
+          expect do |b|
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options,
+              &b)
+          end.to yield_with_args({})
+        end
+
+        it 'returns empty response' do
+          expect(
+            described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+          ).to eq("")
+        end
+      end
+    end
+
+    context 'when the API key is not present' do
+      let(:api_key) { nil }
+
+      it 'does not provide stream response' do
+        expect do |b|
+          described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options, &b)
+        end.not_to yield_with_args
+      end
+
+      it 'returns nil' do
+        expect(
+          described_class.new(user, unit_primitive: unit_primitive).messages_stream(messages: 'anything', **options)
+        ).to be_nil
+      end
     end
   end
 end

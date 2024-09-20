@@ -6,6 +6,7 @@ module Gitlab
       class StepExecutor
         include Gitlab::Utils::StrongMemoize
         include Langsmith::RunHelpers
+        include ::Gitlab::Llm::Concerns::Logger
 
         DEFAULT_TIMEOUT = 60.seconds
         CHAT_V2_ENDPOINT = '/v2/chat/agent'
@@ -16,9 +17,8 @@ module Gitlab
 
         def initialize(user)
           @user = user
-          @logger = Gitlab::Llm::Logger.build
           @agent_steps = []
-          @event_parser = AgentEventParser.new(logger)
+          @event_parser = AgentEventParser.new
         end
 
         def step(params)
@@ -41,7 +41,8 @@ module Gitlab
 
             chunks_for_event = ""
 
-            logger.info_or_debug(user, message: "Received an event from v2/chat/agent", event: event)
+            log_conditional_info(user, message: "Received an event from v2/chat/agent", event_name: 'event_received',
+              ai_component: 'duo_chat', event: event)
 
             yield event if block_given?
 
@@ -63,7 +64,8 @@ module Gitlab
 
         def update_observation(observation)
           if @agent_steps.empty?
-            logger.error(message: "Failed to update observation")
+            log_error(message: "Failed to update observation", event_name: 'agent_steps_empty',
+              ai_component: 'duo_chat')
             return
           end
 
@@ -72,7 +74,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :logger, :event_parser
+        attr_reader :user, :event_parser
 
         def update_params(params)
           params.deep_merge(
@@ -88,7 +90,10 @@ module Gitlab
         end
 
         def perform_agent_request(params)
-          logger.info_or_debug(user, message: "Request to v2/chat/agent", params: params)
+          log_conditional_info(user, message: "Request to v2/chat/agent",
+            event_name: 'performing_request',
+            ai_component: 'duo_chat',
+            params: params)
 
           response = Gitlab::HTTP.post(
             "#{Gitlab::AiGateway.url}#{CHAT_V2_ENDPOINT}",
@@ -102,11 +107,14 @@ module Gitlab
           end
 
           if response.success?
-            logger.info_or_debug(user, message: "Finished streaming from v2/chat/agent")
+            log_conditional_info(user,
+              message: "Finished streaming from v2/chat/agent", event_name: 'response_received',
+              ai_component: 'duo_chat')
             return
           end
 
-          logger.error(message: "Received error from Duo Chat Agent", status: response.code)
+          log_error(message: "Received error from Duo Chat Agent", event_name: 'error_returned',
+            ai_component: 'duo_chat', status: response.code)
 
           # TODO: Improve error handling
           raise Gitlab::AiGateway::ForbiddenError if response.forbidden?

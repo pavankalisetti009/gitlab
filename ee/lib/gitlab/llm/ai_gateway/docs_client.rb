@@ -7,6 +7,7 @@ module Gitlab
         include ::Gitlab::Llm::Concerns::ExponentialBackoff
         include ::Gitlab::Llm::Concerns::EventTracking
         include ::Gitlab::Utils::StrongMemoize
+        include ::Gitlab::Llm::Concerns::Logger
 
         DEFAULT_TIMEOUT = 30.seconds
         DEFAULT_TYPE = 'search-docs'
@@ -15,7 +16,6 @@ module Gitlab
         def initialize(user, tracking_context: {})
           @user = user
           @tracking_context = tracking_context
-          @logger = Gitlab::Llm::Logger.build
         end
 
         def search(query:, **options)
@@ -26,10 +26,13 @@ module Gitlab
 
         private
 
-        attr_reader :user, :logger, :tracking_context
+        attr_reader :user, :tracking_context
 
         def perform_search_request(query:, options:)
-          logger.info(message: "Searching docs from AI Gateway", options: options)
+          log_info(message: "Searching docs from AI Gateway",
+            event_name: 'performing_request',
+            ai_component: 'duo_chat',
+            options: options)
           timeout = options.delete(:timeout) || DEFAULT_TIMEOUT
 
           response = Gitlab::HTTP.post(
@@ -40,7 +43,11 @@ module Gitlab
             allow_local_requests: true
           )
 
-          logger.info_or_debug(user, message: "Searched docs from AI Gateway", response: response)
+          log_conditional_info(user,
+            message: "Searched docs content from AI Gateway",
+            event_name: 'response_received',
+            ai_component: 'duo_chat',
+            response_from_llm: response)
 
           response
         end

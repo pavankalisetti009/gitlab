@@ -5,7 +5,8 @@ module Gitlab
     module AiGateway
       class Client
         include ::Gitlab::Llm::Concerns::ExponentialBackoff
-        include Gitlab::Utils::StrongMemoize
+        include ::Gitlab::Utils::StrongMemoize
+        include ::Gitlab::Llm::Concerns::Logger
         include Langsmith::RunHelpers
 
         DEFAULT_TIMEOUT = 30.seconds
@@ -17,7 +18,6 @@ module Gitlab
           @service = ::CloudConnector::AvailableServices.find_by_name(service_name)
           @access_token = @service.access_token(user)
           @tracking_context = tracking_context
-          @logger = Gitlab::Llm::Logger.build
         end
 
         def complete(url:, body:, timeout: DEFAULT_TIMEOUT)
@@ -27,7 +27,7 @@ module Gitlab
             perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
           end
 
-          logger.info_or_debug(user, message: "Received response from AI Gateway", response: response.parsed_response)
+          log_response_received(response.parsed_response)
 
           response
         end
@@ -46,13 +46,16 @@ module Gitlab
           end
 
           if response.success?
-            logger.info_or_debug(user, message: "Received response from AI Gateway", response: response_body)
+            log_response_received(response_body)
 
             response_body
           else
             parsed_response = ::Gitlab::Json.parse(response_body)
 
-            logger.error(message: "Received error from AI gateway", response: parsed_response.dig('detail', 0, 'msg'))
+            log_error(message: "Received error from AI gateway",
+              event_name: 'error_response_received',
+              ai_component: 'abstraction_layer',
+              response_from_llm: parsed_response.dig('detail', 0, 'msg'))
 
             raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
 
@@ -63,11 +66,17 @@ module Gitlab
 
         private
 
-        attr_reader :user, :service, :access_token, :logger, :tracking_context
+        attr_reader :user, :service, :access_token, :tracking_context
 
         def perform_completion_request(url:, body:, timeout:, stream:)
-          logger.info_or_debug(user, message: "Performing request to AI Gateway",
-            url: url, body: body, timeout: timeout, stream: stream)
+          log_conditional_info(user,
+            message: "Performing request to AI Gateway",
+            url: url,
+            event_name: 'performing_request',
+            ai_component: 'abstraction_layer',
+            body: body,
+            timeout: timeout,
+            stream: stream)
 
           Gitlab::HTTP.post(
             url,
@@ -83,6 +92,14 @@ module Gitlab
 
         def enabled?
           access_token.present?
+        end
+
+        def log_response_received(response_body)
+          log_conditional_info(user,
+            message: 'Received response from AI Gateway',
+            event_name: 'response_received',
+            ai_component: 'abstraction_layer',
+            response_from_llm: response_body)
         end
       end
     end

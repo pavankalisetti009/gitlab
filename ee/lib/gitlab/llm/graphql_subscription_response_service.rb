@@ -9,7 +9,6 @@ module Gitlab
         @response_modifier = response_modifier
         @options = options
         @save_message = save_message
-        @logger = Gitlab::Llm::Logger.build
       end
 
       def response_message
@@ -40,7 +39,7 @@ module Gitlab
 
       private
 
-      attr_reader :user, :resource, :response_modifier, :options, :save_message, :logger
+      attr_reader :user, :resource, :response_modifier, :options, :save_message
 
       def save_message?
         save_message &&
