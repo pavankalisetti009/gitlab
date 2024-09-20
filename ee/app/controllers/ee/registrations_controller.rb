@@ -85,7 +85,7 @@ module EE
       return unless invite_root_namespace&.has_subscription?
       return unless invite_root_namespace&.actual_plan&.paid_excluding_trials?
 
-      user.create_identity_verification_exemption('invited to paid namespace')
+      user.add_identity_verification_exemption('invited to paid namespace')
     end
 
     override :after_successful_create_hook

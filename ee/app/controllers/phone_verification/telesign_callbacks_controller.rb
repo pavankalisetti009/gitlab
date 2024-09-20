@@ -33,7 +33,7 @@ module PhoneVerification
       return unless user
       return unless user.offer_phone_number_exemption?
 
-      user.create_phone_number_exemption!
+      user.add_phone_number_verification_exemption
       Gitlab::EtagCaching::Store.new.touch(
         verification_state_signup_identity_verification_path,
         verification_state_identity_verification_path

@@ -143,7 +143,7 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
 
     context 'when user has an identity verification exemption custom attribute' do
       before do
-        user.create_identity_verification_exemption('testing')
+        user.add_identity_verification_exemption('testing')
       end
 
       it 'destroys the custom attribute' do
@@ -166,7 +166,7 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
 
     context 'when user has an identity verification exemption custom attribute' do
       it 'returns true' do
-        user.create_identity_verification_exemption('testing')
+        user.add_identity_verification_exemption('testing')
 
         expect(call_method).to eq true
       end
@@ -175,6 +175,19 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
     context 'when user does not have an identity verification exemption custom attribute' do
       it { is_expected.to eq false }
     end
+  end
+
+  describe '#add_identity_verification_exemption' do
+    subject(:call_method) { risk_profile.add_identity_verification_exemption('because') }
+
+    it 'creates the exemption custom attribute', :aggregate_failures do
+      key = UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT
+      expect { call_method }.to change { user.custom_attributes.by_key(key).count }.from(0).to(1)
+
+      expect(user.custom_attributes.by_key(key).first.value).to eq('because')
+    end
+
+    it_behaves_like 'clears user_custom_attributes memoization'
   end
 
   describe '#phone_number_verification_exempt?' do
