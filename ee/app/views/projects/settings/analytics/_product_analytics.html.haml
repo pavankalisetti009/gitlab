@@ -4,7 +4,7 @@
 %h4
   = s_('ProjectSettings|Product analytics')
 %p
-  - link = link_to('', help_page_path('user/product_analytics/index'), target: '_blank', rel: 'noopener noreferrer')
+  - link = link_to('', help_page_path('user/product_analytics/index.md'), target: '_blank', rel: 'noopener noreferrer')
   = safe_format(s_('ProjectSettings|Set up your project to receive events that are used for %{link_start}product analytics%{link_end}.'), tag_pair(link, :link_start, :link_end))
 
 - if data[:tracking_key].present?
@@ -15,7 +15,7 @@
   = s_('ProjectSettings|Configure your instance')
 %p
   = s_('ProjectSettings|Override the instance analytics configuration for this project.')
-  - link = link_to('', help_page_path('user/product_analytics/index', anchor: 'product-analytics-provider'), target: '_blank', rel: 'noopener noreferrer')
+  - link = link_to('', help_page_path('user/product_analytics/index.md', anchor: 'product-analytics-provider'), target: '_blank', rel: 'noopener noreferrer')
   = safe_format(s_('ProjectSettings|If GitLab manages your cluster, then GitLab retains your analytics data for 1 year. %{link_start}Learn more about data retention policy%{link_end}.'), tag_pair(link, :link_start, :link_end))
 
 = gitlab_ui_form_for @project, url: project_settings_analytics_path(@project, anchor: 'js-analytics-instance-settings'), html: { class: 'fieldset-form', id: 'product-analytics-settings', autocomplete: 'off' } do |f|
