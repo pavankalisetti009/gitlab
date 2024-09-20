@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-#
-# Note: This service is called via metaprogramming in AutoMergeService
-# which is triggered by the AutoMergeProcessWorker when a pipeline completes
-#
 module AutoMerge
   class MergeTrainService < AutoMerge::BaseService
     extend Gitlab::Utils::Override
