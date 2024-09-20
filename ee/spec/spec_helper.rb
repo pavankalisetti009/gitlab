@@ -17,7 +17,7 @@ RSpec.configure do |config|
     metadata[:with_license] = metadata.fetch(:with_license, true)
 
     location = metadata[:location]
-    metadata[:geo] = metadata.fetch(:geo, true) if location =~ %r{[/_]geo[/_]}
+    metadata[:geo] = metadata.fetch(:geo, true) if %r{[/_]geo[/_]}.match?(location)
   end
 
   config.define_derived_metadata do |metadata|
