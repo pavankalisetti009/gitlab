@@ -450,6 +450,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
   describe '#initial_indexing' do
     let(:task) { :initial_indexing }
+    let_it_be_with_reload(:index) { create(:zoekt_index, state: :pending) }
 
     context 'when feature flag zoekt_initial_indexing_task is disabled' do
       before do
@@ -461,54 +462,18 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
     end
 
-    context 'when there are no zoekt_indices in_progress' do
-      let_it_be(:index) { create(:zoekt_index, state: :pending) }
+    context 'when there are no zoekt_indices in pending state' do
+      before do
+        Search::Zoekt::Index.update_all(state: :initializing)
+      end
 
-      it 'does not moves the index to initializing and calls NamespaceInitialIndexingWorker on the index' do
-        expect(Search::Zoekt::NamespaceInitialIndexingWorker).to receive(:bulk_perform_in_with_contexts)
-          .with(anything, [index], hash_including(:arguments_proc, :context_proc))
-        expect { execute_task }.not_to change { index.reload.state }
+      it 'does not publish the event Search::Zoekt::InitialIndexingEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::InitialIndexingEvent)
       end
     end
 
-    context 'when all zoekt_indices are already in progress' do
-      let_it_be(:idx_in_progress) { create(:zoekt_index, state: :in_progress) }
-      let_it_be(:namespace) { idx_in_progress.zoekt_enabled_namespace.namespace }
-
-      context 'when there are no pending indices' do
-        context 'when zoekt_repositories count is less than all the projects within the namespace' do
-          before do
-            create(:project, namespace: namespace)
-          end
-
-          it 'does not moves the index to initializing' do
-            expect { execute_task }.not_to change { idx_in_progress.reload.state }
-          end
-        end
-
-        context 'when zoekt_repositories count is equal to all the projects within the namespace' do
-          let(:logger) { instance_double(::Search::Zoekt::Logger) }
-          let_it_be(:project) { create(:project, namespace: namespace) }
-
-          before do
-            allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
-            create(:zoekt_repository, zoekt_index: idx_in_progress, project_id: project.id,
-              project_identifier: project.id)
-          end
-
-          it 'moves the index to initializing and do the logging' do
-            node = idx_in_progress.node
-            meta = node.metadata_json.merge('zoekt.index_id' => idx_in_progress.id)
-            expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'namespace_id' => namespace.id,
-                                                    'message' => 'index moved to initializing',
-                                                    'meta' => meta,
-                                                    'repo_count' => idx_in_progress.zoekt_repositories.count,
-                                                    'project_count' => namespace.all_projects.count, 'task' => task }
-            )
-            expect { execute_task }.to change { idx_in_progress.reload.state }.from('in_progress').to('initializing')
-          end
-        end
-      end
+    it 'publishes the event Search::Zoekt::InitialIndexingEvent for the pending indices' do
+      expect { execute_task }.to publish_event(Search::Zoekt::InitialIndexingEvent).with({ index_id: index.id })
     end
   end
 
