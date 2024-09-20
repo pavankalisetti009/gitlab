@@ -74,42 +74,6 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics_dat
     end
   end
 
-  describe '#project_value_streams_dashboards_enabled?' do
-    context 'with a project' do
-      subject { project.project_value_streams_dashboards_enabled? }
-
-      where(:flag, :outcome) do
-        false | false
-        true | true
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(project_analytics_dashboard_dynamic_vsd: flag)
-        end
-
-        it { is_expected.to eq(outcome) }
-      end
-    end
-
-    context 'with a group' do
-      subject { group.project_value_streams_dashboards_enabled? }
-
-      where(:flag, :outcome) do
-        false | true
-        true | true
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(project_analytics_dashboard_dynamic_vsd: flag)
-        end
-
-        it { is_expected.to eq(outcome) }
-      end
-    end
-  end
-
   describe '#ai_impact_dashboard_available_for?' do
     subject { group.ai_impact_dashboard_available_for?(user) }
 

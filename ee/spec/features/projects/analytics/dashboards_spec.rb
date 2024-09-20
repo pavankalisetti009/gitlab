@@ -178,18 +178,5 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
         end
       end
     end
-
-    context 'with project_analytics_dashboard_dynamic_vsd feature flag disabled' do
-      before do
-        stub_feature_flags(project_analytics_dashboard_dynamic_vsd: false)
-
-        visit_project_analytics_dashboards_list(project)
-      end
-
-      it 'does not render the value streams dashboard link' do
-        expect(page).not_to have_content _('Value Streams Dashboard')
-        expect(page).not_to have_selector dashboard_by_gitlab_testid
-      end
-    end
   end
 end

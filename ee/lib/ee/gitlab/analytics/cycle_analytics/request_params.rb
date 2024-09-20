@@ -54,8 +54,7 @@ module EE
           def render_value_stream_dashboard_link?
             (licensed? && group.present?) ||
               (licensed? && project.present? && project.group.present? && can?(current_user,
-                :read_group_analytics_dashboards, project.group) &&
-                  ::Feature.enabled?(:project_analytics_dashboard_dynamic_vsd, project))
+                :read_group_analytics_dashboards, project.group))
           end
 
           def add_licensed_filter_params!(attrs)
