@@ -28,12 +28,15 @@ module Vulnerabilities
           Tasks::DeleteVulnerabilityUserMentions
         ].freeze
 
-        def initialize(project, batch)
+        def initialize(project, batch, update_counts:)
           @project = project
           @batch = batch
+          @update_counts = update_counts
         end
 
         def execute
+          return false if batch_size == 0
+
           Vulnerability.transaction do
             delete_resources_by_findings
             delete_resources_by_vulnerabilities
@@ -41,12 +44,14 @@ module Vulnerabilities
             delete_findings
           end
 
-          update_project_vulnerabilities_count
+          update_project_vulnerabilities_count if update_counts
+
+          true
         end
 
         private
 
-        attr_reader :project, :batch
+        attr_reader :project, :batch, :update_counts
 
         def delete_resources_by_findings
           TASKS_SCOPED_TO_FINDINGS.each { |task| task.new(finding_ids).execute }
@@ -94,6 +99,7 @@ module Vulnerabilities
       def execute
         ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
           %i[
+            vulnerabilities
             vulnerability_feedback
             vulnerability_finding_links
             vulnerability_findings_remediations
@@ -101,26 +107,13 @@ module Vulnerabilities
             vulnerability_occurrence_pipelines
             vulnerability_historical_statistics
             vulnerability_reads
+            vulnerability_identifiers
             vulnerability_merge_request_links
           ],
           url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
         ) do
-          vulnerabilities.each_batch(of: BATCH_SIZE) do |batch|
-            Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-              %w[
-                vulnerabilities
-                vulnerability_historical_statistics
-                vulnerability_identifiers
-                vulnerability_occurrences
-                vulnerability_reads
-                vulnerability_scanners
-                vulnerability_merge_request_links
-              ], url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins'
-            ) do
-              BatchRemoval.new(project, batch).execute
-            end
-          end
-
+          delete_vulnerabilities_on_default_branch
+          delete_vulnerabilities_not_present_on_default_branch
           update_vulnerability_statistics
           delete_feedback_records
           delete_historical_statistics
@@ -130,6 +123,33 @@ module Vulnerabilities
       private
 
       attr_reader :project
+
+      # Vulnerabilities with `present_on_default_branch` attribute as `true` are associated
+      # with `vulnerability_reads`, therefore, iterating over `vulnerability_reads` table
+      # is fine.
+      def delete_vulnerabilities_on_default_branch
+        loop do
+          vulnerability_ids = vulnerability_reads.limit(BATCH_SIZE).pluck_primary_key
+          vulnerabilities = Vulnerability.id_in(vulnerability_ids)
+          batch_removal = BatchRemoval.new(project, vulnerabilities, update_counts: true)
+
+          break unless batch_removal.execute
+        end
+      end
+
+      # This makes sure that we delete vulnerabilities that are not `present_on_default_branch`.
+      def delete_vulnerabilities_not_present_on_default_branch
+        loop do
+          batch = vulnerabilities.limit(BATCH_SIZE)
+          batch_removal = BatchRemoval.new(project, batch, update_counts: false)
+
+          break unless batch_removal.execute
+        end
+      end
+
+      def vulnerability_reads
+        Vulnerabilities::Read.by_projects(project)
+      end
 
       def vulnerabilities
         Vulnerability.with_project(project)
