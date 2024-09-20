@@ -1,0 +1,9 @@
+---
+name: code_suggestions_usage_events_in_pg
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/474469
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165297
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/486469
+milestone: '17.5'
+group: group::optimize
+type: gitlab_com_derisk
+default_enabled: false

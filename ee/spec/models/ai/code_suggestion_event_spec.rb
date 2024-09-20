@@ -56,4 +56,37 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
       })
     end
   end
+
+  describe '#store_to_pg', :freeze_time do
+    context 'when the model is invalid' do
+      it 'does not add anything to write buffer' do
+        expect(Ai::UsageEventWriteBuffer).not_to receive(:add)
+
+        event.store_to_pg
+      end
+    end
+
+    context 'when the model is valid' do
+      let(:attributes) do
+        super().merge(user: user, timestamp: 1.day.ago, suggestion_size: 3, language: 'foo', unique_tracking_id: 'bar')
+      end
+
+      it 'adds model attributes to write buffer' do
+        expect(Ai::UsageEventWriteBuffer).to receive(:add)
+          .with('Ai::CodeSuggestionEvent', {
+            event: 'code_suggestion_shown_in_ide',
+            timestamp: 1.day.ago,
+            user_id: user.id,
+            organization_id: user.namespace.organization_id,
+            payload: {
+              suggestion_size: 3,
+              language: 'foo',
+              unique_tracking_id: 'bar'
+            }
+          }.with_indifferent_access)
+
+        event.store_to_pg
+      end
+    end
+  end
 end
