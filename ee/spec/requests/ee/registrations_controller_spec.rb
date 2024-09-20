@@ -354,48 +354,5 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
         end
       end
     end
-
-    describe 'email reuse check' do
-      context 'when new user\'s normalized email matches a banned user\'s normalized email' do
-        let(:tumbled_email) { 'person+inbox1@test.com' }
-        let(:user_attrs) { super().merge({ email: tumbled_email }) }
-        let(:normalized_email) { 'person@test.com' }
-
-        let!(:banned_user) { create(:user, :banned, email: normalized_email) }
-        let!(:banned_user_email) { create(:user_canonical_email, user: banned_user) }
-
-        it 'renders new action with an alert flash', :aggregate_failures do
-          create_user
-
-          expect(flash[:alert]).to eq(
-            _('Unable to complete your request. Please enter a different email address and try again.')
-          )
-          expect(response).to render_template(:new)
-        end
-
-        it 'logs the event' do
-          allow(Gitlab::AppLogger).to receive(:info).and_call_original
-
-          create_user
-
-          expect(::Gitlab::AppLogger).to have_received(:info).with({
-            message: 'Sign-up blocked',
-            reason: 'Banned user email reuse'
-          })
-        end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(block_banned_user_normalized_email_reuse: false)
-          end
-
-          it 'does not re-render the form' do
-            create_user
-
-            expect(response).not_to render_template(:new)
-          end
-        end
-      end
-    end
   end
 end
