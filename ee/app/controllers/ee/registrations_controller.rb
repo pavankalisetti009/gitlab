@@ -18,7 +18,6 @@ module EE
       skip_before_action :check_captcha, if: -> { arkose_labs_enabled? }
       before_action :restrict_registration, only: [:new, :create]
       before_action :ensure_can_remove_self, only: [:destroy]
-      before_action :banned_user_email_reuse_check, only: :create
       before_action :verify_arkose_labs_challenge!, only: :create
     end
 
@@ -50,20 +49,6 @@ module EE
 
       flash[:alert] =
         s_('Session|There was a error loading the user verification challenge. Refresh to try again.')
-
-      render action: 'new'
-    end
-
-    def banned_user_email_reuse_check
-      return unless ::Feature.enabled?(:block_banned_user_normalized_email_reuse, ::Feature.current_request)
-      return unless ::Users::BannedUser.by_detumbled_email(sign_up_params[:email]).exists?
-
-      ::Gitlab::AppLogger.info({
-        message: 'Sign-up blocked',
-        reason: 'Banned user email reuse'
-      })
-
-      flash[:alert] = _('Unable to complete your request. Please enter a different email address and try again.')
 
       render action: 'new'
     end

@@ -57871,9 +57871,6 @@ msgstr ""
 msgid "Unable to collect memory information"
 msgstr ""
 
-msgid "Unable to complete your request. Please enter a different email address and try again."
-msgstr ""
-
 msgid "Unable to connect to server: %{error}"
 msgstr ""
 
@@ -64775,6 +64772,9 @@ msgid "is not allowed for this project."
 msgstr ""
 
 msgid "is not allowed to point to itself"
+msgstr ""
+
+msgid "is not allowed. Please enter a different email address and try again."
 msgstr ""
 
 msgid "is not allowed. Please use your regular email address."
