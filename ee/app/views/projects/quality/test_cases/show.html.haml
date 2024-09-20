@@ -10,7 +10,7 @@
   can_edit_test_case: can?(current_user, :admin_issue, @project).to_s,
   can_move_test_case: @issuable_sidebar.dig(:current_user, :can_move).to_s,
   description_preview_path: preview_markdown_path(@project),
-  description_help_path: help_page_path('user/markdown'),
+  description_help_path: help_page_path('user/markdown.md'),
   project_full_path: @project.full_path,
   labels_manage_path: project_labels_path(@project),
   labels_fetch_path: project_labels_path(@project, format: :json),

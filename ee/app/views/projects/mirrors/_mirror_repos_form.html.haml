@@ -33,7 +33,7 @@
     .form-text.text-muted
       = _('You will be the author of all events in the activity feed that are the result of an update, like new branches being created or new commits being pushed to existing branches.')
 
-  - overwrite_diverged_branches_help_link = help_page_path('user/project/repository/mirror/pull', anchor: 'overwrite-diverged-branches')
+  - overwrite_diverged_branches_help_link = help_page_path('user/project/repository/mirror/pull.md', anchor: 'overwrite-diverged-branches')
   - overwrite_diverged_branches_help_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: overwrite_diverged_branches_help_link }
   = f.gitlab_ui_checkbox_component :mirror_overwrites_diverged_branches,
     _('Overwrite diverged branches'),

@@ -2,7 +2,7 @@
 - can_delay_project_deletions = License.feature_available?(:adjourned_deletion_for_projects_and_groups)
 - delayed_deletion = project.adjourned_deletion_configured?
 - delayed_date = delayed_deletion ? permanent_deletion_date_formatted(project, Time.now.utc).to_s : nil
-- restore_help_path = help_page_path('user/project/working_with_projects', anchor: 'restore-a-project')
+- restore_help_path = help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project')
 - merge_requests_count = Projects::AllMergeRequestsCountService.new(project).count
 - issues_count = Projects::AllIssuesCountService.new(project).count
 - forks_count = Projects::ForksCountService.new(project).count
