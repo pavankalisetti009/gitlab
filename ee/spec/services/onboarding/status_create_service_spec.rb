@@ -85,6 +85,17 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
             expect(execute).to be_success
           end
         end
+
+        context 'when there is already value in the onboarding_status' do
+          before do
+            user.update!(onboarding_status_email_opt_in: true)
+          end
+
+          it 'merges new data into onboarding_status and does not delete it' do
+            expect(execute[:user]).to be_onboarding_in_progress
+            expect(execute[:user].onboarding_status.symbolize_keys).to eq(onboarding_status.merge(email_opt_in: true))
+          end
+        end
       end
 
       context 'when update is not successful due to systemic failure' do
