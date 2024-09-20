@@ -48,7 +48,7 @@ $badge-height: $gl-spacing-scale-7;
         align-items: center;
         display: flex;
         flex-direction: row;
-        color: $blue-500;
+        @apply gl-text-link;
         font-size: 45px;
         font-weight: $gl-font-weight-bold;
         line-height: 1;
@@ -63,7 +63,7 @@ $badge-height: $gl-spacing-scale-7;
 
       .price-conclusion {
         font-size: $gl-font-size;
-        color: $blue-500;
+        @apply gl-text-link;
         font-weight: $gl-font-weight-bold;
       }
     }
