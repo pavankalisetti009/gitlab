@@ -65433,6 +65433,12 @@ msgstr ""
 msgid "must match the parent organization's ID"
 msgstr ""
 
+msgid "must not be a placeholder email"
+msgstr ""
+
+msgid "must not be a placeholder user"
+msgstr ""
+
 msgid "must not be an owner of the namespace"
 msgstr ""
 
