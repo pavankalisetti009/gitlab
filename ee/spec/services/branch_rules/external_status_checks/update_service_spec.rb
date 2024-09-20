@@ -33,6 +33,42 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
     stub_licensed_features(audit_events: true)
   end
 
+  shared_examples 'the service execution succeeds' do
+    context 'with request store', :request_store do
+      specify '#success? is true' do
+        expect(execute.success?).to be(true)
+      end
+
+      it 'updates the external_status_check record' do
+        execute
+
+        external_status_check.reload
+        expect(external_status_check.name).to eq('Updated name')
+        expect(external_status_check.external_url).to eq('https://external_url_updated.com')
+        expect(external_status_check.shared_secret).to eq(shared_secret)
+      end
+
+      it 'includes the updated external_status_check record in payload' do
+        external_status_check = execute.payload[:external_status_check]
+
+        expect(external_status_check).to be_instance_of(MergeRequests::ExternalStatusCheck)
+        expect(external_status_check.project).to eq(project)
+        expect(external_status_check.name).to eq('Updated name')
+        expect(external_status_check.external_url).to eq('https://external_url_updated.com')
+        expect(external_status_check.shared_secret).to eq(shared_secret)
+        expect(external_status_check.protected_branches).to contain_exactly(protected_branch)
+      end
+    end
+  end
+
+  it_behaves_like 'the service execution succeeds'
+
+  context 'with ::Projects::AllBranchesRule' do
+    let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
+
+    it_behaves_like 'the service execution succeeds'
+  end
+
   describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
     before do
       allow_next_instance_of(described_class) do |instance|
@@ -45,32 +81,6 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
       expect(result.message).to eq('Failed to update external status check')
       expect(result.payload[:errors]).to contain_exactly('Not allowed')
       expect(result.reason).to eq(:access_denied)
-    end
-  end
-
-  context 'when the service execution succeeds', :request_store do
-    specify '#success? is true' do
-      expect(execute.success?).to be(true)
-    end
-
-    it 'updates the external_status_check record' do
-      execute
-
-      external_status_check.reload
-      expect(external_status_check.name).to eq('Updated name')
-      expect(external_status_check.external_url).to eq('https://external_url_updated.com')
-      expect(external_status_check.shared_secret).to eq(shared_secret)
-    end
-
-    it 'includes the updated external_status_check record in payload' do
-      external_status_check = execute.payload[:external_status_check]
-
-      expect(external_status_check).to be_instance_of(MergeRequests::ExternalStatusCheck)
-      expect(external_status_check.project).to eq(project)
-      expect(external_status_check.name).to eq('Updated name')
-      expect(external_status_check.external_url).to eq('https://external_url_updated.com')
-      expect(external_status_check.shared_secret).to eq(shared_secret)
-      expect(external_status_check.protected_branches).to contain_exactly(protected_branch)
     end
   end
 
@@ -116,17 +126,6 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
 
       it 'responds with the expected errors' do
         expect(execute.message).to eq('Unknown branch rule type.')
-      end
-    end
-
-    context 'with ::Projects::AllBranchesRule' do
-      let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
-
-      it 'responds with the expected errors' do
-        expect(execute.error?).to be true
-        expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
-        expect(execute.message).to eq('All branch rules cannot configure external status checks')
-        expect(execute.payload[:errors]).to contain_exactly('All branch rules not allowed')
       end
     end
 

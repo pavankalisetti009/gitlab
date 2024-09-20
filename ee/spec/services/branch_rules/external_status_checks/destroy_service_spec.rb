@@ -25,21 +25,23 @@ RSpec.describe BranchRules::ExternalStatusChecks::DestroyService, feature_catego
     stub_licensed_features(audit_events: true)
   end
 
-  context 'when the service execution succeeds', :request_store do
-    specify '#success? is true' do
-      expect(execute.success?).to be(true)
-    end
+  shared_examples 'the service execution succeeds' do
+    context 'with request store', :request_store do
+      specify '#success? is true' do
+        expect(execute.success?).to be(true)
+      end
 
-    it 'destroys the external_status_check record' do
-      execute
+      it 'destroys the external_status_check record' do
+        execute
 
-      expect { external_status_check.reload }.to raise_error(ActiveRecord::RecordNotFound)
-    end
+        expect { external_status_check.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      end
 
-    it 'does not include errors in payload' do
-      response = execute
+      it 'does not include errors in payload' do
+        response = execute
 
-      expect(response.errors).to be_empty
+        expect(response.errors).to be_empty
+      end
     end
   end
 
@@ -49,6 +51,14 @@ RSpec.describe BranchRules::ExternalStatusChecks::DestroyService, feature_catego
       expect { execute }.not_to change { external_status_check }
       expect(execute.message).to eq(message)
     end
+  end
+
+  it_behaves_like 'the service execution succeeds'
+
+  context 'with ::Projects::AllBranchesRule' do
+    let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
+
+    it_behaves_like 'the service execution succeeds'
   end
 
   describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
@@ -106,12 +116,6 @@ RSpec.describe BranchRules::ExternalStatusChecks::DestroyService, feature_catego
       it 'responds with the expected errors' do
         expect(execute.message).to eq('Unknown branch rule type.')
       end
-    end
-
-    context 'with ::Projects::AllBranchesRule' do
-      let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
-
-      it_behaves_like 'with invalid branch rules', 'All branch rules cannot configure external status checks'
     end
 
     context 'with ::Projects::AllProtectedBranchesRule' do

@@ -47,7 +47,8 @@ RSpec.shared_examples_for 'create external status services' do
       expect(rule.external_url).to eq('https://external_url.text/hello.json')
       expect(rule.name).to eq 'Test'
       expect(rule.shared_secret).to eq 'shared_secret'
-      expect(rule.protected_branches).to contain_exactly(protected_branch)
+
+      expect(rule.protected_branches).to(protected_branch ? contain_exactly(protected_branch) : be_empty)
     end
   end
 
@@ -60,9 +61,10 @@ RSpec.shared_examples_for 'create external status services' do
       context 'when external status check save operation succeeds', :request_store do
         it 'logs an audit event' do
           expect { execute }.to change { AuditEvent.count }.by(1)
-          expect(AuditEvent.last.details).to include({
-            custom_message: "Added Test status check with protected branch(es) #{protected_branch.name}"
-          })
+          message_suffix = protected_branch.present? ? "protected branch(es) #{protected_branch.name}" : "all branches"
+          expect(AuditEvent.last.details).to include(
+            { custom_message: "Added Test status check with #{message_suffix}" }
+          )
         end
       end
 
