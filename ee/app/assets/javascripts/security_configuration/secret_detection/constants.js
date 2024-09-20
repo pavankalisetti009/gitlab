@@ -16,8 +16,8 @@ export const ExclusionScannerEnum = {
   SECRET_PUSH_PROTECTION: 'SECRET_PUSH_PROTECTION',
 };
 
-export const EXCLUSION_TYPES = [
-  {
+export const EXCLUSION_TYPE_MAP = {
+  [ExclusionType.PATH]: {
     text: s__('SecurityExclusions|Path'),
     value: ExclusionType.PATH,
     description: s__('SecurityExclusions|File or directory location'),
@@ -26,7 +26,7 @@ export const EXCLUSION_TYPES = [
     ),
     contentPlaceholder: s__('SecurityExclusions|ex: spec/**/*.rb'),
   },
-  {
+  [ExclusionType.RAW]: {
     text: s__('SecurityExclusions|Raw value'),
     value: ExclusionType.RAW,
     description: s__('SecurityExclusions|Unprocessed data'),
@@ -35,16 +35,7 @@ export const EXCLUSION_TYPES = [
     ),
     contentPlaceholder: s__('SecurityExclusions|ex: glpat-1234567890'),
   },
-  // {
-  //   text: s__('SecurityExclusions|Regex'),
-  //   value: ExclusionType.REGEX,
-  //   description: s__('SecurityExclusions|Pattern matching rules'),
-  //   contentDescription: s__(
-  //     'SecurityExclusions|Enter one or more regex patterns to ignore, separated by line breaks.',
-  //   ),
-  //   contentPlaceholder: s__('SecurityExclusions|ex: ^.*secret.*$'),
-  // },
-  {
+  [ExclusionType.RULE]: {
     text: s__('SecurityExclusions|Rule'),
     value: ExclusionType.RULE,
     description: s__('SecurityExclusions|Scanner rule identifier'),
@@ -53,7 +44,7 @@ export const EXCLUSION_TYPES = [
     ),
     contentPlaceholder: s__('SecurityExclusions|ex: gitlab_personal_access_token'),
   },
-];
+};
 
 export const STATUS_TYPES = [
   { text: s__('SecurityExclusions|Enable'), value: StatusType.ENABLE },

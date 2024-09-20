@@ -1,6 +1,8 @@
 <script>
 import { GlTable, GlIcon, GlButton, GlToggle } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { getTimeago } from '~/lib/utils/datetime_utility';
+import { EXCLUSION_TYPE_MAP } from '../constants';
 
 const i18nStrings = {
   status: s__('SecurityExclusions|Status'),
@@ -47,6 +49,12 @@ export default {
     addExclusion() {
       this.$emit('addExclusion');
     },
+    typeLabel(type) {
+      return EXCLUSION_TYPE_MAP[type].text;
+    },
+    modifiedTime(time) {
+      return getTimeago().format(time);
+    },
   },
 };
 </script>
@@ -71,7 +79,7 @@ export default {
         />
       </template>
       <template #cell(type)="{ item }">
-        {{ item.type }}
+        {{ typeLabel(item.type) }}
       </template>
       <template #cell(content)="{ item }">
         {{ item.value }}
@@ -80,8 +88,7 @@ export default {
         <gl-icon name="check" class="text-success" />
         {{ $options.i18n.secretPushProtection }}
       </template>
-      <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-      <template #cell(modified)> {{ '3 days ago' }} </template>
+      <template #cell(modified)="{ item }"> {{ modifiedTime(item.updatedAt) }} </template>
       <template #cell(actions)>
         <gl-button icon="ellipsis_v" category="tertiary" />
       </template>

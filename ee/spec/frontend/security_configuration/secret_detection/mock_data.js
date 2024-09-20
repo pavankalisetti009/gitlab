@@ -6,6 +6,8 @@ export const projectSecurityExclusions = [
     active: true,
     description: 'test1',
     value: 'tmp',
+    createdAt: '2024-09-19T14:15:21Z',
+    updatedAt: '2024-09-19T14:15:21Z',
     __typename: 'ProjectSecurityExclusion',
   },
   {
@@ -15,6 +17,8 @@ export const projectSecurityExclusions = [
     active: true,
     description: 'test secret',
     value: 'glpat-1234567890abcdefg',
+    createdAt: '2024-09-19T14:15:21Z',
+    updatedAt: '2024-09-19T14:15:21Z',
     __typename: 'ProjectSecurityExclusion',
   },
 ];
