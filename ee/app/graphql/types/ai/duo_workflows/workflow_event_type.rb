@@ -17,6 +17,10 @@ module Types
           scopes: [:api, :read_api, :ai_features],
           description: 'Metadata associated with the event.'
 
+        field :workflow_status, Types::Ai::DuoWorkflows::WorkflowStatusEnum,
+          scopes: [:api, :read_api, :ai_features],
+          description: 'Status of the workflow.'
+
         field :timestamp,
           Types::TimeType,
           scopes: [:api, :read_api, :ai_features],

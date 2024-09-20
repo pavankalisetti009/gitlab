@@ -36,4 +36,10 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
       expect(presenter.checkpoint).to eq(checkpoint.checkpoint)
     end
   end
+
+  describe 'workflow_status' do
+    it 'returns the workflow status' do
+      expect(presenter.workflow_status).to eq(checkpoint.workflow.status)
+    end
+  end
 end
