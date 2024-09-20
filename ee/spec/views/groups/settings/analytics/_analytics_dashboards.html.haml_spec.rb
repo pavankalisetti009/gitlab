@@ -13,7 +13,7 @@ RSpec.describe 'groups/settings/analytics/_analytics_dashboards.html.haml', feat
     render
 
     expect(rendered).to have_link('What is Analytics Dashboards?',
-      href: help_page_path('user/analytics/value_streams_dashboard'))
+      href: help_page_path('user/analytics/value_streams_dashboard.md'))
   end
 
   it 'renders a link to the group analytics dashboards' do

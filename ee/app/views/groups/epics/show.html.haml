@@ -66,7 +66,7 @@
             empty_state_illustration: image_path('illustrations/empty-state/empty-milestone-md.svg'),
             new_epic_path: new_group_epic_path(@group),
             list_epics_path: group_epics_path(@group),
-            epics_docs_path: help_page_path('user/group/epics/index'),
+            epics_docs_path: help_page_path('user/group/epics/index.md'),
             preset_type: roadmap_layout,
             epics_state: 'all',
             sorted_by: roadmap_sort_order,
@@ -75,7 +75,7 @@
   - if related_epics_feature_available
     #js-related-epics{ data: { endpoint: group_epic_related_epic_links_path(@group, @epic),
       can_add_related_epics: "#{can?(current_user, :admin_epic_link_relation, @epic)}",
-      help_path: help_page_path('user/group/epics/linked_epics'),
+      help_path: help_page_path('user/group/epics/linked_epics.md'),
       show_categorized_epics: 'true' } }
 
   .row

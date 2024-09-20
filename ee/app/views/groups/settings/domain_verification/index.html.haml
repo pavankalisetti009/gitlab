@@ -5,7 +5,7 @@
 
 %p.gl-text-secondary
   = s_('DomainVerification|The following domains are configured for projects in this group. Users with email addresses that match a verified domain do not need to confirm their account.')
-  = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/index', anchor: 'verified-domains-for-groups')
+  = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/index.md', anchor: 'verified-domains-for-groups')
 
 = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card js-toggle-container' }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
   - c.with_header do
