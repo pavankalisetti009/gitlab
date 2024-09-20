@@ -12,6 +12,10 @@ module EE
           rule { group.ip_enforcement_prevents_access & ~group.owner }.policy do
             prevent(*create_read_update_admin_destroy(:package))
           end
+
+          rule { group.auditor }.policy do
+            enable :read_package
+          end
         end
       end
     end
