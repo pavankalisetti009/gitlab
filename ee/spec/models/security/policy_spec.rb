@@ -305,4 +305,68 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       it { is_expected.to be false }
     end
   end
+
+  describe '#delete_approval_policy_rules' do
+    let_it_be(:policy) { create(:security_policy, :require_approval) }
+    let_it_be(:other_policy) { create(:security_policy, :require_approval) }
+    let_it_be(:other_policy_rule) { create(:approval_policy_rule, security_policy: other_policy) }
+
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+    let_it_be(:approval_project_rule) do
+      create(:approval_project_rule, approval_policy_rule_id: approval_policy_rule.id)
+    end
+
+    let_it_be(:approval_merge_request_rule) do
+      create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
+    end
+
+    let_it_be(:violation) { create(:scan_result_policy_violation, approval_policy_rule: approval_policy_rule) }
+    let_it_be(:license_policy) { create(:software_license_policy, approval_policy_rule: approval_policy_rule) }
+
+    it 'deletes all associations and approval_policy_rule' do
+      expect { policy.delete_approval_policy_rules }.to change { ApprovalProjectRule.count }.by(-1)
+        .and change { ApprovalMergeRequestRule.count }.by(-1)
+        .and change { Security::ScanResultPolicyViolation.count }.by(-1)
+        .and change { SoftwareLicensePolicy.count }.by(-1)
+        .and change { Security::ApprovalPolicyRule.count }.by(-1)
+    end
+
+    it 'does not delete approval_policy_rules from other policies' do
+      expect { policy.delete_approval_policy_rules }.not_to change { other_policy_rule.reload }
+    end
+
+    # Skipped as we want to update foreign_key to set null on delete: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166482
+    xcontext 'with merged mr rules' do
+      let_it_be(:merged_rule) do
+        create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
+      end
+
+      before do
+        merged_rule.merge_request.update!(state_id: MergeRequest.available_states[:merged])
+      end
+
+      it 'only deletes unmerged ApprovalMergeRequestRules' do
+        expect { policy.delete_approval_policy_rules }.to change { ApprovalMergeRequestRule.count }.by(-1)
+        expect(ApprovalMergeRequestRule.exists?(merged_rule.id)).to be_truthy
+      end
+    end
+  end
+
+  describe '#delete_scan_execution_policy_rules' do
+    let_it_be(:policy) { create(:security_policy, :scan_execution_policy) }
+    let_it_be(:other_policy) { create(:security_policy, :scan_execution_policy) }
+    let_it_be(:other_policy_rule) { create(:scan_execution_policy_rule, security_policy: other_policy) }
+
+    before do
+      create_list(:scan_execution_policy_rule, 3, security_policy: policy)
+    end
+
+    it 'deletes all associated ScanExecutionPolicyRule' do
+      expect { policy.delete_scan_execution_policy_rules }.to change { Security::ScanExecutionPolicyRule.count }.by(-3)
+    end
+
+    it 'does not delete ScanExecutionPolicyRule from other policies' do
+      expect { policy.delete_scan_execution_policy_rules }.not_to change { other_policy_rule.reload }
+    end
+  end
 end

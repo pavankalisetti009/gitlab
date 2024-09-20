@@ -3,6 +3,7 @@
 module Security
   class Policy < ApplicationRecord
     include IgnorableColumns
+    include EachBatch
 
     self.table_name = 'security_policies'
     self.inheritance_column = :_type_disabled
@@ -128,6 +129,49 @@ module Security
       policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
 
       policy_scope_checker.security_policy_applicable?(self)
+    end
+
+    def delete_approval_policy_rules
+      relation_in_batch(approval_policy_rules) do |batch|
+        delete_approval_rules(batch)
+        delete_policy_violations(batch)
+        delete_software_license_policies(batch)
+      end
+
+      delete_in_batches(approval_policy_rules)
+    end
+
+    def delete_scan_execution_policy_rules
+      delete_in_batches(scan_execution_policy_rules)
+    end
+
+    private
+
+    def delete_approval_rules(rules_batch)
+      delete_in_batches(ApprovalProjectRule.where(approval_policy_rule_id: rules_batch.select(:id)))
+      delete_in_batches(
+        ApprovalMergeRequestRule
+          .for_unmerged_merge_requests
+          .where(approval_policy_rule_id: rules_batch.select(:id))
+      )
+    end
+
+    def delete_policy_violations(rules_batch)
+      delete_in_batches(Security::ScanResultPolicyViolation.where(approval_policy_rule_id: rules_batch.select(:id)))
+    end
+
+    def delete_software_license_policies(rules_batch)
+      delete_in_batches(SoftwareLicensePolicy.where(approval_policy_rule_id: rules_batch.select(:id)))
+    end
+
+    def delete_in_batches(relation)
+      relation_in_batch(relation, &:delete_all)
+    end
+
+    def relation_in_batch(relation)
+      relation.each_batch(order_hint: :updated_at) do |batch|
+        yield batch
+      end
     end
   end
 end

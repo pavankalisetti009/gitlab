@@ -68,12 +68,17 @@ module EE
             if: ->(event) { ::AppSec::ContainerScanning::ScanImageWorker.dispatch?(event) }
 
           register_threat_insights_subscribers(store)
+          register_security_policy_subscribers(store)
 
           subscribe_to_epic_events(store)
           subscribe_to_external_issue_links_events(store)
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
           subscribe_to_zoekt_events(store)
+        end
+
+        def register_security_policy_subscribers(store)
+          store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyDeletedEvent
         end
 
         def register_threat_insights_subscribers(store)
