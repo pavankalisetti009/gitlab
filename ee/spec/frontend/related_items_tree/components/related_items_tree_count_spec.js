@@ -6,12 +6,10 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import EpicCountables from 'ee/vue_shared/components/epic_countables/epic_countables.vue';
 import EpicHealthStatus from 'ee/related_items_tree/components/epic_health_status.vue';
-import EpicActionsSplitButton from 'ee/related_items_tree/components/epic_issue_actions_split_button.vue';
-import RelatedItemsTreeHeader from 'ee/related_items_tree/components/related_items_tree_header.vue';
+import RelatedItemsTreeCount from 'ee/related_items_tree/components/related_items_tree_count.vue';
 import createDefaultStore from 'ee/related_items_tree/store';
 import * as epicUtils from 'ee/related_items_tree/utils/epic_utils';
 
-import { TYPE_EPIC, TYPE_ISSUE } from '~/issues/constants';
 import { mockInitialConfig, mockParentItem, mockQueryResponse } from '../mock_data';
 
 Vue.use(Vuex);
@@ -37,7 +35,7 @@ const createComponent = ({ slots, isOpenString } = { isOpenString: 'expanded' })
   });
   store.dispatch('setChildrenCount', mockParentItem.descendantCounts);
 
-  return shallowMountExtended(RelatedItemsTreeHeader, {
+  return shallowMountExtended(RelatedItemsTreeCount, {
     store,
     slots,
     propsData: {
@@ -53,10 +51,6 @@ const createComponent = ({ slots, isOpenString } = { isOpenString: 'expanded' })
 describe('RelatedItemsTree', () => {
   describe('RelatedItemsTreeHeader', () => {
     let wrapper;
-
-    const findToggleButton = () => wrapper.findByTestId('toggle-links');
-
-    const findEpicsIssuesSplitButton = () => wrapper.findComponent(EpicActionsSplitButton);
 
     describe('Count popover', () => {
       beforeEach(() => {
@@ -88,115 +82,6 @@ describe('RelatedItemsTree', () => {
       });
     });
 
-    describe('epic issue actions split button', () => {
-      beforeEach(() => {
-        wrapper = createComponent();
-      });
-
-      describe('showAddEpicForm event', () => {
-        let toggleAddItemForm;
-
-        beforeEach(() => {
-          toggleAddItemForm = jest.fn();
-          wrapper.vm.$store.hotUpdate({
-            actions: {
-              toggleAddItemForm,
-            },
-          });
-        });
-
-        it('dispatches toggleAddItemForm action', () => {
-          findEpicsIssuesSplitButton().vm.$emit('showAddEpicForm');
-
-          expect(toggleAddItemForm).toHaveBeenCalled();
-
-          const payload = toggleAddItemForm.mock.calls[0][1];
-
-          expect(payload).toEqual({
-            issuableType: TYPE_EPIC,
-            toggleState: true,
-          });
-        });
-      });
-
-      describe('showCreateEpicForm event', () => {
-        let toggleCreateEpicForm;
-
-        beforeEach(() => {
-          toggleCreateEpicForm = jest.fn();
-          wrapper.vm.$store.hotUpdate({
-            actions: {
-              toggleCreateEpicForm,
-            },
-          });
-        });
-
-        it('dispatches toggleCreateEpicForm action', () => {
-          findEpicsIssuesSplitButton().vm.$emit('showCreateEpicForm');
-
-          expect(toggleCreateEpicForm).toHaveBeenCalled();
-
-          const payload =
-            toggleCreateEpicForm.mock.calls[toggleCreateEpicForm.mock.calls.length - 1][1];
-
-          expect(payload).toEqual({ toggleState: true });
-        });
-      });
-
-      describe('showAddIssueForm event', () => {
-        let toggleAddItemForm;
-        let setItemInputValue;
-
-        beforeEach(() => {
-          toggleAddItemForm = jest.fn();
-          setItemInputValue = jest.fn();
-          wrapper.vm.$store.hotUpdate({
-            actions: {
-              toggleAddItemForm,
-              setItemInputValue,
-            },
-          });
-        });
-
-        it('dispatches toggleAddItemForm action', () => {
-          findEpicsIssuesSplitButton().vm.$emit('showAddIssueForm');
-
-          expect(toggleAddItemForm).toHaveBeenCalled();
-
-          const payload = toggleAddItemForm.mock.calls[0][1];
-
-          expect(payload).toEqual({
-            issuableType: TYPE_ISSUE,
-            toggleState: true,
-          });
-        });
-      });
-
-      describe('showCreateIssueForm event', () => {
-        let toggleCreateIssueForm;
-
-        beforeEach(() => {
-          toggleCreateIssueForm = jest.fn();
-          wrapper.vm.$store.hotUpdate({
-            actions: {
-              toggleCreateIssueForm,
-            },
-          });
-        });
-
-        it('dispatches toggleCreateIssueForm action', () => {
-          findEpicsIssuesSplitButton().vm.$emit('showCreateIssueForm');
-
-          expect(toggleCreateIssueForm).toHaveBeenCalled();
-
-          const payload =
-            toggleCreateIssueForm.mock.calls[toggleCreateIssueForm.mock.calls.length - 1][1];
-
-          expect(payload).toEqual({ toggleState: true });
-        });
-      });
-    });
-
     describe('template', () => {
       beforeEach(() => {
         wrapper = createComponent();
@@ -215,10 +100,6 @@ describe('RelatedItemsTree', () => {
         expect(epicsEl.text().trim()).toContain('2');
         expect(epicIcon.isVisible()).toBe(true);
         expect(epicIcon.props('name')).toBe('epic');
-      });
-
-      it('renders `Add` dropdown button', () => {
-        expect(findEpicsIssuesSplitButton().isVisible()).toBe(true);
       });
 
       describe('when issuable-health-status feature is not available', () => {
@@ -267,39 +148,6 @@ describe('RelatedItemsTree', () => {
         expect(weightEl.text().trim()).toContain('15');
         expect(weightIcon.isVisible()).toBe(true);
         expect(weightIcon.props('name')).toBe('weight');
-      });
-    });
-
-    describe('toggle Child issues and epics section', () => {
-      beforeEach(() => {
-        wrapper = createComponent();
-      });
-
-      it('is expanded by default', () => {
-        expect(findToggleButton().props('icon')).toBe('chevron-lg-up');
-      });
-
-      it('has an aria-expanded state on the toggle button that is controlled by the isOpenString prop', () => {
-        expect(findToggleButton().attributes('aria-expanded')).toBe('expanded');
-        wrapper = createComponent({ isOpenString: 'collapsed' });
-        expect(findToggleButton().attributes('aria-expanded')).toBe('collapsed');
-      });
-
-      it('expands on click toggle button', async () => {
-        findToggleButton().vm.$emit('click');
-        await nextTick();
-
-        expect(findToggleButton().props('icon')).toBe('chevron-lg-down');
-        expect(wrapper.emitted('toggleRelatedItemsView')[0][0]).toBe(false);
-      });
-
-      it('Collapse on click toggle button', async () => {
-        findToggleButton().vm.$emit('click');
-        findToggleButton().vm.$emit('click');
-        await nextTick();
-
-        expect(findToggleButton().props('icon')).toBe('chevron-lg-up');
-        expect(wrapper.emitted('toggleRelatedItemsView')[1][0]).toBe(true);
       });
     });
   });

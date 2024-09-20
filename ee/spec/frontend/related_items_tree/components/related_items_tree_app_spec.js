@@ -1,4 +1,3 @@
-import { GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import AxiosMockAdapter from 'axios-mock-adapter';
 // eslint-disable-next-line no-restricted-imports
@@ -12,10 +11,11 @@ import CreateEpicForm from 'ee/related_items_tree/components/create_epic_form.vu
 import AddItemForm from '~/related_issues/components/add_issuable_form.vue';
 import SlotSwitch from '~/vue_shared/components/slot_switch.vue';
 import RelatedItemsTreeApp from 'ee/related_items_tree/components/related_items_tree_app.vue';
-import RelatedItemsTreeHeader from 'ee/related_items_tree/components/related_items_tree_header.vue';
+import RelatedItemsTreeHeaderActions from 'ee/related_items_tree/components/related_items_tree_header_actions.vue';
 import RelatedItemsTreeActions from 'ee/related_items_tree/components/related_items_tree_actions.vue';
 import RelatedItemsTreeBody from 'ee/related_items_tree/components/related_items_tree_body.vue';
 import RelatedItemsRoadmapApp from 'ee/related_items_tree/components/related_items_roadmap_app.vue';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 
 import createDefaultStore from 'ee/related_items_tree/store';
 import { TYPE_EPIC, TYPE_ISSUE } from '~/issues/constants';
@@ -48,15 +48,18 @@ describe('RelatedItemsTreeApp', () => {
       store,
       stubs: {
         SlotSwitch,
+        CrudComponent,
       },
     });
   };
 
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findCreateIssueForm = () => wrapper.findComponent(CreateIssueForm);
   const findAddItemForm = () => wrapper.findComponent(AddItemForm);
   const findCreateEpicForm = () => wrapper.findComponent(CreateEpicForm);
   const findRelatedItemsTreeActions = () => wrapper.findComponent(RelatedItemsTreeActions);
-  const findRelatedItemsTreeHeader = () => wrapper.findComponent(RelatedItemsTreeHeader);
+  const findRelatedItemsTreeHeaderActions = () =>
+    wrapper.findComponent(RelatedItemsTreeHeaderActions);
 
   beforeEach(() => {
     axiosMock = new AxiosMockAdapter(axios);
@@ -71,6 +74,7 @@ describe('RelatedItemsTreeApp', () => {
     beforeEach(() => {
       createComponent();
       store.state.showAddItemForm = true;
+      wrapper.vm.$refs.relatedItemsTreeCrud.showForm();
     });
 
     describe('getRawRefs', () => {
@@ -209,17 +213,7 @@ describe('RelatedItemsTreeApp', () => {
 
     it('renders empty message when content is empty', async () => {
       await nextTick();
-      expect(wrapper.find('.gl-new-card-empty').exists()).toBe(true);
-    });
-
-    it('hides empty message when add form is shown', async () => {
-      store.dispatch('toggleAddItemForm', {
-        toggleState: true,
-        issuableType: TYPE_EPIC,
-      });
-
-      await nextTick();
-      expect(wrapper.find('.gl-new-card-empty').exists()).toBe(false);
+      expect(wrapper.findByTestId('crud-empty').exists()).toBe(true);
     });
 
     it('renders loading icon when `state.itemsFetchInProgress` prop is true', async () => {
@@ -229,7 +223,7 @@ describe('RelatedItemsTreeApp', () => {
       });
 
       await nextTick();
-      expect(wrapper.findComponent(GlLoadingIcon).isVisible()).toBe(true);
+      expect(findCrudComponent().props('isLoading')).toBe(true);
     });
 
     it('renders tree container element when `state.itemsFetchInProgress` prop is false', async () => {
@@ -246,12 +240,7 @@ describe('RelatedItemsTreeApp', () => {
 
     it('renders tree header component', async () => {
       await nextTick();
-      expect(findRelatedItemsTreeHeader().isVisible()).toBe(true);
-    });
-
-    it('renders tree header component and passes is-open-string down to it', async () => {
-      await nextTick();
-      expect(findRelatedItemsTreeHeader().props('isOpenString')).toBe('true');
+      expect(findRelatedItemsTreeHeaderActions().isVisible()).toBe(true);
     });
 
     it('renders item add/create form container element', async () => {
@@ -259,6 +248,8 @@ describe('RelatedItemsTreeApp', () => {
         toggleState: true,
         issuableType: TYPE_EPIC,
       });
+
+      wrapper.vm.$refs.relatedItemsTreeCrud.showForm();
 
       await nextTick();
       expect(wrapper.findByTestId('add-item-form').isVisible()).toBe(true);
@@ -287,6 +278,8 @@ describe('RelatedItemsTreeApp', () => {
         });
         store.state.autoCompleteIssues = autoCompleteIssues;
         store.state.autoCompleteEpics = autoCompleteEpics;
+
+        wrapper.vm.$refs.relatedItemsTreeCrud.showForm();
 
         await nextTick();
 
@@ -329,20 +322,5 @@ describe('RelatedItemsTreeApp', () => {
 
       expect(wrapper.findComponent(appMapping[activeTab]).isVisible()).toBe(true);
     });
-
-    it.each([false, true])(
-      "toggle related items container when `toggleRelatedItemsView` emits '%s'",
-      async (toggled) => {
-        store.state.itemsFetchResultEmpty = false;
-
-        await nextTick();
-
-        findRelatedItemsTreeHeader().vm.$emit('toggleRelatedItemsView', toggled);
-
-        await nextTick();
-
-        expect(wrapper.findByTestId('related-items-container').exists()).toBe(toggled);
-      },
-    );
   });
 });
