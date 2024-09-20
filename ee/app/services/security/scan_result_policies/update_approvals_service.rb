@@ -82,7 +82,7 @@ module Security
               approval_rule_name: approval_rule.name,
               missing_scans: missing_scans(approval_rule)
             )
-            violations.add_error(approval_rule.scan_result_policy_read, :scan_removed,
+            violations.add_error(approval_rule.scan_result_policy_read, :scan_removed, context: validation_context,
               missing_scans: missing_scans(approval_rule))
             next true
           end
