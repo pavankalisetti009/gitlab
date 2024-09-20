@@ -1,9 +1,0 @@
----
-name: scan_execution_policy_cache_ci_templates
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/436545
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/157781
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/469693
-milestone: '17.2'
-group: group::security policies
-type: gitlab_com_derisk
-default_enabled: false
