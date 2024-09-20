@@ -13,15 +13,7 @@ RSpec.describe Ci::FinishedBuildChSyncEvent, type: :model, feature_category: :fl
 
     it { is_expected.to validate_presence_of(:build_id) }
     it { is_expected.to validate_presence_of(:build_finished_at) }
-
-    it 'is invalid without project_id' do
-      build1.project_id = nil
-      event = build_ci_build_sync_event(build1).tap(&:save)
-      build1.reload
-
-      expect(event).not_to be_valid
-      expect(event.errors[:project_id]).to include("can't be blank")
-    end
+    it { is_expected.to validate_presence_of(:project_id) }
   end
 
   describe '.upsert_from_build', :aggregate_failures do

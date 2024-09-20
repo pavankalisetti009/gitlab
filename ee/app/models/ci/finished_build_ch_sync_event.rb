@@ -21,7 +21,7 @@ module Ci
     belongs_to :build, # rubocop: disable Rails/InverseOf -- this relation is not present on build
       class_name: 'Ci::Build'
 
-    validates :project_id, presence: true, on: :create
+    validates :project_id, presence: true
     validates :build_id, presence: true
     validates :build_finished_at, presence: true
 
