@@ -11,19 +11,6 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     create(:user_custom_attribute, key: UserCustomAttribute::ARKOSE_RISK_BAND, value: value, user_id: user.id)
   end
 
-  def add_phone_exemption
-    create(:user_custom_attribute, key: UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT, value: true.to_s,
-      user_id: user.id)
-  end
-
-  def add_identity_verification_exemption
-    create(:user_custom_attribute, key: UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT, value: true, user: user)
-  end
-
-  def assume_high_risk(user)
-    create(:user_custom_attribute, :assumed_high_risk_reason, user: user)
-  end
-
   describe('#signup_identity_verification_enabled?') do
     where(
       identity_verification: [true, false],
@@ -379,8 +366,8 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     with_them do
       before do
         add_user_risk_band(risk_band) if risk_band
-        add_phone_exemption if phone_exempt
-        add_identity_verification_exemption if identity_verification_exempt
+        user.add_phone_number_verification_exemption if phone_exempt
+        user.add_identity_verification_exemption('test') if identity_verification_exempt
 
         stub_feature_flags(identity_verification_credit_card: credit_card)
         stub_feature_flags(identity_verification_phone_number: phone_number)
@@ -403,8 +390,8 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
       with_them do
         before do
-          add_phone_exemption if phone_exempt
-          assume_high_risk(user) if assumed_high_risk
+          user.add_phone_number_verification_exemption if phone_exempt
+          user.assume_high_risk!(reason: 'test') if assumed_high_risk
           user.confirm if email_verified
 
           # Disables phone number verification method
@@ -507,11 +494,11 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
       with_them do
         before do
-          assume_high_risk(user)
+          user.assume_high_risk!(reason: 'test')
 
           add_user_risk_band(risk_band) if risk_band
-          add_phone_exemption if phone_exempt
-          add_identity_verification_exemption if identity_verification_exempt
+          user.add_phone_number_verification_exemption if phone_exempt
+          user.add_identity_verification_exemption('test') if identity_verification_exempt
         end
 
         it { is_expected.to eq(result) }
@@ -616,26 +603,22 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
     end
   end
 
-  describe '#create_phone_number_exemption!' do
-    subject(:create_phone_number_exemption) { user.create_phone_number_exemption! }
+  describe '#add_phone_number_verification_exemption' do
+    subject(:call_method) { user.add_phone_number_verification_exemption }
 
-    let(:user) { create(:user) }
+    it 'adds an exemption', :aggregate_failures do
+      expect(user).to receive(:clear_memoization).with(:identity_verification_state)
+      expect(user.send(:risk_profile)).to receive(:add_phone_number_verification_exemption)
 
-    it 'creates an exemption', :aggregate_failures do
-      expect(user).to receive(:clear_memoization).with(:identity_verification_state).and_call_original
-
-      expect { subject }.to change {
-        user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT).count
-      }.from(0).to(1)
+      subject
     end
 
-    shared_examples 'it does not create an exemption' do
-      it 'does not create an exemption', :aggregate_failures do
+    shared_examples 'it does not add an exemption' do
+      specify :aggregate_failures do
         expect(user).not_to receive(:clear_memoization)
+        expect(user.send(:risk_profile)).not_to receive(:add_phone_number_verification_exemption)
 
-        expect { subject }.not_to change {
-          user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_PHONE_EXEMPT).count
-        }
+        subject
       end
     end
 
@@ -644,15 +627,15 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         create(:phone_number_validation, :validated, user: user)
       end
 
-      it_behaves_like 'it does not create an exemption'
+      it_behaves_like 'it does not add an exemption'
     end
 
     context 'when user is already exempt' do
       before do
-        add_phone_exemption
+        allow(user).to receive(:phone_number_verification_exempt?).and_return(true)
       end
 
-      it_behaves_like 'it does not create an exemption'
+      it_behaves_like 'it does not add an exemption'
     end
   end
 
@@ -667,9 +650,9 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       create(:group_with_plan, :public, plan: :ultimate_plan, trial_ends_on: Time.current + 30.days)
     end
 
-    context 'when a user has a identity verification exemption by custom attribute' do
+    context 'when a user has a identity verification exemption' do
       before do
-        add_identity_verification_exemption
+        user.add_identity_verification_exemption('test')
       end
 
       it { is_expected.to be true }
@@ -705,24 +688,8 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       it { is_expected.to be_falsy }
     end
 
-    context 'when a user is not an enterprise user, a paid namespace member or exempted by custom attribute' do
+    context 'when a user is not an enterprise user, a paid namespace member or exempted' do
       it { is_expected.to be_falsy }
-    end
-  end
-
-  describe '#create_identity_verification_exemption' do
-    subject(:create_identity_verification_exemption) { user.create_identity_verification_exemption('because') }
-
-    let(:user) { create(:user) }
-
-    it 'creates an exemption', :aggregate_failures do
-      expect { subject }.to change {
-        user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT).count
-      }.from(0).to(1)
-
-      expect(
-        user.custom_attributes.by_key(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT).first.value
-      ).to eq('because')
     end
   end
 
@@ -735,7 +702,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     context 'when not exempt from phone number verification' do
       it 'creates an exemption' do
-        expect(user).to receive(:create_phone_number_exemption!)
+        expect(user).to receive(:add_phone_number_verification_exemption)
 
         toggle_phone_number_verification
       end
@@ -743,7 +710,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
     context 'when exempt from phone number verification' do
       it 'destroys the exemption' do
-        user.create_phone_number_exemption!
+        user.add_phone_number_verification_exemption
 
         expect { toggle_phone_number_verification }.to change {
                                                          user.phone_number_verification_exempt?
@@ -777,7 +744,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         stub_feature_flags(identity_verification_phone_number: phone_number)
 
         allow(user).to receive(:required_identity_verification_methods).and_return(required_verification_methods)
-        user.create_phone_number_exemption! if phone_exempt
+        user.add_phone_number_verification_exemption if phone_exempt
       end
 
       it { is_expected.to eq(result) }

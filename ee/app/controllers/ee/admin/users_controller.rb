@@ -7,7 +7,7 @@ module EE
       extend ::Gitlab::Utils::Override
 
       def identity_verification_exemption
-        if @user.create_identity_verification_exemption("set by #{current_user.username}")
+        if @user.add_identity_verification_exemption("set by #{current_user.username}")
           redirect_to [:admin, @user], notice: _('Identity verification exemption has been created.')
         else
           redirect_to [:admin, @user], alert: _('Something went wrong. Unable to create identity verification exemption.')

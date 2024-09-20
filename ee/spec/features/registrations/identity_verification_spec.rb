@@ -227,7 +227,7 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
 
     context 'and the user has a phone verification exemption' do
       it 'verifies the user' do
-        user.create_phone_number_exemption!
+        user.add_phone_number_verification_exemption
 
         expect_to_see_identity_verification_page
 

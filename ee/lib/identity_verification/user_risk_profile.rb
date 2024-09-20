@@ -54,6 +54,10 @@ module IdentityVerification
       custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT).present?
     end
 
+    def add_identity_verification_exemption(reason)
+      create_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT, reason)
+    end
+
     def remove_identity_verification_exemption
       destroy_custom_attribute(UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT)
     end
@@ -83,8 +87,9 @@ module IdentityVerification
     end
 
     def create_custom_attribute(key, value)
-      ::UserCustomAttribute.upsert_custom_attribute(user_id: user.id, key: key, value: value)
+      result = ::UserCustomAttribute.upsert_custom_attribute(user_id: user.id, key: key, value: value)
       clear_memoization(:user_custom_attributes)
+      !result.empty?
     end
 
     def destroy_custom_attribute(key)

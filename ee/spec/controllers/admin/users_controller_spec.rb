@@ -139,8 +139,8 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     subject { post :identity_verification_exemption, params: { id: user.to_param } }
 
     context 'when it is successful' do
-      it 'calls create_identity_verification_exemption and redirects with a success notice' do
-        expect(user).to receive(:create_identity_verification_exemption).once.with(
+      it 'calls add_identity_verification_exemption and redirects with a success notice' do
+        expect(user).to receive(:add_identity_verification_exemption).once.with(
           "set by #{admin.username}"
         ).and_call_original
 
@@ -152,8 +152,8 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     end
 
     context 'when it fails' do
-      it 'calls create_identity_verification_exemption and redirects with an alert' do
-        expect(user).to receive(:create_identity_verification_exemption).once.and_return(false)
+      it 'calls add_identity_verification_exemption and redirects with an alert' do
+        expect(user).to receive(:add_identity_verification_exemption).once.and_return(false)
 
         subject
 

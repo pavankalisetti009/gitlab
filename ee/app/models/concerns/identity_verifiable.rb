@@ -98,11 +98,11 @@ module IdentityVerifiable
     credit_card_validation.present? && !credit_card_validation.used_by_banned_user?
   end
 
-  def create_phone_number_exemption!
+  def add_phone_number_verification_exemption
     return if phone_number_verification_exempt?
     return if phone_verified?
 
-    add_phone_number_verification_exemption
+    risk_profile.add_phone_number_verification_exemption
     clear_memoization(:identity_verification_state)
   end
 
@@ -111,12 +111,8 @@ module IdentityVerifiable
       remove_phone_number_verification_exemption
       clear_memoization(:identity_verification_state)
     else
-      create_phone_number_exemption!
+      add_phone_number_verification_exemption
     end
-  end
-
-  def create_identity_verification_exemption(reason)
-    custom_attributes.create(key: UserCustomAttribute::IDENTITY_VERIFICATION_EXEMPT, value: reason)
   end
 
   def identity_verification_exempt?
@@ -166,9 +162,10 @@ module IdentityVerifiable
   end
 
   delegate :arkose_verified?, :assume_low_risk!, :assume_high_risk!, :assumed_high_risk?,
-    :remove_identity_verification_exemption, :phone_number_verification_exempt?, to: :risk_profile
+    :add_identity_verification_exemption, :remove_identity_verification_exemption, :phone_number_verification_exempt?,
+    to: :risk_profile
   delegate :high_risk?, :medium_risk?, :low_risk?, :remove_phone_number_verification_exemption,
-    :add_phone_number_verification_exemption, to: :risk_profile, private: true
+    to: :risk_profile, private: true
 
   private
 
