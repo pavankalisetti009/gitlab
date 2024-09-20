@@ -55,6 +55,15 @@ FactoryBot.define do
         }
       end
     end
+
+    trait :vulnerability_management_policy do
+      type { Security::Policy.types[:vulnerability_management_policy] }
+      content do
+        {
+          actions: [{ type: 'auto_resolve' }]
+        }
+      end
+    end
   end
 
   factory :scan_execution_policy,

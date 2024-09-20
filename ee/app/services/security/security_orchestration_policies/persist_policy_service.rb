@@ -14,6 +14,7 @@ module Security
                        when :approval_policy, :scan_result_policy then :approval_policy
                        when :scan_execution_policy then :scan_execution_policy
                        when :pipeline_execution_policy then :pipeline_execution_policy
+                       when :vulnerability_management_policy then :vulnerability_management_policy
                        else raise ArgumentError, "unrecognized policy_type"
                        end
       end
@@ -120,6 +121,7 @@ module Security
         when :approval_policy then Security::Policy.type_approval_policy
         when :scan_execution_policy then Security::Policy.type_scan_execution_policy
         when :pipeline_execution_policy then Security::Policy.type_pipeline_execution_policy
+        when :vulnerability_management_policy then Security::Policy.type_vulnerability_management_policy
         end
       end
     end

@@ -46,6 +46,12 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
         it_behaves_like 'validates policy content'
       end
+
+      context 'when policy_type is vulnerability_management_policy' do
+        subject(:policy) { create(:security_policy, :vulnerability_management_policy) }
+
+        it_behaves_like 'validates policy content'
+      end
     end
 
     describe 'scope' do
@@ -153,6 +159,12 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         let(:policy_hash) { build(:pipeline_execution_policy, name: "foobar") }
       end
     end
+
+    context "with vulnerability management policies" do
+      include_examples 'upserts policy', :vulnerability_management_policy, :vulnerability_management_policy_rules do
+        let(:policy_hash) { build(:vulnerability_management_policy, name: "foobar") }
+      end
+    end
   end
 
   describe '.delete_by_ids' do
@@ -240,6 +252,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     let_it_be(:approval_policy) { create(:security_policy, :require_approval) }
     let_it_be(:scan_execution_policy) { create(:security_policy, :scan_execution_policy) }
     let_it_be(:pipeline_execution_policy) { create(:security_policy, :pipeline_execution_policy) }
+    let_it_be(:vulnerability_management_policy) { create(:security_policy, :vulnerability_management_policy) }
 
     let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: approval_policy) }
 
@@ -249,6 +262,10 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     let_it_be(:scan_execution_policy_rule) do
       create(:scan_execution_policy_rule, security_policy: scan_execution_policy)
+    end
+
+    let_it_be(:vulnerability_management_policy_rule) do
+      create(:vulnerability_management_policy_rule, security_policy: vulnerability_management_policy)
     end
 
     let_it_be(:negative_index_se_rule) do
@@ -273,6 +290,12 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       let(:policy) { pipeline_execution_policy }
 
       it { is_expected.to be_empty }
+    end
+
+    context 'when policy is a vulnerability management policy' do
+      let(:policy) { vulnerability_management_policy }
+
+      it { is_expected.to contain_exactly(vulnerability_management_policy_rule) }
     end
   end
 
