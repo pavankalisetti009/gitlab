@@ -27412,7 +27412,7 @@ msgstr ""
 msgid "IDE|Confirm"
 msgstr ""
 
-msgid "IDE|Contact your administrator or try to open the Web IDE again with another domain."
+msgid "IDE|Contact your administrator or try to open the Web IDE again with another domain. %{linkStart}How can an administrator resolve the issue%{linkEnd}?"
 msgstr ""
 
 msgid "IDE|Could not find a callback URL entry for %{expectedCallbackUrl}."
