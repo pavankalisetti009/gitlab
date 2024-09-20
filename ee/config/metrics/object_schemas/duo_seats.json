@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "pro": {
+      "type": "object",
+      "description": "Pro seats",
+      "properties": {
+        "purchased": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Number of purchased seats"
+        },
+        "assigned": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Number of assigned seats"
+        }
+      }
+    },
+    "enterprise": {
+      "type": "object",
+      "description": "Enterprise seats",
+      "properties": {
+        "purchased": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Number of purchased seats"
+        },
+        "assigned": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Number of assigned seats"
+        }
+      }
+    }
+  }
+}
