@@ -11035,6 +11035,10 @@ No changes.
 - [Convert design_user_mentions.note_id to bigint for self-managed](gitlab-org/gitlab@08219da99fc356fecc4e9965fe1891baca4d10ff) ([merge request](gitlab-org/gitlab!129111))
 - [Migrate etag cache store from SharedState to Cache](gitlab-org/gitlab@6476298fcdcf77206fa768bcca6bd1e3c7994936) ([merge request](gitlab-org/gitlab!129050))
 
+## 16.3.9 (2024-09-20)
+
+No changes.
+
 ## 16.3.8 (2024-07-23)
 
 ### Added (1 change)
