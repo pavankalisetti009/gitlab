@@ -7,7 +7,7 @@ module Gitlab
         include Gitlab::Utils::StrongMemoize
         include Langsmith::RunHelpers
 
-        DEFAULT_TIMEOUT = 30.seconds
+        DEFAULT_TIMEOUT = 60.seconds
         CHAT_V2_ENDPOINT = '/v2/chat/agent'
 
         ConnectionError = Class.new(StandardError)
