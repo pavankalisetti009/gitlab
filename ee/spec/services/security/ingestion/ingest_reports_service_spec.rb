@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vulnerability_management do
   let(:service_object) { described_class.new(pipeline) }
 
-  let_it_be(:project) { create(:project) }
-  let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+  let_it_be_with_refind(:project) { create(:project) }
+  let_it_be_with_refind(:pipeline) { create(:ci_pipeline, project: project) }
   let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
   let_it_be(:security_scan_1) { create(:security_scan, build: build, scan_type: :sast) }
   let_it_be(:security_scan_2) { create(:security_scan, :with_error, build: build, scan_type: :dast) }
