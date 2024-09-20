@@ -30987,6 +30987,9 @@ msgstr ""
 msgid "Job|Keep"
 msgstr ""
 
+msgid "Job|Log timestamps in UTC."
+msgstr ""
+
 msgid "Job|Manual"
 msgstr ""
 
