@@ -134,7 +134,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       described_class.drain_non_geo_queues
     end
 
-    it 'enables Geo primary Sidekiq cron jobs', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463717' do
+    it 'enables Geo primary Sidekiq cron jobs' do
       cronjob1 = instance_double(Sidekiq::Cron::Job)
       cronjob2 = instance_double(Sidekiq::Cron::Job)
       allow(described_class).to receive(:geo_primary_jobs).and_return(%w[foo bar])
@@ -157,7 +157,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       # * Queue#size gets called more than the specified number of times
       # * Queue#size gets called fewer than the specified number of times
       expect(queue1).to receive(:size).and_return(5).once
-      expect(queue1).to receive(:size).and_return(0).twice
+      expect(queue1).to receive(:size).and_return(0).once
       expect(queue3).to receive(:size).and_return(99).twice
       expect(queue3).to receive(:size).and_return(0).once
 
@@ -165,7 +165,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       expect(described_class).to receive(:sleep).with(1).twice
 
       expected_output = <<~MSG
-        Sidekiq Queues: Disabling all non-Geo queues
+        Sidekiq Queues: Disabling all non-Geo cron jobs
         Sidekiq Queues: Waiting for all non-Geo queues to be empty
         Sidekiq Queues: Non-Geo queues empty
       MSG
@@ -195,7 +195,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       allow(Sidekiq::Queue).to receive(:all).and_return([queue1, queue2, queue3])
 
       expect(queue1).to receive(:size).and_return(5).once
-      expect(queue1).to receive(:size).and_return(0).twice
+      expect(queue1).to receive(:size).and_return(0).once
       expect(queue3).to receive(:size).and_return(99).twice
       expect(queue3).to receive(:size).and_return(0).once
 
