@@ -8,6 +8,9 @@ module Types
 
       value 'PROVISIONING', 'Secrets manager is being provisioned.',
         value: ::SecretsManagement::ProjectSecretsManager::STATUSES[:provisioning]
+
+      value 'ACTIVE', 'Secrets manager has been provisioned.',
+        value: ::SecretsManagement::ProjectSecretsManager::STATUSES[:active]
     end
   end
 end
