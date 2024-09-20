@@ -1,9 +1,10 @@
 <script>
 import { GlTabs, GlTab, GlBadge, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import ProjectSecurityExclusionQuery from 'ee/security_configuration/project_security_exclusions/project_security_exclusions.query.graphql';
+import ProjectSecurityExclusionQuery from 'ee/security_configuration/secret_detection/graphql/project_security_exclusions.query.graphql';
 import EmptyState from './empty_state.vue';
 import ExclusionList from './exclusion_list.vue';
+import ExclusionFormDrawer from './exclusion_form_drawer.vue';
 
 export default {
   components: {
@@ -13,6 +14,7 @@ export default {
     EmptyState,
     GlLoadingIcon,
     ExclusionList,
+    ExclusionFormDrawer,
   },
   inject: ['projectFullPath'],
   i18n: {
@@ -41,6 +43,14 @@ export default {
       return this.$apollo.queries.exclusions.loading;
     },
   },
+  methods: {
+    openDrawer() {
+      this.$refs.exclusionFormDrawer.open();
+    },
+    refreshList() {
+      this.$apollo.queries.exclusions.refetch();
+    },
+  },
 };
 </script>
 
@@ -57,11 +67,13 @@ export default {
         </template>
 
         <div class="gl-mt-3">
-          <empty-state v-if="!isLoading && !exclusions.length" />
+          <empty-state v-if="!isLoading && !exclusions.length" @primaryAction="openDrawer" />
           <gl-loading-icon v-else-if="isLoading" size="lg" class="gl-mt-5" />
-          <exclusion-list v-else :exclusions="exclusions" />
+          <exclusion-list v-else :exclusions="exclusions" @addExclusion="openDrawer" />
         </div>
       </gl-tab>
     </gl-tabs>
+
+    <exclusion-form-drawer ref="exclusionFormDrawer" @updated="refreshList" />
   </div>
 </template>

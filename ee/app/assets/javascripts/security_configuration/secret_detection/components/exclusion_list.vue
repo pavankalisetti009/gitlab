@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     addExclusion() {
-      // Todo: Add later
+      this.$emit('addExclusion');
     },
   },
 };

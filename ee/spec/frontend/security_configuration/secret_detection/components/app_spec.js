@@ -4,7 +4,7 @@ import Vue from 'vue';
 import { GlLoadingIcon } from '@gitlab/ui';
 import App from 'ee/security_configuration/secret_detection/components/app.vue';
 import ExclusionList from 'ee/security_configuration/secret_detection/components/exclusion_list.vue';
-import ProjectSecurityExclusionQuery from 'ee/security_configuration/project_security_exclusions/project_security_exclusions.query.graphql';
+import ProjectSecurityExclusionQuery from 'ee/security_configuration/secret_detection/graphql/project_security_exclusions.query.graphql';
 import EmptyState from 'ee/security_configuration/secret_detection/components/empty_state.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
