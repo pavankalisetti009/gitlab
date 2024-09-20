@@ -9,53 +9,57 @@ module Gitlab
 
         SYSTEM_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_system(
           <<~PROMPT.chomp
-            You are an experienced software developer tasked with reviewing code changes made by your colleague in a GitLab merge request. Your goal is to review the changes thoroughly and offer constructive and concise feedback when you identify any issues or areas of improvement.
+            You are an experienced software developer tasked with reviewing code changes made by your colleague in a GitLab merge request. Your goal is to review the changes thoroughly and offer constructive and yet concise feedback if required.
           PROMPT
         )
         USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            You will be provided with a filename and a git diff hunk from a GitLab merge request. A git diff hunk represents a contiguous group of lines that have been modified, added, or removed between two versions of a file. Git hunk might also includes a few lines of context around the changed lines to provide better understanding of where the changes occur. Added lines are prefixed with '+', removed lines prefixed with '-', and unchanged lines have no prefixes.
+            First, you will be given a filename and the raw git diff of that file. This diff contains the changes made in the MR that you need to review.
 
-            Here is the filename of the git diff hunk:
+            Here is the filename of the git diff:
 
             <filename>
             %{new_path}
             </filename>
 
-            Here is the git diff hunk you need to review:
+            Here is the git diff you need to review:
 
-            <git_diff_hunk>
-            %{hunk}
-            </git_diff_hunk>
+            <git_diff>
+            %{diff}
+            </git_diff>
 
-            Review the code changes carefully, focus on the following criteria:
-            1. Code correctness and functionality
-            2. Code efficiency and performance impact
-            3. Security considerations
-            4. Potential bugs or edge cases
-            5. Readability and maintainability
-            6. Code style and adherence to best practices
+            To properly review this MR, follow these steps:
 
-            Provide feedback only if you identify issues or areas for improvement, otherwise just respond with '<no_issues_found/>' as your entire response.
+            1. Parse the git diff:
+               - The diff contains hunk headers that look like this: @@ -1,7 +1,6 @@
+               - Use these headers to determine the correct line numbers for each changed line
+               - Lines starting with '-' are removals, '+' are additions, and ' ' (space) are unchanged context lines
+               - Do not skip any blank lines after the hunk header when determining line numbers
 
-            Guidelines for your review:
-            - Be specific and provide clear explanations of your suggestions or concerns
-            - Offer both constructive criticism and positive feedback where appropriate
-            - List your feedback in the order of significance when providing feedback
-            - Use the following formats for your feedback:
-               - For non-code feedback:
-                 1. [Your first point]
-                 2. [Your second point]
-                 3. [Your third point]
-               - For code suggestions:
-                 ```
-                 def add(a, b)
-                   a + b
-                 end
-                 ```
-            - List your non-code feedback first then make a code suggestion at the end with a short summary
+            2. Analyze the changes carefully, strictly focus on the following criteria:
+               - Code correctness and functionality
+               - Code efficiency and performance impact
+               - Potential security vulnerabilities like SQL injection, XSS, etc.
+               - Potential bugs or edge cases that may have missed
+               - Do not comment on documentations
 
-            Remember to be constructive and professional in your feedback, as your goal is to improve the code quality and help your fellow developers to apply these changes efficiently.
+            3. Formulate your comments:
+               - Rate the priority for each of your comments on a scale of 1 to 10 based on the above criteria, with 10 being extremely important.
+               - Discard any comments that are lower than the rate of 5
+               - Determine the most appropriate line for your comment and provide that as the line number for the comment.
+               - When you notice multiple issues on the same line, leave only one comment on that line and list your issues together. List comments from highest in priority to the lowest.
+
+            4. Format your comments:
+               - When you need to leave a comment, the format should be: <comment priority="P" line="X">[Priority P/10] [Your comment here]</comment>
+               - Where P is the priority of your review you rated above.
+               - Where X is the line number of the new version of the file (before the changes) and it must be the single most relevant line.
+               - When suggesting a code change, use code block format ```[your code suggestion]```
+               - Wrap your entire response in `<review></review>` tag.
+               - Just return `<review></review>` as your entire response, if the change is acceptable
+
+            Remember to only focus on substantive feedback that will genuinely improve the code or prevent potential issues. Do not nitpick or comment on trivial matters.
+
+            Begin your review now.
           PROMPT
         )
 
@@ -66,8 +70,6 @@ module Gitlab
         end
 
         def to_prompt
-          return if truncated_raw_diff.blank?
-
           {
             messages: Gitlab::Llm::Chain::Utils::Prompt.role_conversation(
               Gitlab::Llm::Chain::Utils::Prompt.format_conversation([USER_MESSAGE], variables)
@@ -80,18 +82,13 @@ module Gitlab
         def variables
           {
             new_path: new_path,
-            hunk: hunk
+            diff: diff
           }
         end
 
         private
 
         attr_reader :new_path, :diff, :hunk
-
-        def truncated_raw_diff
-          diff.sub(Gitlab::Regex.git_diff_prefix, "").truncate_words(750)
-        end
-        strong_memoize_attr :truncated_raw_diff
       end
     end
   end
