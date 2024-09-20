@@ -106,7 +106,9 @@ module Analytics
                                 .where(Vulnerability.arel_table[:project_id].eq(Project.arel_table[:id])).arel.exists
 
         snapshot_project_ids.each_slice(1000).sum do |project_ids|
-          Project.where(id: project_ids).where(subquery).count
+          Project.where(id: project_ids).where(subquery)
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485660')
+          .count
         end
       end
       # rubocop: enable CodeReuse/ActiveRecord

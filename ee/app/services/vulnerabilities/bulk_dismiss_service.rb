@@ -21,6 +21,8 @@ module Vulnerabilities
           %w[
             notes
             vulnerability_state_transitions
+            vulnerability_reads
+            vulnerabilities
           ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486990'
         ) do
           dismiss(Vulnerability.id_in(ids))
