@@ -1,6 +1,7 @@
-query getMergeRequestsCount(
+query getMergeRequestsCountEE(
   $fullPath: ID!
   $approvedBy: [String!]
+  $approver: [String!]
   $assigneeUsernames: String
   $assigneeWildcardId: AssigneeWildcardId
   $reviewerUsername: String
@@ -25,6 +26,7 @@ query getMergeRequestsCount(
     openedMergeRequests: mergeRequests(
       state: opened
       approvedBy: $approvedBy
+      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -49,6 +51,7 @@ query getMergeRequestsCount(
     mergedMergeRequests: mergeRequests(
       state: merged
       approvedBy: $approvedBy
+      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -73,6 +76,7 @@ query getMergeRequestsCount(
     closedMergeRequests: mergeRequests(
       state: closed
       approvedBy: $approvedBy
+      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -97,6 +101,7 @@ query getMergeRequestsCount(
     allMergeRequests: mergeRequests(
       state: all
       approvedBy: $approvedBy
+      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername

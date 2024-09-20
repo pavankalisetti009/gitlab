@@ -44,6 +44,7 @@ exports[`ExternalIssuesListRoot when request succeeds renders issuable-list comp
   "initialSortBy": "created_desc",
   "isGridView": false,
   "isManualOrdering": false,
+  "issuableItemClass": "",
   "issuableSymbol": "#",
   "issuables": [
     {
