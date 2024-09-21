@@ -12,7 +12,7 @@ RSpec.describe 'Delete Epic', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_rollout: false,
+    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false,
       work_item_epics_list: false)
 
     sign_in(user)

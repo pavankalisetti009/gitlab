@@ -7,7 +7,7 @@ class Groups::EpicBoardsController < Groups::ApplicationController
   extend ::Gitlab::Utils::Override
 
   before_action do
-    push_force_frontend_feature_flag(:work_item_epics, group.work_item_epics_enabled?(current_user))
+    push_force_frontend_feature_flag(:work_item_epics, group.work_item_epics_enabled?)
     push_frontend_feature_flag(:issues_list_drawer, group)
   end
 

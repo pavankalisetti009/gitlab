@@ -10,7 +10,7 @@ module EE
       override :create_epic_menu_item
       def create_epic_menu_item(group)
         if can?(current_user, :create_epic, group)
-          if group.namespace_work_items_enabled?(current_user)
+          if group.namespace_work_items_enabled?
             ::Gitlab::Nav::TopNavMenuItem.build(
               id: 'create_epic',
               title: _('New epic'),

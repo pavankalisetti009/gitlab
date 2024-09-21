@@ -8,7 +8,6 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
   let_it_be(:work_item) { create(:work_item, :group_level, namespace: group) }
 
   describe 'GET /groups/:group/-/work_items/:iid' do
-    let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
     let(:iid) { work_item.iid }
 
     subject(:show) { get group_work_item_path(group, iid) }
@@ -16,24 +15,20 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
     before do
       sign_in(current_user)
       stub_licensed_features(epics: true)
+      stub_feature_flags(namespace_level_work_items: true)
     end
 
-    context 'when work_item_epics_rollout enabled' do
-      before do
-        stub_feature_flags(work_item_epics_rollout: current_user, namespace_level_work_items: false)
-      end
+    it 'renders show' do
+      show
 
-      context 'when work item does not exist' do
-        let(:iid) { non_existing_record_id }
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
+    end
 
-        it 'renders not found' do
-          show
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
+    context 'when the new page gets requested' do
       context 'when work item type is epic' do
+        let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
+
         it 'redirects to /epic/:iid' do
           show
 
@@ -56,7 +51,7 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
 
     context 'when namespace_level_work_items is disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false, namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
       let(:iid) { 'new' }
@@ -68,36 +63,14 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
       end
     end
 
-    context 'when work_item_epics_rollout disabled' do
-      before do
-        stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
-      end
-
-      context 'when work item type is epic' do
-        it 'redirects to /epic/:iid' do
-          show
-
-          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
-        end
-      end
-
-      context 'when work item type is not epic' do
-        let_it_be(:work_item) { create(:work_item, :issue, namespace: group) }
-
-        it 'returns not found' do
-          show
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-    end
-
     context 'when work_item_epics disabled' do
       before do
         stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
       context 'when work item type is epic' do
+        let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
+
         it 'redirects to /epic/:iid' do
           show
 
