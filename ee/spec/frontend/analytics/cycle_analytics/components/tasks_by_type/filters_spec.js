@@ -12,7 +12,6 @@ import {
   TASKS_BY_TYPE_FILTERS,
 } from 'ee/analytics/cycle_analytics/constants';
 import createStore from 'ee/analytics/cycle_analytics/store';
-import * as getters from 'ee/analytics/cycle_analytics/store/getters';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -28,19 +27,9 @@ describe('TasksByTypeFilters', () => {
   const mockGroupLabelsRequest = ({ status = HTTP_STATUS_OK, results = groupLabels } = {}) =>
     new MockAdapter(axios).onGet().reply(status, results);
 
-  const createWrapper = async ({ props = {}, state = {} } = {}) => {
+  const createWrapper = async ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(TasksByTypeFilters, {
-      store: {
-        ...createStore(),
-        state: {
-          defaultGroupLabels: groupLabels,
-          ...state,
-        },
-        getters: {
-          ...getters,
-          currentGroupPath: 'fake',
-        },
-      },
+      store: createStore(),
       propsData: {
         selectedLabelNames: groupLabelNames,
         subjectFilter: TASKS_BY_TYPE_SUBJECT_ISSUE,
