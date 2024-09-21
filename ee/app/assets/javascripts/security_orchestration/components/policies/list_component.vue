@@ -10,13 +10,18 @@ import {
   GlTooltip,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __, s__, sprintf } from '~/locale';
+import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
+import {
+  buildPolicyViolationList,
+  exceedsActionLimit,
+} from 'ee/security_orchestration/components/policies/utils';
 import { getPolicyType } from '../../utils';
 import { checkForPerformanceRisk, isGroup, isPolicyInherited, policyHasNamespace } from '../utils';
 import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
@@ -81,7 +86,14 @@ export default {
   directives: {
     GlTooltipDirective,
   },
-  inject: ['assignedPolicyProject', 'namespacePath', 'namespaceType', 'disableScanPolicyUpdate'],
+  mixins: [glFeatureFlagMixin()],
+  inject: [
+    'assignedPolicyProject',
+    'namespacePath',
+    'namespaceType',
+    'disableScanPolicyUpdate',
+    'maxScanExecutionPolicyActions',
+  ],
   props: {
     hasPolicyProject: {
       type: Boolean,
@@ -130,6 +142,12 @@ export default {
     };
   },
   computed: {
+    hasExceedLimitActions() {
+      return Boolean(
+        this.glFeatures.scanExecutionPolicyActionLimitGroup ||
+          this.glFeatures.scanExecutionPolicyActionLimit,
+      );
+    },
     isBusy() {
       return this.isLoadingPolicies || this.isProcessingAction;
     },
@@ -271,15 +289,12 @@ export default {
         projectsCount: this.projectsCount,
       });
     },
-    showBreakingChangesIcon(policyType, deprecatedProperties) {
+    showBreakingChangesIcon(policyType, deprecatedProperties, yaml) {
       return (
-        Boolean(BREAKING_CHANGES_POPOVER_CONTENTS[policyType]) && deprecatedProperties?.length > 0
+        (Boolean(BREAKING_CHANGES_POPOVER_CONTENTS[policyType]) &&
+          deprecatedProperties?.length > 0) ||
+        this.exceedsActionLimit(policyType, yaml)
       );
-    },
-    breakingChangesIconContent(policyType, deprecatedProperties) {
-      return sprintf(BREAKING_CHANGES_POPOVER_CONTENTS[policyType].content, {
-        deprecatedProperties: deprecatedProperties.join(', '),
-      });
     },
     policyListUrlArgs(source) {
       return { namespacePath: source?.namespace?.fullPath || '' };
@@ -345,6 +360,24 @@ export default {
     tooltipContent(enabled) {
       return enabled ? this.$options.i18n.statusEnabled : this.$options.i18n.statusDisabled;
     },
+    exceedsActionLimit(policyType, yaml) {
+      return (
+        this.hasExceedLimitActions &&
+        exceedsActionLimit({
+          policyType,
+          yaml,
+          maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+        })
+      );
+    },
+    violationList(policyType, deprecatedProperties, yaml) {
+      return buildPolicyViolationList({
+        policyType,
+        deprecatedProperties,
+        yaml,
+        maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+      });
+    },
   },
   dateTimeFormat: DATE_ONLY_FORMAT,
   i18n: {
@@ -403,7 +436,7 @@ export default {
         <span class="gl-block md:!gl-hidden">{{ s__('SecurityOrchestration|Status') }}</span>
       </template>
 
-      <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType } }">
+      <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType, yaml } }">
         <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
@@ -414,10 +447,9 @@ export default {
           />
 
           <breaking-changes-icon
-            v-if="showBreakingChangesIcon(policyType, deprecatedProperties)"
+            v-if="showBreakingChangesIcon(policyType, deprecatedProperties, yaml)"
             :id="name"
-            :content="breakingChangesIconContent(policyType, deprecatedProperties)"
-            :link="$options.BREAKING_CHANGES_POPOVER_CONTENTS[policyType].link"
+            :violation-list="violationList(policyType, deprecatedProperties, yaml)"
           />
         </div>
       </template>

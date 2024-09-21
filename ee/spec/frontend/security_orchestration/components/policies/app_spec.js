@@ -5,7 +5,10 @@ import waitForPromises from 'helpers/wait_for_promises';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import App from 'ee/security_orchestration/components/policies/app.vue';
-import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
+import {
+  MAX_SCAN_EXECUTION_ACTION_COUNT,
+  NAMESPACE_TYPES,
+} from 'ee/security_orchestration/constants';
 import {
   DEPRECATED_CUSTOM_SCAN_PROPERTY,
   POLICY_SOURCE_OPTIONS,
@@ -77,6 +80,7 @@ describe('App', () => {
         assignedPolicyProject,
         namespacePath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
+        maxScanExecutionPolicyActions: MAX_SCAN_EXECUTION_ACTION_COUNT,
         ...provide,
       },
       apolloProvider: createMockApollo([

@@ -5,6 +5,7 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { createAlert } from '~/alert';
 import { getParameterByName } from '~/lib/utils/url_utility';
 import {
+  exceedsActionLimit,
   extractSourceParameter,
   extractTypeParameter,
 } from 'ee/security_orchestration/components/policies/utils';
@@ -49,7 +50,12 @@ export default {
     ListHeader,
     ListComponent,
   },
-  inject: ['assignedPolicyProject', 'namespacePath', 'namespaceType'],
+  inject: [
+    'assignedPolicyProject',
+    'namespacePath',
+    'namespaceType',
+    'maxScanExecutionPolicyActions',
+  ],
   apollo: {
     linkedSppItems: {
       query: getSppLinkedProjectsNamespaces,
@@ -87,6 +93,14 @@ export default {
         const policies = data?.namespace?.scanExecutionPolicies?.nodes ?? [];
         this.hasDeprecatedCustomScanPolicies = policies.some((policy) =>
           policy.deprecatedProperties.includes(DEPRECATED_CUSTOM_SCAN_PROPERTY),
+        );
+
+        this.hasExceedingActionLimitPolicies = policies.some(({ yaml }) =>
+          exceedsActionLimit({
+            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
+            yaml,
+            maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+          }),
         );
       },
       error: createPolicyFetchError,
@@ -133,6 +147,7 @@ export default {
     const selectedPolicyType = extractTypeParameter(getParameterByName('type'));
 
     return {
+      hasExceedingActionLimitPolicies: false,
       hasInvalidPolicies: false,
       hasDeprecatedCustomScanPolicies: false,
       hasPolicyProject: Boolean(this.assignedPolicyProject?.id),
@@ -187,6 +202,7 @@ export default {
 <template>
   <div>
     <list-header
+      :has-exceeding-action-limit-policies="hasExceedingActionLimitPolicies"
       :has-invalid-policies="hasInvalidPolicies"
       :has-deprecated-custom-scan-policies="hasDeprecatedCustomScanPolicies"
       @update-policy-list="handleUpdatePolicyList"
