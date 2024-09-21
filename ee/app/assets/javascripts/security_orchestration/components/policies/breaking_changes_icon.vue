@@ -14,19 +14,20 @@ export default {
     GlSprintf,
   },
   props: {
-    content: {
-      type: String,
-      required: true,
-    },
-    link: {
-      type: String,
-      required: false,
-      default: '',
-    },
     id: {
       type: String,
       required: false,
       default: '',
+    },
+    violationList: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+  },
+  computed: {
+    hasMultipleViolations() {
+      return this.violationList.length > 1;
     },
   },
 };
@@ -35,12 +36,29 @@ export default {
 <template>
   <div>
     <gl-popover :title="$options.i18n.title" :target="id" show-close-button>
-      <gl-sprintf :message="content">
-        <template #link="{ content: linkContent }">
-          <gl-link :href="link" target="_blank">{{ linkContent }}</gl-link>
-        </template>
-      </gl-sprintf>
+      <template v-if="hasMultipleViolations">
+        <ul class="gl-pl-5">
+          <li
+            v-for="(violation, index) in violationList"
+            :key="violation.content"
+            :data-testid="`violation-item-${index}`"
+          >
+            <gl-sprintf :message="violation.content">
+              <template #link="{ content: linkContent }">
+                <gl-link :href="violation.link" target="_blank">{{ linkContent }}</gl-link>
+              </template>
+            </gl-sprintf>
+          </li>
+        </ul>
+      </template>
+      <template v-else>
+        <gl-sprintf :message="violationList[0].content">
+          <template #link="{ content: linkContent }">
+            <gl-link :href="violationList[0].link" target="_blank">{{ linkContent }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </template>
     </gl-popover>
-    <gl-icon :id="id" class="gl-text-orange-600" name="warning" />
+    <gl-icon :id="id" class="gl-text-red-600" name="error" />
   </div>
 </template>

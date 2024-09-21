@@ -2,6 +2,7 @@ import { GlButton, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
 import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
+import ExceedingActionsBanner from 'ee/security_orchestration/components/policies/banners/exceeding_actions_banner.vue';
 import InvalidPoliciesBanner from 'ee/security_orchestration/components/policies/banners/invalid_policies_banner.vue';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ProjectModal from 'ee/security_orchestration/components/policies/project_modal.vue';
@@ -26,6 +27,7 @@ describe('List Header Component', () => {
   const findSubheader = () => wrapper.findByTestId('policies-subheader');
   const findBreakingChangesBanner = () => wrapper.findComponent(BreakingChangesBanner);
   const findInvalidPoliciesBanner = () => wrapper.findComponent(InvalidPoliciesBanner);
+  const findExceedingActionsBanner = () => wrapper.findComponent(ExceedingActionsBanner);
   const findDeprecatedCustomScanBanner = () => wrapper.findComponent(DeprecatedCustomScanBanner);
 
   const linkSecurityPoliciesProject = async () => {
@@ -39,6 +41,7 @@ describe('List Header Component', () => {
   const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(ListHeader, {
       propsData: {
+        hasExceedingActionLimitPolicies: false,
         hasDeprecatedCustomScanPolicies: false,
         hasInvalidPolicies: false,
         ...props,
@@ -188,6 +191,18 @@ describe('List Header Component', () => {
       `('does not display the $component', ({ findFn }) => {
         expect(findFn().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('exceeding action count', () => {
+    it('renders banner when scan execution policies has exceeding number of actions', () => {
+      createWrapper({
+        props: {
+          hasExceedingActionLimitPolicies: true,
+        },
+      });
+
+      expect(findExceedingActionsBanner().exists()).toBe(true);
     });
   });
 });

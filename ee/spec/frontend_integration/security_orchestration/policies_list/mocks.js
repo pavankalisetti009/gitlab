@@ -10,4 +10,5 @@ export const DEFAULT_PROVIDE = {
   namespacePath: 'path/to/namespace',
   namespaceType: NAMESPACE_TYPES.PROJECT,
   newPolicyPath: '/-/security/policies/new',
+  maxScanExecutionPolicyActions: 5,
 };

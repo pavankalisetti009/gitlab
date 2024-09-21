@@ -57,6 +57,7 @@ describe('List component', () => {
           namespacePath,
           namespaceType: NAMESPACE_TYPES.PROJECT,
           assignedPolicyProject: defaultAssignedPolicyProject,
+          maxScanExecutionPolicyActions: 300,
           ...provide,
         },
         apolloProvider: createMockApollo([
@@ -257,7 +258,7 @@ describe('List component', () => {
           const icon = firstCell.findAll('svg');
           expect(icon.at(0).props('name')).toBe('check-circle-filled');
           expect(icon.at(0).classes()).toContain('gl-text-gray-200');
-          expect(icon.at(1).props('name')).toBe('warning');
+          expect(icon.at(1).props('name')).toBe('error');
 
           expect(firstCell.findComponent(GlLink).attributes('href')).toBe(expectedLink);
           expect(firstCell.findComponent(GlPopover).text()).toBe(expectedContent);
@@ -314,7 +315,7 @@ describe('List component', () => {
             },
           });
           expectRenderedBreakingChangesIcon(
-            'You must edit the policy and replace the deprecated syntax (test). For details on its replacement, see the policy documentation.',
+            'Policy contains deprecated syntax (test).',
             '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
           );
         });

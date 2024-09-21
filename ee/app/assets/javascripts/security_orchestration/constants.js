@@ -12,3 +12,5 @@ export const GROUP_TYPE = 'group';
 export const ROLE_TYPE = 'role';
 
 export const USER_TYPE = 'user';
+
+export const MAX_SCAN_EXECUTION_ACTION_COUNT = 10;

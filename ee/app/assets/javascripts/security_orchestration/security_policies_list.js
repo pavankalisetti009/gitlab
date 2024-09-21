@@ -3,7 +3,7 @@ import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import SecurityPoliciesListApp from './components/policies/app.vue';
-import { DEFAULT_ASSIGNED_POLICY_PROJECT } from './constants';
+import { DEFAULT_ASSIGNED_POLICY_PROJECT, MAX_SCAN_EXECUTION_ACTION_COUNT } from './constants';
 
 Vue.use(VueApollo);
 
@@ -24,6 +24,7 @@ export default (el, namespaceType) => {
     newPolicyPath,
     namespacePath,
     rootNamespacePath,
+    maxScanExecutionPolicyActions,
   } = el.dataset;
 
   let parsedAssignedPolicyProject;
@@ -33,6 +34,11 @@ export default (el, namespaceType) => {
   } catch {
     parsedAssignedPolicyProject = DEFAULT_ASSIGNED_POLICY_PROJECT;
   }
+
+  const count = parseInt(maxScanExecutionPolicyActions, 10);
+  const parsedMaxScanExecutionPolicyActions = Number.isNaN(count)
+    ? MAX_SCAN_EXECUTION_ACTION_COUNT
+    : count;
 
   return new Vue({
     apolloProvider,
@@ -49,6 +55,7 @@ export default (el, namespaceType) => {
       namespacePath,
       namespaceType,
       rootNamespacePath,
+      maxScanExecutionPolicyActions: parsedMaxScanExecutionPolicyActions,
     },
     render(createElement) {
       return createElement(SecurityPoliciesListApp);

@@ -57,7 +57,15 @@ export const BREAKING_CHANGES_POPOVER_CONTENTS = {
   },
   [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text]: {
     content: s__(
-      'SecurityOrchestration|You must edit the policy and replace the deprecated syntax (%{deprecatedProperties}). For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}.',
+      'SecurityOrchestration|Policy contains %{linkStart}deprecated syntax%{linkEnd} (%{deprecatedProperties}).',
+    ),
+    link: helpPagePath('user/application_security/policies/scan_execution_policies', {
+      anchor: 'scan-execution-policies-schema',
+    }),
+  },
+  exceedingAction: {
+    content: s__(
+      'SecurityOrchestration|Scan actions exceed the limit of %{maxScanExecutionPolicyActions} actions per policy.',
     ),
     link: helpPagePath('user/application_security/policies/scan_execution_policies', {
       anchor: 'scan-execution-policies-schema',
