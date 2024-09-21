@@ -25,7 +25,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   end
 
   before do
-    stub_feature_flags(work_item_epics: true, work_item_epics_rollout: false, namespace_level_work_items: false)
+    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
     stub_licensed_features(epics: true, subepics: true, epic_colors: true)
 
     sign_in(user)
@@ -130,10 +130,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
       end
 
       context 'when updating description tasks' do
-        before do
-          stub_feature_flags(work_item_epics_rollout: true)
-        end
-
         let(:markdown) do
           <<-MARKDOWN.strip_heredoc
         This is a task list:
@@ -145,8 +141,10 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
 
         let(:epic) { create(:epic, group: group, title: epic_title, description: markdown) }
 
-        it 'syncs the updates to the work item', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468470' do
+        it 'syncs the updates to the work item' do
           visit group_epic_path(group, epic, { force_legacy_view: true })
+
+          wait_for_all_requests
 
           expect(page).to have_selector('ul.task-list',      count: 1)
           expect(page).to have_selector('li.task-list-item', count: 2)
@@ -168,8 +166,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
 
     describe 'from work item to epic' do
       before do
-        stub_feature_flags(work_item_epics_rollout: true)
-        stub_feature_flags(work_item_epics_list: false)
+        stub_feature_flags(work_item_epics_list: false, work_item_epics: true)
       end
 
       subject(:create_epic_work_item) do
@@ -194,7 +191,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         work_item = WorkItem.last
         epic = work_item.synced_epic
 
-        stub_feature_flags(work_item_epics_rollout: true)
         visit group_work_item_path(group, work_item.iid)
         expect(find_by_testid('work-item-title').text).to eq(work_item.title)
 
@@ -209,7 +205,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         wait_for_requests
 
         work_item = WorkItem.last
-        stub_feature_flags(work_item_epics_rollout: true)
         visit group_work_item_path(group, work_item.iid)
 
         close_work_item_feedback_popover_if_present

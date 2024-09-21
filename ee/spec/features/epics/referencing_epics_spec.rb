@@ -97,7 +97,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
       let(:note_text) { "Check #{epic.to_reference(full: true)}" }
 
       before do
-        stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
+        stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
         visit project_issue_path(project, issue)
 
         fill_in 'note[note]', with: note_text

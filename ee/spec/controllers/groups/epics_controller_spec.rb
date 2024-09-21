@@ -158,7 +158,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
             end
           end
 
-          context 'when work_item_epics_rollout is true' do
+          context 'work_item_epics_list' do
             where(:work_item_epics_list_ff, :expected_template) do
               false | 'groups/work_items/show'
               true  | 'groups/epics/work_items_index'
@@ -168,7 +168,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
               before do
                 stub_feature_flags(
                   work_item_epics_list: work_item_epics_list_ff,
-                  work_item_epics_rollout: user,
                   namespace_level_work_items: false
                 )
               end
@@ -188,9 +187,9 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
             end
           end
 
-          context 'when work_item_epics_rollout is false' do
+          context 'when work_item_epics is false' do
             before do
-              stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
+              stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
             end
 
             it 'renders work item template' do

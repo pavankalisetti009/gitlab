@@ -74,7 +74,7 @@ class Groups::EpicsController < Groups::ApplicationController
   private
 
   def epic_work_items_enabled?
-    !!@group&.namespace_work_items_enabled?(current_user)
+    !!@group&.namespace_work_items_enabled?
   end
 
   # rubocop: disable CodeReuse/ActiveRecord

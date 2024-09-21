@@ -1,9 +1,0 @@
----
-name: work_item_epics_rollout
-feature_issue_url:
-introduced_by_url:
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/472220
-milestone: '17.2'
-group: group::product planning
-type: gitlab_com_derisk
-default_enabled: false

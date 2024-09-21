@@ -16,7 +16,7 @@ RSpec.describe 'Work item hierarchy', :js, feature_category: :portfolio_manageme
     sign_in(user)
 
     stub_licensed_features(epics: true, subepics: true)
-    stub_feature_flags(work_items: true, work_item_epics: true, work_item_epics_rollout: true)
+    stub_feature_flags(work_items: true, work_item_epics: true)
   end
 
   context 'in epic hierarchy tree' do

@@ -4101,13 +4101,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let_it_be(:current_user) { create(:user) }
     let(:group) { sub_group }
 
-    subject { group.namespace_work_items_enabled?(current_user) }
+    subject { group.namespace_work_items_enabled? }
 
     context 'when all feature flags are enabled' do
-      before do
-        stub_feature_flags(work_item_epics: true, namespace_level_work_items: true, work_item_epics_rollout: true)
-      end
-
       it { is_expected.to eq(true) }
     end
 
@@ -4121,32 +4117,18 @@ RSpec.describe Group, feature_category: :groups_and_projects do
           stub_licensed_features(epics: true)
         end
 
-        context 'when work_item_epics_rollout is enabled' do
-          before do
-            stub_feature_flags(work_item_epics_rollout: current_user)
-          end
-
-          context 'for a sub group' do
-            it { is_expected.to eq(true) }
-          end
-
-          context 'for the root group' do
-            let(:group) { root_group }
-
-            it { is_expected.to eq(true) }
-          end
-
-          context 'for group outside the hierarchy' do
-            let(:group) { create(:group) }
-
-            it { is_expected.to eq(false) }
-          end
+        context 'for a sub group' do
+          it { is_expected.to eq(true) }
         end
 
-        context 'when work_item_epics_rollout is disabled' do
-          before do
-            stub_feature_flags(work_item_epics_rollout: false)
-          end
+        context 'for the root group' do
+          let(:group) { root_group }
+
+          it { is_expected.to eq(true) }
+        end
+
+        context 'for group outside the hierarchy' do
+          let(:group) { create(:group) }
 
           it { is_expected.to eq(false) }
         end
@@ -4163,7 +4145,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when namespace_level_work_items is enabled and work_item_epics is disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true, work_item_epics_rollout: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
       end
 
       it { is_expected.to eq(true) }
@@ -4171,7 +4153,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when namespace_level_work_items and work_item_epics feature flags are disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_rollout: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
       it { is_expected.to eq(false) }
@@ -4220,10 +4202,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let_it_be(:group) { create(:group, parent: root_group) }
     let_it_be(:user) { create(:user) }
 
-    subject { group.work_item_epics_enabled?(user) }
+    subject { group.work_item_epics_enabled? }
 
     before do
-      stub_feature_flags(work_item_epics: root_group, work_item_epics_rollout: user)
+      stub_feature_flags(work_item_epics: root_group)
       stub_licensed_features(epics: true)
     end
 
@@ -4242,14 +4224,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     context 'when work_item_epics enabled for the sub group' do
       before do
         stub_feature_flags(work_item_epics: group)
-      end
-
-      it { is_expected.to be false }
-    end
-
-    context 'when work_item_epics_rollout feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_epics_rollout: false)
       end
 
       it { is_expected.to be false }

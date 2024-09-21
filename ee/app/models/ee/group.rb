@@ -298,13 +298,12 @@ module EE
     end
 
     override :namespace_work_items_enabled?
-    def namespace_work_items_enabled?(user = nil)
-      super || work_item_epics_enabled?(user)
+    def namespace_work_items_enabled?
+      super || work_item_epics_enabled?
     end
 
-    def work_item_epics_enabled?(user)
+    def work_item_epics_enabled?
       ::Feature.enabled?(:work_item_epics, root_ancestor) &&
-        ::Feature.enabled?(:work_item_epics_rollout, user) &&
         licensed_feature_available?(:epics)
     end
 

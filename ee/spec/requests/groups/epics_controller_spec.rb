@@ -17,28 +17,14 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
   describe 'GET #index' do
     subject(:get_index) { get group_epics_path(group) }
 
-    context 'when work_item_epics_rollout enabled' do
-      before do
-        stub_feature_flags(work_item_epics_rollout: user, namespace_level_work_items: false, work_item_epics: true)
-      end
-
-      it 'renders with feature flag enabled' do
-        get_index
-
-        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
-      end
+    before do
+      stub_feature_flags(namespace_level_work_items: false)
     end
 
-    context 'when work_item_epics_rollout disabled' do
-      before do
-        stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
-      end
+    it 'renders with feature flag enabled' do
+      get_index
 
-      it 'renders with feature flag disabled' do
-        get_index
-
-        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: false)
-      end
+      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
     end
 
     context 'when work_item_epics disabled' do
@@ -57,10 +43,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
   describe 'GET #show' do
     context 'for work item epics' do
       context 'when feature flag is set' do
-        before do
-          stub_feature_flags(work_item_epics: true, work_item_epics_rollout: true)
-        end
-
         where(:work_item_epics_list_ff, :expected_template) do
           false | 'groups/work_items/show'
           true  | 'groups/epics/work_items_index'
@@ -102,7 +84,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
       context 'when feature flag is false' do
         before do
-          stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false, namespace_level_work_items: false)
+          stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
         end
 
         it 'exposes the workItemEpics flag' do
