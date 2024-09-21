@@ -25,6 +25,13 @@ module QA
       let(:token) { Resource::PersonalAccessToken.fabricate!.token }
       let(:direct_access) { fetch_direct_connection_details(token) }
 
+      let(:context) do
+        [
+          { type: 'file', name: 'hello.rb', content: "def hello\n  puts \"hi\"\nend\n" },
+          { type: 'snippet', name: 'log', content: "Log.debug(message)" }
+        ]
+      end
+
       shared_examples 'code suggestions API' do |testcase|
         it 'returns a suggestion', testcase: testcase do
           response = get_suggestion(prompt_data)
@@ -114,6 +121,11 @@ module QA
           it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
           it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
           it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
+          context 'with context' do
+            let(:prompt_data) { super().merge(context: context) }
+
+            it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491518'
+          end
         end
 
         context 'on Self-managed', :orchestrated do
@@ -123,6 +135,12 @@ module QA
                 it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
                 it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
                 it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
+
+                context 'with context' do
+                  let(:prompt_data) { super().merge(context: context) }
+
+                  it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
+                end
               end
             end
           end
