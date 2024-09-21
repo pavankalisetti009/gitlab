@@ -51,3 +51,5 @@ class ReindexAndRemoveLeftoverMergeRequestInMainIndex < Elastic::Migration
     Elastic::Latest::Config.index_name
   end
 end
+
+ReindexAndRemoveLeftoverMergeRequestInMainIndex.prepend ::Elastic::MigrationObsolete
