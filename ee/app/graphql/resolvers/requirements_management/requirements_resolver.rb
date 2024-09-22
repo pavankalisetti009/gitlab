@@ -8,7 +8,7 @@ module Resolvers
 
       type ::Types::RequirementsManagement::RequirementType.connection_type, null: true
 
-      argument :iid, GraphQL::Types::ID,
+      argument :iid, GraphQL::Types::ID, # rubocop:disable Graphql/IDType -- Legacy argument using ID type kept for backwards compatibility
         required: false,
         deprecated: { reason: 'Use work_item_iid instead', milestone: '15.8' },
         description: 'IID of the requirement, for example, "1".'

@@ -29,9 +29,10 @@ module Resolvers
       description: 'Global ID of the Iteration to look up.'
     # rubocop:enable Graphql/IDType
 
-    argument :iid, GraphQL::Types::ID,
+    argument :iid, GraphQL::Types::ID, # rubocop:disable Graphql/IDType -- Legacy argument using ID type kept for backwards compatibility
       required: false,
       description: 'Internal ID of the Iteration to look up.'
+
     argument :include_ancestors, GraphQL::Types::Boolean,
       required: false,
       description: 'Whether to include ancestor iterations. Defaults to true.'
