@@ -10,6 +10,8 @@ module Gitlab
 
         DEFAULT_TIMEOUT = 60.seconds
         CHAT_V2_ENDPOINT = '/v2/chat/agent'
+        EVENT_DELIMITER = "\n"
+        EVENT_REGEX = /(\{.*\})#{EVENT_DELIMITER}/i
 
         ConnectionError = Class.new(StandardError)
 
@@ -26,20 +28,10 @@ module Gitlab
 
           params = update_params(params)
 
-          # V2 Chat Agent in AI Gateway streams events as response, however,
-          # Gitlab::HTTP_V2::BufferedIo (or Net::BufferedIo) splits the event further
-          # per `BUFSIZE = 1024 * 16`, hence if the size of the event exceeds the buffer size,
-          # it will yield incomplete event data.
-          # Ref: https://github.com/ruby/net-protocol/blob/master/lib/net/protocol.rb#L214
-          chunks_for_event = ""
-
-          perform_agent_request(params) do |chunk|
-            chunks_for_event += chunk
-            event = event_parser.parse(chunks_for_event)
+          perform_agent_request(params) do |event_json|
+            event = event_parser.parse(event_json)
 
             next unless event
-
-            chunks_for_event = ""
 
             log_conditional_info(user, message: "Received an event from v2/chat/agent", event_name: 'event_received',
               ai_component: 'duo_chat', event: event)
@@ -95,6 +87,13 @@ module Gitlab
             ai_component: 'duo_chat',
             params: params)
 
+          # V2 Chat Agent in AI Gateway streams events as response, however,
+          # Gitlab::HTTP_V2::BufferedIo (or Net::BufferedIo) splits the event further
+          # per `BUFSIZE = 1024 * 16`, hence if the size of the event exceeds the buffer size,
+          # it will yield incomplete event data.
+          # Ref: https://github.com/ruby/net-protocol/blob/master/lib/net/protocol.rb#L214
+          buffer = ""
+
           response = Gitlab::HTTP.post(
             "#{Gitlab::AiGateway.url}#{CHAT_V2_ENDPOINT}",
             headers: Gitlab::AiGateway.headers(user: user, service: service),
@@ -103,12 +102,24 @@ module Gitlab
             allow_local_requests: true,
             stream_body: true
           ) do |fragment|
-            yield fragment if block_given?
+            log_conditional_info(user, message: "Received a chunk from v2/chat/agent", event_name: 'chunk_received',
+              ai_component: 'duo_chat', fragment: fragment)
+
+            buffer += fragment
+            events = buffer.scan(EVENT_REGEX).flatten
+
+            next if events.empty?
+
+            events.each do |e|
+              buffer.sub!(e, "")
+
+              yield e if block_given?
+            end
           end
 
           if response.success?
             log_conditional_info(user,
-              message: "Finished streaming from v2/chat/agent", event_name: 'response_received',
+              message: "Finished streaming from v2/chat/agent", event_name: 'streaming_finished',
               ai_component: 'duo_chat')
             return
           end
