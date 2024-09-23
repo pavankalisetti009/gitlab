@@ -220,7 +220,8 @@ module Sbom
                 :name,
                 :purl_type,
                 :version
-              ).merge(path: occurrence_map.input_file_path))
+              ).merge(path: occurrence_map.input_file_path,
+                licenses: occurrence_map.report_component&.licenses || []))
             end
           end
 
@@ -232,7 +233,8 @@ module Sbom
 
           def licenses
             finder = Gitlab::LicenseScanning::PackageLicenses.new(
-              components: components
+              components: components,
+              project: project
             )
             finder.fetch.each_with_object({}) do |result, hash|
               licenses = result

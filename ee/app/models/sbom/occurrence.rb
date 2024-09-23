@@ -58,7 +58,8 @@ module Sbom
           Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
             attribute_name: "spdx_identifier_#{index}",
             order_expression: direction == "desc" ? sql.desc : sql.asc,
-            sql_type: 'text'
+            sql_type: 'text',
+            nullable: :nulls_last
           )
         end
       ))

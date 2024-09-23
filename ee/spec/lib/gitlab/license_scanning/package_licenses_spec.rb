@@ -20,7 +20,7 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
   describe '#fetch' do
     before_all do
       create(:pm_package, name: "beego", purl_type: "golang",
-        other_licenses: [{ license_names: ["OLDAP-2.1", "OLDAP-2.2"], versions: ["v1.10.0"] }])
+        other_licenses: [{ license_names: %w[OLDAP-2.1 OLDAP-2.2], versions: ["v1.10.0"] }])
       create(:pm_package, name: "camelcase", purl_type: "npm", other_licenses: [
         { license_names: ["OLDAP-2.1"], versions: ["1.2.1"] },
         { license_names: ["OLDAP-2.2"], versions: ["4.1.0"] }
@@ -33,7 +33,7 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         other_licenses: [{ license_names: ["OLDAP-2.6"], versions: ["2.1.0"] }])
 
       create(:pm_package, name: "jst", purl_type: "npm",
-        other_licenses: [{ license_names: ["OLDAP-2.4", "OLDAP-2.5"], versions: ["3.0.2"] }])
+        other_licenses: [{ license_names: %w[OLDAP-2.4 OLDAP-2.5], versions: ["3.0.2"] }])
 
       create(:pm_package, name: "jsbn", purl_type: "npm",
         other_licenses: [{ license_names: ["OLDAP-2.4"], versions: ["0.1.1"] }])
@@ -447,6 +447,101 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
               "name" => "CUSTOM-0.1",
               "spdx_identifier" => "CUSTOM-0.1",
               "url" => "https://spdx.org/licenses/CUSTOM-0.1.html"
+            }])
+          )
+        end
+      end
+    end
+
+    context 'when component contains license information' do
+      subject(:fetch) do
+        described_class.new(components: components_to_fetch, project: create(:project)).fetch
+      end
+
+      let(:license) { { "name" => 'Custom License', "spdx_identifier" => 'Custom-License', "url" => 'https://custom-license.com' } }
+      let(:component_licenses) { [license] }
+
+      let(:components_to_fetch) do
+        [
+          Hashie::Mash.new({ name: "beego", purl_type: "golang", version: "v1.10.0",
+                             licenses: component_licenses })
+        ]
+      end
+
+      context 'when the feature flag `license_scanning_with_sbom_licenses` is disabled' do
+        before do
+          stub_feature_flags(license_scanning_with_sbom_licenses: false)
+        end
+
+        it 'ignores the component license information and returns the information from pm_packages table' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego',
+              purl_type: 'golang',
+              version: 'v1.10.0',
+              licenses: [{
+                "name" => "Open LDAP Public License v2.1",
+                "spdx_identifier" => "OLDAP-2.1",
+                "url" => "https://spdx.org/licenses/OLDAP-2.1.html"
+              }, {
+                "name" => "Open LDAP Public License v2.2",
+                "spdx_identifier" => "OLDAP-2.2",
+                "url" => "https://spdx.org/licenses/OLDAP-2.2.html"
+              }])
+          )
+        end
+      end
+
+      it 'returns the license information provided by the component' do
+        expect(fetch).to contain_exactly(
+          have_attributes(name: 'beego',
+            purl_type: 'golang',
+            version: 'v1.10.0',
+            licenses: [{
+              "name" => 'Custom License',
+              "spdx_identifier" => 'Custom-License',
+              "url" => 'https://custom-license.com'
+            }]
+          )
+        )
+      end
+
+      context 'when component\'s license only has a name' do
+        let(:license) { { "name" => 'Custom License' } }
+
+        it 'returns the component\'s license name' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego', purl_type: 'golang', version: 'v1.10.0', licenses: [{
+              "name" => "Custom License",
+              "spdx_identifier" => nil,
+              "url" => nil
+            }])
+          )
+        end
+      end
+
+      context 'when component\'s license only has an SPDX identifier' do
+        let(:license) { { "spdx_identifier" => 'Custom-License' } }
+
+        it 'infers the license name and URL from its SPDX identifier' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego', purl_type: 'golang', version: 'v1.10.0', licenses: [{
+              "name" => "Custom-License",
+              "spdx_identifier" => "Custom-License",
+              "url" => 'https://spdx.org/licenses/Custom-License.html'
+            }])
+          )
+        end
+      end
+
+      context 'when component\'s license has a name and URL' do
+        let(:license) { { "name" => 'Custom License', "url" => 'https://custom-license-url.com' } }
+
+        it 'returns the component\'s license name and URL' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego', purl_type: 'golang', version: 'v1.10.0', licenses: [{
+              "name" => "Custom License",
+              "spdx_identifier" => nil,
+              "url" => 'https://custom-license-url.com'
             }])
           )
         end

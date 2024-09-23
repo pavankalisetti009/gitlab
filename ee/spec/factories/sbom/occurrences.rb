@@ -71,6 +71,16 @@ FactoryBot.define do
       end
     end
 
+    trait :license_without_spdx_id do
+      after(:build) do |occurrence|
+        occurrence.licenses.push({
+          'spdx_identifier' => nil,
+          'name' => 'Custom License',
+          'url' => nil
+        })
+      end
+    end
+
     trait :mpl_2 do
       after(:build) do |occurrence|
         occurrence.licenses.push({

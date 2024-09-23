@@ -435,6 +435,17 @@ FactoryBot.define do
       end
     end
 
+    trait :cyclonedx_with_license do
+      file_format { :gzip }
+      file_type { :cyclonedx }
+
+      after(:build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/sbom/gl-sbom-with-license.cdx.json.gz'),
+          'application/x-gzip')
+      end
+    end
+
     trait :cyclonedx_container_scanning do
       file_format { :gzip }
       file_type { :cyclonedx }

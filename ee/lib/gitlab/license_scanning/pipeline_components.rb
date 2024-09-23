@@ -13,8 +13,18 @@ module Gitlab
             next unless component.purl
             next unless supported_for_license_scanning?(component.purl.type)
 
-            Hashie::Mash.new(name: component.name, purl_type: component.purl.type,
-              version: component.version, path: sbom_report.source&.input_file_path)
+            if Feature.enabled?(:license_scanning_with_sbom_licenses, pipeline.project)
+              Hashie::Mash.new(name: component.name,
+                purl_type: component.purl.type,
+                version: component.version,
+                path: sbom_report.source&.input_file_path,
+                licenses: component.licenses)
+            else
+              Hashie::Mash.new(name: component.name,
+                purl_type: component.purl.type,
+                version: component.version,
+                path: sbom_report.source&.input_file_path)
+            end
           end.reject(&:blank?)
         end
       end
