@@ -113,30 +113,13 @@ RSpec.describe 'gitlab:geo rake tasks', :geo, :silence_stdout, feature_category:
     context 'on a primary site' do
       before do
         stub_primary_node
-
-        allow(Gitlab::SidekiqSharding::Router).to receive(:enabled?).and_return(sidekiq_sharded)
       end
 
-      context 'when Sidekiq is not sharded' do
-        let(:sidekiq_sharded) { false }
+      it 'enables maintenance mode and drains non-Geo queues' do
+        expect(Gitlab::Geo::GeoTasks).to receive(:enable_maintenance_mode)
+        expect(Gitlab::Geo::GeoTasks).to receive(:drain_non_geo_queues)
 
-        it 'enables maintenance mode and drains non-Geo queues' do
-          expect(Gitlab::Geo::GeoTasks).to receive(:enable_maintenance_mode)
-          expect(Gitlab::Geo::GeoTasks).to receive(:drain_non_geo_queues)
-
-          run_task
-        end
-      end
-
-      context 'when Sidekiq is sharded' do
-        let(:sidekiq_sharded) { true }
-
-        it 'aborts' do
-          instances = instance_double(Array, size: 2)
-          allow(Gitlab::Redis::Queues).to receive(:instances).and_return(instances)
-
-          expect { run_task }.to abort_execution.with_message(/This command does not support sharded Sidekiq/)
-        end
+        run_task
       end
     end
 
@@ -171,29 +154,12 @@ RSpec.describe 'gitlab:geo rake tasks', :geo, :silence_stdout, feature_category:
     context 'on a secondary site' do
       before do
         stub_secondary_node
-
-        allow(Gitlab::SidekiqSharding::Router).to receive(:enabled?).and_return(sidekiq_sharded)
       end
 
-      context 'when Sidekiq is not sharded' do
-        let(:sidekiq_sharded) { false }
+      it 'waits until everything is replicated and verified' do
+        expect(Gitlab::Geo::GeoTasks).to receive(:wait_until_replicated_and_verified)
 
-        it 'waits until everything is replicated and verified' do
-          expect(Gitlab::Geo::GeoTasks).to receive(:wait_until_replicated_and_verified)
-
-          run_task
-        end
-      end
-
-      context 'when Sidekiq is sharded' do
-        let(:sidekiq_sharded) { true }
-
-        it 'aborts' do
-          instances = instance_double(Array, size: 2)
-          allow(Gitlab::Redis::Queues).to receive(:instances).and_return(instances)
-
-          expect { run_task }.to abort_execution.with_message(/This command does not support sharded Sidekiq/)
-        end
+        run_task
       end
     end
 
