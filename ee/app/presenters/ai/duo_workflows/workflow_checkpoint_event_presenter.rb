@@ -12,6 +12,10 @@ module Ai
       def parent_timestamp
         Time.parse(event.parent_ts) if event.parent_ts
       end
+
+      def workflow_status
+        event.workflow.status
+      end
     end
   end
 end
