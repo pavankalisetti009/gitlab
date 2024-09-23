@@ -66,18 +66,31 @@ module Gitlab
       # Note that since some non-Geo cron jobs are enabled, empty queues will be a transient state.
       # It is a sufficient check when the site is in Maintenance Mode.
       def drain_non_geo_queues
-        puts 'Sidekiq Queues: Disabling all non-Geo queues'
-        # TODO: Support sharded Sidekiq https://gitlab.com/gitlab-org/gitlab/-/issues/461530
-        Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
-          Sidekiq::Cron::Job.all.each(&:disable!) # rubocop:disable Rails/FindEach -- not an ActiveRecord::Relation
+        puts 'Sidekiq Queues: Disabling all non-Geo cron jobs'
 
-          # Do not enable `geo_sidekiq_cron_config_worker`, due to https://gitlab.com/gitlab-org/gitlab/-/issues/37135
-          geo_primary_jobs.filter_map { |name| Sidekiq::Cron::Job.find(name) }.map(&:enable!)
-        end
+        disable_non_geo_cron_jobs
 
         puts "Sidekiq Queues: Waiting for all non-Geo queues to be empty"
-        sleep(1) until all_sidekiq_queues.select { |queue| !geo_queue?(queue) && queue_has_jobs?(queue) }.empty?
+
+        poll_selected_queues_until_empty do |queue|
+          !geo_queue?(queue)
+        end
+
         puts Rainbow("Sidekiq Queues: Non-Geo queues empty").green
+      end
+
+      def disable_non_geo_cron_jobs
+        # Apply Sidekiq Cron modification to all shards
+        # rubocop:disable Cop/RedisQueueUsage -- valid usage
+        Gitlab::Redis::Queues.instances.each_value do |inst|
+          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
+            Sidekiq::Cron::Job.all.each(&:disable!) # rubocop:disable Rails/FindEach -- not an ActiveRecord::Relation
+
+            # Do not enable `geo_sidekiq_cron_config_worker`, due to https://gitlab.com/gitlab-org/gitlab/-/issues/37135
+            geo_primary_jobs.filter_map { |name| Sidekiq::Cron::Job.find(name) }.map(&:enable!)
+          end
+        end
+        # rubocop:enable Cop/RedisQueueUsage
       end
 
       def wait_until_replicated_and_verified
@@ -94,7 +107,11 @@ module Gitlab
       # Note that we need this check because e.g. Geo update events may be enqueued in Redis.
       def drain_geo_secondary_queues
         puts "Sidekiq Queues: Waiting for all Geo queues to be empty"
-        sleep(1) until all_sidekiq_queues.select { |queue| geo_queue?(queue) && queue_has_jobs?(queue) }.empty?
+
+        poll_selected_queues_until_empty do |queue|
+          geo_queue?(queue)
+        end
+
         puts Rainbow("Sidekiq Queues: Geo queues empty").green
       end
 
@@ -150,18 +167,32 @@ module Gitlab
         latest_known_id == current_cursor_id
       end
 
-      def all_sidekiq_queues
-        # TODO: Support sharded Sidekiq https://gitlab.com/gitlab-org/gitlab/-/issues/461530
-        #
-        # rubocop:disable Cop/SidekiqApiUsage -- For now we don't work with sharded Sidekiq
-        Sidekiq::Queue.all
-        # rubocop:enable Cop/SidekiqApiUsage
-      end
-
       def geo_primary_jobs
         ::Gitlab::Geo::CronManager::COMMON_GEO_JOBS +
           ::Gitlab::Geo::CronManager::COMMON_GEO_AND_NON_GEO_JOBS +
           ::Gitlab::Geo::CronManager::PRIMARY_GEO_JOBS
+      end
+
+      # Yields every queue in every Sidekiq shard. For each queue that yields
+      # true, poll its size until empty.
+      def poll_selected_queues_until_empty
+        # Watch Sidekiq Queues on all shards
+        # rubocop:disable Cop/RedisQueueUsage -- valid usage
+        Gitlab::Redis::Queues.instances.each_value do |inst|
+          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
+            # rubocop:disable Cop/SidekiqApiUsage -- valid usage
+            selected_queues = Sidekiq::Queue.all.select { |queue| yield(queue) }
+
+            loop do
+              selected_queues = selected_queues.select { |queue| queue_has_jobs?(queue) }
+              break if selected_queues.empty?
+
+              sleep(1)
+            end
+            # rubocop:enable Cop/SidekiqApiUsage
+          end
+        end
+        # rubocop:enable Cop/RedisQueueUsage
       end
 
       def geo_queue?(queue)
