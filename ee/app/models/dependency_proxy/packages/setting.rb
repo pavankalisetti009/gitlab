@@ -59,6 +59,8 @@ module DependencyProxy
         :npm_external_registry_auth_token,
         length: { maximum: 255 }
 
+      after_validation :reset_maven_credentials, if: -> { persisted? && maven_external_registry_url_changed? }
+
       scope :enabled, -> { where(enabled: true) }
 
       def url_from_maven_upstream(path:, file_name:)
@@ -93,6 +95,15 @@ module DependencyProxy
         return unless npm_external_registry_basic_auth.present? && npm_external_registry_auth_token.present?
 
         errors.add(:base, "Npm external registry basic auth and auth token can't be set at the same time")
+      end
+
+      def reset_maven_credentials
+        return if maven_external_registry_username_changed? && maven_external_registry_password_changed?
+
+        self.maven_external_registry_username = nil
+        self.maven_external_registry_password = nil
+        self.encrypted_maven_external_registry_username_iv = nil
+        self.encrypted_maven_external_registry_password_iv = nil
       end
     end
   end
