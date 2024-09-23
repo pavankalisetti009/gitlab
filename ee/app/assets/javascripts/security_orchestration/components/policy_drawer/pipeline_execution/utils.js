@@ -23,11 +23,9 @@ const KEY_LABEL_MAP = {
 export const humanizeIncludeArrayItem = (acc = {}, item) => {
   if (!item) return acc;
 
-  const buildMessage = ({ label, content }) => `${label}: ${content}`;
-
   if (isString(item)) {
     const key = LOCAL in acc ? REMOTE : LOCAL;
-    acc[key] = buildMessage({ label: KEY_LABEL_MAP[key], content: item });
+    acc[key] = { label: KEY_LABEL_MAP[key], content: item };
   }
 
   if (isObject(item)) {
@@ -36,7 +34,11 @@ export const humanizeIncludeArrayItem = (acc = {}, item) => {
       const label = KEY_LABEL_MAP[key];
 
       if (content) {
-        acc[key] = buildMessage({ label, content });
+        acc[key] = {
+          type: key,
+          label,
+          content,
+        };
       }
     });
   }

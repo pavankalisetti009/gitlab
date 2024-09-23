@@ -1,5 +1,7 @@
 <script>
+import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { joinPaths } from '~/lib/utils/url_utility';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import { SUMMARY_TITLE } from 'ee/security_orchestration/components/policy_drawer/constants';
@@ -20,6 +22,7 @@ export default {
   components: {
     InfoRow,
     DrawerLayout,
+    GlLink,
   },
   props: {
     policy: {
@@ -36,6 +39,19 @@ export default {
     },
     parsedYaml() {
       return fromYaml({ manifest: this.policy.yaml });
+    },
+  },
+  methods: {
+    getComponent(prop) {
+      return ['project'].includes(prop) ? GlLink : 'p';
+    },
+    getHref({ project }, type) {
+      switch (type) {
+        case 'project':
+          return joinPaths(gon.relative_url_root || '/', project.content);
+        default:
+          return '';
+      }
     },
   },
 };
@@ -57,11 +73,19 @@ export default {
 
           <ul
             v-for="action in humanizedActions"
-            :key="action.project"
+            :key="action.project.value"
             class="gl-list-none gl-pl-0"
             data-testid="summary-fields"
           >
-            <li v-for="prop in action" :key="prop" class="gl-mb-2">{{ prop }}</li>
+            <li v-for="{ type, label, content } in action" :key="content" class="gl-mb-2">
+              <span>
+                {{ label }}
+              </span>
+              <span>:</span>
+              <component :is="getComponent(type)" :href="getHref(action, type)" class="gl-inline">
+                {{ content }}
+              </component>
+            </li>
           </ul>
         </div>
       </info-row>
