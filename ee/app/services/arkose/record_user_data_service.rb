@@ -44,7 +44,7 @@ module Arkose
     end
 
     def store_risk_scores
-      base_class = Feature.enabled?(:rename_abuse_workers, user, type: :worker) ? AntiAbuse : Abuse
+      base_class = Feature.enabled?(:rename_abuse_workers, user, type: :ops) ? AntiAbuse : Abuse
 
       base_class::TrustScoreWorker.perform_async(user.id, :arkose_global_score, response.global_score.to_f)
       base_class::TrustScoreWorker.perform_async(user.id, :arkose_custom_score, response.custom_score.to_f)
