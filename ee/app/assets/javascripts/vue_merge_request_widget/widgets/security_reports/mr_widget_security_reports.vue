@@ -6,6 +6,7 @@ import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_con
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -30,6 +31,7 @@ export default {
     DynamicScroller,
     DynamicScrollerItem,
   },
+  mixins: [glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -370,6 +372,7 @@ export default {
         :finding-uuid="modalData.vulnerability.uuid"
         :pipeline-iid="pipelineIid"
         :project-full-path="mr.targetProjectFullPath"
+        :show-ai-resolution="glFeatures.resolveVulnerabilityInMr"
         data-testid="vulnerability-finding-modal"
         @hidden="clearModalData"
         @dismissed="updateFindingState('dismissed')"
