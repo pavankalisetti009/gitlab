@@ -98,12 +98,12 @@ module QA
             end
           end
 
-          context 'with no Duo Pro add-on', :ai_gateway_no_add_on do
+          context 'with no Duo Pro add-on', :blocking, :ai_gateway_no_add_on do
             it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452450'
           end
         end
 
-        context 'with no license', :ai_gateway_no_license do
+        context 'with no license', :blocking, :ai_gateway_no_license do
           it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/448662'
         end
       end
