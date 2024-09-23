@@ -14,6 +14,7 @@ module Sbom
       @pipeline_id = pipeline_id
       @possibly_affected_sbom_occurrences_count = 0
       @known_affected_sbom_occurrences_count = 0
+      @sbom_occurrences_semver_dialects_errors_count = 0
     end
 
     def execute
@@ -60,18 +61,21 @@ module Sbom
 
       track_internal_event(
         'cvs_on_sbom_change',
+        project: project,
         additional_properties: {
           label: 'pipeline_info',
           property: pipeline_id.to_s,
           start_time: start_time,
           end_time: Time.current.iso8601,
           possibly_affected_sbom_occurrences: possibly_affected_sbom_occurrences_count,
-          known_affected_sbom_occurrences: known_affected_sbom_occurrences_count
+          known_affected_sbom_occurrences: known_affected_sbom_occurrences_count,
+          sbom_occurrences_semver_dialects_errors_count: sbom_occurrences_semver_dialects_errors_count
         }
       )
     end
 
-    attr_reader :pipeline_id, :possibly_affected_sbom_occurrences_count, :known_affected_sbom_occurrences_count
+    attr_reader :pipeline_id, :possibly_affected_sbom_occurrences_count, :known_affected_sbom_occurrences_count,
+      :sbom_occurrences_semver_dialects_errors_count
 
     private
 
@@ -88,6 +92,9 @@ module Sbom
         project_id: pipeline.project_id,
         source_xid: advisory.source_xid
       )
+    rescue SemverDialects::Error
+      @sbom_occurrences_semver_dialects_errors_count += 1
+      false
     end
 
     def affected_packages(occurrence_batch)
