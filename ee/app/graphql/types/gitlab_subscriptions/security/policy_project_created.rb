@@ -15,9 +15,14 @@ module Types
         field :status, Types::GitlabSubscriptions::Security::PolicyProjectCreatedStatusEnum,
           description: 'Status of the creation of the security policy project.'
 
+        field :errors, [GraphQL::Types::String],
+          null: true,
+          description: 'Error messages in case status is :error.'
+
         field :error_message, GraphQL::Types::String,
           null: true,
-          description: 'Error message in case status is :error.'
+          description: 'Error messages in case status is :error.',
+          deprecated: { milestone: '17.5', reason: 'Use errors instead' }
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end
