@@ -1,5 +1,7 @@
 import { GlPopover, GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 
 describe('Metric table cell', () => {
@@ -40,13 +42,15 @@ describe('Metric table cell', () => {
     `(
       'when isProject=$isProject and relativeUrlRoot=$relativeUrlRoot',
       ({ isProject, relativeUrlRoot, requestPath, url }) => {
+        const trackingProperty = 'trackingProperty';
+
         beforeEach(() => {
           gon.relative_url_root = relativeUrlRoot;
         });
 
         describe('default', () => {
           beforeEach(() => {
-            createWrapper({ identifier, requestPath, isProject });
+            createWrapper({ identifier, requestPath, isProject, trackingProperty });
           });
 
           it('should render the correct link text', () => {
@@ -55,6 +59,26 @@ describe('Metric table cell', () => {
 
           it('should render the correct link URL', () => {
             expect(findMetricLabel().attributes('href')).toBe(url);
+          });
+
+          describe('when clicked', () => {
+            const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+            beforeEach(() => {
+              findMetricLabel().vm.$emit('click');
+            });
+
+            it('should track the click event', () => {
+              const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+              expect(trackEventSpy).toHaveBeenCalledWith(
+                EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
+                {
+                  label: identifier,
+                  property: trackingProperty,
+                },
+                undefined,
+              );
+            });
           });
         });
 
@@ -80,16 +104,27 @@ describe('Metric table cell', () => {
             expect(findMetricLabel().attributes('href')).toBe(expectedUrl);
           });
         });
+
+        describe('with a blank trackingProperty', () => {
+          beforeEach(() => {
+            createWrapper({ identifier, requestPath, isProject });
+          });
+
+          describe('when clicked', () => {
+            const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+            beforeEach(() => {
+              findMetricLabel().vm.$emit('click');
+            });
+
+            it('should not track the click event', () => {
+              const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+              expect(trackEventSpy).not.toHaveBeenCalled();
+            });
+          });
+        });
       },
     );
-
-    it('should emit `drill-down-clicked` event when clicked', () => {
-      createWrapper();
-
-      findMetricLabel().vm.$emit('click');
-
-      expect(wrapper.emitted('drill-down-clicked')).toHaveLength(1);
-    });
   });
 
   describe('popover', () => {

@@ -4,7 +4,7 @@ description: Monthly count of clicks on the Value Streams Dashboard's 'Median ti
 product_group: optimize
 performance_indicator_type: []
 value_type: number
-status: active
+status: removed
 milestone: '17.0'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/149249
 time_frame: 28d
@@ -16,3 +16,5 @@ tier:
 - ultimate
 events:
 - name: value_streams_dashboard_median_time_to_merge_link_clicked
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166366
+milestone_removed: '17.5'

@@ -13,11 +13,7 @@ import { AI_METRICS } from '~/analytics/shared/constants';
 import { dasherize } from '~/lib/utils/text_utility';
 import { formatNumber, s__ } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import { InternalEvents } from '~/tracking';
-import {
-  AI_IMPACT_TABLE_TRACKING_PROPERTY,
-  EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-} from 'ee/analytics/analytics_dashboards/constants';
+import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import { BUCKETING_INTERVAL_ALL } from '../../graphql/constants';
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
@@ -84,7 +80,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glAbilitiesMixin(), InternalEvents.mixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     namespace: {
       type: String,
@@ -151,13 +147,8 @@ export default {
       return HIDE_METRIC_DRILL_DOWN.includes(identifier) ? '' : this.namespace;
     },
 
-    handleMetricDrillDownClick(identifier) {
-      if (!this.requestPath(identifier)) return;
-
-      this.trackEvent(EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE, {
-        label: identifier,
-        property: AI_IMPACT_TABLE_TRACKING_PROPERTY,
-      });
+    trackingProperty(identifier) {
+      return HIDE_METRIC_DRILL_DOWN.includes(identifier) ? '' : AI_IMPACT_TABLE_TRACKING_PROPERTY;
     },
 
     isValidTrend(value) {
@@ -312,7 +303,7 @@ export default {
         :identifier="identifier"
         :request-path="requestPath(identifier)"
         :is-project="isProject"
-        @drill-down-clicked="handleMetricDrillDownClick(identifier)"
+        :tracking-property="trackingProperty(identifier)"
       />
     </template>
 

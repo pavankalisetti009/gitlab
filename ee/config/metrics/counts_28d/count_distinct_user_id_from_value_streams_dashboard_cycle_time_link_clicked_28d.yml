@@ -4,7 +4,7 @@ description: Count of unique users that clicked on the Value Streams Dashboard's
 product_group: optimize
 performance_indicator_type: []
 value_type: number
-status: active
+status: removed
 milestone: '16.7'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138553
 time_frame: 28d
@@ -17,3 +17,5 @@ tier:
 events:
 - name: value_streams_dashboard_cycle_time_link_clicked
   unique: user.id
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166366
+milestone_removed: '17.5'

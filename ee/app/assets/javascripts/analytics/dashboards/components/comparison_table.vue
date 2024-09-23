@@ -2,12 +2,8 @@
 import { GlSkeletonLoader, GlTableLite, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { formatDate } from '~/lib/utils/datetime_utility';
-import { InternalEvents } from '~/tracking';
 import { formatNumber } from '~/locale';
-import {
-  EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-  VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
-} from 'ee/analytics/analytics_dashboards/constants';
+import { VSD_COMPARISON_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import { CHART_GRADIENT, CHART_GRADIENT_INVERTED } from '../constants';
 import { generateDashboardTableFields } from '../utils';
 import MetricTableCell from './metric_table_cell.vue';
@@ -26,7 +22,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [InternalEvents.mixin()],
   props: {
     requestPath: {
       type: String,
@@ -62,15 +57,6 @@ export default {
     chartGradient(invert) {
       return invert ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
     },
-    handleMetricDrillDownClick(identifier) {
-      this.trackEvent(EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE, {
-        label: identifier,
-        property: VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
-      });
-      // TODO These tracking events will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/469128
-      this.trackEvent('value_streams_dashboard_metric_link_clicked');
-      this.trackEvent(`value_streams_dashboard_${identifier}_link_clicked`);
-    },
     rowAttributes({ metric: { identifier } }) {
       return {
         'data-testid': `dora-chart-metric-${identifier.replaceAll('_', '-')}`,
@@ -78,6 +64,7 @@ export default {
     },
     formatNumber,
   },
+  VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
 };
 </script>
 <template>
@@ -127,7 +114,7 @@ export default {
         :request-path="requestPath"
         :is-project="isProject"
         :filter-labels="filterLabels"
-        @drill-down-clicked="handleMetricDrillDownClick(identifier)"
+        :tracking-property="$options.VSD_COMPARISON_TABLE_TRACKING_PROPERTY"
       />
     </template>
 
