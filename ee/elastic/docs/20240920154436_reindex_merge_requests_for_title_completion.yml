@@ -1,0 +1,10 @@
+---
+name: ReindexMergeRequestsForTitleCompletion
+version: '20240920154436'
+description: Reindex merge requests for title completion
+group: group::global search
+milestone: '17.5'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166751
+obsolete: false
+marked_obsolete_by_url:
+marked_obsolete_in_milestone:
