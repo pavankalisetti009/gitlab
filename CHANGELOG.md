@@ -13825,6 +13825,10 @@ No changes.
 - [Migrate custom CSS to utility classes](gitlab-org/gitlab@a67999317bec111d523c763fc865665d4ded0aaf) ([merge request](gitlab-org/gitlab!120745)) **GitLab Enterprise Edition**
 - [Remove the vsa_group_and_project_parity FF](gitlab-org/gitlab@d090818bdedb0e220928d8e456cf36c8bce81f42) ([merge request](gitlab-org/gitlab!120727)) **GitLab Enterprise Edition**
 
+## 16.0.10 (2024-09-23)
+
+No changes.
+
 ## 16.0.9 (2024-07-23)
 
 ### Added (1 change)
