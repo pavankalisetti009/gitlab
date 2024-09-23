@@ -31,6 +31,12 @@ module Ai
           end
 
           @workflow.drop
+        when "start"
+          unless @workflow.can_start?
+            return error_response("Can not start workflow that has status #{@workflow.human_status_name}")
+          end
+
+          @workflow.start
         else
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
