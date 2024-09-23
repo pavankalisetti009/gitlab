@@ -8161,6 +8161,9 @@ msgstr ""
 msgid "Back to page %{number}"
 msgstr ""
 
+msgid "Back to reference %{footnote_id}"
+msgstr ""
+
 msgid "Background Color"
 msgstr ""
 
