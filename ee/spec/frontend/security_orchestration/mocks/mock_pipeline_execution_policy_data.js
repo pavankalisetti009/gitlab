@@ -104,13 +104,8 @@ export const mockProjectPipelineExecutionPolicy = {
 };
 
 export const mockGroupPipelineExecutionPolicy = {
-  __typename: 'PipelineExecutionPolicy',
-  name: `${mockPipelineScanExecutionObject.name}-group`,
-  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
-  yaml: mockPipelineExecutionManifest,
-  editPath: '/policies/policy-name/edit?type="pipeline_execution_policy"',
+  ...mockProjectPipelineExecutionPolicy,
   enabled: false,
-  ...POLICY_SCOPE_MOCK,
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,

@@ -25,19 +25,54 @@ const mockActions = [
   { content: { include: [{ file: '' }] } },
 ];
 
+// Expected outputs for the mockActions. I kept the names simple so that it's easier to read the tests
+const file = {
+  content: 'README.md',
+  label: 'Path',
+  type: 'file',
+};
+
+const project = {
+  content: 'gitlab-policies/js9',
+  label: 'Project',
+  type: 'project',
+};
+
+const ref = {
+  content: 'main',
+  label: 'Reference',
+  type: 'ref',
+};
+
+const template = {
+  content: 'Template.md',
+  label: 'Template',
+  type: 'template',
+};
+
+const local = {
+  content: '/templates/.local.yml',
+  label: 'Local',
+};
+
+const remote = {
+  content: '/templates/.remote.yml',
+  label: 'Remote',
+};
+
 describe('humanizeExternalFileAction', () => {
   it.each`
     action             | output
-    ${mockActions[0]}  | ${{ file: 'Path: README.md', project: 'Project: gitlab-policies/js9', ref: 'Reference: main' }}
-    ${mockActions[1]}  | ${{ file: 'Path: README.md', ref: 'Reference: main', template: 'Template: Template.md' }}
-    ${mockActions[2]}  | ${{ file: 'Path: README.md', project: 'Project: gitlab-policies/js9' }}
-    ${mockActions[3]}  | ${{ file: 'Path: README.md' }}
+    ${mockActions[0]}  | ${{ file, project, ref }}
+    ${mockActions[1]}  | ${{ file, ref, template }}
+    ${mockActions[2]}  | ${{ file, project }}
+    ${mockActions[3]}  | ${{ file }}
     ${mockActions[4]}  | ${{}}
     ${mockActions[5]}  | ${{}}
     ${mockActions[6]}  | ${{}}
     ${mockActions[7]}  | ${{}}
-    ${mockActions[8]}  | ${{ local: 'Local: /templates/.local.yml', remote: 'Remote: /templates/.remote.yml' }}
-    ${mockActions[9]}  | ${{ local: 'Local: /templates/.local.yml' }}
+    ${mockActions[8]}  | ${{ local, remote }}
+    ${mockActions[9]}  | ${{ local }}
     ${mockActions[11]} | ${{}}
   `('should parse action to messages', ({ action, output }) => {
     expect(humanizeExternalFileAction(action)).toEqual(output);
@@ -47,16 +82,12 @@ describe('humanizeExternalFileAction', () => {
 describe('humanizeActions', () => {
   it('should parse action to messages', () => {
     expect(humanizeActions(mockActions)).toEqual([
-      {
-        file: 'Path: README.md',
-        project: 'Project: gitlab-policies/js9',
-        ref: 'Reference: main',
-      },
-      { file: 'Path: README.md', ref: 'Reference: main', template: 'Template: Template.md' },
-      { file: 'Path: README.md', project: 'Project: gitlab-policies/js9' },
-      { file: 'Path: README.md' },
-      { local: 'Local: /templates/.local.yml', remote: 'Remote: /templates/.remote.yml' },
-      { local: 'Local: /templates/.local.yml' },
+      { file, project, ref },
+      { file, ref, template },
+      { file, project },
+      { file },
+      { local, remote },
+      { local },
     ]);
   });
 });
