@@ -34,6 +34,7 @@ describe('ee/BoardContent', () => {
         isSwimlanesOn,
         listQueryVariables: {},
         addColumnFormVisible: false,
+        useWorkItemDrawer: false,
       },
       stubs: {
         'board-content-sidebar': BoardContentSidebar,
