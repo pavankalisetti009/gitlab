@@ -48505,13 +48505,13 @@ msgstr ""
 msgid "Secret token."
 msgstr ""
 
+msgid "SecretDetection|Action unavailable"
+msgstr ""
+
 msgid "SecretDetection|Add exclusion"
 msgstr ""
 
 msgid "SecretDetection|Configure Secret Detection"
-msgstr ""
-
-msgid "SecretDetection|Feature not available"
 msgstr ""
 
 msgid "SecretDetection|No exclusions yet"
