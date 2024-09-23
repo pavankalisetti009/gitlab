@@ -12,7 +12,3 @@ resource :subscriptions, only: [:new, :create] do
     resources :hand_raise_leads, only: :create
   end
 end
-
-scope module: :subscriptions do
-  resources :trials, only: [:new, :create]
-end

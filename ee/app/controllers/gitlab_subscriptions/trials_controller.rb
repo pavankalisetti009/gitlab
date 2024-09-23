@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # EE:SaaS
-module Subscriptions
+module GitlabSubscriptions
   class TrialsController < ApplicationController
     include OneTrustCSP
     include GoogleAnalyticsCSP
@@ -99,4 +99,4 @@ module Subscriptions
   end
 end
 
-Subscriptions::TrialsController.prepend_mod
+GitlabSubscriptions::TrialsController.prepend_mod
