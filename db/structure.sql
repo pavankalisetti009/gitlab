@@ -9388,24 +9388,6 @@ CREATE SEQUENCE commit_user_mentions_id_seq
 
 ALTER SEQUENCE commit_user_mentions_id_seq OWNED BY commit_user_mentions.id;
 
-CREATE TABLE compliance_checks (
-    id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    requirement_id bigint NOT NULL,
-    namespace_id bigint NOT NULL,
-    check_name smallint NOT NULL
-);
-
-CREATE SEQUENCE compliance_checks_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE compliance_checks_id_seq OWNED BY compliance_checks.id;
-
 CREATE TABLE compliance_framework_security_policies (
     id bigint NOT NULL,
     framework_id bigint NOT NULL,
@@ -21827,8 +21809,6 @@ ALTER TABLE ONLY clusters_kubernetes_namespaces ALTER COLUMN id SET DEFAULT next
 
 ALTER TABLE ONLY commit_user_mentions ALTER COLUMN id SET DEFAULT nextval('commit_user_mentions_id_seq'::regclass);
 
-ALTER TABLE ONLY compliance_checks ALTER COLUMN id SET DEFAULT nextval('compliance_checks_id_seq'::regclass);
-
 ALTER TABLE ONLY compliance_framework_security_policies ALTER COLUMN id SET DEFAULT nextval('compliance_framework_security_policies_id_seq'::regclass);
 
 ALTER TABLE ONLY compliance_management_frameworks ALTER COLUMN id SET DEFAULT nextval('compliance_management_frameworks_id_seq'::regclass);
@@ -23912,9 +23892,6 @@ ALTER TABLE ONLY clusters
 
 ALTER TABLE ONLY commit_user_mentions
     ADD CONSTRAINT commit_user_mentions_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY compliance_checks
-    ADD CONSTRAINT compliance_checks_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT compliance_framework_security_policies_pkey PRIMARY KEY (id);
@@ -28167,8 +28144,6 @@ CREATE INDEX index_clusters_on_user_id ON clusters USING btree (user_id);
 
 CREATE UNIQUE INDEX index_commit_user_mentions_on_note_id ON commit_user_mentions USING btree (note_id);
 
-CREATE INDEX index_compliance_checks_on_namespace_id ON compliance_checks USING btree (namespace_id);
-
 CREATE INDEX index_compliance_framework_security_policies_on_namespace_id ON compliance_framework_security_policies USING btree (namespace_id);
 
 CREATE INDEX index_compliance_framework_security_policies_on_project_id ON compliance_framework_security_policies USING btree (project_id);
@@ -31411,8 +31386,6 @@ CREATE INDEX tmp_index_vulnerability_overlong_title_html ON vulnerabilities USIN
 
 CREATE INDEX tmp_index_vulnerability_reads_where_state_is_detected ON vulnerability_reads USING btree (id) WHERE (state = 1);
 
-CREATE UNIQUE INDEX u_compliance_checks_for_requirement ON compliance_checks USING btree (requirement_id, check_name);
-
 CREATE UNIQUE INDEX u_compliance_requirements_for_framework ON compliance_requirements USING btree (framework_id, name);
 
 CREATE UNIQUE INDEX u_project_compliance_standards_adherence_for_reporting ON project_compliance_standards_adherence USING btree (project_id, check_name, standard);
@@ -33836,9 +33809,6 @@ ALTER TABLE ONLY wiki_page_slugs
 ALTER TABLE ONLY security_orchestration_policy_rule_schedules
     ADD CONSTRAINT fk_3e78b9a150 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY compliance_checks
-    ADD CONSTRAINT fk_3fbfa4295c FOREIGN KEY (requirement_id) REFERENCES compliance_requirements(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY abuse_reports
     ADD CONSTRAINT fk_3fe6467b93 FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL;
 
@@ -34627,9 +34597,6 @@ ALTER TABLE ONLY bulk_import_exports
 
 ALTER TABLE ONLY personal_access_tokens
     ADD CONSTRAINT fk_c951fbf57e FOREIGN KEY (previous_personal_access_token_id) REFERENCES personal_access_tokens(id) ON DELETE SET NULL;
-
-ALTER TABLE ONLY compliance_checks
-    ADD CONSTRAINT fk_c9683a794f FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY jira_tracker_data
     ADD CONSTRAINT fk_c98abcd54c FOREIGN KEY (integration_id) REFERENCES integrations(id) ON DELETE CASCADE;
