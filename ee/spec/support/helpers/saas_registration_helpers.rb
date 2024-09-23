@@ -284,6 +284,10 @@ module SaasRegistrationHelpers
 
     expect(service_instance).to receive(:execute).and_return(ServiceResponse.success)
 
+    expect_to_call_apply_trial(glm)
+  end
+
+  def expect_to_call_apply_trial(glm = nil)
     trial_user_information = {
       namespace_id: anything,
       gitlab_com_trial: true,
@@ -303,7 +307,7 @@ module SaasRegistrationHelpers
     expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
       .to receive(:perform_async).with(
         user.id,
-        trial_user_information
+        trial_user_information.deep_stringify_keys
       ).and_call_original
   end
 
@@ -390,7 +394,7 @@ module SaasRegistrationHelpers
     expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
       .to receive(:perform_async).with(
         user.id,
-        trial_user_information
+        trial_user_information.deep_stringify_keys
       ).and_call_original
   end
 
