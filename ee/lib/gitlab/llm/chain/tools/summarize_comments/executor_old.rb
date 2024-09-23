@@ -50,6 +50,8 @@ module Gitlab
               PROMPT
             )
 
+            ADDITIONAL_HTML_TAG_BLOCK_LIST = %w[img].freeze
+
             def perform(&)
               notes = NotesFinder.new(context.current_user, target: resource).execute.by_humans
 
@@ -87,11 +89,22 @@ module Gitlab
                 batch.pluck(:id, :note).each do |note| # rubocop: disable CodeReuse/ActiveRecord -- we need to pluck just id and note
                   break notes_content if notes_content.size + note[1].size >= input_content_limit
 
-                  notes_content << (format("<comment>%<note>s</comment>", note: note[1]))
+                  notes_content << (format("<comment>%<note>s</comment>", note: notes_sanitization(note[1])))
                 end
               end
 
               notes_content
+            end
+
+            def notes_sanitization(notes_content)
+              Sanitize.fragment(notes_content, Sanitize::Config.merge(
+                Sanitize::Config::RELAXED,
+                elements: update_sanitize_elements)
+              )
+            end
+
+            def update_sanitize_elements
+              Sanitize::Config::RELAXED[:elements] - ADDITIONAL_HTML_TAG_BLOCK_LIST
             end
 
             def can_summarize?

@@ -66,6 +66,8 @@ module Gitlab
               }
             }.freeze
 
+            ADDITIONAL_HTML_TAG_BLOCK_LIST = %w[img].freeze
+
             def self.slash_commands
               SLASH_COMMANDS
             end
@@ -89,7 +91,7 @@ module Gitlab
                 batch.pluck(:id, :note).each do |note| # rubocop: disable CodeReuse/ActiveRecord
                   break notes_content if notes_content.size + note[1].size >= input_content_limit
 
-                  notes_content << (format("<comment>%<note>s</comment>", note: note[1]))
+                  notes_content << (format("<comment>%<note>s</comment>", note: notes_sanitization(note[1])))
                 end
               end
 
@@ -100,6 +102,17 @@ module Gitlab
               NotesFinder.new(context.current_user, target: resource).execute.by_humans
             end
             strong_memoize_attr :notes
+
+            def notes_sanitization(notes_content)
+              Sanitize.fragment(notes_content, Sanitize::Config.merge(
+                Sanitize::Config::RELAXED,
+                elements: update_sanitize_elements)
+              )
+            end
+
+            def update_sanitize_elements
+              Sanitize::Config::RELAXED[:elements] - ADDITIONAL_HTML_TAG_BLOCK_LIST
+            end
 
             def command_options
               {
