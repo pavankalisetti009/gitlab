@@ -28,16 +28,10 @@ import {
 } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   OPERATORS_IS,
-  TOKEN_TITLE_GROUP,
-  TOKEN_TITLE_GROUP_INVITE,
-  TOKEN_TITLE_PROJECT,
-  TOKEN_TYPE_GROUP,
-  TOKEN_TYPE_GROUP_INVITE,
-  TOKEN_TYPE_PROJECT,
+  TOKEN_TITLE_ASSIGNED_SEAT,
+  TOKEN_TYPE_ASSIGNED_SEAT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
-import GroupToken from 'ee/usage_quotas/code_suggestions/tokens/group_token.vue';
-import ProjectToken from 'ee/usage_quotas/code_suggestions/tokens/project_token.vue';
 
 Vue.use(VueApollo);
 
@@ -194,33 +188,15 @@ describe('Add On Eligible User List', () => {
       it('passes the correct tokens to <search-and-sort-bar>', () => {
         expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
           {
-            fullPath,
-            icon: 'project',
-            operators: OPERATORS_IS,
-            title: TOKEN_TITLE_PROJECT,
-            token: ProjectToken,
-            type: TOKEN_TYPE_PROJECT,
-            unique: true,
-          },
-          {
-            fullPath,
-            icon: 'group',
-            operators: OPERATORS_IS,
-            title: TOKEN_TITLE_GROUP,
-            token: GroupToken,
-            type: TOKEN_TYPE_GROUP,
-            unique: true,
-          },
-          {
             options: [
               { value: 'true', title: 'Yes' },
               { value: 'false', title: 'No' },
             ],
             icon: 'user',
             operators: OPERATORS_IS,
-            title: TOKEN_TITLE_GROUP_INVITE,
+            title: TOKEN_TITLE_ASSIGNED_SEAT,
             token: BaseToken,
-            type: TOKEN_TYPE_GROUP_INVITE,
+            type: TOKEN_TYPE_ASSIGNED_SEAT,
             unique: true,
           },
         ]);
@@ -302,8 +278,6 @@ describe('Add On Eligible User List', () => {
   });
 
   describe('with filters and sort options', () => {
-    const filterOptions = { search: 'test' };
-
     beforeEach(() => {
       return createComponent();
     });
@@ -318,6 +292,8 @@ describe('Add On Eligible User List', () => {
     });
 
     it('fetches users list matching the search term', async () => {
+      const filterOptions = { search: 'test' };
+
       findSearchAndSortBar().vm.$emit('onFilter', filterOptions);
       await waitForPromises();
 
@@ -334,6 +310,17 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
         ...defaultQueryVariables,
         sort: 'LAST_ACTIVITY_ON_DESC',
+      });
+    });
+
+    it('fetches users list by assigned seats', async () => {
+      const filterOptions = { filterByAssignedSeat: 'true' };
+      findSearchAndSortBar().vm.$emit('onFilter', filterOptions);
+      await waitForPromises();
+
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        ...filterOptions,
       });
     });
   });

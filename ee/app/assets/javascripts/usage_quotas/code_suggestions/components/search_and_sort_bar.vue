@@ -4,6 +4,7 @@ import {
   FILTERED_SEARCH_TERM,
   TOKEN_TYPE_PROJECT,
   TOKEN_TYPE_GROUP_INVITE,
+  TOKEN_TYPE_ASSIGNED_SEAT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import { processFilters } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 
@@ -36,9 +37,15 @@ export default {
         [FILTERED_SEARCH_TERM]: searchFilters = [],
         [TOKEN_TYPE_PROJECT]: [{ value: filterByProjectId } = {}] = [],
         [TOKEN_TYPE_GROUP_INVITE]: [{ value: filterByGroupInvite } = {}] = [],
+        [TOKEN_TYPE_ASSIGNED_SEAT]: [{ value: filterByAssignedSeat } = {}] = [],
       } = processFilters(filterOptions);
       const search = this.processSearchFilters(searchFilters);
-      this.$emit('onFilter', { search, filterByProjectId, filterByGroupInvite });
+      this.$emit('onFilter', {
+        search,
+        filterByProjectId,
+        filterByGroupInvite,
+        filterByAssignedSeat,
+      });
     },
     handleSort(sortValue) {
       this.$emit('onSort', sortValue);

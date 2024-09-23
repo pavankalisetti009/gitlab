@@ -1,5 +1,6 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { __ } from '~/locale';
 import { DEFAULT_PER_PAGE } from '~/api';
 import { fetchPolicies } from '~/lib/graphql';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -18,6 +19,12 @@ import {
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
+import {
+  OPERATORS_IS,
+  TOKEN_TITLE_ASSIGNED_SEAT,
+  TOKEN_TYPE_ASSIGNED_SEAT,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
 
 export default {
@@ -75,8 +82,11 @@ export default {
     },
   },
   computed: {
+    isFilteringEnabled() {
+      return this.glFeatures.enableAddOnUsersFiltering;
+    },
     sortOptions() {
-      return this.glFeatures.enableAddOnUsersFiltering ? SORT_OPTIONS : [];
+      return this.isFilteringEnabled ? SORT_OPTIONS : [];
     },
     queryVariables() {
       return {
@@ -87,6 +97,23 @@ export default {
         ...this.filterOptions,
         ...this.pagination,
       };
+    },
+    filterTokens() {
+      if (!this.isFilteringEnabled) return [];
+      return [
+        {
+          options: [
+            { value: 'true', title: __('Yes') },
+            { value: 'false', title: __('No') },
+          ],
+          icon: 'user',
+          operators: OPERATORS_IS,
+          title: TOKEN_TITLE_ASSIGNED_SEAT,
+          token: BaseToken,
+          type: TOKEN_TYPE_ASSIGNED_SEAT,
+          unique: true,
+        },
+      ];
     },
   },
   methods: {
@@ -143,6 +170,7 @@ export default {
     <template #search-and-sort-bar>
       <search-and-sort-bar
         :sort-options="sortOptions"
+        :tokens="filterTokens"
         @onFilter="handleFilter"
         @onSort="handleSort"
       />

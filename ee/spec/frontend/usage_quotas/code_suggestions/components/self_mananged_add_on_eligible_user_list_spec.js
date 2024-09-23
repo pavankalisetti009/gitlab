@@ -18,6 +18,12 @@ import {
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
+import {
+  OPERATORS_IS,
+  TOKEN_TITLE_ASSIGNED_SEAT,
+  TOKEN_TYPE_ASSIGNED_SEAT,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   eligibleSMUsers,
   pageInfoWithMorePages,
@@ -31,6 +37,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
   let wrapper;
+  let enableAddOnUsersFiltering = false;
 
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
@@ -72,11 +79,7 @@ describe('Add On Eligible User List', () => {
   const createMockApolloProvider = (handler) =>
     createMockApollo([[getAddOnEligibleUsers, handler]]);
 
-  const createComponent = ({
-    props = {},
-    features = { enableAddOnUsersFiltering: false },
-    handler = addOnEligibleUsersDataHandler,
-  } = {}) => {
+  const createComponent = ({ props = {}, handler = addOnEligibleUsersDataHandler } = {}) => {
     wrapper = shallowMountExtended(SelfManagedAddOnEligibleUserList, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
@@ -85,7 +88,9 @@ describe('Add On Eligible User List', () => {
         ...props,
       },
       provide: {
-        glFeatures: features,
+        glFeatures: {
+          enableAddOnUsersFiltering,
+        },
       },
     });
 
@@ -119,17 +124,43 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultQueryVariables);
     });
 
-    it('passes the correct sort options to <search-and-sort-bar>', () => {
-      expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual([]);
-    });
-
     describe('when enableAddOnUsersFiltering is enabled', () => {
       beforeEach(() => {
-        return createComponent({ features: { enableAddOnUsersFiltering: true } });
+        enableAddOnUsersFiltering = true;
+        return createComponent();
       });
 
       it('passes the correct sort options to <search-and-sort-bar>', () => {
         expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual(SORT_OPTIONS);
+      });
+
+      it('passes the correct tokens to <search-and-sort-bar>', () => {
+        expect(findSearchAndSortBar().props('tokens')).toStrictEqual([
+          {
+            options: [
+              { value: 'true', title: 'Yes' },
+              { value: 'false', title: 'No' },
+            ],
+            icon: 'user',
+            operators: OPERATORS_IS,
+            title: TOKEN_TITLE_ASSIGNED_SEAT,
+            token: BaseToken,
+            type: TOKEN_TYPE_ASSIGNED_SEAT,
+            unique: true,
+          },
+        ]);
+      });
+
+      it('fetches users list by assigned seats', async () => {
+        const filterOptions = { filterByAssignedSeat: 'true' };
+
+        findSearchAndSortBar().vm.$emit('onFilter', { filterByAssignedSeat: 'true' });
+        await waitForPromises();
+
+        expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+          ...defaultQueryVariables,
+          ...filterOptions,
+        });
       });
     });
 
