@@ -6,9 +6,9 @@ module Gitlab
       class AgentEventParser
         include ::Gitlab::Llm::Concerns::Logger
 
-        def parse(chunk)
+        def parse(event_json)
           begin
-            event = Gitlab::Json.parse(chunk)
+            event = Gitlab::Json.parse(event_json)
           rescue JSON::ParserError
             # no-op
           end
@@ -18,7 +18,7 @@ module Gitlab
             # 1. AI Gateway issue ... Event data was sent from AI Gateway, but it's corrupted (e.g. not JSON).
             # 2. GitLab-Rails issue ... Event data was sent from AI Gateway correctly,
             #    but the data is split abruptly by Net::BufferedIo.
-            log_warn(message: "Failed to parse a chunk from Duo Chat Agent", chunk_size: chunk.length,
+            log_warn(message: "Failed to parse a chunk from Duo Chat Agent", event_json_size: event_json.length,
               event_name: 'parsing_error', ai_component: 'duo_chat')
             return
           end
