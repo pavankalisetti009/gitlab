@@ -66,6 +66,8 @@ module Llm
       )
 
       Internal::CompletionService.new(ai_prompt_message, options).execute
+    ensure
+      log_extra_metadata_on_done(:ai_action, ai_prompt_message.ai_action)
     end
   end
 end

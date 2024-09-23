@@ -80,7 +80,7 @@ module Gitlab
             "Please try a more specific request or enter /clear to start a new chat.")
         end
 
-        def self.error_answer(context:, error_code: nil, content: default_error_answer, error: nil, source: nil)
+        def self.error_answer(context:, error_code: nil, content: default_error_answer, error: nil, source: "unknown")
           log_error(message: error ? error.message : "Error",
             event_name: 'error_returned',
             ai_component: 'duo_chat',
