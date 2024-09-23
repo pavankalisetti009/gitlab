@@ -23,16 +23,6 @@ export default {
       required: true,
     },
   },
-  computed: {
-    formattedFeatureSettings() {
-      return this.featureSettings.flatMap((feature) =>
-        feature.subFeatures.map((subFeature) => ({
-          feature: feature.name,
-          subFeature: subFeature.name,
-        })),
-      );
-    },
-  },
   fields: [
     {
       key: 'main_feature',
@@ -58,19 +48,20 @@ export default {
 <template>
   <gl-table-lite
     :fields="$options.fields"
-    :items="formattedFeatureSettings"
+    :items="featureSettings"
     stacked="md"
     :hover="true"
     :selectable="false"
   >
     <template #cell(main_feature)="{ item }">
-      {{ item.feature }}
+      {{ item.mainFeature }}
     </template>
     <template #cell(sub_feature)="{ item }">
-      {{ item.subFeature }}
+      {{ item.title }}
     </template>
-    <template #cell(model_name)>
+    <template #cell(model_name)="{ item }">
       <model-select-dropdown
+        :feature-setting="item"
         :models="models"
         :new-self-hosted-model-path="newSelfHostedModelPath"
       />

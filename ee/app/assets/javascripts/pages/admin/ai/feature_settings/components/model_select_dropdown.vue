@@ -1,11 +1,14 @@
 <script>
 import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
+import { createAlert } from '~/alert';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.graphql';
 
 const PROVIDERS = {
-  DISABLED: 0,
-  VENDORED: 1,
-  SELF_HOSTED: 2,
+  DISABLED: 'DISABLED',
+  VENDORED: 'VENDORED',
+  SELF_HOSTED: 'SELF_HOSTED',
 };
 
 const FEATURE_DISABLED = 'DISABLED';
@@ -17,6 +20,10 @@ export default {
     GlButton,
   },
   props: {
+    featureSetting: {
+      type: Object,
+      required: true,
+    },
     models: {
       type: Array,
       required: true,
@@ -26,10 +33,19 @@ export default {
       required: true,
     },
   },
+  i18n: {
+    defaultErrorMessage: s__(
+      'AdminSelfHostedModels|An error occurred while updating the sefl-hosted model, please try again.',
+    ),
+    successMessage: s__('AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}'),
+  },
   data() {
     return {
-      featureProvider: null,
+      feature: this.featureSetting.feature,
+      provider: this.featureSetting.provider,
+      selfHostedModelId: this.featureSetting.selfHostedModelId,
       selectedOption: null,
+      isSaving: false,
     };
   },
   computed: {
@@ -48,7 +64,7 @@ export default {
       return [...modelOptions, disableOption];
     },
     selectedModel() {
-      return this.models.find((m) => m.id === this.selectedOption);
+      return this.models.find((m) => m.id === this.selfHostedModelId);
     },
     dropdownToggleText() {
       if (!this.selectedOption) {
@@ -62,25 +78,69 @@ export default {
     },
   },
   methods: {
-    onSelect(option) {
-      if (option === FEATURE_DISABLED) {
-        this.featureProvider = PROVIDERS.DISABLED;
-      } else {
-        this.featureProvider = PROVIDERS.SELF_HOSTED;
+    async onSelect(option) {
+      this.isSaving = true;
+
+      try {
+        const provider = option === FEATURE_DISABLED ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED;
+
+        const { data } = await this.$apollo.mutate({
+          mutation: updateAiFeatureSetting,
+          variables: {
+            input: {
+              feature: this.feature.toUpperCase(),
+              provider,
+              selfHostedModelId:
+                option === FEATURE_DISABLED
+                  ? null
+                  : convertToGraphQLId('Ai::SelfHostedModel', option),
+            },
+          },
+        });
+
+        if (data) {
+          const { errors } = data.aiFeatureSettingUpdate;
+
+          if (errors.length > 0) {
+            throw new Error(errors[0]);
+          }
+
+          this.selectedOption = option;
+          this.provider = provider;
+          this.selfHostedModelId = option === FEATURE_DISABLED ? null : option;
+          this.isSaving = false;
+          this.$toast.show(this.successMessage(this.featureSetting));
+        }
+      } catch (error) {
+        createAlert({
+          message: this.errorMessage(error),
+          error,
+          captureError: true,
+        });
+        this.isSaving = false;
       }
-      this.selectedOption = option;
+    },
+    errorMessage(error) {
+      return error.message || this.$options.i18n.defaultErrorMessage;
+    },
+    successMessage(featureSetting) {
+      return sprintf(this.$options.i18n.successMessage, {
+        mainFeature: featureSetting.mainFeature,
+        title: featureSetting.title,
+      });
     },
   },
 };
 </script>
 <template>
   <gl-collapsible-listbox
-    v-model="selectedOption"
+    class="gl-w-31"
+    :selected="selectedOption"
     :items="dropdownItems"
     :toggle-text="dropdownToggleText"
     :header-text="s__('AdminAIPoweredFeatures|Self-hosted models')"
+    :loading="isSaving"
     category="primary"
-    fluid-width
     block
     @select="onSelect"
   >

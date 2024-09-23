@@ -8,34 +8,25 @@
 /* eslint-disable @gitlab/require-i18n-strings */
 const stubbedAiFeatureSettings = [
   {
-    name: 'Code Suggestions',
-    subFeatures: [
-      {
-        name: 'Code generation',
-        slug: 'code_generation',
-        value: 0,
-      },
-      {
-        name: 'Code completion',
-        slug: 'code_completion',
-        value: 1,
-      },
-    ],
+    feature: 'code_generations',
+    title: 'Code Generation',
+    mainFeature: 'Code Suggestions',
+    provider: 'self_hosted',
+    selfHostedModel: null,
   },
   {
-    name: 'Duo Chat',
-    subFeatures: [
-      {
-        name: 'Explain code',
-        slug: 'duo_chat_explain_code',
-        value: 3,
-      },
-      {
-        name: 'Epic reader',
-        slug: 'duo_chat_epic_reader',
-        value: 3,
-      },
-    ],
+    feature: 'code_completions',
+    title: 'Code Completion',
+    mainFeature: 'Code Suggestions',
+    provider: 'vendored',
+    selfHostedModel: null,
+  },
+  {
+    feature: 'duo_chat',
+    title: 'Duo Chat',
+    mainFeature: 'Duo Chat',
+    provider: 'self_hosted',
+    selfHostedModel: null,
   },
 ];
 /* eslint-enable @gitlab/require-i18n-strings */
