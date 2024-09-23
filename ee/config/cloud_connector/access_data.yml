@@ -27,6 +27,8 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - code_suggestions
   duo_chat:
     backend: 'gitlab-ai-gateway'
+    # Represents the cut-off date when the service requires addon seat purchase.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_pro:
         unit_primitives:
