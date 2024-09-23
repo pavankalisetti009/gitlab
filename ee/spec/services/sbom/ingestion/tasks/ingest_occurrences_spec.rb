@@ -70,16 +70,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
       end
 
       before do
-        occurrence_maps.map(&:report_component).each do |component|
-          create(
-            :pm_package,
-            name: component.name,
-            purl_type: component.purl&.type,
-            lowest_version: component.version,
-            highest_version: component.version,
-            default_license_names: default_license_names
-          )
-        end
+        create_pm_packages
       end
 
       context 'for a dependency scanning occurrence' do
@@ -278,6 +269,79 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         expect(occurrence_maps).to all(have_attributes(occurrence_id: Integer))
       end
     end
+
+    context 'when the components license are persisted in the database' do
+      let_it_be(:default_licenses) do
+        [
+          { "name" => 'Apache 2.0 License', "spdx_identifier" => 'Apache-2.0',
+            "url" => 'https://spdx.org/licenses/Apache-2.0.html' },
+          { "name" => 'MIT', "spdx_identifier" => 'MIT', "url" => 'https://spdx.org/licenses/MIT.html' }
+        ]
+      end
+
+      let_it_be(:report_licenses) { [{ "name" => "custom license", "spdx_identifier" => nil, "url" => nil }] }
+
+      let_it_be(:component_without_license) { create(:ci_reports_sbom_component, licenses: []) }
+      let_it_be(:component_with_license) do
+        create(:ci_reports_sbom_component, licenses: [build(:ci_reports_sbom_license, name: 'custom license')])
+      end
+
+      let_it_be(:occurrence_map_without_license) do
+        create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_without_license)
+      end
+
+      let_it_be(:occurrence_map_with_license) do
+        create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license)
+      end
+
+      before do
+        create_pm_packages
+      end
+
+      context 'when SBOM provides licenses for all components' do
+        let(:occurrence_maps) { [occurrence_map_with_license] }
+
+        context 'when the feature flag `license_scanning_with_sbom_licenses` is disabled' do
+          before do
+            stub_feature_flags(license_scanning_with_sbom_licenses: false)
+          end
+
+          it 'sets the license using the license database' do
+            task
+
+            expect(Sbom::Occurrence.last&.licenses).to match_array(default_licenses)
+          end
+        end
+
+        it 'sets the license according to the information provided in the report' do
+          task
+
+          expect(Sbom::Occurrence.last&.licenses).to match_array(report_licenses)
+        end
+      end
+
+      context 'when the SBOM does not provide licenses for any component' do
+        let(:occurrence_maps) { [occurrence_map_without_license] }
+
+        it 'sets the license using the license database' do
+          task
+
+          expect(Sbom::Occurrence.last&.licenses).to match_array(default_licenses)
+        end
+      end
+
+      context 'when the SBOM provides licenses for some components' do
+        let_it_be(:occurrence_maps) { [occurrence_map_with_license, occurrence_map_without_license] }
+
+        it 'sets the license using the report and the license database' do
+          task
+
+          occurrences = Sbom::Occurrence.last(2)
+          expect(occurrences[0].licenses).to match_array(report_licenses)
+          expect(occurrences[1].licenses).to match_array(default_licenses)
+        end
+      end
+    end
   end
 
   def expected_attributes_for(occurrence_map)
@@ -301,6 +365,19 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         source_package_id: occurrence_map.source_package_id,
         traversal_ids: project.namespace.traversal_ids
       }.deep_stringify_keys!
+    end
+  end
+
+  def create_pm_packages
+    occurrence_maps.map(&:report_component).each do |component|
+      create(
+        :pm_package,
+        name: component.name,
+        purl_type: component.purl&.type,
+        lowest_version: component.version,
+        highest_version: component.version,
+        default_license_names: default_license_names
+      )
     end
   end
 end

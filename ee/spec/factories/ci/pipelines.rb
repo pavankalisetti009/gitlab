@@ -127,6 +127,14 @@ FactoryBot.define do
       end
     end
 
+    trait :with_cyclonedx_report_with_license do
+      status { :success }
+
+      after(:build) do |pipeline, evaluator|
+        pipeline.builds << build(:ee_ci_build, :cyclonedx_with_license, pipeline: pipeline, project: pipeline.project)
+      end
+    end
+
     trait :with_cyclonedx_pypi_only do
       status { :success }
 
