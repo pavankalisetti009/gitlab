@@ -11934,6 +11934,10 @@ No changes.
 - [Fix test pollution in count_deployments_metric_spec](gitlab-org/gitlab@610e6a033fe9b20aabc237b18837cddf150d4d1b) ([merge request](gitlab-org/gitlab!126808))
 - [Update BulkImports::PipelineBatchWorker resource boundary](gitlab-org/gitlab@7d2477d81bcc2d035be26587802706f7098b6e44) ([merge request](gitlab-org/gitlab!126696))
 
+## 16.2.11 (2024-09-23)
+
+No changes.
+
 ## 16.2.10 (2024-07-23)
 
 ### Added (1 change)
