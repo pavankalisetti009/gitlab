@@ -7,10 +7,9 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
     let_it_be(:project) { create(:project) }
     let_it_be(:user) { create(:user, maintainer_of: project) }
     let_it_be(:another_user) { create(:user) }
-    let(:workflow) { create(:duo_workflows_workflow, project: project, user: user) }
-
-    before do
-      workflow.start!
+    let(:workflow_initial_status_enum) { 1 }
+    let(:workflow) do
+      create(:duo_workflows_workflow, project: project, user: user, status: workflow_initial_status_enum)
     end
 
     context "when feature flag is disabled" do
@@ -44,6 +43,18 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       expect(workflow.reload.human_status_name).to eq("failed")
     end
 
+    context "when initial status is created" do
+      let(:workflow_initial_status_enum) { 0 } # status created
+
+      it "can start a workflow", :aggregate_failures do
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow status updated")
+        expect(workflow.reload.human_status_name).to eq("running")
+      end
+    end
+
     it "does not update to not allowed status", :aggregate_failures do
       result = described_class.new(workflow: workflow, current_user: user, status_event: "pause").execute
 
@@ -73,6 +84,17 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       expect(result[:message]).to eq("Can not drop workflow that has status finished")
       expect(result[:reason]).to eq(:bad_request)
       expect(workflow.reload.human_status_name).to eq("finished")
+    end
+
+    it "does not start failed workflow", :aggregate_failures do
+      workflow.drop
+
+      result = described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
+
+      expect(result[:status]).to eq(:error)
+      expect(result[:message]).to eq("Can not start workflow that has status failed")
+      expect(result[:reason]).to eq(:bad_request)
+      expect(workflow.reload.human_status_name).to eq("failed")
     end
 
     it "does not allow user without permission to finish workflow", :aggregate_failures do
