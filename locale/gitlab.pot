@@ -3892,6 +3892,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again."
 msgstr ""
 
+msgid "AdminSelfHostedModels|An error occurred while updating the sefl-hosted model, please try again."
+msgstr ""
+
 msgid "AdminSelfHostedModels|By enabling self-hosted models, you accept the %{link_start}GitLab Testing Agreement%{link_end}."
 msgstr ""
 
@@ -3965,6 +3968,9 @@ msgid "AdminSelfHostedModels|Self-hosted models"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Self-hosted models are an experimental feature."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}"
 msgstr ""
 
 msgid "AdminSelfHostedModels|There was an error saving the self-hosted model. Please try again."

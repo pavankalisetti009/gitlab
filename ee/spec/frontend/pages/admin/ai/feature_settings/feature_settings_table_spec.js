@@ -45,17 +45,16 @@ describe('FeatureSettingsTable', () => {
       it('renders Code Suggestions sub-features', () => {
         const rows = findTableRows().wrappers.map((h) => h.text());
 
-        expect(rows.filter((r) => r.includes('Code generation')).length).toEqual(1);
-        expect(rows.filter((r) => r.includes('Code completion')).length).toEqual(1);
+        expect(rows.filter((r) => r.includes('Code Generation')).length).toEqual(1);
+        expect(rows.filter((r) => r.includes('Code Completion')).length).toEqual(1);
       });
     });
 
     describe('Duo Chat', () => {
-      it('renders Duo Chat sub-features', () => {
+      it('renders Duo Chat', () => {
         const rows = findTableRows().wrappers.map((h) => h.text());
 
-        expect(rows.filter((r) => r.includes('Explain code')).length).toEqual(1);
-        expect(rows.filter((r) => r.includes('Epic reader')).length).toEqual(1);
+        expect(rows.filter((r) => r.includes('Duo Chat')).length).toEqual(1);
       });
     });
   });
