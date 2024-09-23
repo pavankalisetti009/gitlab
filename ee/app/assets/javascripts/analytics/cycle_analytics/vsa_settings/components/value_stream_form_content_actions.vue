@@ -45,17 +45,22 @@ export default {
 
 <template>
   <div class="gl-flex gl-w-full gl-flex-col gl-gap-3 sm:gl-w-auto sm:gl-flex-row">
-    <gl-button variant="confirm" :loading="isLoading" @click="$emit('clickPrimaryAction')">{{
-      primaryButtonText
-    }}</gl-button>
     <gl-button
+      data-testid="primary-button"
+      variant="confirm"
+      :loading="isLoading"
+      @click="$emit('clickPrimaryAction')"
+      >{{ primaryButtonText }}</gl-button
+    >
+    <gl-button
+      data-testid="add-button"
       category="secondary"
       variant="confirm"
       :disabled="isLoading"
       @click="$emit('clickAddStageAction')"
       >{{ $options.i18n.addStageAction }}</gl-button
     >
-    <gl-button :href="valueStreamPath" :disabled="isLoading">{{
+    <gl-button data-testid="cancel-button" :href="valueStreamPath" :disabled="isLoading">{{
       $options.i18n.cancelAction
     }}</gl-button>
   </div>
