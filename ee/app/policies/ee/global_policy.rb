@@ -232,10 +232,7 @@ module EE
     end
 
     def duo_chat_free_access_was_cut_off_for_gitlab_com?
-      duo_chat_free_cutoff = Time.utc(2024, 10, 17)
-      free_access_expired = Time.now.utc >= duo_chat_free_cutoff
-
-      free_access_expired || user.belongs_to_group_requires_licensed_seat_for_chat?
+      !duo_chat.free_access? || user.belongs_to_group_requires_licensed_seat_for_chat?
     end
 
     def duo_chat_free_access_was_cut_off_for_sm?

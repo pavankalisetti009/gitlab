@@ -18,6 +18,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let_it_be(:sast_backend) { 'gitlab-security-gateway' }
 
     let_it_be(:self_hosted_models_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
+    let_it_be(:duo_chat_cutoff_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:self_hosted_models_bundled_with) { { "duo_enterprise" => [:code_suggestions, :duo_chat] } }
 
     let_it_be(:anthropic_proxy_bundled_with) do
@@ -132,7 +133,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
       let_it_be(:arguments_map) do
         {
           code_suggestions: [cs_cut_off_date, cs_bundled_with, backend],
-          duo_chat: [nil, duo_chat_bundled_with, backend],
+          duo_chat: [duo_chat_cutoff_date, duo_chat_bundled_with, backend],
           anthropic_proxy: [nil, anthropic_proxy_bundled_with, backend],
           vertex_ai_proxy: [nil, vertex_ai_proxy_bundled_with, backend],
           resolve_vulnerability: [nil, resolve_vulnerability_bundled_with, backend],
