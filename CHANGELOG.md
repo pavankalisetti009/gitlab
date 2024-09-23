@@ -12786,6 +12786,10 @@ No changes.
 - [Add schema_version in the commits index mapping](gitlab-org/gitlab@e75b94903b69e1e1588e251217926882875555a8) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/123435)) **GitLab Enterprise Edition**
 - [Allow to set labels for Redis calls](gitlab-org/gitlab@8ccfff9e2d250eb22afaa7d0243e707b536a5436) ([merge request](gitlab-org/gitlab!122340))
 
+## 16.1.8 (2024-09-23)
+
+No changes.
+
 ## 16.1.7 (2024-07-23)
 
 ### Added (1 change)
