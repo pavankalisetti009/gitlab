@@ -33080,6 +33080,9 @@ msgstr ""
 msgid "Maximum requests to the %{api_name} API per %{timeframe} per IP address for unauthenticated requests"
 msgstr ""
 
+msgid "Maximum requests to the %{api_name} API per %{timeframe} per user"
+msgstr ""
+
 msgid "Maximum requests to the %{api_name} API per %{timeframe} per user for authenticated requests"
 msgstr ""
 
@@ -37986,6 +37989,9 @@ msgid "Organization"
 msgstr ""
 
 msgid "Organizations"
+msgstr ""
+
+msgid "Organizations API rate limits"
 msgstr ""
 
 msgid "Organization|%{linkStart}Organizations%{linkEnd} are a top-level container to hold your groups and projects."
@@ -51089,6 +51095,9 @@ msgid "Set the per-user rate limit for getting a user by ID via the API."
 msgstr ""
 
 msgid "Set the per-user rate limit for notes created by web or API requests."
+msgstr ""
+
+msgid "Set the per-user rate limits for the requests to Organizations API."
 msgstr ""
 
 msgid "Set this issue as blocked by %{target}."
