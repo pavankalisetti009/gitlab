@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import { TEST_HOST } from 'spec/test_constants';
 import MergeTrainsApp from 'ee/ci/merge_trains/merge_trains_app.vue';
 import MergeTrainBranchSelector from 'ee/ci/merge_trains/components/merge_train_branch_selector.vue';
 import MergeTrainTabs from 'ee/ci/merge_trains/components/merge_train_tabs.vue';
@@ -12,6 +13,7 @@ import getActiveMergeTrainsQuery from 'ee/ci/merge_trains/graphql/queries/get_ac
 import getCompletedMergeTrainsQuery from 'ee/ci/merge_trains/graphql/queries/get_completed_merge_trains.query.graphql';
 import deleteCarMutation from 'ee/ci/merge_trains/graphql/mutations/delete_car.mutation.graphql';
 import { POLL_INTERVAL } from 'ee/ci/merge_trains/constants';
+import * as urlUtils from '~/lib/utils/url_utility';
 import {
   activeTrain,
   mergedTrain,
@@ -143,18 +145,22 @@ describe('MergeTrainsApp', () => {
   });
 
   describe('events', () => {
-    it('refetches queries on the branchChanged event', async () => {
+    it('refetches queries on the branchChanged event and sets branch query param', async () => {
       createComponent();
+
+      jest.spyOn(urlUtils, 'updateHistory');
+
+      const targetBranch = 'feature-branch';
 
       await waitForPromises();
 
-      findBranchSelector().vm.$emit('branchChanged', 'feature-branch');
+      findBranchSelector().vm.$emit('branchChanged', targetBranch);
 
       await waitForPromises();
 
       const expectedVariables = {
         fullPath: 'namespace/project',
-        targetBranch: 'feature-branch',
+        targetBranch,
         after: null,
         before: null,
         first: 20,
@@ -168,6 +174,9 @@ describe('MergeTrainsApp', () => {
       expect(mergedTrainsHandler).toHaveBeenCalledWith({
         activityStatus: 'COMPLETED',
         ...expectedVariables,
+      });
+      expect(urlUtils.updateHistory).toHaveBeenCalledWith({
+        url: `${TEST_HOST}/?branch=${targetBranch}`,
       });
     });
 
@@ -194,6 +203,39 @@ describe('MergeTrainsApp', () => {
         ...paginationInfo,
       });
     });
+
+    it.each`
+      branchValue     | expectedBranch
+      ${'dev-branch'} | ${'dev-branch'}
+      ${null}         | ${'master'}
+    `(
+      'expects $expectedBranch when branch query param is $branchValue',
+      async ({ branchValue, expectedBranch }) => {
+        jest.spyOn(urlUtils, 'getParameterByName').mockReturnValue(branchValue);
+
+        createComponent();
+
+        await waitForPromises();
+
+        const expectedVariables = {
+          fullPath: 'namespace/project',
+          targetBranch: expectedBranch,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        };
+
+        expect(activeTrainsHandler).toHaveBeenCalledWith({
+          status: 'ACTIVE',
+          ...expectedVariables,
+        });
+        expect(mergedTrainsHandler).toHaveBeenCalledWith({
+          activityStatus: 'COMPLETED',
+          ...expectedVariables,
+        });
+      },
+    );
   });
 
   describe('query errors', () => {
