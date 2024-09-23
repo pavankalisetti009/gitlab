@@ -147,6 +147,41 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
     end
   end
 
+  context 'when maven_external_registry_url is updated' do
+    where(:new_url, :new_user, :new_pwd, :expected_user, :expected_pwd) do
+      'http://original_url.test' | 'test' | 'test' | 'test' | 'test'
+      'http://update_url.test'   | 'test' | 'test' | 'test' | 'test'
+      'http://update_url.test'   | :none  | :none  | nil    | nil
+      'http://update_url.test'   | 'test' | :none  | nil    | nil
+      'http://update_url.test'   | :none  | 'test' | nil    | nil
+    end
+
+    with_them do
+      let(:setting) do
+        create(:dependency_proxy_packages_setting, :maven,
+          maven_external_registry_url: 'http://original_url.test',
+          maven_external_registry_username: 'original_user',
+          maven_external_registry_password: 'original_pwd'
+        )
+      end
+
+      it 'resets the username and the password when necessary' do
+        new_attributes = {
+          maven_external_registry_url: new_url,
+          maven_external_registry_username: new_user,
+          maven_external_registry_password: new_pwd
+        }.select { |_, v| v != :none }
+        setting.update!(new_attributes)
+
+        expect(setting.reload).to have_attributes(
+          maven_external_registry_url: new_url,
+          maven_external_registry_username: expected_user,
+          maven_external_registry_password: expected_pwd
+        )
+      end
+    end
+  end
+
   describe '.enabled' do
     let_it_be(:enabled_setting) { create(:dependency_proxy_packages_setting) }
     let_it_be(:disabled_setting) { create(:dependency_proxy_packages_setting, :disabled) }
