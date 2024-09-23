@@ -2,12 +2,9 @@
 
 module RemoteDevelopment
   class Workspace < ApplicationRecord
-    include IgnorableColumns
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
-
-    ignore_column :url_domain, remove_with: '16.9', remove_after: '2019-01-19'
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
