@@ -18764,6 +18764,24 @@ CREATE SEQUENCE subscription_add_ons_id_seq
 
 ALTER SEQUENCE subscription_add_ons_id_seq OWNED BY subscription_add_ons.id;
 
+CREATE TABLE subscription_seat_assignments (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    last_activity_on timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+CREATE SEQUENCE subscription_seat_assignments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE subscription_seat_assignments_id_seq OWNED BY subscription_seat_assignments.id;
+
 CREATE TABLE subscription_user_add_on_assignments (
     id bigint NOT NULL,
     add_on_purchase_id bigint NOT NULL,
@@ -22559,6 +22577,8 @@ ALTER TABLE ONLY subscription_add_on_purchases ALTER COLUMN id SET DEFAULT nextv
 
 ALTER TABLE ONLY subscription_add_ons ALTER COLUMN id SET DEFAULT nextval('subscription_add_ons_id_seq'::regclass);
 
+ALTER TABLE ONLY subscription_seat_assignments ALTER COLUMN id SET DEFAULT nextval('subscription_seat_assignments_id_seq'::regclass);
+
 ALTER TABLE ONLY subscription_user_add_on_assignments ALTER COLUMN id SET DEFAULT nextval('subscription_user_add_on_assignments_id_seq'::regclass);
 
 ALTER TABLE ONLY subscriptions ALTER COLUMN id SET DEFAULT nextval('subscriptions_id_seq'::regclass);
@@ -25270,6 +25290,9 @@ ALTER TABLE ONLY subscription_add_on_purchases
 
 ALTER TABLE ONLY subscription_add_ons
     ADD CONSTRAINT subscription_add_ons_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY subscription_seat_assignments
+    ADD CONSTRAINT subscription_seat_assignments_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY subscription_user_add_on_assignments
     ADD CONSTRAINT subscription_user_add_on_assignments_pkey PRIMARY KEY (id);
@@ -30616,6 +30639,8 @@ CREATE UNIQUE INDEX index_subscription_add_ons_on_name ON subscription_add_ons U
 
 CREATE INDEX index_subscription_addon_purchases_on_expires_on ON subscription_add_on_purchases USING btree (expires_on);
 
+CREATE INDEX index_subscription_seat_assignments_on_user_id ON subscription_seat_assignments USING btree (user_id);
+
 CREATE INDEX index_subscription_user_add_on_assignments_on_organization_id ON subscription_user_add_on_assignments USING btree (organization_id);
 
 CREATE INDEX index_subscription_user_add_on_assignments_on_user_id ON subscription_user_add_on_assignments USING btree (user_id);
@@ -31395,6 +31420,8 @@ CREATE UNIQUE INDEX uniq_idx_security_policy_requirements_on_requirement_and_pol
 CREATE UNIQUE INDEX uniq_idx_streaming_destination_id_and_namespace_id ON audit_events_streaming_instance_namespace_filters USING btree (external_streaming_destination_id, namespace_id);
 
 CREATE UNIQUE INDEX uniq_idx_streaming_group_destination_id_and_namespace_id ON audit_events_streaming_group_namespace_filters USING btree (external_streaming_destination_id, namespace_id);
+
+CREATE UNIQUE INDEX uniq_idx_subscription_seat_assignments_on_namespace_and_user ON subscription_seat_assignments USING btree (namespace_id, user_id);
 
 CREATE UNIQUE INDEX uniq_idx_user_add_on_assignments_on_add_on_purchase_and_user ON subscription_user_add_on_assignments USING btree (add_on_purchase_id, user_id);
 
@@ -33461,6 +33488,9 @@ ALTER TABLE ONLY dast_sites
 ALTER TABLE ONLY project_saved_replies
     ADD CONSTRAINT fk_0ace76afbb FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE NOT VALID;
 
+ALTER TABLE ONLY subscription_seat_assignments
+    ADD CONSTRAINT fk_0b6bc63773 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY approval_group_rules_protected_branches
     ADD CONSTRAINT fk_0b85e6c388 FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
 
@@ -34204,6 +34234,9 @@ ALTER TABLE ONLY work_item_dates_sources
 
 ALTER TABLE ONLY bulk_import_exports
     ADD CONSTRAINT fk_8c6f33cebe FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY subscription_seat_assignments
+    ADD CONSTRAINT fk_8d214f4142 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY raw_usage_data
     ADD CONSTRAINT fk_8e21125854 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
