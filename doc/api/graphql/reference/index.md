@@ -17316,6 +17316,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="addonusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="addonusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `AddOnUser.groups`
@@ -18200,6 +18201,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="autocompletedusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="autocompletedusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `AutocompletedUser.groups`
@@ -20587,6 +20589,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="currentusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="currentusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `CurrentUser.groups`
@@ -26144,6 +26147,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestassigneecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestassigneecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestAssignee.groups`
@@ -26530,6 +26534,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestauthorcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestauthorcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestAuthor.groups`
@@ -26962,6 +26967,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestparticipantcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestparticipantcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestParticipant.groups`
@@ -27367,6 +27373,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestreviewercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestreviewercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestReviewer.groups`
@@ -33835,6 +33842,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usercorecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercorecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `UserCore.groups`
@@ -40958,6 +40966,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ###### `User.groups`
