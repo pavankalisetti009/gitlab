@@ -59,7 +59,7 @@ module Ai
 
           # This hash matches the current XrayReport payload schema
           def payload
-            return unless libs.present?
+            return unless valid?
 
             {
               libs: formatted_libs,
@@ -96,11 +96,14 @@ module Ai
               lib.version = lib.version&.strip
               lib
             end
+          rescue NoMethodError
+            # Raised when `.strip` is called on a non-string
+            raise ParsingError, 'dependency name or version is an invalid type'
           end
 
           def formatted_libs
             libs.map do |lib|
-              lib_name = lib.version ? "#{lib.name} (#{lib.version})" : lib.name
+              lib_name = lib.version.presence ? "#{lib.name} (#{lib.version})" : lib.name
 
               { name: lib_name }
             end

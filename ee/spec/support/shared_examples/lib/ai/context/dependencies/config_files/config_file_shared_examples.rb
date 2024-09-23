@@ -10,7 +10,7 @@
 #  - config_file_class: The config file class to use instead of `described_class`
 #
 RSpec.shared_examples 'parsing a valid dependency config file' do
-  let(:blob) { instance_double('Gitlab::Git::Blob', path: 'path/to/configfile', data: config_file_content) }
+  let(:blob) { double(path: 'path/to/file', data: config_file_content, project: instance_double('Project', id: 123)) } # rubocop: disable RSpec/VerifiedDoubles -- Inherits from both Gitlab::Git::Blob and Blob
   let(:expected_checksum) { Digest::SHA256.hexdigest(config_file_content) }
   let(:config_file) { (try(:config_file_class) || described_class).new(blob) }
 

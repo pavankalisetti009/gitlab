@@ -21,7 +21,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
           libs = dig_in(parsed, 'parent_node', 'child_node')
           libs.try(:map) { |hash| self.class::Lib.new(**hash) }
         rescue JSON::ParserError
-          error('content is not a valid JSON')
+          error('content is not valid JSON')
           nil
         end
       end
@@ -54,8 +54,23 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     let(:expected_formatted_lib_names) { ['lib1', 'lib2 (2.1.0)'] }
   end
 
+  context 'when a dependency version is blank' do
+    it_behaves_like 'parsing a valid dependency config file' do
+      let(:config_file_content) do
+        Gitlab::Json.dump({
+          'parent_node' => { 'child_node' => [
+            { name: 'lib1', version: '1.0' },
+            { name: 'lib2', version: '' }
+          ] }
+        })
+      end
+
+      let(:expected_formatted_lib_names) { ['lib1 (1.0)', 'lib2'] }
+    end
+  end
+
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_parsing_error_message) { 'content is not a valid JSON' }
+    let(:expected_parsing_error_message) { 'content is not valid JSON' }
   end
 
   context 'when the content has an invalid node' do
@@ -80,6 +95,21 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '' }
       let(:expected_parsing_error_message) { 'file empty' }
+    end
+  end
+
+  context 'when a dependency name is an array' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) do
+        Gitlab::Json.dump({
+          'parent_node' => { 'child_node' => [
+            { name: ['lib1'], version: '1.0' },
+            { name: 'lib2', version: '' }
+          ] }
+        })
+      end
+
+      let(:expected_parsing_error_message) { 'dependency name or version is an invalid type' }
     end
   end
 

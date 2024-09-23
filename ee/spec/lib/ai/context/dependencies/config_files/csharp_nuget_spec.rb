@@ -72,7 +72,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::CsharpNuget, feature_cate
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_parsing_error_message) { 'content is not a valid XML' }
+    let(:expected_parsing_error_message) { 'content is not valid XML' }
   end
 
   describe '.matches?' do
