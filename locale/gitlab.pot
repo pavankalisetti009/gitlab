@@ -6529,9 +6529,6 @@ msgstr ""
 msgid "Analytics|Use the visualization designer to create custom visualizations. After you save a visualization, you can add it to a dashboard."
 msgstr ""
 
-msgid "Analytics|Value Streams Dashboard"
-msgstr ""
-
 msgid "Analytics|View available dashboards"
 msgstr ""
 

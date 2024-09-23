@@ -202,7 +202,6 @@ module Sidebars
             container_html_options: { class: 'shortcuts-group-dashboards-analytics' },
             active_routes: { path: %w[
               groups/analytics/dashboards#index
-              groups/analytics/dashboards#value_streams_dashboard
             ] },
             item_id: menu_item_id
           )
