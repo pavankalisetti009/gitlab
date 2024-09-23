@@ -10,30 +10,41 @@
 
 require 'securerandom'
 
-def create_tokens
+def rails_secrets_config_file
+  Rails.root.join('config/secrets.yml')
+end
+
+def load_secrets_from_file
+  YAML.safe_load_file(rails_secrets_config_file)
+rescue Errno::ENOENT, Psych::SyntaxError
+  {}
+end
+
+def set_credentials_from_file_and_env!
   # Inspired by https://github.com/rails/rails/blob/v7.0.8.4/railties/lib/rails/secrets.rb#L25-L36
-  raw_secrets = begin
-    YAML.safe_load(File.read(Rails.root.join('config/secrets.yml')))
-  rescue Errno::ENOENT, Psych::SyntaxError
-    {}
-  end
-  raw_secrets ||= {}
+  # Later, once config/secrets.yml won't be read automatically, we'll need to do it manually, so
+  # we anticipate and do it ourselves here.
+  file_secrets = load_secrets_from_file
+  secrets = file_secrets.fetch("shared", {}).deep_symbolize_keys
+    .merge(file_secrets.fetch(Rails.env, {}).deep_symbolize_keys)
 
-  secrets = {}
-  secrets.merge!(raw_secrets["shared"].deep_symbolize_keys) if raw_secrets["shared"]
-  secrets.merge!(raw_secrets[Rails.env].deep_symbolize_keys) if raw_secrets[Rails.env]
-
-  # Copy secrets into credentials since Rails.application.secrets is populated from config/secrets.yml
-  # Later, once config/secrets.yml won't be read automatically, we'll need to do it manually, and set
+  # Copy secrets from config/secrets.yml into Rails.application.credentials
+  # If we support native Rails.application.credentials later
+  # (e.g. config.credentials.yml.enc + config/master.key ), this loop would
+  # become a no-op as long as credentials are migrated to config.credentials.yml.enc.
   secrets.each do |key, value|
+    next if Rails.application.credentials.public_send(key).present?
+
     Rails.application.credentials[key] = value
   end
 
-  # Historically, ENV['SECRET_KEY_BASE'] takes precedence over secrets.yml, so we maintain that
-  # behavior by ensuring the environment variable always overrides secrets.yml.
+  # Historically, ENV['SECRET_KEY_BASE'] takes precedence over config/secrets.yml, so we maintain that
+  # behavior by ensuring the environment variable always overrides the value from config/secrets.yml.
   env_secret_key = ENV['SECRET_KEY_BASE']
   Rails.application.credentials.secret_key_base = env_secret_key if env_secret_key.present?
+end
 
+def set_missing_from_defaults!
   defaults = {
     secret_key_base: generate_new_secure_token,
     otp_key_base: generate_new_secure_token,
@@ -43,12 +54,16 @@ def create_tokens
 
   # encrypted_settings_key_base is optional for now
   if ENV['GITLAB_GENERATE_ENCRYPTED_SETTINGS_KEY_BASE']
-    defaults[:encrypted_settings_key_base] =
-      generate_new_secure_token
+    defaults[:encrypted_settings_key_base] = generate_new_secure_token
   end
 
   missing_secrets = set_missing_keys(defaults)
-  write_secrets_yml(missing_secrets) unless missing_secrets.empty?
+  write_secrets_yml!(missing_secrets) if missing_secrets.any?
+end
+
+def create_tokens
+  set_credentials_from_file_and_env!
+  set_missing_from_defaults!
 end
 
 def generate_new_secure_token
@@ -62,7 +77,8 @@ end
 def warn_missing_secret(secret)
   return if Rails.env.test?
 
-  warn "Missing Rails.application.credentials.#{secret} for #{Rails.env} environment. The secret will be generated and stored in config/secrets.yml."
+  warn "Missing Rails.application.credentials.#{secret} for #{Rails.env} environment. " \
+    "The secret will be generated and stored in config/secrets.yml."
 end
 
 def set_missing_keys(defaults)
@@ -74,15 +90,12 @@ def set_missing_keys(defaults)
   end
 end
 
-def write_secrets_yml(missing_secrets)
-  secrets_yml = Rails.root.join('config/secrets.yml')
+def write_secrets_yml!(missing_secrets)
   rails_env = Rails.env.to_s
-  secrets = YAML.load_file(secrets_yml) if File.exist?(secrets_yml)
-  secrets ||= {}
+  secrets = load_secrets_from_file
   secrets[rails_env] ||= {}
-
   secrets[rails_env].merge!(missing_secrets)
-  File.write(secrets_yml, YAML.dump(secrets), mode: 'w', perm: 0o600)
+  File.write(rails_secrets_config_file, YAML.dump(secrets), mode: 'w', perm: 0o600)
 end
 
 create_tokens
