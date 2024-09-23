@@ -12,12 +12,8 @@ import {
 } from 'ee/usage_quotas/error_constants';
 import {
   OPERATORS_IS,
-  TOKEN_TITLE_GROUP,
-  TOKEN_TITLE_GROUP_INVITE,
-  TOKEN_TITLE_PROJECT,
-  TOKEN_TYPE_GROUP,
-  TOKEN_TYPE_GROUP_INVITE,
-  TOKEN_TYPE_PROJECT,
+  TOKEN_TITLE_ASSIGNED_SEAT,
+  TOKEN_TYPE_ASSIGNED_SEAT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
@@ -31,8 +27,6 @@ import {
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
-import GroupToken from 'ee/usage_quotas/code_suggestions/tokens/group_token.vue';
-import ProjectToken from 'ee/usage_quotas/code_suggestions/tokens/project_token.vue';
 
 export default {
   name: 'SaasAddOnEligibleUserList',
@@ -98,33 +92,15 @@ export default {
       if (!this.isFilteringEnabled) return [];
       return [
         {
-          fullPath: this.fullPath,
-          icon: 'project',
-          operators: OPERATORS_IS,
-          title: TOKEN_TITLE_PROJECT,
-          token: ProjectToken,
-          type: TOKEN_TYPE_PROJECT,
-          unique: true,
-        },
-        {
-          fullPath: this.fullPath,
-          icon: 'group',
-          operators: OPERATORS_IS,
-          title: TOKEN_TITLE_GROUP,
-          token: GroupToken,
-          type: TOKEN_TYPE_GROUP,
-          unique: true,
-        },
-        {
           options: [
             { value: 'true', title: __('Yes') },
             { value: 'false', title: __('No') },
           ],
           icon: 'user',
           operators: OPERATORS_IS,
-          title: TOKEN_TITLE_GROUP_INVITE,
+          title: TOKEN_TITLE_ASSIGNED_SEAT,
           token: BaseToken,
-          type: TOKEN_TYPE_GROUP_INVITE,
+          type: TOKEN_TYPE_ASSIGNED_SEAT,
           unique: true,
         },
       ];

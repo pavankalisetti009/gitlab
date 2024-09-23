@@ -7577,6 +7577,9 @@ msgstr ""
 msgid "Assigned projects"
 msgstr ""
 
+msgid "Assigned seat"
+msgstr ""
+
 msgid "Assigned to %{assigneeName}"
 msgstr ""
 

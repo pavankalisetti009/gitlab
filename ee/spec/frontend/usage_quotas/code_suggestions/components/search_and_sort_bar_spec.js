@@ -8,6 +8,8 @@ import {
   TOKEN_TITLE_PROJECT,
   TOKEN_TYPE_GROUP_INVITE,
   TOKEN_TYPE_PROJECT,
+  TOKEN_TITLE_ASSIGNED_SEAT,
+  TOKEN_TYPE_ASSIGNED_SEAT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import ProjectToken from 'ee/usage_quotas/code_suggestions/tokens/project_token.vue';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
@@ -34,6 +36,18 @@ describe('SearchAndSortBar', () => {
       type: TOKEN_TYPE_GROUP_INVITE,
       icon: 'user',
       title: TOKEN_TITLE_GROUP_INVITE,
+      unique: true,
+      token: BaseToken,
+      operators: OPERATORS_IS,
+    },
+    {
+      options: [
+        { value: 'true', title: 'Yes' },
+        { value: 'false', title: 'No' },
+      ],
+      type: TOKEN_TYPE_ASSIGNED_SEAT,
+      icon: 'user',
+      title: TOKEN_TITLE_ASSIGNED_SEAT,
       unique: true,
       token: BaseToken,
       operators: OPERATORS_IS,
@@ -83,7 +97,7 @@ describe('SearchAndSortBar', () => {
           provideProps: { fullPath },
         });
 
-        expect(findFilteredSearchBar().props('tokens')).toHaveLength(2);
+        expect(findFilteredSearchBar().props('tokens')).toHaveLength(3);
         expect(findFilteredSearchBar().props('tokens')).toStrictEqual(tokens);
       });
     });
@@ -115,6 +129,7 @@ describe('SearchAndSortBar', () => {
             search: searchTerm,
             filterByProjectId: undefined,
             filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
           });
         });
       });
@@ -136,6 +151,7 @@ describe('SearchAndSortBar', () => {
             search: 'search with spaces',
             filterByProjectId: undefined,
             filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
           });
         });
       });
@@ -145,12 +161,14 @@ describe('SearchAndSortBar', () => {
       const groupInvite = 'yes';
       const projectId = 'project-id';
       const searchTerm = 'search term';
+      const assignedSeat = 'yes';
 
       it('emits search event with appropriate params', () => {
         const searchTokens = [
           { type: FILTERED_SEARCH_TERM, value: { data: searchTerm } },
           { type: TOKEN_TYPE_PROJECT, value: { data: projectId } },
           { type: TOKEN_TYPE_GROUP_INVITE, value: { data: groupInvite } },
+          { type: TOKEN_TYPE_ASSIGNED_SEAT, value: { data: assignedSeat } },
         ];
         createComponent();
         findFilteredSearchBar().vm.$emit('onFilter', searchTokens);
@@ -159,25 +177,55 @@ describe('SearchAndSortBar', () => {
           search: searchTerm,
           filterByProjectId: projectId,
           filterByGroupInvite: groupInvite,
+          filterByAssignedSeat: assignedSeat,
         });
       });
 
       describe.each([
         [
           { type: FILTERED_SEARCH_TERM, value: { data: searchTerm } },
-          { search: searchTerm, filterByProjectId: undefined, filterByGroupInvite: undefined },
+          {
+            search: searchTerm,
+            filterByProjectId: undefined,
+            filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
+          },
         ],
         [
           { type: TOKEN_TYPE_GROUP_INVITE, value: { data: groupInvite } },
-          { search: undefined, filterByProjectId: undefined, filterByGroupInvite: groupInvite },
+          {
+            search: undefined,
+            filterByProjectId: undefined,
+            filterByGroupInvite: groupInvite,
+            filterByAssignedSeat: undefined,
+          },
         ],
         [
           { type: TOKEN_TYPE_PROJECT, value: { data: projectId } },
-          { search: undefined, filterByProjectId: projectId, filterByGroupInvite: undefined },
+          {
+            search: undefined,
+            filterByProjectId: projectId,
+            filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
+          },
+        ],
+        [
+          { type: TOKEN_TYPE_ASSIGNED_SEAT, value: { data: assignedSeat } },
+          {
+            search: undefined,
+            filterByProjectId: undefined,
+            filterByGroupInvite: undefined,
+            filterByAssignedSeat: assignedSeat,
+          },
         ],
         [
           { type: 'status', value: { data: 'test' } },
-          { search: undefined, filterByProjectId: undefined, filterByGroupInvite: undefined },
+          {
+            search: undefined,
+            filterByProjectId: undefined,
+            filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
+          },
         ],
       ])('with invalid type or data: %s', (searchTokens, expected) => {
         it('emits the correct filter values', () => {
@@ -192,6 +240,7 @@ describe('SearchAndSortBar', () => {
         [{ type: FILTERED_SEARCH_TERM, value: { data: undefined } }],
         [{ type: TOKEN_TYPE_GROUP_INVITE, value: { data: undefined } }],
         [{ type: TOKEN_TYPE_PROJECT, value: { data: undefined } }],
+        [{ type: TOKEN_TYPE_ASSIGNED_SEAT, value: { data: undefined } }],
         [{ type: 'status', value: { data: 'test' } }],
       ])('with invalid type or data: %s', (searchTokens) => {
         it('emits the correct filter values', () => {
@@ -202,6 +251,7 @@ describe('SearchAndSortBar', () => {
             search: undefined,
             filterByProjectId: undefined,
             filterByGroupInvite: undefined,
+            filterByAssignedSeat: undefined,
           });
         });
       });
@@ -224,6 +274,7 @@ describe('SearchAndSortBar', () => {
           search: searchTerm,
           filterByProjectId: projectId,
           filterByGroupInvite: undefined,
+          filterByAssignedSeat: undefined,
         });
       });
     });
