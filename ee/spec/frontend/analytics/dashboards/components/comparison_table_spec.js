@@ -1,6 +1,5 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
 import {
   TABLE_METRICS,
@@ -8,10 +7,7 @@ import {
   CHART_GRADIENT_INVERTED,
 } from 'ee/analytics/dashboards/constants';
 import ComparisonTable from 'ee/analytics/dashboards/components/comparison_table.vue';
-import {
-  EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-  VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
-} from 'ee/analytics/analytics_dashboards/constants';
+import { VSD_COMPARISON_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import { mockComparativeTableData } from '../mock_data';
 
 describe('Comparison table', () => {
@@ -55,51 +51,7 @@ describe('Comparison table', () => {
         expect(findMetricTableCell(identifier).props()).toMatchObject({
           identifier,
           filterLabels,
-        });
-      });
-
-      describe('drill-down clicked event', () => {
-        const { bindInternalEventDocument } = useMockInternalEventsTracking();
-        const trackingMetricClickedAction = 'value_streams_dashboard_metric_link_clicked';
-        const trackingMetricIdentifierClickedAction = `value_streams_dashboard_${identifier}_link_clicked`;
-
-        beforeEach(() => {
-          findMetricTableCell(identifier).vm.$emit('drill-down-clicked');
-        });
-
-        it('should send three tracking events', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).toHaveBeenCalledTimes(3);
-        });
-
-        it(`should track the '${trackingMetricClickedAction}' event`, () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).toHaveBeenCalledWith(trackingMetricClickedAction, {}, undefined);
-        });
-
-        it(`should track the '${trackingMetricIdentifierClickedAction}' event`, () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            trackingMetricIdentifierClickedAction,
-            {},
-            undefined,
-          );
-        });
-
-        it(`should track the '${EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE}' event`, () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-            {
-              label: identifier,
-              property: VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
-            },
-            undefined,
-          );
+          trackingProperty: VSD_COMPARISON_TABLE_TRACKING_PROPERTY,
         });
       });
     });

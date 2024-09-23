@@ -1,8 +1,10 @@
 <script>
 import { GlIcon, GlLink, GlPopover } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { joinPaths, mergeUrlParams } from '~/lib/utils/url_utility';
 import { METRIC_TOOLTIPS } from '~/analytics/shared/constants';
 import { s__ } from '~/locale';
+import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
 import { TABLE_METRICS } from '../constants';
 import { AI_IMPACT_TABLE_METRICS } from '../ai_impact/constants';
 
@@ -13,6 +15,7 @@ export default {
     GlLink,
     GlPopover,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     identifier: {
       type: String,
@@ -30,6 +33,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    trackingProperty: {
+      type: String,
+      required: false,
+      default: '',
     },
   },
   computed: {
@@ -60,6 +68,16 @@ export default {
       return Boolean(this.requestPath.length);
     },
   },
+  methods: {
+    drillDownClicked() {
+      if (this.trackingProperty === '') return;
+
+      this.trackEvent(EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE, {
+        label: this.identifier,
+        property: this.trackingProperty,
+      });
+    },
+  },
   i18n: {
     docsLabel: s__('DORA4Metrics|Go to docs'),
   },
@@ -71,7 +89,7 @@ export default {
       v-if="hasRequestPath"
       :href="link"
       data-testid="metric_label"
-      @click="$emit('drill-down-clicked', $event)"
+      @click="drillDownClicked"
       >{{ metric.label }}</gl-link
     >
     <span v-else data-testid="metric_label">{{ metric.label }}</span>

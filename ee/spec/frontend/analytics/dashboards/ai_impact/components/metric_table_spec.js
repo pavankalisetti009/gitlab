@@ -24,11 +24,7 @@ import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_tab
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
-import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import {
-  AI_IMPACT_TABLE_TRACKING_PROPERTY,
-  EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-} from 'ee/analytics/analytics_dashboards/constants';
+import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import {
   mockDoraMetricsResponse,
   mockFlowMetricsResponse,
@@ -156,52 +152,22 @@ describe('Metric table', () => {
   });
 
   describe.each`
-    identifier                                | testId                            | requestPath
-    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}      | ${deploymentFrequencyTestId}      | ${namespace}
-    ${DORA_METRICS.CHANGE_FAILURE_RATE}       | ${changeFailureRateTestId}        | ${namespace}
-    ${FLOW_METRICS.CYCLE_TIME}                | ${cycleTimeTestId}                | ${namespace}
-    ${FLOW_METRICS.LEAD_TIME}                 | ${leadTimeTestId}                 | ${namespace}
-    ${VULNERABILITY_METRICS.CRITICAL}         | ${vulnerabilityCriticalTestId}    | ${namespace}
-    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${codeSuggestionsUsageRateTestId} | ${''}
-  `('for the $identifier table row', ({ identifier, testId, requestPath }) => {
+    identifier                                | testId                            | requestPath  | trackingProperty
+    ${DORA_METRICS.DEPLOYMENT_FREQUENCY}      | ${deploymentFrequencyTestId}      | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${DORA_METRICS.CHANGE_FAILURE_RATE}       | ${changeFailureRateTestId}        | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.CYCLE_TIME}                | ${cycleTimeTestId}                | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${FLOW_METRICS.LEAD_TIME}                 | ${leadTimeTestId}                 | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${VULNERABILITY_METRICS.CRITICAL}         | ${vulnerabilityCriticalTestId}    | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE} | ${codeSuggestionsUsageRateTestId} | ${''}        | ${''}
+  `('for the $identifier table row', ({ identifier, testId, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper();
     });
 
     it('renders the metric name', () => {
       expect(findMetricTableCell(testId).props()).toEqual(
-        expect.objectContaining({ identifier, requestPath, isProject }),
+        expect.objectContaining({ identifier, requestPath, isProject, trackingProperty }),
       );
-    });
-
-    describe('metric drill-down clicked', () => {
-      const { bindInternalEventDocument } = useMockInternalEventsTracking();
-
-      beforeEach(() => {
-        findMetricTableCell(testId).vm.$emit('drill-down-clicked');
-      });
-
-      if (requestPath) {
-        it(`should trigger tracking event`, () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).toHaveBeenCalledTimes(1);
-          expect(trackEventSpy).toHaveBeenCalledWith(
-            EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE,
-            {
-              label: identifier,
-              property: AI_IMPACT_TABLE_TRACKING_PROPERTY,
-            },
-            undefined,
-          );
-        });
-      } else {
-        it('should not trigger tracking event', () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          expect(trackEventSpy).not.toHaveBeenCalled();
-        });
-      }
     });
   });
 
