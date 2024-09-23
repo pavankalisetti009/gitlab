@@ -62,7 +62,8 @@ export default {
     },
     {
       key: 'action',
-      thClass: 'gl-w-2/20 gl-text-right',
+      thAlignRight: true,
+      thClass: 'gl-w-2/20',
       tdClass: 'gl-text-right',
       label: '',
     },

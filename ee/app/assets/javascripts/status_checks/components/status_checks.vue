@@ -82,7 +82,7 @@ export default {
     {
       key: 'actions',
       label: i18n.actionsHeader,
-      thClass: 'gl-text-right',
+      thAlignRight: true,
       tdClass: 'text-nowrap md:!gl-pl-0 md:!gl-pr-0',
     },
   ],
