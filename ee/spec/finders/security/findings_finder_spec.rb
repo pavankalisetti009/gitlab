@@ -6,7 +6,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
   it_behaves_like 'security findings finder' do
     it_behaves_like 'when the pipeline has security findings' do
       let(:findings) { service_object.execute.findings }
-      let(:query_limit) { 27 } # https://gitlab.com/gitlab-org/gitlab/-/issues/478421
+      let(:query_limit) { 16 }
 
       describe '#findings' do
         context 'when the `security_findings` records have `overridden_uuid`s' do
