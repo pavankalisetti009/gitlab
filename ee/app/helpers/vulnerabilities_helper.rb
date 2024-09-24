@@ -76,16 +76,14 @@ module VulnerabilitiesHelper
   end
 
   def vulnerability_finding_data(vulnerability)
-    ::Gitlab::Database.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480551') do
-      data = Vulnerabilities::FindingSerializer.new(current_user: current_user).represent(vulnerability.finding, only: FINDING_FIELDS)
-      data[:location].merge!('blob_path' => vulnerability.blob_path).compact!
-      data[:description_html] = markdown(vulnerability.present.description)
-      data[:solution_html] = markdown(vulnerability.present.solution)
-      data[:ai_explanation_available] = vulnerability.finding.ai_explanation_available?
-      data[:ai_resolution_available] = vulnerability.finding.ai_resolution_available?
-      data[:ai_resolution_enabled] = vulnerability.finding.ai_resolution_enabled?
-      data
-    end
+    data = Vulnerabilities::FindingSerializer.new(current_user: current_user).represent(vulnerability.finding, only: FINDING_FIELDS)
+    data[:location].merge!('blob_path' => vulnerability.blob_path).compact!
+    data[:description_html] = markdown(vulnerability.present.description)
+    data[:solution_html] = markdown(vulnerability.present.solution)
+    data[:ai_explanation_available] = vulnerability.finding.ai_explanation_available?
+    data[:ai_resolution_available] = vulnerability.finding.ai_resolution_available?
+    data[:ai_resolution_enabled] = vulnerability.finding.ai_resolution_enabled?
+    data
   end
 
   def vulnerability_scan_data?(vulnerability)
