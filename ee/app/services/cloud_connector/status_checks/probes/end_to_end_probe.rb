@@ -5,17 +5,33 @@ module CloudConnector
     module Probes
       # Performs a real request using the current user to verify that AI features work.
       class EndToEndProbe < BaseProbe
-        def execute(user:, **_context)
-          error = request_code_completion_for(user)
-          return failure(failure_text(error)) if error.present?
+        extend ::Gitlab::Utils::Override
 
-          success(_('Authentication with GitLab Cloud services succeeded.'))
+        validate :check_user_exists
+        validate :validate_code_completion_availability
+
+        def initialize(user)
+          @user = user
         end
 
         private
 
-        def request_code_completion_for(user)
-          ::Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(user).test_completion
+        attr_reader :user
+
+        override :success_message
+        def success_message
+          _('Authentication with GitLab Cloud services succeeded.')
+        end
+
+        def check_user_exists
+          errors.add(:base, 'User not provided') unless user
+        end
+
+        def validate_code_completion_availability
+          return unless user
+
+          error = ::Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(user).test_completion
+          errors.add(:base, failure_text(error)) if error.present?
         end
 
         def failure_text(error)
