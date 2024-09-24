@@ -1,13 +1,2 @@
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
-
-gemnasium-dependency_scanning:
-  rules:
-    - when: always
-  artifacts:
-    paths:
-      - gl-sbom.json
-      - gl-dependency-scanning-report.json
-    reports:
-      cyclonedx: gl-sbom.json
-      dependency_scanning: gl-dependency-scanning-report.json

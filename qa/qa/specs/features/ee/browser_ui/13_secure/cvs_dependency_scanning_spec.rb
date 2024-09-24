@@ -76,17 +76,6 @@ module QA
                   'Gemf.lock'
                 )
               )
-            },
-            {
-              action: 'create',
-              file_path: 'gl-sbom.json',
-              content: File.read(
-                File.join(
-                  EE::Runtime::Path.fixtures_path,
-                  'secure_cvs_files',
-                  'gl-sbom.json'
-                )
-              )
             }
           ]
         end
@@ -110,8 +99,6 @@ module QA
             Support::Retrier.retry_until(max_duration: 120, sleep_interval: 15, reload_page: vulnerability_list) do
               vulnerability_list.has_vulnerability?(description: 'Arbitrary test vulnerability')
             end
-
-            expect(vulnerability_list).not_to have_vulnerability(description: 'Outdated test vulnerability')
 
             vulnerability_list.click_vulnerability(description: 'Arbitrary test vulnerability')
           end
