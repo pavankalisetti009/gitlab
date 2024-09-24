@@ -25045,6 +25045,9 @@ msgstr ""
 msgid "GlobalSearch|Archived"
 msgstr ""
 
+msgid "GlobalSearch|Branch not included"
+msgstr ""
+
 msgid "GlobalSearch|Change context %{kbdStart}↵%{kbdEnd}"
 msgstr ""
 
@@ -25168,6 +25171,9 @@ msgstr ""
 msgid "GlobalSearch|No labels found"
 msgstr ""
 
+msgid "GlobalSearch|No matching results"
+msgstr ""
+
 msgid "GlobalSearch|No results found"
 msgstr ""
 
@@ -25217,6 +25223,9 @@ msgid "GlobalSearch|Result count is over limit."
 msgstr ""
 
 msgid "GlobalSearch|Results updated. %{count} results available. Use the up and down arrow keys to navigate search results list, or ENTER to submit."
+msgstr ""
+
+msgid "GlobalSearch|Search"
 msgstr ""
 
 msgid "GlobalSearch|Search %{kbdStart}↵%{kbdEnd}"
@@ -25279,6 +25288,9 @@ msgstr ""
 msgid "GlobalSearch|Snippets"
 msgstr ""
 
+msgid "GlobalSearch|Source branch"
+msgstr ""
+
 msgid "GlobalSearch|The search term must be at least 3 characters long."
 msgstr ""
 
@@ -25286,6 +25298,9 @@ msgid "GlobalSearch|There was an error fetching search autocomplete suggestions.
 msgstr ""
 
 msgid "GlobalSearch|Tip:"
+msgstr ""
+
+msgid "GlobalSearch|Toggle if results have source branch included or excluded"
 msgstr ""
 
 msgid "GlobalSearch|Type %{kbdOpen}/%{kbdClose} to search"
