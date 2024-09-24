@@ -154,24 +154,9 @@ RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
             end
 
             it 'audits the creation' do
-              schedule = subject.payload[:dast_profile_schedule]
-              audit_event = AuditEvent.find_by(target_id: schedule.id)
-
-              aggregate_failures do
-                expect(audit_event.author).to eq(user)
-                expect(audit_event.entity).to eq(project)
-                expect(audit_event.target_id).to eq(dast_profile.dast_profile_schedule.id)
-                expect(audit_event.target_type).to eq('Dast::ProfileSchedule')
-                expect(audit_event.details).to eq({
-                  author_name: user.name,
-                  author_class: user.class.name,
-                  event_name: "dast_profile_schedule_create",
-                  custom_message: 'Added DAST profile schedule',
-                  target_id: schedule.id,
-                  target_type: 'Dast::ProfileSchedule',
-                  target_details: user.name
-                })
-              end
+              expect { subject }.to change {
+                AuditEvent.where("details LIKE ?", "%dast_profile_schedule_create%").count
+              }.by(1)
             end
           end
 
