@@ -602,6 +602,16 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       allow(License).to receive(:current).and_return(license)
     end
 
+    shared_examples 'does not trigger event' do
+      it 'does not publish a MembershipModifiedByAdminEvent' do
+        expect(Gitlab::EventStore)
+          .not_to receive(:publish)
+                    .with(an_instance_of(::Members::MembershipModifiedByAdminEvent))
+
+        execute_service
+      end
+    end
+
     context 'when feature is disabled' do
       before do
         stub_feature_flags(member_promotion_management: false)
@@ -657,6 +667,95 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
           })
         end
       end
+
+      it_behaves_like 'does not trigger event'
+    end
+
+    context 'when admin modifies members', :enable_admin_mode do
+      let_it_be(:user) { create(:admin) }
+
+      shared_examples 'triggers event' do |call_count = 1|
+        it 'publishes MembershipModifiedByAdminEvent' do
+          allow(Gitlab::EventStore).to receive(:publish).and_call_original
+          expect(Gitlab::EventStore)
+            .to receive(:publish)
+                  .with(an_instance_of(::Members::MembershipModifiedByAdminEvent))
+                  .and_call_original
+                  .exactly(call_count).times
+
+          execute_service
+        end
+      end
+
+      context 'when adding user to billable DEVELOPER role' do
+        before do
+          params[:access_level] = Gitlab::Access::DEVELOPER
+        end
+
+        it_behaves_like 'triggers event', 2
+
+        context 'when one member has error' do
+          before do
+            root_ancestor.add_owner(project_users[0])
+          end
+
+          it_behaves_like 'triggers event', 1
+        end
+
+        context 'when feature is disabled' do
+          before do
+            stub_feature_flags(member_promotion_management: false)
+          end
+
+          it_behaves_like 'does not trigger event'
+        end
+
+        context 'when setting is disabled' do
+          before do
+            stub_application_setting(enable_member_promotion_management: false)
+          end
+
+          it_behaves_like 'does not trigger event'
+        end
+
+        context 'when license is not Ultimate' do
+          let(:license) { create(:license, plan: License::STARTER_PLAN) }
+
+          it_behaves_like 'does not trigger event'
+        end
+
+        context 'when new user not present in system is invited with email' do
+          let(:invites) { ['new_user@example.com'] }
+
+          it_behaves_like 'does not trigger event'
+        end
+      end
+
+      context 'when adding user to a non billable GUEST role' do
+        before do
+          params[:access_level] = Gitlab::Access::GUEST
+        end
+
+        it_behaves_like 'does not trigger event'
+      end
+    end
+
+    context 'when current_user is nil' do
+      let(:user) { nil }
+
+      before do
+        params[:skip_authorization] = true
+      end
+
+      it_behaves_like 'does not trigger event'
+    end
+
+    context 'when saas', :saas do
+      before_all do
+        root_ancestor.add_owner(user)
+      end
+
+      it_behaves_like 'does not trigger event'
     end
   end
 end

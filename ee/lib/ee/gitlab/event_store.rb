@@ -66,6 +66,12 @@ module EE
             to: ::ContainerRegistry::ImagePushedEvent,
             delay: 1.minute,
             if: ->(event) { ::AppSec::ContainerScanning::ScanImageWorker.dispatch?(event) }
+          store.subscribe ::GitlabSubscriptions::MemberManagement::ApplyPendingMemberApprovalsWorker,
+            to: ::Members::MembershipModifiedByAdminEvent,
+            if: ->(_) {
+              ::Gitlab::CurrentSettings.enable_member_promotion_management? &&
+                ::Feature.enabled?(:member_promotion_management, :instance, type: :wip)
+            }
 
           register_threat_insights_subscribers(store)
           register_security_policy_subscribers(store)
