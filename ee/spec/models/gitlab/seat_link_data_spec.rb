@@ -91,7 +91,8 @@ RSpec.describe Gitlab::SeatLinkData do
           max_historical_user_count: max_users,
           billable_users_count: billable_users_count,
           hostname: Gitlab.config.gitlab.host,
-          instance_id: instance_id
+          instance_id: instance_id,
+          add_on_metrics: []
         }.to_json
       )
     end
@@ -108,8 +109,29 @@ RSpec.describe Gitlab::SeatLinkData do
             max_historical_user_count: max_users,
             billable_users_count: billable_users_count,
             hostname: Gitlab.config.gitlab.host,
-            instance_id: instance_id
+            instance_id: instance_id,
+            add_on_metrics: []
           }.to_json
+        )
+      end
+    end
+
+    context 'when the instance has add-on purchases' do
+      before do
+        purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise, quantity: 5)
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
+
+        purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :product_analytics, quantity: 3)
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
+      end
+
+      it 'includes the add-on metrics in the payload' do
+        expect(subject.as_json).to include(
+          add_on_metrics: [
+            { add_on_type: 'duo_enterprise', purchased_seats: 5, assigned_seats: 2 },
+            { add_on_type: 'product_analytics', purchased_seats: 3, assigned_seats: 1 }
+          ]
         )
       end
     end

@@ -34,7 +34,8 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
           max_historical_user_count: 5,
           billable_users_count: 4,
           hostname: Gitlab.config.gitlab.host,
-          instance_id: 'one-two-three'
+          instance_id: 'one-two-three',
+          add_on_metrics: []
         }.to_json
       )
     end
