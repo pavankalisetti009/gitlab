@@ -20,7 +20,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   attr_reader :project
 
   def self.sync_to_click_house
-    ClickHouse::DumpAllWriteBuffersCronWorker.new.buffered_tables.each do |table_name|
+    ClickHouse::DumpAllWriteBuffersCronWorker::TABLES.each do |table_name|
       ClickHouse::DumpWriteBufferWorker.new.perform(table_name)
     end
 
@@ -56,21 +56,21 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
         Ai::CodeSuggestionEvent.new(
           user: user,
           event: 'code_suggestion_shown_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).store
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago).save!
 
         next unless rand(100) < 35 # 35% acceptance rate
 
         Ai::CodeSuggestionEvent.new(
           user: user,
           event: 'code_suggestion_accepted_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds).store
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds).save!
       end
 
       CHAT_EVENT_COUNT_SAMPLE.times do
         Ai::DuoChatEvent.new(
           user: user,
           event: 'request_duo_chat_response',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).store
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago).store_to_clickhouse
       end
     end
   end
