@@ -1830,7 +1830,7 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
         %w[succeed! drop! cancel! skip!].each do |action|
           context "when the pipeline received #{action} event" do
             it 'performs AutoMergeProcessWorker' do
-              expect(AutoMergeProcessWorker).to receive(:perform_async).with(merge_request.id)
+              expect(AutoMergeProcessWorker).to receive(:perform_async).with({ 'pipeline_id' => pipeline.id })
 
               pipeline.public_send(action)
             end
@@ -1841,8 +1841,11 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
       context 'when auto merge is not enabled in the merge request' do
         let(:merge_request) { create(:merge_request) }
 
+        # We enqueue the job here because the check for whether or not to
+        # automatically merge happens in the worker itself.
+        # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167095
         it 'performs AutoMergeProcessWorker' do
-          expect(AutoMergeProcessWorker).not_to receive(:perform_async)
+          expect(AutoMergeProcessWorker).to receive(:perform_async).with({ 'pipeline_id' => pipeline.id })
 
           pipeline.succeed!
         end

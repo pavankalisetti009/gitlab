@@ -324,9 +324,7 @@ module Ci
 
       after_transition any => ::Ci::Pipeline.completed_statuses do |pipeline|
         pipeline.run_after_commit do
-          pipeline.all_merge_requests.with_auto_merge_enabled.each do |merge_request|
-            AutoMergeProcessWorker.perform_async(merge_request.id)
-          end
+          AutoMergeProcessWorker.perform_async({ 'pipeline_id' => self.id })
 
           if pipeline.auto_devops_source?
             self.class.auto_devops_pipelines_completed_total.increment(status: pipeline.status)
