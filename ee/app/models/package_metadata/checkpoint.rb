@@ -18,4 +18,12 @@ module PackageMetadata
       find_or_initialize_by(data_type: data_type, purl_type: purl_type, version_format: version_format)
     end
   end
+
+  class NullCheckpoint
+    def update(*args); end
+
+    def blank?
+      true
+    end
+  end
 end

@@ -507,6 +507,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: cronjob:package_metadata_cve_enrichment_sync
+  :worker_name: PackageMetadata::CveEnrichmentSyncWorker
+  :feature_category: :software_composition_analysis
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:package_metadata_licenses_sync
   :worker_name: PackageMetadata::LicensesSyncWorker
   :feature_category: :software_composition_analysis

@@ -26,6 +26,8 @@ module PackageMetadata
 
     def self.configs_for(data_type)
       case data_type
+      when 'cve_enrichment'
+        cve_enrichment_configs
       when 'advisories'
         advisory_configs
       when 'licenses'
@@ -33,6 +35,11 @@ module PackageMetadata
       else
         raise NoMethodError, "unsupported data type: #{data_type}"
       end
+    end
+
+    def self.cve_enrichment_configs
+      storage_type, base_uri = Location.for_cve_enrichment
+      [new('cve_enrichment', storage_type, base_uri, VERSION_FORMAT_V2, nil)]
     end
 
     def self.advisory_configs
@@ -77,6 +84,10 @@ module PackageMetadata
       data_type == 'advisories'
     end
 
+    def cve_enrichment?
+      data_type == 'cve_enrichment'
+    end
+
     def to_s
       "#{data_type}:#{storage_type}/#{base_uri}/#{version_format}/#{purl_type}"
     end
@@ -89,6 +100,8 @@ module PackageMetadata
       LICENSES_BUCKET = 'prod-export-license-bucket-1a6c642fc4de57d4'
       ADVISORIES_PATH = Rails.root.join('vendor/package_metadata/advisories').freeze
       ADVISORIES_BUCKET = 'prod-export-advisory-bucket-1a6c642fc4de57d4'
+      CVE_ENRICHMENT_PATH = Rails.root.join('vendor/package_metadata/cve_enrichment').freeze
+      CVE_ENRICHMENT_BUCKET = 'prod-export-cve-enrichments-bucket-1a6c642fc4de57d4'
 
       def self.for_licenses
         if File.exist?(LICENSES_PATH)
@@ -105,6 +118,14 @@ module PackageMetadata
           [:offline, ADVISORIES_PATH]
         else
           [:gcp, ADVISORIES_BUCKET]
+        end
+      end
+
+      def self.for_cve_enrichment
+        if File.exist?(CVE_ENRICHMENT_PATH)
+          [:offline, CVE_ENRICHMENT_PATH]
+        else
+          [:gcp, CVE_ENRICHMENT_BUCKET]
         end
       end
     end
