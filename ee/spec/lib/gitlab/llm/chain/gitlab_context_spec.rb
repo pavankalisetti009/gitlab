@@ -19,6 +19,8 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
       agent_version: instance_double(Ai::AgentVersion), additional_context: additional_context)
   end
 
+  include_context 'with duo pro addon'
+
   before_all do
     group.add_reporter(user)
   end

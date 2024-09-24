@@ -52,6 +52,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
     let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be_with_reload(:project) { create(:project, group: group) }
 
+    include_context "with duo pro addon"
+
     before_all do
       project.add_developer(user)
     end

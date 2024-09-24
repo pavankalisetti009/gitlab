@@ -84,6 +84,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
       end
 
       context 'when user has permission to read resource' do
+        include_context 'with duo pro addon'
+
         before do
           stub_application_setting(check_namespace_plan: true)
           stub_licensed_features(ai_chat: true)

@@ -126,6 +126,12 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
 
     context 'when user is not logged in' do
       let(:current_user) { nil }
+      # we are trying to authenticate with a token of `authorized_user`
+      # we need to define variable `user` so included context
+      # 'with ai features enabled for group' will
+      # enroll `authorized_user` to Duo Pro addon
+      # and that is a requirement for successful authorization
+      let(:user) { authorized_user }
 
       include_examples 'an unauthorized response'
 

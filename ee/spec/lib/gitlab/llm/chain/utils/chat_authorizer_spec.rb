@@ -15,6 +15,8 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatAuthorizer, feature_category: :duo
     end
   end
 
+  include_context 'with duo pro addon'
+
   context 'for saas', :saas do
     let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
     let_it_be_with_reload(:project) {  create(:project, group: group) }
@@ -277,10 +279,13 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatAuthorizer, feature_category: :duo
 
       context 'when resource is current user' do
         context 'when user is not in any group with ai' do
-          let(:current_user) { create(:user) }
+          # we use 'with duo pro addon' that will assign a seat in addon for
+          # `current_user` or `user` if this variable is defined
+          # that's why we need to use here a variable with a different name
+          let(:new_user) { create(:user) }
 
           it 'returns false' do
-            expect(authorizer.resource(resource: current_user, user: current_user).allowed?)
+            expect(authorizer.resource(resource: new_user, user: new_user).allowed?)
               .to be(false)
           end
         end
