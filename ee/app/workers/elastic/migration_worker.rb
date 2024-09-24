@@ -3,16 +3,14 @@
 module Elastic
   class MigrationWorker
     include ApplicationWorker
-
-    data_consistency :always
-
     include Gitlab::ExclusiveLeaseHelpers
     # There is no onward scheduling and this cron handles work from across the
     # application, so there's no useful context to add.
     include CronjobQueue # rubocop:disable Scalability/CronWorkerContext
     include ActionView::Helpers::NumberHelper
-
     prepend ::Geo::SkipSecondary
+
+    data_consistency :sticky
 
     feature_category :global_search
     idempotent!
@@ -38,7 +36,12 @@ module Elastic
         end
 
         if migration.halted?
-          error message: "MigrationWorker: migration[#{migration.name}] has been halted. All future migrations will be halted because of that. Exiting"
+          msg = <<~MSG.strip_heredoc.tr("\n", ' ')
+            MigrationWorker: migration[#{migration.name}] has been halted.
+            All future migrations will be halted because of that. Exiting
+          MSG
+
+          error message: msg
           unpause_indexing!(migration)
 
           break false
@@ -47,10 +50,20 @@ module Elastic
         if !migration.started? && migration.space_requirements?
           free_size_bytes = helper.cluster_free_size_bytes
           space_required_bytes = migration.space_required_bytes
-          log message: "MigrationWorker: migration[#{migration.name}] checking free space in cluster. Required space #{number_to_human_size(space_required_bytes)}. Free space #{number_to_human_size(free_size_bytes)}."
+          msg = <<~MSG.strip_heredoc.tr("\n", ' ')
+            MigrationWorker : migration[ #{migration.name}] checking free space in cluster.
+            Required space #{number_to_human_size(space_required_bytes)}.
+            Free space #{number_to_human_size(free_size_bytes)}.
+          MSG
+          log message: msg
 
           if free_size_bytes < space_required_bytes
-            warn message: "MigrationWorker: migration[#{migration.name}] You should have at least #{number_to_human_size(space_required_bytes)} of free space in the cluster to run this migration. Please increase the storage in your Elasticsearch cluster."
+            msg = <<~MSG.strip_heredoc.tr("\n", ' ')
+              MigrationWorker: migration[#{migration.name}]
+              You should have at least #{number_to_human_size(space_required_bytes)} of free space in the
+              cluster to run this migration. Please increase the storage in your Elasticsearch cluster.
+            MSG
+            warn message: msg
             log message: "MigrationWorker: migration[#{migration.name}] updating with halted: true"
             migration.halt
 
@@ -87,13 +100,17 @@ module Elastic
     end
 
     def preflight_check_successful?
-      return false if Feature.disabled?(:elastic_migration_worker, type: :ops)
+      return false if Feature.disabled?(:elastic_migration_worker, type: :ops) # rubocop:disable Gitlab/ FeatureFlagWithoutActor -- this is an ops flag that should be on or off
       return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
       return false unless helper.alias_exists?
       return false if Elastic::ReindexingTask.current
 
       if helper.unsupported_version?
-        log message: 'MigrationWorker: You are using an unsupported version of Elasticsearch. Indexing will be paused to prevent data loss'
+        msg = <<~MSG.strip_heredoc.tr("\n", ' ')
+          MigrationWorker: You are using an unsupported version of Elasticsearch.
+          Indexing will be paused to prevent data loss
+        MSG
+        log message: msg
         Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: true)
 
         return false
@@ -109,7 +126,11 @@ module Elastic
 
     def execute_migration(migration)
       if migration.started? && !migration.batched? && !migration.retry_on_failure?
-        log message: "MigrationWorker: migration[#{migration.name}] did not execute migrate method since it was already executed. Waiting for migration to complete"
+        msg = <<~MSG.strip_heredoc.tr("\n", ' ')
+          MigrationWorker: migration[#{migration.name}] did not execute migrate method since it was already executed.
+          Waiting for migration to complete
+        MSG
+        log message: msg
 
         return
       end
@@ -157,10 +178,10 @@ module Elastic
       pause_indexing = !Gitlab::CurrentSettings.elasticsearch_pause_indexing?
       migration.save_state!(pause_indexing: pause_indexing)
 
-      if pause_indexing
-        log message: 'MigrationWorker: Pausing indexing'
-        Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: true)
-      end
+      return unless pause_indexing
+
+      log message: 'MigrationWorker: Pausing indexing'
+      Gitlab::CurrentSettings.update!(elasticsearch_pause_indexing: true)
     end
 
     def unpause_indexing!(migration)
