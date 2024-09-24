@@ -30,6 +30,7 @@ RSpec.describe ::Search::Zoekt::Router, feature_category: :global_search do
       end
 
       it 'includes the index that is associated with that zoekt repository' do
+        expect(::Search::Zoekt::Index).to receive(:where).with(id: [zoekt_index_1.id]).and_call_original
         expect(result).to match_array([zoekt_index_1])
       end
     end
@@ -38,7 +39,8 @@ RSpec.describe ::Search::Zoekt::Router, feature_category: :global_search do
       it 'includes the index that has the most amount of free storage bytes' do
         allow(zoekt_index_1).to receive(:free_storage_bytes).and_return(100.gigabytes)
         allow(zoekt_index_2).to receive(:free_storage_bytes).and_return(20.gigabytes)
-        expect(result).to match_array([zoekt_index_1])
+        expect(::Search::Zoekt::Index).to receive(:where).with(id: [zoekt_index_1.id]).and_call_original
+        expect(result).to contain_exactly(zoekt_index_1)
       end
     end
 
