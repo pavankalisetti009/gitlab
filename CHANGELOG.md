@@ -1662,6 +1662,14 @@ No changes.
 - [Dynamically gets the column type for assertion](https://gitlab.com/gitlab-org/gitlab/-/commit/1389a3daffd104925cce71776903cbf527723222) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159099))
 - [Quarantine a flaky test](https://gitlab.com/gitlab-org/gitlab/-/commit/c94fca35b909440ec66ea35c97ab11aa847dde58) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158180))
 
+## 17.2.8 (2024-09-24)
+
+### Security (3 changes)
+
+- [Implement input sanitization for SummarizeComments](https://gitlab.com/gitlab-org/security/gitlab/-/commit/4bed1f854c5c7014d7486cc404a5da5321c27070) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4412))
+- [Hide system notes with invalid references](https://gitlab.com/gitlab-org/security/gitlab/-/commit/884df0d68bb3f3f2a2029b2851d202949780dd3b) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4484))
+- [Reset dependency proxy maven credentials when registry url is changed](https://gitlab.com/gitlab-org/security/gitlab/-/commit/c43c6ab51a2005958414062c23d5d017a9cba57d) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4459))
+
 ## 17.2.7 (2024-09-16)
 
 No changes.
