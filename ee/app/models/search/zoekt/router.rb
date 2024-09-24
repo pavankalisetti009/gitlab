@@ -7,7 +7,7 @@ module Search
         replicas = Replica.for_namespace(root_namespace_id)
         index_ids = []
 
-        replicas.joins(:indices).find_each do |replica|
+        replicas.joins(:indices).distinct.find_each do |replica|
           repos = replica.fetch_repositories_with_project_identifier(project_id)
 
           if repos.present?
