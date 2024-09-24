@@ -8,10 +8,21 @@ import {
 } from 'ee_jest/usage_quotas/seats/mock_data';
 
 describe('Usage Quotas Seats mutations', () => {
+  /** @type {ReturnType<createState>} */
   let state;
 
   beforeEach(() => {
     state = createState();
+  });
+
+  describe('Initialization', () => {
+    it(`${types.SET_STATE_INITIALIZED}`, () => {
+      state.initialized = false;
+
+      mutations[types.SET_STATE_INITIALIZED](state);
+
+      expect(state.initialized).toBe(true);
+    });
   });
 
   describe('GitLab subscription', () => {

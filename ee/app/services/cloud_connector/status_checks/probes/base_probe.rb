@@ -21,7 +21,7 @@ module CloudConnector
           end
         end
 
-        def execute(**_context)
+        def execute
           return failure(failure_message) unless valid?
 
           success(success_message)

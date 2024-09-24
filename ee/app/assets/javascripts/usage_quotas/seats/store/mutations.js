@@ -6,6 +6,10 @@ import {
 import * as types from './mutation_types';
 
 export default {
+  [types.SET_STATE_INITIALIZED](state) {
+    state.initialized = true;
+  },
+
   // Gitlab subscription
   [types.REQUEST_GITLAB_SUBSCRIPTION](state) {
     state.isLoadingGitlabSubscription = true;

@@ -2,7 +2,7 @@ import * as GroupsApi from 'ee/api/groups_api';
 import Api from 'ee/api';
 import * as actions from 'ee/usage_quotas/seats/store/actions';
 import * as types from 'ee/usage_quotas/seats/store/mutation_types';
-import State from 'ee/usage_quotas/seats/store/state';
+import createState from 'ee/usage_quotas/seats/store/state';
 import {
   mockDataSeats,
   mockMemberDetails,
@@ -18,10 +18,40 @@ jest.mock('~/alert');
 jest.mock('~/tracking');
 
 describe('Usage Quotas Seats actions', () => {
+  /** @type {ReturnType<createState>} */
   let state;
 
   beforeEach(() => {
-    state = State();
+    state = createState();
+  });
+
+  describe('fetchInitialData', () => {
+    it('triggers initializing actions', async () => {
+      state.initialized = false;
+
+      await testAction({
+        action: actions.fetchInitialData,
+        payload: null,
+        state,
+        expectedMutations: [{ type: types.SET_STATE_INITIALIZED }],
+        expectedActions: [
+          { type: 'fetchBillableMembersList' },
+          { type: 'fetchGitlabSubscription' },
+        ],
+      });
+    });
+
+    it('will not initialize twice', async () => {
+      state.initialized = true;
+
+      await testAction({
+        action: actions.fetchInitialData,
+        payload: null,
+        state,
+        expectedMutations: [],
+        expectedActions: [],
+      });
+    });
   });
 
   describe('fetchBillableMembersList', () => {
