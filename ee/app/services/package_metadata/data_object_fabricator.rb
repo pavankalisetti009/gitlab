@@ -28,14 +28,22 @@ module PackageMetadata
     end
 
     def data_object_class
-      return AdvisoryDataObject if sync_config.advisories?
-
-      license_data_object_class
+      if sync_config.cve_enrichment?
+        DataObjects::CveEnrichment
+      elsif sync_config.advisories?
+        AdvisoryDataObject
+      elsif sync_config.v2?
+        v2_license_data_object_class
+      else
+        v1_license_data_object_class
+      end
     end
 
-    def license_data_object_class
-      return CompressedPackageDataObject if sync_config.v2?
+    def v2_license_data_object_class
+      CompressedPackageDataObject
+    end
 
+    def v1_license_data_object_class
       DataObject
     end
   end

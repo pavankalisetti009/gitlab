@@ -27,29 +27,36 @@ module PackageMetadata
 
     def execute
       connector.data_after(checkpoint).each do |file|
-        log_progress(file)
+        Gitlab::AppJsonLogger.debug(class: self.class.name, message: "Evaluating data for #{sync_config}/#{file}")
 
-        DataObjectFabricator.new(data_file: file, sync_config: sync_config)
-          .each_slice(INGEST_SLICE_SIZE) do |data_objects|
-            ingest(data_objects)
-            throttle
-          end
-
+        ingest_file(file)
         checkpoint.update(sequence: file.sequence, chunk: file.chunk)
 
-        if signal.stop?
-          return Gitlab::AppJsonLogger.debug(class: self.class.name,
-            message: "Stop signal after checkpointing")
-        end
+        return log_stop_signal if signal.stop?
       end
     end
 
     private
 
+    def ingest_file(file)
+      DataObjectFabricator.new(data_file: file, sync_config: sync_config)
+        .each_slice(INGEST_SLICE_SIZE) do |data_objects|
+          ingest(data_objects)
+          throttle
+        end
+    end
+
+    def log_stop_signal
+      Gitlab::AppJsonLogger.debug(class: self.class.name,
+        message: "Stop signal after checkpointing")
+    end
+
     attr_accessor :sync_config, :signal
 
     def ingest(data)
-      if sync_config.advisories?
+      if sync_config.cve_enrichment?
+        PackageMetadata::Ingestion::CveEnrichment::IngestionService.execute(data)
+      elsif sync_config.advisories?
         PackageMetadata::Ingestion::Advisory::IngestionService.execute(data)
       elsif sync_config.v2?
         PackageMetadata::Ingestion::CompressedPackage::IngestionService.execute(data)
@@ -59,8 +66,12 @@ module PackageMetadata
     end
 
     def checkpoint
-      @checkpoint ||= PackageMetadata::Checkpoint
-        .with_path_components(sync_config.data_type, sync_config.version_format, sync_config.purl_type)
+      if sync_config.cve_enrichment?
+        @checkpoint ||= PackageMetadata::NullCheckpoint.new
+      else
+        @checkpoint ||= PackageMetadata::Checkpoint
+          .with_path_components(sync_config.data_type, sync_config.version_format, sync_config.purl_type)
+      end
     end
 
     def connector
@@ -72,12 +83,6 @@ module PackageMetadata
                      else
                        raise UnknownAdapterError, "unable to find '#{sync_config.storage_type}' connector"
                      end
-    end
-
-    def log_progress(file)
-      Gitlab::AppJsonLogger
-        .debug(class: self.class.name,
-          message: "Evaluating data for #{sync_config}/#{file}")
     end
 
     def throttle

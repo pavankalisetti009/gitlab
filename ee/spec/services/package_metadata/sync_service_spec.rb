@@ -26,6 +26,7 @@ RSpec.describe PackageMetadata::SyncService, feature_category: :software_composi
       allow(PackageMetadata::Ingestion::IngestionService).to receive(:execute)
       allow(PackageMetadata::Ingestion::CompressedPackage::IngestionService).to receive(:execute)
       allow(PackageMetadata::Ingestion::Advisory::IngestionService).to receive(:execute)
+      allow(PackageMetadata::Ingestion::CveEnrichment::IngestionService).to receive(:execute)
       allow(service).to receive(:sleep)
       allow(Gitlab::AppJsonLogger).to receive(:debug)
     end
@@ -71,9 +72,35 @@ RSpec.describe PackageMetadata::SyncService, feature_category: :software_composi
             sync_config.data_type = 'advisories'
           end
 
-          it 'calls v1 ingestion service to store data' do
+          it 'calls advisories ingestion service to store data' do
             execute
             expect(PackageMetadata::Ingestion::Advisory::IngestionService)
+              .to have_received(:execute).with(data_objects).twice
+          end
+        end
+
+        context 'if data_type is cve enrichment' do
+          let(:checkpoint) do
+            create(:pm_checkpoint, purl_type: sync_config.purl_type, data_type: sync_config.data_type)
+          end
+
+          before do
+            sync_config.data_type = 'cve_enrichment'
+          end
+
+          it 'always calls data_after(NullCheckpoint) even if checkpoints exist' do
+            checkpoint
+            execute
+            expect(connector).to have_received(:data_after).with(an_instance_of(PackageMetadata::NullCheckpoint))
+          end
+
+          it 'does not update the checkpoint' do
+            expect { execute }.not_to change { checkpoint.reload.attributes }
+          end
+
+          it 'calls cve enrichment ingestion service to store data' do
+            execute
+            expect(PackageMetadata::Ingestion::CveEnrichment::IngestionService)
               .to have_received(:execute).with(data_objects).twice
           end
         end
@@ -228,6 +255,19 @@ RSpec.describe PackageMetadata::SyncService, feature_category: :software_composi
         let(:data_type) { 'advisories' }
 
         it_behaves_like 'it calls #execute for each enabled config'
+      end
+
+      context 'and the data_type is cve_enrichment' do
+        let(:data_type) { 'cve_enrichment' }
+        let(:should_stop) { false }
+
+        it 'calls #execute once' do
+          expect(observer).to receive(:execute).once
+          expect(described_class).to receive(:new)
+            .with(having_attributes(data_type: data_type, purl_type: nil), stop_signal)
+            .and_return(observer)
+          execute
+        end
       end
     end
 

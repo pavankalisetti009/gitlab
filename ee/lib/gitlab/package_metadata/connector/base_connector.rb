@@ -28,6 +28,8 @@ module Gitlab
         end
 
         def file_prefix
+          return sync_config.version_format unless sync_config.purl_type
+
           File.join(sync_config.version_format, registry_id)
         end
 

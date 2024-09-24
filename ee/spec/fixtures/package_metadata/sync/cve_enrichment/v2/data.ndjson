@@ -1,0 +1,3 @@
+{ "cve_id": "CVE-2020-1234", "epss_score": 0.5 }
+{ "cve_id": "CVE-2021-12345", "epss_score": 0.6 }
+{ "epss_score": 0.2 }
