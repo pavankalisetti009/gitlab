@@ -46,17 +46,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
       end
 
       it 'returns config file objects up to MAX_DEPTH with the expected attributes' do
-        result = extract_config_files.map do |config_file|
-          {
-            lang: config_file.class.lang,
-            valid: config_file.valid?,
-            error_message: config_file.error_message,
-            payload: config_file.payload
-          }
-        end
-
-        expect(result.size).to eq(2)
-        expect(result).to contain_exactly(
+        expect(config_files_array).to contain_exactly(
           {
             lang: 'java',
             valid: false,
@@ -71,6 +61,50 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
           }
         )
       end
+
+      context 'with a config file that supports multiple languages' do
+        let_it_be(:project) do
+          create(:project, :custom_repo, files:
+            {
+              'dir1/dir2/conanfile.txt' =>
+                <<~CONTENT
+                  [requires]
+                  libiconv/1.17
+                  poco/[>1.0,<1.9]
+                CONTENT
+            })
+        end
+
+        it 'returns a config file object for each supported language' do
+          expect(config_files_array).to contain_exactly(
+            {
+              lang: 'c',
+              valid: true,
+              error_message: nil,
+              payload: a_hash_including(libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+            },
+            {
+              lang: 'cpp',
+              valid: true,
+              error_message: nil,
+              payload: a_hash_including(libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+            }
+          )
+        end
+      end
+    end
+  end
+
+  private
+
+  def config_files_array
+    extract_config_files.map do |config_file|
+      {
+        lang: config_file.class.lang,
+        valid: config_file.valid?,
+        error_message: config_file.error_message,
+        payload: config_file.payload
+      }
     end
   end
 end

@@ -143,6 +143,7 @@ module CodeSuggestions
     # to keep this in sync with Repository X-Ray after we migrate its functionality to
     # the monolith (see https://gitlab.com/gitlab-org/gitlab/-/issues/476177.)
     LANGUAGE_XRAY_NAMING = {
+      'C' => 'c',
       'C++' => 'cpp',
       'C#' => 'csharp',
       'Go' => 'go',

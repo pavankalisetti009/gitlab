@@ -18,13 +18,12 @@ module Ai
         end
 
         def extract_config_files
-          config_file_path_to_class_map = find_config_file_paths_with_class
-          return [] unless config_file_path_to_class_map.present?
+          return [] unless config_file_classes_by_path.present?
 
-          blobs = fetch_blobs(config_file_path_to_class_map.keys)
+          blobs = fetch_blobs(config_file_classes_by_path.keys)
 
-          config_files = blobs.map do |blob|
-            config_file_path_to_class_map[blob.path].new(blob)
+          config_files = blobs.flat_map do |blob|
+            config_file_classes_by_path[blob.path].map { |klass| klass.new(blob) }
           end
 
           config_files.each(&:parse!)
@@ -50,21 +49,22 @@ module Ai
         end
         strong_memoize_attr :latest_commit_sha
 
-        # Returns a hash in the form: { 'path1' => <config_file_class1>, 'path2' => 'config_file_class2', ... }
+        # Returns a hash in the form: { 'path1' => [<config_file_class1>, <config_file_class2>], ... }
         # For each language, we return the first matching config file class,
         # processed in the order as they appear in `CONFIG_FILE_CLASSES`.
-        def find_config_file_paths_with_class
+        def config_file_classes_by_path
           CONFIG_FILE_CLASSES.group_by(&:lang).each_with_object({}) do |(_lang, klasses), hash|
             klasses.each do |klass|
               matching_path = worktree_paths.find { |path| klass.matches?(path) }
 
-              if matching_path
-                hash[matching_path] = klass
-                break
-              end
+              next unless matching_path
+
+              hash[matching_path] ||= []
+              hash[matching_path] << klass
             end
           end
         end
+        strong_memoize_attr :config_file_classes_by_path
 
         def fetch_blobs(paths)
           paths_with_sha = paths.map { |path| [latest_commit_sha, path] }
