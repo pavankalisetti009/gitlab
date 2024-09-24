@@ -35,6 +35,12 @@ module Types
           null: true,
           scopes: [:api, :read_api, :ai_features],
           description: 'Message errors.'
+
+        # rubocop:disable GraphQL/ExtractType -- no need to extract two fields into a separate field
+        field :workflow_goal, GraphQL::Types::String,
+          scopes: [:api, :read_api, :ai_features],
+          description: 'Goal of the workflow.'
+        # rubocop:enable GraphQL/ExtractType
       end
     end
   end

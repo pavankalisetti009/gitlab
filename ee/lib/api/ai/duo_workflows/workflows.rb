@@ -56,9 +56,7 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(
-              :goal, :start_workflow
-            )
+            declared_params(include_missing: false).except(:start_workflow)
           end
 
           def render_response(response)

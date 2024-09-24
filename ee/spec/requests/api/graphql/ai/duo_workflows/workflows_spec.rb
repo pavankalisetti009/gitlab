@@ -16,6 +16,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
         userId,
         projectId,
         humanStatus,
+        goal,
         createdAt,
         updatedAt
       }
@@ -64,6 +65,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
         expect(returned_workflow['humanStatus']).to eq(sorted_workflows[i].human_status_name)
         expect(returned_workflow['createdAt']).to eq(sorted_workflows[i].created_at.iso8601)
         expect(returned_workflow['updatedAt']).to eq(sorted_workflows[i].updated_at.iso8601)
+        expect(returned_workflow['goal']).to eq("Fix pipeline")
       end
     end
   end
