@@ -37,11 +37,6 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
 
         expect { subject }.to change { Rails.cache.read(cache_key) }.from(false).to(nil)
       end
-
-      it 'sends seat assignment email' do
-        expect { subject }.to have_enqueued_mail(
-          GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).with(user)
-      end
     end
 
     shared_examples 'error response' do |error|
@@ -148,13 +143,32 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
       end
     end
 
-    context 'when duo_seat_assignment_email_for_sm flag is off' do
-      before do
-        stub_feature_flags(duo_seat_assignment_email_for_sm: false)
+    context 'with duo pro seat assignment email' do
+      it 'sends seat assignment email' do
+        expect { response }.to have_enqueued_mail(
+          GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).with(user)
       end
 
-      it 'does not enqueue the seat assignment email' do
-        expect { response }.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+      context 'when the add_on is not duo_pro' do
+        let(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+        let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on) }
+        let(:user) { create(:user) }
+
+        it 'does not enqueue the seat assignment email' do
+          expect { response }.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+        end
+      end
+
+      context 'when duo_seat_assignment_email_for_sm flag is off' do
+        before do
+          stub_feature_flags(duo_seat_assignment_email_for_sm: false)
+        end
+
+        it 'does not enqueue the seat assignment email' do
+          expect do
+            response
+          end.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+        end
       end
     end
   end
