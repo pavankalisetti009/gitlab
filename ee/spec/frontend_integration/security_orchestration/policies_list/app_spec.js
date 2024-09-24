@@ -23,7 +23,7 @@ import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/qu
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { DEFAULT_PROVIDE } from './mocks';
 
@@ -78,7 +78,7 @@ describe('Policies List', () => {
         [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
-        [getSppLinkedProjectsNamespaces, requestHandlers.linkedSppItemsResponse],
+        [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
       ]),
     });
   };

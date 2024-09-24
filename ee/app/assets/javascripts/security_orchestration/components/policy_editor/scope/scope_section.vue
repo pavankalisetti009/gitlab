@@ -16,7 +16,7 @@ import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { isProject, isGroup } from 'ee/security_orchestration/components/utils';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import LoaderWithMessage from '../../loader_with_message.vue';
 import ComplianceFrameworkDropdown from './compliance_framework_dropdown.vue';
 import ScopeSectionAlert from './scope_section_alert.vue';
@@ -94,7 +94,7 @@ export default {
   },
   apollo: {
     linkedSppItems: {
-      query: getSppLinkedProjectsNamespaces,
+      query: getSppLinkedProjectsGroups,
       variables() {
         return {
           fullPath: this.namespacePath,
@@ -103,10 +103,10 @@ export default {
       update(data) {
         const {
           securityPolicyProjectLinkedProjects: { nodes: linkedProjects = [] },
-          securityPolicyProjectLinkedNamespaces: { nodes: linkedNamespaces = [] },
+          securityPolicyProjectLinkedGroups: { nodes: linkedGroups = [] },
         } = data?.project || {};
 
-        const items = [...linkedProjects, ...linkedNamespaces];
+        const items = [...linkedProjects, ...linkedGroups];
 
         if (
           isEmpty(this.policyScope) &&

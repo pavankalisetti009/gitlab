@@ -10,7 +10,7 @@ import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 
 describe('ScopeInfoRow', () => {
@@ -23,7 +23,7 @@ describe('ScopeInfoRow', () => {
     Vue.use(VueApollo);
     requestHandler = handler;
 
-    return createMockApollo([[getSppLinkedProjectsNamespaces, requestHandler]]);
+    return createMockApollo([[getSppLinkedProjectsGroups, requestHandler]]);
   };
 
   const createComponent = ({

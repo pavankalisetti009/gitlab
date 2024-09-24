@@ -88,7 +88,7 @@ export default {
       return this.policyHasProjects && this.showScopeSection;
     },
     showGroups() {
-      return policyScopeHasGroups(this.policyScope) && this.showGroupScope;
+      return policyScopeHasGroups(this.policyScope) && this.showScopeSection && this.showGroupScope;
     },
     showDefaultLabel() {
       return this.isDefaultMode && this.showScopeSection;

@@ -10,7 +10,7 @@ import ScopeGroupSelector from 'ee/security_orchestration/components/policy_edit
 import ScopeProjectSelector from 'ee/security_orchestration/components/policy_editor/scope/scope_project_selector.vue';
 import LoaderWithMessage from 'ee/security_orchestration/components/loader_with_message.vue';
 import ScopeSectionAlert from 'ee/security_orchestration/components/policy_editor/scope/scope_section_alert.vue';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   PROJECTS_WITH_FRAMEWORK,
@@ -41,7 +41,7 @@ describe('PolicyScope', () => {
             nodes: projects,
             pageInfo: { ...defaultPageInfo },
           },
-          securityPolicyProjectLinkedNamespaces: {
+          securityPolicyProjectLinkedGroups: {
             nodes: namespaces,
             pageInfo: { ...defaultPageInfo },
           },
@@ -53,7 +53,7 @@ describe('PolicyScope', () => {
     Vue.use(VueApollo);
     requestHandler = handler;
 
-    return createMockApollo([[getSppLinkedProjectsNamespaces, requestHandler]]);
+    return createMockApollo([[getSppLinkedProjectsGroups, requestHandler]]);
   };
 
   const createComponent = ({
@@ -304,7 +304,7 @@ describe('PolicyScope', () => {
               { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
               { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],
-            namespaces: [
+            groups: [
               { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
               { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],
@@ -472,7 +472,7 @@ describe('PolicyScope', () => {
             { id: '1', name: 'name1', fullPath: 'fullPath1' },
             { id: '2', name: 'name2', fullPath: 'fullPath2' },
           ],
-          namespaces: [
+          groups: [
             { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
             { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
           ],
@@ -524,7 +524,7 @@ describe('PolicyScope', () => {
             { id: '1', name: 'name1', fullPath: 'fullPath1' },
             { id: '2', name: 'name2', fullPath: 'fullPath2' },
           ],
-          namespaces: [
+          groups: [
             { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
             { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
           ],
@@ -566,7 +566,7 @@ describe('PolicyScope', () => {
               { id: '1', name: 'name1', fullPath: 'fullPath1' },
               { id: '2', name: 'name2', fullPath: 'fullPath2' },
             ],
-            namespaces: [
+            groups: [
               { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
               { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],

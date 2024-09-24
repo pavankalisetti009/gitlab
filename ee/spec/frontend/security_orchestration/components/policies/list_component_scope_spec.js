@@ -413,6 +413,7 @@ describe('ListComponentScope', () => {
               nodes: items,
             },
           },
+          linkedSppItems: [{ name: 'test' }, { name: 'test1' }],
         },
         provide: {
           namespaceType: NAMESPACE_TYPES.PROJECT,

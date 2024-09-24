@@ -9,7 +9,7 @@ import {
 } from 'ee_jest/groups/settings/compliance_frameworks/mock_data';
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import createComplianceFrameworkMutation from 'ee/groups/settings/compliance_frameworks/graphql/queries/create_compliance_framework.mutation.graphql';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import getSppLinkedGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import securityPolicyProjectCreated from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
@@ -66,7 +66,7 @@ const defaultNodes = [
   },
 ];
 
-export const createSppLinkedItemsHandler = ({ projects = [], namespaces = [] } = {}) =>
+export const createSppLinkedItemsHandler = ({ projects = [], namespaces = [], groups = [] } = {}) =>
   jest.fn().mockResolvedValue({
     data: {
       project: {
@@ -77,6 +77,10 @@ export const createSppLinkedItemsHandler = ({ projects = [], namespaces = [] } =
         },
         securityPolicyProjectLinkedNamespaces: {
           nodes: namespaces,
+          pageInfo: mockPageInfo(),
+        },
+        securityPolicyProjectLinkedGroups: {
+          nodes: groups,
           pageInfo: mockPageInfo(),
         },
       },
@@ -143,7 +147,7 @@ export const createMockApolloProvider = (handlers = defaultHandlers) => {
   return createMockApollo([
     [getComplianceFrameworkQuery, handlers.complianceFrameworks],
     [createComplianceFrameworkMutation, handlers.createFrameworkHandler],
-    [getSppLinkedProjectsNamespaces, handlers.sppLinkedItemsHandler],
+    [getSppLinkedProjectsGroups, handlers.sppLinkedItemsHandler],
     [getSppLinkedGroups, handlers.sppLinkedGroupsHandler],
     [getGroupProjects, mockApolloProjectHandlers],
     [securityPolicyProjectCreated, handlers.securityPolicyProjectCreatedHandler],

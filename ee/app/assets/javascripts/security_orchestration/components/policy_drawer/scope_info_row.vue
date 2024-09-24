@@ -17,7 +17,7 @@ import {
   isGroup,
   isProject,
 } from 'ee/security_orchestration/components/utils';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import LoaderWithMessage from '../loader_with_message.vue';
 import ComplianceFrameworksToggleList from './compliance_frameworks_toggle_list.vue';
 import ProjectsToggleList from './projects_toggle_list.vue';
@@ -42,7 +42,7 @@ export default {
   inject: ['namespaceType', 'namespacePath'],
   apollo: {
     linkedSppItems: {
-      query: getSppLinkedProjectsNamespaces,
+      query: getSppLinkedProjectsGroups,
       variables() {
         return {
           fullPath: this.namespacePath,
@@ -51,10 +51,10 @@ export default {
       update(data) {
         const {
           securityPolicyProjectLinkedProjects: { nodes: linkedProjects = [] } = {},
-          securityPolicyProjectLinkedNamespaces: { nodes: linkedNamespaces = [] } = {},
+          securityPolicyProjectLinkedGroups: { nodes: linkedGroups = [] } = {},
         } = data?.project || {};
 
-        return [...linkedProjects, ...linkedNamespaces];
+        return [...linkedProjects, ...linkedGroups];
       },
       skip() {
         return this.isGroup;
