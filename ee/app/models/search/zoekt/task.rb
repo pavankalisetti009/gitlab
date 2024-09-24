@@ -3,12 +3,13 @@
 module Search
   module Zoekt
     class Task < ApplicationRecord
-      PARTITION_DURATION = 1.day
-      PROCESSING_BATCH_SIZE = 100
-
       include PartitionedTable
       include IgnorableColumns
       include EachBatch
+
+      PARTITION_DURATION = 1.day
+      PARTITION_CLEANUP_THRESHOLD = 7.days
+      PROCESSING_BATCH_SIZE = 100
 
       self.table_name = 'zoekt_tasks'
       self.primary_key = :id
@@ -42,22 +43,33 @@ module Search
 
       partitioned_by :partition_id,
         strategy: :sliding_list,
-        next_partition_if: ->(active_partition) do
-          oldest_record_in_partition = Task
-            .select(:id, :created_at)
-            .for_partition(active_partition.value)
-            .order(:id)
-            .first
+        next_partition_if: ->(active_partition) { next_partition?(active_partition) },
+        detach_partition_if: ->(partition) { detach_partition?(partition) }
 
-          oldest_record_in_partition.present? &&
-            oldest_record_in_partition.created_at < PARTITION_DURATION.ago
-        end,
-        detach_partition_if: ->(partition) do
-          !Task
-            .for_partition(partition.value)
-            .pending_or_processing
-            .exists?
-        end
+      def self.next_partition?(active_partition)
+        oldest_record_in_partition = Task
+          .select(:id, :created_at)
+          .for_partition(active_partition.value)
+          .order(:id)
+          .first
+
+        oldest_record_in_partition.present? && oldest_record_in_partition.created_at < PARTITION_DURATION.ago
+      end
+
+      def self.detach_partition?(partition)
+        newest_task_older(partition, PARTITION_CLEANUP_THRESHOLD) && no_pending_or_processing(partition)
+      end
+
+      def self.newest_task_older(partition, duration)
+        newest_record = Task.select(:id, :created_at).for_partition(partition.value).order(:id).last
+        return true if newest_record.nil?
+
+        newest_record.created_at < duration.ago
+      end
+
+      def self.no_pending_or_processing(partition)
+        !Task.for_partition(partition.value).pending_or_processing.exists?
+      end
 
       def self.each_task_for_processing(limit:)
         return unless block_given?
