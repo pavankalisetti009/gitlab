@@ -4,18 +4,16 @@ import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
-import { createMockSubscription } from 'mock-apollo-client';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
+import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAN_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
 } from 'ee/ai/constants';
 import { TANUKI_BOT_TRACKING_EVENT_NAME } from 'ee/ai/tanuki_bot/constants';
-import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
-import aiResponseStreamSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response_stream.subscription.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
@@ -31,11 +29,10 @@ import {
   MOCK_USER_MESSAGE,
   MOCK_USER_ID,
   MOCK_RESOURCE_ID,
-  MOCK_TANUKI_SUCCESS_RES,
-  MOCK_TANUKI_BOT_MUTATATION_RES,
-  MOCK_CHAT_CACHED_MESSAGES_RES,
-  GENERATE_MOCK_TANUKI_RES,
   MOCK_CHUNK_MESSAGE,
+  MOCK_TANUKI_BOT_MUTATATION_RES,
+  GENERATE_MOCK_TANUKI_RES,
+  MOCK_CHAT_CACHED_MESSAGES_RES,
   MOCK_SLASH_COMMANDS,
 } from '../mock_data';
 
@@ -54,14 +51,14 @@ const skipReason = new SkipReason({
 describeSkipVue3(skipReason, () => {
   let wrapper;
 
+  const UUIDMOCK = '123';
+
   const actionSpies = {
     addDuoChatMessage: jest.fn(),
     setMessages: jest.fn(),
     setLoading: jest.fn(),
   };
 
-  let aiResponseSubscriptionHandler = jest.fn();
-  let aiResponseStreamSubscriptionHandler = jest.fn();
   const chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
   const duoUserFeedbackMutationHandlerMock = jest.fn().mockResolvedValue({});
   const queryHandlerMock = jest.fn().mockResolvedValue(MOCK_CHAT_CACHED_MESSAGES_RES);
@@ -82,6 +79,7 @@ describeSkipVue3(skipReason, () => {
   };
 
   const findCallout = () => wrapper.findComponent(DuoChatCallout);
+  const findSubscriptions = () => wrapper.findComponent(TanukiBotSubscriptions);
 
   const createComponent = ({
     initialState = {},
@@ -100,16 +98,6 @@ describeSkipVue3(skipReason, () => {
       [getAiMessages, queryHandlerMock],
     ]);
 
-    apolloProvider.defaultClient.setRequestHandler(
-      aiResponseSubscription,
-      aiResponseSubscriptionHandler,
-    );
-
-    apolloProvider.defaultClient.setRequestHandler(
-      aiResponseStreamSubscription,
-      aiResponseStreamSubscriptionHandler,
-    );
-
     wrapper = shallowMountExtended(TanukiBotChatApp, {
       store,
       apolloProvider,
@@ -118,16 +106,10 @@ describeSkipVue3(skipReason, () => {
   };
 
   const findGlDuoChat = () => wrapper.findComponent(GlDuoChat);
-  let perfTrackingSpy;
-  beforeEach(() => {
-    uuidv4.mockImplementation(() => '123');
-    getMarkdown.mockImplementation(({ text }) => Promise.resolve({ data: { html: text } }));
 
-    performance.mark = jest.fn();
-    performance.measure = jest.fn();
-    performance.getEntriesByName = jest.fn(() => [{ duration: 123 }]);
-    performance.clearMarks = jest.fn();
-    performance.clearMeasures = jest.fn();
+  beforeEach(() => {
+    uuidv4.mockImplementation(() => UUIDMOCK);
+    getMarkdown.mockImplementation(({ text }) => Promise.resolve({ data: { html: text } }));
   });
 
   afterEach(() => {
@@ -196,7 +178,7 @@ describeSkipVue3(skipReason, () => {
   describe('when new commands are added to the global state', () => {
     beforeEach(() => {
       createComponent();
-      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+      mockTracking(undefined, wrapper.element, jest.spyOn);
       performance.mark = jest.fn();
     });
 
@@ -241,7 +223,7 @@ describeSkipVue3(skipReason, () => {
 
     describe('@send-chat-prompt', () => {
       beforeEach(() => {
-        perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+        mockTracking(undefined, wrapper.element, jest.spyOn);
         performance.mark = jest.fn();
       });
 
@@ -338,6 +320,41 @@ describeSkipVue3(skipReason, () => {
       });
     });
 
+    describe('@response-received', () => {
+      let trackingSpy;
+      beforeEach(() => {
+        trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+        performance.mark = jest.fn();
+        performance.measure = jest.fn();
+        performance.getEntriesByName = jest.fn(() => [{ duration: 123 }]);
+        performance.clearMarks = jest.fn();
+        performance.clearMeasures = jest.fn();
+      });
+
+      afterEach(() => {
+        unmockTracking();
+      });
+
+      it('tracks time to response on first response-received', () => {
+        findSubscriptions().vm.$emit('response-received', 'request-id-123');
+
+        expect(performance.mark).toHaveBeenCalledWith('response-received');
+
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'ai_response_time', {
+          property: 'request-id-123',
+          value: 123,
+        });
+      });
+
+      it('does not track time to response after first chunk was tracked', () => {
+        findSubscriptions().vm.$emit('response-received', 'request-id-123');
+        findSubscriptions().vm.$emit('response-received', 'request-id-123');
+
+        expect(performance.mark).toHaveBeenCalledTimes(1);
+        expect(trackingSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
     describe('@track-feedback', () => {
       it('calls the feedback GraphQL mutation when message is passed', async () => {
         createComponent();
@@ -421,17 +438,7 @@ describeSkipVue3(skipReason, () => {
     });
   });
 
-  describe('Subscriptions', () => {
-    let mockSubscriptionComplete;
-    let mockSubscriptionStream;
-
-    beforeEach(() => {
-      mockSubscriptionComplete = createMockSubscription();
-      mockSubscriptionStream = createMockSubscription();
-      aiResponseSubscriptionHandler = () => mockSubscriptionComplete;
-      aiResponseStreamSubscriptionHandler = () => mockSubscriptionStream;
-    });
-
+  describe('Subscription Component', () => {
     afterEach(() => {
       duoChatGlobalState.isShown = false;
       if (wrapper) {
@@ -440,203 +447,112 @@ describeSkipVue3(skipReason, () => {
       jest.clearAllMocks();
     });
 
-    it('activates subscriptions when isShown is true', async () => {
+    it('renders AiResponseSubscription component with correct props when isShown is true', async () => {
       duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
 
-      expect(mockSubscriptionComplete.closed).toBe(false);
-      expect(mockSubscriptionStream.closed).toBe(false);
+      expect(findSubscriptions().exists()).toBe(true);
+      expect(findSubscriptions().props('userId')).toBe(MOCK_USER_ID);
+      expect(findSubscriptions().props('clientSubscriptionId')).toBe(UUIDMOCK);
+      expect(findSubscriptions().props('cancelledRequestIds')).toHaveLength(0);
     });
 
-    it('does not activate subscriptions when isShown is false', async () => {
+    it('does not render AiResponseSubscription component when isShown is false', async () => {
       duoChatGlobalState.isShown = false;
       createComponent();
       await waitForPromises();
 
-      expect(mockSubscriptionComplete.closed).toBe(true);
-      expect(mockSubscriptionStream.closed).toBe(true);
+      expect(findSubscriptions().exists()).toBe(false);
     });
 
-    it('stops adding new messages when more chunks with the same request ID come in after the full message has already been received', async () => {
-      const requestId = '123';
-      const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
-      const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, requestId);
-      const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
-
-      duoChatGlobalState.isShown = true;
-
-      createComponent();
-      await waitForPromises();
-
-      // message chunk streaming in
-      mockSubscriptionStream.next(firstChunk);
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(1);
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        firstChunk.data.aiCompletionResponse,
-      );
-
-      // full message being sent
-      mockSubscriptionComplete.next(successResponse);
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(2);
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        successResponse.data.aiCompletionResponse,
-      );
-
-      // another chunk with the same request ID
-      mockSubscriptionStream.next(secondChunk);
-      await waitForPromises();
-      // checking that addDuoChatMessage was not called again since full message was already being sent
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(2);
-    });
-
-    it('clears the commands when streaming is done', async () => {
-      const requestId = '123';
-      const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
-      const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
-
-      duoChatGlobalState.isShown = true;
-
-      expect(duoChatGlobalState.commands).toHaveLength(0);
-      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
-      expect(duoChatGlobalState.commands).toHaveLength(1);
-
-      createComponent();
-      await waitForPromises();
-
-      // message chunk streaming in
-      mockSubscriptionStream.next(firstChunk);
-      await waitForPromises();
-      // No changes to commands
-      expect(duoChatGlobalState.commands).toHaveLength(1);
-
-      // full message being sent
-      mockSubscriptionComplete.next(successResponse);
-      await waitForPromises();
-      await waitForPromises();
-
-      // commands have been cleared out
-      expect(duoChatGlobalState.commands).toHaveLength(0);
-    });
-
-    it('continues to invoke addDuoChatMessage when a new message chunk arrives with a distinct request ID, even after a complete message has been received', async () => {
-      const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1);
-      const firstChunkNewRequest = MOCK_CHUNK_MESSAGE('first chunk', 2, 2);
-
+    it('calls addDuoChatMessage when @message is fired', () => {
       duoChatGlobalState.isShown = true;
       createComponent();
-      await waitForPromises();
+      const mockMessage = {
+        content: 'test message content',
+        role: 'user',
+      };
 
-      // message chunk streaming in
-      mockSubscriptionStream.next(firstChunk);
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        firstChunk.data.aiCompletionResponse,
-      );
-
-      // full message being sent
-      mockSubscriptionComplete.next(MOCK_TANUKI_SUCCESS_RES);
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(2);
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        MOCK_TANUKI_SUCCESS_RES.data.aiCompletionResponse,
-      );
-
-      // another chunk with a new request ID
-      mockSubscriptionStream.next(firstChunkNewRequest);
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(3);
+      findSubscriptions().vm.$emit('message', mockMessage);
+      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(expect.anything(), mockMessage);
     });
 
-    it('stops streaming in new chunks when requestId was canceled', async () => {
-      const requestId = '123';
-      const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
-      const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, requestId);
-
-      duoChatGlobalState.isShown = true;
-
-      createComponent({
-        initialState: {
-          messages: [
-            {
-              requestId,
-            },
-          ],
-        },
+    describe('Subscription Component', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = true;
+        createComponent();
+        mockTracking(undefined, wrapper.element, jest.spyOn);
+        performance.mark = jest.fn();
       });
-      await waitForPromises();
-      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-      // message chunk streaming in
-      mockSubscriptionStream.next(firstChunk);
-      await waitForPromises();
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(1);
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.any(Object),
-        firstChunk.data.aiCompletionResponse,
-      );
 
-      findGlDuoChat().vm.$emit('chat-cancel');
+      it('stops adding new messages when more chunks with the same request ID come in after the full message has already been received', () => {
+        const requestId = '123';
+        const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
+        const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, requestId);
+        const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
 
-      // another chunk with the same request ID
-      mockSubscriptionStream.next(secondChunk);
-      await waitForPromises();
-      // checking that addDuoChatMessage was not called again since request id was canceled
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(1);
-    });
+        // message chunk streaming in
+        findSubscriptions().vm.$emit('message-stream', firstChunk);
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(expect.anything(), firstChunk);
 
-    it('stops adding new message when requestId was canceled', async () => {
-      const requestId = '123';
-
-      duoChatGlobalState.isShown = true;
-      createComponent({
-        initialState: {
-          messages: [
-            {
-              requestId,
-            },
-          ],
-        },
+        // full message being sent
+        findSubscriptions().vm.$emit('message', successResponse);
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          successResponse,
+        );
+        // another chunk with the same request ID
+        findSubscriptions().vm.$emit('message-stream', secondChunk);
+        // addDuoChatMessage should not be called since the full message was already sent
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(2);
       });
-      await waitForPromises();
 
-      findGlDuoChat().vm.$emit('chat-cancel');
+      it('continues to invoke addDuoChatMessage when a new message chunk arrives with a distinct request ID, even after a complete message has been received', () => {
+        const firstRequestId = '123';
+        const secondRequestId = '124';
+        const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, firstRequestId);
+        const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, firstRequestId);
+        const successResponse = GENERATE_MOCK_TANUKI_RES('', secondRequestId);
 
-      // full message being sent
-      mockSubscriptionComplete.next(GENERATE_MOCK_TANUKI_RES('', requestId));
-      await waitForPromises();
-      // checking that addDuoChatMessage was not called since request id was canceled
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(0);
-    });
+        // message chunk streaming in
+        findSubscriptions().vm.$emit('message-stream', firstChunk);
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(expect.anything(), firstChunk);
 
-    it('tracks performance metrics correctly when a chunk is received', async () => {
-      const chunkMessage = MOCK_CHUNK_MESSAGE('chunk content', 1, 'requestId-123');
+        // full message being sent
+        findSubscriptions().vm.$emit('message', successResponse);
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          successResponse,
+        );
+        // another chunk with a new request ID
+        findSubscriptions().vm.$emit('message-stream', secondChunk);
+        // addDuoChatMessage should be called since the second chunk has a new requestId
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          successResponse,
+        );
+      });
 
-      duoChatGlobalState.isShown = true;
-      createComponent();
-      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+      it('clears the commands when streaming is done', () => {
+        const requestId = '123';
+        const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
+        const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
 
-      await waitForPromises();
+        expect(duoChatGlobalState.commands).toHaveLength(0);
+        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+        expect(duoChatGlobalState.commands).toHaveLength(1);
 
-      mockSubscriptionStream.next(chunkMessage);
+        createComponent();
 
-      expect(performance.mark).toHaveBeenCalledWith('response-received');
-      expect(performance.measure).toHaveBeenCalledWith(
-        'prompt-to-response',
-        'prompt-sent',
-        'response-received',
-      );
-      expect(performance.getEntriesByName).toHaveBeenCalledWith('prompt-to-response');
-      expect(performance.clearMarks).toHaveBeenCalled();
-      expect(performance.clearMeasures).toHaveBeenCalled();
-
-      expect(perfTrackingSpy).toHaveBeenCalledWith(undefined, 'ai_response_time', {
-        property: chunkMessage.data.aiCompletionResponse.requestId,
-        value: 123,
+        // message chunk streaming in
+        findSubscriptions().vm.$emit('message-stream', firstChunk);
+        // No changes to commands
+        expect(duoChatGlobalState.commands).toHaveLength(1);
+        // full message being sent
+        findSubscriptions().vm.$emit('message', successResponse);
+        // commands have been cleared out
+        expect(duoChatGlobalState.commands).toHaveLength(0);
       });
     });
   });
