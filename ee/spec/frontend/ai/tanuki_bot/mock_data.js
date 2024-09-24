@@ -70,20 +70,16 @@ export const MOCK_FAILING_USER_MESSAGE = {
 
 export const MOCK_CHUNK_MESSAGE = (content = '', chunkId = 0, requestId = 1) => {
   return {
-    data: {
-      aiCompletionResponse: {
-        id: '611363bc-c75a-44e2-80cd-f22ab5e665be',
-        requestId,
-        content,
-        errors: [],
-        role: 'ASSISTANT',
-        timestamp: '2024-05-29T17:17:06Z',
-        type: null,
-        chunkId,
-        extras: {
-          sources: null,
-        },
-      },
+    id: '611363bc-c75a-44e2-80cd-f22ab5e665be',
+    requestId,
+    content,
+    errors: [],
+    role: 'ASSISTANT',
+    timestamp: '2024-05-29T17:17:06Z',
+    type: null,
+    chunkId,
+    extras: {
+      sources: null,
     },
   };
 };
@@ -93,20 +89,16 @@ export const GENERATE_MOCK_TANUKI_RES = (
   requestId = '987',
 ) => {
   return {
-    data: {
-      aiCompletionResponse: {
-        id: '123',
-        content: body,
-        contentHtml: `<p>${body}</p>`,
-        errors: [],
-        requestId,
-        role: MOCK_TANUKI_MESSAGE.role,
-        timestamp: '2021-04-21T12:00:00.000Z',
-        type: null,
-        chunkId: null,
-        extras: null,
-      },
-    },
+    id: '123',
+    content: body,
+    contentHtml: `<p>${body}</p>`,
+    errors: [],
+    requestId,
+    role: MOCK_TANUKI_MESSAGE.role,
+    timestamp: '2021-04-21T12:00:00.000Z',
+    type: null,
+    chunkId: null,
+    extras: null,
   };
 };
 
@@ -138,4 +130,5 @@ export const MOCK_TANUKI_BOT_MUTATATION_RES = {
 };
 
 export const MOCK_USER_ID = 'gid://gitlab/User/1';
+export const MOCK_CLIENT_SUBSCRIPTION_ID = '123';
 export const MOCK_RESOURCE_ID = 'gid://gitlab/Issue/1';

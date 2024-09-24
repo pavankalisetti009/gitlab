@@ -8,8 +8,6 @@ import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands } from 'ee/ai/utils';
-import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
-import aiResponseStreamSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response_stream.subscription.graphql';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
@@ -21,7 +19,8 @@ import {
   GENIE_CHAT_CLEAN_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
 } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES, SLASH_COMMANDS } from '../constants';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, SLASH_COMMANDS, MESSAGE_TYPES } from '../constants';
+import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
 export default {
   name: 'TanukiBotChatApp',
@@ -46,6 +45,7 @@ export default {
   components: {
     GlDuoChat,
     DuoChatCallout,
+    TanukiBotSubscriptions,
   },
   mixins: [Tracking.mixin()],
   provide() {
@@ -65,72 +65,6 @@ export default {
     },
   },
   apollo: {
-    $subscribe: {
-      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-      aiCompletionResponse: {
-        query: aiResponseSubscription,
-        variables() {
-          return {
-            userId: this.userId,
-            aiAction: 'CHAT',
-          };
-        },
-        result({ data }) {
-          const requestId = data?.aiCompletionResponse?.requestId;
-          if (requestId && !this.cancelledRequestIds.includes(requestId)) {
-            this.addDuoChatMessage(data.aiCompletionResponse);
-            if (data.aiCompletionResponse.role.toLowerCase() === MESSAGE_TYPES.TANUKI) {
-              this.responseCompleted = requestId;
-              clearDuoChatCommands();
-            }
-          }
-        },
-        error(err) {
-          this.addDuoChatMessage({ errors: [err.toString()] });
-        },
-        skip() {
-          return !this.duoChatGlobalState.isShown;
-        },
-      },
-      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-      aiCompletionResponseStream: {
-        query: aiResponseStreamSubscription,
-        variables() {
-          return {
-            userId: this.userId,
-            clientSubscriptionId: this.clientSubscriptionId,
-          };
-        },
-        result({ data }) {
-          const requestId = data?.aiCompletionResponse?.requestId;
-          if (
-            requestId &&
-            requestId !== this.responseCompleted &&
-            !this.cancelledRequestIds.includes(requestId)
-          ) {
-            this.addDuoChatMessage(data.aiCompletionResponse);
-          }
-          if (data?.aiCompletionResponse?.chunkId && !this.isResponseTracked) {
-            performance.mark('response-received');
-            performance.measure('prompt-to-response', 'prompt-sent', 'response-received');
-            const [{ duration }] = performance.getEntriesByName('prompt-to-response');
-            this.track('ai_response_time', {
-              property: requestId,
-              value: duration,
-            });
-            performance.clearMarks();
-            performance.clearMeasures();
-            this.isResponseTracked = true;
-          }
-        },
-        error(err) {
-          this.addDuoChatMessage({ errors: [err.toString()] });
-        },
-        skip() {
-          return !this.duoChatGlobalState.isShown;
-        },
-      },
-    },
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     aiMessages: {
       query: getAiMessages,
@@ -140,7 +74,7 @@ export default {
         }
       },
       error(err) {
-        this.addDuoChatMessage({ errors: [err.toString()] });
+        this.onError(err);
       },
     },
   },
@@ -150,9 +84,9 @@ export default {
       clientSubscriptionId: uuidv4(),
       toolName: i18n.GITLAB_DUO,
       error: '',
-      responseCompleted: undefined,
       isResponseTracked: false,
       cancelledRequestIds: [],
+      completedRequestId: null,
     };
   },
   computed: {
@@ -192,9 +126,39 @@ export default {
       this.cancelledRequestIds.push(this.messages[this.messages.length - 1].requestId);
       this.setLoading(false);
     },
+    onMessageReceived(aiCompletionResponse) {
+      this.addDuoChatMessage(aiCompletionResponse);
+      if (aiCompletionResponse.role.toLowerCase() === MESSAGE_TYPES.TANUKI) {
+        this.completedRequestId = aiCompletionResponse.requestId;
+        clearDuoChatCommands();
+      }
+    },
+    onMessageStreamReceived(aiCompletionResponse) {
+      if (aiCompletionResponse.requestId !== this.completedRequestId) {
+        this.addDuoChatMessage(aiCompletionResponse);
+      }
+    },
+    onResponseReceived(requestId) {
+      if (this.isResponseTracked) {
+        return;
+      }
+
+      performance.mark('response-received');
+      performance.measure('prompt-to-response', 'prompt-sent', 'response-received');
+      const [{ duration }] = performance.getEntriesByName('prompt-to-response');
+
+      this.track('ai_response_time', {
+        property: requestId,
+        value: duration,
+      });
+
+      performance.clearMarks();
+      performance.clearMeasures();
+      this.isResponseTracked = true;
+    },
     onSendChatPrompt(question, variables = {}) {
-      this.responseCompleted = undefined;
       performance.mark('prompt-sent');
+      this.completedRequestId = null;
       this.isResponseTracked = false;
 
       if (!this.isClearOrResetMessage(question)) {
@@ -229,7 +193,7 @@ export default {
           this.addDuoChatMessage({
             content: question,
           });
-          this.addDuoChatMessage({ errors: [err.toString()] });
+          this.onError(err);
           this.setLoading(false);
         });
     },
@@ -274,30 +238,45 @@ export default {
         });
       }
     },
+    onError(err) {
+      this.addDuoChatMessage({ errors: [err.toString()] });
+    },
   },
 };
 </script>
 
 <template>
   <div>
-    <gl-duo-chat
-      v-if="duoChatGlobalState.isShown"
-      id="duo-chat"
-      :slash-commands="$options.SLASH_COMMANDS"
-      :title="$options.i18n.gitlabChat"
-      :messages="messages"
-      :error="error"
-      :is-loading="loading"
-      :predefined-prompts="$options.i18n.predefinedPrompts"
-      :badge-type="null"
-      :tool-name="toolName"
-      :canceled-request-ids="cancelledRequestIds"
-      class="duo-chat-container"
-      @chat-cancel="onChatCancel"
-      @send-chat-prompt="onSendChatPrompt"
-      @chat-hidden="onChatClose"
-      @track-feedback="onTrackFeedback"
-    />
+    <div v-if="duoChatGlobalState.isShown">
+      <!-- Renderless component for subscriptions -->
+      <tanuki-bot-subscriptions
+        :user-id="userId"
+        :client-subscription-id="clientSubscriptionId"
+        :cancelled-request-ids="cancelledRequestIds"
+        @message="onMessageReceived"
+        @message-stream="onMessageStreamReceived"
+        @response-received="onResponseReceived"
+        @error="onError"
+      />
+
+      <gl-duo-chat
+        id="duo-chat"
+        :slash-commands="$options.SLASH_COMMANDS"
+        :title="$options.i18n.gitlabChat"
+        :messages="messages"
+        :error="error"
+        :is-loading="loading"
+        :predefined-prompts="$options.i18n.predefinedPrompts"
+        :badge-type="null"
+        :tool-name="toolName"
+        :canceled-request-ids="cancelledRequestIds"
+        class="duo-chat-container"
+        @chat-cancel="onChatCancel"
+        @send-chat-prompt="onSendChatPrompt"
+        @chat-hidden="onChatClose"
+        @track-feedback="onTrackFeedback"
+      />
+    </div>
     <duo-chat-callout @callout-dismissed="onCalloutDismissed" />
   </div>
 </template>
