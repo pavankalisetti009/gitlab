@@ -37,7 +37,8 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::CodeChat, feature_cat
   end
 
   describe '#url' do
-    it 'returns default codechat url from application settings' do
+    it 'returns default codechat url from application settings',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/481946' do
       expect(subject.url).to eq(
         'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/codechat-bison:predict'
       )
