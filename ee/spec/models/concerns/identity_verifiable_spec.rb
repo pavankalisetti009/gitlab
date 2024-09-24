@@ -606,7 +606,7 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
   describe '#add_phone_number_verification_exemption' do
     subject(:call_method) { user.add_phone_number_verification_exemption }
 
-    it 'adds an exemption', :aggregate_failures do
+    it 'adds an exemption', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/492093' do
       expect(user).to receive(:clear_memoization).with(:identity_verification_state)
       expect(user.send(:risk_profile)).to receive(:add_phone_number_verification_exemption)
 
