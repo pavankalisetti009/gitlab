@@ -7,7 +7,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let_it_be(:embeddings) { build_list(:vertex_gitlab_documentation, 2) }
 
   let(:empty_response_message) do
-    "I'm sorry, I couldn't find any documentation to answer your question. Error code: M2000"
+    "I'm sorry, I couldn't find any documentation to answer your question. Error code: [M2000](https://docs.gitlab.com/ee/user/gitlab_duo_chat/troubleshooting.html#error-m2000)"
   end
 
   let(:question) { 'A question' }
