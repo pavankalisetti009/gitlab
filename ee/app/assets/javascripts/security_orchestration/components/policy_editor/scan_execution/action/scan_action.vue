@@ -194,78 +194,94 @@ export default {
     >
       {{ $options.ACTION_AND_LABEL }}
     </div>
-    <section-layout class="gl-pb-0" :show-remove-button="false">
-      <template #content>
-        <section-layout class="gl-w-full gl-bg-white" @remove="$emit('remove')">
+    <div class="gl-flex gl-w-full">
+      <div class="gl-flex-1">
+        <section-layout class="gl-pb-0 gl-pr-0" :show-remove-button="false">
           <template #content>
-            <gl-sprintf :message="scannerHumanizedMessage">
-              <template #scan>
-                <gl-collapsible-listbox
-                  data-testid="scan-type-selector"
-                  :items="actionScannerList"
-                  :header-text="$options.i18n.scannersHeaderText"
-                  :selected="selectedScanner"
-                  :toggle-text="selectedScannerText"
-                  @select="setSelectedScanner({ scanner: $event })"
-                />
+            <section-layout class="gl-w-full gl-bg-white" :show-remove-button="false">
+              <template #content>
+                <gl-sprintf :message="scannerHumanizedMessage">
+                  <template #scan>
+                    <gl-collapsible-listbox
+                      data-testid="scan-type-selector"
+                      :items="actionScannerList"
+                      :header-text="$options.i18n.scannersHeaderText"
+                      :selected="selectedScanner"
+                      :toggle-text="selectedScannerText"
+                      @select="setSelectedScanner({ scanner: $event })"
+                    />
+                  </template>
+                </gl-sprintf>
               </template>
-            </gl-sprintf>
+            </section-layout>
           </template>
         </section-layout>
-      </template>
-    </section-layout>
-    <section-layout class="gl-pt-3" :show-remove-button="false">
-      <template #content>
-        <project-dast-profile-selector
-          v-if="isProject && isDast"
-          :full-path="namespacePath"
-          :saved-scanner-profile-name="scannerProfile"
-          :saved-site-profile-name="siteProfile"
-          @error="$emit('parsing-error', $options.POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY)"
-          @profiles-selected="setSelectedScanner"
-        />
+        <section-layout class="gl-pr-0 gl-pt-3" :show-remove-button="false">
+          <template #content>
+            <project-dast-profile-selector
+              v-if="isProject && isDast"
+              :full-path="namespacePath"
+              :saved-scanner-profile-name="scannerProfile"
+              :saved-site-profile-name="siteProfile"
+              @error="
+                $emit('parsing-error', $options.POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY)
+              "
+              @profiles-selected="setSelectedScanner"
+            />
 
-        <group-dast-profile-selector
-          v-if="isGroup && isDast"
-          :saved-scanner-profile-name="scannerProfile"
-          :saved-site-profile-name="siteProfile"
-          @set-profile="setSelectedScanner"
-        />
+            <group-dast-profile-selector
+              v-if="isGroup && isDast"
+              :saved-scanner-profile-name="scannerProfile"
+              :saved-site-profile-name="siteProfile"
+              @set-profile="setSelectedScanner"
+            />
 
-        <runner-tags-filter
-          :selected="tags"
-          @remove="removeYamlProperty('tags')"
-          @input="triggerChanged"
-          @error="$emit('parsing-error', $options.POLICY_ACTION_BUILDER_TAGS_ERROR_KEY)"
-        />
+            <runner-tags-filter
+              :selected="tags"
+              @remove="removeYamlProperty('tags')"
+              @input="triggerChanged"
+              @error="$emit('parsing-error', $options.POLICY_ACTION_BUILDER_TAGS_ERROR_KEY)"
+            />
 
-        <template-selector
-          :selected="initAction.template"
-          @input="triggerChanged"
-          @remove="removeFilter($options.TEMPLATE)"
-        />
+            <template-selector
+              :selected="initAction.template"
+              @input="triggerChanged"
+              @remove="removeFilter($options.TEMPLATE)"
+            />
 
-        <ci-variables-selectors
-          v-if="isCIVariableSelectorSelected"
-          :scan-type="initAction.scan"
-          :selected="initAction.variables"
-          :action-index="actionIndex"
-          :error-sources="errorSources"
-          @input="triggerChanged"
-          @remove="removeFilter($options.CI_VARIABLE)"
-        />
+            <ci-variables-selectors
+              v-if="isCIVariableSelectorSelected"
+              :scan-type="initAction.scan"
+              :selected="initAction.variables"
+              :action-index="actionIndex"
+              :error-sources="errorSources"
+              @input="triggerChanged"
+              @remove="removeFilter($options.CI_VARIABLE)"
+            />
 
+            <gl-button
+              v-if="!filtersDisabled"
+              class="gl-ml-4 gl-mt-4"
+              data-testid="add-variable-button"
+              :aria-label="$options.i18n.addVariableButtonText"
+              variant="link"
+              @click="selectFilter($options.VARIABLE_FILTER)"
+            >
+              {{ $options.i18n.addVariableButtonText }}
+            </gl-button>
+          </template>
+        </section-layout>
+      </div>
+
+      <div class="security-policies-bg-gray-10">
         <gl-button
-          v-if="!filtersDisabled"
-          class="gl-ml-4 gl-mt-4"
-          data-testid="add-variable-button"
-          :aria-label="$options.i18n.addVariableButtonText"
-          variant="link"
-          @click="selectFilter($options.VARIABLE_FILTER)"
-        >
-          {{ $options.i18n.addVariableButtonText }}
-        </gl-button>
-      </template>
-    </section-layout>
+          icon="remove"
+          category="tertiary"
+          :aria-label="__('Remove')"
+          data-testid="remove-action"
+          @click="$emit('remove')"
+        />
+      </div>
+    </div>
   </div>
 </template>
