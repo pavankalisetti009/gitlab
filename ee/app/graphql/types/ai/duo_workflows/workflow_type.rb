@@ -32,6 +32,10 @@ module Types
 
         field :updated_at, Types::TimeType,
           null: false, description: 'Timestamp of when the workflow was last updated.'
+
+        field :goal, GraphQL::Types::String,
+          scopes: [:api, :read_api, :ai_features],
+          description: 'Goal of the workflow.'
       end
     end
   end

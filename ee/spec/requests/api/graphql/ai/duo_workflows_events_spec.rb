@@ -17,7 +17,8 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_workflow d
         errors
         checkpoint,
         metadata,
-        parentTimestamp
+        parentTimestamp,
+        workflowGoal
       }
     GRAPHQL
   end
@@ -45,6 +46,7 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_workflow d
         expect(event['metadata']).to eq(checkpoints[i].metadata.to_json)
         expect(event['timestamp']).to eq(Time.parse(checkpoints[i].thread_ts).iso8601)
         expect(event['parentTimestamp']).to eq(Time.parse(checkpoints[i].parent_ts).iso8601)
+        expect(event['workflowGoal']).to eq("Fix pipeline")
       end
     end
   end

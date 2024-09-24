@@ -27,6 +27,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
+    it { is_expected.to validate_length_of(:goal).is_at_most(4096) }
   end
 
   describe 'state transitions' do

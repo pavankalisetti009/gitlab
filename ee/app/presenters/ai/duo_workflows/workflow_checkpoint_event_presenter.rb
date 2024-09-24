@@ -16,6 +16,10 @@ module Ai
       def workflow_status
         event.workflow.status
       end
+
+      def workflow_goal
+        event.workflow.goal
+      end
     end
   end
 end
