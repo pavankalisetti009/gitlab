@@ -481,7 +481,7 @@ export default {
     updateDraft(type, value) {
       this.draftData[type] = value;
     },
-    async updateWorkItem() {
+    async updateWorkItem({ clearDraft } = {}) {
       this.updateInProgress = true;
       try {
         const {
@@ -504,6 +504,10 @@ export default {
         if (errors?.length) {
           this.updateError = errors.join('\n');
           throw new Error(this.updateError);
+        }
+
+        if (clearDraft) {
+          clearDraft();
         }
 
         this.editMode = false;
