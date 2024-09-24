@@ -23,29 +23,36 @@ RSpec.describe ElasticAssociationIndexerWorker, feature_category: :global_search
   context 'when elasticsearch_indexing is enabled' do
     let_it_be(:project) { create(:project) }
 
-    context 'when object is not setup to use elasticsearch' do
-      it 'does nothing' do
-        expect_next_found_instance_of(Project) do |p|
-          expect(p).to receive(:use_elasticsearch?).and_return(false)
+    let(:job_args) { [project.class.name, project_id, indexed_associations] }
+    let(:project_id) { project.id }
+
+    it_behaves_like 'an idempotent worker' do
+      context 'when object is not setup to use elasticsearch' do
+        it 'does nothing' do
+          expect_next_found_instance_of(Project) do |p|
+            expect(p).to receive(:use_elasticsearch?).and_return(false)
+          end
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_associations)
+
+          worker.perform(*job_args)
         end
-        expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_associations)
-
-        worker.perform(project.class.name, project.id, indexed_associations)
       end
-    end
 
-    it 'updates associations for the object' do
-      expect(Elastic::ProcessBookkeepingService)
-        .to receive(:maintain_indexed_associations).with(project, indexed_associations)
+      it 'updates associations for the object' do
+        expect(Elastic::ProcessBookkeepingService)
+          .to receive(:maintain_indexed_associations).with(project, indexed_associations)
 
-      worker.perform(project.class.name, project.id, indexed_associations)
-    end
+        worker.perform(*job_args)
+      end
 
-    context 'when record is not found' do
-      it 'does nothing' do
-        expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_associations)
+      context 'when record is not found' do
+        let(:project_id) { non_existing_record_id }
 
-        worker.perform(Project.name, non_existing_record_id, indexed_associations)
+        it 'does nothing' do
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_associations)
+
+          worker.perform(*job_args)
+        end
       end
     end
   end

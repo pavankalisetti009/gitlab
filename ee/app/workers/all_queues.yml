@@ -1405,7 +1405,7 @@
   :urgency: :low
   :resource_boundary: :cpu
   :weight: 1
-  :idempotent: false
+  :idempotent: true
   :tags: []
 - :name: elastic_commit_indexer
   :worker_name: ElasticCommitIndexerWorker
@@ -1450,7 +1450,7 @@
   :urgency: :low
   :resource_boundary: :cpu
   :weight: 1
-  :idempotent: false
+  :idempotent: true
   :tags: []
 - :name: elastic_namespace_rollout
   :worker_name: ElasticNamespaceRolloutWorker

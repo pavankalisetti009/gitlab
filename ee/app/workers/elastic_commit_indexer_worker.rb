@@ -2,11 +2,11 @@
 
 class ElasticCommitIndexerWorker
   include ApplicationWorker
-
-  data_consistency :always
+  include Gitlab::ExclusiveLeaseHelpers
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
-  include Gitlab::ExclusiveLeaseHelpers
+
+  data_consistency :delayed
 
   feature_category :global_search
   sidekiq_options retry: 2
@@ -39,7 +39,9 @@ class ElasticCommitIndexerWorker
 
     force = !!options['force']
     search_indexing_duration_s = Benchmark.realtime do
-      @ret = in_lock("#{self.class.name}/#{project_id}/#{wiki}", ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute), retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
+      key = "#{self.class.name}/#{project_id}/#{wiki}"
+      ttl = Gitlab::Elastic::Indexer::TIMEOUT + 1.minute
+      @ret = in_lock(key, ttl: ttl, retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
         Gitlab::Elastic::Indexer.new(@project, wiki: wiki, force: force).run
       end
     end
@@ -56,7 +58,8 @@ class ElasticCommitIndexerWorker
       )
 
       document_type = wiki ? 'Wiki' : 'Code'
-      Gitlab::Metrics::GlobalSearchIndexingSlis.record_apdex(elapsed: search_indexing_duration_s, document_type: document_type)
+      Gitlab::Metrics::GlobalSearchIndexingSlis
+        .record_apdex(elapsed: search_indexing_duration_s, document_type: document_type)
 
       if force && !wiki && @project.statistics
         log_extra_metadata_on_done(:commit_count, @project.statistics.commit_count)
