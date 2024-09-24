@@ -2021,7 +2021,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
   context 'after_commit hooks' do
     describe 'create_pending_status_check_responses' do
-      subject(:create_merge_request) { create(:merge_request, source_project: project, target_project: project, state: :opened) }
+      subject(:create_merge_request) do
+        create :merge_request, :opened, source_project: project, target_project: project
+      end
 
       let_it_be(:status_check) { create(:external_status_check, project: project) }
       let_it_be(:another_status_check) { create(:external_status_check, project: project) }
@@ -2036,6 +2038,14 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           expect(ComplianceManagement::PendingStatusCheckWorker).to receive(:perform_async).and_call_original
 
           create_merge_request
+        end
+
+        context 'when the the diff head SHA is empty' do
+          it 'does not enqueue a status check' do
+            expect(ComplianceManagement::PendingStatusCheckWorker).not_to receive(:perform_async)
+
+            create :merge_request, :opened, source_branch: 'main', target_branch: 'foo'
+          end
         end
       end
 
