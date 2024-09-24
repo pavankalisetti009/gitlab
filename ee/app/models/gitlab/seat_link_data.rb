@@ -40,7 +40,8 @@ module Gitlab
         max_historical_user_count: max_users,
         billable_users_count: billable_users_count,
         hostname: Gitlab.config.gitlab.host,
-        instance_id: Gitlab::CurrentSettings.uuid
+        instance_id: Gitlab::CurrentSettings.uuid,
+        add_on_metrics: add_on_metrics
       }
     end
 
@@ -70,6 +71,28 @@ module Gitlab
 
     def default_billable_users_count
       historical_data&.active_user_count
+    end
+
+    def add_on_metrics
+      add_on_purchases = GitlabSubscriptions::AddOnPurchase
+        .active
+        .by_namespace(nil)
+        .eager_load(:add_on)
+        .left_joins(:assigned_users)
+        .select(
+          :quantity,
+          :subscription_add_on_id,
+          'COUNT(subscription_user_add_on_assignments.id) AS assigned_users_count'
+        )
+        .group(:id, 'subscription_add_ons.id')
+
+      add_on_purchases.map do |purchase|
+        {
+          add_on_type: purchase.add_on.name,
+          purchased_seats: purchase.quantity,
+          assigned_seats: purchase.assigned_users_count
+        }
+      end
     end
   end
 end

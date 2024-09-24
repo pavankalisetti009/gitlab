@@ -64513,6 +64513,9 @@ msgstr ""
 msgid "compliance violation has already been recorded"
 msgstr ""
 
+msgid "conaninfo is too large. Maximum size is %{max_size} characters"
+msgstr ""
+
 msgid "contacts can only be added to root groups"
 msgstr ""
 
