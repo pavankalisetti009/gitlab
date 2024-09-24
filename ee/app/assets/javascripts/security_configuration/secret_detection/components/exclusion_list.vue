@@ -1,8 +1,19 @@
 <script>
-import { GlTable, GlIcon, GlButton, GlToggle } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import {
+  GlTable,
+  GlIcon,
+  GlButton,
+  GlToggle,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+} from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 import { getTimeago } from '~/lib/utils/datetime_utility';
+import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { EXCLUSION_TYPE_MAP } from '../constants';
+import updateMutation from '../graphql/project_security_exclusion_update.mutation.graphql';
+import DeleteModal from './exclusion_delete_modal.vue';
 
 const i18nStrings = {
   status: s__('SecurityExclusions|Status'),
@@ -16,6 +27,8 @@ const i18nStrings = {
   addExclusion: s__('SecurityExclusions|Add exclusion'),
   secretPushProtection: s__('SecurityExclusions|Secret push protection'),
   toggleLabel: s__('SecurityExclusions|Toggle exclusion'),
+  exclusionStatusEnabled: s__('SecurityExclusions|Exclusion enabled successfully.'),
+  exclusionStatusDisabled: s__('SecurityExclusions|Exclusion disabled successfully.'),
 };
 
 export default {
@@ -25,6 +38,9 @@ export default {
     GlIcon,
     GlButton,
     GlToggle,
+    GlDisclosureDropdown,
+    GlDisclosureDropdownItem,
+    DeleteModal,
   },
   props: {
     exclusions: {
@@ -43,6 +59,7 @@ export default {
         { key: 'modified', label: this.$options.i18n.modified },
         { key: 'actions', label: '' },
       ],
+      itemToBeDeleted: {},
     };
   },
   methods: {
@@ -50,10 +67,66 @@ export default {
       this.$emit('addExclusion');
     },
     typeLabel(type) {
-      return EXCLUSION_TYPE_MAP[type].text;
+      return EXCLUSION_TYPE_MAP[type]?.text || '';
     },
     modifiedTime(time) {
       return getTimeago().format(time);
+    },
+    prepareExclusionDeletion(item) {
+      this.itemToBeDeleted = item;
+      this.$refs.deleteModal.show();
+    },
+    editItem() {
+      return {
+        text: __('Edit'),
+        to: `#`,
+      };
+    },
+    deleteItem(item) {
+      return {
+        text: __('Delete'),
+        action: () => this.prepareExclusionDeletion(item),
+        extraAttrs: {
+          class: '!gl-text-danger',
+        },
+      };
+    },
+    async toggleExclusionStatus(item) {
+      const { id, active } = item;
+      const newStatus = !active;
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: updateMutation,
+          variables: {
+            input: {
+              id,
+              active: newStatus,
+            },
+          },
+        });
+
+        const { errors } = data.projectSecurityExclusionUpdate;
+
+        if (errors && errors.length > 0) {
+          this.onError(new Error(errors.join(' ')));
+          return;
+        }
+
+        this.$toast.show(
+          newStatus
+            ? this.$options.i18n.exclusionStatusEnabled
+            : this.$options.i18n.exclusionStatusDisabled,
+        );
+      } catch (error) {
+        this.onError(error);
+      }
+    },
+    onError(error) {
+      const { message } = error;
+      const title = s__('SecurityExclusions|Failed to update the exclusion:');
+
+      createAlert({ title, message });
+      Sentry.captureException(error);
     },
   },
 };
@@ -76,6 +149,7 @@ export default {
           :value="item.active"
           :label="$options.i18n.toggleLabel"
           label-position="hidden"
+          @change="toggleExclusionStatus(item)"
         />
       </template>
       <template #cell(type)="{ item }">
@@ -89,9 +163,19 @@ export default {
         {{ $options.i18n.secretPushProtection }}
       </template>
       <template #cell(modified)="{ item }"> {{ modifiedTime(item.updatedAt) }} </template>
-      <template #cell(actions)>
-        <gl-button icon="ellipsis_v" category="tertiary" />
+      <template #cell(actions)="{ item }">
+        <gl-disclosure-dropdown
+          category="tertiary"
+          variant="default"
+          size="small"
+          icon="ellipsis_v"
+          no-caret
+        >
+          <gl-disclosure-dropdown-item :item="editItem(item)" />
+          <gl-disclosure-dropdown-item :item="deleteItem(item)" />
+        </gl-disclosure-dropdown>
       </template>
     </gl-table>
+    <delete-modal ref="deleteModal" :exclusion="itemToBeDeleted" />
   </div>
 </template>

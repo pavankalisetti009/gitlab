@@ -2,86 +2,94 @@
 
 require 'spec_helper'
 
-RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :global_search do
-  subject { described_class.new }
+RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
+  subject(:worker) { described_class.new }
 
   let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
 
   describe '#perform' do
-    context 'Feature Flag `elastic_migration_worker` is disabled' do
+    let(:migration) { Elastic::DataMigrationService.migrations.last }
+
+    before do
+      stub_ee_application_setting(elasticsearch_indexing: true)
+    end
+
+    context 'when Feature Flag `elastic_migration_worker` is disabled' do
       before do
-        stub_ee_application_setting(elasticsearch_indexing: true)
         stub_feature_flags(elastic_migration_worker: false)
       end
 
       it 'returns with no execution' do
-        expect(subject).not_to receive(:execute_migration)
-        expect(subject.perform).to be_falsey
+        expect(worker).not_to receive(:execute_migration)
+        expect(worker.perform).to be_falsey
       end
     end
 
-    context 'indexing is disabled' do
+    context 'when indexing is disabled' do
       before do
         stub_ee_application_setting(elasticsearch_indexing: false)
       end
 
       it 'returns without execution' do
-        expect(subject).not_to receive(:execute_migration)
-        expect(subject.perform).to be_falsey
+        expect(worker).not_to receive(:execute_migration)
+        expect(worker.perform).to be_falsey
       end
     end
 
-    context 'unsupported elasticsearch version' do
-      let(:helper) { Gitlab::Elastic::Helper.new }
+    context 'when on an unsupported elasticsearch version' do
+      let(:helper) { Gitlab::Elastic::Helper.default }
 
       before do
-        stub_ee_application_setting(elasticsearch_indexing: true)
         allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
         allow(helper).to receive(:unsupported_version?).and_return(true)
+        allow(helper).to receive(:alias_exists?).and_return(true)
       end
 
       it 'pauses indexing and does not execute migration' do
         expect(Gitlab::CurrentSettings).to receive(:update!).with(elasticsearch_pause_indexing: true)
-        expect(subject).not_to receive(:execute_migration)
-        expect(subject.perform).to be_falsey
+        expect(worker).not_to receive(:execute_migration)
+        expect(worker.perform).to be_falsey
       end
     end
 
-    context 'cluster is unhealthy' do
+    context 'when cluster is unhealthy' do
+      let(:helper) { Gitlab::Elastic::Helper.default }
+
       before do
-        stub_ee_application_setting(elasticsearch_indexing: true)
+        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
         allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
         allow(::Gitlab::Elasticsearch::Logger).to receive(:build).and_return(logger)
+        allow(helper).to receive(:unsupported_version?).and_return(false)
+        allow(helper).to receive(:alias_exists?).and_return(true)
       end
 
       it 'raises an error and does not execute migration' do
-        expect(subject).not_to receive(:execute_migration)
+        expect(worker).not_to receive(:execute_migration)
         expect(logger).to receive(:error)
-        expect(subject.perform).to be_falsey
+        expect(worker.perform).to be_falsey
       end
     end
 
-    context 'reindexing task is in progress' do
-      let!(:task) { create(:elastic_reindexing_task) }
+    context 'when reindexing task is in progress' do
+      let(:helper) { Gitlab::Elastic::Helper.default }
 
       before do
-        stub_ee_application_setting(elasticsearch_indexing: true)
+        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+        allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
+        allow(helper).to receive(:unsupported_version?).and_return(false)
+        allow(helper).to receive(:alias_exists?).and_return(true)
       end
 
       it 'returns without execution' do
-        expect(subject).not_to receive(:execute_migration)
-        expect(subject.perform).to be_falsey
+        create(:elastic_reindexing_task)
+
+        expect(worker).not_to receive(:execute_migration)
+        expect(worker.perform).to be_falsey
       end
     end
 
-    context 'indexing is enabled' do
-      let(:migration) { Elastic::DataMigrationService.migrations.first }
-
-      before do
-        stub_ee_application_setting(elasticsearch_indexing: true)
-      end
-
-      context 'an unexecuted migration present' do
+    context 'when indexing is enabled' do
+      context 'when an unexecuted migration present', :elastic_clean do
         before do
           allow(Elastic::MigrationRecord).to receive(:current_migration).and_return(migration)
         end
@@ -89,10 +97,11 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
         it 'creates an index if it does not exist' do
           Gitlab::Elastic::Helper.default.delete_migrations_index
 
-          expect { subject.perform }.to change { Gitlab::Elastic::Helper.default.migrations_index_exists? }.from(false).to(true)
+          expect { worker.perform }
+            .to change { Gitlab::Elastic::Helper.default.migrations_index_exists? }.from(false).to(true)
         end
 
-        context 'migration is halted' do
+        context 'when migration is halted' do
           using RSpec::Parameterized::TableSyntax
 
           where(:pause_indexing, :halted_indexing_unpaused, :unpause) do
@@ -106,7 +115,8 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
             before do
               allow(Gitlab::CurrentSettings).to receive(:elasticsearch_pause_indexing?).and_return(true)
               allow(migration).to receive(:pause_indexing?).and_return(true)
-              migration.save_state!(halted: true, pause_indexing: pause_indexing, halted_indexing_unpaused: halted_indexing_unpaused)
+              migration.save_state!(halted: true, pause_indexing: pause_indexing,
+                halted_indexing_unpaused: halted_indexing_unpaused)
             end
 
             it 'unpauses indexing' do
@@ -118,12 +128,12 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
 
               expect(migration).not_to receive(:migrate)
 
-              subject.perform
+              worker.perform
             end
           end
         end
 
-        context 'executing migration with retry_on_failure set' do
+        context 'when executing migration with retry_on_failure set' do
           before do
             allow(migration).to receive(:started?).and_return(true)
             allow(migration).to receive(:retry_on_failure?).and_return(true)
@@ -133,27 +143,29 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
           end
 
           it 'increases previous_attempts on failure' do
-            subject.perform
+            worker.perform
 
-            expect(migration.migration_state).to match(previous_attempts: 1)
+            expect(migration.migration_state).to match(a_hash_including(previous_attempts: 1))
           end
 
           it 'fails the migration if max_attempts is exceeded' do
             migration.set_migration_state(previous_attempts: 2)
 
             expect(logger).to receive(:error).twice.and_call_original
-            subject.perform
+            worker.perform
 
             expect(migration.halted?).to be_truthy
             expect(migration.failed?).to be_truthy
           end
         end
 
-        context 'migration process' do
+        context 'for migration process' do
           before do
             allow(migration).to receive(:started?).and_return(started)
             allow(migration).to receive(:completed?).and_return(completed)
             allow(migration).to receive(:batched?).and_return(batched)
+            # retry_on_failure is tested in the context above
+            allow(migration).to receive(:retry_on_failure?).and_return(false)
           end
 
           using RSpec::Parameterized::TableSyntax
@@ -181,7 +193,7 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
               expect(migration).to receive(:save!).with(completed: completed)
               expect(Elastic::DataMigrationService).to receive(:drop_migration_has_finished_cache!).with(migration)
 
-              subject.perform
+              worker.perform
             end
 
             it 'handles batched migrations' do
@@ -192,11 +204,11 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
                 expect(Elastic::MigrationWorker).not_to receive(:perform_in)
               end
 
-              subject.perform
+              worker.perform
             end
           end
 
-          context 'indexing pause' do
+          context 'when indexing paused' do
             before do
               allow(migration).to receive(:pause_indexing?).and_return(true)
             end
@@ -212,15 +224,18 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
             with_them do
               it 'pauses and unpauses indexing' do
                 expect(Gitlab::CurrentSettings).to receive(:update!).with(elasticsearch_pause_indexing: true)
-                expect(Gitlab::CurrentSettings).to receive(:update!).with(elasticsearch_pause_indexing: false) if expected
 
-                subject.perform
+                if expected
+                  expect(Gitlab::CurrentSettings).to receive(:update!).with(elasticsearch_pause_indexing: false)
+                end
+
+                worker.perform
               end
             end
           end
 
-          context 'checks space required' do
-            let(:helper) { Gitlab::Elastic::Helper.new }
+          context 'when space_requirements migration option is set' do
+            let(:helper) { Gitlab::Elastic::Helper.default }
             let(:started) { false }
             let(:completed) { false }
             let(:batched) { false }
@@ -236,7 +251,7 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
               expect(migration).to receive(:halt)
               expect(migration).not_to receive(:migrate)
 
-              subject.perform
+              worker.perform
             end
 
             it 'runs the migration if there is enough space' do
@@ -244,7 +259,7 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
               expect(migration).not_to receive(:fail)
               expect(migration).to receive(:migrate).once
 
-              subject.perform
+              worker.perform
             end
 
             context 'when migration is already started' do
@@ -254,35 +269,44 @@ RSpec.describe Elastic::MigrationWorker, :elastic_clean, feature_category: :glob
                 expect(helper).not_to receive(:cluster_free_size_bytes)
                 expect(migration).not_to receive(:space_required_bytes)
 
-                subject.perform
+                worker.perform
               end
             end
           end
         end
       end
 
-      context 'no unexecuted migrations' do
+      context 'when there are no unexecuted migrations' do
         before do
-          allow(subject).to receive(:current_migration).and_return(nil)
+          allow(worker).to receive(:current_migration).and_return(nil)
         end
 
         it 'skips execution' do
-          expect(subject).not_to receive(:execute_migration)
+          expect(worker).not_to receive(:execute_migration)
 
-          expect(subject.perform).to be_falsey
+          expect(worker.perform).to be_falsey
         end
       end
 
-      context 'no executed migrations' do
+      context 'when there are no executed migrations' do
+        let(:helper) { Gitlab::Elastic::Helper.default }
+
         before do
+          allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+          allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(true)
+          allow(helper).to receive(:unsupported_version?).and_return(false)
+          allow(helper).to receive(:alias_exists?).and_return(true)
           allow(Elastic::MigrationRecord).to receive(:load_versions).and_return([])
           allow(Elastic::DataMigrationService).to receive(:migrations).and_return([migration])
+          allow(migration).to receive(:space_requirements?).and_return(false)
+          allow(migration).to receive(:started?).and_return(false)
+          allow(migration).to receive(:batched?).and_return(false)
         end
 
         it 'executes the first migration' do
-          expect(subject).to receive(:execute_migration).with(migration)
+          expect(worker).to receive(:execute_migration).with(migration)
 
-          subject.perform
+          worker.perform
         end
       end
     end
