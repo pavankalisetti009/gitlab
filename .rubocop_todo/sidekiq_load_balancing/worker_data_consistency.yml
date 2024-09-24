@@ -52,7 +52,6 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/ci/stuck_builds/drop_running_worker.rb'
     - 'app/workers/ci/stuck_builds/drop_scheduled_worker.rb'
     - 'app/workers/ci/test_failure_history_worker.rb'
-    - 'app/workers/ci_platform_metrics_update_cron_worker.rb'
     - 'app/workers/cleanup_container_repository_worker.rb'
     - 'app/workers/cluster_configure_istio_worker.rb'
     - 'app/workers/cluster_install_app_worker.rb'
