@@ -157,30 +157,38 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
 
       subject(:value) { described_class.partitioning_strategy.detach_partition_if.call(active_partition) }
 
-      before_all do
-        create(:zoekt_task, state: :pending)
-        create(:zoekt_task, state: :done)
+      context 'when the partition contains pending records' do
+        let!(:task) { create(:zoekt_task, state: :pending) }
+
+        it { is_expected.to eq(false) }
       end
 
-      context 'when the partition contains pending records' do
-        it { is_expected.to eq(false) }
+      context 'when the partition is empty' do
+        it { is_expected.to eq(true) }
       end
 
       context 'when the partition contains processing records' do
-        before do
-          described_class.first.processing!
-        end
+        let!(:task) { create(:zoekt_task, state: :processing) }
 
         it { is_expected.to eq(false) }
       end
 
-      context 'when the partition does not contain pending or processing records' do
-        before do
-          described_class.update_all(state: :failed)
-          described_class.last.done!
+      context 'when the newest record of the partition is older than PARTITION_CLEANUP_THRESHOLD' do
+        let(:created_at) { (described_class::PARTITION_CLEANUP_THRESHOLD + 1.day).ago }
+
+        let!(:task_failed) { create(:zoekt_task, state: :failed, created_at: created_at) }
+        let!(:task_done) { create(:zoekt_task, state: :done, created_at: created_at) }
+        let!(:task_orphaned) { create(:zoekt_task, state: :orphaned, created_at: created_at) }
+
+        context 'when the partition does not contain pending or processing records' do
+          it { is_expected.to eq(true) }
         end
 
-        it { is_expected.to eq(true) }
+        context 'when there are pending or processing records' do
+          let!(:task_pending) { create(:zoekt_task, state: :pending, created_at: created_at) }
+
+          it { is_expected.to eq(false) }
+        end
       end
     end
   end
