@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 class ElasticWikiIndexerWorker
-  MAX_JOBS_PER_HOUR = 3600
   include ApplicationWorker
-
-  data_consistency :delayed
+  include Gitlab::ExclusiveLeaseHelpers
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
-  include Gitlab::ExclusiveLeaseHelpers
+
+  data_consistency :delayed
 
   feature_category :global_search
   urgency :throttled
   idempotent!
   loggable_arguments 1, 2
 
+  MAX_JOBS_PER_HOUR = 3600
   LOCK_RETRIES = 2
   LOCK_SLEEP_SEC = 1
 

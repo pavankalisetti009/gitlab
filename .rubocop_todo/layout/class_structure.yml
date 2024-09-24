@@ -285,7 +285,6 @@ Layout/ClassStructure:
     - 'ee/app/workers/compliance_management/project_framework_export_mailer_worker.rb'
     - 'ee/app/workers/compliance_management/standards_adherence_export_mailer_worker.rb'
     - 'ee/app/workers/compliance_management/violation_export_mailer_worker.rb'
-    - 'ee/app/workers/elastic_wiki_indexer_worker.rb'
     - 'ee/app/workers/geo/secondary_usage_data_cron_worker.rb'
     - 'ee/app/workers/namespaces/free_user_cap/group_over_limit_notification_worker.rb'
     - 'ee/app/workers/repository_update_mirror_worker.rb'

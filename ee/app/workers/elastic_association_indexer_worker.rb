@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-class ElasticAssociationIndexerWorker # rubocop:disable Scalability/IdempotentWorker
+class ElasticAssociationIndexerWorker
   include ApplicationWorker
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
-  data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- legacy setting, must investigate before changing
-
-  sidekiq_options retry: 3
+  data_consistency :delayed
 
   feature_category :global_search
+  sidekiq_options retry: 3
+  idempotent!
   worker_resource_boundary :cpu
   loggable_arguments 0, 2
 
