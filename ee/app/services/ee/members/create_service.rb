@@ -4,6 +4,7 @@ module EE
   module Members
     module CreateService
       include ::Gitlab::Utils::StrongMemoize
+      include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
       extend ::Gitlab::Utils::Override
 
       override :initialize
@@ -204,6 +205,39 @@ module EE
         pass_back[:queued_users] = queued_users if queued_users.any?
 
         super(pass_back)
+      end
+
+      override :publish_event!
+      def publish_event!
+        super
+
+        return unless should_publish_admin_events?
+
+        members.each do |member|
+          next unless member_eligible_for_admin_event?(member)
+
+          ::Gitlab::EventStore.publish(
+            ::Members::MembershipModifiedByAdminEvent.new(data: {
+              member_user_id: member.user_id
+            })
+          )
+        end
+      end
+
+      def should_publish_admin_events?
+        promotion_management_applicable? &&
+          current_user&.can_admin_all_resources? &&
+          at_least_one_member_created?
+      end
+
+      def member_eligible_for_admin_event?(member)
+        member.persisted? &&
+          member.errors.empty? &&
+          member.user_id.present? &&
+          promotion_management_required_for_role?(
+            new_access_level: member.access_level,
+            member_role_id: member.member_role_id
+          )
       end
     end
   end
