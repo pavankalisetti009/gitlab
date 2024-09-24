@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'spec_helper'
+
 RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category: :cloud_connector do
   describe '#execute' do
     subject(:probe) { described_class.new(uri) }

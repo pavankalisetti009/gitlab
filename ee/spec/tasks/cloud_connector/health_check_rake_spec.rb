@@ -12,7 +12,9 @@ RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category
 
   before do
     Rake.application.rake_require('ee/lib/tasks/cloud_connector/health_check', [Rails.root.to_s])
-    stub_const('CloudConnector::StatusChecks::StatusService::DEFAULT_PROBES', [test_probe])
+    allow_next_instance_of(::CloudConnector::StatusChecks::StatusService) do |status_service|
+      allow(status_service).to receive(:probes).and_return([test_probe])
+    end
   end
 
   describe 'health check execution' do

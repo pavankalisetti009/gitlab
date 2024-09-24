@@ -7,50 +7,33 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
   let(:succeeded_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: true) }
   let(:failed_probe) { CloudConnector::StatusChecks::Probes::TestProbe.new(success: false) }
   let(:user) { build(:user) }
-  let(:expected_execution_context) { { user: user } }
 
   subject(:service) { described_class.new(user: user, probes: probes) }
 
-  it 'has the expected default probes' do
-    expect(described_class::DEFAULT_PROBES).to match_array([
-      an_instance_of(CloudConnector::StatusChecks::Probes::LicenseProbe),
-      an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe).and(
-        have_attributes(host: 'cloud.gitlab.com', port: 443)
-      ),
-      an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe).and(
-        have_attributes(host: 'customers.staging.gitlab.com', port: 443)
-      ),
-      an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe),
-      an_instance_of(CloudConnector::StatusChecks::Probes::TokenProbe),
-      an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
-    ])
+  describe '#initialize' do
+    context 'when no probes are passed' do
+      subject(:service) { described_class.new(user: user) }
+
+      it 'created default probes' do
+        service_probes = service.probes
+
+        expect(service_probes.count).to eq(6)
+        expect(service_probes[0]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::LicenseProbe)
+        expect(service_probes[1]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe)
+        expect(service_probes[2]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe)
+        expect(service_probes[3]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe)
+        expect(service_probes[4]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::TokenProbe)
+        expect(service_probes[5]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
+      end
+    end
   end
 
   describe '#execute' do
-    context 'when no arguments are passed' do
-      subject(:service) { described_class.new(user: user) }
-
-      before do
-        stub_const("#{described_class}::DEFAULT_PROBES", [succeeded_probe])
-      end
-
-      it 'executes all probes and returns successful status result' do
-        expect(succeeded_probe).to receive(:execute)
-          .with(expected_execution_context)
-          .and_call_original
-
-        service.execute
-      end
-    end
-
     context 'when all probes succeed' do
       let(:probes) { [succeeded_probe, succeeded_probe] }
 
       it 'executes all probes and returns successful status result' do
-        expect(succeeded_probe).to receive(:execute)
-          .twice
-          .with(expected_execution_context)
-          .and_call_original
+        expect(succeeded_probe).to receive(:execute).twice.and_call_original
 
         result = service.execute
 
@@ -65,12 +48,8 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
       let(:probes) { [succeeded_probe, failed_probe] }
 
       it 'executes all probes and returns unsuccessful status result' do
-        expect(succeeded_probe).to receive(:execute)
-          .with(expected_execution_context)
-          .and_call_original
-        expect(failed_probe).to receive(:execute)
-          .with(expected_execution_context)
-          .and_call_original
+        expect(succeeded_probe).to receive(:execute).and_call_original
+        expect(failed_probe).to receive(:execute).and_call_original
 
         result = service.execute
 
@@ -85,10 +64,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
       let(:probes) { [failed_probe, failed_probe] }
 
       it 'executes all probes and returns unsuccessful status result' do
-        expect(failed_probe).to receive(:execute)
-          .twice
-          .with(expected_execution_context)
-          .and_call_original
+        expect(failed_probe).to receive(:execute).twice.and_call_original
 
         result = service.execute
 
