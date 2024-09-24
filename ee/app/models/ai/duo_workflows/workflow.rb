@@ -10,6 +10,7 @@ module Ai
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
 
       validates :status, presence: true
+      validates :goal, length: { maximum: 4096 }
 
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
