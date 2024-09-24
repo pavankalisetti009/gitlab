@@ -94,7 +94,7 @@ export default {
     },
     classes() {
       return {
-        'gl-border-b': this.needsApproval,
+        'lg:gl-border-b': this.needsApproval,
       };
     },
     needsApproval() {
@@ -169,7 +169,7 @@ export default {
 <template>
   <div
     v-if="requiresApproval"
-    class="gl-border-t gl-border-r gl-border-l gl-rounded-base"
+    class="lg:gl-border-t lg:gl-border-r lg:gl-border-l lg:gl-rounded-base"
     :class="classes"
   >
     <div class="gl-m-5 gl-block gl-font-bold" data-testid="deployment-approval-header">

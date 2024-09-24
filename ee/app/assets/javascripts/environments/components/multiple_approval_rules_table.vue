@@ -91,7 +91,7 @@ export default {
 };
 </script>
 <template>
-  <gl-table-lite :fields="$options.fields" :items="items">
+  <gl-table-lite stacked="lg" :fields="$options.fields" :items="items">
     <template #cell(approvers)="{ value }">
       <gl-link v-if="value.link" :href="value.link">{{ value.name }}</gl-link>
       <span v-else>{{ value.name }}</span>
