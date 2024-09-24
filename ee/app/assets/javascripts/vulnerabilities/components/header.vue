@@ -1,7 +1,6 @@
 <script>
 import { GlLoadingIcon, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
@@ -17,12 +16,7 @@ import UsersCache from '~/lib/utils/users_cache';
 import { s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
-import {
-  VULNERABILITY_STATE_OBJECTS,
-  FEEDBACK_TYPES,
-  CREATE_MR_ACTION,
-  DOWNLOAD_PATCH_ACTION,
-} from '../constants';
+import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
@@ -56,12 +50,11 @@ export default {
     StatusDescription,
     VulnerabilityStateDropdown: () => import('./vulnerability_state_dropdown.vue'),
     VulnerabilityActionsDropdown: () => import('./vulnerability_actions_dropdown.vue'),
-    SplitButton: () => import('ee/vue_shared/security_reports/components/split_button.vue'),
   },
   directives: {
     GlTooltip,
   },
-  mixins: [glFeatureFlagsMixin(), glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     vulnerability: {
       type: Object,
@@ -78,27 +71,6 @@ export default {
     };
   },
   computed: {
-    actionButtons() {
-      const buttons = [];
-
-      if (this.canCreateMergeRequest) {
-        buttons.push(CREATE_MR_ACTION);
-      }
-
-      if (this.canDownloadPatch) {
-        buttons.push(DOWNLOAD_PATCH_ACTION);
-      }
-
-      if (this.glAbilities.resolveVulnerabilityWithAi) {
-        buttons.push(CREATE_MR_AI_ACTION);
-      }
-
-      if (this.glAbilities.explainVulnerabilityWithAi) {
-        buttons.push(EXPLAIN_VULNERABILITY_AI_ACTION);
-      }
-
-      return buttons;
-    },
     canDownloadPatch() {
       return (
         this.vulnerability.state !== VULNERABILITY_STATE_OBJECTS.resolved.state &&
@@ -361,17 +333,7 @@ export default {
           :disabled="disabledChangeState"
           @change="changeVulnerabilityState"
         />
-        <split-button
-          v-if="!glFeatures.vulnerabilityResolutionGa && actionButtons.length"
-          :buttons="actionButtons"
-          :loading="isProcessingAction"
-          @create-merge-request="createMergeRequest"
-          @download-patch="downloadPatch"
-          @start-subscription="startSubscription"
-          @explain-vulnerability="explainVulnerability"
-        />
         <vulnerability-actions-dropdown
-          v-if="glFeatures.vulnerabilityResolutionGa"
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
           :show-create-merge-request="canCreateMergeRequest"

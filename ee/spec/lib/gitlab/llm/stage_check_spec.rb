@@ -120,39 +120,5 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
         it_behaves_like 'expected stage check results'
       end
     end
-
-    describe 'vulnerability_resolution_ga feature_flag', :saas do
-      let(:feature_name) { :resolve_vulnerability }
-      let_it_be_with_reload(:root_group) { create(:group_with_plan, :private, plan: :premium_plan) }
-      let_it_be(:group) { create(:group, :private, parent: root_group) }
-      let_it_be_with_reload(:project) { create(:project, group: group) }
-
-      where(:container, :feature_type, :feature_flag_enabled, :namespace_experiment_features_enabled, :result) do
-        ref(:project) | :experimental | true | false  | true
-        ref(:project) | :beta         | true | false  | true
-        ref(:project) | :ga           | true | false  | true
-        ref(:project) | :experimental | false | true  | true
-        ref(:project) | :beta         | false | true  | true
-        ref(:project) | :ga           | false | true  | true
-        ref(:project) | :experimental | false | false  | false
-        ref(:project) | :beta         | false | false  | false
-        ref(:project) | :ga           | false | false  | true
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(vulnerability_resolution_ga: feature_flag_enabled)
-          stub_const("::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", feature_name => { maturity: feature_type })
-          stub_licensed_features(ai_features: true)
-          stub_saas_features(gitlab_duo_saas_only: true)
-          root_group.namespace_settings.update!(experiment_features_enabled: namespace_experiment_features_enabled)
-          Gitlab::CurrentSettings.current_application_settings.update!(
-            instance_level_ai_beta_features_enabled: true
-          )
-        end
-
-        it_behaves_like 'expected stage check results'
-      end
-    end
   end
 end

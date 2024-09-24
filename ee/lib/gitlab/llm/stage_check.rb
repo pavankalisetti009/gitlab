@@ -10,9 +10,6 @@ module Gitlab
           return false if personal_namespace?(root_ancestor)
           return false unless root_ancestor.licensed_feature_available?(license_feature_name(feature))
 
-          return true if feature == :resolve_vulnerability && ::Feature.enabled?(:vulnerability_resolution_ga,
-            container)
-
           available_on_experimental_stage?(root_ancestor, feature) ||
             available_on_beta_stage?(root_ancestor, feature) ||
             available_on_ga_stage?(feature)
