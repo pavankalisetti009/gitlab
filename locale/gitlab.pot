@@ -22385,6 +22385,9 @@ msgstr ""
 msgid "Existing projects will be able to use cleanup policies. Avoid enabling this if an external Container Registry is being used, as there is a performance risk if many images exist on one project."
 msgstr ""
 
+msgid "Exit full screen"
+msgstr ""
+
 msgid "Expand"
 msgstr ""
 
@@ -31990,9 +31993,6 @@ msgid "Leave group"
 msgstr ""
 
 msgid "Leave project"
-msgstr ""
-
-msgid "Leave zen mode"
 msgstr ""
 
 msgid "Legacy Prometheus integrations cannot currently be removed"
