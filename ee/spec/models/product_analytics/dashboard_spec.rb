@@ -285,33 +285,6 @@ description: with missing properties
         expect(dashboard.panels.map { |panel| panel.visualization.type }).to eq(%w[DORAChart UsageOverview])
       end
     end
-
-    context 'with the project_analytics_dashboard_dynamic_vsd feature flag disabled' do
-      before do
-        stub_feature_flags(project_analytics_dashboard_dynamic_vsd: false)
-      end
-
-      context 'for projects' do
-        it 'returns nil' do
-          dashboard = described_class.value_stream_dashboard(project, config_project)
-
-          expect(dashboard).to be_nil
-        end
-      end
-
-      context 'for groups' do
-        let(:dashboard) { described_class.value_stream_dashboard(group, config_project) }
-
-        it_behaves_like 'returns the value streams dashboard'
-
-        it 'returns the correct panels' do
-          expect(dashboard.panels.size).to eq(3)
-          expect(dashboard.panels.map { |panel| panel.visualization.type }).to eq(
-            %w[DORAChart UsageOverview DoraPerformersScore]
-          )
-        end
-      end
-    end
   end
 
   describe '.ai_impact_dashboard' do

@@ -156,4 +156,10 @@ describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
       });
     });
   });
+
+  it('should stack on smaller devices', () => {
+    wrapper = createWrapper();
+
+    expect(findTable().classes()).toContain('b-table-stacked-lg');
+  });
 });

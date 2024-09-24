@@ -33,6 +33,10 @@ module GitlabSubscriptions
           response.success? && duo_pro_or_enterprise? && !user_already_assigned?
         end
 
+        def duo_pro_or_enterprise?
+          add_on_purchase.add_on.code_suggestions? || add_on_purchase.add_on.duo_enterprise?
+        end
+
         def create_iterable_trigger
           ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params)
         end

@@ -29,7 +29,7 @@ module GitlabSubscriptions
           Feature.enabled?(:duo_seat_assignment_email_for_sm, :instance) &&
             !user_already_assigned? &&
             response.success? &&
-            duo_pro_or_enterprise?
+            add_on_purchase.add_on.code_suggestions? # checking if it is a duo_pro add_on
         end
       end
     end

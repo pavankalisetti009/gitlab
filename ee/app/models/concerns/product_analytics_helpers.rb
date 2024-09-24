@@ -30,12 +30,6 @@ module ProductAnalyticsHelpers
     analytics_addon_quantity * EVENTS_PER_ADD_ON_PURCHASE
   end
 
-  def project_value_streams_dashboards_enabled?
-    return true unless is_a?(Project)
-
-    Feature.enabled?(:project_analytics_dashboard_dynamic_vsd, self)
-  end
-
   def value_streams_dashboard_available?
     licensed_feature =
       if is_a?(Project)
@@ -44,7 +38,7 @@ module ProductAnalyticsHelpers
         :group_level_analytics_dashboard
       end
 
-    licensed_feature_available?(licensed_feature) && project_value_streams_dashboards_enabled?
+    licensed_feature_available?(licensed_feature)
   end
 
   def ai_impact_dashboard_available_for?(user)
