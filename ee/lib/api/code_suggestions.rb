@@ -10,8 +10,6 @@ module API
     MAX_BODY_SIZE = 600_000
     MAX_CONTENT_SIZE = 400_000
 
-    MAX_CONTEXT_NAME_SIZE = 255
-
     allow_access_with_scope :ai_features
 
     before do
@@ -72,11 +70,11 @@ module API
             desc: 'Additional instructions provided by a user'
           optional :context, type: Array, allow_blank: false, desc: 'List of related context parts' do
             requires :type, type: String,
-              values: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.values,
+              values: ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES.values,
               desc: 'The type of a related part of context'
-            requires :name, type: String, limit: MAX_CONTEXT_NAME_SIZE, allow_blank: false,
+            requires :name, type: String, limit: ::Ai::AdditionalContext::MAX_CONTEXT_TYPE_SIZE, allow_blank: false,
               desc: 'The name of a related part of context'
-            requires :content, type: String, limit: MAX_BODY_SIZE, allow_blank: false,
+            requires :content, type: String, limit: ::Ai::AdditionalContext::MAX_BODY_SIZE, allow_blank: false,
               desc: 'The content of a part of context'
           end
         end

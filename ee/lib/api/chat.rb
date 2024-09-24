@@ -62,13 +62,13 @@ module API
           optional :additional_context, type: Array, allow_blank: true,
             desc: 'List of additional context to be passed for the chat' do
             requires :category, type: String,
-              values: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.values,
+              values: ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES.values,
               desc: 'Category of the additional context.'
             requires :id, type: String,
-              limit: ::API::CodeSuggestions::MAX_CONTEXT_NAME_SIZE, allow_blank: false,
+              limit: ::Ai::AdditionalContext::MAX_CONTEXT_TYPE_SIZE, allow_blank: false,
               desc: 'ID of the additional context.'
             requires :content, type: String,
-              limit: ::API::CodeSuggestions::MAX_BODY_SIZE, allow_blank: false,
+              limit: ::Ai::AdditionalContext::MAX_BODY_SIZE, allow_blank: false,
               desc: 'Content of the additional context.'
             optional :metadata, type: Hash, allow_blank: true,
               desc: 'Metadata of the additional context.'
