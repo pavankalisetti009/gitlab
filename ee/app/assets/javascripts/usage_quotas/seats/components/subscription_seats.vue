@@ -1,7 +1,7 @@
 <script>
 import { GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import {
   seatsAvailableText,
   seatsInSubscriptionText,
@@ -120,11 +120,7 @@ export default {
         }
       },
     });
-    this.fetchBillableMembersList();
-    this.fetchGitlabSubscription();
-  },
-  methods: {
-    ...mapActions(['fetchBillableMembersList', 'fetchGitlabSubscription']),
+    this.$store.dispatch('fetchInitialData');
   },
   helpLinks: {
     seatsInUseLink,

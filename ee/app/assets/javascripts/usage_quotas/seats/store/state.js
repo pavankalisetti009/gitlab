@@ -8,6 +8,7 @@ export default ({
   explorePlansPath = '',
   enforcementFreeUserCapEnabled = false,
 } = {}) => ({
+  initialized: false,
   isLoadingBillableMembers: false,
   isLoadingGitlabSubscription: false,
   isChangingMembershipState: false,
