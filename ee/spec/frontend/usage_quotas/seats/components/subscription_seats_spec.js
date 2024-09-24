@@ -14,8 +14,7 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 Vue.use(Vuex);
 
 const actionSpies = {
-  fetchBillableMembersList: jest.fn(),
-  fetchGitlabSubscription: jest.fn(),
+  fetchInitialData: jest.fn(),
 };
 
 const providedFields = {
@@ -50,6 +49,7 @@ const fakeStore = ({ initialState, initialGetters }) =>
   });
 
 describe('Subscription Seats', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const createComponent = ({ initialState = {}, initialGetters = {} } = {}) => {
@@ -74,8 +74,8 @@ describe('Subscription Seats', () => {
       wrapper = createComponent();
     });
 
-    it('correct actions are called on create', () => {
-      expect(actionSpies.fetchBillableMembersList).toHaveBeenCalled();
+    it('dispatches fetchInitialData action', () => {
+      expect(actionSpies.fetchInitialData).toHaveBeenCalled();
     });
   });
 
@@ -99,10 +99,6 @@ describe('Subscription Seats', () => {
       wrapper = createComponent({
         initialState: defaultInitialState,
       });
-    });
-
-    it('calls the correct action on create', () => {
-      expect(actionSpies.fetchGitlabSubscription).toHaveBeenCalled();
     });
 
     describe('renders <statistics-card>', () => {
