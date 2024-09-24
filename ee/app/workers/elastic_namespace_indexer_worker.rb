@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 
-class ElasticNamespaceIndexerWorker # rubocop:disable Scalability/IdempotentWorker
+class ElasticNamespaceIndexerWorker
   include ApplicationWorker
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
-  data_consistency :always
+  data_consistency :delayed
 
   feature_category :global_search
   worker_resource_boundary :cpu
+  deduplicate :until_executed
+  idempotent!
   sidekiq_options retry: 2
   loggable_arguments 1
 
   def perform(namespace_id, operation)
     return true unless Gitlab::CurrentSettings.elasticsearch_indexing?
 
-    namespace = Namespace.find(namespace_id)
+    namespace = Namespace.find_by_id(namespace_id)
+    return unless namespace
 
     case operation.to_s
     when /index/
@@ -50,7 +53,7 @@ class ElasticNamespaceIndexerWorker # rubocop:disable Scalability/IdempotentWork
   def delete_from_index(namespace)
     namespace.all_projects.find_in_batches do |batch|
       args = batch.map { |project| [project.id, project.es_id, { delete_project: false }] }
-      ElasticDeleteProjectWorker.bulk_perform_async(args) # rubocop:disable Scalability/BulkPerformWithContext
+      ElasticDeleteProjectWorker.bulk_perform_async(args) # rubocop:disable Scalability/BulkPerformWithContext -- namespace_id argument is logged, do not need to log each project id
     end
 
     return unless namespace.group_namespace?

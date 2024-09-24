@@ -55,10 +55,8 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
       described_class.order(:created_at).pluck(:namespace_id)
     end
 
-    def expect_queue_to_contain(*args)
-      expect(ElasticNamespaceIndexerWorker.jobs).to include(
-        hash_including("args" => args)
-      )
+    def expect_worker_args(*args)
+      expect(ElasticNamespaceIndexerWorker).to receive(:bulk_perform_async).with(array_including([args]))
     end
 
     describe '.index_first_n_namespaces_of_plan' do
@@ -67,20 +65,21 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
 
         ids = namespaces.map(&:id)
 
+        expect_worker_args(ids[0], :index)
+        expect_worker_args(ids[2], :index)
+        expect_worker_args(ids[1], :index)
+
         described_class.index_first_n_namespaces_of_plan('ultimate', 1)
 
         expect(get_indexed_namespaces).to eq([ids[0]])
-        expect_queue_to_contain(ids[0], "index")
 
         described_class.index_first_n_namespaces_of_plan('ultimate', 2)
 
         expect(get_indexed_namespaces).to eq([ids[0], ids[2]])
-        expect_queue_to_contain(ids[2], "index")
 
         described_class.index_first_n_namespaces_of_plan('premium', 1)
 
         expect(get_indexed_namespaces).to eq([ids[0], ids[2], ids[1]])
-        expect_queue_to_contain(ids[1], "index")
       end
     end
 
@@ -95,22 +94,23 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
 
         ids = namespaces.map(&:id)
 
+        expect_worker_args(ids[2], :delete)
+        expect_worker_args(ids[1], :delete)
+        expect_worker_args(ids[0], :delete)
+
         expect(get_indexed_namespaces).to contain_exactly(ids[0], ids[2], ids[1])
 
         described_class.unindex_last_n_namespaces_of_plan('ultimate', 1)
 
         expect(get_indexed_namespaces).to contain_exactly(ids[0], ids[1])
-        expect_queue_to_contain(ids[2], "delete")
 
         described_class.unindex_last_n_namespaces_of_plan('premium', 1)
 
         expect(get_indexed_namespaces).to contain_exactly(ids[0])
-        expect_queue_to_contain(ids[1], "delete")
 
         described_class.unindex_last_n_namespaces_of_plan('ultimate', 1)
 
         expect(get_indexed_namespaces).to be_empty
-        expect_queue_to_contain(ids[0], "delete")
       end
     end
   end
