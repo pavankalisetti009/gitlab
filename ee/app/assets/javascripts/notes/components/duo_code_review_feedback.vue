@@ -14,11 +14,11 @@ export default {
   <div>
     <user-feedback
       event-name="duo_code_review"
-      :feedback-link-text="__('Rate Duo Code Review')"
+      :feedback-link-text="__('Rate the review')"
       class="gl-inline-block !gl-pt-0"
     />
     <span class="gl-mx-2">&middot;</span>
-    <gl-button variant="link" href="https://gitlab.com/gitlab-org/gitlab/-/issues/484857">
+    <gl-button variant="link" href="https://gitlab.com/gitlab-org/gitlab/-/issues/493890">
       {{ __('Leave feedback') }}
     </gl-button>
   </div>
