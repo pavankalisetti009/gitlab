@@ -19772,6 +19772,7 @@ CREATE TABLE virtual_registries_packages_maven_cached_responses (
     object_storage_key text NOT NULL,
     upstream_etag text,
     content_type text DEFAULT 'application/octet-stream'::text NOT NULL,
+    status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_28c64d513d CHECK ((char_length(object_storage_key) <= 255)),
     CONSTRAINT check_30b7e853d9 CHECK ((char_length(upstream_etag) <= 255)),
     CONSTRAINT check_68b105cda6 CHECK ((char_length(file) <= 255)),
