@@ -34,8 +34,11 @@ RSpec.describe Gitlab::Llm::Chain::ResponseModifier, feature_category: :duo_chat
     context 'when answer has error code' do
       let(:error_code) { "A1000" }
 
-      it 'appends the error code to the message' do
-        expect(subject.errors).to eq([content + " Error code: #{error_code}"])
+      it 'appends the error code link to the message' do
+        expected_url =
+          "#{Gitlab::Saas.doc_url}/ee/user/gitlab_duo_chat/troubleshooting.html#error-#{error_code.downcase}"
+        expected_message = "#{content} #{_('Error code')}: [#{error_code}](#{expected_url})"
+        expect(subject.errors).to eq([expected_message])
       end
     end
   end

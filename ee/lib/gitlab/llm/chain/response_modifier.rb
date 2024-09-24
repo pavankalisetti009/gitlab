@@ -26,7 +26,13 @@ module Gitlab
 
         def error_message
           message = ai_response.content
-          message += " #{_('Error code')}: #{ai_response.error_code}" if ai_response.error_code.present?
+          if ai_response.error_code.present?
+            url = "#{Gitlab::Saas.doc_url}/ee/user/gitlab_duo_chat/troubleshooting.html" \
+              "#error-#{ai_response.error_code.downcase}"
+
+            message += " #{_('Error code')}: [#{ai_response.error_code}](#{url})"
+          end
+
           message
         end
       end
