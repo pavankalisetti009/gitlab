@@ -102,5 +102,22 @@ RSpec.describe PackageMetadata::DataObjectFabricator, feature_category: :softwar
 
       it_behaves_like 'it handles errors'
     end
+
+    context 'when cve enrichment' do
+      let(:sync_config) { build(:pm_sync_config, data_type: 'cve_enrichment', version_format: 'v2') }
+      let(:io) { File.open(Rails.root.join('ee/spec/fixtures/package_metadata/sync/cve_enrichment/v2/data.ndjson')) }
+      let(:data_file) { Gitlab::PackageMetadata::Connector::NdjsonDataFile.new(io, 0, 0) }
+
+      subject(:data_objects) { described_class.new(data_file: data_file, sync_config: sync_config).to_a }
+
+      it {
+        is_expected.to match_array([
+          have_attributes(cve_id: 'CVE-2020-1234', epss_score: 0.5),
+          have_attributes(cve_id: 'CVE-2021-12345', epss_score: 0.6)
+        ])
+      }
+
+      it_behaves_like 'it handles errors'
+    end
   end
 end

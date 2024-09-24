@@ -6,7 +6,8 @@ RSpec.describe PackageMetadata::Checkpoint, type: :model, feature_category: :sof
   let(:data_types) do
     {
       advisories: 1,
-      licenses: 2
+      licenses: 2,
+      cve_enrichment: 3
     }
   end
 
@@ -102,6 +103,30 @@ RSpec.describe PackageMetadata::Checkpoint, type: :model, feature_category: :sof
           expect { update! }.not_to change { [checkpoint.reload.sequence, checkpoint.reload.chunk] }
         end
       end
+    end
+  end
+end
+
+RSpec.describe PackageMetadata::NullCheckpoint, type: :model, feature_category: :software_composition_analysis do
+  subject(:null_checkpoint) { described_class.new }
+
+  describe '#update' do
+    it 'accepts any number of arguments without raising an error' do
+      # rubocop:disable Rails/SaveBang -- There is no `update!` method since NullCheckpoint isn't ActiveRecord
+      expect { null_checkpoint.update }.not_to raise_error
+      expect { null_checkpoint.update(sequence: 1, chunk: 2) }.not_to raise_error
+      # rubocop:enable Rails/SaveBang
+    end
+
+    it 'returns nil' do
+      expect(null_checkpoint.update).to be_nil
+      expect(null_checkpoint.update(sequence: 1, chunk: 2)).to be_nil
+    end
+  end
+
+  describe '#blank?' do
+    it 'always returns true' do
+      expect(null_checkpoint.blank?).to be true
     end
   end
 end

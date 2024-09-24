@@ -111,6 +111,24 @@ RSpec.describe PackageMetadata::SyncConfiguration, feature_category: :software_c
         it { is_expected.to match_array([expected_storage_type, expected_base_uri]) }
       end
     end
+
+    describe '.for_cve_enrichment' do
+      subject { described_class.for_cve_enrichment }
+
+      where(:filepath_exists, :expected_storage_type, :expected_base_uri) do
+        true     | :offline  | described_class::CVE_ENRICHMENT_PATH
+        false    | :gcp      | described_class::CVE_ENRICHMENT_BUCKET
+      end
+
+      with_them do
+        before do
+          allow(File).to receive(:exist?).with(described_class::CVE_ENRICHMENT_PATH)
+            .and_return(filepath_exists)
+        end
+
+        it { is_expected.to match_array([expected_storage_type, expected_base_uri]) }
+      end
+    end
   end
 
   describe '.registry' do
