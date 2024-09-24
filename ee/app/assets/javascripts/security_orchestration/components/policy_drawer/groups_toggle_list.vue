@@ -45,9 +45,6 @@ export default {
     hasGroups() {
       return this.groupsLength > 0;
     },
-    groupsLabel() {
-      return n__('group', 'groups', this.groupsLength);
-    },
     groupsLength() {
       return this.groups.length;
     },
