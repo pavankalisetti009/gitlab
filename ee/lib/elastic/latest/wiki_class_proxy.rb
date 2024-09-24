@@ -162,8 +162,7 @@ module Elastic
       end
 
       def archived_filter_applicable_on_wiki?(options)
-        !options[:include_archived] && options[:search_level] != 'project' &&
-          ::Elastic::DataMigrationService.migration_has_finished?(:reindex_wikis_to_fix_routing_and_backfill_archived)
+        !options[:include_archived] && options[:search_level] != 'project'
       end
 
       def searched_group(group_id, user)

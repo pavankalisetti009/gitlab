@@ -198,18 +198,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       end
     end
 
-    context 'when migration reindex_wikis_to_fix_routing_and_backfill_archived is not finished' do
-      before do
-        set_elasticsearch_migration_to(:reindex_wikis_to_fix_routing_and_backfill_archived, including: false)
-      end
-
-      it 'includes results from the archived project' do
-        collection = results.objects(scope)
-        expect(collection.size).to eq 3
-        expect(collection.map(&:project)).to include(archived_project)
-      end
-    end
-
     it 'excludes the wikis from the archived project' do
       collection = results.objects(scope)
       expect(collection.size).to eq 2
