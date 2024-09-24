@@ -108,41 +108,6 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
     end
   end
 
-  context 'for experimental settings' do
-    context 'when settings are disabled' do
-      it 'renders nothing' do
-        allow(group).to receive(:experiment_settings_allowed?).and_return(false)
-
-        render
-
-        expect(rendered).to render_template('groups/settings/_experimental_settings')
-        expect(rendered).not_to have_content('GitLab Duo experiment and beta features')
-      end
-    end
-
-    context 'when feature flag is not available ' do
-      it 'renders nothing' do
-        stub_feature_flags(early_access_program_toggle: false)
-
-        render
-
-        expect(rendered).to render_template('groups/settings/_experimental_settings')
-        expect(rendered).not_to have_content('GitLab Duo experiment and beta features')
-      end
-    end
-
-    context 'when experiment settings for group is enabled and feature flag is available' do
-      it 'renders the experiment settings' do
-        allow(group).to receive(:experiment_settings_allowed?).and_return(true)
-
-        render
-
-        expect(rendered).to render_template('groups/settings/_experimental_settings')
-        expect(rendered).to have_content('GitLab Duo experiment and beta features')
-      end
-    end
-  end
-
   context 'for extensions marketplace settings' do
     let_it_be(:section_title) { _('Web IDE and workspaces') }
     let_it_be(:checkbox_label) { s_('GroupSettings|Enable extension marketplace') }

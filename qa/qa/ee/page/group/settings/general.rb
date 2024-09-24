@@ -45,10 +45,6 @@ module QA
                   element 'seat-control-user-cap-radio'
                   element 'user-cap-limit-field'
                 end
-
-                view 'ee/app/views/groups/settings/_experimental_settings.haml' do
-                  element 'use-early-access-program-checkbox'
-                end
               end
             end
 
@@ -85,13 +81,6 @@ module QA
               click_element('save-permissions-changes-button')
             end
 
-            def set_experimental_features_enabled
-              expand_content('permissions-settings') do
-                check_element('use-early-access-program-checkbox', true)
-                click_element('save-permissions-changes-button')
-              end
-            end
-
             def set_membership_lock_enabled
               expand_content('permissions-settings')
               check_element('membership-lock-checkbox', true)
@@ -101,13 +90,6 @@ module QA
             def set_membership_lock_disabled
               expand_content('permissions-settings')
               uncheck_element('membership-lock-checkbox', true)
-              click_element('save-permissions-changes-button')
-            end
-
-            def set_use_experimental_features_enabled
-              expand_content('permissions-settings')
-              check_element('use-early-access-program-checkbox', true)
-              check_element('use-product-analytics-checkbox', true) if has_element?('use-product-analytics-checkbox')
               click_element('save-permissions-changes-button')
             end
 
