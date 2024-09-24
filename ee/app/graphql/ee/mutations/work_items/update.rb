@@ -34,7 +34,10 @@ module EE
           argument :rolledup_dates_widget, ::Types::WorkItems::Widgets::RolledupDatesInputType,
             required: false,
             description: 'Input for rolledup dates widget.',
-            alpha: { milestone: '16.9' }
+            deprecated: {
+              reason: 'use StartAndDueDate instead',
+              milestone: '17.5'
+            }
         end
       end
     end
