@@ -6998,6 +6998,9 @@ msgid_plural "ApprovalRuleSummary|%{count} approvals required from %{membersCoun
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "ApprovalRules|Define target branch approval rules for new merge requests."
+msgstr ""
+
 msgid "ApprovalRule|A merge request author collaborating with a merge request approver"
 msgstr ""
 

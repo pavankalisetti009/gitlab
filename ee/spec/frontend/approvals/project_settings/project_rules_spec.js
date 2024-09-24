@@ -61,34 +61,51 @@ describe('Approvals ProjectRules', () => {
       store.state.settings.allowMultiRule = true;
     });
 
-    it('should never have any_approver rule', () => {
-      factory({ isBranchRulesEdit: true });
-      const hasAnyApproverRule = store.modules.approvals.state.rules.some(
-        (rule) => rule.ruleType === 'any_approver',
-      );
+    describe('when `true`', () => {
+      beforeEach(() => {
+        factory({ isBranchRulesEdit: true });
+      });
 
-      expect(hasAnyApproverRule).toBe(false);
+      it('should never have any_approver rule', () => {
+        const hasAnyApproverRule = store.modules.approvals.state.rules.some(
+          (rule) => rule.ruleType === 'any_approver',
+        );
+
+        expect(hasAnyApproverRule).toBe(false);
+      });
+
+      it('does not render unconfigured security rules', () => {
+        expect(wrapper.findComponent(UnconfiguredSecurityRules).exists()).toBe(false);
+      });
+
+      it('should not have Show more pagination button', () => {
+        expect(findShowMoreButton(wrapper).exists()).toBe(false);
+      });
+
+      it('does not render branches', () => {
+        expect(findBranches().exists()).toBe(false);
+      });
+
+      it('does not render no rules text', () => {
+        expect(wrapper.text()).not.toContain(
+          'Define target branch approval rules for new merge requests.',
+        );
+      });
+
+      describe('when there are no rules', () => {
+        beforeEach(() => {
+          store.modules.approvals.state.rules = [];
+        });
+
+        it('renders the "no rules text"', () => {
+          expect(wrapper.text()).toContain(
+            'Define target branch approval rules for new merge requests.',
+          );
+        });
+      });
     });
 
-    it('does not render unconfigured security rules when `true', () => {
-      factory({ isBranchRulesEdit: true });
-
-      expect(wrapper.findComponent(UnconfiguredSecurityRules).exists()).toBe(false);
-    });
-
-    it('should not have Show more pagination button', () => {
-      factory({ isBranchRulesEdit: true });
-
-      expect(findShowMoreButton(wrapper).exists()).toBe(false);
-    });
-
-    it('does not render branches when `true`', () => {
-      factory({ isBranchRulesEdit: true });
-
-      expect(findBranches().exists()).toBe(false);
-    });
-
-    it('renders branches when `false`', () => {
+    it('when `false` renders branches', () => {
       factory({ isBranchRulesEdit: false });
 
       expect(findBranches().exists()).toBe(true);
