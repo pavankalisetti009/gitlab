@@ -62,3 +62,5 @@ class ReindexWikisToFixRoutingAndBackfillArchived < Elastic::Migration
     Elastic::Latest::WikiConfig.index_name
   end
 end
+
+ReindexWikisToFixRoutingAndBackfillArchived.prepend ::Elastic::MigrationObsolete
