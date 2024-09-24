@@ -10,6 +10,7 @@ module Vulnerabilities
 
     def allowance
       @maximum_number_of_vulnerabilities ||=
+        project_limit ||
         root_ancestor_limit ||
         application_wide_limit ||
         Float::INFINITY
@@ -51,7 +52,7 @@ module Vulnerabilities
 
     attr_reader :project
 
-    delegate :statistics, :project_namespace, :root_ancestor, to: :project, private: true
+    delegate :statistics, :project_setting, :root_ancestor, to: :project, private: true
 
     def store_over_usage
       with_redis { |redis| redis.set(redis_state_key, true) }
@@ -75,6 +76,10 @@ module Vulnerabilities
 
     def vulnerability_count
       statistics.reset.vulnerability_count
+    end
+
+    def project_limit
+      project_setting.max_number_of_vulnerabilities
     end
 
     def root_ancestor_limit

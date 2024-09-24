@@ -65,14 +65,16 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
   describe '#allowance' do
     subject { quota.allowance }
 
-    where(:ancestor_setting, :application_setting, :expected_value) do
-      2   | 1   | 2
-      nil | 1   | 1
-      nil | nil | Float::INFINITY
+    where(:project_setting, :ancestor_setting, :application_setting, :expected_value) do
+      3   | 2   | 1   | 3
+      nil | 2   | 1   | 2
+      nil | nil | 1   | 1
+      nil | nil | nil | Float::INFINITY
     end
 
     with_them do
       before do
+        project.project_setting.update!(max_number_of_vulnerabilities: project_setting)
         project.root_ancestor.namespace_limit.update!(max_number_of_vulnerabilities_per_project: ancestor_setting)
         stub_application_setting(max_number_of_vulnerabilities_per_project: application_setting)
       end
