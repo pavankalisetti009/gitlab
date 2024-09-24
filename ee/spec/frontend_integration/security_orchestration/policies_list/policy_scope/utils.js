@@ -25,6 +25,27 @@ export const projects = [
   },
 ];
 
+export const complianceFrameworks = [
+  {
+    color: '#ed9121',
+    description: 'test-0.0.1',
+    id: 'gid://gitlab/ComplianceManagement::Framework/5',
+    name: 'test-0.0.1',
+    projects: [],
+    __typename: 'ComplianceFramework',
+  },
+  {
+    color: '#ed9121',
+    description: 'test-0.0.2',
+    id: 'gid://gitlab/ComplianceManagement::Framework/6',
+    name: 'test-0.0.2',
+    projects: [],
+    __typename: 'ComplianceFramework',
+  },
+];
+
+export const normaliseText = (text) => text.replaceAll(/\r?\n|\r/g, '').replaceAll(' ', '');
+
 export const generateMockResponse = (index, basis, newPayload) => ({
   ...basis[index],
   policyScope: {
