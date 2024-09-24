@@ -21490,6 +21490,9 @@ msgstr ""
 msgid "Environments|Synced"
 msgstr ""
 
+msgid "Environments|The description is displayed to anyone who can see this environment."
+msgstr ""
+
 msgid "Environments|There are no deployments for this environment yet. %{linkStart}Learn more about setting up deployments.%{linkEnd}"
 msgstr ""
 
@@ -21515,6 +21518,9 @@ msgid "Environments|Updating"
 msgstr ""
 
 msgid "Environments|View logs"
+msgstr ""
+
+msgid "Environments|Write a description or drag your files here…"
 msgstr ""
 
 msgid "Environments|by %{avatar}"
