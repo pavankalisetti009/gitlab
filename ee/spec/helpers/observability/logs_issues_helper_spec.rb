@@ -10,6 +10,7 @@ RSpec.describe Observability::LogsIssuesHelper, feature_category: :metrics do
         'timestamp' => '2024-08-14T12:34:56Z',
         'fullUrl' => 'http://example.com/log/123',
         'traceId' => 'abc123',
+        'fingerprint' => 'def456',
         'severityNumber' => '5',
         'body' => 'An error occurred'
       }
@@ -32,6 +33,7 @@ RSpec.describe Observability::LogsIssuesHelper, feature_category: :metrics do
             [Log details](http://example.com/log/123) \\
             Service: `UserService` \\
             Trace ID: `abc123` \\
+            Log Fingerprint: `def456` \\
             Severity Number: `5` \\
             Timestamp: `2024-08-14T12:34:56Z` \\
             Message:
