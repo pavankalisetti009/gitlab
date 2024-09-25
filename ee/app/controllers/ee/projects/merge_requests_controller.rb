@@ -12,7 +12,6 @@ module EE
         before_action only: [:show] do
           push_frontend_feature_flag(:merge_trains_skip_train, @project)
           push_frontend_feature_flag(:resolve_vulnerability_in_mr, @project)
-          push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)
         end
 
         before_action :authorize_read_pipeline!, only: [:metrics_reports]

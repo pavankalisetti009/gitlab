@@ -13,38 +13,6 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     login_as(user)
   end
 
-  describe 'GET #show' do
-    def get_show
-      get project_merge_request_path(project, merge_request)
-    end
-
-    context "when resolveVulnerabilityWithAi ability is allowed" do
-      before do
-        allow(Ability).to receive(:allowed?).and_call_original
-        allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, project).and_return(true)
-
-        get_show
-      end
-
-      it 'sets the frontend ability to true when allowed' do
-        expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: true)
-      end
-    end
-
-    context "when resolveVulnerabilityWithAi ability is not allowed" do
-      before do
-        allow(Ability).to receive(:allowed?).and_call_original
-        allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, project).and_return(false)
-
-        get_show
-      end
-
-      it 'sets the frontend ability to false not allowed' do
-        expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: false)
-      end
-    end
-  end
-
   describe 'GET #edit' do
     def get_edit
       get edit_project_merge_request_path(project, merge_request)
