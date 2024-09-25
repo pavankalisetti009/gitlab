@@ -334,10 +334,8 @@ export default {
           this.isUpdating = false;
         });
     },
-    async expandWidget() {
+    expandWidget() {
       this.isEditing = true;
-      await this.$nextTick();
-      this.$refs.startDatePicker.show();
     },
     collapseWidget(event = {}) {
       // This prevents outside directive from treating
@@ -403,12 +401,15 @@ export default {
           >{{ __('Apply') }}</gl-button
         >
       </div>
-      <div v-outside="collapseWidget" class="gl-flex gl-pt-2">
+      <div
+        v-outside="collapseWidget"
+        class="gl-flex gl-flex-col gl-flex-wrap gl-gap-x-5 gl-gap-y-3 gl-pt-2 sm:gl-flex-row md:gl-flex-col"
+      >
         <gl-form-group
-          class="gl-m-0"
+          class="gl-m-0 gl-flex gl-items-center gl-gap-3"
           :label="$options.i18n.startDate"
           :label-for="$options.startDateInputId"
-          label-class="!gl-font-normal !gl-pb-2"
+          label-class="!gl-font-normal !gl-pb-0 gl-min-w-7 sm:gl-min-w-fit md:gl-min-w-7 gl-break-words"
         >
           <gl-datepicker
             ref="startDatePicker"
@@ -418,17 +419,17 @@ export default {
             :input-id="$options.startDateInputId"
             show-clear-button
             :target="null"
-            class="work-item-date-picker"
+            class="work-item-date-picker gl-max-w-20"
             @clear="clearStartDatePicker"
             @close="handleStartDateInput"
             @keydown.esc.native="collapseWidget"
           />
         </gl-form-group>
         <gl-form-group
-          class="gl-m-0 gl-pl-3 gl-pr-2"
+          class="gl-m-0 gl-flex gl-items-center gl-gap-3"
           :label="$options.i18n.dueDate"
           :label-for="$options.dueDateInputId"
-          label-class="!gl-font-normal !gl-pb-2"
+          label-class="!gl-font-normal !gl-pb-0 gl-min-w-7 sm:gl-min-w-fit md:gl-min-w-7 gl-break-words"
         >
           <gl-datepicker
             v-model="dirtyDueDate"
@@ -438,7 +439,7 @@ export default {
             :min-date="dirtyStartDate"
             show-clear-button
             :target="null"
-            class="work-item-date-picker"
+            class="work-item-date-picker gl-max-w-20"
             data-testid="due-date-picker"
             @clear="clearDueDatePicker"
             @keydown.esc.native="collapseWidget"
@@ -448,13 +449,13 @@ export default {
     </fieldset>
     <template v-else>
       <p class="gl-m-0 gl-py-1">
-        {{ $options.i18n.startDate }}:
+        <span class="gl-inline-block gl-min-w-8">{{ $options.i18n.startDate }}:</span>
         <span data-testid="start-date-value" :class="{ 'gl-text-secondary': !startDate }">
           {{ startDateValue }}
         </span>
       </p>
-      <p class="gl-m-0 gl-pb-3 gl-pt-1">
-        {{ $options.i18n.dueDate }}:
+      <p class="gl-m-0 gl-pt-1">
+        <span class="gl-inline-block gl-min-w-8">{{ $options.i18n.dueDate }}:</span>
         <span data-testid="due-date-value" :class="{ 'gl-text-secondary': !dueDate }">
           {{ dueDateValue }}
         </span>
