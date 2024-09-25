@@ -85,7 +85,7 @@ module Gitlab
             event_name: 'error_returned',
             ai_component: 'duo_chat',
             error: content,
-            error_code: error_code,
+            duo_chat_error_code: error_code,
             source: source)
 
           track_event(context, 'error_answer')

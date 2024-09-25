@@ -173,7 +173,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
       it 'logs the error code' do
         answer
 
-        expect(logger).to have_received(:error).with(a_hash_including(error: "error", error_code: error_code,
+        expect(logger).to have_received(:error).with(a_hash_including(error: "error", duo_chat_error_code: error_code,
           message: 'hello world', source: "chat_v2"))
       end
 
@@ -183,7 +183,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         it 'logs the error code' do
           answer
 
-          expect(logger).to have_received(:error).with(a_hash_including(error: "error", error_code: error_code,
+          expect(logger).to have_received(:error).with(a_hash_including(error: "error", duo_chat_error_code: error_code,
             message: 'StandardError', source: "chat_v2"))
         end
       end
@@ -201,7 +201,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
           answer
 
           expect(logger).to have_received(:error).with(
-            a_hash_including(message: "Error", error: "error", error_code: error_code, source: "unknown")
+            a_hash_including(message: "Error", error: "error", duo_chat_error_code: error_code, source: "unknown")
           )
         end
       end
