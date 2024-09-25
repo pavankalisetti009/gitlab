@@ -29,7 +29,16 @@ module CodeSuggestions
       end
 
       def endpoint
-        "#{base_url}/v2/code/#{endpoint_name}"
+        # TODO: After their migration to AIGW, both generations and
+        # completions will use the same `/completions` endpoint in v3.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/477891.
+        if endpoint_name == "generations" &&
+            !self_hosted? &&
+            ::Feature.enabled?(:anthropic_code_gen_aigw_migration, current_user)
+          "#{base_url}/v3/code/completions"
+        else
+          "#{base_url}/v2/code/#{endpoint_name}"
+        end
       end
 
       def body

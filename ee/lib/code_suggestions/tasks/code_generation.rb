@@ -21,7 +21,7 @@ module CodeSuggestions
         if self_hosted?
           # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global development flag for migrating the prompts
           if ::Feature.enabled?(:ai_custom_models_prompts_migration)
-            return CodeSuggestions::Prompts::CodeGeneration::AiGatewayCodeGenerationMessage.new(
+            return CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
               feature_setting: feature_setting, params: params)
           end
           # rubocop:enable Gitlab/FeatureFlagWithoutActor
@@ -37,6 +37,8 @@ module CodeSuggestions
           else
             raise "Unknown model: #{model_name}"
           end
+        elsif ::Feature.enabled?(:anthropic_code_gen_aigw_migration, current_user)
+          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params)
         else
           CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages.new(params)
         end

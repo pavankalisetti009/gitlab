@@ -3,7 +3,7 @@
 module CodeSuggestions
   module Prompts
     module CodeGeneration
-      class AiGatewayCodeGenerationMessage < CodeSuggestions::Prompts::Base
+      class AiGatewaySelfHostedMessages < CodeSuggestions::Prompts::Base
         GATEWAY_PROMPT_VERSION = 2
         MODEL_PROVIDER = 'litellm'
         PROMPT_ID = 'code_suggestions/generations'

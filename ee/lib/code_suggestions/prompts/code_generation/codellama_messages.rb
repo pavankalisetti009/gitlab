@@ -3,7 +3,7 @@
 module CodeSuggestions
   module Prompts
     module CodeGeneration
-      class CodellamaMessages < AiGatewayCodeGenerationMessage
+      class CodellamaMessages < AiGatewaySelfHostedMessages
         GATEWAY_PROMPT_VERSION = 3
         MODEL_PROVIDER = 'litellm'
 

@@ -162,6 +162,45 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       }
     end
 
+    let(:v3_saas_code_generation_prompt_components) do
+      {
+        "prompt_components" => [
+          {
+            "type" => "code_editor_generation",
+            "payload" => {
+              "file_name" => "test.py",
+              "content_above_cursor" => "def is_even(n: int) ->\n# A " \
+                "function that outputs the first 20 fibonacci numbers\n",
+              "content_below_cursor" => "",
+              "language_identifier" => "Python",
+              "prompt_id" => "code_suggestions/generations",
+              "prompt_enhancer" => {
+                "examples_array" => [
+                  {
+                    "example" => "class Project:\n  def __init__(self, name, public):\n    " \
+                      "self.name = name\n    self.visibility = 'PUBLIC' if public\n\n    " \
+                      "# is this project public?\n{{cursor}}\n\n    # print name of this project",
+                    "response" => "<new_code>def is_public(self):\n  return self.visibility == 'PUBLIC'",
+                    "trigger_type" => "comment"
+                  },
+                  {
+                    "example" => "def get_user(session):\n  # get the current user's " \
+                      "name from the session data\n{{cursor}}\n\n# is the current user an admin",
+                    "response" => "<new_code>username = None\nif 'username' in session:\n  " \
+                      "username = session['username']\nreturn username",
+                    "trigger_type" => "comment"
+                  }
+                ],
+                "trimmed_prefix" => "def is_even(n: int) ->\n# A " \
+                  "function that outputs the first 20 fibonacci numbers\n",
+                "trimmed_suffix" => ""
+              }
+            }
+          }
+        ]
+      }
+    end
+
     let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
 
     subject(:post_api) do
@@ -590,22 +629,40 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               ]
             end
 
-            it 'sends requests to the code generation endpoint' do
-              expected_body = body.merge(
-                model_provider: 'anthropic',
-                model_name: 'claude-3-5-sonnet-20240620',
-                prompt_version: 3,
-                prompt: prompt,
-                current_file: {
-                  file_name: file_name,
-                  content_above_cursor: prefix,
-                  content_below_cursor: ''
-                }
-              )
+            context 'when FF `anthropic_code_gen_aigw_migration` is disabled' do
+              before do
+                stub_feature_flags(anthropic_code_gen_aigw_migration: false)
+              end
+
+              it 'sends requests to the code generation v2 endpoint' do
+                expected_body = body.merge(
+                  model_provider: 'anthropic',
+                  model_name: 'claude-3-5-sonnet-20240620',
+                  prompt_version: 3,
+                  prompt: prompt,
+                  current_file: {
+                    file_name: file_name,
+                    content_above_cursor: prefix,
+                    content_below_cursor: ''
+                  }
+                )
+                expect(Gitlab::Workhorse)
+                  .to receive(:send_url)
+                        .with(
+                          'https://cloud.gitlab.com/ai/v2/code/generations',
+                          hash_including(body: expected_body.to_json)
+                        )
+
+                post_api
+              end
+            end
+
+            it 'sends requests to the code generation v3 endpoint' do
+              expected_body = body.merge(v3_saas_code_generation_prompt_components)
               expect(Gitlab::Workhorse)
                 .to receive(:send_url)
                 .with(
-                  'https://cloud.gitlab.com/ai/v2/code/generations',
+                  'https://cloud.gitlab.com/ai/v3/code/completions',
                   hash_including(body: expected_body.to_json)
                 )
 
