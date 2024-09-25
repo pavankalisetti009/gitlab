@@ -47,6 +47,7 @@ class CustomAbilityOptionParser
   extend CustomAbilityHelpers
 
   Options = Struct.new(
+    :title,
     :name,
     :description,
     :feature_category,
@@ -77,6 +78,11 @@ class CustomAbilityOptionParser
 
         opts.on('-f', '--force', 'Overwrite an existing entry') do |value|
           options.force = value
+        end
+
+        opts.on('-t', '--title [string]', String,
+          'A human-readable title of the custom ability') do |value|
+          options.title = value
         end
 
         opts.on('-d', '--description [string]', String,
@@ -146,6 +152,19 @@ class CustomAbilityOptionParser
       options.name = argv.first.downcase.tr('-', '_')
 
       options
+    end
+
+    def read_title
+      $stdout.puts
+      $stdout.puts ">> Specify a human-readable title of the ability:"
+
+      loop do
+        title = Readline.readline('?> ', false)&.strip
+        title = nil if title.empty?
+        return title unless title.nil?
+
+        warn "title is a required field."
+      end
     end
 
     def read_description
@@ -288,15 +307,7 @@ class CustomAbilityCreator
     assert_name!
     assert_custom_ability_does_not_exist!
 
-    options.description ||= CustomAbilityOptionParser.read_description
-    options.feature_category ||= CustomAbilityOptionParser.read_feature_category
-    options.group_ability ||= CustomAbilityOptionParser.read_group_ability
-    options.project_ability ||= CustomAbilityOptionParser.read_project_ability
-    options.introduced_by_mr ||= CustomAbilityOptionParser.read_introduced_by_mr
-    options.introduced_by_issue ||= CustomAbilityOptionParser.read_introduced_by_issue
-    options.requirements ||= CustomAbilityOptionParser.read_requirements
-    options.available_from_access_level ||= CustomAbilityOptionParser.read_available_from_access_level
-    options.milestone ||= CustomAbilityOptionParser.read_milestone
+    read_options
 
     $stdout.puts "\e[32mcreate\e[0m #{file_path}"
     $stdout.puts contents
@@ -311,6 +322,19 @@ class CustomAbilityCreator
 
   private
 
+  def read_options
+    options.title ||= CustomAbilityOptionParser.read_title
+    options.description ||= CustomAbilityOptionParser.read_description
+    options.feature_category ||= CustomAbilityOptionParser.read_feature_category
+    options.group_ability ||= CustomAbilityOptionParser.read_group_ability
+    options.project_ability ||= CustomAbilityOptionParser.read_project_ability
+    options.introduced_by_mr ||= CustomAbilityOptionParser.read_introduced_by_mr
+    options.introduced_by_issue ||= CustomAbilityOptionParser.read_introduced_by_issue
+    options.requirements ||= CustomAbilityOptionParser.read_requirements
+    options.available_from_access_level ||= CustomAbilityOptionParser.read_available_from_access_level
+    options.milestone ||= CustomAbilityOptionParser.read_milestone
+  end
+
   def contents
     # Slice is used to ensure that YAML keys
     # are always ordered in a predictable way
@@ -321,6 +345,7 @@ class CustomAbilityCreator
 
   def config_hash
     {
+      'title' => options.title,
       'name' => options.name,
       'description' => options.description,
       'feature_category' => options.feature_category,

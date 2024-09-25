@@ -4,6 +4,7 @@ module Gitlab
   module CustomRoles
     module Shared
       PARAMS = %i[
+        title
         name
         description
         introduced_by_issue
