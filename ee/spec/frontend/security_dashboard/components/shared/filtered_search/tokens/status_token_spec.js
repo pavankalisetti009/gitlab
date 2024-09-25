@@ -2,6 +2,7 @@ import { GlFilteredSearchToken } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import StatusToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/status_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -42,6 +43,7 @@ describe('Status Token component', () => {
       },
       stubs: {
         QuerystringSync: true,
+        SearchSuggestion,
         ...stubs,
       },
     });
