@@ -20,7 +20,7 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
       include_context 'with ai features enabled for group'
 
       before do
-        visit root_path
+        visit group_path(group)
       end
 
       shared_examples 'GitLab Duo drawer' do
@@ -46,6 +46,8 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
   end
 
   context 'for self-managed', :with_cloud_connector do
+    let_it_be_with_reload(:group) { create(:group) }
+
     before do
       sign_in(user)
     end
@@ -54,7 +56,7 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
       include_context 'with duo features enabled and ai chat available for self-managed'
 
       before do
-        visit root_path
+        visit group_path(group)
       end
 
       shared_examples 'GitLab Duo drawer' do
