@@ -3,7 +3,7 @@ import { GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import RuleName from 'ee/approvals/components/rules/rule_name.vue';
-import { n__, sprintf } from '~/locale';
+import { n__, s__, sprintf } from '~/locale';
 import UserAvatarList from '~/vue_shared/components/user_avatar/user_avatar_list.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { RULE_TYPE_ANY_APPROVER, RULE_TYPE_REGULAR } from 'ee/approvals/constants';
@@ -16,6 +16,9 @@ import Rules from 'ee/approvals/components/rules/rules.vue';
 import UnconfiguredSecurityRules from 'ee/approvals/components/security_configuration/unconfigured_security_rules.vue';
 
 export default {
+  i18n: {
+    noRulesText: s__('ApprovalRules|Define target branch approval rules for new merge requests.'),
+  },
   components: {
     GlButton,
     RuleControls,
@@ -142,6 +145,10 @@ export default {
       </template>
       <template #tbody="{ rules, name, members, approvalsRequired, branches, actions }">
         <unconfigured-security-rules v-if="!isBranchRulesEdit" />
+
+        <p v-if="isBranchRulesEdit && !rules.length" class="gl-mb-0 gl-p-5 gl-text-subtle">
+          {{ $options.i18n.noRulesText }}
+        </p>
 
         <template v-for="(rule, index) in rules">
           <empty-rule
