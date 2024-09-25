@@ -95,13 +95,13 @@ export const summaryTextWithoutLicenseCheck = (_, getters) => {
   if (!getters.baseReportHasLicenses) {
     return getters.reportContainsDeniedLicense
       ? n__(
-          'LicenseCompliance|License Compliance detected %d license and policy violation for the source branch only',
-          'LicenseCompliance|License Compliance detected %d licenses and policy violations for the source branch only',
+          'LicenseCompliance|License Compliance detected %d license and policy violation',
+          'LicenseCompliance|License Compliance detected %d licenses and policy violations',
           getters.licenseReportLength,
         )
       : n__(
-          'LicenseCompliance|License Compliance detected %d license for the source branch only',
-          'LicenseCompliance|License Compliance detected %d licenses for the source branch only',
+          'LicenseCompliance|License Compliance detected %d license',
+          'LicenseCompliance|License Compliance detected %d licenses',
           getters.licenseReportLength,
         );
   }

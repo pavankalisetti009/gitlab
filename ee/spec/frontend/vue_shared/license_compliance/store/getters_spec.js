@@ -429,7 +429,7 @@ describe('getters', () => {
 
       describe('when denied licenses exist on the HEAD', () => {
         describe('when a single license is detected', () => {
-          it('should return "License Compliance detected 1 license and policy violation for the source branch only"', () => {
+          it('should return "License Compliance detected 1 license and policy violation"', () => {
             const mockGetters = {
               reportContainsDeniedLicense: true,
               baseReportHasLicenses: false,
@@ -437,13 +437,13 @@ describe('getters', () => {
             };
 
             expect(getters.summaryTextWithoutLicenseCheck(state, mockGetters)).toBe(
-              'License Compliance detected 1 license and policy violation for the source branch only',
+              'License Compliance detected 1 license and policy violation',
             );
           });
         });
 
         describe('when multiple licenses are detected', () => {
-          it('should return "License Compliance detected 2 licenses and policy violations for the source branch only"', () => {
+          it('should return "License Compliance detected 2 licenses and policy violations"', () => {
             const mockGetters = {
               reportContainsDeniedLicense: true,
               baseReportHasLicenses: false,
@@ -451,7 +451,7 @@ describe('getters', () => {
             };
 
             expect(getters.summaryTextWithoutLicenseCheck(state, mockGetters)).toBe(
-              'License Compliance detected 2 licenses and policy violations for the source branch only',
+              'License Compliance detected 2 licenses and policy violations',
             );
           });
         });
@@ -459,7 +459,7 @@ describe('getters', () => {
 
       describe('when denied licenses are not detected on the HEAD', () => {
         describe('when a single license is detected', () => {
-          it('should return "License Compliance detected 1 license for the source branch only"', () => {
+          it('should return "License Compliance detected 1 license"', () => {
             const mockGetters = {
               reportContainsDeniedLicense: false,
               baseReportHasLicenses: false,
@@ -467,13 +467,13 @@ describe('getters', () => {
             };
 
             expect(getters.summaryTextWithoutLicenseCheck(state, mockGetters)).toBe(
-              'License Compliance detected 1 license for the source branch only',
+              'License Compliance detected 1 license',
             );
           });
         });
 
         describe('when multiple licenses are detected', () => {
-          it('should return "License Compliance detected 2 licenses for the source branch only"', () => {
+          it('should return "License Compliance detected 2 licenses"', () => {
             const mockGetters = {
               reportContainsDeniedLicense: false,
               baseReportHasLicenses: false,
@@ -481,7 +481,7 @@ describe('getters', () => {
             };
 
             expect(getters.summaryTextWithoutLicenseCheck(state, mockGetters)).toBe(
-              'License Compliance detected 2 licenses for the source branch only',
+              'License Compliance detected 2 licenses',
             );
           });
         });
