@@ -128,7 +128,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:first_review_answer) do
         %(
           <review>
-            <comment priority="5" line="2">First comment with suggestions</comment>
+            <comment priority="3" line="2">First comment with suggestions</comment>
           </review>'
         )
       end
@@ -137,8 +137,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:second_review_answer) do
         %(
           <review>
-            <comment priority="4" line="1">Second comment with suggestions</comment>
-            <comment priority="7" line="2">Third comment with suggestions</comment>
+            <comment priority="3" line="1">Second comment with suggestions</comment>
+            <comment priority="3" line="2">Third comment with suggestions</comment>
+            <comment priority="2" line="2">Fourth comment with suggestions</comment>
           </review>'
         )
       end
@@ -146,14 +147,14 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:summary_answer) { 'Helpful review summary' }
       let(:summary_response) { { content: [{ text: summary_answer }] } }
 
-      it 'sorts by priority and creates diff notes on new and updated files' do
+      it 'filters by priority and creates diff notes on new and updated files' do
         completion.execute
 
         diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
         expect(diff_notes.count).to eq 3
 
         first_note = diff_notes[0]
-        expect(first_note.note).to eq 'Third comment with suggestions'
+        expect(first_note.note).to eq 'Second comment with suggestions'
         expect(first_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
@@ -162,19 +163,19 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           new_path: 'NEW.md',
           position_type: 'text',
           old_line: nil,
-          new_line: 2,
+          new_line: 1,
           line_range: nil,
           ignore_whitespace_change: false
         })
 
         second_note = diff_notes[1]
-        expect(second_note.note).to eq 'First comment with suggestions'
+        expect(second_note.note).to eq 'Third comment with suggestions'
         expect(second_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
           head_sha: diff_refs.head_sha,
-          old_path: 'UPDATED.md',
-          new_path: 'UPDATED.md',
+          old_path: 'NEW.md',
+          new_path: 'NEW.md',
           position_type: 'text',
           old_line: nil,
           new_line: 2,
@@ -183,16 +184,16 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
 
         third_note = diff_notes[2]
-        expect(third_note.note).to eq 'Second comment with suggestions'
+        expect(third_note.note).to eq 'First comment with suggestions'
         expect(third_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
           head_sha: diff_refs.head_sha,
-          old_path: 'NEW.md',
-          new_path: 'NEW.md',
+          old_path: 'UPDATED.md',
+          new_path: 'UPDATED.md',
           position_type: 'text',
           old_line: nil,
-          new_line: 1,
+          new_line: 2,
           line_range: nil,
           ignore_whitespace_change: false
         })
@@ -219,7 +220,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           %(
             <review>
               <comment>First comment with suggestions</comment>
-              <comment priority="1" line="2">Second comment with suggestions</comment>
+              <comment priority="3" line="2">Second comment with suggestions</comment>
             </review>'
           )
         end
@@ -229,7 +230,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           %(
             <review>
               <comment priority="" line="1">Third comment with suggestions</comment>
-              <comment priority="7" line="">Fourth comment with suggestions</comment>
+              <comment priority="3" line="">Fourth comment with suggestions</comment>
             </review>'
           )
         end
@@ -253,7 +254,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             Let me explain how awesome this review is.
 
             <review>
-              <comment priority="1" line="2">First comment with suggestions</comment>
+              <comment priority="3" line="2">First comment with suggestions</comment>
             </review>'
           )
         end
@@ -262,7 +263,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:second_review_answer) do
           %(
             <review>
-              <comment priority="7" line="1">Second comment with suggestions</comment>
+              <comment priority="3" line="1">Second comment with suggestions</comment>
             </review>'
           )
         end
@@ -387,7 +388,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           diff_notes = merge_request.notes.diff_notes
           expect(diff_notes.count).to eq 1
 
-          expect(diff_notes[0].note).to eq 'Third comment with suggestions'
+          expect(diff_notes[0].note).to eq 'Second comment with suggestions'
           expect(diff_notes[0].position.to_h).to eq({
             base_sha: diff_refs.base_sha,
             start_sha: diff_refs.start_sha,
@@ -396,7 +397,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             new_path: 'NEW.md',
             position_type: 'text',
             old_line: nil,
-            new_line: 2,
+            new_line: 1,
             line_range: nil,
             ignore_whitespace_change: false
           })

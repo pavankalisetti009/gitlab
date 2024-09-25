@@ -7,6 +7,7 @@ module Gitlab
         class ReviewMergeRequest < Gitlab::Llm::Completions::Base
           DRAFT_NOTES_COUNT_LIMIT = 50
           OUTPUT_TOKEN_LIMIT = 8000
+          PRIORITY_THRESHOLD = 3
 
           def execute
             create_progress_note
@@ -159,8 +160,12 @@ module Gitlab
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
           def sorted_and_trimmed_draft_note_params
-            # Take only a limited number of reviews to minimize the review volume
-            @draft_notes_by_priority.sort_by(&:first).reverse.take(DRAFT_NOTES_COUNT_LIMIT).map(&:last)
+            # Filter out lower priority comments (< 3) and take only a limited
+            # number of reviews to minimize the review volume
+            @draft_notes_by_priority
+              .select { |note| note.first >= PRIORITY_THRESHOLD }
+              .take(DRAFT_NOTES_COUNT_LIMIT)
+              .map(&:last)
           end
           # rubocop: enable CodeReuse/ActiveRecord
 
