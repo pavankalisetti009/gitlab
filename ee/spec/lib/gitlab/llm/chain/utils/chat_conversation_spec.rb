@@ -75,6 +75,23 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :d
       end
     end
 
+    context "with empty message" do
+      let(:messages) do
+        [
+          build(:ai_chat_message, request_id: "uuid1", content: "question 1"),
+          build(:ai_chat_message, :assistant, request_id: "uuid1", content: ""),
+          build(:ai_chat_message, request_id: "uuid1", content: "question 2"),
+          build(:ai_chat_message, :assistant, request_id: "uuid1", content: "answer 2")
+        ]
+      end
+
+      let(:history) { conversation.pluck(:content) }
+
+      it "returns only successful conversations in a right order" do
+        expect(history).to contain_exactly("question 2", "answer 2")
+      end
+    end
+
     context "with duplicating roles message" do
       let(:messages) do
         [
