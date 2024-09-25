@@ -144,6 +144,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'zoekt.node_name' => 'test_name',
         'zoekt.node_id' => node.id,
         'zoekt.indexed_bytes' => 0,
+        'zoekt.storage_percent_used' => node.storage_percent_used,
         'zoekt.used_bytes' => node.used_bytes,
         'zoekt.total_bytes' => node.total_bytes,
         'zoekt.task_count' => 100,
@@ -160,6 +161,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'zoekt.node_name' => 'another_name',
         'zoekt.node_id' => node.id,
         'zoekt.indexed_bytes' => 0,
+        'zoekt.storage_percent_used' => node.storage_percent_used,
         'zoekt.used_bytes' => node.used_bytes,
         'zoekt.total_bytes' => node.total_bytes,
         'zoekt.concurrency_limit' => node.concurrency_limit
@@ -207,6 +209,48 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           expect(concurrency_limit).to eq(result)
         end
       end
+    end
+  end
+
+  describe '#storage_percent_used' do
+    it 'is used storage / total reserved storage' do
+      expect(node.storage_percent_used).to eq(node.used_bytes / node.total_bytes.to_f)
+    end
+  end
+
+  describe '#watermark_exceeded_low?' do
+    it 'returns true when over low limit' do
+      node.used_bytes = 0
+      expect(node).not_to be_watermark_exceeded_low
+
+      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_LOW
+      expect(node).to be_watermark_exceeded_low
+      expect(node).not_to be_watermark_exceeded_high
+      expect(node).not_to be_watermark_exceeded_critical
+    end
+  end
+
+  describe '#watermark_exceeded_high?' do
+    it 'returns true when over high limit' do
+      node.used_bytes = 0
+      expect(node).not_to be_watermark_exceeded_high
+
+      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH
+      expect(node).to be_watermark_exceeded_low
+      expect(node).to be_watermark_exceeded_high
+      expect(node).not_to be_watermark_exceeded_critical
+    end
+  end
+
+  describe '#watermark_exceeded_critical?' do
+    it 'returns true when over critical limit' do
+      node.used_bytes = 0
+      expect(node).not_to be_watermark_exceeded_critical
+
+      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_CRITICAL
+      expect(node).to be_watermark_exceeded_low
+      expect(node).to be_watermark_exceeded_high
+      expect(node).to be_watermark_exceeded_critical
     end
   end
 end

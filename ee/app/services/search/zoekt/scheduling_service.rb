@@ -22,8 +22,6 @@ module Search
       ].freeze
 
       BUFFER_FACTOR = 3
-      WATERMARK_LIMIT_LOW = 0.6
-      WATERMARK_LIMIT_HIGH = 0.7
 
       DOT_COM_ROLLOUT_TARGET_BYTES = 300.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
@@ -79,12 +77,12 @@ module Search
 
         execute_every 5.minutes, cache_key: :eviction do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
-          over_watermark_nodes = nodes.select { |n| (n.used_bytes / n.total_bytes.to_f) >= WATERMARK_LIMIT_HIGH }
+          over_watermark_nodes = nodes.select(&:watermark_exceeded_high?)
 
           break if over_watermark_nodes.empty?
 
           info(:eviction, message: 'Detected nodes over watermark',
-            watermark_limit_high: WATERMARK_LIMIT_HIGH,
+            watermark_limit_high: ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH,
             count: over_watermark_nodes.count)
 
           over_watermark_nodes.each do |node|
@@ -110,7 +108,7 @@ module Search
               namespaces_to_move << namespace_id
               total_repository_size += repository_size
 
-              break if (node.used_bytes / node.total_bytes.to_f) < WATERMARK_LIMIT_LOW
+              break unless node.watermark_exceeded_low?
             end
 
             unassign_namespaces_from_node(node, namespaces_to_move, node_original_used_bytes, total_repository_size)
@@ -122,7 +120,7 @@ module Search
         return if namespaces_to_move.empty?
 
         info(:eviction, message: 'Unassigning namespaces from node',
-          watermark_limit_high: WATERMARK_LIMIT_HIGH,
+          watermark_limit_high: ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH,
           count: namespaces_to_move.count,
           node_used_bytes: node_original_used_bytes,
           node_expected_used_bytes: node.used_bytes,
@@ -236,7 +234,7 @@ module Search
 
             node = nodes.max_by { |n| n.total_bytes - n.used_bytes }
 
-            if (node.used_bytes + space_required) <= node.total_bytes * WATERMARK_LIMIT_LOW
+            if (node.used_bytes + space_required) <= node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_LOW
               zoekt_index = Search::Zoekt::Index.new(
                 namespace_id: zoekt_enabled_namespace.root_namespace_id,
                 zoekt_node_id: node.id,

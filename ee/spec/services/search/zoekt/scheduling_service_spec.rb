@@ -96,18 +96,19 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         it 'removes extra indices and logs' do
           expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
             'message' => 'Detected nodes over watermark',
-            'watermark_limit_high' => described_class::WATERMARK_LIMIT_HIGH,
+            'watermark_limit_high' => ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH,
             'count' => 1 }
           )
 
           expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task,
             'message' => 'Unassigning namespaces from node',
-            'watermark_limit_high' => described_class::WATERMARK_LIMIT_HIGH,
+            'watermark_limit_high' => ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH,
             'count' => 1,
             'node_used_bytes' => 90000000,
             'node_expected_used_bytes' => 27000001,
             'total_repository_size' => namespace_statistics.repository_size,
-            'meta' => node_out_of_storage.metadata_json.merge('zoekt.used_bytes' => 27000001) }
+            'meta' => node_out_of_storage.metadata_json.merge(
+              'zoekt.used_bytes' => 27000001, 'zoekt.storage_percent_used' => 0.27000001) }
           )
 
           expect { execute_task }.to change { Search::Zoekt::Index.pending_deletion.count }.from(0).to(1)

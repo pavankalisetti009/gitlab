@@ -7,6 +7,9 @@ module Search
 
       DEFAULT_CONCURRENCY_LIMIT = 20
       MAX_CONCURRENCY_LIMIT = 200
+      WATERMARK_LIMIT_LOW = 0.6
+      WATERMARK_LIMIT_HIGH = 0.7
+      WATERMARK_LIMIT_CRITICAL = 0.85
 
       has_many :indices,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Index'
@@ -67,11 +70,30 @@ module Search
           'zoekt.node_id' => id,
           'zoekt.used_bytes' => used_bytes,
           'zoekt.indexed_bytes' => indexed_bytes,
+          'zoekt.storage_percent_used' => storage_percent_used,
           'zoekt.total_bytes' => total_bytes,
           'zoekt.task_count' => metadata['task_count'],
           'zoekt.concurrency' => metadata['concurrency'],
           'zoekt.concurrency_limit' => concurrency_limit
         }.compact
+      end
+
+      def watermark_exceeded_critical?
+        storage_percent_used >= WATERMARK_LIMIT_CRITICAL
+      end
+
+      def watermark_exceeded_high?
+        storage_percent_used >= WATERMARK_LIMIT_HIGH
+      end
+
+      def watermark_exceeded_low?
+        storage_percent_used >= WATERMARK_LIMIT_LOW
+      end
+
+      def storage_percent_used
+        return 0 unless total_bytes.to_i > 0
+
+        used_bytes / total_bytes.to_f
       end
     end
   end
