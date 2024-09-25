@@ -49,8 +49,6 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
       before do
         stub_saas_features(identity_verification: true)
 
-        stub_feature_flags(ci_require_credit_card_on_trial_plan: false)
-
         stub_ci_pipeline_to_return_yaml_file
 
         visit new_project_pipeline_path(project)

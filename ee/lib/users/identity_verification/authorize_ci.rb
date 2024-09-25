@@ -16,7 +16,6 @@ module Users
         return unless user
         return unless project.shared_runners_enabled
 
-        authorize_credit_card!
         authorize_identity_verification!
       end
 
@@ -31,12 +30,6 @@ module Users
       end
 
       private
-
-      def authorize_credit_card!
-        return if user.has_required_credit_card_to_run_pipelines?(project)
-
-        ci_access_denied!('Credit card required to be on file in order to run CI jobs')
-      end
 
       def authorize_identity_verification!
         return if identity_verified?

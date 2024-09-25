@@ -56,21 +56,6 @@ module EE
         ).execute
       end
 
-      def show_verification_reminder?
-        return false unless ::Gitlab.com?
-
-        return false unless current_user
-        return false if current_user.has_valid_credit_card?
-
-        failed_pipeline = current_user.pipelines.user_not_verified.last
-        return false unless failed_pipeline
-
-        project = failed_pipeline.project
-        feature_enabled = ::Feature.enabled?(:ci_require_credit_card_on_trial_plan, project)
-
-        feature_enabled && !user_dismissed?('verification_reminder', failed_pipeline.created_at)
-      end
-
       def show_joining_a_project_alert?
         return false unless cookies[:signup_with_joining_a_project]
         return false unless ::Gitlab::Saas.feature_available?(:onboarding)

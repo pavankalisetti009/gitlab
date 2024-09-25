@@ -6,13 +6,6 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:project) { create(:project) }
 
-  def stub_verifications(credit_card:, identity_verification:)
-    allow_next_instance_of(described_class) do |instance|
-      allow(instance).to receive(:authorize_credit_card!) unless credit_card
-      allow(instance).to receive(:authorize_identity_verification!) unless identity_verification
-    end
-  end
-
   describe '#authorize_run_jobs!' do
     subject(:authorize) { described_class.new(user: user, project: project).authorize_run_jobs! }
 
@@ -35,32 +28,11 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
       end
     end
 
-    shared_examples 'credit card verification' do
-      let(:error_message) { 'Credit card required to be on file in order to run CI jobs' }
-
-      context 'when the user has validated a credit card' do
-        before do
-          build(:credit_card_validation, user: user)
-        end
-
-        it { expect { authorize }.not_to raise_error }
-      end
-
-      context 'when the user has not validated a credit card' do
-        before do
-          allow(user).to receive(:has_required_credit_card_to_run_pipelines?).with(project).and_return(false)
-        end
-
-        it_behaves_like 'logs the failure and raises an exception'
-      end
-    end
-
     context 'when the user is nil' do
       let(:user) { nil }
 
       before do
         allow_next_instance_of(described_class) do |instance|
-          allow(instance).to receive(:authorize_credit_card!).and_raise(::Users::IdentityVerification::Error)
           allow(instance).to receive(:authorize_identity_verification!).and_raise(::Users::IdentityVerification::Error)
         end
       end
@@ -72,7 +44,6 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
       before do
         allow(project).to receive(:shared_runners_enabled).and_return(false)
         allow_next_instance_of(described_class) do |instance|
-          allow(instance).to receive(:authorize_credit_card!).and_raise(::Users::IdentityVerification::Error)
           allow(instance).to receive(:authorize_identity_verification!).and_raise(::Users::IdentityVerification::Error)
         end
       end
@@ -80,27 +51,7 @@ RSpec.describe Users::IdentityVerification::AuthorizeCi, :saas, feature_category
       it { expect { authorize }.not_to raise_error }
     end
 
-    context 'when credit card verification is required' do
-      before do
-        stub_verifications(credit_card: true, identity_verification: false)
-      end
-
-      it_behaves_like 'credit card verification'
-    end
-
-    context 'when credit card and identity verification are required' do
-      before do
-        stub_verifications(credit_card: true, identity_verification: true)
-      end
-
-      it_behaves_like 'credit card verification'
-    end
-
     context 'when identity verification is required' do
-      before do
-        stub_verifications(credit_card: false, identity_verification: true)
-      end
-
       context 'when user identity is verified' do
         before do
           allow(user).to receive(:identity_verified?).and_return(true)
