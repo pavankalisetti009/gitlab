@@ -166,13 +166,13 @@ module Features
         extra_params: extra_with_glm_source(extra_params).merge(existing_group_attrs)
       )
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
     end
 
     def submit_new_group_trial_selection_form(result: ServiceResponse.success, extra_params: {})
       stub_apply_trial(result: result, extra_params: extra_with_glm_source(extra_params))
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
     end
 
     def extra_with_glm_source(extra_params)

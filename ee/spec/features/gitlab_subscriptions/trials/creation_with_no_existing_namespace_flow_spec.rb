@@ -13,11 +13,11 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(button_text: 'Continue')
 
       expect_to_be_on_namespace_creation
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
 
       # required field check
       expect(page).to have_native_text_validation_message('new_group_name')
@@ -25,7 +25,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       # namespace invalid check
       fill_in_trial_form_for_new_group(name: '_invalid group name_')
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
 
       expect_to_be_on_namespace_creation
       expect_to_have_namespace_creation_errors
@@ -33,7 +33,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       # namespace filled out with blank spaces
       fill_in_trial_form_for_new_group(name: '  ')
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
 
       expect_to_be_on_namespace_creation
       expect_to_have_namespace_creation_errors(group_name: '  ', error_message: "Name can't be blank")
@@ -55,7 +55,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
         fill_in_company_information
 
         submit_company_information_form(
-          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_content: 'discover-group-security' }
+          button_text: 'Continue', extra_params: { glm_content: 'discover-group-security' }
         )
 
         expect_to_be_on_namespace_creation
@@ -81,7 +81,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
         fill_in_company_information
 
         submit_company_information_form(
-          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_source: glm_source }
+          button_text: 'Continue', extra_params: { glm_source: glm_source }
         )
 
         expect_to_be_on_namespace_creation_without_company_question
@@ -105,7 +105,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
         fill_in_company_information
 
         submit_company_information_form(
-          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_source: glm_source }
+          button_text: 'Continue', extra_params: { glm_source: glm_source }
         )
 
         expect_to_be_on_namespace_creation
@@ -129,12 +129,12 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_result: lead_failure, button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(lead_result: lead_failure, button_text: 'Continue')
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(button_text: 'Continue')
 
       expect_to_be_on_namespace_creation
 
@@ -154,7 +154,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(button_text: 'Continue')
 
       expect_to_be_on_namespace_creation
 
@@ -182,13 +182,13 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       fill_in_company_information
 
-      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(button_text: 'Continue')
 
       expect_to_be_on_namespace_creation
 
       fill_in_trial_form_for_new_group
 
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
 
       expect(page).to have_content('Page not found')
     end

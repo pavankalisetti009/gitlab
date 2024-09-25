@@ -47,9 +47,9 @@ RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_
         expect(service).to receive(:execute).with(lead_params).and_return(ServiceResponse.success) # rubocop:disable RSpec/ExpectInHook
       end
 
-      click_button 'Start free GitLab Ultimate trial'
+      click_button 'Continue'
 
-      expect(page).to have_content('Almost there')
+      expect(page).to have_content('Activate my trial')
       expect(page).to have_content('Who will be using GitLab?')
     end
 
