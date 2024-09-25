@@ -580,7 +580,6 @@ export const pipelineSecurityReportFinding = {
   stateComment: null,
   vulnerability: {
     id: '1',
-    aiResolutionEnabled: true,
     externalIssueLinks: {
       nodes: [],
     },
