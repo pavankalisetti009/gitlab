@@ -81,7 +81,8 @@ module EE
           end
 
           def analytics_menu_item
-            unless ::License.feature_available?(:product_analytics)
+            unless ::License.feature_available?(:product_analytics) &&
+                ::Feature.enabled?(:product_analytics_admin_settings, :instance)
               return ::Sidebars::NilMenuItem.new(item_id: :admin_analytics)
             end
 
