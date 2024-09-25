@@ -11,6 +11,7 @@ RSpec.describe 'bin/custom-ability', feature_category: :permissions do
   describe CustomAbilityCreator do
     let(:argv) do
       %w[test_custom_ability
+        -t test
         -d test
         -c vulnerability_management
         -r other_ability
@@ -81,6 +82,8 @@ RSpec.describe 'bin/custom-ability', feature_category: :permissions do
         :amend                       | %w[foo --amend]                           | true
         :force                       | %w[foo -f]                                | true
         :force                       | %w[foo --force]                           | true
+        :title                       | %w[foo -t title]                          | 'title'
+        :title                       | %w[foo --title title]                     | 'title'
         :description                 | %w[foo -d desc]                           | 'desc'
         :description                 | %w[foo --description desc]                | 'desc'
         :feature_category            | %w[foo -c abilities]                      | 'abilities'
@@ -125,6 +128,31 @@ RSpec.describe 'bin/custom-ability', feature_category: :permissions do
         expect do
           expect { described_class.parse(%w[foo -h]) }.to output(%r{Usage: bin/custom-ability}).to_stdout
         end.to raise_error(CustomAbilityHelpers::Done)
+      end
+    end
+
+    describe '.read_title' do
+      let(:title) { 'Test title' }
+
+      it 'reads title from stdin' do
+        expect(Readline).to receive(:readline).and_return(title)
+        expect do
+          expect(described_class.read_title).to eq('Test title')
+        end.to output(/Specify a human-readable title of the ability./).to_stdout
+      end
+
+      context 'when title is empty' do
+        let(:title) { '' }
+
+        it 'shows error message and retries' do
+          expect(Readline).to receive(:readline).and_return(title)
+          expect(Readline).to receive(:readline).and_raise('EOF')
+
+          expect do
+            expect { described_class.read_title }.to raise_error(/EOF/)
+          end.to output(/Specify a human-readable title of the ability:/)
+                   .to_stdout.and output(/title is a required field/).to_stderr
+        end
       end
     end
 
