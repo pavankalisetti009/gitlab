@@ -30,8 +30,16 @@ module Search
 
       attr_reader :task
 
-      def self.execute(task)
-        new(task).execute
+      def self.execute!(task)
+        execute(task, without_cache: true)
+      end
+
+      def self.execute(task, without_cache: false)
+        instance = new(task)
+
+        Gitlab::Redis::SharedState.with { |r| r.del(instance.cache_key) } if without_cache
+
+        instance.execute
       end
 
       def initialize(task)
@@ -45,14 +53,16 @@ module Search
         send(task) # rubocop:disable GitlabSecurity/PublicSend -- We control the list of tasks in the source code
       end
 
+      def cache_key
+        [self.class.name.underscore, :execute_every, task].flatten.join(':')
+      end
+
       private
 
       def execute_every(period, cache_key:)
         # We don't want any delay interval in development environments,
         # so lets disable the cache unless we are in production.
         return yield if Rails.env.development?
-
-        cache_key = [self.class.name.underscore, :execute_every, cache_key].flatten.join(':')
 
         Gitlab::Redis::SharedState.with do |redis|
           key_set = redis.set(cache_key, 1, ex: period, nx: true)
