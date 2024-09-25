@@ -40,7 +40,6 @@ module QA
         end
 
         def fabricate!
-          QA::Page::Main::Menu.perform(&:sign_out_if_signed_in)
           QA::Page::Main::Login.perform(&:sign_in_using_admin_credentials)
           QA::Page::Main::Menu.perform(&:go_to_admin_area)
           QA::Page::Main::Login.perform(&:set_up_new_admin_password_if_required)
@@ -84,8 +83,18 @@ module QA
 
             api_post.tap { QA::Runtime::Logger.info("Successfully added license key. Details:\n#{license_info}") }
           rescue RuntimeError => e
-            QA::Runtime::Logger.error("Following license fabrication failed: #{base_license_info}")
-            raise(e)
+            unless e.message.include?('Your password expired')
+              QA::Runtime::Logger.error("Following license fabrication failed: #{base_license_info}")
+              raise(e)
+            end
+
+            QA::Runtime::Logger.warn('Admin password must be reset before the default access token can be used. ' \
+                                     'Setting password now...')
+
+            QA::Page::Main::Login.perform(&:sign_in_using_admin_credentials)
+            QA::Page::Main::Login.perform(&:set_up_new_admin_password_if_required)
+
+            retry
           end
         end
 
