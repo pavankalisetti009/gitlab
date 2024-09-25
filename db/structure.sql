@@ -21023,7 +21023,8 @@ CREATE TABLE zoekt_indices (
     state smallint DEFAULT 0 NOT NULL,
     zoekt_replica_id bigint,
     reserved_storage_bytes bigint DEFAULT '10737418240'::bigint,
-    used_storage_bytes bigint DEFAULT 0 NOT NULL
+    used_storage_bytes bigint DEFAULT 0 NOT NULL,
+    watermark_level smallint DEFAULT 0 NOT NULL
 );
 
 CREATE SEQUENCE zoekt_indices_id_seq
