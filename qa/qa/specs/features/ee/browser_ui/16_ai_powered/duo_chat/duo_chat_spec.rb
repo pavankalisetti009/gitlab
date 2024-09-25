@@ -4,6 +4,8 @@ module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
   RSpec.describe 'Ai-powered', product_group: :duo_chat do
     describe 'Duo Chat' do
+      let(:project) { create(:project, name: 'duo-chat-project') }
+
       shared_examples 'Duo Chat' do |testcase|
         it 'gets a response back from Duo Chat', testcase: testcase do
           QA::EE::Page::Component::DuoChat.perform do |duo_chat|
@@ -23,6 +25,7 @@ module QA
 
       before do
         Flow::Login.sign_in
+        project.visit!
       end
 
       context 'when initiating Duo Chat' do
