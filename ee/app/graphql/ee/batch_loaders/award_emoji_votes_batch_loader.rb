@@ -13,7 +13,7 @@ module EE
           awardable_class ||= object.class.name
 
           batch_object = [object.id, object&.sync_object&.id]
-          batch_key = "#{object.issuing_parent_id}-#{vote_type}"
+          batch_key = "#{object.class.base_class.name}-#{vote_type}"
 
           BatchLoader::GraphQL.for(batch_object).batch(key: batch_key) do |ids, loader, _args|
             counts_for_object = votes_for_collection(ids.flat_map(&:first), awardable_class, vote_type)
