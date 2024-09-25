@@ -97,27 +97,11 @@ module Vulnerabilities
       end
 
       def execute
-        ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %i[
-            vulnerabilities
-            vulnerability_feedback
-            vulnerability_finding_links
-            vulnerability_findings_remediations
-            vulnerability_occurrences
-            vulnerability_occurrence_pipelines
-            vulnerability_historical_statistics
-            vulnerability_reads
-            vulnerability_identifiers
-            vulnerability_merge_request_links
-          ],
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
-        ) do
-          delete_vulnerabilities_on_default_branch
-          delete_vulnerabilities_not_present_on_default_branch
-          update_vulnerability_statistics
-          delete_feedback_records
-          delete_historical_statistics
-        end
+        delete_vulnerabilities_on_default_branch
+        delete_vulnerabilities_not_present_on_default_branch
+        update_vulnerability_statistics
+        delete_feedback_records
+        delete_historical_statistics
       end
 
       private
