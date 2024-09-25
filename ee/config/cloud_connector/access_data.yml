@@ -50,6 +50,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - generate_issue_description
   anthropic_proxy:
     backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
@@ -65,6 +66,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - summarize_review
   vertex_ai_proxy:
     backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:

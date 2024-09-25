@@ -22,6 +22,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let_it_be(:sast_backend) { 'gitlab-security-gateway' }
 
     let_it_be(:self_hosted_models_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
+    let_it_be(:ai_proxy_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:duo_chat_cutoff_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:self_hosted_models_bundled_with) { { "duo_enterprise" => [:code_suggestions, :duo_chat] } }
 
@@ -138,15 +139,14 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
         {
           code_suggestions: [cs_cut_off_date, cs_bundled_with, backend],
           duo_chat: [duo_chat_cutoff_date, duo_chat_bundled_with, backend],
-          anthropic_proxy: [nil, anthropic_proxy_bundled_with, backend],
-          vertex_ai_proxy: [nil, vertex_ai_proxy_bundled_with, backend],
+          anthropic_proxy: [ai_proxy_cut_off_date, anthropic_proxy_bundled_with, backend],
+          vertex_ai_proxy: [ai_proxy_cut_off_date, vertex_ai_proxy_bundled_with, backend],
           resolve_vulnerability: [nil, resolve_vulnerability_bundled_with, backend],
           self_hosted_models: [self_hosted_models_cut_off_date, self_hosted_models_bundled_with, backend],
           generate_description: [nil, generate_description_bundled_with, backend],
           generate_commit_message: [nil, generate_commit_message_bundled_with, backend],
           glab_ask_git_command: [nil, glab_ask_git_command_bundled_with, backend],
-          explain_vulnerability: [nil, explain_vulnerability_bundled_with,
-            backend],
+          explain_vulnerability: [nil, explain_vulnerability_bundled_with, backend],
           summarize_comments: [nil, summarize_comments_bundled_with, backend],
           observability_all: [nil, observability_all_bundled_with, gob_backend],
           troubleshoot_job: [nil, troubleshoot_job_bundled_with, backend],
