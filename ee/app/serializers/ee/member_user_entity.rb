@@ -15,6 +15,10 @@ module EE
           user.managed_by_user?(options[:current_user], group: options[:source]&.root_ancestor)
       end
 
+      expose :is_service_account, if: ->(user, _options) { user&.service_account? } do |user|
+        user&.service_account?
+      end
+
       def oncall_schedules
         object.oncall_schedules.for_project(project_ids)
       end

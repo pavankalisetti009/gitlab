@@ -192,6 +192,24 @@ RSpec.describe MemberUserEntity do
       end
     end
 
+    context 'with service account' do
+      context 'when the current_user is a service account' do
+        it "exposes `is_service_account`" do
+          allow(user).to receive(:service_account?).and_return(true)
+
+          expect(entity_hash[:is_service_account]).to eq(true)
+        end
+      end
+
+      context 'when the current_user is not a service account' do
+        it "does not expose `is_service_account`" do
+          allow(user).to receive(:service_account?).and_return(false)
+
+          expect(entity_hash.keys).not_to include(:is_service_account)
+        end
+      end
+    end
+
     private
 
     def expected_hash(oncall_object)

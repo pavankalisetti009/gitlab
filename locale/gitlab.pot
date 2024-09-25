@@ -44734,9 +44734,6 @@ msgstr ""
 msgid "RapidDiffs|Original line number"
 msgstr ""
 
-msgid "Rate Duo Code Review"
-msgstr ""
-
 msgid "Rate Limits"
 msgstr ""
 
@@ -44747,6 +44744,9 @@ msgid "Rate limit access to specified paths."
 msgstr ""
 
 msgid "Rate limits can help reduce request volume (like from crawlers or abusive bots)."
+msgstr ""
+
+msgid "Rate the review"
 msgstr ""
 
 msgid "Raw blob request rate limit per minute"
