@@ -15,8 +15,8 @@ module Gitlab
         authorizer_response.allowed?
       end
 
-      def self.show_breadcrumbs_entry_point?(user:)
-        return false unless chat_enabled?(user)
+      def self.show_breadcrumbs_entry_point?(user:, container: nil)
+        return false unless chat_enabled?(user) && container
 
         Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
       end

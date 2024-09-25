@@ -1,4 +1,4 @@
-- if ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user)
+- if ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user, container: @group || @project)
   - label = s_('DuoChat|GitLab Duo Chat')
   - chat_disabled_reason = ::Gitlab::Llm::TanukiBot.chat_disabled_reason(user: current_user, container: @group || @project).to_s
 

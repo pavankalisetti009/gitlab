@@ -15,7 +15,7 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
 
     before do
       sign_in(user)
-      visit root_path
+      visit group_path(group)
     end
 
     it 'does not show the button to open chat' do
@@ -24,9 +24,12 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
   end
 
   context 'when group has an AI features license', :sidekiq_inline do
+    using RSpec::Parameterized::TableSyntax
+
     include_context 'with duo features enabled and ai chat available for group on SaaS'
 
     let_it_be_with_reload(:group) { create(:group_with_plan, plan: :premium_plan) }
+    let_it_be(:project) { create(:project, namespace: group) }
 
     let(:question) { 'Who are you?' }
     let(:answer) { "Hello! I'm GitLab Duo Chat" }
@@ -41,37 +44,44 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
 
       sign_in(user)
 
-      visit root_path
+      visit group_path(group)
     end
 
-    it 'shows the disabled button with project tooltip when chat is disabled on project level' do
-      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return('project')
-
-      visit root_path
-
-      expect(page).to have_selector(
-        'span.has-tooltip[title*="An administrator has turned off GitLab Duo for this project"]'
-      )
-      expect(page).to have_button('GitLab Duo Chat', disabled: true)
+    where(:disabled_reason, :visit_path, :expected_button_state, :expected_tooltip) do
+      'project' | :visit_project | :disabled | "An administrator has turned off GitLab Duo for this project"
+      'project' | :visit_root | :hidden | nil
+      'group' | :visit_group | :disabled | "An administrator has turned off GitLab Duo for this group"
+      'group' | :visit_root | :hidden | nil
+      nil | :visit_group | :enabled | nil
+      nil | :visit_project | :enabled | nil
+      nil | :visit_root | :hidden | nil
     end
 
-    it 'shows the disabled button with group tooltip when chat is disabled on group level' do
-      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return('group')
+    with_them do
+      it 'shows the correct button state and tooltip' do
+        allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(disabled_reason)
 
-      visit root_path
+        case visit_path
+        when :visit_group
+          visit group_path(group)
+        when :visit_project
+          visit project_path(project)
+        when :visit_root
+          visit root_path
+        end
 
-      expect(page).to have_selector(
-        'span.has-tooltip[title*="An administrator has turned off GitLab Duo for this group"]'
-      )
-      expect(page).to have_button('GitLab Duo Chat', disabled: true)
-    end
-
-    it 'shows the enabled button when chat is enabled' do
-      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(nil)
-
-      visit root_path
-
-      expect(page).to have_button('GitLab Duo Chat', disabled: false)
+        case expected_button_state
+        when :disabled
+          expect(page).to have_selector(
+            "span.has-tooltip[title*=\"#{expected_tooltip}\"]"
+          )
+          expect(page).to have_button('GitLab Duo Chat', disabled: true)
+        when :enabled
+          expect(page).to have_button('GitLab Duo Chat', disabled: false)
+        when :hidden
+          expect(page).not_to have_button('GitLab Duo Chat')
+        end
+      end
     end
 
     it 'returns response after asking a question', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/462444' do

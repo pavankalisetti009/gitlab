@@ -70,21 +70,29 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       allow(described_class).to receive(:chat_enabled?).with(user)
                                                        .and_return(ai_features_enabled_for_user)
       allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
-                                                                        .and_return(authorizer_response)
+                                                                                 .and_return(authorizer_response)
     end
 
-    where(:ai_features_enabled_for_user, :allowed, :result) do
+    where(:container, :ai_features_enabled_for_user, :allowed, :result) do
       [
-        [true, true, true],
-        [true, false, false],
-        [false, false, false],
-        [false, true, false]
+        [:project, true, true, true],
+        [:project, true, false, false],
+        [:project, false, false, false],
+        [:project, false, true, false],
+        [:group, true, true, true],
+        [:group, true, false, false],
+        [:group, false, false, false],
+        [:group, false, true, false],
+        [nil, true, true, false],
+        [nil, true, false, false],
+        [nil, false, false, false],
+        [nil, false, true, false]
       ]
     end
 
     with_them do
       it 'returns correct result' do
-        expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(result)
+        expect(described_class.show_breadcrumbs_entry_point?(user: user, container: container)).to be(result)
       end
     end
   end
