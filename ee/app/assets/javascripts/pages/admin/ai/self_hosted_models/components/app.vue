@@ -1,6 +1,6 @@
 <script>
 import { GlEmptyState, GlButton, GlSkeletonLoader } from '@gitlab/ui';
-import EmptyLabelsSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
+import EmptyEnvironmentSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-environment-md.svg?url';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import getSelfHostedModelsQuery from '../queries/get_self_hosted_models.query.graphql';
@@ -25,11 +25,11 @@ export default {
     },
   },
   i18n: {
-    emptyStateTitle: s__('AdminSelfHostedModels|Define your set of self-hosted models'),
+    emptyStateTitle: s__('AdminSelfHostedModels|Get started with Self‑hosted models'),
     emptyStateDescription: s__(
-      'AdminSelfHostedModels|Add self-hosted language models to use as backups for GitLab Duo features.',
+      'AdminSelfHostedModels|Add and manage models that can be used for GitLab AI features.',
     ),
-    emptyStatePrimaryButtonText: s__('AdminSelfHostedModels|New self-hosted model'),
+    emptyStatePrimaryButtonText: s__('AdminSelfHostedModels|Add self-hosted model'),
     errorMessage: s__(
       'AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again.',
     ),
@@ -58,45 +58,42 @@ export default {
       return this.$apollo?.queries?.selfHostedModels?.loading;
     },
   },
-  emptyStateSvgPath: EmptyLabelsSvg,
+  emptyStateSvgPath: EmptyEnvironmentSvg,
 };
 </script>
 <template>
   <div>
-    <section>
-      <h1 class="page-title gl-text-size-h-display">
-        {{ s__('AdminSelfHostedModels|Self-hosted models') }}
-      </h1>
-      <div class="gl-items-top gl-flex gl-justify-between">
-        <p>
-          {{
-            s__(
-              'AdminSelfHostedModels|Self-hosted AI models can be used to power GitLab AI features.',
-            )
-          }}
-        </p>
-        <div v-if="hasModels" class="gl-pb-4">
-          <gl-button
-            category="primary"
-            variant="confirm"
-            size="small"
-            :href="newSelfHostedModelPath"
-            >{{ s__('AdminSelfHostedModels|New model') }}
-          </gl-button>
-        </div>
-      </div>
-    </section>
     <div v-if="!hasModels && !isLoading">
-      <gl-empty-state
-        :title="$options.i18n.emptyStateTitle"
-        :description="$options.i18n.emptyStateDescription"
-        :svg-path="$options.emptyStateSvgPath"
-        :svg-height="150"
-        :primary-button-text="$options.i18n.emptyStatePrimaryButtonText"
-        :primary-button-link="newSelfHostedModelPath"
-      />
+      <div class="justify-content-center gl-flex gl-items-center">
+        <gl-empty-state
+          class="gl-w-1/4"
+          :title="$options.i18n.emptyStateTitle"
+          :description="$options.i18n.emptyStateDescription"
+          :svg-path="$options.emptyStateSvgPath"
+          :svg-height="150"
+          :primary-button-text="$options.i18n.emptyStatePrimaryButtonText"
+          :primary-button-link="newSelfHostedModelPath"
+        />
+      </div>
     </div>
     <div v-else>
+      <section>
+        <h1 class="page-title gl-text-size-h-display">
+          {{ s__('AdminSelfHostedModels|Self-hosted models') }}
+        </h1>
+        <div class="gl-items-top gl-flex gl-justify-between gl-pb-2">
+          <p>
+            {{
+              s__('AdminSelfHostedModels|Manage AI models that can be used for GitLab AI features.')
+            }}
+          </p>
+          <div v-if="hasModels" class="gl-pb-4">
+            <gl-button category="primary" variant="confirm" :href="newSelfHostedModelPath"
+              >{{ s__('AdminSelfHostedModels|Add self-hosted model') }}
+            </gl-button>
+          </div>
+        </div>
+      </section>
       <gl-skeleton-loader v-if="isLoading" />
       <self-hosted-models-table v-else :models="selfHostedModels" :base-path="basePath" />
     </div>
