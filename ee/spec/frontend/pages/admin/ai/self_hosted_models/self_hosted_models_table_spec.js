@@ -37,7 +37,7 @@ describe('SelfHostedModelsTable', () => {
       'Name',
       'Model',
       'Endpoint',
-      'API key',
+      'API token',
       '', // The 'edit' column does not have a header name
     ];
 
@@ -51,8 +51,8 @@ describe('SelfHostedModelsTable', () => {
 
     expect(firstModel.text()).toContain('mock-self-hosted-model-1');
     expect(firstModel.text()).toContain('mixtral');
-
-    expect(firstModel.find('[data-testid="close-xs-icon"]').exists()).toBe(true);
+    expect(firstModel.text()).toContain('https://mock-endpoint-1.com');
+    expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
   });
 
   it('renders a disclosure dropdown for each self-hosted model entry', () => {
