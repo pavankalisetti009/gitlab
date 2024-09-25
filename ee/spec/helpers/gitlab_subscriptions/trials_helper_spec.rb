@@ -382,8 +382,8 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     subject { helper.trial_selection_intro_text }
 
     where(:have_group_namespace, :text) do
-      true  | 'You can apply your Ultimate and GitLab Duo Enterprise trial to a group.'
-      false | 'Create a new group to start your GitLab Ultimate trial.'
+      true  | s_('Trials|You can apply your Ultimate and GitLab Duo Enterprise trial to a group.')
+      false | s_('Trials|Create a new group to start your GitLab Ultimate trial.')
     end
 
     with_them do
@@ -397,7 +397,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
 
       where(:have_group_namespace, :text) do
         true  | 'You can apply your trial to a new group or an existing group.'
-        false | 'Create a new group to start your GitLab Ultimate trial.'
+        false | s_('Trials|Create a new group to start your GitLab Ultimate trial.')
       end
 
       with_them do
