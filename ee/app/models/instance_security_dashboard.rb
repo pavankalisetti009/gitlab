@@ -23,6 +23,7 @@ class InstanceSecurityDashboard
   def projects
     Project.where(id: visible_users_security_dashboard_projects)
            .with_feature_available_for_user(:security_and_compliance, user)
+           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485658')
   end
 
   def vulnerabilities
