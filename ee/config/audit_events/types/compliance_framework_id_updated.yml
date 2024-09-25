@@ -1,6 +1,6 @@
 ---
 name: compliance_framework_id_updated
-description: Triggered when a compliance framework ID is updated
+description: Triggered when a compliance framework is updated for a project
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369310
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/94711
 milestone: '15.7'
