@@ -1,5 +1,5 @@
 - if show_user_cap_alert?
-  .gl-w-full.order-md-1.gl-sm-mb-5
+  .gl-w-full.order-md-1.gl-mb-5.md:gl-mb-0
     = render Pajamas::AlertComponent.new(variant: :info, dismissible: false,
       alert_options: { data: { testid: "pending-members-alert" } }) do |c|
       - c.with_body do
