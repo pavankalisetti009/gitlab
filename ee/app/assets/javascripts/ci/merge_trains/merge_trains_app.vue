@@ -3,6 +3,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { reportToSentry } from '~/ci/utils';
+import { setUrlParams, updateHistory, getParameterByName } from '~/lib/utils/url_utility';
 import MergeTrainsFeedbackBanner from './components/merge_trains_feedback_banner.vue';
 import MergeTrainBranchSelector from './components/merge_train_branch_selector.vue';
 import MergeTrainTabs from './components/merge_train_tabs.vue';
@@ -91,7 +92,7 @@ export default {
     return {
       activeMergeTrains: { train: {} },
       completedMergeTrains: { train: {} },
-      selectedBranch: this.defaultBranch,
+      selectedBranch: getParameterByName('branch') || this.defaultBranch,
       activeCursor: DEFAULT_CURSOR,
       mergedCursor: DEFAULT_CURSOR,
     };
@@ -149,6 +150,13 @@ export default {
         reportToSentry(this.$options.name, err);
       }
     },
+    setBranch(branch) {
+      this.selectedBranch = branch;
+
+      updateHistory({
+        url: setUrlParams({ branch: this.selectedBranch }),
+      });
+    },
   },
 };
 </script>
@@ -162,10 +170,7 @@ export default {
 
       <div class="gl-mb-5 gl-flex gl-justify-between">
         <h1 class="gl-text-size-h1">{{ s__('Pipelines|Merge train') }}</h1>
-        <merge-train-branch-selector
-          :selected-branch="selectedBranch"
-          @branchChanged="selectedBranch = $event"
-        />
+        <merge-train-branch-selector :selected-branch="selectedBranch" @branchChanged="setBranch" />
       </div>
 
       <merge-train-tabs
