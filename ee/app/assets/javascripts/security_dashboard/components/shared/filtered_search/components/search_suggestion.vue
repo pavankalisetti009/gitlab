@@ -7,6 +7,10 @@ export default {
     GlIcon,
   },
   props: {
+    /**
+     * The value of the suggestion.
+     * This is passed to gl-filtered-search-suggestion and used in data test ids.
+     */
     value: {
       type: String,
       required: true,
@@ -15,6 +19,9 @@ export default {
       type: String,
       required: true,
     },
+    /**
+     * The name of the token. Used for data test ids.
+     */
     name: {
       type: String,
       required: true,

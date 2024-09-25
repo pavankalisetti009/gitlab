@@ -1,14 +1,9 @@
 <script>
-import {
-  GlIcon,
-  GlFilteredSearchToken,
-  GlFilteredSearchSuggestion,
-  GlDropdownDivider,
-  GlDropdownSectionHeader,
-} from '@gitlab/ui';
+import { GlFilteredSearchToken, GlDropdownDivider, GlDropdownSectionHeader } from '@gitlab/ui';
 import { VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__, n__ } from '~/locale';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { GROUPS } from '../../filters/status_filter.vue';
 import { ALL_ID as ALL_STATUS_VALUE } from '../../filters/constants';
@@ -26,12 +21,11 @@ export default {
   GROUPS,
 
   components: {
-    GlIcon,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
     GlDropdownDivider,
     GlDropdownSectionHeader,
     QuerystringSync,
+    SearchSuggestion,
   },
   props: {
     config: {
@@ -197,40 +191,26 @@ export default {
       <template #suggestions>
         <gl-dropdown-section-header>{{ $options.i18n.statusLabel }}</gl-dropdown-section-header>
         <gl-dropdown-divider />
-        <gl-filtered-search-suggestion
+        <search-suggestion
           v-for="status in $options.groups.statusOptions"
           :key="status.value"
+          :text="status.text"
           :value="status.value"
-        >
-          <div class="gl-flex gl-items-center">
-            <gl-icon
-              name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-              :class="{ 'gl-invisible': !isStatusSelected(status.value) }"
-              :data-testid="`status-icon-${status.value}`"
-            />
-            {{ status.text }}
-          </div>
-        </gl-filtered-search-suggestion>
+          :selected="isStatusSelected(status.value)"
+          name="status"
+        />
         <gl-dropdown-divider />
         <gl-dropdown-section-header>{{
           $options.i18n.dismissedAsLabel
         }}</gl-dropdown-section-header>
-        <gl-filtered-search-suggestion
+        <search-suggestion
           v-for="status in $options.groups.dismissalReasonOptions"
           :key="status.value"
+          :text="status.text"
           :value="status.value"
-        >
-          <div class="gl-flex gl-items-center">
-            <gl-icon
-              name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-              :class="{ 'gl-invisible': !isStatusSelected(status.value) }"
-              :data-testid="`status-icon-${status.value}`"
-            />
-            {{ status.text }}
-          </div>
-        </gl-filtered-search-suggestion>
+          :selected="isStatusSelected(status.value)"
+          name="status"
+        />
       </template>
     </gl-filtered-search-token>
   </querystring-sync>
