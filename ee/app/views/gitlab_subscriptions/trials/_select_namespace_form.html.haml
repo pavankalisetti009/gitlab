@@ -1,4 +1,7 @@
-- page_title _('Start a Free Ultimate Trial')
+- if Feature.enabled?(:duo_enterprise_trials, current_user)
+  - page_title _('Start your Free Ultimate and GitLab Duo Enterprise Trial')
+- else
+  - page_title _('Start a Free Ultimate Trial')
 - content_for :page_specific_javascripts do
   = render 'layouts/google_tag_manager_head'
   = render 'layouts/one_trust'
@@ -7,7 +10,10 @@
 .row
   .col-md-6.m-sm-6
     %h2.gl-pb-5.gl-my-0
-      = _('Almost there')
+      - if Feature.enabled?(:duo_enterprise_trials, current_user)
+        = s_('Trial|Apply your combined trial to an existing group')
+      - else
+        = _('Almost there')
 
     %p.gl-text-gray-700.gl-text-lg
       = trial_selection_intro_text
@@ -29,7 +35,10 @@
                 class: 'form-check-input', data: { testid: 'trial-individual-radio' }
               = label_tag :trial_entity_individual, _('Just me'), class: 'form-check-label'
       = render Pajamas::ButtonComponent.new(type: :submit, variant: :confirm, button_options: {data: { testid: 'start-your-free-trial-button' }}) do
-        = _('Start your free trial')
+        - if Feature.enabled?(:duo_enterprise_trials, current_user)
+          = _('Activate my trial')
+        - else
+          = _('Start your free trial')
 
   .col-md-4.gl-mt-9
     = image_tag 'illustrations/saas-trial-illustration.svg', alt: '', class: 'gl-hidden md:gl-inline gl-w-full'

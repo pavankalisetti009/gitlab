@@ -197,10 +197,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             expect(post_create).to have_gitlab_http_status(:ok)
 
             expect(response.body).to include(_('your trial could not be created'))
-            expect(response.body).to include(_('Start your Free Ultimate Trial'))
-            expect(response.body).to include(s_('Trial|Your GitLab Ultimate trial lasts for 30 days, ' \
-                                                'but you can keep your free GitLab account forever. ' \
-                                                'We just need some additional information to activate your trial.'))
+            expect(response.body).to include(_('Start your Free Ultimate and GitLab Duo Enterprise Trial'))
+            expect(response.body).to include(s_('Trial|Your combined Ultimate and GitLab Duo Enterprise trial ' \
+                                                'lasts for 60 days. We just need some additional information ' \
+                                                'to activate it.'))
           end
         end
 
@@ -289,8 +289,8 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
   RSpec::Matchers.define :render_select_namespace do
     match do |response|
       expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to include(_('Almost there'))
-      expect(response.body).to include(_('Start your free trial'))
+      expect(response.body).to include(_('Apply your combined trial to an existing group'))
+      expect(response.body).to include(_('Activate my trial'))
     end
   end
 

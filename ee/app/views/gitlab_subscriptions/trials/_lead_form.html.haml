@@ -1,4 +1,7 @@
-- page_title _('Start your Free Ultimate Trial')
+- if Feature.enabled?(:duo_enterprise_trials, current_user)
+  - page_title _('Start your Free Ultimate and GitLab Duo Enterprise Trial')
+- else
+  - page_title _('Start your Free Ultimate Trial')
 - content_for :page_specific_javascripts do
   = render 'layouts/google_tag_manager_head'
   = render 'layouts/one_trust'
@@ -7,9 +10,15 @@
 .row.gl-items-center
   .col-md-6.m-sm-6
     %h2.gl-pb-5.gl-my-0
-      = _('Start your Free Ultimate Trial')
+      - if Feature.enabled?(:duo_enterprise_trials, current_user)
+        = _('Start your Free Ultimate and GitLab Duo Enterprise Trial')
+      - else
+        = _('Start your Free Ultimate Trial')
 
     %p.gl-text-gray-700.gl-text-lg
+    - if Feature.enabled?(:duo_enterprise_trials, current_user)
+      = s_('Trial|Your combined Ultimate and GitLab Duo Enterprise trial lasts for 60 days. We just need some additional information to activate it.')
+    - else
       = s_('Trial|Your GitLab Ultimate trial lasts for 30 days, but you can keep your free GitLab account forever. We just need some additional information to activate your trial.')
 
     = yield :before_form
