@@ -12,7 +12,7 @@ export const mockSelfHostedModelsList = [
     name: 'mock-self-hosted-model-1',
     model: 'mixtral',
     endpoint: 'https://mock-endpoint-1.com',
-    hasApiToken: false,
+    hasApiToken: true,
   },
   {
     id: 'gid://gitlab/SelfHostedModel/2',

@@ -24,32 +24,32 @@ export default {
   fields: [
     {
       key: 'name',
-      label: __('Name'),
-      thClass: 'w-15p',
+      label: s__('AdminSelfHostedModels|Name'),
+      thClass: 'gl-w-2/8',
       tdClass: 'gl-content-center',
     },
     {
       key: 'model',
-      label: __('Model'),
-      thClass: 'w-15p',
+      label: s__('AdminSelfHostedModels|Model'),
+      thClass: 'gl-w-2/8',
       tdClass: 'gl-content-center',
     },
     {
       key: 'endpoint',
       label: s__('AdminSelfHostedModels|Endpoint'),
-      thClass: 'w-15p',
+      thClass: 'gl-w-2/8',
       tdClass: 'gl-content-center gl-text-ellipsis',
     },
     {
       key: 'has_api_key',
-      label: __('API key'),
-      thClass: 'w-15p',
-      tdClass: 'gl-content-center',
+      label: s__('AdminSelfHostedModels|API token'),
+      thClass: 'gl-w-1/8 gl-text-center',
+      tdClass: 'gl-content-center gl-text-center',
     },
     {
       key: 'edit',
       label: '',
-      thClass: 'w-15p',
+      thClass: 'gl-w-1/8',
       tdClass: 'gl-content-center gl-text-right',
     },
   ],
@@ -84,20 +84,15 @@ export default {
     <template #cell(has_api_key)="{ item }">
       <gl-icon
         v-if="item.hasApiToken"
-        :aria-label="s__('AdminSelfHostedModels|Model has API key')"
-        name="check-xs"
-      />
-      <gl-icon
-        v-else
-        :aria-label="s__('AdminSelfHostedModels|Model does not have API key')"
-        name="close-xs"
+        :aria-label="s__('AdminSelfHostedModels|Model uses an API token')"
+        name="check-circle"
       />
     </template>
     <template #cell(edit)="{ item }">
       <div>
         <gl-disclosure-dropdown
+          class="gl-py-2"
           category="tertiary"
-          variant="default"
           size="small"
           icon="ellipsis_v"
           :no-caret="true"

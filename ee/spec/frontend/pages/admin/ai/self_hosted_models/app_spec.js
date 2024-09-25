@@ -65,7 +65,7 @@ describe('SelfHostedModelsApp', () => {
       it('renders button to create new self-hosted model', () => {
         const button = findButton();
 
-        expect(button.text()).toBe('New model');
+        expect(button.text()).toBe('Add self-hosted model');
         expect(button.attributes('href')).toBe('/admin/ai/self_hosted_models/new');
       });
     });
