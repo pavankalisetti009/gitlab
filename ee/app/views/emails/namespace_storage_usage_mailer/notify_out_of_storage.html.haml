@@ -5,11 +5,11 @@
 
 %p
   = html_escape(s_('NamespaceStorage|%{name_with_link} is now read-only. Projects under this namespace are locked and actions are restricted.')) % { name_with_link: name_link.html_safe }
-  = link_to s_('NamespaceStorage|Which actions are restricted?'), help_page_url('user/read_only_namespaces')
+  = link_to s_('NamespaceStorage|Which actions are restricted?'), help_page_url('user/read_only_namespaces.md')
 
 %p
   = s_('NamespaceStorage|Manage your storage usage or purchase additional storage.')
-  = link_to s_('Learn more.'), help_page_url('user/usage_quotas', anchor: 'manage-storage-usage')
+  = link_to s_('Learn more.'), help_page_url('user/usage_quotas.md', anchor: 'manage-storage-usage')
 
 %p
   = link_to sprintf('%{link_label} →', { link_label: s_('NamespaceStorage|Buy more storage') }), @buy_storage_url
