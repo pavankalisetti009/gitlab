@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Read < ApplicationRecord
+  class Read < Gitlab::Database::SecApplicationRecord
     include VulnerabilityScopes
     include EachBatch
     include UnnestedInFilters::Dsl

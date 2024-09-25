@@ -887,6 +887,20 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     it { is_expected.to eq("('{1,2}', 1)") }
   end
 
+  context 'with loose foreign key on vulnerability_reads.casted_cluster_agent_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:cluster_agent) }
+      let_it_be(:model) { create(:vulnerability_read, casted_cluster_agent_id: parent.id) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_reads.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerability_read, project: parent) }
+    end
+  end
+
   private
 
   def create_vulnerability(severity: 7, report_type: 0)
