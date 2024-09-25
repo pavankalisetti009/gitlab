@@ -15,7 +15,7 @@ const initWorkItemEpicPage = async () => {
 
   initWorkItemsRoot({ workItemType: 'epics', workspaceType: WORKSPACE_GROUP });
   initWorkItemsFeedback({
-    feedbackIssue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463598',
+    feedbackIssue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494462',
     feedbackIssueText: __('Provide feedback on the experience'),
     content: __(
       'We’ve introduced some improvements to the epic page such as real time updates, additional features, and a refreshed design. Have questions or thoughts on the changes?',
