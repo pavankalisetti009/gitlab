@@ -13,6 +13,7 @@ module Gitlab
           ToolNotFoundError = Class.new(StandardError)
           EmptyEventsError = Class.new(StandardError)
           ExhaustedLoopError = Class.new(StandardError)
+          AgentEventError = Class.new(StandardError)
 
           attr_reader :tools, :user_input, :context, :response_handler
           attr_accessor :iterations
@@ -84,6 +85,20 @@ module Gitlab
               )
             when ExhaustedLoopError
               Answer.default_final_answer(context: context)
+            when EOFError
+              Answer.error_answer(
+                error: error,
+                context: context,
+                source: "chat_v2",
+                error_code: "A1003"
+              )
+            when AgentEventError
+              Answer.error_answer(
+                error: error,
+                context: context,
+                source: "chat_v2",
+                error_code: "A1004"
+              )
             else
               Answer.error_answer(
                 error: error,
@@ -148,6 +163,8 @@ module Gitlab
             streamed_answer = Gitlab::Llm::Chain::StreamedAnswer.new
 
             step_executor.step(step_params) do |event|
+              raise AgentEventError, event.message if event.instance_of? Gitlab::Duo::Chat::AgentEvents::Error
+
               next unless stream_response_handler
               next unless event.instance_of? Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta
 

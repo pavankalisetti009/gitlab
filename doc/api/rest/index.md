@@ -11,38 +11,23 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
-The REST APIs have been around for a longer time compared to GraphQL APIs, which
-may make them more familiar to some developers. It is often a good choice for
-developers who are more comfortable with traditional API architecture.
+Use the GitLab REST API to retrieve data by using any compatible REST API client.
 
-## Compatibility guidelines
+The REST API version complies with the semantic versioning specification. The major version number
+is `4`. Backward-incompatible changes require this version number to change.
 
-The HTTP API is versioned with a single number, which is `4`. This number
-symbolizes the major version number, as described by [SemVer](https://semver.org/).
-Because of this, backward-incompatible changes require this version number to
-change.
+- The minor version isn't explicit, which allows for a stable API endpoint.
+- New features are added to the API in the same version number.
+- Major API version changes, and removal of entire API versions,
+  are done in tandem with major GitLab releases.
+- All deprecations and changes between versions are noted in the documentation.
 
-The minor version isn't explicit, which allows for a stable API
-endpoint. New features can be added to the API in the same
-version number.
+The following are excluded from the deprecation process and can be removed at any time without
+notice:
 
-New features and bug fixes are released in tandem with GitLab. Apart
-from incidental patch releases, new minor versions of GitLab are released every
-month. Major API version changes, and removal of entire API versions, are done in tandem
-with major GitLab releases.
-
-All deprecations and changes between versions are in the documentation.
-
-### Current status
-
-Only API version v4 is available.
-
-### Breaking change exemptions
-
-Elements labeled as [experimental or beta](../../policy/experiment-beta-support.md) in the [REST API resources](../api_resources.md) are exempt from the deprecation process.
-These parts can be removed or changed at any time without notice.
-
-Fields behind a feature flag and disabled by default do not follow the deprecation and removal process. These fields can be removed at any time without notice.
+- Elements labeled in the [REST API resources](../api_resources.md) as
+  [experimental or beta](../../policy/experiment-beta-support.md).
+- Fields behind a feature flag and disabled by default.
 
 ## How to use the API
 

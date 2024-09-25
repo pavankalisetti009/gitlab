@@ -206,6 +206,28 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
     end
 
+    context "when error event received" do
+      before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+
+        event = Gitlab::Duo::Chat::AgentEvents::Error.new({ "message" => 'overload_error' })
+
+        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          allow(react_agent).to receive(:step).with(step_params)
+                                              .and_yield(event).and_return([event])
+        end
+      end
+
+      it "returns an error" do
+        expect(answer.is_final).to eq(true)
+        expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
+        expect(answer.error_code).to include("A1004")
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
+          kind_of(described_class::AgentEventError)
+        )
+      end
+    end
+
     context "when resource is not authorized" do
       let!(:user) { create(:user) }
 
@@ -356,6 +378,25 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
         expect(answer.is_final).to eq(true)
         expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
         expect(answer.error_code).to include("A1001")
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
+      end
+    end
+
+    context "when eof error is raised" do
+      let(:error) { EOFError.new }
+
+      before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+
+        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          allow(react_agent).to receive(:step).and_raise(error)
+        end
+      end
+
+      it "returns an error" do
+        expect(answer.is_final).to eq(true)
+        expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
+        expect(answer.error_code).to include("A1003")
         expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
       end
     end
