@@ -10,3 +10,5 @@ class ReindexEpicsToFixLabelIds < Elastic::Migration
   DOCUMENT_TYPE = Epic
   NEW_SCHEMA_VERSION = 2310
 end
+
+ReindexEpicsToFixLabelIds.prepend ::Elastic::MigrationObsolete
