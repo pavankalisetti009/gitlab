@@ -42,7 +42,7 @@ module Gitlab
           def successful_conversations
             ChatStorage.new(user, nil)
               .last_conversation
-              .reject { |message| message.errors.present? || message.content.nil? }
+              .reject { |message| message.errors.present? || message.content.blank? }
               .group_by(&:request_id)
               .select { |_uuid, messages| messages.size > 1 }
           end
