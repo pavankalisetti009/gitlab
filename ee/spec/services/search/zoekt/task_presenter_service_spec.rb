@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_search do
   let_it_be(:node) { create(:zoekt_node) }
   let_it_be(:task) { create(:zoekt_task, node: node) }
+  let_it_be(:delete_task) { create(:zoekt_task, node: node, task_type: :delete_repo) }
 
   let(:service) { described_class.new(node) }
 
@@ -38,7 +39,17 @@ RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_
       end
 
       it 'returns serialized tasks' do
-        expect(execute_task).to contain_exactly(::Search::Zoekt::TaskSerializerService.execute(task))
+        expect(execute_task).to contain_exactly(
+          ::Search::Zoekt::TaskSerializerService.execute(task),
+          ::Search::Zoekt::TaskSerializerService.execute(delete_task)
+        )
+      end
+    end
+
+    context 'when critical storage watermark is exceeded' do
+      it 'only presents delete repo tasks' do
+        expect(node).to receive(:watermark_exceeded_critical?).and_return(true)
+        expect(execute_task).to contain_exactly(::Search::Zoekt::TaskSerializerService.execute(delete_task))
       end
     end
   end
