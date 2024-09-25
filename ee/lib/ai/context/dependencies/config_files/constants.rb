@@ -28,6 +28,7 @@ module Ai
             ConfigFiles::JavaMaven,
             ConfigFiles::KotlinGradle,
             ConfigFiles::PythonPip,
+            ConfigFiles::PythonPoetry,
             ConfigFiles::RubyGemsLock
           ].freeze
         end
