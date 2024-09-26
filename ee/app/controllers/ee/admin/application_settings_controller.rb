@@ -33,7 +33,7 @@ module EE
         feature_category :global_search, [:advanced_search]
         feature_category :software_composition_analysis, [:security_and_compliance]
         feature_category :consumables_cost_management, [:namespace_storage]
-        feature_category :product_analytics_data_management, [:analytics]
+        feature_category :product_analytics, [:analytics]
         urgency :low, [:advanced_search, :seat_link_payload]
 
         def elasticsearch_reindexing_task

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::MetricsIssuesConnection, feature_category: :metrics do
+RSpec.describe Observability::MetricsIssuesConnection, feature_category: :observability do
   describe 'associations' do
     it { is_expected.to belong_to(:issue).optional(false) }
   end

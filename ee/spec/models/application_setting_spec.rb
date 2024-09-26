@@ -149,7 +149,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    describe 'dashboard', feature_category: :metrics do
+    describe 'dashboard', feature_category: :observability do
       it { is_expected.to validate_numericality_of(:dashboard_limit).only_integer.is_greater_than_or_equal_to(0) }
     end
 
@@ -291,7 +291,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    context 'Sentry validations', feature_category: :error_tracking do
+    context 'Sentry validations', feature_category: :observability do
       context 'when Sentry is enabled' do
         before do
           setting.sentry_enabled = true
@@ -445,7 +445,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
-    describe 'when validating product analytics settings', feature_category: :product_analytics_data_management do
+    describe 'when validating product analytics settings', feature_category: :product_analytics do
       context 'when product analytics is enabled' do
         before do
           setting.product_analytics_enabled = true

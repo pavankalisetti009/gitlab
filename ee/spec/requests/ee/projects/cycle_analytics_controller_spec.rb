@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::CycleAnalyticsController, feature_category: :product_analytics_data_management do
+RSpec.describe Projects::CycleAnalyticsController, feature_category: :product_analytics do
   let_it_be(:project) { create(:project, namespace: create(:group)) }
   let_it_be(:user) { create(:user) }
   let_it_be(:value_stream) { create(:cycle_analytics_value_stream, namespace: project.project_namespace) }

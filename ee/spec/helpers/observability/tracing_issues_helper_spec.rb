@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::TracingIssuesHelper, feature_category: :metrics do
+RSpec.describe Observability::TracingIssuesHelper, feature_category: :observability do
   describe '#observability_tracing_issues_params' do
     let(:params) do
       {

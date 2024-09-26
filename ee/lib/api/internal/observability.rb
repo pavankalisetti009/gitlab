@@ -62,38 +62,38 @@ module API
           end
 
           namespace ':id/read' do
-            get '/analytics', feature_category: :tracing, urgency: :high do
+            get '/analytics', feature_category: :observability, urgency: :high do
               not_found! unless can_read
               respond_success
             end
-            get '/traces', feature_category: :tracing, urgency: :high do
+            get '/traces', feature_category: :observability, urgency: :high do
               not_found! unless can_read
               respond_success
             end
-            get '/services', feature_category: :tracing, urgency: :high do
+            get '/services', feature_category: :observability, urgency: :high do
               not_found! unless can_read
               respond_success
             end
-            get '/metrics', feature_category: :metrics, urgency: :high do
+            get '/metrics', feature_category: :observability, urgency: :high do
               not_found! unless can_read
               respond_success
             end
-            get '/logs', feature_category: :logging, urgency: :high do
+            get '/logs', feature_category: :observability, urgency: :high do
               not_found! unless can_read
               respond_success
             end
           end
 
           namespace ':id/write' do
-            post '/traces', feature_category: :tracing, urgency: :high do
+            post '/traces', feature_category: :observability, urgency: :high do
               not_found! unless can_write
               respond_success
             end
-            post '/metrics', feature_category: :metrics, urgency: :high do
+            post '/metrics', feature_category: :observability, urgency: :high do
               not_found! unless can_write
               respond_success
             end
-            post '/logs', feature_category: :logging, urgency: :high do
+            post '/logs', feature_category: :observability, urgency: :high do
               not_found! unless can_write
               respond_success
             end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Query.resource_parent(id).visualizations', feature_category: :product_analytics_visualization do
+RSpec.describe 'Query.resource_parent(id).visualizations', feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

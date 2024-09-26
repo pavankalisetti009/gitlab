@@ -29,7 +29,7 @@ module EE
                                                      :sast_reports, :secret_detection_reports, :dast_reports,
                                                      :coverage_fuzzing_reports, :api_fuzzing_reports,
                                                      :security_reports]
-        feature_category :metrics, [:metrics_reports]
+        feature_category :observability, [:metrics_reports]
         feature_category :software_composition_analysis,
           [:license_scanning_reports, :license_scanning_reports_collapsed]
         feature_category :code_review_workflow, [:delete_description_version, :description_diff, :reports]

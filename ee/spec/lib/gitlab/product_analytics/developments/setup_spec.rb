@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_category: :product_analytics_data_management do
+RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_category: :product_analytics do
   include RakeHelpers
 
   let_it_be(:organization) { create(:organization) }

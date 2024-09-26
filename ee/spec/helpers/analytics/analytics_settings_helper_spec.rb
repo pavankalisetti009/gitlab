@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::AnalyticsSettingsHelper, feature_category: :product_analytics_visualization do
+RSpec.describe Analytics::AnalyticsSettingsHelper, feature_category: :product_analytics do
   let(:form_name) { 'project[foo_bar]' }
   let(:value) { 'some_value' }
   let(:testid) { 'some-testid' }

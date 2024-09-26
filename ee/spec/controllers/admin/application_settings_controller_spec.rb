@@ -649,7 +649,7 @@ RSpec.describe Admin::ApplicationSettingsController do
     end
   end
 
-  describe 'GET #analytics', feature_category: :product_analytics_data_management do
+  describe 'GET #analytics', feature_category: :product_analytics do
     before do
       sign_in(admin)
     end

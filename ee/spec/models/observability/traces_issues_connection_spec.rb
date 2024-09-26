@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::TracesIssuesConnection, feature_category: :tracing do
+RSpec.describe Observability::TracesIssuesConnection, feature_category: :observability do
   let_it_be(:issue) { create(:issue) }
   let_it_be(:connection) { create(:observability_traces_issues_connection) }
 

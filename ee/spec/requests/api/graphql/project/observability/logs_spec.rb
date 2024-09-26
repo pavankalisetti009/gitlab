@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe "getting a project's linked observability logs", feature_category: :logging do
+RSpec.describe "getting a project's linked observability logs", feature_category: :observability do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }

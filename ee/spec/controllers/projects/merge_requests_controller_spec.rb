@@ -842,7 +842,7 @@ RSpec.describe Projects::MergeRequestsController do
     it_behaves_like 'authorize read pipeline'
   end
 
-  describe 'GET #metrics_reports', feature_category: :metrics do
+  describe 'GET #metrics_reports', feature_category: :observability do
     let_it_be_with_reload(:merge_request) { create(:ee_merge_request, :with_metrics_reports, source_project: project, author: author) }
 
     let(:params) do

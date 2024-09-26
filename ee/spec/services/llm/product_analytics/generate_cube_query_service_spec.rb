@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Llm::ProductAnalytics::GenerateCubeQueryService,
   :saas,
-  feature_category: :product_analytics_visualization do
+  feature_category: :product_analytics do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:project) { create(:project, :public, group: group) }

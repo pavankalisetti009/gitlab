@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'getting a limit of stored events a namespace is permitted',
-  feature_category: :product_analytics_visualization do
+  feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:namespace) { create(:group) }
