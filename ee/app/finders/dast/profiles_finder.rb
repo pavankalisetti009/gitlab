@@ -17,9 +17,7 @@ module Dast
       relation = by_scanner_profile_id(relation)
       relation = with_project(relation)
 
-      sort(
-        relation.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482858')
-      )
+      sort(relation)
     end
 
     private

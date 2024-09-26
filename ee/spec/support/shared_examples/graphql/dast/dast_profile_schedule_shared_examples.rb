@@ -14,6 +14,14 @@ RSpec.shared_examples 'query dastProfiles.dastProfileSchedule shared examples' d
       profile_project.add_developer(user)
     end
 
+    create(
+      :dast_profile_schedule,
+      project: profile_project,
+      dast_profile:
+        create(:dast_profile, project: profile_project, branch_name: profile_project.default_branch),
+      owner: extra_users.first
+    )
+
     control = ActiveRecord::QueryRecorder.new(query_recorder_debug: true) do
       run_query(query)
     end

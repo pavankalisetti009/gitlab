@@ -36,7 +36,7 @@ module Dast
     end
 
     scope :with_schedule_owner, -> do
-      eager_load(dast_profile_schedule: [:owner])
+      preload(dast_profile_schedule: [:owner])
     end
 
     scope :by_site_profile_id, ->(site_profile_id) do
