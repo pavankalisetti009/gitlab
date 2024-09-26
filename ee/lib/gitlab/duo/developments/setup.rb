@@ -188,14 +188,16 @@ module Gitlab
         def create_add_on_purchases!
           group = Group.find_by_full_path(@namespace) # will be nil for self-managed mode
 
-          # rubocop: disable Cop/DestroyAll -- For dev
-          ::GitlabSubscriptions::AddOnPurchase.destroy_all
-          # rubocop: enable Cop/DestroyAll
-          create_code_suggestions_purchase!(group)
-          create_enterprise_purchase!(group)
+          ::GitlabSubscriptions::AddOnPurchase.by_namespace(group).delete_all
+
+          if args[:add_on] == 'duo_pro'
+            create_duo_pro_purchase!(group)
+          else
+            create_enterprise_purchase!(group)
+          end
         end
 
-        def create_code_suggestions_purchase!(group)
+        def create_duo_pro_purchase!(group)
           add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
 
           response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
@@ -205,6 +207,8 @@ module Gitlab
           }).execute
 
           raise response.message unless response.success?
+
+          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
 
           puts "Code suggestions add-on added..."
         end
