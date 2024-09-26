@@ -6,7 +6,7 @@ module Types
       graphql_name 'AiAdditionalContextCategory'
       description 'The category of the additional context'
 
-      ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.each_value do |category|
+      ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES.each_value do |category|
         value category.upcase, description: "#{category.capitalize} content category.", value: category
       end
     end

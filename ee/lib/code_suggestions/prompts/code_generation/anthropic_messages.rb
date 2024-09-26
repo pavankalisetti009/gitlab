@@ -13,7 +13,6 @@ module CodeSuggestions
         # so we don't attempt to use the whole size of prompt window
         MAX_INPUT_CHARS = 50000
         GATEWAY_PROMPT_VERSION = 3
-        CONTENT_TYPES = { file: 'file', snippet: 'snippet' }.freeze
 
         def request_params
           {
@@ -82,13 +81,13 @@ module CodeSuggestions
           related_snippets = []
 
           params[:context].each do |context|
-            if context[:type] == CONTENT_TYPES[:file]
+            if context[:type] == ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES[:file]
               related_files << <<~FILE_CONTENT
               <file_content file_name="#{context[:name]}">
               #{context[:content]}
               </file_content>
               FILE_CONTENT
-            elsif context[:type] == CONTENT_TYPES[:snippet]
+            elsif context[:type] == ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES[:snippet]
               related_snippets << <<~SNIPPET_CONTENT
               <snippet_content name="#{context[:name]}">
               #{context[:content]}
