@@ -21,11 +21,12 @@ import {
   DEFAULT_PAGE_SIZE_CHILD_ITEMS,
   DETAIL_VIEW_QUERY_PARAM_NAME,
   WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
+  WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
 } from '../../constants';
 import {
   findHierarchyWidgets,
-  saveShowLabelsToLocalStorage,
-  getShowLabelsFromLocalStorage,
+  saveToggleToLocalStorage,
+  getToggleFromLocalStorage,
 } from '../../utils';
 import { removeHierarchyChild } from '../../graphql/cache_utils';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
@@ -121,11 +122,12 @@ export default {
       reportedUserId: 0,
       reportedUrl: '',
       widgetName: TASKS_ANCHOR,
-      defaultShowLabels: true,
       showLabels: true,
+      showClosed: true,
       fetchNextPageInProgress: false,
       disableContent: false,
       showLabelsLocalStorageKey: WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
+      showClosedLocalStorageKey: WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
     };
   },
   computed: {
@@ -186,10 +188,8 @@ export default {
     },
   },
   mounted() {
-    this.showLabels = getShowLabelsFromLocalStorage(
-      this.showLabelsLocalStorageKey,
-      this.defaultShowLabels,
-    );
+    this.showLabels = getToggleFromLocalStorage(this.showLabelsLocalStorageKey);
+    this.showClosed = getToggleFromLocalStorage(this.showClosedLocalStorageKey);
   },
   methods: {
     showAddForm(formType) {
@@ -237,7 +237,11 @@ export default {
     },
     toggleShowLabels() {
       this.showLabels = !this.showLabels;
-      saveShowLabelsToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
+      saveToggleToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
+    },
+    toggleShowClosed() {
+      this.showClosed = !this.showClosed;
+      saveToggleToLocalStorage(this.showClosedLocalStorageKey, this.showClosed);
     },
     setShowLabelsFromLocalStorage() {},
     async fetchNextPage() {
@@ -322,6 +326,7 @@ export default {
         :show-labels="showLabels"
         :show-view-roadmap-action="false"
         @toggle-show-labels="toggleShowLabels"
+        @toggle-show-closed="toggleShowClosed"
       />
     </template>
 

@@ -11,13 +11,14 @@ import workItemLinkedItemsQuery from '../../graphql/work_item_linked_items.query
 import removeLinkedItemsMutation from '../../graphql/remove_linked_items.mutation.graphql';
 import {
   findLinkedItemsWidget,
-  saveShowLabelsToLocalStorage,
-  getShowLabelsFromLocalStorage,
+  saveToggleToLocalStorage,
+  getToggleFromLocalStorage,
 } from '../../utils';
 import {
   LINKED_CATEGORIES_MAP,
   LINKED_ITEMS_ANCHOR,
   WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
+  WORKITEM_RELATIONSHIPS_SHOWCLOSED_LOCALSTORAGEKEY,
   STATE_CLOSED,
   sprintfWorkItem,
 } from '../../constants';
@@ -115,11 +116,11 @@ export default {
       linksIsBlockedBy: [],
       linksBlocks: [],
       widgetName: LINKED_ITEMS_ANCHOR,
-      defaultShowLabels: true,
       showLabels: true,
       showClosed: true,
       linkedWorkItems: [],
       showLabelsLocalStorageKey: WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
+      showClosedLocalStorageKey: WORKITEM_RELATIONSHIPS_SHOWCLOSED_LOCALSTORAGEKEY,
     };
   },
   computed: {
@@ -148,10 +149,8 @@ export default {
     },
   },
   mounted() {
-    this.showLabels = getShowLabelsFromLocalStorage(
-      this.showLabelsLocalStorageKey,
-      this.defaultShowLabels,
-    );
+    this.showLabels = getToggleFromLocalStorage(this.showLabelsLocalStorageKey);
+    this.showClosed = getToggleFromLocalStorage(this.showClosedLocalStorageKey);
   },
   methods: {
     showLinkItemForm() {
@@ -162,7 +161,11 @@ export default {
     },
     toggleShowLabels() {
       this.showLabels = !this.showLabels;
-      saveShowLabelsToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
+      saveToggleToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
+    },
+    toggleShowClosed() {
+      this.showClosed = !this.showClosed;
+      saveToggleToLocalStorage(this.showClosedLocalStorageKey, this.showClosed);
     },
     /**
      * We are relying on calling two mutations sequentially to achieve drag and drop
@@ -323,7 +326,7 @@ export default {
         :show-closed="showClosed"
         :show-view-roadmap-action="false"
         @toggle-show-labels="toggleShowLabels"
-        @toggle-show-closed="showClosed = !showClosed"
+        @toggle-show-closed="toggleShowClosed"
       />
     </template>
 

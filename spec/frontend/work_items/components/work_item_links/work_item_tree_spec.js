@@ -25,6 +25,8 @@ import {
   WORK_ITEM_TYPE_VALUE_EPIC,
   WORK_ITEM_TYPE_VALUE_OBJECTIVE,
   WORK_ITEM_TYPE_VALUE_TASK,
+  WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY,
+  WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
 } from '~/work_items/constants';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import * as utils from '~/work_items/utils';
@@ -299,8 +301,8 @@ describe('WorkItemTree', () => {
     useLocalStorageSpy();
 
     beforeEach(async () => {
-      jest.spyOn(utils, 'getShowLabelsFromLocalStorage');
-      jest.spyOn(utils, 'saveShowLabelsToLocalStorage');
+      jest.spyOn(utils, 'getToggleFromLocalStorage');
+      jest.spyOn(utils, 'saveToggleToLocalStorage');
       await createComponent();
     });
 
@@ -345,13 +347,26 @@ describe('WorkItemTree', () => {
       },
     );
 
-    it('calls saveShowLabelsToLocalStorage on toggle', () => {
+    it('calls saveToggleToLocalStorage on toggle', () => {
       findMoreActions().vm.$emit('toggle-show-labels');
-      expect(utils.saveShowLabelsToLocalStorage).toHaveBeenCalled();
+      expect(utils.saveToggleToLocalStorage).toHaveBeenCalled();
     });
 
-    it('calls getShowLabelsFromLocalStorage on mount', () => {
-      expect(utils.getShowLabelsFromLocalStorage).toHaveBeenCalled();
+    it('calls saveToggleToLocalStorage on toggle-show-closed', () => {
+      findMoreActions().vm.$emit('toggle-show-closed');
+      expect(utils.saveToggleToLocalStorage).toHaveBeenCalled();
+    });
+
+    it('calls getToggleFromLocalStorage on mount for showClosed', () => {
+      expect(utils.getToggleFromLocalStorage).toHaveBeenCalledWith(
+        WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY,
+      );
+    });
+
+    it('calls getToggleFromLocalStorage on mount for showLabels', () => {
+      expect(utils.getToggleFromLocalStorage).toHaveBeenCalledWith(
+        WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
+      );
     });
   });
 

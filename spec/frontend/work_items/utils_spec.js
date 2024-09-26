@@ -10,8 +10,8 @@ import {
   isReference,
   getWorkItemIcon,
   workItemRoadmapPath,
-  saveShowLabelsToLocalStorage,
-  getShowLabelsFromLocalStorage,
+  saveToggleToLocalStorage,
+  getToggleFromLocalStorage,
   makeDrawerUrlParam,
   makeDrawerItemFullPath,
 } from '~/work_items/utils';
@@ -189,25 +189,25 @@ describe('utils for remembering user showLabel preferences', () => {
     localStorage.clear();
   });
 
-  describe('saveShowLabelsToLocalStorage', () => {
+  describe('saveToggleToLocalStorage', () => {
     it('saves the value to localStorage', () => {
       const TEST_KEY = `test-key-${new Date().getTime}`;
 
       expect(localStorage.getItem(TEST_KEY)).toBe(null);
 
-      saveShowLabelsToLocalStorage(TEST_KEY, true);
+      saveToggleToLocalStorage(TEST_KEY, true);
       expect(localStorage.setItem).toHaveBeenCalled();
       expect(localStorage.getItem(TEST_KEY)).toBe(true);
     });
   });
 
-  describe('getShowLabelsFromLocalStorage', () => {
+  describe('getToggleFromLocalStorage', () => {
     it('defaults to true when there is no value from localStorage and no default value is passed', () => {
       const TEST_KEY = `test-key-${new Date().getTime}`;
 
       expect(localStorage.getItem(TEST_KEY)).toBe(null);
 
-      const result = getShowLabelsFromLocalStorage(TEST_KEY);
+      const result = getToggleFromLocalStorage(TEST_KEY);
       expect(localStorage.getItem).toHaveBeenCalled();
       expect(result).toBe(true);
     });
@@ -218,7 +218,7 @@ describe('utils for remembering user showLabel preferences', () => {
 
       expect(localStorage.getItem(TEST_KEY)).toBe(null);
 
-      const result = getShowLabelsFromLocalStorage(TEST_KEY, DEFAULT_VALUE);
+      const result = getToggleFromLocalStorage(TEST_KEY, DEFAULT_VALUE);
       expect(localStorage.getItem).toHaveBeenCalled();
       expect(result).toBe(false);
     });
@@ -229,7 +229,7 @@ describe('utils for remembering user showLabel preferences', () => {
 
       localStorage.setItem(TEST_KEY, 'false');
 
-      const newResult = getShowLabelsFromLocalStorage(TEST_KEY, DEFAULT_VALUE);
+      const newResult = getToggleFromLocalStorage(TEST_KEY, DEFAULT_VALUE);
       expect(localStorage.getItem).toHaveBeenCalled();
       expect(newResult).toBe(false);
     });

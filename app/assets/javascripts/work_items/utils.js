@@ -246,15 +246,15 @@ export const newWorkItemId = (workItemType) => {
   return `${NEW_WORK_ITEM_GID}-${workItemTypeLowercase}`;
 };
 
-export const saveShowLabelsToLocalStorage = (showLabelsLocalStorageKey, value) => {
+export const saveToggleToLocalStorage = (key, value) => {
   if (AccessorUtilities.canUseLocalStorage()) {
-    localStorage.setItem(showLabelsLocalStorageKey, value);
+    localStorage.setItem(key, value);
   }
 };
 
-export const getShowLabelsFromLocalStorage = (showLabelsLocalStorageKey, defaultValue = true) => {
+export const getToggleFromLocalStorage = (key, defaultValue = true) => {
   if (AccessorUtilities.canUseLocalStorage()) {
-    return parseBoolean(localStorage.getItem(showLabelsLocalStorageKey) ?? defaultValue);
+    return parseBoolean(localStorage.getItem(key) ?? defaultValue);
   }
   return null;
 };
