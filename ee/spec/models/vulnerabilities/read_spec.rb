@@ -433,6 +433,31 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe '.with_ai_resolution' do
+    subject { described_class.with_ai_resolution(with_resolution) }
+
+    let_it_be(:read_with_ai_resolution) { create(:vulnerability_read, has_vulnerability_resolution: true) }
+    let_it_be(:read_without_ai_resolution) { create(:vulnerability_read, has_vulnerability_resolution: false) }
+
+    context 'when no argument is provided' do
+      subject { described_class.with_ai_resolution }
+
+      it { is_expected.to match_array([read_with_ai_resolution]) }
+    end
+
+    context 'when the argument is true' do
+      let(:with_resolution) { true }
+
+      it { is_expected.to match_array([read_with_ai_resolution]) }
+    end
+
+    context 'when the given argument is `false`' do
+      let(:with_resolution) { false }
+
+      it { is_expected.to match_array([read_without_ai_resolution]) }
+    end
+  end
+
   describe '.with_issues' do
     let_it_be(:vulnerability_with_issues) { create(:vulnerability, :with_finding, :with_issue_links, project: project) }
     let_it_be(:vulnerability_without_issues) { create(:vulnerability, :with_finding, project: project) }
