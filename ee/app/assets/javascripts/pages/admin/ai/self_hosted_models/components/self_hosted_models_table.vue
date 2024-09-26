@@ -2,6 +2,7 @@
 import { GlTableLite, GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
+import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
 
 export default {
   name: 'SelfHostedModelsTable',
@@ -10,6 +11,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlIcon,
+    DeleteSelfHostedModelDisclosureItem,
   },
   props: {
     models: {
@@ -60,15 +62,6 @@ export default {
         to: `${this.basePath}/${getIdFromGraphQLId(model.id)}/edit`,
       };
     },
-    deleteModelItem() {
-      /** TODO: implement delete functionality https://gitlab.com/gitlab-org/gitlab/-/issues/463137 */
-      return {
-        text: s__('AdminSelfHostedModels|Delete model'),
-        extraAttrs: {
-          class: '!gl-text-danger',
-        },
-      };
-    },
   },
 };
 </script>
@@ -89,18 +82,16 @@ export default {
       />
     </template>
     <template #cell(edit)="{ item }">
-      <div>
-        <gl-disclosure-dropdown
-          class="gl-py-2"
-          category="tertiary"
-          size="small"
-          icon="ellipsis_v"
-          :no-caret="true"
-        >
-          <gl-disclosure-dropdown-item :item="editModelItem(item)" />
-          <gl-disclosure-dropdown-item :item="deleteModelItem()" />
-        </gl-disclosure-dropdown>
-      </div>
+      <gl-disclosure-dropdown
+        class="gl-py-2"
+        category="tertiary"
+        size="small"
+        icon="ellipsis_v"
+        :no-caret="true"
+      >
+        <gl-disclosure-dropdown-item data-testid="model-edit-button" :item="editModelItem(item)" />
+        <delete-self-hosted-model-disclosure-item :model="item" />
+      </gl-disclosure-dropdown>
     </template>
   </gl-table-lite>
 </template>
