@@ -32094,6 +32094,16 @@ msgstr ""
 msgid "LicenseCompliance|Learn more about %{linkStart}License Approvals%{linkEnd}"
 msgstr ""
 
+msgid "LicenseCompliance|License Compliance detected %d license"
+msgid_plural "LicenseCompliance|License Compliance detected %d licenses"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "LicenseCompliance|License Compliance detected %d license and policy violation"
+msgid_plural "LicenseCompliance|License Compliance detected %d licenses and policy violations"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "LicenseCompliance|License Compliance detected %d license and policy violation for the source branch only"
 msgid_plural "LicenseCompliance|License Compliance detected %d licenses and policy violations for the source branch only"
 msgstr[0] ""
