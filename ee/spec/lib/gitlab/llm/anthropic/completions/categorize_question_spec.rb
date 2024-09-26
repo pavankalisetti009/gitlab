@@ -52,7 +52,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
         expect_snowplow_event(
           category: described_class.to_s,
           action: 'ai_question_category',
-          property: 'uuid',
+          requestId: 'uuid',
           user: user,
           context: [{
             schema: described_class::SCHEMA_URL,
@@ -83,7 +83,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
         expect_no_snowplow_event(
           category: described_class.to_s,
           action: 'ai_question_category',
-          property: 'uuid',
+          requestId: 'uuid',
           user: user,
           context: anything
         )
@@ -99,7 +99,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
         expect_no_snowplow_event(
           category: described_class.to_s,
           action: 'ai_question_category',
-          property: 'uuid',
+          requestId: 'uuid',
           user: user,
           context: anything
         )
