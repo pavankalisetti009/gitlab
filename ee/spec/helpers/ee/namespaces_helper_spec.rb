@@ -19,7 +19,6 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
   end
 
   let(:ci_minutes_used) { 100 }
-  let(:more_storage_url) { ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url }
 
   describe '#ci_minutes_report', feature_category: :hosted_runners do
     let(:usage) { Ci::Minutes::Usage.new(user_group) }
@@ -180,6 +179,13 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
       let(:user) { create(:user) }
       let(:personal_namespace) { build_stubbed(:user_namespace) }
 
+      let(:more_storage_url) do
+        ::Gitlab::Utils.add_url_parameters(
+          ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url,
+          gl_namespace_id: personal_namespace.root_ancestor.id
+        )
+      end
+
       it 'returns the default purchase' do
         expect(helper.buy_storage_path(personal_namespace)).to eq more_storage_url
       end
@@ -205,6 +211,13 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     context 'when called for a personal namespace' do
       let(:user) { create(:user) }
       let(:personal_namespace) { build_stubbed(:user_namespace) }
+
+      let(:more_storage_url) do
+        ::Gitlab::Utils.add_url_parameters(
+          ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url,
+          gl_namespace_id: personal_namespace.root_ancestor.id
+        )
+      end
 
       it 'returns the default purchase' do
         expect(helper.buy_storage_url(personal_namespace)).to eq more_storage_url
@@ -290,7 +303,14 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
   end
 
   describe '#purchase_storage_url', feature_category: :consumables_cost_management do
-    subject { helper.purchase_storage_url }
+    subject { helper.purchase_storage_url(user_group) }
+
+    let(:more_storage_url) do
+      ::Gitlab::Utils.add_url_parameters(
+        ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url,
+        gl_namespace_id: user_group.root_ancestor.id
+      )
+    end
 
     it { is_expected.to eq(more_storage_url) }
   end
@@ -303,6 +323,13 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
 
     let(:repository_size_limit) { 1000 }
     let(:storage_size_limit) { 1 }
+
+    let(:more_storage_url) do
+      ::Gitlab::Utils.add_url_parameters(
+        ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url,
+        gl_namespace_id: namespace.root_ancestor.id
+      )
+    end
 
     where(enforcement_type: [:project_repository_limit, :namespace_storage_limit])
 
