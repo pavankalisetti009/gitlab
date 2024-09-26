@@ -332,7 +332,7 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
     end
 
     it 'renders the empty state' do
-      expect(page).to have_selector('.requirements-empty-state-container')
+      expect(page).to have_selector('[data-testid="requirements-empty-state"]')
     end
   end
 end

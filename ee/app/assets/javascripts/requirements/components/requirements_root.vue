@@ -16,6 +16,7 @@ import {
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
+import EmptyResult from '~/vue_shared/components/empty_result.vue';
 import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
@@ -48,6 +49,7 @@ export default {
     GlPagination,
     GlAlert,
     FilteredSearchBar,
+    EmptyResult,
     RequirementsTabs,
     RequirementsLoading,
     RequirementsEmptyState,
@@ -262,6 +264,9 @@ export default {
     },
     showEmptyState() {
       return this.requirementsListEmpty && !this.showRequirementCreateDrawer;
+    },
+    hasSearchFilters() {
+      return this.getFilteredSearchValue().length;
     },
     showPaginationControls() {
       const { hasPreviousPage, hasNextPage } = this.requirements.pageInfo;
@@ -744,15 +749,18 @@ export default {
       @disable-edit="handleRequirementEdit(false)"
       @drawer-close="handleUpdateRequirementDrawerClose"
     />
-    <requirements-empty-state
-      v-if="showEmptyState"
-      :filter-by="filterBy"
-      :empty-state-path="emptyStatePath"
-      :requirements-count="requirementsCount"
-      :can-create-requirement="canCreateRequirement"
-      @click-new-requirement="handleNewRequirementClick"
-      @click-import-requirements="handleImportRequirementsClick"
-    />
+    <template v-if="showEmptyState">
+      <empty-result v-if="hasSearchFilters" />
+      <requirements-empty-state
+        v-else
+        :filter-by="filterBy"
+        :empty-state-path="emptyStatePath"
+        :requirements-count="requirementsCount"
+        :can-create-requirement="canCreateRequirement"
+        @click-new-requirement="handleNewRequirementClick"
+        @click-import-requirements="handleImportRequirementsClick"
+      />
+    </template>
     <requirements-loading
       v-show="requirementsListLoading"
       :filter-by="filterBy"
