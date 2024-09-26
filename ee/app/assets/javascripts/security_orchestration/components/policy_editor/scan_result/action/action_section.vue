@@ -1,4 +1,5 @@
 <script>
+import { GlButton } from '@gitlab/ui';
 import { ACTION_AND_LABEL } from '../../constants';
 import { REQUIRE_APPROVAL_TYPE, DISABLED_BOT_MESSAGE_ACTION } from '../lib';
 import ApproverAction from './approver_action.vue';
@@ -9,6 +10,7 @@ export default {
   DISABLED_BOT_MESSAGE_ACTION,
   name: 'ActionSection',
   components: {
+    GlButton,
     ApproverAction,
     BotMessageAction,
   },
@@ -39,6 +41,15 @@ export default {
       return this.actionIndex === 0;
     },
   },
+  methods: {
+    remove() {
+      if (this.isApproverAction) {
+        this.$emit('remove');
+      } else {
+        this.$emit('changed', this.$options.DISABLED_BOT_MESSAGE_ACTION);
+      }
+    },
+  },
 };
 </script>
 
@@ -51,20 +62,29 @@ export default {
     >
       {{ $options.ACTION_AND_LABEL }}
     </div>
-    <approver-action
-      v-if="isApproverAction"
-      :init-action="initAction"
-      :errors="errors"
-      :existing-approvers="existingApprovers"
-      @error="$emit('error')"
-      @updateApprovers="$emit('updateApprovers', $event)"
-      @changed="$emit('changed', $event)"
-      @remove="$emit('remove')"
-    />
-    <bot-message-action
-      v-else
-      :init-action="initAction"
-      @remove="$emit('changed', $options.DISABLED_BOT_MESSAGE_ACTION)"
-    />
+
+    <div class="gl-flex gl-w-full">
+      <div class="gl-flex-1">
+        <approver-action
+          v-if="isApproverAction"
+          :init-action="initAction"
+          :errors="errors"
+          :existing-approvers="existingApprovers"
+          @error="$emit('error')"
+          @updateApprovers="$emit('updateApprovers', $event)"
+          @changed="$emit('changed', $event)"
+        />
+        <bot-message-action v-else :init-action="initAction" />
+      </div>
+      <div class="security-policies-bg-gray-10">
+        <gl-button
+          icon="remove"
+          category="tertiary"
+          :aria-label="__('Remove')"
+          data-testid="remove-action"
+          @click="remove"
+        />
+      </div>
+    </div>
   </div>
 </template>

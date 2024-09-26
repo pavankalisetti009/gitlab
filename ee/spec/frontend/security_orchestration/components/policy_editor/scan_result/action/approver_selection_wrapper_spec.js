@@ -194,6 +194,7 @@ describe('ApproverSelectionWrapper', () => {
     });
 
     it('renders the remove button', () => {
+      factory({ propsData: { showRemoveButton: true } });
       expect(findSectionLayout().props('showRemoveButton')).toBe(true);
     });
   });

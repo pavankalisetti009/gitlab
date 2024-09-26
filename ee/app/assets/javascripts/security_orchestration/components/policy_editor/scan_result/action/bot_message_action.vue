@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <section-layout @remove="$emit('remove')">
+  <section-layout :show-remove-button="false">
     <template #content>
       <div class="gl-mt-3 gl-flex-col">
         <gl-sprintf :message="$options.i18n.contentText">

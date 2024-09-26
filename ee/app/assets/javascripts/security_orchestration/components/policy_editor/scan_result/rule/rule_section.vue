@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlAlert, GlSprintf } from '@gitlab/ui';
 import { ANY_MERGE_REQUEST, SCAN_FINDING, LICENSE_FINDING } from '../lib';
 import { RULE_OR_LABEL } from '../../constants';
 import AnyMergeRequestRuleBuilder from './any_merge_request_rule_builder.vue';
@@ -11,6 +11,7 @@ export default {
   RULE_OR_LABEL,
   components: {
     GlAlert,
+    GlButton,
     GlSprintf,
     DefaultRuleBuilder,
     AnyMergeRequestRuleBuilder,
@@ -108,41 +109,55 @@ export default {
       {{ $options.RULE_OR_LABEL }}
     </div>
 
-    <default-rule-builder
-      v-if="isEmptyRule"
-      :error-sources="errorSources"
-      :index="index"
-      :init-rule="initRule"
-      @error="handleError"
-      @changed="updateRule"
-      @remove="removeRule"
-      @set-scan-type="setScanType"
-    />
+    <div class="gl-flex">
+      <div>
+        <default-rule-builder
+          v-if="isEmptyRule"
+          :error-sources="errorSources"
+          :index="index"
+          :init-rule="initRule"
+          @error="handleError"
+          @changed="updateRule"
+          @remove="removeRule"
+          @set-scan-type="setScanType"
+        />
 
-    <any-merge-request-rule-builder
-      v-else-if="isAnyMergeRequestRule"
-      :init-rule="initRule"
-      @changed="updateRule"
-      @remove="removeRule"
-      @set-scan-type="setScanType"
-    />
+        <any-merge-request-rule-builder
+          v-else-if="isAnyMergeRequestRule"
+          :init-rule="initRule"
+          @changed="updateRule"
+          @remove="removeRule"
+          @set-scan-type="setScanType"
+        />
 
-    <security-scan-rule-builder
-      v-else-if="isSecurityRule"
-      :init-rule="initRule"
-      @error="handleError"
-      @changed="updateRule"
-      @remove="removeRule"
-      @set-scan-type="setScanType"
-    />
+        <security-scan-rule-builder
+          v-else-if="isSecurityRule"
+          :init-rule="initRule"
+          @error="handleError"
+          @changed="updateRule"
+          @remove="removeRule"
+          @set-scan-type="setScanType"
+        />
 
-    <license-scan-rule-builder
-      v-else-if="isLicenseRule"
-      :init-rule="initRule"
-      @error="handleError"
-      @changed="updateRule"
-      @remove="removeRule"
-      @set-scan-type="setScanType"
-    />
+        <license-scan-rule-builder
+          v-else-if="isLicenseRule"
+          :init-rule="initRule"
+          @error="handleError"
+          @changed="updateRule"
+          @remove="removeRule"
+          @set-scan-type="setScanType"
+        />
+      </div>
+
+      <div class="security-policies-bg-gray-10">
+        <gl-button
+          icon="remove"
+          category="tertiary"
+          :aria-label="__('Remove')"
+          data-testid="remove-rule"
+          @click="$emit('remove')"
+        />
+      </div>
+    </div>
   </div>
 </template>
