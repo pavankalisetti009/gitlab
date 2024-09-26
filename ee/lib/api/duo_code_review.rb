@@ -9,6 +9,8 @@ module API
     allow_access_with_scope :ai_features
 
     before do
+      not_found! unless Gitlab.dev_or_test_env?
+
       authenticate!
 
       license_feature_available = ::License.feature_available?(:ai_review_mr)

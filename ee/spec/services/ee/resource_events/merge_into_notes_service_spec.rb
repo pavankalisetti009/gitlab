@@ -45,8 +45,8 @@ RSpec.describe ResourceEvents::MergeIntoNotesService, feature_category: :team_pl
 
       notes = described_class.new(resource, user).execute
 
-      added_scoped_labels_refs = [scoped_label_group1_2, scoped_label_group2_1, scoped_label_group3_1, label].map(&:to_reference).sort.join(' ')
-      removed_scoped_labels_refs = [scoped_label_group1_1, scoped_label_group2_2, label2].map(&:to_reference).sort.join(' ')
+      added_scoped_labels_refs = [scoped_label_group2_1, scoped_label_group3_1, scoped_label_group1_2, label].map(&:to_reference).join(' ')
+      removed_scoped_labels_refs = [scoped_label_group2_2, scoped_label_group1_1, label2].map(&:to_reference).join(' ')
 
       expected = [
         "added #{added_scoped_labels_refs} labels and removed #{removed_scoped_labels_refs} labels",
@@ -68,8 +68,8 @@ RSpec.describe ResourceEvents::MergeIntoNotesService, feature_category: :team_pl
 
           note = described_class.new(resource, user).execute.first.note
 
-          added_scoped_labels_refs = [scoped_label_group1_1, scoped_label_group2_1].map(&:to_reference).sort.join(' ')
-          removed_scoped_labels_refs = [scoped_label_group1_2, scoped_label_group2_2].map(&:to_reference).sort.join(' ')
+          added_scoped_labels_refs = [scoped_label_group2_1, scoped_label_group1_1].map(&:to_reference).join(' ')
+          removed_scoped_labels_refs = [scoped_label_group2_2, scoped_label_group1_2].map(&:to_reference).join(' ')
 
           expect(note).to eq("added #{added_scoped_labels_refs} labels and removed #{removed_scoped_labels_refs} labels")
         end
@@ -84,7 +84,7 @@ RSpec.describe ResourceEvents::MergeIntoNotesService, feature_category: :team_pl
           note = described_class.new(resource, user).execute.first.note
 
           added_scoped_labels_refs = scoped_label_group1_1.to_reference
-          removed_scoped_labels_refs = [scoped_label_group1_2, scoped_label_group2_1].map(&:to_reference).sort.join(' ')
+          removed_scoped_labels_refs = [scoped_label_group2_1, scoped_label_group1_2].map(&:to_reference).join(' ')
 
           expect(note).to eq("added #{added_scoped_labels_refs} label and removed #{removed_scoped_labels_refs} labels")
         end
