@@ -57,7 +57,7 @@ module Gitlab
         when 'notes'
           eager_load(notes, page, per_page, preload_method, project: [:invited_groups, :route, :namespace])
         when 'epics'
-          eager_load(epics, page, per_page, preload_method, nil)
+          epics(page: page, per_page: per_page, preload_method: preload_method)
         when 'blobs'
           blobs(page: page, per_page: per_page, preload_method: preload_method)
         when 'wiki_blobs'
@@ -333,6 +333,16 @@ module Gitlab
           # Otherwise it will ignore project_ids and return milestones
           # from projects with milestones disabled.
           base_options.merge({ features: [:issues, :merge_requests] }, filters.slice(:include_archived))
+        when :epics
+          if work_item_index_available_for_searching_epics?
+            work_item_scope_options.merge(
+              not_work_item_type_ids: nil,
+              klass: WorkItem,
+              work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
+            )
+          else
+            base_options
+          end
         when :users
           base_options.merge(admin: current_user&.admin?, routing_disabled: true) # rubocop:disable Cop/UserAdmin
         when :blobs
@@ -373,7 +383,7 @@ module Gitlab
 
       def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         strong_memoize(memoize_key('issues', count_only: count_only)) do
-          if work_item_index_available_for_searching?
+          if work_item_index_available_for_searching_issues?
             options = scope_options(:work_items)
               .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
             search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
@@ -389,7 +399,12 @@ module Gitlab
         end
       end
 
-      def work_item_index_available_for_searching?
+      def work_item_index_available_for_searching_epics?
+        ::Feature.enabled?(:search_epics_uses_work_items_index, current_user) &&
+          ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
+      end
+
+      def work_item_index_available_for_searching_issues?
         ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
           ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
@@ -406,8 +421,20 @@ module Gitlab
         scope_results :notes, Note, count_only: count_only
       end
 
-      def epics(count_only: false)
-        scope_results :epics, Epic, count_only: count_only
+      def epics(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
+        unless work_item_index_available_for_searching_epics?
+          epics = scope_results :epics, Epic, count_only: count_only
+          return eager_load(epics, page, per_page, preload_method, nil)
+        end
+
+        strong_memoize(memoize_key('epics', count_only: count_only)) do
+          options = scope_options(:epics)
+            .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+          search_query = ::Search::Elastic::WorkItemGroupQueryBuilder.build(query: query, options: options)
+          ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
+            ::Search::Elastic::ResponseMapper.new(response, options).paginated_array
+          end
+        end
       end
 
       def users(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
@@ -486,7 +513,7 @@ module Gitlab
       strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
-        if work_item_index_available_for_searching?
+        if work_item_index_available_for_searching_issues?
           options = scope_options(:work_items).merge(aggregation: true)
           search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
         else

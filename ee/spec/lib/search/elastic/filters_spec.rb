@@ -767,6 +767,182 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  describe '.by_group_level_authorization' do
+    subject(:by_group_level_authorization) do
+      described_class.by_group_level_authorization(query_hash: query_hash, options: options)
+    end
+
+    context 'when user.can_read_all_resources? is true' do
+      let(:base_options) { { current_user: user, search_level: 'global' } }
+      let(:options) { base_options }
+
+      before do
+        allow(user).to receive(:can_read_all_resources?).and_return(true)
+      end
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when user is having permission for the group' do
+      let_it_be(:group) { create(:group, :private) }
+      let(:base_options) { { current_user: user, search_level: 'group', group_id: group.id, group_ids: [group.id] } }
+      let(:options) { base_options }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      it 'shows private filter' do
+        expected_filter = [
+          { bool: { _name: "filters:level:group", minimum_should_match: 1,
+                    should: [{ prefix: {
+                      traversal_ids: {
+                        _name: "filters:level:group:ancestry_filter:descendants",
+                        value: group.elastic_namespace_ancestry
+                      }
+                    } }] } },
+          { bool: {
+            minimum_should_match: 1,
+            should: [
+              { bool: { filter: [
+                { term: { namespace_visibility_level: {
+                  _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
+                } } }
+              ] } },
+              { bool: { filter: [{ term: { namespace_visibility_level: {
+                _name: 'filters:namespace_visibility_level:internal', value: ::Gitlab::VisibilityLevel::INTERNAL
+              } } }] } },
+              { bool: { filter: [
+                { term: {
+                  namespace_visibility_level: { _name: 'filters:namespace_visibility_level:private',
+                                                value: ::Gitlab::VisibilityLevel::PRIVATE }
+                } },
+                { terms: { namespace_id: [group.id] } }
+              ] } }
+            ]
+          } }
+        ]
+
+        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when user is nil' do
+      let(:options) { base_options }
+      let(:base_options) { { current_user: nil, search_level: 'global' } }
+
+      it 'shows only the public filter' do
+        expected_filter = [
+          bool: {
+            minimum_should_match: 1,
+            should: [
+              { bool: { filter: [{ term: { namespace_visibility_level: {
+                _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
+              } } }] } }
+            ]
+          }
+        ]
+
+        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when user is not having permissions to read confidential epics' do
+      let(:options) { base_options }
+      let(:base_options) { { current_user: user, search_level: 'global' } }
+
+      it 'shows only the public filter' do
+        expected_filter = [
+          bool: {
+            minimum_should_match: 1,
+            should: [
+              { bool: { filter: [{ term: { namespace_visibility_level: {
+                _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
+              } } }] } },
+              { bool: { filter: [{ term: { namespace_visibility_level: {
+                _name: 'filters:namespace_visibility_level:internal', value: ::Gitlab::VisibilityLevel::INTERNAL
+              } } }] } }
+            ]
+          }
+        ]
+
+        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
+  describe '.by_group_level_confidentiality' do
+    subject(:by_group_level_confidentiality) do
+      described_class.by_group_level_confidentiality(query_hash: query_hash, options: options)
+    end
+
+    context 'when user.can_read_all_resources? is true' do
+      let(:base_options) { { current_user: user, search_level: 'global' } }
+      let(:options) { base_options }
+
+      before do
+        allow(user).to receive(:can_read_all_resources?).and_return(true)
+      end
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when user is having permission for the group' do
+      let_it_be(:group) { create(:group, :private) }
+      let(:base_options) { { current_user: user, search_level: 'global' } }
+      let(:options) { base_options }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      it 'shows the expected filter' do
+        expected_filter = [
+          bool: { should: [
+            {
+              bool: {
+                must: [
+                  { term: { confidential: { value: true, _name: "filters:confidential:groups" } } },
+                  { terms: { namespace_id: [group.id],
+                             _name: "filters:confidential:groups:can_read_confidential_work_items" } }
+                ]
+              }
+            },
+            { term: { confidential: { value: false, _name: "filters:non_confidential:groups" } } }
+          ] }
+        ]
+
+        expect(by_group_level_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_group_level_confidentiality.dig(:query, :bool, :must)).to be_empty
+        expect(by_group_level_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_group_level_confidentiality.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when user is nil' do
+      let(:options) { base_options }
+      let(:base_options) { { current_user: nil, search_level: 'global' } }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when user is not having permissions to read confidential epics' do
+      let(:options) { base_options }
+      let(:base_options) { { current_user: user, search_level: 'global' } }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+  end
+
   describe '.by_confidentiality' do
     let_it_be(:authorized_project) { create(:project, developers: [user]) }
     let_it_be(:private_project) { create(:project, :private) }
