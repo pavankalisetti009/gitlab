@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Observability::LogType, feature_category: :metrics do
+RSpec.describe Types::Observability::LogType, feature_category: :observability do
   include GraphqlHelpers
 
   specify { expect(described_class).to require_graphql_authorizations(:read_observability) }

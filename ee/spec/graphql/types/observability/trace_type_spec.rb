@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Observability::TraceType, feature_category: :tracing do
+RSpec.describe Types::Observability::TraceType, feature_category: :observability do
   include GraphqlHelpers
 
   specify { expect(described_class).to require_graphql_authorizations(:read_observability) }

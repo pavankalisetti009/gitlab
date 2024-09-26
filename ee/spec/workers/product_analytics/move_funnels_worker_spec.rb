@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_analytics do
   let_it_be(:project) { create(:project) }
   let_it_be(:previous_custom_dashboard_project) { create(:project, :repository) }
   let_it_be(:new_custom_dashboard_project) { create(:project, :repository) }

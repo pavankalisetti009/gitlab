@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::LogsIssuesConnection, feature_category: :logging do
+RSpec.describe Observability::LogsIssuesConnection, feature_category: :observability do
   describe 'associations' do
     it { is_expected.to belong_to(:issue).inverse_of(:observability_logs) }
   end

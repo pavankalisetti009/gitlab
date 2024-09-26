@@ -10,7 +10,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
   describe 'Menu Items' do
     subject(:items) { described_class.new(context).renderable_items.find { |e| e.item_id == item_id } }
 
-    describe 'Analytics menu', feature_category: :product_analytics_data_management do
+    describe 'Analytics menu', feature_category: :product_analytics do
       let(:item_id) { :admin_analytics }
 
       context 'when product_analytics feature is licensed' do

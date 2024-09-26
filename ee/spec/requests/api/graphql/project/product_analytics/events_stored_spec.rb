@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Query.project(fullPath).product_analytics_events_stored',
-  feature_category: :product_analytics_data_management do
+  feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'projects/settings/operations/_observability.html.haml', feature_category: :metrics do
+RSpec.describe 'projects/settings/operations/_observability.html.haml', feature_category: :observability do
   let_it_be(:setting) { build(:project_setting) }
 
   let_it_be(:project) { build(:project, project_setting: setting) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project > Settings > Analytics -> Data sources -> Product analytics instance settings', :js, feature_category: :product_analytics_visualization do
+RSpec.describe 'Project > Settings > Analytics -> Data sources -> Product analytics instance settings', :js, feature_category: :product_analytics do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user) }

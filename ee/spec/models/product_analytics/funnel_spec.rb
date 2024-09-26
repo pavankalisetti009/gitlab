@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::Funnel, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalytics::Funnel, feature_category: :product_analytics do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :with_product_analytics_funnel, group: group) }
   let_it_be(:project_invalid_seconds) { create(:project, :with_invalid_seconds_product_analytics_funnel, group: group) }

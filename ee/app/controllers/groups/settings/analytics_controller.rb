@@ -6,7 +6,7 @@ module Groups
       include Groups::AnalyticsDashboardHelper
 
       layout 'group_settings'
-      feature_category :product_analytics_visualization
+      feature_category :product_analytics
 
       before_action :authorize_analytics_settings!
 

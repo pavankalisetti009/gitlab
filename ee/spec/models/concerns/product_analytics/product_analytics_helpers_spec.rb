@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:group) { create(:group) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'admin/application_settings/analytics.html.haml', feature_category: :product_analytics_data_management do
+RSpec.describe 'admin/application_settings/analytics.html.haml', feature_category: :product_analytics do
   let_it_be(:user) { build_stubbed(:admin) }
   let_it_be(:app_settings) { build(:application_setting) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Audit::ProjectAnalyticsChangesAuditor, feature_category: :product_analytics_data_management do
+RSpec.describe Audit::ProjectAnalyticsChangesAuditor, feature_category: :product_analytics do
   describe 'auditing project analytics changes' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }

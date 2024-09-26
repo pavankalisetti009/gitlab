@@ -482,7 +482,7 @@
   :tags: []
 - :name: cronjob:observability_alert_query
   :worker_name: Observability::AlertQueryWorker
-  :feature_category: :metrics
+  :feature_category: :observability
   :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
@@ -1931,7 +1931,7 @@
   :tags: []
 - :name: product_analytics_initialize_snowplow_product_analytics
   :worker_name: ProductAnalytics::InitializeSnowplowProductAnalyticsWorker
-  :feature_category: :product_analytics_data_management
+  :feature_category: :product_analytics
   :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
@@ -1940,7 +1940,7 @@
   :tags: []
 - :name: product_analytics_move_funnels
   :worker_name: ProductAnalytics::MoveFunnelsWorker
-  :feature_category: :product_analytics_data_management
+  :feature_category: :product_analytics
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -1949,7 +1949,7 @@
   :tags: []
 - :name: product_analytics_post_push
   :worker_name: ProductAnalytics::PostPushWorker
-  :feature_category: :product_analytics_data_management
+  :feature_category: :product_analytics
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -1958,7 +1958,7 @@
   :tags: []
 - :name: product_analytics_sync_funnels
   :worker_name: ProductAnalytics::SyncFunnelsWorker
-  :feature_category: :product_analytics_data_management
+  :feature_category: :product_analytics
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

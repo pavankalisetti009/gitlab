@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'rspec-parameterized'
 
-RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_category: :product_analytics_visualization do
+RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

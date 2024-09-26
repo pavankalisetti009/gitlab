@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::AlertQueryWorker, feature_category: :metrics do
+RSpec.describe Observability::AlertQueryWorker, feature_category: :observability do
   let_it_be(:active_token, freeze: true) { create(:service_access_token, :active) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }

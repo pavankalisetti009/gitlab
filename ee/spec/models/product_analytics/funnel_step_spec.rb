@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::FunnelStep, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalytics::FunnelStep, feature_category: :product_analytics do
   let(:funnel) do
     ::ProductAnalytics::Funnel.new(
       name: 'test',
