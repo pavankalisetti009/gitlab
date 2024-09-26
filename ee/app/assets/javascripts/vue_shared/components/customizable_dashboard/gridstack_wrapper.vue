@@ -1,16 +1,9 @@
 <script>
 import { GridStack } from 'gridstack';
-import { breakpoints } from '@gitlab/ui/dist/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { cloneWithoutReferences } from '~/lib/utils/common_utils';
 import { loadCSSFile } from '~/lib/utils/css_utils';
-import {
-  GRIDSTACK_MARGIN,
-  GRIDSTACK_CSS_HANDLE,
-  GRIDSTACK_CELL_HEIGHT,
-  GRIDSTACK_MIN_ROW,
-  CURSOR_GRABBING_CLASS,
-} from './constants';
+import { GRIDSTACK_BASE_CONFIG, CURSOR_GRABBING_CLASS } from './constants';
 import { parsePanelToGridItem } from './utils';
 
 export default {
@@ -63,7 +56,8 @@ export default {
   },
   beforeDestroy() {
     this.mounted = false;
-    this.grid?.destroy();
+    const removeDom = Boolean(this.$el.parentElement);
+    this.grid?.destroy(removeDom);
   },
   async created() {
     try {
@@ -105,15 +99,8 @@ export default {
     },
     initGridStack() {
       this.grid = GridStack.init({
+        ...GRIDSTACK_BASE_CONFIG,
         staticGrid: !this.editing,
-        margin: GRIDSTACK_MARGIN,
-        handle: GRIDSTACK_CSS_HANDLE,
-        cellHeight: GRIDSTACK_CELL_HEIGHT,
-        minRow: GRIDSTACK_MIN_ROW,
-        columnOpts: { breakpoints: [{ w: breakpoints.md, c: 1 }] },
-        alwaysShowResizeHandle: true,
-        animate: true,
-        float: true,
       }).load(this.gridConfig);
 
       // Sync Vue components array with gridstack items

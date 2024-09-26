@@ -1,3 +1,5 @@
+import { breakpoints } from '@gitlab/ui/dist/utils';
+
 export const GRIDSTACK_MARGIN = 8;
 export const GRIDSTACK_CSS_HANDLE = '.grid-stack-item-handle';
 
@@ -7,6 +9,17 @@ export const GRIDSTACK_CSS_HANDLE = '.grid-stack-item-handle';
  */
 export const GRIDSTACK_CELL_HEIGHT = '125px';
 export const GRIDSTACK_MIN_ROW = 1;
+
+export const GRIDSTACK_BASE_CONFIG = {
+  margin: GRIDSTACK_MARGIN,
+  handle: GRIDSTACK_CSS_HANDLE,
+  cellHeight: GRIDSTACK_CELL_HEIGHT,
+  minRow: GRIDSTACK_MIN_ROW,
+  columnOpts: { breakpoints: [{ w: breakpoints.md, c: 1 }] },
+  alwaysShowResizeHandle: true,
+  animate: true,
+  float: true,
+};
 
 export const PANEL_POPOVER_DELAY = {
   hide: 500,
