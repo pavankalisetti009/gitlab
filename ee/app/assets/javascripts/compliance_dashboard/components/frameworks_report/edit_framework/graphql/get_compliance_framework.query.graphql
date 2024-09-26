@@ -46,6 +46,11 @@ query getComplianceFrameworkWithPolicies(
             webUrl
             visibility
             fullPath
+            namespace {
+              id
+              fullName
+              webUrl
+            }
           }
         }
         scanResultPolicies {

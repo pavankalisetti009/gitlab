@@ -17,6 +17,8 @@ describe('Basic information section', () => {
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
   const findInfoText = () => wrapper.findByTestId('info-text');
   const findLink = () => findInfoText().findComponent(GlLink);
+  const projectLinks = () => wrapper.findAllByTestId('project-link');
+  const subgroupLinks = () => wrapper.findAllByTestId('subgroup-link');
 
   const createComponent = () => {
     wrapper = mountExtended(ProjectsSection, {
@@ -52,7 +54,7 @@ describe('Basic information section', () => {
       const frameworkProjects = findTableRowData(idx).wrappers.map((d) => d.text());
 
       expect(frameworkProjects[0]).toMatch(projects[idx].name);
-      expect(frameworkProjects[1]).toMatch(projects[idx].fullPath);
+      expect(frameworkProjects[1]).toMatch(projects[idx].namespace.fullName);
       expect(frameworkProjects[2]).toMatch(projects[idx].description);
     });
 
@@ -61,6 +63,14 @@ describe('Basic information section', () => {
 
       const visibilityIcon = frameworkProjects[0].findComponent(VisibilityIcon);
       expect(visibilityIcon.props('visibilityLevel')).toMatch(projects[idx].visibility);
+    });
+
+    it.each(Object.keys(projects))('renders correct url for the projects %s', (idx) => {
+      expect(projectLinks().at(idx).attributes('href')).toBe(projects[idx].webUrl);
+    });
+
+    it.each(Object.keys(projects))('renders correct url for the projects subgroup %s', (idx) => {
+      expect(subgroupLinks().at(idx).attributes('href')).toBe(projects[idx].namespace.webUrl);
     });
 
     it('renders information text with correct action', () => {

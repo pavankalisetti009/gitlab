@@ -37,8 +37,8 @@ export default {
       tdClass: '!gl-bg-white !gl-border-b-white',
     },
     {
-      key: 'path',
-      label: i18n.projectsTableFields.path,
+      key: 'subgroup',
+      label: i18n.projectsTableFields.subgroup,
       thClass: 'gl-w-1 !gl-border-t-0',
       tdClass: '!gl-bg-white !gl-border-b-white',
     },
@@ -72,15 +72,17 @@ export default {
       selected-variant="primary"
     >
       <template #cell(name)="{ item }">
-        <gl-link :href="item.webUrl">{{ item.name }}</gl-link>
+        <gl-link data-testid="project-link" :href="item.webUrl">{{ item.name }}</gl-link>
         <visibility-icon
           v-if="item.visibility"
           class="gl-ml-2"
           :visibility-level="item.visibility"
         />
       </template>
-      <template #cell(path)="{ item }">
-        {{ item.fullPath }}
+      <template #cell(subgroup)="{ item }">
+        <gl-link v-if="item.namespace" data-testid="subgroup-link" :href="item.namespace.webUrl">
+          {{ item.namespace.fullName }}
+        </gl-link>
       </template>
       <template #cell(description)="{ item }">
         {{ item.description }}
