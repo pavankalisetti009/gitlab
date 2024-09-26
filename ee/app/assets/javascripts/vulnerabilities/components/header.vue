@@ -20,6 +20,8 @@ import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
+import VulnerabilityActionsDropdown from './vulnerability_actions_dropdown.vue';
+import VulnerabilityStateDropdown from './vulnerability_state_dropdown.vue';
 
 export const CREATE_MR_AI_ACTION = {
   name: s__('ciReport|Resolve with merge request'),
@@ -48,8 +50,8 @@ export default {
     StatusBadge,
     ResolutionAlert,
     StatusDescription,
-    VulnerabilityStateDropdown: () => import('./vulnerability_state_dropdown.vue'),
-    VulnerabilityActionsDropdown: () => import('./vulnerability_actions_dropdown.vue'),
+    VulnerabilityStateDropdown,
+    VulnerabilityActionsDropdown,
   },
   directives: {
     GlTooltip,
