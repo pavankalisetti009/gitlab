@@ -10,7 +10,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
 
     let_it_be(:duo_chat_unit_primitives) { [:duo_chat, :documentation_search] }
     let_it_be(:duo_chat_ent_unit_primitives) do
-      duo_chat_unit_primitives + [:ask_commit, :ask_epic, :ask_issue, :ask_merge_request]
+      duo_chat_unit_primitives + [:ask_build, :ask_commit, :ask_epic, :ask_issue, :ask_merge_request]
     end
 
     let_it_be(:duo_chat_bundled_with) do

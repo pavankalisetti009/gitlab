@@ -60,6 +60,16 @@ module EE
 
           progress
         end
+
+        override :extract_work_items
+        def extract_work_items(params)
+          return if params.nil?
+
+          issues_and_work_items = super
+          epics = extract_references(params, :epic)
+
+          epics.map(&:sync_object) + issues_and_work_items
+        end
       end
     end
   end

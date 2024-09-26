@@ -244,6 +244,73 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       end
     end
 
+    describe '/set_parent' do
+      let_it_be_with_reload(:noteable) do
+        create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic")
+      end
+
+      let_it_be_with_reload(:parent) do
+        create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Parent Epic")
+      end
+
+      let_it_be(:note_text) { "/set_parent #{parent.to_reference}" }
+      let_it_be(:note) { build(:note, noteable: noteable, namespace: group, note: note_text) }
+      let_it_be(:epic) { noteable.synced_epic }
+      let_it_be(:parent_epic) { parent.synced_epic }
+
+      before do
+        stub_licensed_features(epics: true, subepics: true)
+        stub_feature_flags(work_item_epics: true)
+        group.add_developer(user)
+      end
+
+      context 'when using epic iid' do
+        let_it_be(:note_text) { "/set_parent #{parent.to_reference}" }
+
+        it_behaves_like 'sets work item parent'
+      end
+
+      context 'when using legacy epic URL' do
+        let_it_be(:url) { "#{Gitlab.config.gitlab.url}/#{group.full_path}/epics/#{parent.iid}" }
+        let_it_be(:note_text) { "/set_parent #{url}" }
+
+        it_behaves_like 'sets work item parent'
+      end
+    end
+
+    describe '/add_child' do
+      let_it_be(:noteable) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be(:child) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be(:second_child) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be(:note_text) { "/add_child #{child.to_reference}, #{second_child.to_reference}" }
+      let_it_be(:note) { build(:note, noteable: noteable, project: project, note: note_text) }
+      let_it_be(:children) { [child, second_child] }
+
+      before do
+        stub_licensed_features(epics: true, subepics: true)
+        stub_feature_flags(work_item_epics: true)
+        group.add_developer(user)
+      end
+
+      it_behaves_like 'adds child work items'
+
+      context 'when using work item full reference' do
+        let_it_be(:note_text) do
+          "/add_child #{child.to_reference(full: true)}, #{second_child.to_reference(full: true)}"
+        end
+
+        it_behaves_like 'adds child work items'
+      end
+
+      context 'when using epic and epic work item URL' do
+        let_it_be(:group_path) { "#{Gitlab.config.gitlab.url}/#{group.full_path}" }
+        let_it_be(:url) { "#{group_path}/work_items/#{child.iid}, #{group_path}/epics/#{second_child.iid}" }
+        let_it_be(:note_text) { "/add_child #{url}" }
+
+        it_behaves_like 'adds child work items'
+      end
+    end
+
     describe '/reopen' do
       let(:note_text) { "/reopen" }
       let(:note) { create(:note, noteable: epic, note: note_text) }
