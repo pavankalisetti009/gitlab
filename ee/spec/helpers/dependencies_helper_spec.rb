@@ -8,7 +8,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
       is_expected.to include(
         has_dependencies: 'false',
         documentation_path: a_string_including("user/application_security/dependency_list/index"),
-        empty_state_svg_path: match(%r{illustrations/Dependency-list-empty-state.*\.svg})
+        empty_state_svg_path: match(%r{illustrations/empty-state/empty-radar-md.*\.svg})
       )
     end
   end
