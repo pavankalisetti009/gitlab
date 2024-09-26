@@ -34,6 +34,7 @@ module QA
 
       before do
         Flow::Login.sign_in
+        project.visit!
         clear_chat
 
         Support::Waiter.wait_until(message: 'Wait for MR pipeline to be created') do
