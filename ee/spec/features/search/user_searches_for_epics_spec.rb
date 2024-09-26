@@ -2,11 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User searches for epics', :elastic, :sidekiq_inline, :js, :disable_rate_limiter, feature_category: :global_search do
+RSpec.describe 'User searches for epics', :js, :disable_rate_limiter, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:epic1) { create(:epic, title: 'Foo', group: group, updated_at: 6.days.ago) }
-  let_it_be(:epic2) { create(:epic, :closed, :confidential, title: 'Bar', group: group) }
 
   before do
     stub_licensed_features(epics: true)
@@ -18,9 +16,17 @@ RSpec.describe 'User searches for epics', :elastic, :sidekiq_inline, :js, :disab
     visit(search_path(group_id: group.id))
   end
 
-  include_examples 'top right search form'
-  include_examples 'search timeouts', 'epics' do
-    let(:additional_params) { { group_id: group.id } }
+  [:work_item, :epic].each do |document_type|
+    context "when we have document_type as #{document_type}", :elastic do
+      before do
+        stub_feature_flags(search_epics_uses_work_items_index: (document_type == :work_item))
+      end
+
+      include_examples 'top right search form'
+      include_examples 'search timeouts', 'epics' do
+        let(:additional_params) { { group_id: group.id } }
+      end
+    end
   end
 
   shared_examples 'searches for epics' do
@@ -74,18 +80,41 @@ RSpec.describe 'User searches for epics', :elastic, :sidekiq_inline, :js, :disab
     end
   end
 
-  context 'when advanced_search is enabled' do
+  context 'when advanced_search is enabled', :elastic do
+    let_it_be(:epic1) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, title: 'Foo', namespace: group,
+        updated_at: 6.days.ago)
+    end
+
+    let_it_be(:epic2) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, :closed, :confidential, title: 'Bar',
+        namespace: group)
+    end
+
     before do
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-
+      stub_feature_flags(search_epics_uses_work_items_index: true)
       Elastic::ProcessBookkeepingService.track!(*[epic1, epic2])
       ensure_elasticsearch_index!
     end
 
     include_examples 'searches for epics'
+    context 'when ff is disabled' do
+      let_it_be(:epic1) { create(:epic, title: 'Foo', group: group, updated_at: 6.days.ago) }
+      let_it_be(:epic2) { create(:epic, :closed, :confidential, title: 'Bar', group: group) }
+
+      before do
+        stub_feature_flags(search_epics_uses_work_items_index: false)
+      end
+
+      include_examples 'searches for epics'
+    end
   end
 
   context 'when advanced_search is disabled' do
+    let_it_be(:epic1) { create(:epic, title: 'Foo', group: group, updated_at: 6.days.ago) }
+    let_it_be(:epic2) { create(:epic, :closed, :confidential, title: 'Bar', group: group) }
+
     before do
       stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
     end

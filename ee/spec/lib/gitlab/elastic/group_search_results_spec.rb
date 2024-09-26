@@ -236,6 +236,61 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
+  context 'group level work_items search', :sidekiq_inline do
+    let(:query) { 'foo' }
+    let(:scope) { 'epics' }
+
+    let_it_be(:public_parent_group) { create(:group, :public) }
+    let_it_be(:group) { create(:group, :private, parent: public_parent_group) }
+    let_it_be(:child_group) { create(:group, :private, parent: group) }
+    let_it_be(:child_of_child_group) { create(:group, :private, parent: child_group) }
+    let_it_be(:another_group) { create(:group, :private, parent: public_parent_group) }
+    let!(:parent_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: public_parent_group, title: query) }
+    let!(:group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: query) }
+    let!(:child_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: child_group, title: query) }
+    let!(:confidential_child_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_group, title: query) }
+    let!(:confidential_child_of_child_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_of_child_group, title: query) }
+    let!(:another_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: another_group, title: query) }
+
+    before do
+      ensure_elasticsearch_index!
+    end
+
+    it 'returns no epics' do
+      expect(results.objects('epics')).to be_empty
+    end
+
+    context 'when the user is a developer on the group' do
+      before_all do
+        group.add_developer(user)
+      end
+
+      it 'returns matching epics belonging to the group or its descendants, including confidential epics' do
+        epics = results.objects('epics')
+
+        expect(epics).to include(group_epic)
+        expect(epics).to include(child_group_epic)
+        expect(epics).to include(confidential_child_group_epic)
+
+        expect(epics).not_to include(parent_group_epic)
+        expect(epics).not_to include(another_group_epic)
+      end
+
+      context 'when searching from the child group' do
+        it 'returns matching epics belonging to the child group, including confidential epics' do
+          epics = described_class.new(user, query, [], group: child_group, filters: filters).objects('epics')
+
+          expect(epics).to include(child_group_epic)
+          expect(epics).to include(confidential_child_group_epic)
+
+          expect(epics).not_to include(group_epic)
+          expect(epics).not_to include(parent_group_epic)
+          expect(epics).not_to include(another_group_epic)
+        end
+      end
+    end
+  end
+
   context 'epics search', :sidekiq_inline do
     let(:query) { 'foo' }
     let(:scope) { 'epics' }
@@ -253,6 +308,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     let!(:another_group_epic) { create(:epic, group: another_group, title: query) }
 
     before do
+      stub_feature_flags(search_epics_uses_work_items_index: false)
       ensure_elasticsearch_index!
     end
 
