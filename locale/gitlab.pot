@@ -61734,7 +61734,7 @@ msgstr ""
 msgid "With custom notification levels you receive notifications for the same events as in the Participate level, with additional selected events. For more information, see %{notificationLinkStart}notification emails%{notificationLinkEnd}."
 msgstr ""
 
-msgid "With requirements, you can set criteria to check your products against."
+msgid "With requirements, you can set criteria to check your products against"
 msgstr ""
 
 msgid "Withdraw Access Request"
