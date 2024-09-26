@@ -11,6 +11,8 @@ module Gitlab
         end
 
         def allowed?
+          return false unless @user
+
           project_authorized? && user_authorized?
         end
 
