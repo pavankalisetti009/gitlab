@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTable } from '@gitlab/ui';
+import { GlTable, GlBadge, GlButton } from '@gitlab/ui';
 
 import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section.vue';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
@@ -48,55 +48,45 @@ const makeFakeResponse = () => ({
   data: {
     namespace: {
       id: 'gid://gitlab/Group/29',
-      approvalPolicies: {
-        nodes: [
-          makePolicy({
-            name: 'test',
-            enabled: false,
-            description: 'Test1',
-            __typename: 'ApprovalPolicy',
-          }),
-          makePolicy({
-            name: 'test2',
-            enabled: true,
-            description: 'Test2',
-            __typename: 'ApprovalPolicy',
-          }),
-        ],
-        pageInfo: pageInfo('A1'),
-        __typename: 'ApprovalPolicyConnection',
-      },
-      scanExecutionPolicies: {
-        nodes: [
-          makePolicy({
-            name: 'testE',
-            enabled: false,
-            description: 'E1',
-            __typename: 'ScanExecutionPolicy',
-          }),
-          makePolicy({
-            name: 'testE2',
-            enabled: true,
-            description: 'E2',
-            __typename: 'ScanExecutionPolicy',
-          }),
-        ],
-        pageInfo: pageInfo('SE1'),
-        __typename: 'ScanExecutionPolicyConnection',
-      },
       complianceFrameworks: {
         nodes: [
           {
             id: 'gid://gitlab/ComplianceManagement::Framework/7',
             name: 'ddd',
             scanResultPolicies: {
-              nodes: [{ name: 'test', __typename: 'ScanResultPolicy' }],
-              pageInfo: pageInfo('A2'),
+              nodes: [
+                makePolicy({
+                  name: 'test',
+                  enabled: false,
+                  description: 'Test1',
+                  __typename: 'ScanResultPolicy',
+                }),
+                makePolicy({
+                  name: 'test2',
+                  enabled: true,
+                  description: 'Test2',
+                  __typename: 'ScanResultPolicy',
+                }),
+              ],
+              pageInfo: pageInfo('A1'),
               __typename: 'ScanResultPolicyConnection',
             },
             scanExecutionPolicies: {
-              nodes: [{ name: 'testE2', __typename: 'ScanExecutionPolicy' }],
-              pageInfo: pageInfo('SE2'),
+              nodes: [
+                makePolicy({
+                  name: 'testE',
+                  enabled: false,
+                  description: 'E1',
+                  __typename: 'ScanExecutionPolicy',
+                }),
+                makePolicy({
+                  name: 'testE2',
+                  enabled: true,
+                  description: 'E2',
+                  __typename: 'ScanExecutionPolicy',
+                }),
+              ],
+              pageInfo: pageInfo('SE1'),
               __typename: 'ScanExecutionPolicyConnection',
             },
             __typename: 'ComplianceFramework',
@@ -109,8 +99,10 @@ const makeFakeResponse = () => ({
   },
 });
 
-describe('Basic information section', () => {
+describe('PoliciesSection component', () => {
   let wrapper;
+  const findPoliciesTable = () => wrapper.findComponent(GlTable);
+  const findDrawer = () => wrapper.findComponent(DrawerWrapper);
 
   function createComponent({ requestHandlers = [], provide } = {}) {
     return mountExtended(PoliciesSection, {
@@ -135,7 +127,7 @@ describe('Basic information section', () => {
 
     beforeEach(() => {
       const responseWithNextPages = makeFakeResponse();
-      responseWithNextPages.data.namespace.approvalPolicies.pageInfo.hasNextPage = true;
+      responseWithNextPages.data.namespace.complianceFrameworks.nodes[0].scanResultPolicies.pageInfo.hasNextPage = true;
 
       loadHandler = jest
         .fn()
@@ -150,11 +142,8 @@ describe('Basic information section', () => {
     it('loads next pages with appropriate cursors if has next pages', async () => {
       await waitForPromises();
       expect(loadHandler).toHaveBeenCalledWith({
-        approvalPoliciesGlobalAfter: 'A1',
-        approvalPoliciesAfter: 'A2',
-
-        scanExecutionPoliciesGlobalAfter: 'SE1',
-        scanExecutionPoliciesAfter: 'SE2',
+        scanResultPoliciesAfter: 'A1',
+        scanExecutionPoliciesAfter: 'SE1',
         complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
         fullPath: 'Commit451',
       });
@@ -191,7 +180,7 @@ describe('Basic information section', () => {
     });
 
     it('renders info text with link', () => {
-      expect(wrapper.findByTestId('info-text').text()).toMatchInterpolatedText(
+      expect(wrapper.findByTestId('info-text').text()).toContain(
         'Go to the policy management page to scope policies for this framework.',
       );
       expect(wrapper.findByTestId('info-text').find('a').attributes('href')).toBe(
@@ -200,52 +189,49 @@ describe('Basic information section', () => {
     });
 
     it('correctly calculates policies', () => {
-      const { items: policies } = wrapper.findComponent(GlTable).vm.$attrs;
+      const { items: policies } = findPoliciesTable().vm.$attrs;
       expect(policies).toHaveLength(4);
-      expect(policies.find((p) => p.name === 'test').isLinked).toBe(true);
-      expect(policies.find((p) => p.name === 'test2').isLinked).toBe(false);
-      expect(policies.find((p) => p.name === 'testE').isLinked).toBe(false);
-      expect(policies.find((p) => p.name === 'testE2').isLinked).toBe(true);
+      expect(policies.find((p) => p.name === 'test')).toBeDefined();
+      expect(policies.find((p) => p.name === 'test2')).toBeDefined();
+      expect(policies.find((p) => p.name === 'testE')).toBeDefined();
+      expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
     });
 
     it('displays disabled badge for disabled policy', () => {
-      const disabledBadge = wrapper.findByText('Disabled');
-      expect(disabledBadge.element.closest('tr').textContent).toContain('Test1');
+      const disabledBadge = wrapper
+        .findAllComponents(GlBadge)
+        .filter((badge) => badge.text() === 'Disabled');
+      expect(disabledBadge).toHaveLength(2);
+      const disabledPolicyNames = disabledBadge.wrappers.map((badgeWrapper) =>
+        badgeWrapper.element.closest('tr').querySelector('td span').textContent.trim(),
+      );
+      expect(disabledPolicyNames).toEqual(['test', 'testE']);
     });
 
-    it('correctly renders linked checkboxes', () => {
-      const checkboxes = wrapper.findAll('input[type="checkbox"]');
-      expect(checkboxes.wrappers.map((c) => c.element.checked)).toStrictEqual([
-        true,
-        false,
-        false,
-        true,
-      ]);
-    });
-
-    it('renders link to edit policy', () => {
-      const { items: policies } = wrapper.findComponent(GlTable).vm.$attrs;
-      const policyLink = wrapper.find('table tbody a');
-      expect(policyLink.attributes('href')).toBe(editPath(policies[0].name));
+    it('renders buttons to view policy details', async () => {
+      const { items: policies } = findPoliciesTable().vm.$attrs;
+      const policyButtons = findPoliciesTable().findAllComponents(GlButton);
+      expect(policyButtons).toHaveLength(policies.length);
+      policyButtons.at(0).vm.$emit('click');
+      await nextTick();
+      expect(findDrawer().props('policy')).toEqual(policies[0]);
     });
 
     describe('Drawer', () => {
       it('renders with selected policy', async () => {
-        const drawer = wrapper.findComponent(DrawerWrapper);
         await wrapper.find('table tbody tr').trigger('click');
         await nextTick();
-        expect(drawer.props('policyType')).toBe('approval');
-        expect(drawer.props('policy').name).toBe('test');
+        expect(findDrawer().props('policyType')).toBe('approval');
+        expect(findDrawer().props('policy').name).toBe('test');
       });
 
-      it('deselects policy when drawer generates close event', async () => {
-        const drawer = wrapper.findComponent(DrawerWrapper);
+      it('deselects policy when drawer emits close event', async () => {
         await wrapper.find('table tbody tr').trigger('click');
         await nextTick();
-        expect(drawer.props('policy').name).toBe('test');
-        drawer.vm.$emit('close');
+        expect(findDrawer().props('policy').name).toBe('test');
+        findDrawer().vm.$emit('close');
         await nextTick();
-        expect(drawer.props('policy')).toBe(null);
+        expect(findDrawer().props('policy')).toBeNull();
       });
     });
   });

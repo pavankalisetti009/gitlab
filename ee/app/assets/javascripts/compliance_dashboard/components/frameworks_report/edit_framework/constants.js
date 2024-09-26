@@ -23,7 +23,7 @@ export const i18n = {
     'ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEnd} to scope policies for this framework.',
   ),
   policiesTableFields: {
-    linked: s__('ComplianceFrameworks|Linked'),
+    action: s__('ComplianceFrameworks|Action'),
     name: s__('ComplianceFrameworks|Policy name'),
     description: s__('ComplianceFrameworks|Summary'),
   },
