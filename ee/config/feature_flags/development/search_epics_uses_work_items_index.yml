@@ -1,0 +1,9 @@
+---
+name: search_epics_uses_work_items_index
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/480118
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165827
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/487755
+milestone: '17.5'
+type: development
+group: group::global search
+default_enabled: false

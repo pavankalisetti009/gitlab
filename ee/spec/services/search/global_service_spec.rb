@@ -200,8 +200,12 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
     context 'epic' do
       let(:scope) { 'epics' }
-      let!(:epic) { create :epic, group: group }
-      let(:search) { epic.title }
+      let(:search) { 'chosen epic title' }
+      let!(:epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title') }
+
+      before do
+        ensure_elasticsearch_index!
+      end
 
       where(:group_level, :membership, :admin_mode, :expected_count) do
         permission_table_for_epics_access
@@ -215,6 +219,30 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
           ensure_elasticsearch_index!
           expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
             described_class.new(user, search: search).execute
+          end
+        end
+      end
+      context "when we have ff disabled" do
+        let!(:epic) { create(:epic, group: group, title: 'chosen epic title') }
+
+        before do
+          stub_feature_flags(search_epics_uses_work_items_index: false)
+          ensure_elasticsearch_index!
+        end
+
+        where(:group_level, :membership, :admin_mode, :expected_count) do
+          permission_table_for_epics_access
+        end
+
+        with_them do
+          it 'respects visibility' do
+            enable_admin_mode!(user_in_group) if admin_mode
+
+            group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
+            ensure_elasticsearch_index!
+            expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
+              described_class.new(user, search: search).execute
+            end
           end
         end
       end

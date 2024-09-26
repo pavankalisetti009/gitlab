@@ -29,7 +29,13 @@ RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_
         stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
         project.repository.index_commits_and_blobs
         stub_licensed_features(epics: true, group_wikis: true)
-        create(:epic, group: group, title: 'chosen epic title')
+        stub_feature_flags(search_epics_uses_work_items_index: (document_type == :work_item))
+        if document_type == :work_item # rubocop:disable RSpec/AvoidConditionalStatements -- We need to create objects based on document type.
+          create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
+        else
+          create(:epic, group: group, title: 'chosen epic title')
+        end
+
         Sidekiq::Worker.skipping_transaction_check do
           [group_wiki, wiki].each do |w|
             w.create_page('test.md', '# term')

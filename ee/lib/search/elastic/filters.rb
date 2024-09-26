@@ -231,6 +231,82 @@ module Search
           end
         end
 
+        def by_group_level_confidentiality(query_hash:, options:)
+          user = options[:current_user]
+          query_hash = search_level_filter(query_hash: query_hash, options: options)
+          return query_hash if user.nil? || user&.can_read_all_resources?
+
+          confidential_group_ids = group_ids_user_has_min_access_as(
+            access_level: ::Gitlab::Access::REPORTER, user: options[:current_user], group_ids: options[:group_ids]
+          )
+
+          return query_hash if confidential_group_ids.empty?
+
+          context.name(:filters) do
+            add_filter(query_hash, :query, :bool, :filter) do
+              { bool: { should: [
+                {
+                  bool: {
+                    must: [
+                      { term: { confidential: { value: true, _name: context.name(:confidential, :groups) } } },
+                      { terms: { namespace_id: confidential_group_ids,
+                                 _name: context.name(:confidential, :groups, "can_read_confidential_work_items") } }
+                    ]
+                  }
+                },
+                { term: { confidential: { value: false, _name: context.name(:non_confidential, :groups) } } }
+              ] } }
+            end
+          end
+        end
+
+        def by_group_level_authorization(query_hash:, options:)
+          user = options[:current_user]
+          query_hash = search_level_filter(query_hash: query_hash, options: options)
+          return query_hash if user&.can_read_all_resources?
+
+          context.name(:filters) do
+            add_filter(query_hash, :query, :bool, :filter) do
+              visibility_filters = Search::Elastic::BoolExpr.new
+              visibility_filters.minimum_should_match = 1
+              add_filter(visibility_filters, :should) do
+                { bool: { filter: [
+                  { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC,
+                                                          _name: context.name(:namespace_visibility_level,
+                                                            :public) } } }
+                ] } }
+              end
+
+              if user && !user.external?
+                add_filter(visibility_filters, :should) do
+                  { bool: { filter: [
+                    { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL,
+                                                            _name: context.name(:namespace_visibility_level,
+                                                              :internal) } } }
+                  ] } }
+                end
+                authorized_group_ids = group_ids_user_has_min_access_as(access_level: ::Gitlab::Access::GUEST,
+                  user: user, group_ids: options[:group_ids])
+
+                unless authorized_group_ids.empty?
+                  add_filter(visibility_filters, :should) do
+                    { bool: { filter: [
+                      { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PRIVATE,
+                                                              _name: context.name(:namespace_visibility_level,
+                                                                :private) } } },
+                      { terms: { namespace_id: authorized_group_ids } }
+
+                    ] } }
+                  end
+                end
+
+              end
+
+              { bool: visibility_filters.to_h }
+            end
+          end
+        end
+
         def by_confidentiality(query_hash:, options:)
           confidential = options[:confidential]
           user = options[:current_user]
@@ -354,6 +430,16 @@ module Search
 
           query_hash.dig(*path) << filter_result
           query_hash
+        end
+
+        def group_ids_user_has_min_access_as(access_level:, user:, group_ids:)
+          finder_params = { min_access_level: access_level }
+          if group_ids.present?
+            finder_params[:filter_group_ids] =
+              Group.id_in(group_ids.uniq).map(&:self_and_descendants_ids).uniq
+          end
+
+          ::GroupsFinder.new(user, finder_params).execute.pluck("#{Group.table_name}.#{Group.primary_key}") # rubocop:disable CodeReuse/ActiveRecord -- we need pluck only the ids from the finder
         end
 
         def scoped_project_ids(current_user, project_ids)

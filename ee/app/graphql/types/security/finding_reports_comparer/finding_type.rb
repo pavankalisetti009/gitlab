@@ -39,7 +39,8 @@ module Types
         field :scanner,
           type: FindingReportsComparer::ScannerType,
           null: true,
-          description: 'Compared report vulnerability scanner.', hash_key: "scanner"
+          description: 'Compared report vulnerability scanner.',
+          hash_key: "scanner"
 
         field :found_by_pipeline_iid,
           type: GraphQL::Types::String,
@@ -56,7 +57,8 @@ module Types
           type: [VulnerabilityIdentifierType],
           null: true,
           alpha: { milestone: '16.3' },
-          description: 'Identifiers of the vulnerability finding.', hash_key: "identifiers"
+          description: 'Identifiers of the vulnerability finding.',
+          hash_key: "identifiers"
 
         def found_by_pipeline_iid
           object.dig('found_by_pipeline', 'iid')

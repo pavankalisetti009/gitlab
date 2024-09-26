@@ -4,7 +4,7 @@ module EE
   module TodosFinder
     extend ActiveSupport::Concern
 
-    EE_TODO_TYPES = (::TodosFinder::TODO_TYPES + %w[Epic]).freeze
+    EE_TODO_TYPES = (::TodosFinder::TODO_TYPES + %w[Epic Vulnerability]).freeze
 
     class_methods do
       extend ::Gitlab::Utils::Override

@@ -6,9 +6,18 @@ module Resolvers
       type [::Types::VulnerabilityDetailType], null: false
 
       def resolve
-        return [] if object.finding_details.blank?
+        # This function can be called from two different places, each providing 'object' in a different format:
+        # 1. From the database: 'object' instance with a 'finding_details' method.
+        # 2. From an artifact: 'object' is a hash-like structure with a 'details' key.
+        details = if object.respond_to?(:finding_details)
+                    object.finding_details
+                  elsif object.is_a?(Hash) && object.key?('details')
+                    object['details']
+                  end
 
-        self.class.with_field_name(object.finding_details.with_indifferent_access)
+        return [] if details.blank?
+
+        self.class.with_field_name(details.with_indifferent_access)
       end
 
       def self.with_field_name(items)
