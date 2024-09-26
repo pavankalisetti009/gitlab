@@ -195,9 +195,13 @@ const createProject = ({ id, groupPath } = {}) => ({
   id: `gid://gitlab/Project/${id}`,
   name: `Project ${id}`,
   description: `Project description ${id}`,
-  fullPath: `${groupPath}/project${id}`,
   webUrl: `${groupPath}/project${id}`,
   visibility: 'public',
+  fullPath: `${groupPath}/project${id}`,
+  namespace: {
+    webUrl: `${groupPath}`,
+    fullName: `Project ${id} group`,
+  },
   complianceFrameworks: {
     nodes: [
       {

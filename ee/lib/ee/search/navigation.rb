@@ -21,14 +21,22 @@ module EE
         return true if super
         return false unless project.nil?
 
+        global_search_code_tab_enabled = ::Feature.enabled?(:global_search_code_tab, user, type: :ops)
+        global_search_with_zoekt_enabled = ::Feature.enabled?(:zoekt_cross_namespace_search, user, type: :ops)
+
+        zoekt_enabled_for_user = zoekt_enabled? && ::Search::Zoekt.enabled_for_user?(user)
+
         if show_elasticsearch_tabs?
           return true if group.present?
 
-          return ::Feature.enabled?(:global_search_code_tab, user, type: :ops)
+          return global_search_code_tab_enabled
+        elsif zoekt_enabled_for_user
+          return ::Search::Zoekt.search?(group) if group.present?
+
+          return global_search_code_tab_enabled && global_search_with_zoekt_enabled
         end
 
-        group.present? && zoekt_enabled? &&
-          ::Search::Zoekt.search?(group) && ::Search::Zoekt.enabled_for_user?(user)
+        false
       end
 
       override :show_wiki_search_tab?

@@ -1,5 +1,5 @@
 import { differenceWith, isEqual } from 'lodash';
-import { linesPadding } from 'ee/vulnerabilities/components/code_flow/utils/constants';
+import { linesPadding } from 'ee/vue_shared/components/code_flow/utils/constants';
 import { splitByLineBreaks } from '~/vue_shared/components/source_viewer/workers/highlight_utils';
 
 /**

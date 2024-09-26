@@ -23,7 +23,7 @@ export const i18n = {
     'ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEnd} to scope policies for this framework.',
   ),
   policiesTableFields: {
-    linked: s__('ComplianceFrameworks|Linked'),
+    action: s__('ComplianceFrameworks|Action'),
     name: s__('ComplianceFrameworks|Policy name'),
     description: s__('ComplianceFrameworks|Summary'),
   },
@@ -111,7 +111,7 @@ continue to take precedence over the new pipeline execution policy.`),
   projectsTableFields: {
     name: s__('ComplianceFrameworks|Project name'),
     description: s__('ComplianceFrameworks|Description'),
-    path: s__('ComplianceFrameworks|Project path'),
+    subgroup: s__('ComplianceFrameworks|Subgroup'),
   },
   projectsDescription: s__(
     'ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies.',

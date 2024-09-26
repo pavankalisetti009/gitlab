@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
   feature_category: :dynamic_application_security_testing do
+  include LooseForeignKeysHelper
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
   let_it_be(:old_tags) { [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')] }
@@ -199,6 +200,7 @@ RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
             context 'when the owner was deleted' do
               before do
                 dast_profile_schedule.owner.delete
+                process_loose_foreign_key_deletions(record: user)
                 dast_profile_schedule.reload
               end
 

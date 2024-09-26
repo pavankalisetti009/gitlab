@@ -218,7 +218,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let(:scope) { 'issues' }
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.search_type).not_to eq('zoekt')
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -638,8 +638,9 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   describe '#allowed_scopes' do
     let_it_be(:group) { create(:group) }
+    let(:service) { described_class.new(user, group, {}) }
 
-    subject(:allowed_scopes) { described_class.new(user, group, {}).allowed_scopes }
+    subject(:allowed_scopes) { service.allowed_scopes }
 
     context 'for blobs scope' do
       context 'when elasticearch_search is disabled and zoekt is disabled' do
@@ -665,9 +666,18 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
           stub_ee_application_setting(elasticsearch_search: false)
           allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(true)
           allow(::Search::Zoekt).to receive(:search?).with(group).and_return(true)
+          allow(service).to receive(:zoekt_node_available_for_search?).and_return(true)
         end
 
         it { is_expected.to include('blobs') }
+
+        context 'and zoekt node is not available' do
+          before do
+            allow(service).to receive(:zoekt_node_available_for_search?).and_return(false)
+          end
+
+          it { is_expected.not_to include('blobs') }
+        end
 
         context 'and the group does is not enabled for zoekt' do
           before do

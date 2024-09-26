@@ -5,7 +5,7 @@ import {
   normalizeCodeFlowsInfo,
   createHighlightSourcesInfo,
   createSourceBlockHighlightInfo,
-} from 'ee/vulnerabilities/components/code_flow/utils/utils';
+} from 'ee/vue_shared/components/code_flow/utils/utils';
 
 jest.mock('~/vue_shared/components/source_viewer/workers/highlight_utils', () => ({
   ...jest.requireActual('~/vue_shared/components/source_viewer/workers/highlight_utils'),
