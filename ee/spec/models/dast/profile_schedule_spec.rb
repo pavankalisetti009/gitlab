@@ -283,4 +283,18 @@ RSpec.describe Dast::ProfileSchedule, :dynamic_analysis,
       end
     end
   end
+
+  context 'with loose foreign key on dast_profile_schedules.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dast_profile_schedule, project: parent) }
+    end
+  end
+
+  context 'with loose foreign key on dast_profile_schedules.user_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:dast_profile_schedule, user_id: parent) }
+    end
+  end
 end
