@@ -10,7 +10,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   updateCodeBlocks,
   updateLinesToMarker,
-} from 'ee/vulnerabilities/components/code_flow/utils/utils';
+} from 'ee/vue_shared/components/code_flow/utils/utils';
 
 export default {
   name: 'CodeFlowFileViewer',

@@ -1,7 +1,7 @@
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
-import CodeFlowFileViewer from 'ee/vulnerabilities/components/code_flow/code_flow_file_viewer.vue';
+import CodeFlowFileViewer from 'ee/vue_shared/components/code_flow/code_flow_file_viewer.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilityFileContentViewer from 'ee/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobHeader from '~/blob/components/blob_header.vue';
