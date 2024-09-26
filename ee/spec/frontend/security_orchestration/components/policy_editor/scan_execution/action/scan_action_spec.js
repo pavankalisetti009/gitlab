@@ -88,13 +88,13 @@ describe('PolicyActionBuilder', () => {
   const findActionSeperator = () => wrapper.findByTestId('action-and-label');
   const findCiVariablesSelectors = () => wrapper.findComponent(CiVariablesSelectors);
   const findTemplateFilter = () => wrapper.findComponent(TemplateSelector);
-  const findSectionLayout = () => wrapper.findAllComponents(SectionLayout).at(1);
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findSprintf = () => wrapper.findComponent(GlSprintf);
   const findTagsFilter = () => wrapper.findComponent(RunnerTagsFilter);
   const findProjectDastSelector = () => wrapper.findComponent(ProjectDastProfileSelector);
   const findGroupDastSelector = () => wrapper.findComponent(GroupDastProfileSelector);
   const findAddVariableButton = () => wrapper.findByTestId('add-variable-button');
+  const findRemoveButton = () => wrapper.findByTestId('remove-action');
 
   it('renders default scanner', () => {
     factory();
@@ -156,7 +156,7 @@ describe('PolicyActionBuilder', () => {
     factory();
     expect(wrapper.emitted('remove')).toBe(undefined);
 
-    await findSectionLayout().vm.$emit('remove');
+    await findRemoveButton().vm.$emit('click');
     expect(wrapper.emitted('remove')).toStrictEqual([[]]);
   });
 

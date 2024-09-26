@@ -103,7 +103,7 @@ export default {
 <template>
   <div class="gl-w-full gl-rounded-base gl-bg-white">
     <section-layout
-      class="gl-mb-2 gl-bg-white gl-pb-0"
+      class="gl-mb-2 gl-bg-white gl-pb-0 gl-pr-2"
       content-classes="gl-gap-y-2"
       @remove="remove"
     >
