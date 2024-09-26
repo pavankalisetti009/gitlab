@@ -16,7 +16,8 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { isGroup } from 'ee/security_orchestration/components/utils';
-import { INJECT, OVERRIDE } from '../constants';
+import { INJECT, OVERRIDE, SUFFIX_ON_CONFLICT } from '../constants';
+import SuffixSelector from '../suffix_selector.vue';
 import { validateStrategyValues } from './utils';
 import CodeBlockStrategySelector from './code_block_strategy_selector.vue';
 
@@ -66,6 +67,7 @@ export default {
     GlTruncate,
     GroupProjectsDropdown,
     RefSelector,
+    SuffixSelector,
   },
   directives: { GlTooltip: GlTooltipDirective },
   mixins: [glFeatureFlagMixin()],
@@ -96,6 +98,11 @@ export default {
       type: Object,
       required: false,
       default: null,
+    },
+    suffix: {
+      type: String,
+      required: false,
+      default: SUFFIX_ON_CONFLICT,
     },
   },
   computed: {
@@ -159,6 +166,9 @@ export default {
     },
     setSelectedRef(ref) {
       this.$emit('select-ref', ref);
+    },
+    updateSuffix(suffix) {
+      this.$emit('update-suffix', suffix);
     },
     triggerTooltip(state) {
       const EVENT = state ? BV_SHOW_TOOLTIP : BV_HIDE_TOOLTIP;
@@ -285,5 +295,7 @@ export default {
         </template>
       </gl-sprintf>
     </div>
+
+    <suffix-selector :suffix="suffix" @update="updateSuffix" />
   </div>
 </template>
