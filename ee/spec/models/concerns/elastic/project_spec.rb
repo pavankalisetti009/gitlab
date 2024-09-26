@@ -125,7 +125,7 @@ RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_sear
     context 'when searching with a wildcard' do
       it 'only returns projects', :sidekiq_inline do
         create(:project)
-        create(:snippet, :public)
+        create(:personal_snippet, :public)
 
         ensure_elasticsearch_index!
         response = described_class.elastic_search('*')
