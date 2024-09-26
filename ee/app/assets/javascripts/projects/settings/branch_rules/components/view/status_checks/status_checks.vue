@@ -46,6 +46,10 @@ export default {
       type: String,
       required: true,
     },
+    isAllBranchesRule: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -243,7 +247,7 @@ export default {
     updateCacheAfterStatusCheckChange(store, updateFunction, errorMessage) {
       const sourceData = store.readQuery({
         query: branchRulesQuery,
-        variables: { projectPath: this.projectPath },
+        variables: { projectPath: this.projectPath, buildMissing: this.isAllBranchesRule },
       });
       const data = produce(sourceData, (draftData) => {
         const currentBranchIndex = sourceData.project.branchRules.nodes.findIndex(
