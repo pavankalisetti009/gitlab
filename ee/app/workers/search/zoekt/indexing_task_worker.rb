@@ -9,7 +9,7 @@ module Search
       feature_category :global_search
       data_consistency :delayed
       idempotent!
-      pause_control :zoekt
+      pause_control :deprecated
       urgency :low
 
       def perform(project_id, task_type, options = {})
