@@ -49154,6 +49154,9 @@ msgid_plural "SecurityExclusions|The following errors occured while saving the e
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "SecurityExclusions|This feature is subject to the %{linkStart}GitLab Testing Agreement%{linkEnd}."
+msgstr ""
+
 msgid "SecurityExclusions|Toggle exclusion"
 msgstr ""
 
