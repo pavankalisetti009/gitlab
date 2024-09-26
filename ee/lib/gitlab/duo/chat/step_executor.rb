@@ -34,7 +34,7 @@ module Gitlab
             next unless event
 
             log_conditional_info(user, message: "Received an event from v2/chat/agent", event_name: 'event_received',
-              ai_component: 'duo_chat', event: event)
+              ai_component: 'duo_chat', ai_event: event)
 
             yield event if block_given?
 
