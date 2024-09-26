@@ -90,6 +90,16 @@ export default {
     canCreateMergeRequest() {
       return !this.mergeRequest && this.vulnerability.createMrUrl && this.hasRemediation;
     },
+    canResolveWithAi() {
+      return (
+        this.glAbilities.resolveVulnerabilityWithAi && this.vulnerability.aiResolutionAvailable
+      );
+    },
+    canExplainWithAi() {
+      return (
+        this.glAbilities.explainVulnerabilityWithAi && this.vulnerability.aiExplanationAvailable
+      );
+    },
     showResolutionAlert() {
       return (
         this.vulnerability.resolvedOnDefaultBranch &&
@@ -337,10 +347,8 @@ export default {
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
           :show-create-merge-request="canCreateMergeRequest"
-          :resolve-with-ai-ability="glAbilities.resolveVulnerabilityWithAi"
-          :explain-with-ai-ability="glAbilities.explainVulnerabilityWithAi"
-          :ai-explanation-available="vulnerability.aiExplanationAvailable"
-          :ai-resolution-available="vulnerability.aiResolutionAvailable"
+          :show-resolve-with-ai="canResolveWithAi"
+          :show-explain-with-ai="canExplainWithAi"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"

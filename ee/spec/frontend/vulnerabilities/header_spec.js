@@ -84,6 +84,9 @@ describe('Vulnerability Header', () => {
   const getVulnerability = ({
     canCreateMergeRequest,
     canDownloadPatch,
+    canResolveWithAi,
+    canExplainWithAi,
+    aiResolutionEnabled,
     canAdmin = true,
     ...otherProperties
   } = {}) => ({
@@ -91,6 +94,9 @@ describe('Vulnerability Header', () => {
     state: canDownloadPatch ? 'detected' : 'resolved',
     mergeRequestLinks: canCreateMergeRequest || canDownloadPatch ? [] : [{}],
     mergeRequestFeedback: canCreateMergeRequest ? null : {},
+    aiResolutionAvailable: canResolveWithAi,
+    aiExplanationAvailable: canExplainWithAi,
+    aiResolutionEnabled,
     canAdmin,
     ...(canDownloadPatch && canCreateMergeRequest === undefined ? { createMrUrl: '' } : {}),
     ...otherProperties,
@@ -342,7 +348,8 @@ describe('Vulnerability Header', () => {
         vulnerability: getVulnerability({
           canCreateMergeRequest: actionsEnabled,
           canDownloadPatch: actionsEnabled,
-          aiResolutionAvailable: actionsEnabled,
+          canResolveWithAi: actionsEnabled,
+          canExplainWithAi: actionsEnabled,
           aiResolutionEnabled: actionsEnabled,
         }),
         glAbilities: {
@@ -357,9 +364,8 @@ describe('Vulnerability Header', () => {
         loading: false,
         showDownloadPatch: actionsEnabled,
         showCreateMergeRequest: actionsEnabled,
-        explainWithAiAbility: actionsEnabled,
-        resolveWithAiAbility: actionsEnabled,
-        aiResolutionAvailable: actionsEnabled,
+        showResolveWithAi: actionsEnabled,
+        showExplainWithAi: actionsEnabled,
         aiResolutionEnabled: actionsEnabled,
       });
     });
