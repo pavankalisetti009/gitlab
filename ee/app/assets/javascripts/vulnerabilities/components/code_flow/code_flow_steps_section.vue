@@ -60,6 +60,7 @@ export default {
 
         acc[fileName].push({
           ...item,
+          nodeType: item.nodeType.toLowerCase(),
           stepNumber: index + 1,
           rawTextBlob: this.rawTextBlobs[item.fileLocation.fileName],
           fileDescription,

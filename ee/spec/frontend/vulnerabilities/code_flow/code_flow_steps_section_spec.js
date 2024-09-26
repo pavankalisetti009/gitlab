@@ -125,8 +125,10 @@ describe('Vulnerability Code Flow', () => {
 
       files.wrappers.forEach((file) => {
         const fileRows = file.findAll('[data-testid^="step-row-"]');
+        const firstNode = 0;
+        const lastNode = fileRows.length - 1;
 
-        fileRows.wrappers.forEach((row) => {
+        fileRows.wrappers.forEach((row, index) => {
           globalIndex += 1;
 
           const componentsUnderRow = row.text();
@@ -137,6 +139,11 @@ describe('Vulnerability Code Flow', () => {
           expect(componentsUnderRow).toContain(
             `${mockVulnerability.details.items[0][globalIndex - 1].fileDescription}`,
           );
+          if (index === firstNode || index === lastNode) {
+            expect(componentsUnderRow).toContain(
+              `${mockVulnerability.details.items[0][globalIndex - 1].nodeType}`,
+            );
+          }
         });
       });
     });
