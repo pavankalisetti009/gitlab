@@ -464,7 +464,11 @@ module EE
       with_replicator Geo::ProjectRepositoryReplicator
 
       def pipeline_configuration_full_path
-        compliance_management_frameworks.first&.pipeline_configuration_full_path
+        compliance_framework_settings
+          .order(:id)
+          .joins(:compliance_management_framework)
+          .where.not(compliance_management_framework: { pipeline_configuration_full_path: nil })
+          .pick(:pipeline_configuration_full_path)
       end
 
       def verification_state_object

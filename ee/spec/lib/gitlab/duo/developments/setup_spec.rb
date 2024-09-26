@@ -73,8 +73,11 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
   end
 
   shared_examples 'creates add-on purchases' do
-    it 'creates add-on purchases', :aggregate_failures do
-      expect { setup }.to change { ::GitlabSubscriptions::AddOnPurchase.count }.by(2)
+    it 'creates enterprise add-on purchases', :aggregate_failures do
+      setup
+
+      expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(0)
+      expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(1)
     end
   end
 
@@ -116,6 +119,17 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
         setup
 
         expect(group.reload.users).to include(user)
+      end
+    end
+
+    context 'when creating duo pro add on' do
+      let(:args) { { root_group_path: 'test', add_on: 'duo_pro' } }
+
+      it 'creates duo pro add-on only' do
+        setup
+
+        expect(::GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro.count).to eq(1)
+        expect(::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.count).to eq(0)
       end
     end
 
