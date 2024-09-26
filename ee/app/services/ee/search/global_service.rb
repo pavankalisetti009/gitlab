@@ -21,7 +21,7 @@ module EE
 
       override :zoekt_searchable_scope?
       def zoekt_searchable_scope?
-        scope == 'blobs' && ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
+        ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
       end
 
       override :root_ancestor
@@ -70,10 +70,13 @@ module EE
 
       override :allowed_scopes
       def allowed_scopes
-        return super unless use_elasticsearch?
-
         strong_memoize(:ee_allowed_scopes) do
-          super + %w[blobs commits epics notes wiki_blobs]
+          scopes = super
+
+          scopes += %w[blobs commits epics notes wiki_blobs] if use_elasticsearch?
+          scopes += %w[blobs] if use_zoekt?
+
+          scopes.uniq
         end
       end
     end

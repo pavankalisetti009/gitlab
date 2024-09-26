@@ -422,6 +422,41 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         end
       end
     end
+
+    context 'for blobs scope' do
+      context 'when elasticearch_search is disabled and zoekt is disabled' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: false)
+          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+        end
+
+        it 'does not include blobs scope' do
+          expect(described_class.new(user, {}).allowed_scopes).not_to include('blobs')
+        end
+      end
+
+      context 'when elasticsearch_search is enabled and zoekt is disabled' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true)
+          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(false)
+        end
+
+        it 'includes blobs scope' do
+          expect(described_class.new(user, {}).allowed_scopes).to include('blobs')
+        end
+      end
+
+      context 'when elasticsearch_search is disabled and zoekt is enabled' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: false)
+          allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(true)
+        end
+
+        it 'includes blobs scope' do
+          expect(described_class.new(user, {}).allowed_scopes).to include('blobs')
+        end
+      end
+    end
   end
 
   describe '#elastic_projects' do

@@ -58,10 +58,9 @@ module EE
             scopes -= %w[epics] unless group.licensed_feature_available?(:epics)
           else
             scopes += %w[epics] # In basic search we have epics enabled for groups
-            scopes += %w[blobs] if ::Search::Zoekt.search?(group) && ::Search::Zoekt.enabled_for_user?(current_user)
           end
 
-          scopes
+          scopes.uniq
         end
       end
     end
