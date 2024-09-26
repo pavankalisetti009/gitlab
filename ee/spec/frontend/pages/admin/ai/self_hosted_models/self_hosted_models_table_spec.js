@@ -1,6 +1,8 @@
-import { GlTableLite, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { GlTableLite, GlDisclosureDropdown } from '@gitlab/ui';
+import { mount } from '@vue/test-utils';
+import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
+import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
 import { mockSelfHostedModelsList } from './mock_data';
 
 describe('SelfHostedModelsTable', () => {
@@ -9,12 +11,14 @@ describe('SelfHostedModelsTable', () => {
   const createComponent = ({ props }) => {
     const basePath = '/admin/ai/self_hosted_models';
 
-    wrapper = mountExtended(SelfHostedModelsTable, {
-      propsData: {
-        basePath,
-        ...props,
-      },
-    });
+    wrapper = extendedWrapper(
+      mount(SelfHostedModelsTable, {
+        propsData: {
+          basePath,
+          ...props,
+        },
+      }),
+    );
   };
 
   beforeEach(() => {
@@ -26,7 +30,9 @@ describe('SelfHostedModelsTable', () => {
   const findTableRows = () => findTable().findAllComponents('tbody > tr');
   const findNthTableRow = (idx) => findTableRows().at(idx);
   const findDisclosureDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
-  const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
+  const findEditButtons = () => wrapper.findAllByTestId('model-edit-button');
+  const findDeleteDisclosureItems = () =>
+    wrapper.findAllComponents(DeleteSelfHostedModelDisclosureItem);
 
   it('renders the table component', () => {
     expect(findTable().exists()).toBe(true);
@@ -59,13 +65,29 @@ describe('SelfHostedModelsTable', () => {
     expect(findDisclosureDropdowns().length).toBe(2);
   });
 
-  describe('Edit button', () => {
-    it('routes to the correct path', () => {
-      const firstModelEditButton = findDisclosureDropdownItems().at(0);
-      const secondModelEditButton = findDisclosureDropdownItems().at(2);
+  describe('Editing a model', () => {
+    it('renders an edit button for each model', () => {
+      expect(findEditButtons().length).toBe(2);
 
-      expect(firstModelEditButton.html()).toContain(`href="/admin/ai/self_hosted_models/1/edit"`);
-      expect(secondModelEditButton.html()).toContain(`href="/admin/ai/self_hosted_models/2/edit"`);
+      findEditButtons().wrappers.forEach((button) => {
+        expect(button.text()).toEqual('Edit');
+      });
+    });
+
+    it('routes to the correct path', () => {
+      findEditButtons().wrappers.forEach((button, idx) => {
+        expect(button.html()).toContain(`href="/admin/ai/self_hosted_models/${idx + 1}/edit"`);
+      });
+    });
+  });
+
+  describe('Deleting a model', () => {
+    it('renders a delete button for each model', () => {
+      expect(findDeleteDisclosureItems().length).toBe(2);
+
+      findDeleteDisclosureItems().wrappers.forEach((button) => {
+        expect(button.text()).toEqual('Delete');
+      });
     });
   });
 });
