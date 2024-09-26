@@ -4,7 +4,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_analytics do
   RSpec.shared_examples 'sends data to configurator' do
     context 'when a new funnel is in the commit' do
       before do

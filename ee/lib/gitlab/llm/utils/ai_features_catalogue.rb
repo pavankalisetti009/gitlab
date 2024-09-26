@@ -90,7 +90,7 @@ module Gitlab
           generate_cube_query: {
             service_class: ::Gitlab::Llm::VertexAi::Completions::GenerateCubeQuery,
             prompt_class: ::Gitlab::Llm::VertexAi::Templates::GenerateCubeQuery,
-            feature_category: :product_analytics_visualization,
+            feature_category: :product_analytics,
             execute_method: ::Llm::ProductAnalytics::GenerateCubeQueryService,
             maturity: :experimental,
             self_managed: false,

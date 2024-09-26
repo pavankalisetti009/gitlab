@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, feature_category: :product_analytics_data_management do
+RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, feature_category: :product_analytics do
   include GraphqlHelpers
   subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 

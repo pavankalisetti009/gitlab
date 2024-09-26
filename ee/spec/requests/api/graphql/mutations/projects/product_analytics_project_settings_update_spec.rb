@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe "Product Analytics Project Settings Update", feature_category: :product_analytics_data_management do
+RSpec.describe "Product Analytics Project Settings Update", feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

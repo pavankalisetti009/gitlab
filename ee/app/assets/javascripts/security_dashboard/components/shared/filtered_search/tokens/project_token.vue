@@ -1,10 +1,5 @@
 <script>
-import {
-  GlIcon,
-  GlFilteredSearchToken,
-  GlFilteredSearchSuggestion,
-  GlLoadingIcon,
-} from '@gitlab/ui';
+import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
@@ -14,6 +9,7 @@ import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import groupProjectsQuery from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
 import instanceProjectsQuery from 'ee/security_dashboard/graphql/queries/instance_projects.query.graphql';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import eventHub from '../event_hub';
 
@@ -24,9 +20,8 @@ const QUERIES = {
 
 export default {
   components: {
-    GlIcon,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
+    SearchSuggestion,
     GlLoadingIcon,
     QuerystringSync,
   },
@@ -122,14 +117,14 @@ export default {
       this.selectedProjectIds = [];
       this.emitFiltersChanged();
     },
-    isProjectSelected(project) {
-      return this.selectedProjectIds.some((id) => id === project.rawId);
+    isProjectSelected(rawProjectId) {
+      return this.selectedProjectIds.some((id) => id === rawProjectId);
     },
-    toggleSelectedProject(project) {
-      if (this.isProjectSelected(project)) {
-        this.selectedProjectIds = this.selectedProjectIds.filter((id) => id !== project.rawId);
+    toggleSelectedProject(rawProjectId) {
+      if (this.isProjectSelected(rawProjectId)) {
+        this.selectedProjectIds = this.selectedProjectIds.filter((id) => id !== rawProjectId);
       } else {
-        this.selectedProjectIds.push(project.rawId);
+        this.selectedProjectIds.push(rawProjectId);
       }
     },
     onComplete() {
@@ -188,21 +183,14 @@ export default {
       <template #suggestions>
         <gl-loading-icon v-if="isLoadingProjects" size="sm" />
         <template v-else>
-          <gl-filtered-search-suggestion
+          <search-suggestion
             v-for="project in projects"
             :key="project.id"
-            :value="project"
-          >
-            <div class="gl-flex gl-items-center">
-              <gl-icon
-                v-if="config.multiSelect"
-                name="check"
-                class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-                :class="{ 'gl-invisible': !isProjectSelected(project) }"
-              />
-              {{ project.name }}
-            </div>
-          </gl-filtered-search-suggestion>
+            :value="project.rawId"
+            :text="project.name"
+            :selected="isProjectSelected(project.rawId)"
+            name="project"
+          />
         </template>
       </template>
     </gl-filtered-search-token>

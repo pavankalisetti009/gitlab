@@ -6,7 +6,7 @@ module Observability
 
     data_consistency :delayed
     queue_namespace :cronjob
-    feature_category :metrics
+    feature_category :observability
 
     idempotent!
     worker_has_external_dependencies!

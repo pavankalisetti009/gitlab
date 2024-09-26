@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-RSpec.describe Analytics::ProductAnalytics::ProjectUsageData, feature_category: :product_analytics_visualization do
+RSpec.describe Analytics::ProductAnalytics::ProjectUsageData, feature_category: :product_analytics do
   let_it_be(:setting) { create(:project_setting, :with_product_analytics_configured) }
   let_it_be(:project) { create(:project, project_setting: setting) }
   let(:fetcher) { described_class.new(project_id: project.id) }

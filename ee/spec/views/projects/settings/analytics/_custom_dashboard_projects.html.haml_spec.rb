@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'projects/settings/analytics/_custom_dashboard_projects.html.haml', feature_category: :product_analytics_data_management do
+RSpec.describe 'projects/settings/analytics/_custom_dashboard_projects.html.haml', feature_category: :product_analytics do
   let(:group) { build_stubbed(:group) }
   let(:project) { build_stubbed(:project, namespace: group) }
 

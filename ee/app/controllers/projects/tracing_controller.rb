@@ -2,7 +2,7 @@
 
 module Projects
   class TracingController < Projects::ApplicationController
-    feature_category :tracing
+    feature_category :observability
 
     before_action :authorize_read_observability!
 

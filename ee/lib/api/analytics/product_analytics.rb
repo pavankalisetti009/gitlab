@@ -7,7 +7,7 @@ module API
         authenticate!
       end
 
-      feature_category :product_analytics_data_management
+      feature_category :product_analytics
       urgency :low
 
       helpers do

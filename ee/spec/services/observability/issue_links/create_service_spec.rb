@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::IssueLinks::CreateService, feature_category: :metrics do
+RSpec.describe Observability::IssueLinks::CreateService, feature_category: :observability do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be(:issue) { create(:issue, project: project) }

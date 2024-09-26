@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Analytics::ProductAnalytics, feature_category: :product_analytics_data_management do
+RSpec.describe API::Analytics::ProductAnalytics, feature_category: :product_analytics do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :with_product_analytics_funnel, group: group) }
 

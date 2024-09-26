@@ -42,7 +42,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       end
     end
 
-    describe 'Tracing', feature_category: :tracing do
+    describe 'Tracing', feature_category: :observability do
       let(:item_id) { :tracing }
       let(:user) { build(:user) }
       let(:role) { :reporter }
@@ -77,7 +77,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       end
     end
 
-    describe 'Metrics', feature_category: :metrics do
+    describe 'Metrics', feature_category: :observability do
       let(:item_id) { :metrics }
       let(:user) { build(:user) }
       let(:role) { :reporter }
@@ -112,7 +112,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       end
     end
 
-    describe 'Logs', feature_category: :metrics do
+    describe 'Logs', feature_category: :observability do
       let(:item_id) { :logs }
       let(:user) { build(:user) }
       let(:role) { :reporter }

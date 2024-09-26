@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Initialize Product Analytics', feature_category: :product_analytics_data_management do
+RSpec.describe 'Initialize Product Analytics', feature_category: :product_analytics do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }

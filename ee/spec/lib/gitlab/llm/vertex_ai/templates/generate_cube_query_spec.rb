@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::VertexAi::Templates::GenerateCubeQuery, feature_category: :product_analytics_visualization do
+RSpec.describe Gitlab::Llm::VertexAi::Templates::GenerateCubeQuery, feature_category: :product_analytics do
   let(:question) { "How many people used the application in the previous 7 days?" }
   let(:expected) do
     "The question you need to answer is \"How many people used the application in the previous 7 days?\""

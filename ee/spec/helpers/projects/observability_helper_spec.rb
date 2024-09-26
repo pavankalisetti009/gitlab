@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'json'
 
-RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :tracing do
+RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :observability do
   include Gitlab::Routing.url_helpers
 
   let_it_be(:group) { build_stubbed(:group) }

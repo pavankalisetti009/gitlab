@@ -2,7 +2,7 @@
 
 require('spec_helper')
 
-RSpec.describe Groups::Settings::AnalyticsController, feature_category: :product_analytics_visualization do
+RSpec.describe Groups::Settings::AnalyticsController, feature_category: :product_analytics do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user) }

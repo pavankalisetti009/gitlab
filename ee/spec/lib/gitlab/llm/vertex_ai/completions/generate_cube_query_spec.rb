@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::VertexAi::Completions::GenerateCubeQuery, feature_category: :product_analytics_visualization do
+RSpec.describe Gitlab::Llm::VertexAi::Completions::GenerateCubeQuery, feature_category: :product_analytics do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user) }

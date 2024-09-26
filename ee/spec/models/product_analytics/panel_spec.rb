@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ProductAnalytics::Panel, feature_category: :product_analytics_data_management do
+RSpec.describe ProductAnalytics::Panel, feature_category: :product_analytics do
   let_it_be(:project) { create(:project, :with_product_analytics_dashboard) }
   let_it_be(:user) { create(:user) }
 

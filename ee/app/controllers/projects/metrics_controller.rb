@@ -2,7 +2,7 @@
 
 module Projects
   class MetricsController < Projects::ApplicationController
-    feature_category :metrics
+    feature_category :observability
 
     before_action :authorize_read_observability!
 

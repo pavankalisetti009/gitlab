@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Observability::ObservabilityIssuesHelper, feature_category: :metrics do
+RSpec.describe Observability::ObservabilityIssuesHelper, feature_category: :observability do
   using RSpec::Parameterized::TableSyntax
 
   let(:project) { build_stubbed(:project) }
