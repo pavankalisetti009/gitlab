@@ -311,6 +311,47 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
       end
     end
 
+    context 'when attempting to authenticate via GitHub signature' do
+      before do
+        Grape::Endpoint.before_each do |endpoint|
+          allow(endpoint).to receive(:project).and_return(project_mirrored)
+        end
+
+        allow(project_mirrored).to receive(:external_webhook_token).and_return(external_webhook_token)
+      end
+
+      after do
+        Grape::Endpoint.before_each nil
+      end
+
+      subject(:request) do
+        params = { action: 'opened' }
+        spoofed_signature = "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), '', 'action=opened')}"
+
+        do_post(params: params, headers: { 'X-Hub-Signature' => spoofed_signature })
+      end
+
+      context 'without a project.external_webhook_token' do
+        let(:external_webhook_token) { nil }
+
+        it 'returns a 401 status' do
+          request
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+
+      context 'with a project.external_webhook_token' do
+        let(:external_webhook_token) { 'a-fake-token' }
+
+        it 'returns a 401 status' do
+          request
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+    end
+
     context 'when not authenticated' do
       before do
         Grape::Endpoint.before_each do |endpoint|
