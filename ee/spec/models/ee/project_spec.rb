@@ -4874,4 +4874,48 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to be_an_instance_of(Vulnerabilities::Quota) }
   end
+
+  describe '#pipeline_configuration_full_path' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, group: namespace) }
+    let_it_be(:framework_1_with_pipeline) { create(:compliance_framework, namespace: namespace, name: 'With pipeline 1', pipeline_configuration_full_path: ".compliance-gitlab-ci.yml@test-project-1") }
+    let_it_be(:framework_2_with_pipeline) { create(:compliance_framework, namespace: namespace, name: 'With pipeline 2', pipeline_configuration_full_path: ".compliance-gitlab-ci.yml@test-project-2") }
+    let_it_be(:framework_1_without_pipeline) { create(:compliance_framework, namespace: namespace, name: 'Without pipeline 1') }
+    let_it_be(:framework_2_without_pipeline) { create(:compliance_framework, namespace: namespace, name: 'Without pipeline 2') }
+
+    context 'when the first associated framework has pipeline configuration' do
+      let_it_be(:framework_settings_1) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_1_with_pipeline) }
+      let_it_be(:framework_settings_2) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_2_with_pipeline) }
+
+      it 'returns the path of pipeline config associated with first framework' do
+        expect(project.pipeline_configuration_full_path).to eq(framework_1_with_pipeline.pipeline_configuration_full_path)
+      end
+    end
+
+    context 'when no framework has pipeline configuration' do
+      let_it_be(:framework_settings_1) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_1_without_pipeline) }
+      let_it_be(:framework_settings_2) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_2_without_pipeline) }
+
+      it 'returns nil' do
+        expect(project.pipeline_configuration_full_path).to eq(nil)
+      end
+    end
+
+    context 'when initial frameworks do not have pipeline configuration' do
+      let_it_be(:framework_settings_1) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_1_without_pipeline) }
+      let_it_be(:framework_settings_2) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_2_without_pipeline) }
+      let_it_be(:framework_settings_3) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_2_with_pipeline) }
+      let_it_be(:framework_settings_4) { create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework_1_with_pipeline) }
+
+      it 'returns the pipeline of first framework which has pipeline' do
+        expect(project.pipeline_configuration_full_path).to eq(framework_2_with_pipeline.pipeline_configuration_full_path)
+      end
+    end
+
+    context 'when there is no associated framework' do
+      it 'returns nil' do
+        expect(project.pipeline_configuration_full_path).to eq(nil)
+      end
+    end
+  end
 end
