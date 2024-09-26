@@ -14,7 +14,7 @@ module EE
       return if target.nil?
 
       case target
-      when Epic
+      when Vulnerability, Epic
         ::Gitlab::UrlBuilder.build(
           target,
           anchor: note.present? ? ActionView::RecordIdentifier.dom_id(note) : nil

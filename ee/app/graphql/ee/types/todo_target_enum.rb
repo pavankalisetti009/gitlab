@@ -7,6 +7,7 @@ module EE
 
       prepended do
         value 'EPIC', value: 'Epic', description: 'An Epic.'
+        value 'VULNERABILITY', value: 'Vulnerability', description: 'Vulnerability.'
       end
     end
   end

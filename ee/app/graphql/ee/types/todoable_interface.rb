@@ -10,9 +10,14 @@ module EE
 
         override :resolve_type
         def resolve_type(object, *)
-          return ::Types::EpicType if Epic === object
-
-          super
+          case object
+          when Epic
+            ::Types::EpicType
+          when Vulnerability
+            ::Types::VulnerabilityType
+          else
+            super
+          end
         end
       end
     end
