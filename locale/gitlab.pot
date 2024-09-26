@@ -14015,6 +14015,9 @@ msgstr ""
 msgid "ComplianceFrameworks|A compliance frameworks CSV export for the group %{group_link} is attached to this email."
 msgstr ""
 
+msgid "ComplianceFrameworks|Action"
+msgstr ""
+
 msgid "ComplianceFrameworks|Add framework"
 msgstr ""
 
@@ -14082,9 +14085,6 @@ msgid "ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEn
 msgstr ""
 
 msgid "ComplianceFrameworks|Invalid format"
-msgstr ""
-
-msgid "ComplianceFrameworks|Linked"
 msgstr ""
 
 msgid "ComplianceFrameworks|Multiple frameworks"

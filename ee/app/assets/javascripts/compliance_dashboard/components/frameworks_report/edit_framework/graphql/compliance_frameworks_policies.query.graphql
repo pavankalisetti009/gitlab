@@ -4,63 +4,37 @@
 query complianceFrameworkPolicies(
   $fullPath: ID!
   $complianceFramework: ComplianceManagementFrameworkID
-  $approvalPoliciesGlobalAfter: String
-  $scanExecutionPoliciesGlobalAfter: String
-  $approvalPoliciesAfter: String
+  $scanResultPoliciesAfter: String
   $scanExecutionPoliciesAfter: String
 ) {
   namespace(fullPath: $fullPath) {
     id
-    approvalPolicies(after: $approvalPoliciesGlobalAfter, relationship: DESCENDANT) {
-      nodes {
-        name
-        yaml
-        editPath
-        enabled
-        description
-        source {
-          ...SecurityPolicySource
-        }
-        updatedAt
-        userApprovers {
-          id
-          name
-          webUrl
-        }
-        allGroupApprovers {
-          id
-          fullPath
-          webUrl
-        }
-        roleApprovers
-      }
-      pageInfo {
-        ...PageInfo
-      }
-    }
-    scanExecutionPolicies(after: $scanExecutionPoliciesGlobalAfter, relationship: DESCENDANT) {
-      nodes {
-        name
-        yaml
-        editPath
-        enabled
-        description
-        source {
-          ...SecurityPolicySource
-        }
-        updatedAt
-      }
-      pageInfo {
-        ...PageInfo
-      }
-    }
     complianceFrameworks(id: $complianceFramework) {
       nodes {
         id
         name
-        scanResultPolicies(after: $approvalPoliciesAfter) {
+        scanResultPolicies(after: $scanResultPoliciesAfter) {
           nodes {
             name
+            yaml
+            editPath
+            enabled
+            description
+            source {
+              ...SecurityPolicySource
+            }
+            updatedAt
+            userApprovers {
+              id
+              name
+              webUrl
+            }
+            allGroupApprovers {
+              id
+              fullPath
+              webUrl
+            }
+            roleApprovers
           }
           pageInfo {
             ...PageInfo
@@ -69,6 +43,14 @@ query complianceFrameworkPolicies(
         scanExecutionPolicies(after: $scanExecutionPoliciesAfter) {
           nodes {
             name
+            yaml
+            editPath
+            enabled
+            description
+            source {
+              ...SecurityPolicySource
+            }
+            updatedAt
           }
           pageInfo {
             ...PageInfo
