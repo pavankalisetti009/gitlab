@@ -18,6 +18,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
     let_it_be(:critical_vulnerability) do
       create(:vulnerability, :with_finding, :detected, :critical, :sast, resolved_on_default_branch: true, project: project)
+        .tap { |v| v.vulnerability_read.update!(has_vulnerability_resolution: true) }
     end
 
     let_it_be(:high_vulnerability) do
@@ -165,6 +166,50 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
         it 'only returns resolution that does not have resolution' do
           is_expected.to contain_exactly(low_vulnerability, high_vulnerability)
+        end
+      end
+    end
+
+    context 'when given value for has_ai_resolution argument' do
+      let(:params) { { has_ai_resolution: has_ai_resolution } }
+
+      context 'when has_ai_resolution is set to true' do
+        let(:has_ai_resolution) { true }
+
+        it 'only returns vulnerabilities that are eligible to be resolved by an LLM' do
+          is_expected.to contain_exactly(critical_vulnerability)
+        end
+      end
+
+      context 'when has_ai_resolution is set to false' do
+        let(:has_ai_resolution) { false }
+
+        it 'only returns vulnerabilities that are ineligible to be resolved by an LLM' do
+          is_expected.to contain_exactly(low_vulnerability, high_vulnerability)
+        end
+      end
+
+      context 'when vulnerability_report_vr_filter FF is disabled' do
+        let(:all_vulnerabilities) { [critical_vulnerability, low_vulnerability, high_vulnerability] }
+
+        before do
+          stub_feature_flags(vulnerability_report_vr_filter: false)
+        end
+
+        context 'with has_ai_resolution true' do
+          let(:has_ai_resolution) { true }
+
+          it 'ignores the filter and returns all vulnerabilities' do
+            is_expected.to match_array(all_vulnerabilities)
+          end
+        end
+
+        context 'with has_ai_resolution false' do
+          let(:has_ai_resolution) { false }
+
+          it 'ignores the filter and returns all vulnerabilities' do
+            is_expected.to match_array(all_vulnerabilities)
+          end
         end
       end
     end

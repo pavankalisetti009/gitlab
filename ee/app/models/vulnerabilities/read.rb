@@ -94,6 +94,7 @@ module Vulnerabilities
     scope :with_container_image_starting_with, ->(image) { where(arel_table[:location_image].matches("#{image}%")) }
     scope :with_cluster_agent_ids, ->(agent_ids) { where(cluster_agent_id: agent_ids) }
     scope :with_resolution, ->(has_resolution = true) { where(resolved_on_default_branch: has_resolution) }
+    scope :with_ai_resolution, ->(resolution = true) { where(has_vulnerability_resolution: resolution) }
     scope :with_issues, ->(has_issues = true) { where(has_issues: has_issues) }
     scope :with_merge_request, ->(has_merge_request = true) { where(has_merge_request: has_merge_request) }
     scope :with_remediations, ->(has_remediations = true) { where(has_remediations: has_remediations) }
