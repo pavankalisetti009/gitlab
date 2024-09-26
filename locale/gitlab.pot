@@ -45761,15 +45761,6 @@ msgstr ""
 msgid "Reports|Metrics reports are loading"
 msgstr ""
 
-msgid "Reports|Metrics reports changed on %{numberOfChanges} %{pointsString}"
-msgstr ""
-
-msgid "Reports|Metrics reports did not change"
-msgstr ""
-
-msgid "Reports|Metrics reports failed loading results"
-msgstr ""
-
 msgid "Reports|Metrics reports failed to load results"
 msgstr ""
 
@@ -65791,11 +65782,6 @@ msgstr ""
 
 msgid "pipelineEditorWalkthrough|You can use the file tree to view your pipeline configuration files. %{linkStart}Learn more%{linkEnd}"
 msgstr ""
-
-msgid "point"
-msgid_plural "points"
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "policy"
 msgid_plural "policies"
