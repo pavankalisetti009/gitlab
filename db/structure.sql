@@ -10806,8 +10806,13 @@ CREATE TABLE environments (
     cluster_agent_id bigint,
     kubernetes_namespace text,
     flux_resource_path text,
+    description text,
+    description_html text,
+    cached_markdown_version integer,
     CONSTRAINT check_23b1eb18a2 CHECK ((char_length(flux_resource_path) <= 255)),
-    CONSTRAINT check_b5373a1804 CHECK ((char_length(kubernetes_namespace) <= 63))
+    CONSTRAINT check_ad5e1ed5e1 CHECK ((char_length(description) <= 10000)),
+    CONSTRAINT check_b5373a1804 CHECK ((char_length(kubernetes_namespace) <= 63)),
+    CONSTRAINT check_d26221226f CHECK ((char_length(description_html) <= 50000))
 );
 
 CREATE SEQUENCE environments_id_seq
