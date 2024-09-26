@@ -41,6 +41,7 @@ describe('Status checks in branch rules enterprise edition', () => {
       query: branchRulesQuery,
       variables: {
         projectPath: 'gid://gitlab/Project/1',
+        isAllBranchesRule: false,
       },
       ...branchProtectionsMockResponse,
     });
@@ -50,6 +51,7 @@ describe('Status checks in branch rules enterprise edition', () => {
       propsData: {
         branchRuleId: 'gid://gitlab/Projects/BranchRule/1',
         projectPath: 'gid://gitlab/Project/1',
+        isAllBranchesRule: false,
       },
       mocks: {
         $toast: {

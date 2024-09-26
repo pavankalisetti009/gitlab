@@ -7,7 +7,9 @@ import MockAdapter from 'axios-mock-adapter';
 import RuleView from 'ee/projects/settings/branch_rules/components/view/index.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
+import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import branchRulesQuery from 'ee/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
+import * as urlUtility from '~/lib/utils/url_utility';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createStoreOptions } from 'ee/approvals/stores';
 import projectSettingsModule from 'ee/approvals/stores/modules/project_settings';
@@ -24,6 +26,7 @@ import {
   statusChecksRulesMock,
   protectionPropsMock,
   editBranchRuleMockResponse,
+  predefinedBranchRulesMockResponse,
 } from './mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -88,6 +91,7 @@ describe('View branch rules in enterprise edition', () => {
       stubs: {
         CrudComponent,
         ProtectionToggle,
+        StatusChecks,
       },
     });
 
@@ -106,6 +110,7 @@ describe('View branch rules in enterprise edition', () => {
   const findStatusChecksCrud = () => wrapper.findByTestId('status-checks');
   const findStatusChecksTitle = () => wrapper.findByTestId('crud-title');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
+  const findStatusChecksDrawer = () => wrapper.findByTestId('status-checks-drawer');
 
   it('renders a branch protection component for push rules', () => {
     expect(findAllowedToPush().props()).toMatchObject({
@@ -194,7 +199,43 @@ describe('View branch rules in enterprise edition', () => {
     });
   });
 
+  describe('if "showStatusChecks" is true', () => {
+    it('does not render status check section for all protected branches', () => {
+      jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('All protected branches');
+      createComponent({ editBranchRules: true }, { showStatusChecks: true });
+      expect(findStatusChecksTitle().exists()).toBe(false);
+      expect(findStatusChecksDrawer().exists()).toBe(false);
+    });
+
+    it('renders status check section for all branches', async () => {
+      jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('All branches');
+      createComponent(
+        { editBranchRules: true },
+        { showStatusChecks: true },
+        predefinedBranchRulesMockResponse,
+      );
+      await waitForPromises();
+      expect(findStatusChecksTitle().exists()).toBe(true);
+      expect(findStatusChecksDrawer().exists()).toBe(true);
+    });
+
+    it('renders status check section for non-predefined branch', async () => {
+      jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('main');
+      createComponent(
+        { editBranchRules: true },
+        { showStatusChecks: true },
+        branchProtectionsMockResponse,
+      );
+      await waitForPromises();
+      expect(findStatusChecksTitle().exists()).toBe(true);
+      expect(findStatusChecksDrawer().exists()).toBe(true);
+    });
+  });
+
   describe('When edit_branch_rules feature flag is disabled', () => {
+    beforeEach(() => {
+      jest.spyOn(urlUtility, 'getParameterByName').mockReturnValue('main');
+    });
     it.each`
       codeOwnerApprovalRequired | title                                           | description
       ${true}                   | ${'Requires code owner approval'}               | ${'Also rejects code pushes that change files listed in CODEOWNERS file.'}
