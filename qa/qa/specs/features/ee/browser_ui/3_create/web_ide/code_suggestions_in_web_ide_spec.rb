@@ -5,22 +5,16 @@ module QA
   # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
   RSpec.describe 'Create', product_group: :remote_development do
     describe 'Code Suggestions in Web IDE' do
+      include_context "Web IDE test prep"
       let(:project) { create(:project, :with_readme, name: 'webide-code-suggestions-project') }
       let(:file_name) { 'new_file.rb' }
       let(:prompt_data) { 'def reverse_string' }
 
       before do
-        Flow::Login.sign_in
-
         create(:commit, project: project, actions: [
           { action: 'create', file_path: file_name, content: '# test' }
         ])
-
-        project.visit!
-        Page::Project::Show.perform(&:open_web_ide!)
-        Page::Project::WebIDE::VSCode.perform do |ide|
-          ide.wait_for_ide_to_load(file_name)
-        end
+        load_web_ide(file_name)
       end
 
       shared_examples 'a code generation suggestion' do |testcase|

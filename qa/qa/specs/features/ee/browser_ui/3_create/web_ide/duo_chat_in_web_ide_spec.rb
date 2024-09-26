@@ -4,6 +4,7 @@ module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
   RSpec.describe 'Create', product_group: :remote_development do
     describe 'Duo Chat in Web IDE' do
+      include_context 'Web IDE test prep'
       shared_examples 'Duo Chat' do |testcase|
         it 'gets a response back from Duo Chat', testcase: testcase do
           Page::Project::WebIDE::VSCode.perform do |ide|
@@ -25,12 +26,7 @@ module QA
       let(:project) { create(:project, :with_readme, name: 'webide-duo-chat-project') }
 
       before do
-        Flow::Login.sign_in
-        project.visit!
-        Page::Project::Show.perform(&:open_web_ide!)
-        Page::Project::WebIDE::VSCode.perform do |ide|
-          ide.wait_for_ide_to_load('README.md')
-        end
+        load_web_ide
       end
 
       context 'on GitLab.com', :external_ai_provider,
