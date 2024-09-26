@@ -15,6 +15,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
   end
 
   describe 'POST /duo_code_review/evaluations' do
+    let(:dev_or_test_env?) { true }
     let(:license_feature_available) { true }
     let(:global_feature_flag_enabled) { true }
     let(:feature_flag_enabled) { true }
@@ -44,6 +45,8 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
       stub_feature_flags(ai_global_switch: global_feature_flag_enabled)
       stub_feature_flags(ai_review_merge_request: feature_flag_enabled)
 
+      allow(Gitlab).to receive(:dev_or_test_env?).and_return(dev_or_test_env?)
+
       allow_next_instance_of(
         ::Gitlab::Llm::Templates::ReviewMergeRequest,
         new_path,
@@ -70,6 +73,12 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     it 'returns 201 with the review response' do
       expect(response).to have_gitlab_http_status(:created)
       expect(response.body).to eq({ review: 'Review response' }.to_json)
+    end
+
+    context 'when environment is not development or test' do
+      let(:dev_or_test_env?) { false }
+
+      it { expect(response).to have_gitlab_http_status(:not_found) }
     end
 
     context 'when user is not authenticated' do
