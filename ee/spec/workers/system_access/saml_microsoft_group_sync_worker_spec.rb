@@ -89,7 +89,10 @@ RSpec.describe SystemAccess::SamlMicrosoftGroupSyncWorker, :aggregate_failures, 
         # Sync service is not called for group3 because no group links exist.
         it 'calls the service for all top-level groups with any groups links in the hierarchy' do
           expect(Groups::SyncService).to receive(:new).with(
-            group1, user_with_identity, group_links: [subgroup1_link], manage_group_ids: [group1.id, subgroup1.id]
+            group1,
+            user_with_identity,
+            group_links: [subgroup1_link],
+            manage_group_ids: an_array_matching([group1.id, subgroup1.id])
           ).and_call_original
 
           expect(Groups::SyncService).to receive(:new).with(
@@ -111,7 +114,10 @@ RSpec.describe SystemAccess::SamlMicrosoftGroupSyncWorker, :aggregate_failures, 
 
         it 'is not included in manage_group_ids' do
           expect(Groups::SyncService).to receive(:new).with(
-            group1, user_with_identity, group_links: [subgroup1_link], manage_group_ids: [group1.id, subgroup1.id]
+            group1,
+            user_with_identity,
+            group_links: [subgroup1_link],
+            manage_group_ids: an_array_matching([group1.id, subgroup1.id])
           ).and_call_original
 
           expect(Groups::SyncService).to receive(:new).with(
