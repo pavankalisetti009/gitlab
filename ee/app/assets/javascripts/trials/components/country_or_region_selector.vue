@@ -33,6 +33,11 @@ export default {
       default: false,
       required: false,
     },
+    trackActionForErrors: {
+      type: String,
+      default: null,
+      required: false,
+    },
   },
   data() {
     return { selectedCountry: this.country, selectedState: this.state, countries: [], states: [] };
@@ -44,6 +49,9 @@ export default {
     stateSelectPrompt: TRIAL_STATE_PROMPT,
   },
   computed: {
+    countryClass() {
+      return this.trackActionForErrors ? 'js-track-error' : '';
+    },
     countryOptionsWithDefault() {
       return [
         {
@@ -118,10 +126,12 @@ export default {
         id="country"
         v-model="selectedCountry"
         name="country"
+        :class="countryClass"
         :options="countryOptionsWithDefault"
         value-field="id"
         text-field="name"
         data-testid="country-dropdown"
+        :data-track-action-for-errors="trackActionForErrors"
         :required="required"
         @change="selected"
       />

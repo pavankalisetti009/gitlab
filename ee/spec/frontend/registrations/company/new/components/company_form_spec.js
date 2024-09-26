@@ -18,6 +18,7 @@ describe('CompanyForm', () => {
           firstName: 'Joe',
           lastName: 'Doe',
         },
+        trackActionForErrors: '_trackActionForErrors_',
         ...provideData,
       },
     });

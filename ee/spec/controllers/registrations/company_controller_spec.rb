@@ -78,7 +78,6 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
   describe '#create' do
     using RSpec::Parameterized::TableSyntax
 
-    let(:trial_registration) { 'false' }
     let(:glm_params) do
       {
         glm_source: 'some_source',
@@ -120,8 +119,6 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
       end
 
       context 'when it is a trial registration' do
-        let(:trial_registration) { 'true' }
-
         before do
           user.update!(
             onboarding_status_registration_type: 'trial', onboarding_status_initial_registration_type: 'trial'
@@ -141,8 +138,6 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         end
 
         context 'when driving from the onboarding_status.initial_registration_type' do
-          let(:trial_registration) { 'false' }
-
           before do
             user.update!(onboarding_status_initial_registration_type: 'trial')
           end
@@ -259,6 +254,17 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
       end
 
       context 'with snowplow tracking' do
+        it 'tracks error event' do
+          post_create
+
+          expect_snowplow_event(
+            category: described_class.name,
+            action: 'track_free_registration_error',
+            user: user,
+            label: 'failed'
+          )
+        end
+
         it 'does not track successful submission event' do
           post_create
 
@@ -271,7 +277,22 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         end
 
         context 'when in trial flow' do
-          it 'tracks successful submission event' do
+          before do
+            user.update!(onboarding_status_registration_type: 'trial')
+          end
+
+          it 'tracks error event' do
+            post_create
+
+            expect_snowplow_event(
+              category: described_class.name,
+              action: 'track_trial_registration_error',
+              user: user,
+              label: 'failed'
+            )
+          end
+
+          it 'does not track successful submission event' do
             post_create
 
             expect_no_snowplow_event(

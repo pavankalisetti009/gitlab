@@ -1,4 +1,4 @@
-import { GlLoadingIcon, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
@@ -84,6 +84,9 @@ describe('Vulnerability Header', () => {
   const getVulnerability = ({
     canCreateMergeRequest,
     canDownloadPatch,
+    canResolveWithAi,
+    canExplainWithAi,
+    aiResolutionEnabled,
     canAdmin = true,
     ...otherProperties
   } = {}) => ({
@@ -91,6 +94,9 @@ describe('Vulnerability Header', () => {
     state: canDownloadPatch ? 'detected' : 'resolved',
     mergeRequestLinks: canCreateMergeRequest || canDownloadPatch ? [] : [{}],
     mergeRequestFeedback: canCreateMergeRequest ? null : {},
+    aiResolutionAvailable: canResolveWithAi,
+    aiExplanationAvailable: canExplainWithAi,
+    aiResolutionEnabled,
     canAdmin,
     ...(canDownloadPatch && canCreateMergeRequest === undefined ? { createMrUrl: '' } : {}),
     ...otherProperties,
@@ -111,7 +117,7 @@ describe('Vulnerability Header', () => {
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findStatusBadge = () => wrapper.findComponent(StatusBadge);
   const findActionsDropdown = () => wrapper.findComponent(VulnerabilityActionsDropdown);
-  const findStateButton = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findStateButton = () => wrapper.findComponent(VulnerabilityStateDropdown);
   const findResolutionAlert = () => wrapper.findComponent(ResolutionAlert);
   const findStatusDescription = () => wrapper.findComponent(StatusDescription);
 
@@ -337,12 +343,13 @@ describe('Vulnerability Header', () => {
   });
 
   describe('actions dropdown', () => {
-    it.each([true, false])('passes the correct props to the dropdown', async (actionsEnabled) => {
+    it.each([true, false])('passes the correct props to the dropdown', (actionsEnabled) => {
       createWrapper({
         vulnerability: getVulnerability({
           canCreateMergeRequest: actionsEnabled,
           canDownloadPatch: actionsEnabled,
-          aiResolutionAvailable: actionsEnabled,
+          canResolveWithAi: actionsEnabled,
+          canExplainWithAi: actionsEnabled,
           aiResolutionEnabled: actionsEnabled,
         }),
         glAbilities: {
@@ -351,15 +358,12 @@ describe('Vulnerability Header', () => {
         },
       });
 
-      await waitForPromises();
-
       expect(findActionsDropdown().props()).toMatchObject({
         loading: false,
         showDownloadPatch: actionsEnabled,
         showCreateMergeRequest: actionsEnabled,
-        explainWithAiAbility: actionsEnabled,
-        resolveWithAiAbility: actionsEnabled,
-        aiResolutionAvailable: actionsEnabled,
+        showResolveWithAi: actionsEnabled,
+        showExplainWithAi: actionsEnabled,
         aiResolutionEnabled: actionsEnabled,
       });
     });

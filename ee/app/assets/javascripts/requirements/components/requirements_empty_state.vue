@@ -31,7 +31,7 @@ export default {
     emptyStateTitle() {
       return this.requirementsCount[filterState.all]
         ? filterStateEmptyMessage[this.filterBy]
-        : __('With requirements, you can set criteria to check your products against.');
+        : __('With requirements, you can set criteria to check your products against');
     },
     emptyStateDescription() {
       return !this.requirementsCount[filterState.all]
@@ -46,30 +46,28 @@ export default {
 </script>
 
 <template>
-  <div class="requirements-empty-state-container">
-    <gl-empty-state
-      :svg-path="emptyStatePath"
-      :svg-height="150"
-      :title="emptyStateTitle"
-      :description="emptyStateDescription"
-    >
-      <template v-if="emptyStateDescription && canCreateRequirement" #actions>
-        <gl-button
-          class="gl-mx-2 gl-mb-3"
-          category="primary"
-          variant="confirm"
-          @click="$emit('click-new-requirement')"
-          >{{ __('New requirement') }}</gl-button
-        >
-        <gl-button
-          class="gl-mx-2 gl-mb-3"
-          category="secondary"
-          variant="default"
-          @click="$emit('click-import-requirements')"
-        >
-          {{ __('Import requirements') }}
-        </gl-button>
-      </template>
-    </gl-empty-state>
-  </div>
+  <gl-empty-state
+    :svg-path="emptyStatePath"
+    :title="emptyStateTitle"
+    :description="emptyStateDescription"
+    data-testid="requirements-empty-state"
+  >
+    <template v-if="emptyStateDescription && canCreateRequirement" #actions>
+      <gl-button
+        class="gl-mx-2 gl-mb-3"
+        category="primary"
+        variant="confirm"
+        @click="$emit('click-new-requirement')"
+        >{{ __('New requirement') }}</gl-button
+      >
+      <gl-button
+        class="gl-mx-2 gl-mb-3"
+        category="secondary"
+        variant="default"
+        @click="$emit('click-import-requirements')"
+      >
+        {{ __('Import requirements') }}
+      </gl-button>
+    </template>
+  </gl-empty-state>
 </template>

@@ -9,7 +9,7 @@ module Gitlab
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
 
     def self.url
-      ENV['AI_GATEWAY_URL'] || cloud_connector_url
+      self_hosted_url || cloud_connector_url
     end
 
     def self.cloud_connector_url
@@ -17,9 +17,16 @@ module Gitlab
     end
 
     def self.access_token_url
-      base_url = ENV['AI_GATEWAY_URL'] || "#{::CloudConnector::Config.base_url}/auth"
+      base_url = self_hosted_url || "#{::CloudConnector::Config.base_url}/auth"
 
       "#{base_url}/v1/code/user_access_token"
+    end
+
+    # Returns the configured URL of a self-hosted AI Gateway.
+    # TODO: to be moved to a config instead of ENV variable
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/473143
+    def self.self_hosted_url
+      ENV['AI_GATEWAY_URL']
     end
 
     # Exposes the state of a feature flag to the AI Gateway code.

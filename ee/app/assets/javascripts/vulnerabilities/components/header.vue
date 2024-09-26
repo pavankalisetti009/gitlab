@@ -20,6 +20,8 @@ import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
 import { normalizeGraphQLVulnerability, normalizeGraphQLLastStateTransition } from '../helpers';
 import ResolutionAlert from './resolution_alert.vue';
 import StatusDescription from './status_description.vue';
+import VulnerabilityActionsDropdown from './vulnerability_actions_dropdown.vue';
+import VulnerabilityStateDropdown from './vulnerability_state_dropdown.vue';
 
 export const CREATE_MR_AI_ACTION = {
   name: s__('ciReport|Resolve with merge request'),
@@ -48,8 +50,8 @@ export default {
     StatusBadge,
     ResolutionAlert,
     StatusDescription,
-    VulnerabilityStateDropdown: () => import('./vulnerability_state_dropdown.vue'),
-    VulnerabilityActionsDropdown: () => import('./vulnerability_actions_dropdown.vue'),
+    VulnerabilityStateDropdown,
+    VulnerabilityActionsDropdown,
   },
   directives: {
     GlTooltip,
@@ -89,6 +91,16 @@ export default {
     },
     canCreateMergeRequest() {
       return !this.mergeRequest && this.vulnerability.createMrUrl && this.hasRemediation;
+    },
+    canResolveWithAi() {
+      return (
+        this.glAbilities.resolveVulnerabilityWithAi && this.vulnerability.aiResolutionAvailable
+      );
+    },
+    canExplainWithAi() {
+      return (
+        this.glAbilities.explainVulnerabilityWithAi && this.vulnerability.aiExplanationAvailable
+      );
     },
     showResolutionAlert() {
       return (
@@ -337,10 +349,8 @@ export default {
           :loading="isProcessingAction"
           :show-download-patch="canDownloadPatch"
           :show-create-merge-request="canCreateMergeRequest"
-          :resolve-with-ai-ability="glAbilities.resolveVulnerabilityWithAi"
-          :explain-with-ai-ability="glAbilities.explainVulnerabilityWithAi"
-          :ai-explanation-available="vulnerability.aiExplanationAvailable"
-          :ai-resolution-available="vulnerability.aiResolutionAvailable"
+          :show-resolve-with-ai="canResolveWithAi"
+          :show-explain-with-ai="canExplainWithAi"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"

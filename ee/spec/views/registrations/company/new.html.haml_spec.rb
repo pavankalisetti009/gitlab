@@ -6,7 +6,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
   let(:initial_trial?) { false }
   let(:onboarding_status) do
-    instance_double(::Onboarding::Status, initial_trial?: initial_trial?)
+    instance_double(::Onboarding::Status, initial_trial?: initial_trial?, tracking_label: 'free_registration')
   end
 
   before do

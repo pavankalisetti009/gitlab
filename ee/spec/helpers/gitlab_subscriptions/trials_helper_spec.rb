@@ -219,7 +219,8 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
         submit_path: "/users/sign_up/company?#{extra_params.to_query}",
         first_name: user.first_name,
         last_name: user.last_name,
-        initial_trial: 'false'
+        initial_trial: 'false',
+        track_action_for_errors: 'free_registration'
       }
 
       expect(helper.create_company_form_data(::Onboarding::Status.new({}, {}, user))).to match(attributes)

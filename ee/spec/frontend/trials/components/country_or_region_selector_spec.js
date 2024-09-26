@@ -51,6 +51,16 @@ describe('CountryOrRegionSelector', () => {
     `('has the default injected value for $testid', ({ testid, value }) => {
       expect(findFormInput(testid).attributes('value')).toBe(value);
     });
+
+    describe('with trackActionForErrors', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ trackActionForErrors: '_trackActionForErrors_' });
+      });
+
+      it('adds track error class for country selector', () => {
+        expect(findFormInput('country-dropdown').attributes('class')).toContain('js-track-error');
+      });
+    });
   });
 
   describe.each`

@@ -10,6 +10,7 @@ import {
 } from 'ee/vue_shared/leads/constants';
 import csrf from '~/lib/utils/csrf';
 import { __ } from '~/locale';
+import FormErrorTracker from '~/pages/shared/form_error_tracker';
 import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
 import {
   TRIAL_COMPANY_SIZE_PROMPT,
@@ -43,6 +44,10 @@ export default {
     initialTrial: {
       type: Boolean,
       default: false,
+    },
+    trackActionForErrors: {
+      type: String,
+      required: false,
     },
   },
   data() {
@@ -79,6 +84,9 @@ export default {
     footerText() {
       return this.initialTrial ? '' : this.$options.i18n.footerDescriptionRegistration;
     },
+  },
+  mounted() {
+    new FormErrorTracker(); // eslint-disable-line no-new
   },
   methods: {
     trackCompanyForm() {
@@ -123,7 +131,9 @@ export default {
           id="first_name"
           :value="firstName"
           name="first_name"
+          class="js-track-error"
           data-testid="first_name"
+          :data-track-action-for-errors="trackActionForErrors"
           required
         />
       </gl-form-group>
@@ -137,7 +147,9 @@ export default {
           id="last_name"
           :value="lastName"
           name="last_name"
+          class="js-track-error"
           data-testid="last_name"
+          :data-track-action-for-errors="trackActionForErrors"
           required
         />
       </gl-form-group>
@@ -147,7 +159,9 @@ export default {
         id="company_name"
         :value="companyName"
         name="company_name"
+        class="js-track-error"
         data-testid="company_name"
+        :data-track-action-for-errors="trackActionForErrors"
         required
       />
     </gl-form-group>
@@ -156,14 +170,24 @@ export default {
         id="company_size"
         :value="companySize"
         name="company_size"
+        class="js-track-error"
         :options="companySizeOptionsWithDefault"
         value-field="id"
         text-field="name"
         data-testid="company_size"
+        :data-track-action-for-errors="trackActionForErrors"
         required
       />
     </gl-form-group>
-    <country-or-region-selector :country="country" :state="state" data-testid="country" required />
+
+    <country-or-region-selector
+      :country="country"
+      :state="state"
+      data-testid="country"
+      :track-action-for-errors="trackActionForErrors"
+      required
+    />
+
     <gl-form-group
       :label="$options.i18n.phoneNumberLabel"
       :optional-text="$options.i18n.optional"
