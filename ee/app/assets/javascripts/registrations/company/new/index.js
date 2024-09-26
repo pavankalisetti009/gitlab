@@ -5,7 +5,7 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 
 export default () => {
   const el = document.querySelector('#js-registrations-company-form');
-  const { submitPath, firstName, lastName, initialTrial } = el.dataset;
+  const { submitPath, firstName, lastName, initialTrial, trackActionForErrors } = el.dataset;
 
   return new Vue({
     el,
@@ -16,6 +16,7 @@ export default () => {
         lastName,
       },
       submitPath,
+      trackActionForErrors,
       initialTrial: parseBoolean(initialTrial),
     },
     render(createElement) {
