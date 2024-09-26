@@ -69,10 +69,10 @@ plain text format. To confirm which content type an endpoint supports, see the
 
 ## Authentication
 
-Most API requests require authentication, or only return public data when
-authentication isn't provided. When authentication is not required, the documentation
-for each endpoint specifies this. For example, the
-[`/projects/:id` endpoint](../projects.md#get-a-single-project) does not require authentication.
+Most API requests require authentication, or return only public data when authentication isn't
+provided. When authentication is not required, the documentation for each endpoint specifies this.
+For example, the [`/projects/:id` endpoint](../projects.md#get-a-single-project) does not require
+authentication.
 
 You can authenticate with the GitLab API in several ways:
 
@@ -88,14 +88,14 @@ Project access tokens are supported by:
 - Self-managed GitLab: Free, Premium, and Ultimate.
 - GitLab SaaS: Premium and Ultimate.
 
-If you are an administrator, you or your application can authenticate as a specific user.
-To do so, use:
+If you are an administrator, you or your application can authenticate as a specific user, using
+either:
 
 - [Impersonation tokens](#impersonation-tokens)
 - [Sudo](#sudo)
 
-If authentication information is not valid or is missing, GitLab returns an error
-message with a status code of `401`:
+If authentication information is not valid or is missing, GitLab returns an error message with a
+status code of `401`:
 
 ```json
 {
@@ -109,8 +109,8 @@ Deploy tokens can't be used with the GitLab public API. For details, see
 
 ### OAuth 2.0 tokens
 
-You can use an [OAuth 2.0 token](../oauth2.md) to authenticate with the API by passing
-it in either the `access_token` parameter or the `Authorization` header.
+You can use an [OAuth 2.0 token](../oauth2.md) to authenticate with the API by passing it in either
+the `access_token` parameter or the `Authorization` header.
 
 Example of using the OAuth 2.0 token in a parameter:
 
@@ -127,15 +127,14 @@ curl --header "Authorization: Bearer OAUTH-TOKEN" "https://gitlab.example.com/ap
 Read more about [GitLab as an OAuth 2.0 provider](../oauth2.md).
 
 NOTE:
-All OAuth access tokens are valid for two hours after they are created. You can
-use the `refresh_token` parameter to refresh tokens. See
-[OAuth 2.0 token](../oauth2.md) documentation for how to request a new access
-token using a refresh token.
+All OAuth access tokens are valid for two hours after they are created. You can use the
+`refresh_token` parameter to refresh tokens. See [OAuth 2.0 token](../oauth2.md) documentation for
+how to request a new access token using a refresh token.
 
 ### Personal/project/group access tokens
 
-You can use access tokens to authenticate with the API by passing it in either
-the `private_token` parameter or the `PRIVATE-TOKEN` header.
+You can use access tokens to authenticate with the API by passing it in either the `private_token`
+parameter or the `PRIVATE-TOKEN` header.
 
 Example of using the personal, project, or group access token in a parameter:
 
@@ -158,8 +157,8 @@ curl --header "Authorization: Bearer <your_access_token>" "https://gitlab.exampl
 ### Job tokens
 
 You can use job tokens to authenticate with [specific API endpoints](../../ci/jobs/ci_job_token.md)
-by passing the token in the `job_token` parameter or the `JOB-TOKEN` header.
-To pass the token in GitLab CI/CD jobs, use the `CI_JOB_TOKEN` variable.
+by passing the token in the `job_token` parameter or the `JOB-TOKEN` header. To pass the token in
+GitLab CI/CD jobs, use the `CI_JOB_TOKEN` variable.
 
 Example of using the job token in a parameter:
 
@@ -175,19 +174,19 @@ curl --header "JOB-TOKEN:$CI_JOB_TOKEN" "https://gitlab.example.com/api/v4/proje
 
 ### Session cookie
 
-Signing in to the main GitLab application sets a `_gitlab_session` cookie. The
-API uses this cookie for authentication if it's present. Using the API to
-generate a new session cookie isn't supported.
+Signing in to the main GitLab application sets a `_gitlab_session` cookie. The API uses this cookie
+for authentication if it's present. Using the API to generate a new session cookie isn't supported.
 
-The primary user of this authentication method is the web frontend of GitLab
-itself. The web frontend can use the API as the authenticated user to get a
-list of projects without explicitly passing an access token.
+The primary user of this authentication method is the web frontend of GitLab itself. The web
+frontend can use the API as the authenticated user to get a list of projects without explicitly
+passing an access token.
 
 ### Impersonation tokens
 
-Impersonation tokens are a type of [personal access token](../../user/profile/personal_access_tokens.md).
-They can be created only by an administrator, and are used to authenticate with the
-API as a specific user.
+Impersonation tokens are a type of
+[personal access token](../../user/profile/personal_access_tokens.md).
+They can be created only by an administrator, and are used to authenticate with the API as a
+specific user.
 
 Use impersonation tokens as an alternative to:
 
@@ -195,12 +194,11 @@ Use impersonation tokens as an alternative to:
 - The [Sudo](#sudo) feature. The user's or administrator's password or token
   may not be known, or may change over time.
 
-For more information, see the
+For more details, see the
 [User tokens API](../user_tokens.md#create-an-impersonation-token) documentation.
 
-Impersonation tokens are used exactly like regular personal access tokens, and
-can be passed in either the `private_token` parameter or the `PRIVATE-TOKEN`
-header.
+Impersonation tokens are used exactly like regular personal access tokens, and can be passed in
+either the `private_token` parameter or the `PRIVATE-TOKEN` header.
 
 #### Disable impersonation
 
@@ -233,23 +231,21 @@ By default, impersonation is enabled. To disable impersonation:
 
 ::EndTabs
 
-To re-enable impersonation, remove this configuration and reconfigure GitLab (Linux package installations) or restart
-GitLab (self-compiled installations).
+To re-enable impersonation, remove this configuration and reconfigure GitLab (Linux package
+installations) or restart GitLab (self-compiled installations).
 
 ### Sudo
 
-All API requests support performing an API request as if you were another user,
-provided you're authenticated as an administrator with an OAuth or personal
-access token that has the `sudo` scope. The API requests are executed with the
-permissions of the impersonated user.
+All API requests support performing an API request as if you were another user, provided you're
+authenticated as an administrator with an OAuth or personal access token that has the `sudo` scope.
+The API requests are executed with the permissions of the impersonated user.
 
-As an [administrator](../../user/permissions.md), pass the `sudo` parameter either
-by using query string or a header with an ID or username (case insensitive) of
-the user you want to perform the operation as. If passed as a header, the header
-name must be `Sudo`.
+As an [administrator](../../user/permissions.md), pass the `sudo` parameter either by using query
+string or a header with an ID or username (case insensitive) of the user you want to perform the
+operation as. If passed as a header, the header name must be `Sudo`.
 
-If a non administrative access token is provided, GitLab returns an error
-message with a status code of `403`:
+If a non administrative access token is provided, GitLab returns an error message with a status code
+of `403`:
 
 ```json
 {
@@ -257,8 +253,8 @@ message with a status code of `403`:
 }
 ```
 
-If an access token without the `sudo` scope is provided, an error message is
-returned with a status code of `403`:
+If an access token without the `sudo` scope is provided, an error message is returned with a status
+code of `403`:
 
 ```json
 {
@@ -268,8 +264,8 @@ returned with a status code of `403`:
 }
 ```
 
-If the sudo user ID or username cannot be found, an error message is
-returned with a status code of `404`:
+If the sudo user ID or username cannot be found, an error message is returned with a status code of
+`404`:
 
 ```json
 {
@@ -288,8 +284,7 @@ GET /projects?private_token=<your_access_token>&sudo=username
 curl --header "PRIVATE-TOKEN: <your_access_token>" --header "Sudo: username" "https://gitlab.example.com/api/v4/projects"
 ```
 
-Example of a valid API request and a request using cURL with sudo request,
-providing an ID:
+Example of a valid API request and a request using cURL with sudo request, providing an ID:
 
 ```plaintext
 GET /projects?private_token=<your_access_token>&sudo=23
