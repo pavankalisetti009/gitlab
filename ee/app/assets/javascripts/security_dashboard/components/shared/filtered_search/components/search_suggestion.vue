@@ -12,7 +12,7 @@ export default {
      * This is passed to gl-filtered-search-suggestion and used in data test ids.
      */
     value: {
-      type: String,
+      type: [String, Number],
       required: true,
     },
     text: {

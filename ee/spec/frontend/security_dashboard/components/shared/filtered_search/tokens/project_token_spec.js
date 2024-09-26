@@ -10,6 +10,7 @@ import VueRouter from 'vue-router';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
 import getProjects from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
@@ -103,6 +104,7 @@ describe('ee/security_dashboard/components/shared/filtered_search/tokens/project
         dashboardType: DASHBOARD_TYPES.GROUP,
       },
       stubs: {
+        SearchSuggestion,
         GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
           template: `
               <div>
@@ -132,7 +134,7 @@ describe('ee/security_dashboard/components/shared/filtered_search/tokens/project
   };
 
   const selectProject = (project) => {
-    findFilteredSearchToken().vm.$emit('select', project);
+    findFilteredSearchToken().vm.$emit('select', project.rawId);
     return nextTick();
   };
 
