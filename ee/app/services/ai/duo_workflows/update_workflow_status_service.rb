@@ -41,6 +41,8 @@ module Ai
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
 
+        GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
+
         ServiceResponse.success(payload: { workflow: @workflow }, message: "Workflow status updated")
       end
 

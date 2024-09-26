@@ -28,6 +28,9 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
     end
 
     it "can finish a workflow", :aggregate_failures do
+      checkpoint = create(:duo_workflows_checkpoint, workflow: workflow, project: workflow.project)
+      expect(GraphqlTriggers).to receive(:workflow_events_updated).with(checkpoint).and_return(1)
+
       result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
 
       expect(result[:status]).to eq(:success)
