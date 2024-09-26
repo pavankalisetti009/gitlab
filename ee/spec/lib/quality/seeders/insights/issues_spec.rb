@@ -23,7 +23,7 @@ RSpec.describe Quality::Seeders::Insights::Issues, feature_category: :quality_ma
       expect(weights.size).to eq(issues_count)
     end
 
-    it 'generates DORA metrics' do
+    it 'generates DORA metrics', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/488614' do
       dora_metrics = project.environments.last.dora_daily_metrics
 
       expect(dora_metrics).not_to be_empty
