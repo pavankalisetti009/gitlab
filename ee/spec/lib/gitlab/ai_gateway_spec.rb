@@ -38,6 +38,26 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     end
   end
 
+  describe '.self_hosted_url' do
+    context 'when AI_GATEWAY_URL environment variable is set' do
+      let(:url) { 'http://localhost:5052' }
+
+      it 'returns the url' do
+        stub_env('AI_GATEWAY_URL', url)
+
+        expect(described_class.self_hosted_url).to eq(url)
+      end
+    end
+
+    context 'when AI_GATEWAY_URL environment variable is not set' do
+      it 'returns nil' do
+        stub_env('AI_GATEWAY_URL', nil)
+
+        expect(described_class.self_hosted_url).to be_nil
+      end
+    end
+  end
+
   describe '.push_feature_flag', :request_store do
     before do
       allow(::Feature).to receive(:enabled?).and_return(true)

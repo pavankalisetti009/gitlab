@@ -8,7 +8,7 @@ module Gitlab
 
         def initialize
           @root_user = User.find_by_id(1)
-          @ai_gateway_url = ENV['AI_GATEWAY_URL']
+          @ai_gateway_url = ::Gitlab::AiGateway.self_hosted_url
         end
 
         def execute
