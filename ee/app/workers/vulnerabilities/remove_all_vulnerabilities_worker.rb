@@ -11,12 +11,12 @@ module Vulnerabilities
 
     feature_category :vulnerability_management
 
-    def perform(project_id)
+    def perform(project_id, params = {})
       project = Project.find_by_id(project_id)
 
       return unless project
 
-      Vulnerabilities::Removal::RemoveFromProjectService.new(project).execute
+      Vulnerabilities::Removal::RemoveFromProjectService.new(project, params.symbolize_keys).execute
     end
   end
 end

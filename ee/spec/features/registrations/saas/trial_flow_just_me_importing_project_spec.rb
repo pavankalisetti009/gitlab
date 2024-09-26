@@ -74,8 +74,7 @@ RSpec.describe 'Trial flow for user picking just me and importing a project', :j
         namespace_id: anything,
         gitlab_com_trial: true,
         sync_to_gl: true,
-        add_on: 'duo_enterprise',
-        with_add_on: true,
+        with_addon: true,
         namespace: {
           id: anything,
           name: 'Test Group',

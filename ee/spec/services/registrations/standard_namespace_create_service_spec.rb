@@ -206,8 +206,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
           gitlab_com_trial: true,
           sync_to_gl: true,
           namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on),
-          with_add_on: true,
-          add_on: 'duo_enterprise'
+          with_addon: true
         }
       end
 

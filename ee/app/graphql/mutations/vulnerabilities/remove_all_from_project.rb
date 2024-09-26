@@ -13,16 +13,22 @@ module Mutations
         description: "IDs of project for which all Vulnerabilities should be removed. " \
                      "The deletion will happen in the background so the changes will not be visible immediately."
 
+      argument :resolved_on_default_branch, GraphQL::Types::Boolean,
+        required: false,
+        description: 'When set as `true`, deletes only the vulnerabilities no longer detected. ' \
+                     'When set as `false`, deletes only the vulnerabilities still detected.'
+
       field :projects, [Types::ProjectType],
         null: false,
         description: 'Projects for which the deletion was scheduled.'
 
-      def resolve(project_ids: [])
+      def resolve(project_ids: [], resolved_on_default_branch: nil)
         raise_not_enough_arguments_error! if project_ids.empty?
 
         projects = find_projects(project_ids)
 
-        result = ::Vulnerabilities::ScheduleRemovingAllFromProjectService.new(projects).execute
+        service = ::Vulnerabilities::ScheduleRemovingAllFromProjectService.new(projects, resolved_on_default_branch)
+        result = service.execute
 
         {
           projects: result.payload[:projects],

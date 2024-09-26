@@ -20,8 +20,16 @@ RSpec.describe Mutations::Vulnerabilities::RemoveAllFromProject, feature_categor
   describe '#resolve' do
     subject(:mutation) do
       klass.resolve(
-        project_ids: project_ids
+        project_ids: project_ids,
+        resolved_on_default_branch: true
       )
+    end
+
+    it 'calls the service object with correct arguments' do
+      expect(Vulnerabilities::ScheduleRemovingAllFromProjectService)
+        .to receive(:new).with(a_collection_containing_exactly(project1, project2), true).and_call_original
+
+      mutation
     end
 
     it 'returns the list of Projects affected', :aggregate_failures do

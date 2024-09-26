@@ -15,12 +15,14 @@ RSpec.describe Vulnerabilities::RemoveAllVulnerabilitiesWorker, feature_category
     end
 
     include_examples 'an idempotent worker' do
-      subject(:perform) { worker.perform(project.id) }
+      subject(:perform) { worker.perform(project.id, { 'resolved_on_default_branch' => true }) }
 
       it 'delegates the call to `Vulnerabilities::Removal::RemoveFromProjectService`' do
         perform
 
-        expect(Vulnerabilities::Removal::RemoveFromProjectService).to have_received(:new).with(project)
+        expect(Vulnerabilities::Removal::RemoveFromProjectService)
+          .to have_received(:new).with(project, { resolved_on_default_branch: true })
+
         expect(mock_service_instance).to have_received(:execute)
       end
 

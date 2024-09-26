@@ -47,6 +47,11 @@ module Resolvers
       required: false,
       description: 'Returns only the vulnerabilities which have been resolved on default branch.'
 
+    argument :has_ai_resolution, GraphQL::Types::Boolean,
+      required: false,
+      alpha: { milestone: '17.5' },
+      description: 'Returns only the vulnerabilities which can likely be resolved by GitLab Duo Vulnerability Resolution. Requires the `vulnerability_report_vr_filter` feature flag to be enabled, otherwise the argument is ignored.'
+
     argument :has_issues, GraphQL::Types::Boolean,
       required: false,
       description: 'Returns only the vulnerabilities which have linked issues.'
@@ -110,8 +115,15 @@ module Resolvers
 
     def vulnerabilities(params)
       finder_params = params.merge(before_severity: before_severity, after_severity: after_severity)
+      finder_params.delete(:has_ai_resolution) unless resolve_by_duo_filtering_enabled?
 
       apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, finder_params).execute.as_vulnerabilities)
+    end
+
+    def resolve_by_duo_filtering_enabled?
+      return false if vulnerable.is_a?(::InstanceSecurityDashboard)
+
+      Feature.enabled?(:vulnerability_report_vr_filter, vulnerable)
     end
 
     def after_severity
