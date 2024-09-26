@@ -70,6 +70,11 @@ export default {
       required: false,
       default: '',
     },
+    showRemoveButton: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     approverTypeToggleText() {
@@ -108,9 +113,6 @@ export default {
         this.approverIndex + 1 < APPROVER_TYPE_LIST_ITEMS.length &&
         this.approverIndex + 1 === this.numOfApproverTypes
       );
-    },
-    showRemoveButton() {
-      return this.numOfApproverTypes > 1;
     },
     listBoxItems() {
       return APPROVER_TYPE_LIST_ITEMS.map(({ value, text }) => ({

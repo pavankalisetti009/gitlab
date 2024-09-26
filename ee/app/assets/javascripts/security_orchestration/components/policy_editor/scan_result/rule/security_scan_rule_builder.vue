@@ -321,9 +321,13 @@ export default {
 
 <template>
   <div>
-    <section-layout class="gl-pb-0" :show-remove-button="false" @changed="$emit('changed', $event)">
+    <section-layout
+      class="gl-pb-0 gl-pr-0"
+      :show-remove-button="false"
+      @changed="$emit('changed', $event)"
+    >
       <template #content>
-        <section-layout class="!gl-bg-white" @remove="$emit('remove')">
+        <section-layout class="!gl-bg-white" :show-remove-button="false">
           <template #content>
             <gl-sprintf :message="$options.scanResultRuleCopy">
               <template #scanType>
@@ -378,7 +382,7 @@ export default {
       </template>
     </section-layout>
 
-    <section-layout class="gl-pt-3" :show-remove-button="false">
+    <section-layout class="gl-pr-0 gl-pt-3" :show-remove-button="false">
       <template #content>
         <severity-filter
           :selected="severityLevels"

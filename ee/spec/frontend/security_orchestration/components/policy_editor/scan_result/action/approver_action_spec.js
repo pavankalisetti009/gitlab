@@ -93,6 +93,7 @@ describe('ApproverAction', () => {
         existingApprovers: {},
         numOfApproverTypes: 1,
         approverType: '',
+        showRemoveButton: false,
       });
     });
 
@@ -214,10 +215,10 @@ describe('ApproverAction', () => {
   });
 
   describe('remove action', () => {
-    it('emits "remove" when the remove icon is clicked', () => {
+    it('does not render remove button for section layout', () => {
       createWrapper();
-      findSectionLayout().vm.$emit('remove');
-      expect(wrapper.emitted('remove')).toHaveLength(1);
+
+      expect(findSectionLayout().props('showRemoveButton')).toBe(false);
     });
   });
 

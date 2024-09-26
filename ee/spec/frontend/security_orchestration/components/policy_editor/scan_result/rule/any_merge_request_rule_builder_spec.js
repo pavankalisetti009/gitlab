@@ -63,9 +63,8 @@ describe('AnyMergeRequestRuleBuilder', () => {
       expect(findCommitsTypeListBox().exists()).toBe(true);
     });
 
-    it('can remove rule builder', () => {
-      findAllBaseLayoutComponent().at(1).vm.$emit('remove');
-      expect(wrapper.emitted('remove')).toHaveLength(1);
+    it('does not render remove icon', () => {
+      expect(findAllBaseLayoutComponent().at(1).props('showRemoveButton')).toBe(false);
     });
 
     it('can change scan type', () => {

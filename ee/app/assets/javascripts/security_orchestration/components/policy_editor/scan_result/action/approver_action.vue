@@ -136,7 +136,11 @@ export default {
     >
       {{ error.message }}
     </gl-alert>
-    <section-layout content-classes="gl-py-5 gl-pr-5 gl-bg-white" @remove="$emit('remove')">
+    <section-layout
+      class="gl-pr-0"
+      content-classes="gl-py-5 gl-pr-2 gl-bg-white"
+      :show-remove-button="false"
+    >
       <template #content>
         <approver-selection-wrapper
           v-for="({ id, type }, i) in approverTypeTracker"
@@ -148,6 +152,7 @@ export default {
           :num-of-approver-types="approverTypeTracker.length"
           :approvals-required="initAction.approvals_required"
           :existing-approvers="existingApprovers"
+          :show-remove-button="i > 0"
           @addApproverType="handleAddApproverType"
           @error="$emit('error')"
           @updateApprovers="handleUpdateApprovers"

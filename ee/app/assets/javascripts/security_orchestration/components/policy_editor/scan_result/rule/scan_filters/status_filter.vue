@@ -81,7 +81,7 @@ export default {
 <template>
   <section-layout
     :key="filter"
-    class="gl-w-full gl-bg-white"
+    class="gl-w-full gl-bg-white gl-pr-2"
     :show-remove-button="showRemoveButton"
     @remove="remove"
   >

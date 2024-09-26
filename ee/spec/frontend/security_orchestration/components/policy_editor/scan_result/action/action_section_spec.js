@@ -26,6 +26,7 @@ describe('ActionSection', () => {
   };
 
   const findActionSeperator = () => wrapper.findByTestId('action-and-label');
+  const findRemoveButton = () => wrapper.findByTestId('remove-action');
   const findApproverAction = () => wrapper.findComponent(ApproverAction);
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
 
@@ -66,7 +67,7 @@ describe('ActionSection', () => {
       });
 
       it('passes through the "remove" event', () => {
-        findApproverAction().vm.$emit('remove');
+        findRemoveButton().vm.$emit('click');
         expect(wrapper.emitted('remove')).toEqual([[]]);
       });
     });
@@ -82,7 +83,7 @@ describe('ActionSection', () => {
 
     it('emits "changed" on removal', () => {
       factory({ props: { initAction: { type: BOT_MESSAGE_TYPE } } });
-      findBotCommentAction().vm.$emit('remove');
+      findRemoveButton().vm.$emit('click');
       expect(wrapper.emitted('changed')).toEqual([
         [expect.objectContaining(DISABLED_BOT_MESSAGE_ACTION)],
       ]);
