@@ -25,7 +25,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalEntity,
 
   describe 'when assigning the member presenter' do
     it 'is only set once' do
-      expect(Members::MemberApprovalPresenter).to receive(:new)
+      expect(::Members::MemberApprovalPresenter).to receive(:new)
                                          .with(pending_member_approval)
                                          .and_call_original
                                          .once

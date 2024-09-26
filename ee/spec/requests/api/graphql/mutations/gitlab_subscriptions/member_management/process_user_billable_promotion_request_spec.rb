@@ -204,7 +204,7 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
     context 'when update! fails' do
       before do
-        allow(Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
+        allow(::Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
                                             .and_yield(member_approval)
         allow(member_approval).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
       end

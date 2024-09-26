@@ -55,7 +55,7 @@ RSpec.shared_examples 'billable promotion management feature' do
         member = nil
         expect do
           member = add_member
-        end.to change { Members::MemberApproval.count }.by(1)
+        end.to change { ::Members::MemberApproval.count }.by(1)
 
         expect(member.errors[:base].first).to eq("Request queued for administrator approval.")
       end
@@ -63,7 +63,7 @@ RSpec.shared_examples 'billable promotion management feature' do
 
     shared_examples 'returns errored member when queuing fails' do
       before do
-        allow(Members::MemberApproval).to receive(:create_or_update_pending_approval)
+        allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval)
                                             .and_raise(ActiveRecord::RecordInvalid)
       end
 
@@ -71,7 +71,7 @@ RSpec.shared_examples 'billable promotion management feature' do
         member = nil
         expect do
           member = add_member
-        end.not_to change { Members::MemberApproval.count }
+        end.not_to change { ::Members::MemberApproval.count }
 
         expect(member.errors[:base].first).to eq("Unable to send approval request to administrator.")
       end
@@ -96,7 +96,7 @@ RSpec.shared_examples 'billable promotion management feature' do
     context 'with existing member' do
       shared_examples "updates the members" do
         it 'updates the member' do
-          expect { add_member }.not_to change { Members::MemberApproval.count }
+          expect { add_member }.not_to change { ::Members::MemberApproval.count }
           expect(existing_member.reload.access_level).to eq(Gitlab::Access.sym_options_with_owner[access_level])
         end
       end
@@ -172,7 +172,7 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
 
         expect do
           members = add_members
-        end.to change { Members::MemberApproval.count }.by(1)
+        end.to change { ::Members::MemberApproval.count }.by(1)
 
         expect(members.first.errors[:base].first).to eq("Request queued for administrator approval.")
         expect(members.second.access_level).to eq(Gitlab::Access.sym_options_with_owner[access_level])
@@ -193,7 +193,7 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
 
         expect do
           members = add_members
-        end.not_to change { Members::MemberApproval.count }
+        end.not_to change { ::Members::MemberApproval.count }
 
         expect(members.first.access_level).to eq(Gitlab::Access.sym_options_with_owner[access_level])
         expect(members.first.errors[:base]).to be_empty
@@ -215,7 +215,7 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
 
         expect do
           members = add_members
-        end.to change { Members::MemberApproval.count }.by(2)
+        end.to change { ::Members::MemberApproval.count }.by(2)
 
         expect(members.first.errors[:base].first).to eq("Request queued for administrator approval.")
         expect(members.second.errors[:base].first).to eq("Request queued for administrator approval.")

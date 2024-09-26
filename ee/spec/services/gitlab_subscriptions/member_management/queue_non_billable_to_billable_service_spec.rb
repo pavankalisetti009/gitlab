@@ -269,7 +269,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
           context 'when MemberApproval raises ActiveRecord::RecordInvalid' do
             before do
               add_non_billable_members(users_with_membership, source)
-              allow(Members::MemberApproval).to receive(:create_or_update_pending_approval).and_raise(
+              allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval).and_raise(
                 ActiveRecord::RecordInvalid
               )
             end
