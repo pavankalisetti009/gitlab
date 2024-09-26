@@ -14,7 +14,7 @@ RSpec.describe Vulnerabilities::ScheduleRemovingAllFromProjectService, feature_c
   end
 
   describe '#execute' do
-    subject(:service) { described_class.new(projects).execute }
+    subject(:service) { described_class.new(projects, true).execute }
 
     context 'when not all arguments are a Project' do
       let(:projects) { [1, 2] }
@@ -30,18 +30,22 @@ RSpec.describe Vulnerabilities::ScheduleRemovingAllFromProjectService, feature_c
       end
     end
 
-    context 'with valid arguments' do
+    context 'with valid arguments', :clean_gitlab_redis_queues do
       let(:projects) { [project1, project2] }
 
       it 'does not fail' do
         expect(service).to be_success
       end
 
-      it 'schedules jobs in bulk', :aggregate_failures do
-        expect(Vulnerabilities::RemoveAllVulnerabilitiesWorker).to receive(:bulk_perform_async_with_contexts)
-          .once.with(projects, { arguments_proc: kind_of(Proc), context_proc: kind_of(Proc) })
-
+      it 'schedules jobs in bulk' do
         service
+
+        scheduled_job_args = Vulnerabilities::RemoveAllVulnerabilitiesWorker.jobs.pluck('args')
+
+        expect(scheduled_job_args).to match_array([
+          [project1.id, { 'resolved_on_default_branch' => true }],
+          [project2.id, { 'resolved_on_default_branch' => true }]
+        ])
       end
 
       it 'returns all Projects affected' do
