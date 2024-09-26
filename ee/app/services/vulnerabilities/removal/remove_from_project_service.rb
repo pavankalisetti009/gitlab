@@ -92,8 +92,9 @@ module Vulnerabilities
 
       BATCH_SIZE = 100
 
-      def initialize(project)
+      def initialize(project, params)
         @project = project
+        @resolved_on_default_branch = params[:resolved_on_default_branch]
       end
 
       def execute
@@ -106,7 +107,7 @@ module Vulnerabilities
 
       private
 
-      attr_reader :project
+      attr_reader :project, :resolved_on_default_branch
 
       # Vulnerabilities with `present_on_default_branch` attribute as `true` are associated
       # with `vulnerability_reads`, therefore, iterating over `vulnerability_reads` table
@@ -123,6 +124,8 @@ module Vulnerabilities
 
       # This makes sure that we delete vulnerabilities that are not `present_on_default_branch`.
       def delete_vulnerabilities_not_present_on_default_branch
+        return unless full_cleanup?
+
         loop do
           batch = vulnerabilities.limit(BATCH_SIZE)
           batch_removal = BatchRemoval.new(project, batch, update_counts: false)
@@ -132,7 +135,9 @@ module Vulnerabilities
       end
 
       def vulnerability_reads
-        Vulnerabilities::Read.by_projects(project)
+        return Vulnerabilities::Read.by_projects(project) if full_cleanup?
+
+        Vulnerabilities::Read.by_projects(project).with_resolution(resolved_on_default_branch)
       end
 
       def vulnerabilities
@@ -140,17 +145,25 @@ module Vulnerabilities
       end
 
       def update_vulnerability_statistics
-        Vulnerabilities::Statistics::AdjustmentWorker.perform_async(project.id)
+        Vulnerabilities::Statistics::AdjustmentWorker.perform_async([project.id])
       end
 
       # Do we really need to delete these records? The feedback model has already been
       # deprecated and the model will be removed soon.
       def delete_feedback_records
+        return unless full_cleanup?
+
         loop { break if project.vulnerability_feedback.limit(BATCH_SIZE).delete_all == 0 }
       end
 
       def delete_historical_statistics
+        return unless full_cleanup?
+
         loop { break if project.vulnerability_historical_statistics.limit(BATCH_SIZE).delete_all == 0 }
+      end
+
+      def full_cleanup?
+        resolved_on_default_branch.nil?
       end
     end
   end

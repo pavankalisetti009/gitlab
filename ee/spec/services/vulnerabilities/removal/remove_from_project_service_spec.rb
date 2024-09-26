@@ -18,9 +18,17 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
         project: project)
     end
 
+    let_it_be(:resolved_vulnerability) do
+      create(:vulnerability,
+        :with_finding,
+        project: project,
+        resolved_on_default_branch: true)
+    end
+
     let_it_be(:finding) { vulnerabilities.first.vulnerability_finding }
 
-    let(:service_object) { described_class.new(project) }
+    let(:params) { {} }
+    let(:service_object) { described_class.new(project, params) }
 
     subject(:remove_vulnerabilities) { service_object.execute }
 
@@ -34,11 +42,11 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
       it 'deletes records in batches' do
         remove_vulnerabilities
 
-        expect(Vulnerability).to have_received(:transaction).twice
+        expect(Vulnerability).to have_received(:transaction).exactly(3).times
       end
     end
 
-    describe 'deleting the records' do
+    describe 'deleting the records', :aggregate_failures do
       before do
         allow(Vulnerabilities::Statistics::AdjustmentWorker).to receive(:perform_async)
       end
@@ -61,14 +69,18 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
         create(:vulnerabilities_remediation, project: project, findings: [finding])
 
         create(:vulnerability, project: project, present_on_default_branch: false)
+        resolved_vulnerability.vulnerability_finding.identifiers << finding.identifiers.first
+
+        other_project = create(:project)
+        create(:vulnerability, :with_finding, project: other_project)
       end
 
-      it 'removes all the records from the database', :aggregate_failures do
-        expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-3)
-                                         .and change { Vulnerabilities::Read.count }.by(-2)
+      it 'removes all the records from the database' do
+        expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-4)
+                                         .and change { Vulnerabilities::Read.count }.by(-3)
                                          .and change { Vulnerabilities::Flag.count }.by(-1)
                                          .and change { VulnerabilityUserMention.count }.by(-2)
-                                         .and change { Vulnerabilities::Finding.count }.by(-3)
+                                         .and change { Vulnerabilities::Finding.count }.by(-4)
                                          .and change { Vulnerabilities::Feedback.count }.by(-1)
                                          .and change { Vulnerabilities::IssueLink.count }.by(-4)
                                          .and change { Vulnerabilities::Identifier.count }.by(-1)
@@ -76,13 +88,72 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                          .and change { Vulnerabilities::StateTransition.count }.by(-2)
                                          .and change { Vulnerabilities::MergeRequestLink.count }.by(-1)
                                          .and change { Vulnerabilities::FindingSignature.count }.by(-1)
+                                         .and change { Vulnerabilities::FindingIdentifier.count }.by(-2)
                                          .and change { Vulnerabilities::Finding::Evidence.count }.by(-1)
                                          .and change { Vulnerabilities::ExternalIssueLink.count }.by(-1)
                                          .and change { Vulnerabilities::FindingRemediation.count }.by(-1)
                                          .and change { Vulnerabilities::HistoricalStatistic.count }.by(-1)
-                                         .and change { project_statistics.reload.vulnerability_count }.by(-2)
+                                         .and change { project_statistics.reload.vulnerability_count }.by(-3)
 
-        expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with(project.id)
+        expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
+      end
+
+      context 'when the `resolved_on_default_branch` argument presents' do
+        context 'when the cleanup is only for the vulnerabilities resolved on default branch' do
+          let(:params) { { resolved_on_default_branch: true } }
+
+          it 'removes only the vulnerabilities resolved on default branch' do
+            expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-1)
+                                             .and change { Vulnerabilities::Read.count }.by(-1)
+                                             .and change { Vulnerabilities::Finding.count }.by(-1)
+                                             .and change { Vulnerabilities::FindingIdentifier.count }.by(-1)
+                                             .and change { project_statistics.reload.vulnerability_count }.by(-1)
+                                             .and not_change { Vulnerabilities::Flag.count }
+                                             .and not_change { VulnerabilityUserMention.count }
+                                             .and not_change { Vulnerabilities::Feedback.count }
+                                             .and not_change { Vulnerabilities::IssueLink.count }
+                                             .and not_change { Vulnerabilities::Identifier.count }
+                                             .and not_change { Vulnerabilities::FindingLink.count }
+                                             .and not_change { Vulnerabilities::Remediation.count }
+                                             .and not_change { Vulnerabilities::FindingPipeline.count }
+                                             .and not_change { Vulnerabilities::StateTransition.count }
+                                             .and not_change { Vulnerabilities::MergeRequestLink.count }
+                                             .and not_change { Vulnerabilities::FindingSignature.count }
+                                             .and not_change { Vulnerabilities::Finding::Evidence.count }
+                                             .and not_change { Vulnerabilities::ExternalIssueLink.count }
+                                             .and not_change { Vulnerabilities::FindingRemediation.count }
+                                             .and not_change { Vulnerabilities::HistoricalStatistic.count }
+
+            expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
+          end
+        end
+
+        context 'when the cleanup is only for the vulnerabilities still detected' do
+          let(:params) { { resolved_on_default_branch: false } }
+
+          it 'removes only the still detected vulnerabilities' do
+            expect { remove_vulnerabilities }.to change { Vulnerability.count }.by(-2)
+                                             .and change { Vulnerabilities::Read.count }.by(-2)
+                                             .and change { Vulnerabilities::Flag.count }.by(-1)
+                                             .and change { VulnerabilityUserMention.count }.by(-2)
+                                             .and change { Vulnerabilities::Finding.count }.by(-2)
+                                             .and change { Vulnerabilities::IssueLink.count }.by(-4)
+                                             .and change { Vulnerabilities::FindingLink.count }.by(-1)
+                                             .and change { Vulnerabilities::StateTransition.count }.by(-2)
+                                             .and change { Vulnerabilities::MergeRequestLink.count }.by(-1)
+                                             .and change { Vulnerabilities::FindingSignature.count }.by(-1)
+                                             .and change { Vulnerabilities::FindingIdentifier.count }.by(-1)
+                                             .and change { Vulnerabilities::Finding::Evidence.count }.by(-1)
+                                             .and change { Vulnerabilities::ExternalIssueLink.count }.by(-1)
+                                             .and change { Vulnerabilities::FindingRemediation.count }.by(-1)
+                                             .and change { project_statistics.reload.vulnerability_count }.by(-2)
+                                             .and not_change { Vulnerabilities::Feedback.count }
+                                             .and not_change { Vulnerabilities::Identifier.count }
+                                             .and not_change { Vulnerabilities::HistoricalStatistic.count }
+
+            expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
+          end
+        end
       end
     end
   end

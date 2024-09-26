@@ -10395,6 +10395,7 @@ Input type: `VulnerabilitiesRemoveAllFromProjectInput`
 | ---- | ---- | ----------- |
 | <a id="mutationvulnerabilitiesremoveallfromprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationvulnerabilitiesremoveallfromprojectprojectids"></a>`projectIds` | [`[ProjectID!]!`](#projectid) | IDs of project for which all Vulnerabilities should be removed. The deletion will happen in the background so the changes will not be visible immediately. |
+| <a id="mutationvulnerabilitiesremoveallfromprojectresolvedondefaultbranch"></a>`resolvedOnDefaultBranch` | [`Boolean`](#boolean) | When set as `true`, deletes only the vulnerabilities no longer detected. When set as `false`, deletes only the vulnerabilities still detected. |
 
 #### Fields
 
