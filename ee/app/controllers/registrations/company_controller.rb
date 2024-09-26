@@ -17,20 +17,24 @@ module Registrations
     helper_method :onboarding_status
 
     def new
-      track_event('render')
+      track_event('render', onboarding_status.tracking_label)
     end
 
     def create
       result = GitlabSubscriptions::CreateCompanyLeadService.new(user: current_user, params: permitted_params).execute
 
       if result.success?
-        track_event('successfully_submitted_form')
+        track_event('successfully_submitted_form', onboarding_status.tracking_label)
 
         response = Onboarding::StatusStepUpdateService
                      .new(current_user, new_users_sign_up_group_path(glm_tracking_params)).execute
 
         redirect_to response[:step_url]
       else
+        result.errors.each do |error|
+          track_event("track_#{onboarding_status.tracking_label}_error", error.parameterize.underscore)
+        end
+
         flash.now[:alert] = result.errors.to_sentence
         render :new, status: :unprocessable_entity
       end
@@ -55,8 +59,8 @@ module Registrations
       ).merge(glm_tracking_params)
     end
 
-    def track_event(action)
-      ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: onboarding_status.tracking_label)
+    def track_event(action, label)
+      ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: label)
     end
 
     def onboarding_status

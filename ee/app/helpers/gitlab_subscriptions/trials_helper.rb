@@ -45,7 +45,8 @@ module GitlabSubscriptions
         submit_path: users_sign_up_company_path(submit_params),
         first_name: current_user.first_name,
         last_name: current_user.last_name,
-        initial_trial: onboarding_status.initial_trial?.to_s
+        initial_trial: onboarding_status.initial_trial?.to_s,
+        track_action_for_errors: onboarding_status.tracking_label
       }
     end
 
