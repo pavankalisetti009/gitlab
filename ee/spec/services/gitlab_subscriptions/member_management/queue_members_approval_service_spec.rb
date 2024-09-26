@@ -101,7 +101,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueMembersApprovalServic
 
       context 'when RecordInvalid is raised' do
         before do
-          allow(Members::MemberApproval).to receive(:create_or_update_pending_approval)
+          allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval)
                                               .and_raise(ActiveRecord::RecordInvalid)
         end
 
@@ -110,7 +110,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueMembersApprovalServic
 
       context 'when RecordNotUnique is raised' do
         before do
-          allow(Members::MemberApproval).to receive(:create_or_update_pending_approval)
+          allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval)
                                               .and_raise(ActiveRecord::RecordNotUnique)
         end
 

@@ -68,11 +68,11 @@ module GitlabSubscriptions
         source = get_source_from_member_namespace(member_approval.member_namespace)
         params = member_approval_params(member_approval, source)
 
-        Members::CreateService.new(current_user, params).execute
+        ::Members::CreateService.new(current_user, params).execute
       end
 
       def pending_approvals
-        Members::MemberApproval.pending_member_approvals_for_user(user.id)
+        ::Members::MemberApproval.pending_member_approvals_for_user(user.id)
       end
 
       def all_promotions_failed?

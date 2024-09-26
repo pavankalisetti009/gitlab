@@ -52,7 +52,7 @@ module GitlabSubscriptions
                 metadata: params.slice(:access_level, :expires_at, :member_role_id)
               }
 
-              Members::MemberApproval.create_or_update_pending_approval(
+              ::Members::MemberApproval.create_or_update_pending_approval(
                 user, source_namespace, attributes
               )
             end
