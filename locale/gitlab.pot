@@ -23591,6 +23591,9 @@ msgstr ""
 msgid "Followed users"
 msgstr ""
 
+msgid "Following"
+msgstr ""
+
 msgid "Following tags don't exist"
 msgstr ""
 
@@ -38049,9 +38052,6 @@ msgid "Open"
 msgstr ""
 
 msgid "Open Selection"
-msgstr ""
-
-msgid "Open action menu"
 msgstr ""
 
 msgid "Open color picker"
@@ -53988,12 +53988,6 @@ msgid "Switch branch"
 msgstr ""
 
 msgid "Switch branch/tag"
-msgstr ""
-
-msgid "Switch to new dashboard"
-msgstr ""
-
-msgid "Switch to old dashboard"
 msgstr ""
 
 msgid "Switch to plain text editing"
