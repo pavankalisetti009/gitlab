@@ -226,7 +226,7 @@ GEM
   specs:
     CFPropertyList (3.0.5)
       rexml
-    RedCloth (4.3.3)
+    RedCloth (4.3.4)
     acme-client (2.0.18)
       faraday (>= 1.0, < 3.0.0)
       faraday-retry (>= 1.0, < 3.0.0)
@@ -1022,7 +1022,7 @@ GEM
     io-event (1.6.5)
     ipaddr (1.2.5)
     ipaddress (0.8.3)
-    irb (1.14.0)
+    irb (1.14.1)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jaeger-client (1.1.0)
