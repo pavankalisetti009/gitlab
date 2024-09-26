@@ -31,29 +31,56 @@ RSpec.describe Resolvers::Vulnerabilities::DetailsResolver, feature_category: :v
   end
 
   describe '#resolve' do
-    subject { resolve(described_class, obj: vulnerability, args: {}, ctx: {}) }
+    subject { resolve(described_class, obj: object, args: {}, ctx: {}) }
 
-    let(:vulnerability) { double(finding_details: finding_details) }
+    context 'when object is from database' do
+      let(:object) { double(finding_details: finding_details) }
 
-    context 'when there are no items in finding details' do
-      let(:finding_details) { nil }
+      context 'when there are no items in finding details' do
+        let(:finding_details) { nil }
 
-      it { is_expected.to eq([]) }
-    end
-
-    context 'when there are items in finding details' do
-      let(:finding_details) do
-        {
-          field: {
-            value: :x
-          },
-          field_2: {
-            value: :y
-          }
-        }
+        it { is_expected.to eq([]) }
       end
 
-      it { is_expected.to eq([{ 'field_name' => 'field', 'value' => :x }, { 'field_name' => 'field_2', 'value' => :y }]) }
+      context 'when there are items in finding details' do
+        let(:finding_details) do
+          {
+            field: {
+              value: :x
+            },
+            field_2: {
+              value: :y
+            }
+          }
+        end
+
+        it { is_expected.to match_array([{ 'field_name' => 'field', 'value' => :x }, { 'field_name' => 'field_2', 'value' => :y }]) }
+      end
+    end
+
+    context 'when object is from artifact' do
+      let(:object) { { 'details' => details } }
+
+      context 'when there are no items in details' do
+        let(:details) { nil }
+
+        it { is_expected.to eq([]) }
+      end
+
+      context 'when there are items in details' do
+        let(:details) do
+          {
+            field: {
+              value: :a
+            },
+            field_2: {
+              value: :b
+            }
+          }
+        end
+
+        it { is_expected.to match_array([{ 'field_name' => 'field', 'value' => :a }, { 'field_name' => 'field_2', 'value' => :b }]) }
+      end
     end
   end
 end
