@@ -85,6 +85,29 @@ RSpec.describe API::ProtectedTags, feature_category: :source_code_management do
         end
       end
 
+      context 'when deploy key is set' do
+        let(:deploy_key) do
+          create(:deploy_key, deploy_keys_projects: [create(:deploy_keys_project, :write_access, project: project)])
+        end
+
+        it 'can protect a tag while allowing a deploy key to create tags' do
+          post post_endpoint, params: { name: tag_name, allowed_to_create: [{ deploy_key_id: deploy_key.id }] }
+
+          expect_protection_to_be_successful
+          expect(json_response['create_access_levels'][0]['deploy_key_id']).to eq(deploy_key.id)
+        end
+
+        context 'when unrelated deploy key is set' do
+          let(:deploy_key) { create(:deploy_key) }
+
+          it 'cannot protect a tag' do
+            post post_endpoint, params: { name: tag_name, allowed_to_create: [{ deploy_key_id: deploy_key.id }] }
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          end
+        end
+      end
+
       context 'when protected_refs_for_users feature is not available' do
         before do
           stub_licensed_features(protected_refs_for_users: false)
