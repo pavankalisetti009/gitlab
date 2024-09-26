@@ -8,6 +8,7 @@ import CodeBlockFilePath from 'ee/security_orchestration/components/policy_edito
 import {
   INJECT,
   OVERRIDE,
+  SUFFIX_NEVER,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { mockWithoutRefPipelineExecutionObject } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
@@ -125,6 +126,11 @@ describe('ActionSection', () => {
       ]);
     });
 
+    it('updates suffix strategy', () => {
+      findCodeBlockFilePath().vm.$emit('update-suffix', SUFFIX_NEVER);
+      expect(wrapper.emitted('changed')).toEqual([['suffix', SUFFIX_NEVER]]);
+    });
+
     it('updates project', async () => {
       await findCodeBlockFilePath().vm.$emit('select-project', project);
       expect(wrapper.emitted('changed')).toEqual([
@@ -155,6 +161,14 @@ describe('ActionSection', () => {
         await wrapper.setProps({ doesFileExist: true });
         expect(findCodeBlockFilePath().props('doesFileExist')).toBe(true);
       });
+    });
+  });
+
+  describe('suffix rendering', () => {
+    it('renders correct suffix strategy', () => {
+      factory({ propsData: { suffix: SUFFIX_NEVER } });
+
+      expect(findCodeBlockFilePath().props('suffix')).toBe(SUFFIX_NEVER);
     });
   });
 });

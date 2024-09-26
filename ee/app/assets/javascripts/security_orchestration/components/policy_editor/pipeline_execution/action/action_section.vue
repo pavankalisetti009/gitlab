@@ -1,6 +1,7 @@
 <script>
 import { parseCustomFileConfiguration } from 'ee/security_orchestration/components/policy_editor/utils';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
+import { SUFFIX_ON_CONFLICT } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import CodeBlockFilePath from './code_block_file_path.vue';
 
 export default {
@@ -20,6 +21,11 @@ export default {
     strategy: {
       type: String,
       required: true,
+    },
+    suffix: {
+      type: String,
+      required: false,
+      default: SUFFIX_ON_CONFLICT,
     },
   },
   data() {
@@ -88,6 +94,9 @@ export default {
     updatedFilePath(path) {
       this.setCiConfigurationPath({ ...this.ciConfigurationPath, file: path });
     },
+    updateSuffix(suffix) {
+      this.$emit('changed', 'suffix', suffix);
+    },
     setCiConfigurationPath(pathConfig) {
       this.$emit('changed', 'content', { include: [pathConfig] });
     },
@@ -102,9 +111,11 @@ export default {
     :selected-ref="selectedRef"
     :selected-project="selectedProject"
     :does-file-exist="doesFileExist"
+    :suffix="suffix"
     @select-strategy="setStrategy"
     @select-ref="setSelectedRef"
     @select-project="setSelectedProject"
     @update-file-path="updatedFilePath"
+    @update-suffix="updateSuffix"
   />
 </template>

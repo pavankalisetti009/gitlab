@@ -49134,7 +49134,13 @@ msgstr ""
 msgid "SecurityOrchestration|Actions"
 msgstr ""
 
+msgid "SecurityOrchestration|Add a numeric suffix to ensure unique job names."
+msgstr ""
+
 msgid "SecurityOrchestration|Add action"
+msgstr ""
+
+msgid "SecurityOrchestration|Add job name suffix %{suffixEditor} %{suffixIcon}"
 msgstr ""
 
 msgid "SecurityOrchestration|Add new action"
@@ -49467,6 +49473,9 @@ msgstr ""
 msgid "SecurityOrchestration|Merge request approval policy syntax changes"
 msgstr ""
 
+msgid "SecurityOrchestration|Never"
+msgstr ""
+
 msgid "SecurityOrchestration|New merge request approval policy"
 msgstr ""
 
@@ -49510,6 +49519,9 @@ msgid "SecurityOrchestration|Non-existing tags have been detected in the policy 
 msgstr ""
 
 msgid "SecurityOrchestration|Not enabled"
+msgstr ""
+
+msgid "SecurityOrchestration|On conflict"
 msgstr ""
 
 msgid "SecurityOrchestration|On runners with tag:"
@@ -49683,6 +49695,9 @@ msgid "SecurityOrchestration|Select scan type"
 msgstr ""
 
 msgid "SecurityOrchestration|Select security policy project"
+msgstr ""
+
+msgid "SecurityOrchestration|Select suffix"
 msgstr ""
 
 msgid "SecurityOrchestration|Send a bot message when the conditions match."

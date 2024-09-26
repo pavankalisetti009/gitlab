@@ -6,7 +6,11 @@ import EditorComponent from 'ee/security_orchestration/components/policy_editor/
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/rule_section.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
-import { DEFAULT_PIPELINE_EXECUTION_POLICY } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
+import {
+  DEFAULT_PIPELINE_EXECUTION_POLICY,
+  SUFFIX_NEVER,
+  SUFFIX_ON_CONFLICT,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import {
   doesFileExist,
@@ -375,6 +379,21 @@ describe('EditorComponent', () => {
 
         expect(doesFileExist).toHaveBeenCalledWith(expectedResult);
       });
+    });
+  });
+
+  describe('suffix editor', () => {
+    beforeEach(() => {
+      factory();
+    });
+
+    it('has suffix in action section', () => {
+      expect(findActionSection().props('suffix')).toBe(SUFFIX_ON_CONFLICT);
+    });
+
+    it('selects suffix strategy', () => {
+      findActionSection().vm.$emit('changed', 'suffix', SUFFIX_NEVER);
+      expect(findPolicyEditorLayout().props('policy').suffix).toEqual(SUFFIX_NEVER);
     });
   });
 });
