@@ -286,6 +286,7 @@ export default {
           :action="policy.content"
           :does-file-exist="!disableSubmit"
           :strategy="strategy"
+          :suffix="policy.suffix"
           @changed="handleUpdateProperty"
         />
       </dim-disable-container>

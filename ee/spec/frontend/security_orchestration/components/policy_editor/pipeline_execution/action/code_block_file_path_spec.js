@@ -9,11 +9,14 @@ import {
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_strategy_selector.vue';
 import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
+import SuffixSelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/suffix_selector.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import {
   INJECT,
   OVERRIDE,
+  SUFFIX_ON_CONFLICT,
+  SUFFIX_NEVER,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -51,6 +54,7 @@ describe('CodeBlockFilePath', () => {
   const findPipelineExecutionRefSelector = () =>
     wrapper.findByTestId('pipeline-execution-ref-selector');
   const findTruncate = () => wrapper.findComponent(GlTruncate);
+  const findSuffixEditor = () => wrapper.findComponent(SuffixSelector);
 
   describe('initial state', () => {
     beforeEach(() => {
@@ -276,6 +280,26 @@ describe('CodeBlockFilePath', () => {
         expect(findFormInputGroup().attributes('state')).toBe(state);
         expect(findFormGroup().attributes('state')).toBe(state);
         expect(findFormGroup().attributes('invalid-feedback')).toBe(message);
+      });
+    });
+
+    describe('suffix selector', () => {
+      beforeEach(() => {
+        createComponent({
+          propsData: {
+            suffix: SUFFIX_NEVER,
+          },
+        });
+      });
+
+      it('renders suffix selector', () => {
+        expect(findSuffixEditor().props('suffix')).toBe(SUFFIX_NEVER);
+      });
+
+      it('emits event when suffix is changed', () => {
+        findSuffixEditor().vm.$emit('update', SUFFIX_ON_CONFLICT);
+
+        expect(wrapper.emitted('update-suffix')).toEqual([[SUFFIX_ON_CONFLICT]]);
       });
     });
   });

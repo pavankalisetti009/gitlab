@@ -232,7 +232,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
 
       context 'when there is failure during update!' do
         before do
-          allow(Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
+          allow(::Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
                                               .and_yield(member_approval).and_yield(another_member_approval)
           allow(member_approval).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
         end

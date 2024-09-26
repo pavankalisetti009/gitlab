@@ -48,3 +48,16 @@ export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS)
 export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = Object.entries(CUSTOM_STRATEGY_OPTIONS).map(
   ([value, text]) => ({ value, text }),
 );
+
+export const SUFFIX_ON_CONFLICT = 'on_conflict';
+export const SUFFIX_NEVER = 'never';
+
+export const SUFFIX_ITEMS = {
+  [SUFFIX_ON_CONFLICT]: s__('SecurityOrchestration|On conflict'),
+  [SUFFIX_NEVER]: s__('SecurityOrchestration|Never'),
+};
+
+export const SUFFIX_LIST_BOX_ITEMS = Object.keys(SUFFIX_ITEMS).map((key) => ({
+  value: key,
+  text: SUFFIX_ITEMS[key],
+}));

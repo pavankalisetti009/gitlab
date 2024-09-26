@@ -87,10 +87,10 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
       context 'when ActiveRecord::RecordInvalid is raised' do
         it 'returns an error' do
-          allow(Members::MemberApproval).to receive(:create_or_update_pending_approval)
+          allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval)
                                               .and_raise(ActiveRecord::RecordInvalid)
 
-          expect { update_members }.not_to change { Members::MemberApproval.count }
+          expect { update_members }.not_to change { ::Members::MemberApproval.count }
           expect(update_members[:status]).to eq(:error)
           expect(update_members[:members].first.errors[:base].first).to eq(
             "Unable to send approval request to administrator."
@@ -101,12 +101,12 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
       context 'when current_user can update the given members' do
         it 'queues members requiring promotion management for approval and updates others' do
-          expect { update_members }.to change { Members::MemberApproval.count }.by(1)
+          expect { update_members }.to change { ::Members::MemberApproval.count }.by(1)
           expect(update_members[:status]).to eq(:success)
           expect(update_members[:members]).to contain_exactly(members.second)
 
           members.first.reload
-          member_approval = Members::MemberApproval.last
+          member_approval = ::Members::MemberApproval.last
           expect(member_approval.member).to eq(members.first)
           expect(member_approval.member_namespace).to eq(members.first.member_namespace)
           expect(member_approval.old_access_level).to eq(members.first.access_level)
