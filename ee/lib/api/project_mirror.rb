@@ -18,9 +18,13 @@ module API
       end
 
       def valid_github_signature?
-        request.body.rewind
+        token = project.external_webhook_token.to_s
+        # project.external_webhook_token should always exist when authenticating
+        # via headers['X-Hub-Signature']. If it doesn't exist, this could be
+        # an attempt to misuse.
+        return false if token.empty?
 
-        token        = project.external_webhook_token.to_s
+        request.body.rewind
         payload_body = request.body.read
         signature    = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), token, payload_body)
 
