@@ -76,4 +76,14 @@ RSpec.describe Packages::Policies::ProjectPolicy, feature_category: :package_reg
       end
     end
   end
+
+  context 'with auditor' do
+    let(:current_user) { create(:auditor) }
+
+    before do
+      project.update_column(:visibility_level, ::Gitlab::VisibilityLevel.const_get(:PRIVATE, false))
+    end
+
+    it { is_expected.to be_allowed(:read_package) }
+  end
 end
