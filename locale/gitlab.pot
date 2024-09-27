@@ -54690,7 +54690,7 @@ msgstr ""
 msgid "The connection will time out after %{timeout}. For repositories that take longer, use a clone/push combination."
 msgstr ""
 
-msgid "The contact does not belong to the issue group's root ancestor"
+msgid "The contact does not belong to the issue group's CRM source group"
 msgstr ""
 
 msgid "The content for this wiki page failed to load. To fix this error, reload the page."
@@ -64595,7 +64595,7 @@ msgstr ""
 msgid "conaninfo is too large. Maximum size is %{max_size} characters"
 msgstr ""
 
-msgid "contacts can only be added to root groups"
+msgid "contacts can only be added to root groups and groups configured as CRM targets"
 msgstr ""
 
 msgid "container registry images"
@@ -65776,7 +65776,7 @@ msgstr ""
 msgid "or sign in with"
 msgstr ""
 
-msgid "organizations can only be added to root groups"
+msgid "organizations can only be added to root groups and groups configured as CRM targets"
 msgstr ""
 
 msgid "packages"
