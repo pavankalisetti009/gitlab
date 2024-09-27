@@ -13,7 +13,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
     let(:index) { 0 }
     let(:opts) do
       {
-        allow_restricted_variables_at_policy_level: true,
         template_cache: template_cache
       }
     end
@@ -37,33 +36,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
         end
 
         execute_service
-      end
-
-      context 'when allow_restricted_variables_at_policy_level is disabled' do
-        before do
-          stub_feature_flags(allow_restricted_variables_at_policy_level: false)
-        end
-
-        let(:opts) do
-          {
-            allow_restricted_variables_at_policy_level: false,
-            template_cache: template_cache
-          }
-        end
-
-        it 'configures a template scan with disabled flag' do
-          expect_next_instance_of(Security::SecurityOrchestrationPolicies::CiAction::Template,
-            action,
-            ci_variables,
-            context,
-            index,
-            opts
-          ) do |instance|
-            expect(instance).to receive(:config)
-          end
-
-          execute_service
-        end
       end
     end
 

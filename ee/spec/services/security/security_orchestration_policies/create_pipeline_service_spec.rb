@@ -397,33 +397,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
                variables: { SAST_EXCLUDED_ANALYZERS: 'semgrep' } }]
           end
 
-          context 'when allow_restricted_variables_at_policy_level feature flag is enabled' do
-            it 'allows passing variables from the action into configuration service' do
-              expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
-                expect(ci_configuration_service).to receive(:execute).once.with(
-                  actions.first,
-                  { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' },
-                  kind_of(Gitlab::Ci::Config::External::Context), 0
-                ).and_call_original
-              end
-
-              subject
-            end
-          end
-
-          context 'when allow_restricted_variables_at_policy_level feature flag is disabled' do
-            before do
-              stub_feature_flags(allow_restricted_variables_at_policy_level: false)
+          it 'allows passing variables from the action into configuration service' do
+            expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
+              expect(ci_configuration_service).to receive(:execute).once.with(
+                actions.first,
+                { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS' },
+                kind_of(Gitlab::Ci::Config::External::Context), 0
+              ).and_call_original
             end
 
-            it 'does not pass variables from the action into configuration service' do
-              expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
-                expect(ci_configuration_service).to receive(:execute).once
-                                                                     .with(actions.first, {}, kind_of(Gitlab::Ci::Config::External::Context), 0).and_call_original
-              end
-
-              subject
-            end
+            subject
           end
         end
       end

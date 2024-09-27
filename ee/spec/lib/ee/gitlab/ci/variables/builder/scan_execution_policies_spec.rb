@@ -72,13 +72,16 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
         'dast-on-demand-0'                       | { 'DAST_WEBSITE' => 'https://my.site.com' }
         'container-scanning-0'                   | { 'CS_REGISTRY_USER' => 'user' }
         'brakeman-sast-1'                        | { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep',
-                                                     'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
+                                                     'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS',
+                                                     'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
         'secret-detection-2'                     | { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true',
-                                                      'SECRET_DETECTION_EXCLUDED_PATHS' => '' }
+                                                     'SECRET_DETECTION_EXCLUDED_PATHS' => '' }
         'kics-iac-sast-3'                        | { 'SAST_IMAGE_SUFFIX' => '-fips',
+                                                     'SAST_EXCLUDED_ANALYZERS' => '',
                                                      'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
         'gemnasium-python-dependency-scanning-4' | { 'DS_IMAGE_SUFFIX' => '-fips',
-                                                     'DS_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
+                                                     'DS_EXCLUDED_PATHS' => 'spec, test, tests, tmp',
+                                                     'DS_EXCLUDED_ANALYZERS' => '' }
       end
 
       with_them do
@@ -133,7 +136,8 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
           'container-scanning-0' | -> { [item(key: 'CS_REGISTRY_USER', value: 'user')] }
           'brakeman-sast-1'      | -> do
             [
-              item(key: 'SAST_EXCLUDED_PATHS', value: 'spec, test, tests, tmp'),
+              item(key: 'DEFAULT_SAST_EXCLUDED_PATHS', value: 'spec, test, tests, tmp'),
+              item(key: 'SAST_EXCLUDED_PATHS', value: '$DEFAULT_SAST_EXCLUDED_PATHS'),
               item(key: 'SAST_EXCLUDED_ANALYZERS', value: 'semgrep')
             ]
           end
