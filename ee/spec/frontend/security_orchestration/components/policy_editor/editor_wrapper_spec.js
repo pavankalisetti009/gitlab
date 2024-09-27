@@ -153,23 +153,17 @@ describe('EditorWrapper component', () => {
   });
 
   describe('subscription', () => {
-    it('does not subscribe to the newlyCreatedPolicyProject subscription w/ securityPoliciesProjectBackgroundWorker false', () => {
+    it('subscribes to the newlyCreatedPolicyProject subscription', () => {
       factory();
-      expect(getSecurityPolicyProjectSubscriptionHandlerMock).not.toHaveBeenCalled();
-    });
-
-    it('subscribes to the newlyCreatedPolicyProject subscription w/ securityPoliciesProjectBackgroundWorker true', () => {
-      factory({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
       expect(getSecurityPolicyProjectSubscriptionHandlerMock).toHaveBeenCalledWith({
         fullPath: defaultProjectPath,
       });
     });
 
-    it('updates the project when the subscription fulfills with a project w/ securityPoliciesProjectBackgroundWorker true', async () => {
+    it('updates the project when the subscription fulfills with a project', async () => {
       factory({
         provide: {
           namespacePath: 'path/to/namespace',
-          glFeatures: { securityPoliciesProjectBackgroundWorker: true },
         },
       });
       await waitForPromises();
@@ -183,9 +177,8 @@ describe('EditorWrapper component', () => {
       expect(goToPolicyMR).not.toHaveBeenCalled();
     });
 
-    it('passes the errors when the the subscription fails with a project w/ securityPoliciesProjectBackgroundWorker true', async () => {
+    it('passes the errors when the the subscription fails with a project', async () => {
       factory({
-        provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
         subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
       });
       await waitForPromises();
@@ -201,7 +194,6 @@ describe('EditorWrapper component', () => {
     describe('without an assigned policy project', () => {
       it('does not make the request to create the MR without an assigned policy project', async () => {
         await factory({
-          provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
           subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
         });
         findScanExecutionPolicyEditor().vm.$emit('save', {
@@ -219,7 +211,10 @@ describe('EditorWrapper component', () => {
         ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE}
         ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}
       `('makes the request to "goToPolicyMR" $status', async ({ action }) => {
-        factory({ provide: { assignedPolicyProject: existingAssignedPolicyProject } });
+        factory({
+          provide: { assignedPolicyProject: existingAssignedPolicyProject },
+          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
+        });
         findScanExecutionPolicyEditor().vm.$emit('save', {
           action,
           policy: mockDastScanExecutionManifest,

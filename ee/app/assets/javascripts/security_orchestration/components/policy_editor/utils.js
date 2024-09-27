@@ -2,7 +2,6 @@ import { intersection, uniqBy, uniqueId } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { sprintf, s__ } from '~/locale';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
-import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import getFile from 'ee/security_orchestration/graphql/queries/get_file.query.graphql';
@@ -164,28 +163,6 @@ export const goToPolicyMR = async ({
     mergeRequestId: mergeRequest.id,
     assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
   });
-};
-
-/**
- * Creates a new security policy project and assigns it to the current project
- * @param {String} fullPath
- * @returns {Object} contains the new security policy project and any errors
- */
-export const assignSecurityPolicyProject = async (fullPath) => {
-  const {
-    data: {
-      securityPolicyProjectCreate: { project, errors },
-    },
-  } = await gqClient.mutate({
-    mutation: createPolicyProject,
-    variables: {
-      fullPath,
-    },
-  });
-
-  checkForErrors({ errors });
-
-  return { ...project, branch: project?.branch?.rootRef, errors };
 };
 
 /**

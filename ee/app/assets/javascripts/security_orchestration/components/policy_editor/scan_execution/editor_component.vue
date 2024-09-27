@@ -2,7 +2,6 @@
 import { GlEmptyState, GlButton } from '@gitlab/ui';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import {
   checkForPerformanceRisk,
@@ -13,7 +12,6 @@ import OverloadWarningModal from 'ee/security_orchestration/components/overload_
 import {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
-  GRAPHQL_ERROR_MESSAGE,
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
   ACTIONS_LABEL,
@@ -21,7 +19,6 @@ import {
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
-import { assignSecurityPolicyProject, goToPolicyMR, parseError } from '../utils';
 import RuleSection from './rule/rule_section.vue';
 import ScanAction from './action/scan_action.vue';
 import {
@@ -30,7 +27,6 @@ import {
   createPolicyObject,
   DEFAULT_SCAN_EXECUTION_POLICY,
   DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
-  fromYaml,
   policyToYaml,
 } from './lib';
 import {
@@ -86,7 +82,6 @@ export default {
     OverloadWarningModal,
     RuleSection,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
@@ -133,13 +128,9 @@ export default {
     const parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
 
     return {
-      errorSourcesOld: [],
       projectsCount: 0,
       showPerformanceWarningModal: false,
       dismissPerformanceWarningModal: false,
-      isCreatingMR: false,
-      isRemovingPolicy: false,
-      newlyCreatedPolicyProject: null,
       policy,
       policyModificationAction: null,
       hasParsingError,
@@ -151,27 +142,6 @@ export default {
         'scan-execution-policy-editor',
       ),
     };
-  },
-  computed: {
-    errorSourcesTemp() {
-      return this.glFeatures.securityPoliciesProjectBackgroundWorker
-        ? this.errorSources
-        : this.errorSourcesOld;
-    },
-    isCreatingMRTemp() {
-      return this.isCreatingMR || this.isCreating;
-    },
-    isRemovingPolicyTemp() {
-      return this.isRemovingPolicy || this.isDeleting;
-    },
-    originalName() {
-      return this.existingPolicy?.name;
-    },
-    policyActionName() {
-      return this.isEditing
-        ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
-        : this.$options.SECURITY_POLICY_ACTIONS.APPEND;
-    },
   },
   methods: {
     addAction() {
@@ -202,17 +172,6 @@ export default {
     changeEditorMode(mode) {
       this.mode = mode;
     },
-    handleError(error) {
-      // Emit error for alert
-      if (error.message.toLowerCase().includes('graphql')) {
-        this.$emit('error', GRAPHQL_ERROR_MESSAGE);
-      } else {
-        this.$emit('error', error.message);
-      }
-
-      // Process error to pass to specific component
-      this.errorSourcesOld = parseError(error);
-    },
     handleActionBuilderParsingError(key) {
       this.hasParsingError = true;
       this.parsingError = ERROR_MESSAGE_MAP[key] || PARSING_ERROR_MESSAGE;
@@ -233,53 +192,14 @@ export default {
         projectsCount: this.projectsCount,
       });
     },
-    async getSecurityPolicyProject() {
-      if (!this.newlyCreatedPolicyProject && !this.assignedPolicyProject.fullPath) {
-        this.newlyCreatedPolicyProject = await assignSecurityPolicyProject(this.namespacePath);
-      }
-
-      return this.newlyCreatedPolicyProject || this.assignedPolicyProject;
-    },
-    async handleModifyPolicy(act) {
-      this.policyModificationAction = act || this.policyActionName;
-
+    async handleModifyPolicy(action) {
       if (this.hasPerformanceRisk() && !this.dismissPerformanceWarningModal) {
+        this.policyModificationAction = action;
         this.showPerformanceWarningModal = true;
         return;
       }
 
-      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
-        this.$emit('save', {
-          action: this.policyModificationAction,
-          policy: this.yamlEditorValue,
-        });
-        return;
-      }
-
-      this.$emit('error', '');
-      this.setLoadingFlag(true);
-
-      try {
-        const assignedPolicyProject = await this.getSecurityPolicyProject();
-        await goToPolicyMR({
-          action: this.policyModificationAction,
-          assignedPolicyProject,
-          name: this.originalName || fromYaml({ manifest: this.yamlEditorValue })?.name,
-          namespacePath: this.namespacePath,
-          yamlEditorValue: this.yamlEditorValue,
-        });
-      } catch (e) {
-        this.handleError(e);
-        this.setLoadingFlag(false);
-        this.policyModificationAction = null;
-      }
-    },
-    setLoadingFlag(val) {
-      if (this.policyModificationAction === SECURITY_POLICY_ACTIONS.REMOVE) {
-        this.isRemovingPolicy = val;
-      } else {
-        this.isCreatingMR = val;
-      }
+      this.$emit('save', { action, policy: this.yamlEditorValue });
     },
     updateYaml(manifest) {
       const { policy, hasParsingError } = createPolicyObject(manifest);
@@ -302,8 +222,8 @@ export default {
     :custom-save-button-text="$options.i18n.createMergeRequest"
     :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
-    :is-removing-policy="isRemovingPolicyTemp"
-    :is-updating-policy="isCreatingMRTemp"
+    :is-removing-policy="isDeleting"
+    :is-updating-policy="isCreating"
     :parsing-error="parsingError"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"

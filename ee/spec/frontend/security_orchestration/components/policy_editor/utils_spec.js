@@ -1,6 +1,5 @@
 import {
   addIdsToPolicy,
-  assignSecurityPolicyProject,
   assignSecurityPolicyProjectAsync,
   doesFileExist,
   getPolicyLimitDetails,
@@ -28,7 +27,6 @@ import {
   getMergeRequestConfig,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
-import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
@@ -43,11 +41,6 @@ jest.mock('~/lib/utils/url_utility', () => ({
 }));
 
 const defaultAssignedPolicyProject = { fullPath: 'path/to/policy-project', branch: 'main' };
-const newAssignedPolicyProject = {
-  id: '02',
-  fullPath: 'path/to/new-project',
-  branch: { rootRef: 'main' },
-};
 const projectPath = 'path/to/current-project';
 const policyName = 'policy-01';
 const yamlEditorValue = `\nname: ${policyName}\ndescription: some yaml`;
@@ -63,16 +56,6 @@ const error = 'There was an error';
 
 const mockApolloResponses = (shouldReject) => {
   return ({ mutation }) => {
-    if (mutation === createPolicyProject) {
-      return Promise.resolve({
-        data: {
-          securityPolicyProjectCreate: {
-            project: newAssignedPolicyProject,
-            errors: shouldReject ? [error] : [],
-          },
-        },
-      });
-    }
     if (mutation === createPolicyProjectAsync) {
       return Promise.resolve({
         data: {
@@ -145,29 +128,6 @@ describe('removeIdsFromPolicy', () => {
   it('does not remove ids from a policy with no actions and no rules', () => {
     const policy = { name: 'the best' };
     expect(removeIdsFromPolicy(policy)).toStrictEqual(policy);
-  });
-});
-
-describe('assignSecurityPolicyProject', () => {
-  it('returns the newly created policy project', async () => {
-    gqClient.mutate.mockImplementation(mockApolloResponses());
-
-    const newlyCreatedPolicyProject = await assignSecurityPolicyProject(projectPath);
-
-    expect(newlyCreatedPolicyProject).toStrictEqual({
-      branch: 'main',
-      id: '02',
-      errors: [],
-      fullPath: 'path/to/new-project',
-    });
-  });
-
-  it('throws when an error is detected', async () => {
-    gqClient.mutate.mockImplementation(mockApolloResponses(true));
-
-    await expect(async () => {
-      await assignSecurityPolicyProject(projectPath);
-    }).rejects.toThrow(error);
   });
 });
 
