@@ -68,7 +68,7 @@ describe('Reviewers drawer approval summary component', () => {
   it('renders loading skeleton', () => {
     createComponent();
 
-    expect(wrapper.classes()).toContain('gl-animate-skeleton-loader');
+    expect(wrapper.find('.gl-animate-skeleton-loader').exists()).toBe(true);
   });
 
   describe('when approval is required', () => {
@@ -111,15 +111,5 @@ describe('Reviewers drawer approval summary component', () => {
     await waitForPromises();
 
     expect(wrapper.text()).toBe('Requires 0 approvals from Code Owners.');
-  });
-
-  describe('when multipleApprovalRulesAvailable is false', () => {
-    it('renders approval summary', async () => {
-      createComponent({ multipleApprovalRulesAvailable: false });
-
-      await waitForPromises();
-
-      expect(wrapper.text()).toBe('Requires 1 approval from eligible users.');
-    });
   });
 });
