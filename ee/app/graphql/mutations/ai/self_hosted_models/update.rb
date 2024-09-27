@@ -28,6 +28,10 @@ module Mutations
           required: false,
           description: 'API token to access the self-hosted model, if any.'
 
+        argument :identifier, GraphQL::Types::String,
+          required: false,
+          description: 'Identifier for 3rd party model provider.'
+
         def resolve(**args)
           check_feature_access!
 

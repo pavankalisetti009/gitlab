@@ -7,6 +7,7 @@ module Ai
     validates :model, presence: true
     validates :endpoint, presence: true, addressable_url: true
     validates :name, presence: true, uniqueness: true
+    validates :identifier, length: { maximum: 255 }, allow_nil: true
 
     has_many :feature_settings
 
