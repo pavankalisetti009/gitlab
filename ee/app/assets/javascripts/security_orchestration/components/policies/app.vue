@@ -1,6 +1,6 @@
 <script>
 import { s__ } from '~/locale';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { createAlert } from '~/alert';
 import { getParameterByName } from '~/lib/utils/url_utility';
@@ -58,7 +58,7 @@ export default {
   ],
   apollo: {
     linkedSppItems: {
-      query: getSppLinkedProjectsNamespaces,
+      query: getSppLinkedProjectsGroups,
       variables() {
         return {
           fullPath: this.namespacePath,
@@ -67,10 +67,10 @@ export default {
       update(data) {
         const {
           securityPolicyProjectLinkedProjects: { nodes: linkedProjects = [] } = {},
-          securityPolicyProjectLinkedNamespaces: { nodes: linkedNamespaces = [] } = {},
+          securityPolicyProjectLinkedGroups: { nodes: linkedGroups = [] } = {},
         } = data?.project || {};
 
-        return [...linkedProjects, ...linkedNamespaces];
+        return [...linkedProjects, ...linkedGroups];
       },
       skip() {
         return isGroup(this.namespaceType);

@@ -14,7 +14,7 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
-import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import projectScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_execution_policies.query.graphql';
 import groupScanExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_execution_policies.query.graphql';
 import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
@@ -88,7 +88,7 @@ describe('App', () => {
         [groupScanExecutionPoliciesQuery, requestHandlers.groupScanExecutionPolicies],
         [projectScanResultPoliciesQuery, requestHandlers.projectScanResultPolicies],
         [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
-        [getSppLinkedProjectsNamespaces, requestHandlers.linkedSppItemsResponse],
+        [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
       ]),
