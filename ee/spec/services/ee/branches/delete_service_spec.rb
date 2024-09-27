@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# rubocop: disable RSpec/DuplicateSpecLocation
 RSpec.describe Branches::DeleteService, feature_category: :source_code_management do
   describe '#execute' do
     subject(:execute_service) { described_class.new(project, user).execute(protected_branch_name) }
@@ -22,9 +21,18 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
       project.repository.create_branch(protected_branch_name, project.default_branch_or_main)
     end
 
-    it 'deletes the branch' do
-      expect(execute_service.status).to eq :success
+    shared_examples 'a deleted branch' do
+      it 'removes the branch' do
+        expect(branch_exists?(protected_branch_name)).to be true
+
+        result = execute_service
+
+        expect(result.status).to eq :success
+        expect(branch_exists?(protected_branch_name)).to be false
+      end
     end
+
+    it_behaves_like 'a deleted branch'
 
     context 'with scan result policy blocking protected branches' do
       include_context 'with scan result policy blocking protected branches'
@@ -44,9 +52,7 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
           stub_licensed_features(security_orchestration_policies: false)
         end
 
-        it 'deletes the branch' do
-          expect(execute_service.status).to eq :success
-        end
+        it_behaves_like 'a deleted branch'
       end
 
       context 'when branch is not included in security policy' do
@@ -54,9 +60,7 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
           let(:branch_name) { 'some other branch' }
         end
 
-        it 'deletes the branch' do
-          expect(execute_service.status).to eq :success
-        end
+        it_behaves_like 'a deleted branch'
       end
 
       context 'with branch exceptions' do
@@ -81,11 +85,23 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
           end
         end
 
-        it 'deletes the branch' do
-          expect(execute_service.status).to eq :success
-        end
+        it_behaves_like 'a deleted branch'
       end
+    end
+
+    context 'when there is a push rule matching the branch name' do
+      before_all do
+        project.add_developer(user)
+        create(:push_rule, branch_name_regex: '^(w*)$')
+      end
+
+      let(:protected_branch_name) { 'add-pdf-file' }
+
+      it_behaves_like 'a deleted branch'
+    end
+
+    def branch_exists?(branch_name)
+      project.repository.ref_exists?("refs/heads/#{branch_name}")
     end
   end
 end
-# rubocop: enable RSpec/DuplicateSpecLocation
