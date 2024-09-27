@@ -163,17 +163,6 @@ From the IDE:
 1. Optional. To verify your credentials, select **Verify setup**.
 1. Select **OK**.
 
-## Toggle sending open tabs as context
-
-By default, the Code Suggestions use the files open in your IDE for context.
-To enable or disable this feature in your IDE:
-
-1. Go to your IDE's top menu bar and select **Settings**.
-1. On the left sidebar, expand **Tools**, then select **GitLab Duo**.
-1. Expand **GitLab Language Server**.
-1. Under **Code Completion**, select or clear **Send open tabs as context**.
-1. Select **OK**.
-
 ## Report issues with the plugin
 
 You can report any issues, bugs, or feature requests in the
@@ -195,6 +184,7 @@ built-in error reporting tool:
 
 ## Related topics
 
+- [Code Suggestions](../../user/project/repository/code_suggestions/index.md)
 - [About the Create:Editor Extensions Group](https://handbook.gitlab.com/handbook/engineering/development/dev/create/editor-extensions/)
 - [Open issues for this plugin](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin/-/issues/)
 - [Plugin documentation](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin/-/blob/main/README.md)
