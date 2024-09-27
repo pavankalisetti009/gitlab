@@ -3,7 +3,7 @@ import { GlEmptyState, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import EmptyEnvironmentSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-environment-md.svg?url';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import getSelfHostedModelsQuery from '../queries/get_self_hosted_models.query.graphql';
+import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
 import SelfHostedModelsTable from './self_hosted_models_table.vue';
 
 export default {
