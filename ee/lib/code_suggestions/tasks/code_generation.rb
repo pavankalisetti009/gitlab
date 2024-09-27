@@ -19,24 +19,8 @@ module CodeSuggestions
 
       def prompt
         if self_hosted?
-          # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global development flag for migrating the prompts
-          if ::Feature.enabled?(:ai_custom_models_prompts_migration)
-            return CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
-              feature_setting: feature_setting, params: params)
-          end
-          # rubocop:enable Gitlab/FeatureFlagWithoutActor
-
-          model_name = feature_setting&.self_hosted_model&.model&.to_sym
-          case model_name
-          when :codellama
-            CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages.new(
-              feature_setting: feature_setting, params: params)
-          when :mistral, :mixtral, :mixtral_8x22b, :codestral, :codegemma
-            CodeSuggestions::Prompts::CodeGeneration::MistralMessages.new(
-              feature_setting: feature_setting, params: params)
-          else
-            raise "Unknown model: #{model_name}"
-          end
+          CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
+            feature_setting: feature_setting, params: params)
         elsif ::Feature.enabled?(:anthropic_code_gen_aigw_migration, current_user)
           CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params)
         else
