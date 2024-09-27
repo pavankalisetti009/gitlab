@@ -64,7 +64,7 @@ module Mutations
       end
 
       def find_object(id:)
-        GlobalID::Locator.locate(id)
+        GitlabSchema.object_from_id(id)
       end
 
       def permitted_params
