@@ -28,7 +28,6 @@ module Gitlab
 
               unless authorizer.allowed?
                 log_error(message: "Error finding #{resource_name}",
-                  klass: self.class.to_s,
                   event_name: 'incorrect_response_received',
                   ai_component: 'duo_chat',
                   error_message: authorizer.message)
@@ -44,7 +43,7 @@ module Gitlab
                 message: "Answer received from LLM",
                 event_name: 'response_received',
                 ai_component: 'duo_chat',
-                content_of_response: content)
+                response_from_llm: content)
 
               return Answer.new(status: :ok, context: context, content: content, tool: nil)
             rescue JSON::ParserError

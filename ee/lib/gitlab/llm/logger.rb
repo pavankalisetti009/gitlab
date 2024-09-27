@@ -33,6 +33,11 @@ module Gitlab
         options.merge!(message: message, class: klass, ai_event_name: event_name, ai_component: ai_component)
         super(options)
       end
+
+      def warn(message:, klass:, event_name:, ai_component:, **options)
+        options.merge!(message: message, class: klass, ai_event_name: event_name, ai_component: ai_component)
+        super(options)
+      end
     end
   end
 end
