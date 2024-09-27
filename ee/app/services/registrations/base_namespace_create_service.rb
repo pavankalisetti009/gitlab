@@ -42,8 +42,6 @@ module Registrations
         sync_to_gl: true
       }
 
-      trial_user_information[:with_addon] = true if Feature.enabled?(:duo_enterprise_trials, user)
-
       GitlabSubscriptions::Trials::ApplyTrialWorker.perform_async(user.id, trial_user_information.stringify_keys)
     end
 

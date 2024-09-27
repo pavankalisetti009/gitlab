@@ -14,6 +14,13 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     }
   end
 
+  let(:generate_trial_params) do
+    {
+      uid: user.id,
+      trial_user: trial_user_information
+    }
+  end
+
   describe '.execute' do
     before do
       allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial).and_return(response)
@@ -35,14 +42,38 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
   describe '#execute' do
     subject(:execute) { described_class.new(**apply_trial_params).execute }
 
+    let(:response) { { success: true } }
+
+    context 'when valid should call generate_trial' do
+      it 'with expected paramaters' do
+        expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
+          .with(generate_trial_params)
+          .and_return(response)
+
+        expect(execute).to be_success
+      end
+
+      context "when duo_enterprise_trials_registration feature flag is disabled" do
+        before do
+          stub_feature_flags(duo_enterprise_trials_registration: false)
+        end
+
+        it 'with expected paramaters' do
+          expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
+            .with({ uid: user.id, trial_user: trial_user_information.without(:with_add_on, :add_on_name) })
+            .and_return(response)
+
+          expect(execute).to be_success
+        end
+      end
+    end
+
     context 'when valid to generate a trial' do
       before do
         allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial).and_return(response)
       end
 
       context 'when trial is applied successfully' do
-        let(:response) { { success: true } }
-
         it 'returns success: true' do
           expect(execute).to be_success
         end

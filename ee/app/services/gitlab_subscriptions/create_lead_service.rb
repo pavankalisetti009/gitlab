@@ -3,6 +3,10 @@
 module GitlabSubscriptions
   class CreateLeadService
     def execute(company_params)
+      if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
+        company_params.merge!(with_add_on: true, add_on_name: 'duo_enterprise')
+      end
+
       response = client.generate_trial(company_params)
 
       if response[:success]

@@ -23,7 +23,9 @@ RSpec.describe GitlabSubscriptions::CreateLeadService, feature_category: :subscr
         skip_email_confirmation: true,
         gitlab_com_trial: true,
         provider: 'gitlab',
-        opt_in: true
+        opt_in: true,
+        with_add_on: true,
+        add_on_name: 'duo_enterprise'
       }
     end
 
@@ -36,6 +38,20 @@ RSpec.describe GitlabSubscriptions::CreateLeadService, feature_category: :subscr
                                                                            .and_return({ success: true })
 
       expect(execute).to be_success
+    end
+
+    context "when duo_enterprise_trials_registration feature flag is disabled" do
+      before do
+        stub_feature_flags(duo_enterprise_trials_registration: false)
+      end
+
+      it 'successfully creates a trial' do
+        allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
+          .with(company_params.without(:with_add_on, :add_on_name))
+          .and_return({ success: true })
+
+        expect(execute).to be_success
+      end
     end
 
     it 'errors while creating trial' do
