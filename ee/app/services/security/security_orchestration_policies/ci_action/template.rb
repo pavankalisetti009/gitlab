@@ -11,8 +11,7 @@ module Security
           'sast_iac' => 'Jobs/SAST-IaC',
           'dependency_scanning' => 'Jobs/Dependency-Scanning'
         }.freeze
-        EXCLUDED_VARIABLES_PATTERNS = %w[_DISABLED _EXCLUDED_PATHS].freeze
-        CONDITIONALLY_EXCLUDED_VARIABLES_PATTERNS = %w[_EXCLUDED_ANALYZERS].freeze
+        EXCLUDED_VARIABLES_PATTERNS = %w[_DISABLED].freeze
         LATEST_TEMPLATE_TYPE = 'latest'
 
         def self.scan_template_path(scan_type, latest)
@@ -34,7 +33,7 @@ module Security
             apply_tags!(job_configuration, @action[:tags])
             apply_defaults!(job_configuration, @action[:scan_settings])
             remove_extends!(job_configuration)
-            remove_rule_to_disable_job!(job_configuration, ci_variables)
+            remove_rule_to_disable_job!(job_configuration)
           end
 
           ci_configuration
@@ -79,18 +78,9 @@ module Security
           job_configuration.delete(:extends)
         end
 
-        def remove_rule_to_disable_job!(job_configuration, ci_variables)
+        def remove_rule_to_disable_job!(job_configuration)
           job_configuration[:rules]&.reject! do |rule|
-            EXCLUDED_VARIABLES_PATTERNS.any? { |pattern| rule[:if]&.include?(pattern) } ||
-              includes_restricted_variables_defined_at_policy_level?(rule, ci_variables)
-          end
-        end
-
-        def includes_restricted_variables_defined_at_policy_level?(rule, ci_variables)
-          CONDITIONALLY_EXCLUDED_VARIABLES_PATTERNS.any? do |pattern|
-            rule[:if]&.include?(pattern) && (
-              !@opts[:allow_restricted_variables_at_policy_level] ||
-                ci_variables.none? { |variable, _| variable.to_s.include?(pattern) })
+            EXCLUDED_VARIABLES_PATTERNS.any? { |pattern| rule[:if]&.include?(pattern) }
           end
         end
       end

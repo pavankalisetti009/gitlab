@@ -1,8 +1,0 @@
----
-name: allow_restricted_variables_at_policy_level
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/144243
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/442340
-milestone: '16.10'
-group: group::security policies
-type: beta
-default_enabled: true
