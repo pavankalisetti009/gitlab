@@ -282,28 +282,27 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
     end
 
     context 'when user is not registered yet' do
-      let_it_be(:user) { build_stubbed(:user, email: 'new@example.com') }
-      let_it_be(:new_user_email) { user.email }
-      let(:base_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
-      let(:glm_params) { {} }
+      let_it_be(:new_user_email) { 'new@example.com' }
+      let(:user) { build_stubbed(:user, email: new_user_email) }
+      let(:extra_params) { { bogus: 'bogus', onboarding_status_email_opt_in: 'true' } }
+      let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
+      let(:registration_params) { extra_params.merge(glm_params) }
       let(:redirect_params) { glm_params }
 
       subject(:post_create) { post provider }
 
       before do
-        request.env['omniauth.params'] = glm_params.stringify_keys
+        request.env['omniauth.params'] = registration_params.stringify_keys
       end
 
-      context 'with trial SSO' do
+      context 'with trial omniauth' do
         it_behaves_like EE::Onboarding::Redirectable, 'trial' do
-          let(:glm_params) { base_params.merge(trial: true) }
+          let(:registration_params) { extra_params.merge(glm_params).merge(trial: true) }
         end
       end
 
-      context 'with free SSO' do
-        it_behaves_like EE::Onboarding::Redirectable, 'free' do
-          let(:glm_params) { base_params }
-        end
+      context 'with free omniauth' do
+        it_behaves_like EE::Onboarding::Redirectable, 'free'
       end
 
       context 'with invited by email' do
@@ -311,13 +310,12 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
           create(:group_member, :invited, invite_email: new_user_email)
         end
 
-        it_behaves_like EE::Onboarding::Redirectable, 'invite' do
-          let(:glm_params) { base_params }
-        end
+        it_behaves_like EE::Onboarding::Redirectable, 'invite'
       end
 
       context 'with subscription concerns for stored location values' do
         let(:session) { { 'user_return_to' => return_to } }
+        let(:registration_params) { {} }
 
         before do
           stub_saas_features(onboarding: true)

@@ -3,6 +3,8 @@
 module EE
   module Onboarding
     module Status
+      extend ::Gitlab::Utils::Override
+
       REGISTRATION_KLASSES = {
         ::Onboarding::REGISTRATION_TYPE[:free] => ::Onboarding::FreeRegistration,
         ::Onboarding::REGISTRATION_TYPE[:trial] => ::Onboarding::TrialRegistration,
@@ -33,10 +35,10 @@ module EE
         end
 
         override :registration_path_params
-        def registration_path_params(params:, extra_params: {})
+        def registration_path_params(params:)
           return super unless ::Onboarding.enabled?
 
-          glm_tracking_params(params).to_h.merge(extra_params)
+          glm_tracking_params(params).to_h
         end
       end
 
@@ -103,6 +105,18 @@ module EE
       def stored_user_location
         # side effect free look at devise store_location_for(:user)
         session['user_return_to']
+      end
+
+      override :registration_omniauth_params
+      def registration_omniauth_params
+        return super unless ::Onboarding.enabled?
+
+        # We don't have controller params here, so we need to slice instead of permit
+        super.merge(params.slice(*GLM_PARAMS)) # rubocop:disable Rails/StrongParams -- false positive due to unique placement of this class in the controller area
+      end
+
+      def trial_registration_omniauth_params
+        registration_omniauth_params.merge(trial: true)
       end
 
       private

@@ -4,8 +4,11 @@ require 'spec_helper'
 
 RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
   let(:resource) { Users::AuthorizedBuildService.new(nil, {}).execute }
+  let(:params) { controller.params }
+  let(:onboarding_status) { ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, {}, resource) }
 
   before do
+    allow(view).to receive(:onboarding_status).and_return(onboarding_status)
     allow(view).to receive(:arkose_labs_enabled?).and_return(false)
     allow(view).to receive(:resource).and_return(resource)
     allow(view).to receive(:resource_name).and_return(:user)
@@ -45,13 +48,17 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
   end
 
   context 'for omniauth provider buttons' do
-    let(:action_params) { 'glm_content=_glm_content_&glm_source=_glm_source_&trial=true' }
+    let(:params) do
+      controller.params.merge(glm_content: '_glm_content_', glm_source: '_glm_source_')
+    end
+
+    let(:action_params) do
+      'glm_content=_glm_content_&glm_source=_glm_source_&trial=true'
+    end
 
     before do
       allow(view).to receive(:social_signin_enabled?).and_return(true)
       allow(view).to receive(:popular_enabled_button_based_providers).and_return([:github, :google_oauth2])
-      controller.params[:glm_content] = '_glm_content_'
-      controller.params[:glm_source] = '_glm_source_'
       stub_saas_features(onboarding: true) # for trials this view it isn't reachable in the false case
     end
 

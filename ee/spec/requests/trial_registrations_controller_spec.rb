@@ -2,8 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, feature_category: :onboarding do
+RSpec.describe TrialRegistrationsController, :with_current_organization, feature_category: :onboarding do
   include FullNameHelper
+
+  let(:onboarding_enabled?) { true }
+
+  before do
+    stub_saas_features(onboarding: onboarding_enabled?)
+  end
 
   describe 'GET new' do
     let(:get_params) { {} }
@@ -13,10 +19,8 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, 
       response
     end
 
-    context 'when not on gitlab.com and not in development environment' do
-      before do
-        allow(Gitlab).to receive(:com?).and_return(false)
-      end
+    context 'when the saas feature onboarding is not available' do
+      let(:onboarding_enabled?) { false }
 
       it { is_expected.to have_gitlab_http_status(:not_found) }
     end
@@ -50,7 +54,10 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, 
 
   describe 'POST create' do
     let(:params) { {} }
-    let(:user_params) { build_stubbed(:user).slice(:first_name, :last_name, :email, :username, :password) }
+    let(:extra_params) { {} }
+    let(:user_params) do
+      build_stubbed(:user).slice(:first_name, :last_name, :email, :username, :password).merge(extra_params)
+    end
 
     subject(:post_create) do
       post trial_registrations_path, params: params.merge(user: user_params)
@@ -62,8 +69,8 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, 
     end
 
     context 'with onboarding' do
+      let(:extra_params) { { onboarding_status_email_opt_in: 'true' } }
       let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
-      let(:redirect_params) { glm_params.merge(trial: true) }
       let(:new_user_email) { user_params[:email] }
       let(:params) { glm_params }
 
@@ -74,24 +81,23 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, 
       it 'onboards the user' do
         post_create
 
-        expect(response).to redirect_to(users_sign_up_welcome_path(redirect_params))
+        expect(response).to redirect_to(users_sign_up_welcome_path(glm_params))
         created_user = User.find_by_email(new_user_email)
         expect(created_user).to be_onboarding_in_progress
-        expect(created_user.onboarding_status_step_url).to eq(users_sign_up_welcome_path(redirect_params))
+        expect(created_user.onboarding_status_step_url).to eq(users_sign_up_welcome_path(glm_params))
         expect(created_user.onboarding_status_initial_registration_type).to eq('trial')
         expect(created_user.onboarding_status_registration_type).to eq('trial')
+        expect(created_user.onboarding_status_email_opt_in).to be(true)
       end
     end
 
-    context 'when not on gitlab.com and not in development environment' do
-      before do
-        allow(Gitlab).to receive(:com?).and_return(false)
-      end
+    context 'when the saas feature onboarding is not available' do
+      let(:onboarding_enabled?) { false }
 
       it { is_expected.to have_gitlab_http_status(:not_found) }
     end
 
-    context 'when on gitlab.com or in dev environment' do
+    context 'when the saas feature onboarding is available' do
       it { is_expected.to have_gitlab_http_status(:found) }
 
       it_behaves_like 'creates a user with ArkoseLabs risk band on signup request' do

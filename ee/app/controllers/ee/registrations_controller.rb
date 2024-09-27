@@ -120,6 +120,11 @@ module EE
       )
     end
 
+    override :onboarding_status_params
+    def onboarding_status_params
+      params.to_unsafe_h.deep_symbolize_keys # rubocop:todo Rails/StrongParams -- this is a move, not an add. We'll handle in https://gitlab.com/gitlab-org/gitlab/-/issues/498141
+    end
+
     override :set_resource_fields
     def set_resource_fields
       super
@@ -196,6 +201,26 @@ module EE
     def track_error(new_user)
       super
       track_invalid_user_error(new_user, preregistration_tracking_label)
+    end
+
+    override :sign_up_params
+    def sign_up_params
+      data = super
+
+      return super unless ::Onboarding.enabled? && data.key?(:onboarding_status_email_opt_in)
+
+      # We want to say that if for some reason the param is nil, then we can't
+      # be certain the user was ever shown this option so we should default to false to follow opt in guidelines.
+      data[:onboarding_status_email_opt_in] =
+        ::Gitlab::Utils.to_boolean(data[:onboarding_status_email_opt_in], default: false)
+      data
+    end
+
+    override :sign_up_params_attributes
+    def sign_up_params_attributes
+      return super unless ::Onboarding.enabled?
+
+      super + [:onboarding_status_email_opt_in]
     end
 
     def allow_account_deletion?
