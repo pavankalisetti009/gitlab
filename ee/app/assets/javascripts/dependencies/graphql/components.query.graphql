@@ -1,6 +1,0 @@
-query components($name: String) {
-  components(name: $name) {
-    id
-    name
-  }
-}

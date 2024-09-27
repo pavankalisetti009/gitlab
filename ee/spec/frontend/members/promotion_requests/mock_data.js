@@ -39,7 +39,7 @@ const pendingMemberApprovalsMockData = {
         avatarUrl:
           'https://www.gravatar.com/avatar/7df6adb62d7df6d8d27593fe4e308a8485293007d44f56aba1be402f9f9a859a?s=80\u0026d=identicon',
         webUrl: 'http://localhost:3000/reported_user_3',
-        email: null,
+        publicEmail: 'liberty_bartell@example.com',
         lastActivityOn: null,
         __typename: 'UserCore',
       },
@@ -71,25 +71,8 @@ const pendingMemberApprovalsMockData = {
       __typename: 'MemberApproval',
     },
     {
-      user: {
-        id: 'gid://gitlab/User/21',
-        name: 'Laronda Simonis',
-        username: 'hyon.veum',
-        avatarUrl:
-          'https://www.gravatar.com/avatar/5bd500957738daa73818727aabceff7eb80a91b731d8d80f20fb55bd23f57f80?s=80\u0026d=identicon',
-        webUrl: 'http://localhost:3000/hyon.veum',
-        email: null,
-        lastActivityOn: null,
-        __typename: 'UserCore',
-      },
-      member: {
-        id: 'gid://gitlab/GroupMember/96',
-        accessLevel: {
-          stringValue: 'GUEST',
-          __typename: 'AccessLevel',
-        },
-        __typename: 'GroupMember',
-      },
+      user: null,
+      member: null,
       requestedBy: {
         id: 'gid://gitlab/User/19',
         username: 'christal',

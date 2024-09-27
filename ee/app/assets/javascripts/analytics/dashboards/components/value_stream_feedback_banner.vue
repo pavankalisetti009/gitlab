@@ -18,9 +18,14 @@ export default {
 };
 </script>
 <template>
-  <user-callout-dismisser feature-name="vsd_feedback_banner" data-testid="vsd-feedback-survey">
+  <user-callout-dismisser feature-name="vsd_feedback_banner">
     <template #default="{ dismiss, shouldShowCallout }">
-      <gl-alert v-if="shouldShowCallout" class="gl-my-4" @dismiss="dismiss">
+      <gl-alert
+        v-if="shouldShowCallout"
+        class="gl-my-4"
+        data-testid="vsd-feedback-survey"
+        @dismiss="dismiss"
+      >
         <gl-sprintf :message="$options.i18n.alertText">
           <template #link="{ content }">
             <gl-link :href="$options.DASHBOARD_SURVEY_LINK">{{ content }}</gl-link>

@@ -2,24 +2,17 @@
 
 module Sbom
   class ComponentsFinder
-    DEFAULT_MAX_RESULTS = 30
-
-    def initialize(name)
-      @name = name
+    def initialize(namespace, query = nil)
+      @namespace = namespace
+      @query = query
     end
 
     def execute
-      components
+      Sbom::Component.by_namespace(namespace, query)
     end
 
     private
 
-    attr_reader :name
-
-    def components
-      return Sbom::Component.limit(DEFAULT_MAX_RESULTS) unless name
-
-      Sbom::Component.by_name(name).limit(DEFAULT_MAX_RESULTS)
-    end
+    attr_reader :namespace, :query
   end
 end

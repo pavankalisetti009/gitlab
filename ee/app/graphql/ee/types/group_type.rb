@@ -318,6 +318,14 @@ module EE
           resolver: ::Resolvers::Sbom::DependenciesResolver,
           description: 'Software dependencies used by projects under this group.'
 
+        field :components,
+          [::Types::Sbom::ComponentType],
+          null: true,
+          authorize: :read_dependency,
+          description: 'Find software dependencies by name.',
+          resolver: ::Resolvers::Sbom::ComponentResolver,
+          alpha: { milestone: '17.5' }
+
         def billable_members_count(requested_hosted_plan: nil)
           object.billable_members_count(requested_hosted_plan)
         end

@@ -33,35 +33,22 @@ module Vulnerabilities
         )
       end
 
-      response = nil
-      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-        %w[
-          vulnerabilities
-          vulnerability_historical_statistics
-          vulnerability_occurrences
-          vulnerability_occurrence_identifiers
-          vulnerability_reads
-          vulnerability_identifiers
-          project_settings
-          project_statistics
-          vulnerability_scanners
-          vulnerability_identifiers
-        ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/476175'
-      ) do
-        response = Vulnerability.transaction do
-          finding.save!
-          vulnerability.vulnerability_finding = finding
-          vulnerability.save!
-          finding.update!(vulnerability_id: vulnerability.id)
+      response = Vulnerability.transaction do
+        finding.save!
+        vulnerability.vulnerability_finding = finding
+        vulnerability.save!
+        finding.update!(vulnerability_id: vulnerability.id)
 
-          vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
-          project.mark_as_vulnerable!
-          project.statistics.increase_vulnerability_counter!(1)
+        vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
 
-          Statistics::UpdateService.update_for(vulnerability)
+        Statistics::UpdateService.update_for(vulnerability)
 
-          ServiceResponse.success(payload: { vulnerability: vulnerability })
-        end
+        ServiceResponse.success(payload: { vulnerability: vulnerability })
+      end
+
+      Project.transaction do
+        project.mark_as_vulnerable!
+        project.statistics.increase_vulnerability_counter!(1)
       end
 
       process_archival_and_traversal_ids_changes if response.success?

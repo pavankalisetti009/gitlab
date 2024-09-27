@@ -1,5 +1,5 @@
 import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMount } from '@vue/test-utils';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { DASHBOARD_SURVEY_LINK } from 'ee/analytics/dashboards/constants';
@@ -10,7 +10,7 @@ describe('Value Stream Feedback Banner', () => {
 
   const createWrapper = (shouldShowCallout = true) => {
     userCalloutDismissSpy = jest.fn();
-    wrapper = shallowMountExtended(ValueStreamFeedbackBanner, {
+    wrapper = shallowMount(ValueStreamFeedbackBanner, {
       stubs: {
         GlSprintf,
         UserCalloutDismisser: makeMockUserCalloutDismisser({
@@ -22,14 +22,14 @@ describe('Value Stream Feedback Banner', () => {
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findAlertText = () => findAlert().findComponent(GlSprintf).text();
+  const findAlertText = () => findAlert().text();
   const findLink = () => wrapper.findComponent(GlLink);
 
   it('displays the alert banner correctly', () => {
     createWrapper();
 
     expect(findAlertText()).toBe(
-      'To help us improve the Value Stream Management Dashboard, please share feedback about your experience in this',
+      'To help us improve the Value Stream Management Dashboard, please share feedback about your experience in this survey.',
     );
 
     expect(findLink().text()).toBe('survey');

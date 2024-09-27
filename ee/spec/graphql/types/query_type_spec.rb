@@ -48,8 +48,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_self_hosted_models,
       :ai_self_hosted_model_feature_settings,
       :cloud_connector_status,
-      :project_secrets_manager,
-      :components
+      :project_secrets_manager
     ]
 
     all_expected_fields = expected_foss_fields + expected_ee_fields

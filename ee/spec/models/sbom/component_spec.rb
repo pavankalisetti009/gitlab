@@ -77,6 +77,46 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     end
   end
 
+  describe '.by_namespace' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:component_1) { create(:sbom_component, name: "activerecord") }
+    let_it_be(:occurrence_1) { create(:sbom_occurrence, component: component_1, project: project) }
+    let_it_be(:component_2) { create(:sbom_component, name: "activesupport") }
+    let_it_be(:occurrence) { create(:sbom_occurrence, component: component_2, project: project) }
+
+    subject(:results) { described_class.by_namespace(thing, query) }
+
+    context 'when passed a Namespace' do
+      let(:thing) { group }
+
+      context 'when given a query string' do
+        let(:query) { component_1.name }
+
+        it 'returns matching components' do
+          expect(results).to match_array([component_1])
+        end
+      end
+
+      context 'when no query string is given' do
+        let(:query) { nil }
+
+        it 'returns all components' do
+          expect(results).to match_array([component_1, component_2])
+        end
+      end
+    end
+
+    context 'when given anything else' do
+      let(:thing) { project }
+      let(:query) { "active" }
+
+      it 'returns no results' do
+        expect(results).to be_empty
+      end
+    end
+  end
+
   context 'with loose foreign key on sbom_components.organization_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:organization) }

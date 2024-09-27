@@ -9,7 +9,7 @@ import {
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import componentsQuery from 'ee/dependencies/graphql/components.query.graphql';
+import componentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
 
 export default {
   components: {
@@ -81,11 +81,12 @@ export default {
       variables() {
         return {
           name: this.searchTerm,
+          fullPath: this.groupFullPath,
         };
       },
       update(data) {
         // Remove __typename
-        return data.components.map(({ id, name }) => ({ name, id }));
+        return data.group?.components?.map(({ id, name }) => ({ name, id }));
       },
       error() {
         createAlert({

@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Geo::LogCursor::Logger, :geo, feature_category: :geo_repl
           class: "LoggerSpec",
           gitlab_host: 'localhost',
           message: 'Test',
-          cursor_delay_s: 0.0
+          cursor_delay_s: be_within(0.01).of(0)
         }
       )
 

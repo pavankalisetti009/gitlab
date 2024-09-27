@@ -179,7 +179,7 @@ export default {
         </template>
       </gl-table>
     </template>
-    <template v-else #empty>
+    <template v-if="!hasVariables" #empty>
       {{ __('There are no variables yet.') }}
     </template>
   </crud-component>
