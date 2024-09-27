@@ -16,19 +16,15 @@ module Vulnerabilities
       def execute
         return error_response("No findings given to relate remediation to") unless @findings.present?
 
-        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[vulnerability_remediations vulnerability_findings_remediations], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480168'
-        ) do
-          remediation = Vulnerabilities::Remediation.create(
-            project: @project,
-            file: Tempfile.new.tap { |f| f.write(@diff) },
-            summary: @summary,
-            findings: @findings,
-            checksum: Digest::SHA256.hexdigest(@diff)
-          )
+        remediation = Vulnerabilities::Remediation.create(
+          project: @project,
+          file: Tempfile.new.tap { |f| f.write(@diff) },
+          summary: @summary,
+          findings: @findings,
+          checksum: Digest::SHA256.hexdigest(@diff)
+        )
 
-          remediation.save ? success_response(remediation) : error_response("Remediation creation failed")
-        end
+        remediation.save ? success_response(remediation) : error_response("Remediation creation failed")
       end
 
       private
