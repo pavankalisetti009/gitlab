@@ -3,16 +3,40 @@
 require 'spec_helper'
 
 RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_category: :cloud_connector do
+  let(:cut_off_date) { 1.month.ago }
+  let(:bundled_with) { {} }
+  let(:backend) { 'gitlab-ai-gateway' }
+  let(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
+
+  describe '#free_access?' do
+    subject(:free_access) { available_service_data.free_access? }
+
+    let(:cut_off_date) { 1.month.from_now }
+
+    context 'when cloud_connector_cut_off_date_expired feature flag is disabled' do
+      before do
+        stub_feature_flags(cloud_connector_cut_off_date_expired: false)
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when cloud_connector_cut_off_date_expired feature flag is enabled' do
+      before do
+        stub_feature_flags(cloud_connector_cut_off_date_expired: true)
+      end
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe '#access_token' do
     let(:resource) { create(:user) }
     let(:encoded_token_string) { 'token_string' }
-    let(:cut_off_date) { 1.month.ago }
     let(:dc_unit_primitives) { [:duo_chat_up1, :duo_chat_up2] }
     let(:duo_pro_scopes) { dc_unit_primitives + [:duo_chat_up3] }
     let(:duo_extra_scopes) { dc_unit_primitives + [:duo_chat_up4] }
     let(:bundled_with) { { "duo_pro" => duo_pro_scopes, "duo_extra" => duo_extra_scopes } }
-    let(:backend) { 'gitlab-ai-gateway' }
-    let(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
     let(:extra_claims) { {} }
     let(:expected_token) do
       instance_double('Gitlab::CloudConnector::SelfIssuedToken', encoded: encoded_token_string)

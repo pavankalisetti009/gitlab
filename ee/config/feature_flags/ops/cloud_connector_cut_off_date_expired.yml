@@ -1,0 +1,9 @@
+---
+name: cloud_connector_cut_off_date_expired
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/479121
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165312
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/483364
+milestone: '17.5'
+group: group::cloud connector
+type: ops
+default_enabled: false
