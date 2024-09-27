@@ -124,6 +124,10 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
   end
 
   describe '.drain_non_geo_queues' do
+    before do
+      allow(described_class).to receive(:validate_geo_queues_exist!)
+    end
+
     it 'disables all non-Geo Sidekiq cron jobs' do
       cronjob1 = instance_double(Sidekiq::Cron::Job)
       cronjob2 = instance_double(Sidekiq::Cron::Job)
@@ -189,6 +193,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
   describe '.drain_geo_secondary_queues' do
     it 'waits until all Geo queues are empty' do
+      allow(described_class).to receive(:validate_geo_queues_exist!)
       queue1 = instance_double(Sidekiq::Queue, name: 'geo_foo')
       queue2 = instance_double(Sidekiq::Queue, name: 'bar')
       queue3 = instance_double(Sidekiq::Queue, name: 'geo_baz')
@@ -206,6 +211,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
     end
 
     it 'outputs what it is doing' do
+      allow(described_class).to receive(:validate_geo_queues_exist!)
       expected_output = <<~MSG
         Sidekiq Queues: Waiting for all Geo queues to be empty
         Sidekiq Queues: Geo queues empty
@@ -312,6 +318,68 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
     context 'when a status is not cached' do
       it 'returns nil' do
         expect(described_class.do_status_check).to be_nil
+      end
+    end
+  end
+
+  describe '.validate_geo_queues_exist!' do
+    let(:geo_queue) { instance_double(Sidekiq::Queue, name: 'geo:sync') }
+    let(:non_geo_queue) { instance_double(Sidekiq::Queue, name: 'default') }
+
+    before do
+      allow(Gitlab::Redis::Queues).to receive(:instances)
+        .and_return({ main: Gitlab::Redis::Queues })
+      allow(Gitlab::Redis::Queues).to receive(:sidekiq_redis)
+      allow(Sidekiq::Client).to receive(:via).and_yield
+    end
+
+    context 'when Geo queues exist' do
+      before do
+        allow(Sidekiq::Queue).to receive(:all).and_return([geo_queue, non_geo_queue])
+      end
+
+      it 'does not raise an error' do
+        expect { described_class.validate_geo_queues_exist! }.not_to raise_error
+      end
+    end
+
+    context 'when no Geo queues exist' do
+      before do
+        allow(Sidekiq::Queue).to receive(:all).and_return([non_geo_queue])
+      end
+
+      it 'raises an error' do
+        expect { described_class.validate_geo_queues_exist! }.to raise_error(
+          RuntimeError, "No Geo queues detected. Unable to check if Geo or non-Geo jobs are drained")
+      end
+    end
+
+    context 'when multiple Redis instances are present' do
+      before do
+        allow(Gitlab::Redis::Queues).to receive(:instances)
+          .and_return({ foo: Gitlab::Redis::Queues, bar: Gitlab::Redis::Queues })
+        allow(Gitlab::Redis::Queues).to receive(:sidekiq_redis)
+      end
+
+      it 'checks all instances and stops when a Geo queue is found' do
+        expect(Sidekiq::Client).to receive(:via).ordered.and_yield
+        expect(Sidekiq::Queue).to receive(:all).and_return([non_geo_queue])
+
+        expect(Sidekiq::Client).to receive(:via).ordered.and_yield
+        expect(Sidekiq::Queue).to receive(:all).and_return([geo_queue])
+
+        expect { described_class.validate_geo_queues_exist! }.not_to raise_error
+      end
+    end
+
+    context 'when no Redis instances are present' do
+      before do
+        allow(Gitlab::Redis::Queues).to receive(:instances).and_return({})
+      end
+
+      it 'raises an error' do
+        expect { described_class.validate_geo_queues_exist! }.to raise_error(
+          RuntimeError, "No Geo queues detected. Unable to check if Geo or non-Geo jobs are drained")
       end
     end
   end
