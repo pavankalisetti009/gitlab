@@ -1,0 +1,9 @@
+query components($name: String, $fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    components(name: $name) {
+      id
+      name
+    }
+  }
+}

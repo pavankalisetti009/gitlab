@@ -121,8 +121,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
           context 'with existing dependencies' do
             let_it_be(:project) { create(:project, group: group) }
-            let_it_be(:component_1) { create(:sbom_component, name: 'a') }
-            let_it_be(:component_2) { create(:sbom_component, name: 'b') }
+            let_it_be(:component_1) { create(:sbom_component, name: 'activerecord') }
+            let_it_be(:component_2) { create(:sbom_component, name: 'apollo') }
             let_it_be(:sbom_occurrence_npm) do
               create(
                 :sbom_occurrence,
@@ -206,6 +206,22 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
               let(:params) do
                 {
                   component_ids: [component_1.id]
+                }
+              end
+
+              it 'returns matching Sbom::Occurrence records' do
+                subject
+
+                dependency_name = json_response.dig("dependencies", 0, "name")
+
+                expect(dependency_name).to eq(sbom_occurrence_npm.component_name)
+              end
+            end
+
+            context 'when filtering with component_names' do
+              let(:params) do
+                {
+                  component_names: [component_1.name]
                 }
               end
 

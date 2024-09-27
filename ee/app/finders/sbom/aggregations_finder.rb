@@ -88,6 +88,7 @@ module Sbom
 
       relation = filter_by_licences(relation)
       relation = filter_by_component_ids(relation)
+      relation = filter_by_component_names(relation)
 
       relation
         .order(inner_order)
@@ -106,6 +107,13 @@ module Sbom
       return relation unless params[:component_ids].present?
 
       relation.filter_by_component_ids(params[:component_ids])
+    end
+
+    def filter_by_component_names(relation)
+      return relation if Feature.disabled?(:group_level_dependencies_filtering_by_component, namespace)
+      return relation unless params[:component_names].present?
+
+      relation.filter_by_component_names(params[:component_names])
     end
 
     def inner_order

@@ -44,6 +44,83 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:permanent_deletion_date) }
   it { expect(described_class).to have_graphql_field(:pending_member_approvals) }
   it { expect(described_class).to have_graphql_field(:dependencies) }
+  it { expect(described_class).to have_graphql_field(:components) }
+
+  describe 'components' do
+    let_it_be(:guest) { create(:user) }
+    let_it_be(:developer) { create(:user) }
+    let_it_be(:group) { create(:group, developers: developer, guests: guest) }
+    let_it_be(:project_1) { create(:project, namespace: group) }
+    let_it_be(:sbom_occurrence_1) { create(:sbom_occurrence, project: project_1) }
+    let(:component_1) { sbom_occurrence_1.component }
+    let_it_be(:project_2) { create(:project, namespace: group) }
+    let_it_be(:sbom_occurrence_2) { create(:sbom_occurrence, project: project_2) }
+    let(:component_2) { sbom_occurrence_2.component }
+    let(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            name
+            #{components_query}
+              id
+              name
+            }
+          }
+        }
+      )
+    end
+
+    let(:components_query) do
+      if component_name
+        "components(name: \"#{component_name}\") {"
+      else
+        "components {"
+      end
+    end
+
+    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    before do
+      stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+    end
+
+    context 'with developer access' do
+      let(:user) { developer }
+
+      context 'when no name is passed' do
+        let(:component_name) { nil }
+
+        it 'returns all components for all projects under given group' do
+          components = query_result.dig(*%w[data group components])
+          names = components.pluck('name')
+
+          expect(components.count).to be(2)
+          expect(names).to match_array([component_1.name, component_2.name])
+        end
+      end
+
+      context 'when name is passed' do
+        let(:component_name) { component_2.name }
+
+        it "returns all components that match the name" do
+          components = query_result.dig(*%w[data group components])
+
+          expect(components.count).to be(1)
+          expect(components.first['name']).to eq(component_2.name)
+        end
+      end
+    end
+
+    context 'without developer access' do
+      let(:user) { guest }
+      let(:component_name) { component_2.name }
+
+      it 'does not return any components' do
+        components = query_result.dig(*%w[data group components])
+        expect(components).to be_nil
+      end
+    end
+  end
 
   describe 'dependencies' do
     let_it_be(:user) { create(:user) }

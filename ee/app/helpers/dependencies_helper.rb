@@ -23,6 +23,7 @@ module DependenciesHelper
       locations_endpoint: locations_group_dependencies_path(group),
       export_endpoint: expose_path(api_v4_groups_dependency_list_exports_path(id: group.id)),
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
+      group_full_path: group.full_path,
       below_group_limit: below_group_limit.to_s
     })
   end
