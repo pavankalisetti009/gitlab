@@ -54,7 +54,6 @@ module Gitlab
 
             delay *= EXPONENTIAL_BASE * (1 + Random.rand)
             log_info(message: "Too many requests, will retry in #{delay} seconds",
-              klass: self.class.to_s,
               event_name: 'retrying_request',
               ai_component: 'abstraction_layer')
 
