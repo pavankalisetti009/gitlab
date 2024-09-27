@@ -3,14 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_search do
-  let_it_be(:ns) { create(:namespace) }
+  let_it_be(:ns) { create(:group) }
   let_it_be(:project) { create(:project, :repository, namespace: ns) }
   let_it_be(:node) { create(:zoekt_node, :enough_free_space) }
   let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: ns) }
   let_it_be(:zoekt_index) { create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: node) }
 
   describe '.execute' do
-    let(:service) { described_class.new(project, :index_repo) }
+    let(:service) { described_class.new(project.id, :index_repo) }
 
     it 'executes the task' do
       expect(described_class).to receive(:new).with(project.id, :index_repo).and_return(service)
@@ -21,7 +21,7 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
   describe '#execute' do
     context 'when task_type is delete_repo' do
-      let(:service) { described_class.new(project, :delete_repo) }
+      let(:service) { described_class.new(project.id, :delete_repo) }
 
       it 'creates Search::Zoekt::Task record' do
         expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
@@ -30,7 +30,7 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
     context 'when task_type is not delete_repo' do
       let(:task_type) { 'index_repo' }
-      let(:service) { described_class.new(project, task_type) }
+      let(:service) { described_class.new(project.id, task_type) }
 
       context 'when zoekt_random_force_reindexing is disabled' do
         before do
@@ -39,7 +39,7 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
         context 'for preflight_check? is false' do
           context 'if project does not have a repository' do
-            let_it_be(:project) { create(:project) }
+            let_it_be(:project) { create(:project, :empty_repo, namespace: ns) }
 
             it 'does not creates Search::Zoekt::Task record' do
               expect { service.execute }.not_to change { Search::Zoekt::Task.count }
@@ -47,11 +47,9 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
           end
 
           context 'if project does not exists' do
-            let_it_be(:project) { create(:project, :empty_repo) }
-
             it 'does not creates Search::Zoekt::Task record' do
-              service = described_class.new(project, task_type)
               project.destroy!
+              service = described_class.new(project.id, task_type)
               expect { service.execute }.not_to change { Search::Zoekt::Task.count }
             end
           end
@@ -85,7 +83,7 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
         context 'when delay is passed' do
           let(:delay) { 1.hour }
-          let(:service) { described_class.new(project, task_type, delay: delay) }
+          let(:service) { described_class.new(project.id, task_type, delay: delay) }
 
           it 'sets perform_at with delay' do
             freeze_time do
