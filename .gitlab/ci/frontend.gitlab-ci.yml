@@ -286,12 +286,12 @@ jest-build-cache:
     NODE_OPTIONS: --max-old-space-size=7680
   allow_failure: true
 
-.with-jest-build-cache-vue3-needs:
+.with-jest-build-cache-vue3-ensure-compilable-sfcs-needs:
   needs:
-    - job: jest-build-cache-vue3
+    - job: jest-build-cache-vue3-ensure-compilable-sfcs
       optional: true
 
-jest-build-cache-vue3:
+jest-build-cache-vue3-ensure-compilable-sfcs:
   extends:
     - .vue3
     # Make sure allow_failure is set by jest-build-cache rather than .vue3.
@@ -340,7 +340,7 @@ jest vue3:
     - .frontend:rules:jest-vue3-nightly
     - .vue3
   needs:
-    - !reference [.with-jest-build-cache-vue3-needs, needs]
+    - !reference [.with-jest-build-cache-vue3-ensure-compilable-sfcs-needs, needs]
 
 jest-with-fixtures vue3:
   extends:
@@ -359,7 +359,7 @@ jest vue3 mr:
     - .frontend:rules:jest
     - .vue3
   needs:
-    - !reference [.with-jest-build-cache-vue3-needs, needs]
+    - !reference [.with-jest-build-cache-vue3-ensure-compilable-sfcs-needs, needs]
   artifacts:
     name: vue3-mr-junit
     expire_in: 31d
@@ -376,7 +376,7 @@ jest-with-fixtures vue3 mr:
     - jest vue3 mr
     - .repo-from-artifacts
   needs:
-    - !reference [.with-jest-build-cache-vue3-needs, needs]
+    - !reference [.with-jest-build-cache-vue3-ensure-compilable-sfcs-needs, needs]
     # it's ok to wait for the repo artifact as we're waiting for the fixtures (which wait for the repo artifact) anyway
     - !reference [.repo-from-artifacts, needs]
     - !reference [.with-fixtures-needs, needs]
