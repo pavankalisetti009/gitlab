@@ -23,7 +23,7 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities, feature_catego
         :resolved,
         :with_finding,
         resolved_on_default_branch: true,
-        present_on_default_branch: false
+        present_on_default_branch: true
       )
     end
 
