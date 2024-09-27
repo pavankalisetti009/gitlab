@@ -1,6 +1,9 @@
 <script>
 import { GlModal, GlDisclosureDropdownItem, GlModalDirective, GlSprintf } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
+import { createAlert } from '~/alert';
+import deleteSelfHostedModelMutation from '../graphql/mutations/delete_self_hosted_model.mutation.graphql';
+import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
 
 export default {
   name: 'DeleteSelfHostedModelDisclosureItem',
@@ -28,14 +31,63 @@ export default {
       text: __('Cancel'),
     },
   },
+  i18n: {
+    modalTitle: s__('AdminSelfHostedModels|Delete self-hosted model'),
+    successMessage: s__('AdminSelfHostedModels|Your self-hosted model was successfully deleted.'),
+    defaultErrorMessage: s__(
+      'AdminSelfHostedModels|An error occurred while deleting your self-hosted model. Please try again.',
+    ),
+  },
+  data() {
+    return {
+      isDeleting: false,
+    };
+  },
   computed: {
     modelDeploymentName() {
       return { modelName: this.model.name };
     },
   },
   methods: {
-    deleteModel() {
-      // TODO: Invoke mutation to delete model
+    async deleteModel() {
+      this.isDeleting = true;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteSelfHostedModelMutation,
+          variables: {
+            input: {
+              id: this.model.id,
+            },
+          },
+          refetchQueries: [
+            {
+              query: getSelfHostedModelsQuery,
+            },
+          ],
+        });
+
+        if (data) {
+          const errors = data.aiSelfHostedModelDelete?.errors;
+
+          if (errors.length > 0) {
+            throw new Error(errors[0]);
+          }
+        }
+
+        this.isDeleting = false;
+        createAlert({
+          message: this.$options.i18n.successMessage,
+          variant: 'success',
+        });
+      } catch (error) {
+        this.isDeleting = false;
+        createAlert({
+          message: error?.message || this.$options.i18n.defaultErrorMessage,
+          error,
+          captureError: true,
+        });
+      }
     },
   },
 };
@@ -44,7 +96,7 @@ export default {
   <div>
     <gl-disclosure-dropdown-item
       v-gl-modal-directive="`delete-${model.name}-model-modal`"
-      :aria-label="s__('AdminSelfHostedModels|Delete self-hosted model')"
+      :aria-label="$options.i18n.modalTitle"
       variant="danger"
     >
       <template #list-item>
@@ -53,7 +105,7 @@ export default {
     </gl-disclosure-dropdown-item>
     <gl-modal
       :modal-id="`delete-${model.name}-model-modal`"
-      :title="s__('AdminSelfHostedModels|Delete self-hosted model')"
+      :title="$options.i18n.modalTitle"
       size="sm"
       :no-focus-on-show="true"
       :action-primary="$options.modal.actionPrimary"
