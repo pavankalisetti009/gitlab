@@ -35,19 +35,18 @@ RSpec.describe 'Deleting a ProjectSecurityExclusion', feature_category: :secret_
       end
 
       context 'with an invalid global id' do
-        let(:mutation_with_invalid_id) do
+        let(:mutation) do
           graphql_mutation(
             :project_security_exclusion_delete,
-            id: "gid://gitlab/ProjectSecurityExclusion/#{non_existing_record_id}"
+            id: "gid://gitlab/Security::ProjectSecurityExclusion/#{non_existing_record_id}"
           )
         end
 
-        it 'returns an error' do
-          expect { post_graphql_mutation(mutation_with_invalid_id, current_user: current_user) }
-            .not_to change { Security::ProjectSecurityExclusion.count }
-
-          expect { mutation_response }.to raise_error(GraphqlHelpers::NoData)
+        before do
+          post_graphql_mutation(mutation, current_user: current_user)
         end
+
+        it_behaves_like 'a mutation on an unauthorized resource'
       end
 
       context 'when delete fails' do

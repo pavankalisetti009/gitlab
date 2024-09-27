@@ -71,6 +71,21 @@ RSpec.describe 'Updating a ProjectSecurityExclusion', feature_category: :secret_
           )
         end
       end
+
+      context 'with an invalid global id' do
+        let(:mutation) do
+          graphql_mutation(
+            :project_security_exclusion_update,
+            id: "gid://gitlab/Security::ProjectSecurityExclusion/#{non_existing_record_id}"
+          )
+        end
+
+        before do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end
+
+        it_behaves_like 'a mutation on an unauthorized resource'
+      end
     end
 
     context 'when the feature is not licensed for the project' do
