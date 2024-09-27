@@ -16,12 +16,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
     let(:user) { create(:user) }
     let(:opts) do
       {
-        allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level,
         template_cache: template_cache
       }
     end
 
-    let(:allow_restricted_variables_at_policy_level) { true }
     let(:template_cache) { Security::SecurityOrchestrationPolicies::TemplateCacheService.new }
 
     shared_examples 'with template name for scan type' do
@@ -60,7 +58,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
       it 'removes rules matching EXCLUDED_VARIABLES_PATTERNS' do
         config.each do |key, configuration|
           expect(configuration[:rules]).not_to(
-            match(array_including(hash_including(if: /_EXCLUDED_ANALYZERS|_DISABLED|_EXCLUDED_PATHS/))),
+            match(array_including(hash_including(if: /_DISABLED/))),
             "expected configuration '#{key}' not to disable jobs or exclude paths"
           )
         end
@@ -266,26 +264,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
         it_behaves_like 'with template name for scan type'
         it_behaves_like 'removes rules which disable jobs'
-
-        context 'when SAST_EXCLUDED_ANALYZERS is provided as variable set in the policy' do
-          let_it_be(:ci_variables) { { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep' } }
-
-          context 'when allow_restricted_variables_at_policy_level feature flag is disabled' do
-            let(:allow_restricted_variables_at_policy_level) { false }
-
-            it_behaves_like 'removes rules which disable jobs'
-          end
-
-          context 'when allow_restricted_variables_at_policy_level feature flag is enabled' do
-            it 'does not remove SAST_EXCLUDED_ANALYZERS rule or variable' do
-              expect(config[:'sast-0'][:variables].stringify_keys).to include(ci_variables)
-
-              config.values_at(*expected_jobs_with_excluded_variable_rules).each do |configuration|
-                expect(configuration[:rules]).to include(hash_including(if: /SAST_EXCLUDED_ANALYZERS/))
-              end
-            end
-          end
-        end
       end
     end
 
@@ -323,24 +301,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
       it_behaves_like 'with template name for scan type'
       it_behaves_like 'removes rules which disable jobs'
-
-      context 'when DS_EXCLUDED_ANALYZERS is provided as variable set in the policy' do
-        let_it_be(:ci_variables) { { 'DS_EXCLUDED_ANALYZERS' => 'gemnasium-maven' } }
-
-        context 'when allow_restricted_variables_at_policy_level feature flag is disabled' do
-          let(:allow_restricted_variables_at_policy_level) { false }
-
-          it_behaves_like 'removes rules which disable jobs'
-        end
-
-        context 'when allow_restricted_variables_at_policy_level feature flag is enabled' do
-          it 'does not remove DS_EXCLUDED_ANALYZERS rule' do
-            config.values_at(*expected_jobs_with_excluded_variable_rules).each do |configuration|
-              expect(configuration[:rules]).to include(hash_including(if: /DS_EXCLUDED_ANALYZERS/))
-            end
-          end
-        end
-      end
     end
 
     context 'when scan type is sast_iac', :aggregate_failures do

@@ -352,37 +352,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
             hash_including(
               artifacts: { access: 'developer', reports: { sast: 'gl-sast-report.json' } },
               script: ['/analyzer run'],
-              image: { name: '$SAST_ANALYZER_IMAGE' },
-              rules: [
-                { if: '$CI_COMMIT_BRANCH', exists:
-                  [
-                    '**/*.py',
-                    '**/*.js',
-                    '**/*.jsx',
-                    '**/*.ts',
-                    '**/*.tsx',
-                    '**/*.cjs',
-                    '**/*.mjs',
-                    '**/*.c',
-                    '**/*.cc',
-                    '**/*.cpp',
-                    '**/*.c++',
-                    '**/*.cp',
-                    '**/*.cxx',
-                    '**/*.h',
-                    '**/*.hpp',
-                    '**/*.go',
-                    '**/*.java',
-                    '**/*.cs',
-                    '**/*.scala',
-                    '**/*.sc',
-                    '**/*.php',
-                    '**/*.swift',
-                    '**/*.m',
-                    '**/*.rb',
-                    '**/*.kt'
-                  ] }
-              ]
+              image: { name: '$SAST_ANALYZER_IMAGE' }
             )
           end
         end
