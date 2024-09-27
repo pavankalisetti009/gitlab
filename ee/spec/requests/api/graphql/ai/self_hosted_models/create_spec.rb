@@ -12,7 +12,8 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
       "name" => 'ollama1-mistral',
       "endpoint" => 'http://localhost:8080',
       "model" => 'MISTRAL',
-      "api_token" => "test_api_token"
+      "api_token" => "test_api_token",
+      "identifier" => "provider/some-model"
     }
   end
 
@@ -78,7 +79,8 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :"self-hosted_m
           "name" => 'ollama1-mistral',
           "endpoint" => 'http://localhost:8080',
           "model" => 'mistral',
-          "hasApiToken" => true
+          "hasApiToken" => true,
+          "identifier" => "provider/some-model"
         }
       end
 

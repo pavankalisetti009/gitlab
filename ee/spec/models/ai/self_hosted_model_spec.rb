@@ -10,6 +10,7 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
     it { is_expected.to validate_presence_of(:model) }
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_uniqueness_of(:name) }
+    it { is_expected.to validate_length_of(:identifier).is_at_most(255) }
     it { is_expected.to allow_value('http://gitlab.com/s').for(:endpoint) }
     it { is_expected.not_to allow_value('javascript:alert(1)').for(:endpoint) }
 
