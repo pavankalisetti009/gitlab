@@ -52,7 +52,7 @@ To enable the plugin:
 1. In your IDE, on the top bar, select your IDE's name, then select **Settings**.
 1. On the left sidebar, select **Plugins**.
 1. Select the **GitLab Duo** plugin, and select **Install**.
-1. Select **OK**.
+1. Select **OK** or **Save**.
 
 To configure the plugin in your IDE after you enable it:
 
@@ -65,7 +65,7 @@ To configure the plugin in your IDE after you enable it:
 1. For **GitLab Personal Access Token**, paste in the personal access token you created. The token is not displayed,
    nor is it accessible to others.
 1. Select **Verify setup**.
-1. Select **OK**.
+1. Select **OK** or **Save**.
 
 ### Enable experimental or beta features
 
@@ -110,7 +110,7 @@ To use a custom SSL certificate with GitLab Duo:
 1. On the left sidebar, expand **Tools**, then select **GitLab Duo**.
 1. Under **Connection**, enter the **URL to GitLab instance**.
 1. To verify your connection, select **Verify setup**.
-1. Select **OK**.
+1. Select **OK** or **Save**.
 
 If your IDE detects a non-trusted SSL certificate:
 
@@ -161,7 +161,7 @@ From the IDE:
 1. Select **Integrate with 1Password CLI**.
 1. Optional. For **Secret reference**, paste the secret reference you copied from 1Password.
 1. Optional. To verify your credentials, select **Verify setup**.
-1. Select **OK**.
+1. Select **OK** or **Save**.
 
 ## Report issues with the plugin
 

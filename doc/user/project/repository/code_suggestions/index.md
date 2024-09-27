@@ -160,7 +160,7 @@ To confirm that open tabs are used as context:
 1. On the left sidebar, expand **Tools**, then select **GitLab Duo**.
 1. Expand **GitLab Language Server**.
 1. Under **Code Completion**, select **Send open tabs as context**.
-1. Select **OK**.
+1. Select **OK** or **Save**.
 
 ::EndTabs
 
