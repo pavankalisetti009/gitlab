@@ -10,8 +10,8 @@ RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-host
   let! :model_params do
     [
       { name: 'ollama1-mistral', model: :mistral },
-      { name: 'vllm-mixtral', model: :mixtral, api_token: "test_api_token" },
-      { name: 'ollama2-mistral', model: :mistral }
+      { name: 'vllm-mistral', model: :mistral, api_token: "test_api_token" },
+      { name: 'ollama2-codegemma', model: :codegemma }
     ]
   end
 

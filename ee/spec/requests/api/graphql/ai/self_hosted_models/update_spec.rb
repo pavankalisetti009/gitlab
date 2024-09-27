@@ -21,7 +21,7 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
     {
       id: GitlabSchema.id_from_object(self_hosted_model).to_s,
       name: 'new-test-deployment',
-      model: 'MIXTRAL',
+      model: 'CODEGEMMA',
       endpoint: 'https://new-test-endpoint.com',
       api_token: '',
       identifier: 'provider/some-model-2'
@@ -56,7 +56,7 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
           {
             id: GitlabSchema.id_from_object(self_hosted_model).to_s,
             name: '',
-            model: 'MIXTRAL',
+            model: 'CODEGEMMA',
             endpoint: 'https://new-test-endpoint.com',
             api_token: '',
             identifier: 'provider/some-model-2'
@@ -98,7 +98,7 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
           self_hosted_model.reload
 
           expect(self_hosted_model.name).to eq('new-test-deployment')
-          expect(self_hosted_model.model).to eq('mixtral')
+          expect(self_hosted_model.reload.model).to eq('codegemma')
           expect(self_hosted_model.endpoint).to eq('https://new-test-endpoint.com')
           expect(self_hosted_model.identifier).to eq('provider/some-model-2')
         end

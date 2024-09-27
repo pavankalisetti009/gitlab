@@ -67,7 +67,7 @@ describe('ModelSelectDropdown', () => {
 
     expect(modelOptions.map((model) => model.text)).toEqual([
       'Model 1 (mistral)',
-      'Model 2 (mixtral)',
+      'Model 2 (codellama)',
       'Model 3 (codegemma)',
       'Disabled',
     ]);
