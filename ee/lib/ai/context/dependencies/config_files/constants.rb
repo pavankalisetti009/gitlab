@@ -30,6 +30,7 @@ module Ai
             ConfigFiles::PythonConda,
             ConfigFiles::PythonPip,
             ConfigFiles::PythonPoetry,
+            ConfigFiles::PythonPoetryLock,
             ConfigFiles::RubyGemsLock
           ].freeze
         end

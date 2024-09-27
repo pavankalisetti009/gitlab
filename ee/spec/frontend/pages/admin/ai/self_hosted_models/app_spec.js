@@ -5,7 +5,7 @@ import { GlEmptyState, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import SelfHostedModelsApp from 'ee/pages/admin/ai/self_hosted_models/components/app.vue';
-import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/queries/get_self_hosted_models.query.graphql';
+import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
 import { createAlert } from '~/alert';
 import { mockAiSelfHostedModelsQueryResponse, mockSelfHostedModelsList } from './mock_data';
