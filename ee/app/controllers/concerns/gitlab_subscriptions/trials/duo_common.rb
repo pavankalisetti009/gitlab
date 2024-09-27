@@ -7,7 +7,6 @@ module GitlabSubscriptions
 
       include OneTrustCSP
       include GoogleAnalyticsCSP
-      include RegistrationsTracking
       include ::Gitlab::Utils::StrongMemoize
       include SafeFormatHelper
 
@@ -43,8 +42,9 @@ module GitlabSubscriptions
 
       def lead_params
         params.permit(
+          *::Onboarding::Status::GLM_PARAMS,
           :company_name, :company_size, :first_name, :last_name, :phone_number,
-          :country, :state, :website_url, :glm_content, :glm_source
+          :country, :state, :website_url
         ).to_h
       end
 

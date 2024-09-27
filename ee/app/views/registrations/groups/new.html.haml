@@ -1,7 +1,6 @@
 - @html_class = "subscriptions-layout-html"
 - @hide_flash = true
 - page_title _('Your GitLab group')
-- form_params = { glm_source: params[:glm_source], glm_content: params[:glm_content] }
 - content_for :page_specific_javascripts do
   = render "layouts/google_tag_manager_head"
   = render "layouts/one_trust"
@@ -29,7 +28,7 @@
 
         .tab-content.gitlab-tab-content.gl-bg-white.js-group-project-tab-contents
           #blank-project-pane.tab-pane.js-toggle-container.active{ role: 'tabpanel' }
-            = gitlab_ui_form_for :project_group, url: users_sign_up_groups_path(form_params), html: { class: 'gl-show-field-errors gl-w-full gl-p-4 js-groups-projects-form' } do |f|
+            = gitlab_ui_form_for :project_group, url: users_sign_up_groups_path(::Onboarding::Status.glm_tracking_params(params)), html: { class: 'gl-show-field-errors gl-w-full gl-p-4 js-groups-projects-form' } do |f|
               = form_errors(@group, type: "Group")
               = form_errors(@project, type: "Project")
               = render 'layouts/flash'
@@ -50,7 +49,7 @@
 
           #import-project-pane.tab-pane.import-project-pane.js-toggle-container{ role: 'tabpanel' }
             - if import_sources_enabled?
-              = form_tag users_sign_up_groups_path(form_params), class: 'gl-show-field-errors gl-w-full gl-p-4 js-import-project-form' do
+              = form_tag users_sign_up_groups_path(::Onboarding::Status.glm_tracking_params(params)), class: 'gl-show-field-errors gl-w-full gl-p-4 js-import-project-form' do
                 = form_errors(@group, type: "Group")
                 = render 'layouts/flash'
 
