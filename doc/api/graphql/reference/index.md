@@ -17369,6 +17369,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="addonusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="addonusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="addonusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -18257,6 +18258,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="autocompletedusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="autocompletedusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="autocompletedusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -20649,6 +20651,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="currentusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="currentusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="currentusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -26221,6 +26224,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestassigneecontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestassigneecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestassigneecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -26611,6 +26615,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestauthorcontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestauthorcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestauthorcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -27047,6 +27052,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestparticipantcontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestparticipantcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestparticipantcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -27456,6 +27462,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestreviewercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestreviewercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestreviewercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -33950,6 +33957,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usercorecontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="usercorecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercorecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
@@ -41101,6 +41109,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="usercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
