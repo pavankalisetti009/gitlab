@@ -33,7 +33,7 @@ module Resolvers
       end
 
       def authorize!
-        current_user.can?(:read_merge_train, project) || raise_resource_not_available_error!
+        Ability.allowed?(current_user, :read_merge_train, project) || raise_resource_not_available_error!
       end
     end
   end
