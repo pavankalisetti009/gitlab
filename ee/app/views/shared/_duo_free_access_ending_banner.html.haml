@@ -1,0 +1,25 @@
+- root_namespace = resource.root_ancestor
+- return unless show_duo_free_access_ending_banner?(root_namespace)
+
+- content_for :page_level_alert do
+  - duo_free_access_end_date = Date.new(2024, 10, 17)
+  %div{ class: [container_class, @content_class, '!gl-px-0'], data: { event_tracking_load: 'true', event_tracking: 'render_duo_free_access_ending_banner' } }
+    = render Pajamas::BannerComponent.new(close_options: { class: 'js-close-callout',
+        data: { testid: 'hide-duo-free-access-ending-banner' },
+        'aria-label' => s_('DuoFreeAccessEndingBanner|Dismiss Free Access Ending banner') },
+      banner_options: { class: 'js-duo-free-access-ending-banner',
+        data: { feature_id: ::EE::Users::CalloutsHelper::DUO_FREE_ACCESS_ENDING_BANNER,
+          defer_links: 'true',
+          dismiss_endpoint: callouts_path,
+          testid: 'duo-pro-trial-banner' } }) do |c|
+      - c.with_illustration do
+        = image_tag image_path('illustrations/tanuki-ai-md.svg'), alt: 'Tanuki AI Logo', class: 'gl-p-3 gl-rounded-lg gl-bg-brand-charcoal rounded-bottom-right-9'
+      - c.with_title do
+        = format(s_('DuoFreeAccessEndingBanner|Free access to GitLab Duo is ending on %{date}'), date: l(duo_free_access_end_date))
+      - c.with_primary_action do
+        = render Pajamas::ButtonComponent.new(variant: :confirm, href: subscription_portal_add_saas_duo_pro_seats_url(root_namespace.id), button_options: { class: 'gl-mr-3', data: { testid: 'buy-duo-pro-button' }}) do
+          = s_('DuoFreeAccessEndingBanner|Buy Duo Pro')
+        .js-hand-raise-lead-trigger{ data: duo_free_access_ending_hand_raise_lead_data(root_namespace) }
+      - formatted_date = l(duo_free_access_end_date, format: :long)
+      - link = link_to('', help_page_path('subscriptions/subscription-add-ons.md', anchor: 'changes-to-gitlab-duo-pro-and-gitlab-duo-enterprise-access'), target: '_blank', rel: 'noopener noreferrer')
+      %p= safe_format(s_('DuoFreeAccessEndingBanner|Starting %{date}, all GitLab Duo features, including Duo Chat, %{link_start}require a paid add-on subscription.%{link_end} To ensure uninterrupted access to Code Suggestions and Chat, buy Duo Pro and assign seats to your users. Or, for Duo Enterprise options, contact Sales.'), tag_pair(link, :link_start, :link_end), date: formatted_date)

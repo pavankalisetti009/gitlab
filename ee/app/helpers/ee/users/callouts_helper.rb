@@ -14,6 +14,7 @@ module EE
       PERSONAL_ACCESS_TOKEN_EXPIRY = 'personal_access_token_expiry'
       PROFILE_PERSONAL_ACCESS_TOKEN_EXPIRY = 'profile_personal_access_token_expiry'
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
+      DUO_FREE_ACCESS_ENDING_BANNER = 'duo_free_access_ending_banner'
 
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
@@ -71,6 +72,15 @@ module EE
         return false unless ::Gitlab::Saas.feature_available?(:onboarding)
 
         !user_dismissed?(JOINING_A_PROJECT_ALERT)
+      end
+
+      def show_duo_free_access_ending_banner?(group)
+        return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return false unless ::Feature.enabled?(:duo_free_access_ending_banner, group)
+        return false unless can?(current_user, :owner_access, group)
+        return false unless group.paid? && GitlabSubscriptions::DuoPro.no_add_on_purchase_for_namespace?(group)
+
+        !user_dismissed?(DUO_FREE_ACCESS_ENDING_BANNER)
       end
 
       override :show_transition_to_jihu_callout?

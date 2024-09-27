@@ -20,6 +20,7 @@ module Security
 
         def update_existing_vulnerabilities
           IngestVulnerabilities::Update.new(pipeline, partitioned_maps.second).execute
+          IngestVulnerabilities::SetPresentOnDefaultBranch.new(pipeline, partitioned_maps.second).execute
         end
 
         def mark_resolved_vulnerabilities_as_detected
