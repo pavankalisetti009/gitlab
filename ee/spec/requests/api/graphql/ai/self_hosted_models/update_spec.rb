@@ -11,7 +11,8 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
       :ai_self_hosted_model,
       name: 'test-deployment',
       model: :mistral,
-      endpoint: 'https://test-endpoint.com'
+      endpoint: 'https://test-endpoint.com',
+      identifier: 'provider/some-model'
     )
   end
 
@@ -22,7 +23,8 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
       name: 'new-test-deployment',
       model: 'MIXTRAL',
       endpoint: 'https://new-test-endpoint.com',
-      api_token: ''
+      api_token: '',
+      identifier: 'provider/some-model-2'
     }
   end
 
@@ -56,7 +58,8 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
             name: '',
             model: 'MIXTRAL',
             endpoint: 'https://new-test-endpoint.com',
-            api_token: ''
+            api_token: '',
+            identifier: 'provider/some-model-2'
           }
         end
 
@@ -92,9 +95,12 @@ RSpec.describe 'Updating a self-hosted model', feature_category: :"self-hosted_m
 
           expect(response).to have_gitlab_http_status(:success)
 
-          expect(self_hosted_model.reload.name).to eq('new-test-deployment')
-          expect(self_hosted_model.reload.model).to eq('mixtral')
-          expect(self_hosted_model.reload.endpoint).to eq('https://new-test-endpoint.com')
+          self_hosted_model.reload
+
+          expect(self_hosted_model.name).to eq('new-test-deployment')
+          expect(self_hosted_model.model).to eq('mixtral')
+          expect(self_hosted_model.endpoint).to eq('https://new-test-endpoint.com')
+          expect(self_hosted_model.identifier).to eq('provider/some-model-2')
         end
       end
     end

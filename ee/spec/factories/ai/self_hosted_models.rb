@@ -6,5 +6,6 @@ FactoryBot.define do
     model { :mistral }
     name { 'mistral-7b-ollama-api' }
     api_token { 'token' }
+    identifier { 'provider/some-model' }
   end
 end

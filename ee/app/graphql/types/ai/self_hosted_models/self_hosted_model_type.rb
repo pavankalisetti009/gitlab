@@ -17,6 +17,7 @@ module Types
           ::Types::GlobalIDType[::Ai::SelfHostedModel],
           null: false,
           description: 'ID of the self-hosted model server.'
+        field :identifier, String, null: true, description: 'Identifier for 3rd party model provider.'
         field :model, String, null: false, description: 'AI model deployed.'
         field :name, String, null: false, description: 'Deployment name of the self-hosted model.'
         field :updated_at, Types::TimeType, null: true, description: 'Timestamp of last update.'
