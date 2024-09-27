@@ -20,7 +20,7 @@ RSpec.describe IncidentManagement::EscalationPolicyHelper, feature_category: :in
     it 'returns escalation policies data' do
       is_expected.to eq(
         'project-path' => project.full_path,
-        'empty_escalation_policies_svg_path' => helper.image_path('illustrations/empty-state/empty-escalation.svg'),
+        'empty_escalation_policies_svg_path' => helper.image_path('illustrations/status/status-new-md.svg'),
         'user_can_create_escalation_policy' => 'false',
         'access_level_description_path' => Gitlab::Routing.url_helpers.project_project_members_url(
           project,

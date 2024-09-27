@@ -5,7 +5,7 @@ module IncidentManagement
     def escalation_policy_data(project)
       {
         'project-path' => project.full_path,
-        'empty_escalation_policies_svg_path' => image_path('illustrations/empty-state/empty-escalation.svg'),
+        'empty_escalation_policies_svg_path' => image_path('illustrations/status/status-new-md.svg'),
         'user_can_create_escalation_policy' => can?(
           current_user,
           :admin_incident_management_escalation_policy, project
