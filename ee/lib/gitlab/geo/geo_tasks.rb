@@ -66,6 +66,8 @@ module Gitlab
       # Note that since some non-Geo cron jobs are enabled, empty queues will be a transient state.
       # It is a sufficient check when the site is in Maintenance Mode.
       def drain_non_geo_queues
+        validate_geo_queues_exist!
+
         puts 'Sidekiq Queues: Disabling all non-Geo cron jobs'
 
         disable_non_geo_cron_jobs
@@ -106,6 +108,8 @@ module Gitlab
       #
       # Note that we need this check because e.g. Geo update events may be enqueued in Redis.
       def drain_geo_secondary_queues
+        validate_geo_queues_exist!
+
         puts "Sidekiq Queues: Waiting for all Geo queues to be empty"
 
         poll_selected_queues_until_empty do |queue|
@@ -193,6 +197,28 @@ module Gitlab
           end
         end
         # rubocop:enable Cop/RedisQueueUsage
+      end
+
+      # It's possible to configure GitLab Sidekiq queues and their names. If there are no queues
+      # with Geo in the name, then raise, because this code assumes that it can easily know if Geo
+      # or non-Geo jobs are drained, based on queue name.
+      def validate_geo_queues_exist!
+        any_geo_queues = false
+
+        # Watch Sidekiq Queues on all shards
+        # rubocop:disable Cop/RedisQueueUsage -- valid usage
+        Gitlab::Redis::Queues.instances.each_value do |inst|
+          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
+            # rubocop:disable Cop/SidekiqApiUsage -- valid usage
+            any_geo_queues ||= Sidekiq::Queue.all.any? { |queue| geo_queue?(queue) }
+            # rubocop:enable Cop/SidekiqApiUsage
+          end
+
+          break if any_geo_queues
+        end
+        # rubocop:enable Cop/RedisQueueUsage
+
+        raise "No Geo queues detected. Unable to check if Geo or non-Geo jobs are drained" unless any_geo_queues
       end
 
       def geo_queue?(queue)
