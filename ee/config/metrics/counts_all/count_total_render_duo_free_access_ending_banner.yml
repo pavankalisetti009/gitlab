@@ -1,0 +1,19 @@
+---
+key_path: counts.count_total_render_duo_free_access_ending_banner
+description: Total count of when the duo free access ending banner is rendered
+product_group: acquisition
+performance_indicator_type: []
+value_type: number
+status: active
+milestone: '17.5'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167061
+time_frame: all
+data_source: internal_events
+data_category: optional
+distribution:
+  - ee
+tier:
+  - premium
+  - ultimate
+events:
+  - name: render_duo_free_access_ending_banner

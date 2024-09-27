@@ -262,6 +262,82 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
   end
 
+  describe '.show_duo_free_access_ending_banner?', feature_category: :acquistion do
+    subject { helper.show_duo_free_access_ending_banner?(group) }
+
+    let(:user) { build(:user) }
+    let(:group) { build(:group, owners: [user]) }
+
+    let(:sass_feature_available?) { true }
+    let(:duo_free_access_ending_banner_feature_available?) { true }
+    let(:current_user) { user }
+    let(:group_paid?) { true }
+    let(:owner_of_group?) { true }
+    let(:no_duo_pro_subscription?) { true }
+    let(:dismissed_callout?) { false }
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: sass_feature_available?)
+      stub_feature_flags(duo_free_access_ending_banner: duo_free_access_ending_banner_feature_available?)
+      allow(helper).to receive(:current_user).and_return(current_user)
+
+      allow(helper).to receive(:can?).with(current_user, :owner_access, group).and_return(owner_of_group?)
+      allow(group).to receive(:paid?).and_return(group_paid?)
+      allow(GitlabSubscriptions::DuoPro).to receive(:no_add_on_purchase_for_namespace?).with(group).and_return(no_duo_pro_subscription?)
+      allow(helper).to receive(:user_dismissed?).with('duo_free_access_ending_banner').and_return(dismissed_callout?)
+    end
+
+    context 'with all conditions met' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when saas feature `gitlab_com_subscriptions` is not available' do
+      let(:sass_feature_available?) { false }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when feature flag `duo_free_access_ending_banner` is not enabled' do
+      let(:duo_free_access_ending_banner_feature_available?) { false }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when current_user is nil' do
+      let(:current_user) { nil }
+
+      before do
+        allow(helper).to receive(:can?).with(current_user, :owner_access, group).and_call_original
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when group is not paid' do
+      let(:group_paid?) { false }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when user is not an owner of a group' do
+      let(:owner_of_group?) { false }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when a duo pro subscription exists for a group' do
+      let(:no_duo_pro_subscription?) { false }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when the callout is dismissed' do
+      let(:dismissed_callout?) { true }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '.show_transition_to_jihu_callout?', :do_not_mock_admin_mode_setting do
     let_it_be(:admin) { create(:user, :admin) }
     let_it_be(:user) { create(:user) }

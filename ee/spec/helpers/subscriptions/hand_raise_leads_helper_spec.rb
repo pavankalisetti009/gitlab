@@ -92,6 +92,27 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
     end
   end
 
+  describe '#duo_free_access_ending_hand_raise_lead_data' do
+    let(:namespace) { build_stubbed(:group) }
+
+    it 'provides the expected dataset' do
+      result = {
+        namespace_id: namespace.id,
+        glm_content: 'duo-free-access-ending',
+        button_text: 'Contact Sales',
+        cta_tracking: {
+          action: 'click_buy_duo_pro_seats'
+        }.to_json,
+        button_attributes: {
+          category: 'secondary',
+          variant: 'confirm'
+        }.to_json
+      }
+
+      expect(helper.duo_free_access_ending_hand_raise_lead_data(namespace)).to eq(result)
+    end
+  end
+
   describe 'discover_duo_pro_hand_raise_lead_data' do
     let_it_be(:namespace) { build_stubbed(:group) }
 

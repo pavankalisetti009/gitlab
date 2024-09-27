@@ -1,0 +1,9 @@
+---
+name: duo_free_access_ending_banner
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/482067
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167061
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/493880
+milestone: '17.5'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

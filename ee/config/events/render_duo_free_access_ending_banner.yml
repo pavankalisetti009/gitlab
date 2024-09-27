@@ -1,0 +1,16 @@
+---
+description: Tracks when the duo free access ending banner is rendered
+internal_events: true
+action: render_duo_free_access_ending_banner
+identifiers:
+  - namespace
+  - user
+  - project
+product_group: acquisition
+milestone: '17.5'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167061
+distributions:
+- ee
+tiers:
+- premium
+- ultimate
