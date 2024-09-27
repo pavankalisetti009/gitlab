@@ -198,6 +198,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     context 'unassign_reviewer command' do
       let(:content) { '/unassign_reviewer' }
       let(:merge_request) { create(:merge_request, source_project: project) }
+      let(:merge_request_not_persisted) { build(:merge_request, source_project: project) }
 
       context 'unassign_reviewer command with multiple assignees' do
         it 'unassigns both reviewers if content contains /unassign_reviewer @user @user1' do
@@ -229,6 +230,12 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
             it 'will correctly remove the reviewer' do
               _, updates, _ = service.execute(content, merge_request)
+
+              expect(updates[:reviewer_ids]).to match_array([developer2.id])
+            end
+
+            it 'will correctly remove the reviewer even for non-persisted merge requests' do
+              _, updates, _ = service.execute(content, merge_request_not_persisted)
 
               expect(updates[:reviewer_ids]).to match_array([developer2.id])
             end
