@@ -365,23 +365,23 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     it 'lists issue when search by a valid iid' do
-      results = described_class.new(user, '#2', limit_project_ids, public_and_internal_projects: false)
+      results = described_class.new(user, '#2', limit_project_ids)
       issues = results.objects('issues')
 
-      expect(issues).to contain_exactly(issue_2)
-      expect(results.issues_count).to eq 1
+      expect(issues).to contain_exactly(issue_2, issue_3)
+      expect(results.issues_count).to eq 2
     end
 
     it 'can also find an issue by iid without the prefixed #' do
-      results = described_class.new(user, '2', limit_project_ids, public_and_internal_projects: false)
+      results = described_class.new(user, '2', limit_project_ids)
       issues = results.objects('issues')
 
-      expect(issues).to contain_exactly(issue_2)
-      expect(results.issues_count).to eq 1
+      expect(issues).to contain_exactly(issue_3, issue_2)
+      expect(results.issues_count).to eq 2
     end
 
     it 'finds the issue with an out of integer range number in its description without exception' do
-      results = described_class.new(user, '20200623170000', limit_project_ids, public_and_internal_projects: false)
+      results = described_class.new(user, '20200623170000', limit_project_ids)
       issues = results.objects('issues')
 
       expect(issues).to contain_exactly(issue_1)
