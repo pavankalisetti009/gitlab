@@ -118,7 +118,7 @@ module Gitlab
           end
 
           if response.success?
-            log_conditional_info(user,
+            log_info(
               message: "Finished streaming from v2/chat/agent", event_name: 'streaming_finished',
               ai_component: 'duo_chat')
             return

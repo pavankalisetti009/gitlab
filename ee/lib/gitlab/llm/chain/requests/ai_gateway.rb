@@ -45,7 +45,6 @@ module Gitlab
 
             log_conditional_info(user,
               message: "Made request to AI Client",
-              klass: self.class.to_s,
               event_name: 'response_received',
               ai_component: 'duo_chat',
               prompt: prompt[:prompt],

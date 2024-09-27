@@ -84,7 +84,6 @@ module Gitlab
 
               log_conditional_info(context.current_user,
                 message: "Answer content for summarize_comments",
-                klass: self.class.to_s,
                 event_name: 'response_received',
                 ai_component: 'feature',
                 response_from_llm: content)

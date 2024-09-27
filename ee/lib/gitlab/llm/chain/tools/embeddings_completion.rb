@@ -60,10 +60,6 @@ module Gitlab
               prompt: final_prompt[:prompt],
               response_from_llm: final_prompt_result)
 
-            log_info(message: "Got Final Result for documentation question",
-              event_name: 'response_received',
-              ai_component: 'duo_chat')
-
             Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot.new(
               { completion: final_prompt_result }.to_json,
               current_user,
