@@ -18,7 +18,7 @@ module Onboarding
       return unless @namespace.present?
 
       User.left_join_user_detail.id_in(user_ids).find_each do |user|
-        Onboarding::CreateIterableTriggerWorker.perform_async(user_iterable_params(user))
+        Onboarding::CreateIterableTriggerWorker.perform_async(user_iterable_params(user).stringify_keys)
       end
     end
 

@@ -605,17 +605,19 @@ module SaasRegistrationHelpers
                             'Personal SaaS Registration'
                           end
 
+    params = {
+      provider: 'gitlab',
+      work_email: user.email,
+      uid: user.id,
+      preferred_language: 'English',
+      comment: 'My reason',
+      role: 'software_developer',
+      jtbd: 'other',
+      product_interaction: product_interaction
+    }
+
     expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).with(
-      hash_including(
-        provider: 'gitlab',
-        work_email: user.email,
-        uid: user.id,
-        preferred_language: 'English',
-        comment: 'My reason',
-        role: 'software_developer',
-        jtbd: 'other',
-        product_interaction: product_interaction
-      )
+      hash_including(**params.stringify_keys)
     ).and_call_original
   end
 

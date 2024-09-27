@@ -16,7 +16,7 @@ module Registrations
     attr_reader :user, :glm_params, :project, :group, :group_params
 
     def after_successful_group_creation(group_track_action:)
-      ::Groups::CreateEventWorker.perform_async(group.id, user.id, :created)
+      ::Groups::CreateEventWorker.perform_async(group.id, user.id, 'created')
       Gitlab::Tracking.event(self.class.name, group_track_action, namespace: group, user: user)
       ::Onboarding::Progress.onboard(group)
 
