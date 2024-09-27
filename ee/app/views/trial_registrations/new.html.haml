@@ -31,7 +31,7 @@
     .signup-box.gl-max-w-75
       .gl-mb-3.gl-p-6.gl-border-gray-100.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-white
         = render 'signup_box_form',
-          url: trial_registrations_path(glm_tracking_params),
+          url: trial_registrations_path(::Onboarding::Status.glm_tracking_params(params)),
           button_text: _('Continue'),
           button_class: 'black-btn'
 
@@ -44,7 +44,7 @@
           .gl-flex.gl-gap-3.gl-justify-center
             - popular_enabled_button_based_providers.each do |provider|
               = render 'devise/shared/omniauth_provider_button',
-                href: omniauth_authorize_path(:user, provider, register_omniauth_params(trial: true)),
+                href: omniauth_authorize_path(:user, provider, ::Onboarding::Status.registration_path_params(params: params, extra_params: { trial: true })),
                 provider: provider,
                 classes: 'js-track-omni-auth',
                 data: { provider: provider, track_action: "#{provider}_sso", track_label: preregistration_tracking_label }

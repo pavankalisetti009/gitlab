@@ -53,7 +53,7 @@ module GitlabSubscriptions
           # trigger new creation for next step...
           trial_selection_params = {
             step: TRIAL
-          }.merge(lead_params.slice(:glm_content, :glm_source))
+          }.merge(lead_params.slice(*::Onboarding::Status::GLM_PARAMS))
            .merge(trial_params.slice(:namespace_id))
 
           ServiceResponse.error(

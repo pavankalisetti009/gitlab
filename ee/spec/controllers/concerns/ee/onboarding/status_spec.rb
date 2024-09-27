@@ -26,6 +26,52 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
   end
 
+  describe '.glm_tracking_params' do
+    let(:params) { ActionController::Parameters.new(glm_source: 'source', glm_content: 'content', extra: 'param') }
+
+    subject { described_class.glm_tracking_params(params) }
+
+    it { is_expected.to eq(params.slice(:glm_source, :glm_content).permit!) }
+  end
+
+  describe '.registration_path_params' do
+    let(:params) { ActionController::Parameters.new(glm_source: 'source', glm_content: 'content', extra: 'param') }
+    let(:extra_params) { { another_extra: 'param' } }
+    let(:onboarding_enabled) { true }
+
+    before do
+      stub_saas_features(onboarding: onboarding_enabled)
+    end
+
+    subject { described_class.registration_path_params(params: params) }
+
+    context 'when onboarding is enabled' do
+      let(:expected_params) { { glm_source: 'source', glm_content: 'content' } }
+
+      it { is_expected.to eq(expected_params.stringify_keys) }
+
+      context 'when extra params are passed' do
+        let(:combined_params) { expected_params.merge(extra_params).stringify_keys }
+
+        subject { described_class.registration_path_params(params: params, extra_params: extra_params) }
+
+        it { is_expected.to eq(combined_params) }
+      end
+    end
+
+    context 'when onboarding is disabled' do
+      let(:onboarding_enabled) { false }
+
+      it { is_expected.to eq({}) }
+
+      context 'when extra params are passed' do
+        subject { described_class.registration_path_params(params: params, extra_params: extra_params) }
+
+        it { is_expected.to eq({}) }
+      end
+    end
+  end
+
   describe '#continue_full_onboarding?' do
     let(:session_in_oauth) do
       { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }

@@ -13,6 +13,10 @@ module EE
         users_sign_up_welcome_path(onboarding_params)
       end
 
+      def onboarding_params
+        ::Onboarding::Status.glm_tracking_params(params) # rubocop:disable Rails/StrongParams -- strong params are used in the method being called
+      end
+
       override :after_sign_up_path
       def after_sign_up_path
         if ::Onboarding.enabled?

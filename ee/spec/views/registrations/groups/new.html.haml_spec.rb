@@ -48,6 +48,19 @@ RSpec.describe 'registrations/groups/new', feature_category: :onboarding do
     end
   end
 
+  context 'for form action path' do
+    before do
+      controller.params[:glm_content] = '_glm_content_'
+      controller.params[:glm_source] = '_glm_source_'
+    end
+
+    subject { render && rendered }
+
+    it do
+      is_expected.to have_css('form[action="/users/sign_up/groups?glm_content=_glm_content_&glm_source=_glm_source_"]')
+    end
+  end
+
   context 'with expected DOM elements' do
     it 'contains js-groups-projects-form class' do
       render

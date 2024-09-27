@@ -21,11 +21,6 @@ module EE
       data.compact
     end
 
-    override :register_omniauth_params
-    def register_omniauth_params(local_assigns)
-      super.merge(glm_tracking_params.to_h).merge(local_assigns.slice(:trial))
-    end
-
     def unconfirmed_email_feature_enabled?
       ::Gitlab::CurrentSettings.delete_unconfirmed_users? &&
         (::Gitlab::CurrentSettings.email_confirmation_setting_soft? ||
