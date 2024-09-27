@@ -13,7 +13,7 @@ describe('Reviewer drawer approval rules component', () => {
   const findOptionalToggle = () => wrapper.findByTestId('optional-rules-toggle');
   const findRuleRows = () => wrapper.findAll('tbody tr');
 
-  function createComponent(rule = null) {
+  function createComponent({ rule = null, approvalsRequired = 1, key = 'required' } = {}) {
     const apolloProvider = createMockApollo([
       [userPermissionsQuery, jest.fn().mockResolvedValue({ data: { project: null } })],
     ]);
@@ -30,40 +30,47 @@ describe('Reviewer drawer approval rules component', () => {
         reviewers: [],
         group: {
           label: 'Rule',
-          rules: [
+          key,
+          sections: [
             {
-              approvalsRequired: 0,
-              name: 'Optional rule',
-              approvedBy: {
-                nodes: [],
-              },
+              label: 'Approval rules',
+              key: 'rules',
+              rules: [
+                {
+                  approvalsRequired,
+                  name: 'Optional rule',
+                  approvedBy: {
+                    nodes: [],
+                  },
+                },
+                {
+                  approvalsRequired,
+                  name: 'Required rule',
+                  approvedBy: {
+                    nodes: [],
+                  },
+                },
+                {
+                  approvalsRequired,
+                  name: 'Approved rule',
+                  approvedBy: {
+                    nodes: [{ id: 1 }],
+                  },
+                },
+                rule,
+              ].filter((r) => r),
             },
-            {
-              approvalsRequired: 1,
-              name: 'Required rule',
-              approvedBy: {
-                nodes: [],
-              },
-            },
-            {
-              approvalsRequired: 1,
-              name: 'Approved rule',
-              approvedBy: {
-                nodes: [{ id: 1 }],
-              },
-            },
-            rule,
-          ].filter((r) => r),
+          ],
         },
       },
     });
   }
 
   it('renders optional rules toggle button', () => {
-    createComponent();
+    createComponent({ key: 'optional' });
 
     expect(findOptionalToggle().exists()).toBe(true);
-    expect(findOptionalToggle().text()).toBe('1 optional rule.');
+    expect(findOptionalToggle().text()).toBe('Optional approvals');
   });
 
   it('renders non-optional rules by default', () => {
@@ -77,30 +84,33 @@ describe('Reviewer drawer approval rules component', () => {
   it('renders approved by count', () => {
     createComponent();
 
-    const row = findRuleRows().at(1);
+    const row = findRuleRows().at(2);
 
     expect(row.text()).toContain('1 of 1');
   });
 
   it('toggles optional rows when clicking toggle', async () => {
-    createComponent();
+    createComponent({ key: 'optional' });
+
+    expect(findRuleRows().length).toBe(0);
 
     findOptionalToggle().vm.$emit('click');
 
     await nextTick();
 
     expect(findRuleRows().length).toBe(3);
-    expect(findRuleRows().at(2).element).toMatchSnapshot();
   });
 
   describe('when codeowners rule exists', () => {
     it('renders section name', () => {
       createComponent({
-        approvalsRequired: 1,
-        name: 'Approved rule',
-        section: 'Frontend',
-        approvedBy: {
-          nodes: [{ id: 1 }],
+        rule: {
+          approvalsRequired: 1,
+          name: 'Approved rule',
+          section: 'Frontend',
+          approvedBy: {
+            nodes: [{ id: 1 }],
+          },
         },
       });
 
@@ -109,11 +119,13 @@ describe('Reviewer drawer approval rules component', () => {
 
     it('does not render section name when codeowners rule does not have a section name', () => {
       createComponent({
-        approvalsRequired: 1,
-        name: 'Approved rule',
-        section: 'codeowners',
-        approvedBy: {
-          nodes: [{ id: 1 }],
+        rule: {
+          approvalsRequired: 1,
+          name: 'Approved rule',
+          section: 'codeowners',
+          approvedBy: {
+            nodes: [{ id: 1 }],
+          },
         },
       });
 
