@@ -44,15 +44,17 @@ module Gitlab
                - Do not comment on documentations
 
             3. Formulate your comments:
-               - Rate the priority for each of your comments on a scale of 1 to 10 based on the above criteria, with 10 being extremely important.
-               - Discard any comments that are lower than the rate of 5
                - Determine the most appropriate line for your comment and provide that as the line number for the comment.
                - When you notice multiple issues on the same line, leave only one comment on that line and list your issues together. List comments from highest in priority to the lowest.
+               - Assign each comment a priority from 1 to 3:
+                 - Priority 1: Not important
+                 - Priority 2: Helpful but can be ignored
+                 - Priority 3: Important, helpful and required
 
             4. Format your comments:
-               - When you need to leave a comment, the format should be: <comment priority="P" line="X">[Priority P/10] [Your comment here]</comment>
-               - Where P is the priority of your review you rated above.
-               - Where X is the line number of the new version of the file (before the changes) and it must be the single most relevant line.
+               - Wrap each comment in a <comment> element
+               - Include a 'priority' attribute with the assigned priority (1, 2, or 3)
+               - Include a 'line' attribute with the most relevant line number from the Git diff
                - When suggesting a code change, use code block format ```[your code suggestion]```
                - Wrap your entire response in `<review></review>` tag.
                - Just return `<review></review>` as your entire response, if the change is acceptable
