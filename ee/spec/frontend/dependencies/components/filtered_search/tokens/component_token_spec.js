@@ -8,7 +8,7 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import ComponentToken from 'ee/dependencies/components/filtered_search/tokens/component_token.vue';
-import groupDependencies from 'ee/dependencies/graphql/components.query.graphql';
+import groupDependencies from 'ee/dependencies/graphql/group_components.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
@@ -48,7 +48,10 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
     const defaultHandlers = {
       getGroupComponentsHandler: jest.fn().mockResolvedValue({
         data: {
-          components: TEST_COMPONENTS,
+          group: {
+            id: 'some-group-id',
+            components: TEST_COMPONENTS,
+          },
         },
       }),
     };

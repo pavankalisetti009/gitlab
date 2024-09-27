@@ -22,7 +22,87 @@ module Sbom
     end
 
     scope :by_name, ->(name) do
-      where(Sbom::Component.arel_table[:name].matches("%#{name}%"))
+      where('name ILIKE ?', "%#{sanitize_sql_like(name)}%") # rubocop:disable GitlabSecurity/SqlInjection -- using sanitize_sql_like here
+    end
+
+    DEFAULT_COMPONENT_NAMES_LIMIT = 30
+    def self.by_namespace(namespace, query, limit = DEFAULT_COMPONENT_NAMES_LIMIT)
+      return Sbom::Component.none unless namespace.is_a?(Group)
+
+      component_names_group_query(
+        namespace.traversal_ids,
+        namespace.next_traversal_ids,
+        query,
+        limit
+      )
+    end
+
+    # In addition we need to perform a loose index scan with custom collation for performance reasons.
+    # Sorting can be unpredictable for words containing non-ASCII characters, but dependency names
+    # are usually ASCII
+    # See https://gitlab.com/gitlab-org/gitlab/-/issues/442407#note_2099802302 for performance
+    def self.component_names_group_query(start_id, end_id, query, limit)
+      query ||= ""
+
+      sql = <<~SQL
+        WITH RECURSIVE component_names AS (
+          SELECT
+            *
+          FROM (
+              SELECT
+                traversal_ids,
+                component_name,
+                component_id
+              FROM
+                sbom_occurrences
+              WHERE
+                traversal_ids >= '{:start_id}'
+                AND traversal_ids < '{:end_id}'
+                AND component_name LIKE :query COLLATE "C"
+              ORDER BY
+                sbom_occurrences.component_name COLLATE "C" ASC
+              LIMIT 1
+            ) sub_select
+          UNION ALL
+          SELECT
+            lateral_query.traversal_ids,
+            lateral_query.component_name,
+            lateral_query.component_id
+          FROM
+            component_names,
+            LATERAL (
+              SELECT
+                sbom_occurrences.traversal_ids,
+                sbom_occurrences.component_name,
+                sbom_occurrences.component_id
+              FROM
+                sbom_occurrences
+              WHERE
+                sbom_occurrences.traversal_ids >= '{:start_id}'
+                AND sbom_occurrences.traversal_ids < '{:end_id}'
+                AND component_name LIKE :query COLLATE "C"
+                AND sbom_occurrences.component_name > component_names.component_name
+              ORDER BY
+                sbom_occurrences.component_name COLLATE "C" ASC
+              LIMIT 1
+            ) lateral_query
+        )
+        SELECT
+          component_names.component_id AS id
+        FROM
+          component_names
+      SQL
+
+      sanitized_query = sanitize_sql_like(query)
+
+      query_params = {
+        start_id: start_id,
+        end_id: end_id,
+        query: "#{sanitized_query}%"
+      }
+
+      sql = sanitize_sql_array([sql, query_params])
+      where("id IN (#{sql})").order(name: :asc).limit(limit) # rubocop:disable GitlabSecurity/SqlInjection -- sanitized above
     end
   end
 end
