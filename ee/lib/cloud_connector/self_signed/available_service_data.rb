@@ -14,6 +14,11 @@ module CloudConnector
         @backend = backend
       end
 
+      override :free_access?
+      def free_access?
+        cut_off_date_expired_enabled? ? false : super
+      end
+
       override :access_token
       def access_token(resource = nil, extra_claims: {})
         ::Gitlab::CloudConnector::SelfIssuedToken.new(
@@ -25,6 +30,12 @@ module CloudConnector
       end
 
       private
+
+      def cut_off_date_expired_enabled?
+        return false unless ::Gitlab.dev_or_test_env? || ::Gitlab.staging?
+
+        Feature.enabled?(:cloud_connector_cut_off_date_expired, :instance, type: :ops)
+      end
 
       def scopes_for(resource)
         free_access? ? allowed_scopes_during_free_access : allowed_scopes_from_purchased_bundles_for(resource)

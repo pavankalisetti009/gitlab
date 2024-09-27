@@ -29,6 +29,13 @@ RSpec.configure do |config|
     metadata[:without_license] = true
   end
 
+  config.before do |example|
+    if example.metadata.fetch(:stub_feature_flags, true)
+      # Specs should not require cut_off_date to be expired by default for cloud connector features.
+      stub_feature_flags(cloud_connector_cut_off_date_expired: false)
+    end
+  end
+
   config.before(:context, :with_license) do
     License.destroy_all # rubocop: disable Cop/DestroyAll
     TestLicense.init
