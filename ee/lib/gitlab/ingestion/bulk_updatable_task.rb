@@ -11,6 +11,7 @@ module Gitlab
     # Configuration value;
     #
     #   `model`: The ActiveRecord model which the task is ingesting the data for.
+    #   `scope`: Additional filtering scope for the update query.
     #
     # Template method;
     #
@@ -29,16 +30,22 @@ module Gitlab
           (%<values>s) AS map(%<map_schema>s)
         WHERE
           %<table_name>s.%<primary_key>s = map.%<primary_key>s
+          %<scope>s
+        RETURNING
+          %<table_name>s.%<primary_key>s
       SQL
 
       def self.included(base)
         base.singleton_class.attr_accessor :model
+        base.singleton_class.attr_accessor :scope
       end
 
       def execute
         return unless attribute_names.present?
 
-        connection.execute(update_sql)
+        result_set = connection.execute(update_sql)
+
+        after_update(result_set.values.flatten)
       end
 
       private
@@ -54,7 +61,8 @@ module Gitlab
           set_values: set_values,
           values: values,
           primary_key: primary_key,
-          map_schema: map_schema
+          map_schema: map_schema,
+          scope: scope
         )
       end
 
@@ -92,6 +100,16 @@ module Gitlab
 
       def attributes
         raise "Implement the `attributes` template method!"
+      end
+
+      def after_update(updated_record_ids)
+        # Template method
+      end
+
+      def scope
+        return unless self.class.scope
+
+        "AND #{self.class.scope}"
       end
     end
   end
