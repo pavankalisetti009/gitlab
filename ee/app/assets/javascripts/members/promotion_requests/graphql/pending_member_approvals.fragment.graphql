@@ -9,7 +9,7 @@ fragment pendingMemberApprovals on MemberApprovalConnection {
       username
       avatarUrl
       webUrl
-      email: publicEmail
+      publicEmail
       lastActivityOn
     }
     member {

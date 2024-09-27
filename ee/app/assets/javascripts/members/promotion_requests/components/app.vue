@@ -8,6 +8,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ProjectPendingMemberApprovalsQuery from '../graphql/project_pending_member_approvals.query.graphql';
 import GroupPendingMemberApprovalsQuery from '../graphql/group_pending_member_approvals.query.graphql';
 import { subscribe } from '../services/promotion_request_list_invalidation_service';
+import UserAvatar from './user_avatar.vue';
 
 const FIELDS = [
   {
@@ -37,6 +38,7 @@ export default {
     GlTable,
     GlKeysetPagination,
     GlAlert,
+    UserAvatar,
     UserDate,
   },
   inject: ['context', 'group', 'project'],
@@ -133,8 +135,7 @@ export default {
     >
     <gl-table :busy="isLoading" :items="pendingMemberApprovals.nodes" :fields="$options.FIELDS">
       <template #cell(user)="{ item }">
-        <span v-if="item.user">{{ item.user.name }}</span>
-        <span v-else>{{ __('Orphaned member') }}</span>
+        <user-avatar :user="item.user" />
       </template>
       <template #cell(requested_role)="{ item }">
         {{ item.newAccessLevel.stringValue }}

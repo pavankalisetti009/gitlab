@@ -38325,6 +38325,9 @@ msgstr ""
 msgid "Orphaned member"
 msgstr ""
 
+msgid "Orphaned request"
+msgstr ""
+
 msgid "Other"
 msgstr ""
 

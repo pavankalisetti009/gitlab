@@ -1,10 +1,11 @@
+import { GlAlert, GlKeysetPagination, GlTable } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlKeysetPagination, GlTable } from '@gitlab/ui';
+import { CONTEXT_TYPE } from 'ee/members/constants';
 import PromotionRequestsApp from 'ee/members/promotion_requests/components/app.vue';
+import UserAvatar from 'ee/members/promotion_requests/components/user_avatar.vue';
 import GroupPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/group_pending_member_approvals.query.graphql';
 import ProjectPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/project_pending_member_approvals.query.graphql';
-import { CONTEXT_TYPE } from 'ee/members/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -105,7 +106,8 @@ describe('PromotionRequestsApp', () => {
 
       it('renders the mocked data properly inside a row', () => {
         const firstRowCells = findTable().findAll('tbody > tr').at(0).findAll('td');
-        expect(firstRowCells.at(0).text()).toContain(result.nodes[0].user.name);
+        const userAvatar = firstRowCells.at(0).findComponent(UserAvatar);
+        expect(userAvatar.props('user')).toEqual(result.nodes[0].user);
         expect(firstRowCells.at(1).text()).toBe(result.nodes[0].newAccessLevel.stringValue);
         expect(firstRowCells.at(2).text()).toBe(result.nodes[0].requestedBy.name);
         expect(firstRowCells.at(3).findComponent(UserDate).exists()).toBe(true);
