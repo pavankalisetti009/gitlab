@@ -14,7 +14,7 @@ module Gitlab
           def self.extract_keys(input)
             input.scan(/\[.*?\]/)
                  .map { |x| x[1..-2].delete("\"").delete("'") }
-                 .map { |x| x =~ /^(\d)+$/ ? Integer(x) : x }
+                 .map { |x| /^(\d)+$/.match?(x) ? Integer(x) : x }
           end
         end
       end

@@ -8,7 +8,7 @@ module Gitlab
       end
 
       def call(env)
-        return @app.call(env) if env['PATH_INFO'] =~ %r{^/api/v\d+/internal/}
+        return @app.call(env) if %r{^/api/v\d+/internal/}.match?(env['PATH_INFO'])
 
         ::Gitlab::IpAddressState.with(env['action_dispatch.remote_ip'].to_s) do # rubocop: disable CodeReuse/ActiveRecord
           @app.call(env)
