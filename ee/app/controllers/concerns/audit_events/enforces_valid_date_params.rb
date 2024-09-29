@@ -25,7 +25,7 @@ module AuditEvents
     def valid_utc_date?(date)
       return true if date.blank?
 
-      return false unless date =~ Gitlab::Regex.utc_date_regex
+      return false unless Gitlab::Regex.utc_date_regex.match?(date)
 
       return true if Date.parse(date)
     rescue Date::Error
