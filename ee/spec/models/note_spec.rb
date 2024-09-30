@@ -297,6 +297,16 @@ RSpec.describe Note, feature_category: :team_planning do
     end
   end
 
+  describe '#for_group_wiki?' do
+    it 'returns true for a group-level wiki page' do
+      expect(build_stubbed(:note_on_wiki_page, :on_group_level_wiki).for_group_wiki?).to be_truthy
+    end
+
+    it 'returns false for a project-level wiki page' do
+      expect(build_stubbed(:note_on_wiki_page, :on_project_level_wiki).for_group_wiki?).to be_falsy
+    end
+  end
+
   describe '.note_starting_with' do
     it 'returns a note matching the prefix' do
       create(:note)

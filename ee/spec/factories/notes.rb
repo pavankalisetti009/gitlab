@@ -10,6 +10,12 @@ FactoryBot.modify do
     trait :on_vulnerability do
       noteable { association(:vulnerability, project: project) }
     end
+
+    trait :on_group_level_wiki do
+      project { nil }
+      namespace { association :group }
+      noteable { association(:wiki_page_meta, namespace: namespace) }
+    end
   end
 end
 
