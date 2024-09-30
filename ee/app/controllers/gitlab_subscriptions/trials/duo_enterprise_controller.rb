@@ -82,9 +82,9 @@ module GitlabSubscriptions
       def success_flash_message
         safe_format(
           s_(
-            'DuoEnterpriseTrial|Congratulations, your free Ultimate and GitLab Duo Enterprise trial is ' \
-              'activated and will expire on %{exp_date}. The new license might take a minute to show on the ' \
-              'page. To give members access to new GitLab Duo Enterprise features, ' \
+            'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \
+              'expire on %{exp_date}. The new license might take a minute to show on the page. ' \
+              'To give members access to new GitLab Duo Enterprise features, ' \
               '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats.'
           ),
           success_doc_link,

@@ -193,9 +193,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
           expires_on = GitlabSubscriptions::Trials::AddOns::DURATION.from_now.to_date.iso8601
           message = format(
             s_(
-              'DuoEnterpriseTrial|Congratulations, your free Ultimate and GitLab Duo Enterprise trial is activated ' \
-                'and will expire on %{exp_date}. The new license might take a minute to show on the page. To give ' \
-                'members access to new GitLab Duo Enterprise features, <a target="_blank" rel="noopener noreferrer" ' \
+              'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \
+                'expire on %{exp_date}. The new license might take a minute to show on the page. To give members ' \
+                'access to new GitLab Duo Enterprise features, <a target="_blank" rel="noopener noreferrer" ' \
                 'href="/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats">assign them</a> ' \
                 'to GitLab Duo Enterprise seats.'
             ),
