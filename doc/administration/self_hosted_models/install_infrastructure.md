@@ -64,20 +64,33 @@ installed LLM:
 
 ## Configure your GitLab instance
 
-1. For the GitLab instance to know where the AI Gateway is located so it can access
-   the gateway, set the environment variable `AI_GATEWAY_URL` inside your GitLab
-   instance environment variables:
+Prerequisites:
 
-   ```shell
-   AI_GATEWAY_URL=https://<your_ai_gitlab_domain>
-   ```
+- Upgrade to the latest version of GitLab.
 
-1. Where your GitLab instance is installed, [run the following Rake task](../../raketasks/index.md)
-   to activate GitLab Duo features:
+1. The GitLab instance must be able to access the AI Gateway.
 
-   ```shell
-   sudo gitlab-rake gitlab:duo:enable_feature_flags
-   ```
+   1. Where your GitLab instance is installed, update the `/etc/gitlab/gitlab.rb` file.
+
+      ```shell
+      sudo vim /etc/gitlab/gitlab.rb
+      ```
+
+   1. Add and save the following environment variables.
+
+      ```.rb
+      gitlab_rails['env'] = {
+      'GITLAB_LICENSE_MODE' => 'production',
+      'CUSTOMER_PORTAL_URL' => 'https://customers.gitlab.com',
+      'AI_GATEWAY_URL' => '<path_to_their_ai_gateway>'
+      }
+      ```
+
+   1. Run reconfigure:
+
+      ```shell
+      sudo gitlab-ctl reconfigure
+      ```
 
 1. [Start a GitLab Rails console](../feature_flags.md#start-the-gitlab-rails-console):
 
@@ -85,9 +98,10 @@ installed LLM:
    sudo gitlab-rails console
    ```
 
-   In the console, enable the `ai_custom_model` feature flag:
+   In the console, enable feature flags:
 
    ```shell
+   Feature.enable(:self_hosted_models_beta_ended)
    Feature.enable(:ai_custom_model)
    ```
 
@@ -257,6 +271,7 @@ https://gitlab.com/api/v4/projects/gitlab-org%2fcharts%2fai-gateway-helm-chart/p
      ai-gateway/ai-gateway \
      --version 0.1.1 \
      --namespace=ai-gateway \
+     --set="image.tag=<ai-gateway-image>" \
      --set="gitlab.url=https://<your_gitlab_domain>" \
      --set="gitlab.apiUrl=https://<your_gitlab_domain>/api/v4/" \
      --set "ingress.enabled=true" \
