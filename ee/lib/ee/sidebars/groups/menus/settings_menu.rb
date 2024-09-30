@@ -56,7 +56,9 @@ module EE
           end
 
           def custom_roles_enabled?
-            context.group.root? && context.group.licensed_feature_available?(:custom_roles) && gitlab_com_subscription?
+            context.group.root? &&
+              can?(context.current_user, :view_member_roles, context.group) &&
+              gitlab_com_subscription?
           end
 
           def ldap_sync_menu_item

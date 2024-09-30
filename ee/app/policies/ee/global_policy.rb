@@ -124,6 +124,10 @@ module EE
         ::License.feature_available?(:custom_roles)
       end
 
+      condition(:default_roles_assignees_allowed) do
+        ::License.feature_available?(:default_roles_assignees)
+      end
+
       condition(:user_allowed_to_manage_ai_settings) do
         next false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
@@ -170,6 +174,11 @@ module EE
 
       rule { admin & custom_roles_allowed }.policy do
         enable :admin_member_role
+        enable :view_member_roles
+      end
+
+      rule { admin & default_roles_assignees_allowed }.policy do
+        enable :view_member_roles
       end
 
       rule { ~anonymous & custom_roles_allowed }.policy do

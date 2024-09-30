@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enable_admin_mode, feature_category: :user_management do
-  let_it_be(:member_role) { create(:member_role, :instance, name: 'Custom role') }
-  let_it_be(:role_id) { member_role.id }
+  let_it_be(:role_id) { Gitlab::Access.options.each_key.first }
   let_it_be(:admin) { create(:admin) }
 
   shared_examples 'not found' do
@@ -15,7 +14,7 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
     end
   end
 
-  shared_examples 'access control' do
+  shared_examples 'access control' do |licenses|
     context 'with non-admin user' do
       let_it_be(:user) { create(:user) }
 
@@ -39,27 +38,33 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
         sign_in(admin)
       end
 
-      context 'when `custom_roles` license is disabled' do
+      context 'when no suitable license is available' do
         it_behaves_like 'not found'
       end
 
-      context 'when `custom_roles` license is enabled' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
+      context 'when a suitable license is available' do
+        using RSpec::Parameterized::TableSyntax
 
-        it 'returns a 200 status code' do
-          get_method
+        where(license: licenses)
 
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-
-        context 'when on SaaS' do
+        with_them do
           before do
-            stub_saas_features(gitlab_com_subscriptions: true)
+            stub_licensed_features(license => true)
           end
 
-          it_behaves_like 'not found'
+          it 'returns a 200 status code' do
+            get_method
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          context 'when on SaaS' do
+            before do
+              stub_saas_features(gitlab_com_subscriptions: true)
+            end
+
+            it_behaves_like 'not found'
+          end
         end
       end
     end
@@ -101,20 +106,20 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
   describe 'GET #index' do
     subject(:get_method) { get admin_application_settings_roles_and_permissions_path }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
   end
 
   describe 'GET #show' do
     subject(:get_method) { get admin_application_settings_roles_and_permission_path(role_id) }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
     it_behaves_like 'role existence check'
   end
 
   describe 'GET #edit' do
     subject(:get_method) { get edit_admin_application_settings_roles_and_permission_path(role_id) }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles]
     it_behaves_like 'role existence check'
   end
 end

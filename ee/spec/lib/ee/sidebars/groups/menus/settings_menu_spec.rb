@@ -28,44 +28,50 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       subject { menu.renderable_items.find { |e| e.item_id == item_id } }
 
       describe 'Roles and permissions menu', feature_category: :user_management do
+        using RSpec::Parameterized::TableSyntax
+
         let(:item_id) { :roles_and_permissions }
 
-        context 'when custom_roles feature is licensed' do
-          before do
-            stub_licensed_features(custom_roles: true)
-            stub_saas_features(gitlab_com_subscriptions: true)
-          end
+        where(license: [:custom_roles, :default_roles_assignees])
 
-          it { is_expected.to be_present }
-
-          context 'when it is not a root group' do
-            let_it_be_with_refind(:subgroup) do
-              create(:group, :private, parent: group).tap do |g|
-                g.add_owner(owner)
-              end
-            end
-
-            let(:container) { subgroup }
-
-            it { is_expected.not_to be_present }
-          end
-
-          context 'when on self-managed' do
+        with_them do
+          context 'when feature is licensed' do
             before do
-              stub_saas_features(gitlab_com_subscriptions: false)
+              stub_licensed_features(license => true)
+              stub_saas_features(gitlab_com_subscriptions: true)
+            end
+
+            it { is_expected.to be_present }
+
+            context 'when it is not a root group' do
+              let_it_be_with_refind(:subgroup) do
+                create(:group, :private, parent: group).tap do |g|
+                  g.add_owner(owner)
+                end
+              end
+
+              let(:container) { subgroup }
+
+              it { is_expected.not_to be_present }
+            end
+
+            context 'when on self-managed' do
+              before do
+                stub_saas_features(gitlab_com_subscriptions: false)
+              end
+
+              it { is_expected.not_to be_present }
+            end
+          end
+
+          context 'when feature is not licensed' do
+            before do
+              stub_licensed_features(license => false)
+              stub_saas_features(gitlab_com_subscriptions: true)
             end
 
             it { is_expected.not_to be_present }
           end
-        end
-
-        context 'when custom_roles feature is not licensed' do
-          before do
-            stub_licensed_features(custom_roles: false)
-            stub_saas_features(gitlab_com_subscriptions: true)
-          end
-
-          it { is_expected.not_to be_present }
         end
       end
 
