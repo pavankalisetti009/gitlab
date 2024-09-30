@@ -16,7 +16,7 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :original_archived_value, :original_traversal_ids_value
+    attr_reader :author, :project, :original_archived_value, :original_traversal_ids_value
 
     delegate :vulnerability_quota, to: :project, private: true
 
