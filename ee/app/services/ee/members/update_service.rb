@@ -16,8 +16,11 @@ module EE
 
         service_response = GitlabSubscriptions::MemberManagement::QueueNonBillableToBillableService.new(
           current_user: current_user,
-          members: members,
-          params: params).execute
+          params: params.merge(
+            members: members,
+            source: members.first.source
+          )
+        ).execute
 
         if service_response.error?
           errored_members = service_response.payload[:non_billable_to_billable_members]
@@ -25,12 +28,16 @@ module EE
         end
 
         billable_members = service_response.payload[:billable_members]
-        members_queued_for_approval = service_response.payload[:users_queued_for_promotion]
+        non_billable_to_billable_members = service_response.payload[:non_billable_to_billable_members]
 
         update_member_response = super(billable_members, permission: permission)
         return update_member_response if update_member_response[:status] == :error
 
-        update_member_response.merge(members_queued_for_approval: members_queued_for_approval)
+        queued_member_approvals = service_response.payload[:queued_member_approvals]
+        update_member_response.merge({
+          members_queued_for_approval: non_billable_to_billable_members,
+          queued_member_approvals: queued_member_approvals
+        })
       end
 
       override :after_execute
