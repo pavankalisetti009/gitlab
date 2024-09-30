@@ -17,7 +17,7 @@ module Search
                      end
 
         query_hash = ::Search::Elastic::Filters.by_type(query_hash: query_hash, options: options)
-        query_hash = ::Search::Elastic::Filters.by_authorization(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Formats.source_fields(query_hash: query_hash, options: options)
         ::Search::Elastic::Formats.size(query_hash: query_hash, options: options)

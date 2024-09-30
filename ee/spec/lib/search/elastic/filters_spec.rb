@@ -943,11 +943,13 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '.by_confidentiality' do
+  describe '.by_project_confidentiality' do
     let_it_be(:authorized_project) { create(:project, developers: [user]) }
     let_it_be(:private_project) { create(:project, :private) }
 
-    subject(:by_confidentiality) { described_class.by_confidentiality(query_hash: query_hash, options: options) }
+    subject(:by_project_confidentiality) do
+      described_class.by_project_confidentiality(query_hash: query_hash, options: options)
+    end
 
     context 'when options[:confidential] is not passed or not true/false' do
       let(:base_options) { { current_user: user } }
@@ -990,10 +992,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             ] } }
           ]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
 
@@ -1003,10 +1005,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         it 'adds the non-confidential filters to query_hash' do
           expected_filter = [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
     end
@@ -1023,10 +1025,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         it 'adds the requested confidential filter to the query hash' do
           expected_filter = [{ term: { confidential: true } }]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
 
@@ -1036,10 +1038,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         it 'adds the requested confidential filter to the query hash' do
           expected_filter = [{ term: { confidential: true } }]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
 
@@ -1067,10 +1069,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             ] } }
           ]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
 
@@ -1080,16 +1082,16 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         it 'adds the non-confidential filters to query_hash' do
           expected_filter = [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
       end
     end
   end
 
-  describe '.by_authorization' do
+  describe '.by_project_authorization' do
     let_it_be_with_reload(:public_group) { create(:group, :public) }
     let_it_be_with_reload(:authorized_project) { create(:project, group: public_group, developers: [user]) }
     let_it_be_with_reload(:private_project) { create(:project, :private, group: public_group) }
@@ -1114,8 +1116,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       }
     end
 
-    subject(:by_authorization) do
-      described_class.by_authorization(query_hash: query_hash, options: options)
+    subject(:by_project_authorization) do
+      described_class.by_project_authorization(query_hash: query_hash, options: options)
     end
 
     # anonymous users
@@ -1143,10 +1145,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                             } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1169,10 +1171,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
       end
@@ -1205,10 +1207,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1243,10 +1245,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -1281,10 +1283,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -1316,10 +1318,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1342,10 +1344,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
       end
@@ -1365,10 +1367,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                   ] } } } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
 
@@ -1384,10 +1386,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                   ] } } } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
       end
@@ -1428,10 +1430,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1480,10 +1482,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
 
@@ -1527,10 +1529,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -1576,10 +1578,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -1608,10 +1610,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } }] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1630,10 +1632,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                         ] } }] } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -1652,10 +1654,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                           ] } }] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -1700,10 +1702,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1744,10 +1746,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                         ] } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -1788,10 +1790,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                           ] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -1826,10 +1828,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1854,10 +1856,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -1880,10 +1882,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                   ]
                 } }
               ]
-              expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -1933,10 +1935,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ] } } } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -1982,10 +1984,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               ]
             } }]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'and project_id_field is provided in options' do
@@ -2031,10 +2033,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 ]
               } }]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -2066,10 +2068,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when traversal_ids_prefix is set in options' do
@@ -2093,10 +2095,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
 
@@ -2125,10 +2127,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
         end
 
@@ -2150,10 +2152,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when authorization_use_traversal_ids is false in options' do
@@ -2176,10 +2178,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
 
@@ -2204,10 +2206,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
 
@@ -2232,10 +2234,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 { terms: { _name: 'filters:reject_projects', foo: [private_project.id] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -2262,10 +2264,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
           ]
 
-          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+          expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
         end
 
         context 'when no_join_project is true' do
@@ -2286,10 +2288,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               { terms: { _name: 'filters:reject_projects', project_id: [private_project.id] } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when project_id_field is set in options' do
@@ -2310,10 +2312,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 { terms: { _name: 'filters:reject_projects', foo: [private_project.id] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to eq(expected_must_not)
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
           end
         end
@@ -2352,10 +2354,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when no_join_project is true' do
@@ -2376,10 +2378,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                     ] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
 
             context 'when project_id_field is set in options' do
@@ -2403,10 +2405,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       ] } }
                 ]
 
-                expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-                expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-                expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-                expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+                expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
               end
             end
           end
@@ -2456,10 +2458,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                   ] } } } }
             ]
 
-            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
           end
 
           context 'when no_join_project is true' do
@@ -2500,10 +2502,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                     ] } }
               ]
 
-              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
             end
 
             context 'when project_id_field is set in options' do
@@ -2544,10 +2546,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       ] } }
                 ]
 
-                expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
-                expect(by_authorization.dig(:query, :bool, :must)).to be_empty
-                expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
-                expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+                expect(by_project_authorization.dig(:query, :bool, :must)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :must_not)).to be_empty
+                expect(by_project_authorization.dig(:query, :bool, :should)).to be_empty
               end
             end
           end
