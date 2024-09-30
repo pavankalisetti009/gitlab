@@ -48,11 +48,7 @@ module Ai
         end
 
         def token
-          ::Gitlab::CloudConnector::SelfIssuedToken.new(
-            audience: "gitlab-duo-workflow-service",
-            subject: ::Gitlab::CurrentSettings.uuid,
-            scopes: ["duo_workflow_generate_token"]
-          ).encoded
+          CloudConnector::AvailableServices.find_by_name(:duo_workflow).access_token
         end
 
         def channel_credentials
