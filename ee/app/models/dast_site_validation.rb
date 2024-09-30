@@ -71,9 +71,7 @@ class DastSiteValidation < Gitlab::Database::SecApplicationRecord
   end
 
   def self.get_normalized_url_base(url)
-    uri = Addressable::URI.parse(url)
-
-    "%{scheme}://%{host}:%{port}" % { scheme: uri.scheme, host: uri.host, port: uri.inferred_port }
+    ::Gitlab::UrlHelpers.normalized_base_url(url)
   end
 
   private

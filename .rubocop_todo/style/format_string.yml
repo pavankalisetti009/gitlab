@@ -164,7 +164,6 @@ Style/FormatString:
     - 'ee/app/models/dast/profile.rb'
     - 'ee/app/models/dast/site_profile_secret_variable.rb'
     - 'ee/app/models/dast_site_profile.rb'
-    - 'ee/app/models/dast_site_validation.rb'
     - 'ee/app/models/geo/upload_registry.rb'
     - 'ee/app/models/integrations/github.rb'
     - 'ee/app/models/iterations/cadence.rb'

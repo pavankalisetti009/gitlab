@@ -21,6 +21,6 @@ class BulkImports::Configuration < ApplicationRecord
     algorithm: 'aes-256-gcm'
 
   def source_hostname
-    URI.parse(url).host
+    ::Gitlab::UrlHelpers.normalized_base_url(url)
   end
 end
