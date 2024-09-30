@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_category: :vulnerability_management do
   describe '#execute' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:project_statistics) { project.statistics }
+    let_it_be(:security_statistics) { project.security_statistics }
     let_it_be(:vulnerabilities) do
       create_list(
         :vulnerability,
@@ -93,7 +93,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                          .and change { Vulnerabilities::ExternalIssueLink.count }.by(-1)
                                          .and change { Vulnerabilities::FindingRemediation.count }.by(-1)
                                          .and change { Vulnerabilities::HistoricalStatistic.count }.by(-1)
-                                         .and change { project_statistics.reload.vulnerability_count }.by(-3)
+                                         .and change { security_statistics.reload.vulnerability_count }.by(-3)
 
         expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
       end
@@ -107,7 +107,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and change { Vulnerabilities::Read.count }.by(-1)
                                              .and change { Vulnerabilities::Finding.count }.by(-1)
                                              .and change { Vulnerabilities::FindingIdentifier.count }.by(-1)
-                                             .and change { project_statistics.reload.vulnerability_count }.by(-1)
+                                             .and change { security_statistics.reload.vulnerability_count }.by(-1)
                                              .and not_change { Vulnerabilities::Flag.count }
                                              .and not_change { VulnerabilityUserMention.count }
                                              .and not_change { Vulnerabilities::Feedback.count }
@@ -146,7 +146,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and change { Vulnerabilities::Finding::Evidence.count }.by(-1)
                                              .and change { Vulnerabilities::ExternalIssueLink.count }.by(-1)
                                              .and change { Vulnerabilities::FindingRemediation.count }.by(-1)
-                                             .and change { project_statistics.reload.vulnerability_count }.by(-2)
+                                             .and change { security_statistics.reload.vulnerability_count }.by(-2)
                                              .and not_change { Vulnerabilities::Feedback.count }
                                              .and not_change { Vulnerabilities::Identifier.count }
                                              .and not_change { Vulnerabilities::HistoricalStatistic.count }
