@@ -15,7 +15,7 @@ module WorkItems
         handle_color_change
       end
 
-      def after_save_commit
+      def after_update_commit
         ::SystemNoteService.change_color_note(work_item, current_user, @previous_color) if create_system_notes?
       end
 

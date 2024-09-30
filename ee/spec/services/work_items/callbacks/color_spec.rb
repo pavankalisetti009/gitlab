@@ -122,13 +122,13 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
     it_behaves_like 'when epic_colors feature is unlicensed'
   end
 
-  describe '#after_save_commit' do
-    subject(:after_save_commit_callback) { callback.after_save_commit }
+  describe '#after_update_commit' do
+    subject(:after_update_commit_callback) { callback.after_update_commit }
 
     let_it_be_with_reload(:color) { create(:color, work_item: work_item, color: '#1068bf') }
 
     it "does not create system notes when color didn't change" do
-      expect { after_save_commit_callback }.to not_change { work_item.notes.count }
+      expect { after_update_commit_callback }.to not_change { work_item.notes.count }
     end
 
     context 'when color was reset' do
@@ -137,7 +137,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
       end
 
       it 'creates system note' do
-        expect { after_save_commit_callback }.to change { work_item.notes.count }.by(1)
+        expect { after_update_commit_callback }.to change { work_item.notes.count }.by(1)
 
         expect(work_item.notes.first.note).to eq("removed color `#{color.color}`")
       end
@@ -149,7 +149,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
       end
 
       it 'creates system note' do
-        expect { after_save_commit_callback }.to change { work_item.notes.count }.by(1)
+        expect { after_update_commit_callback }.to change { work_item.notes.count }.by(1)
 
         expect(work_item.notes.first.note).to eq("set color to `#{color.color}`")
       end
