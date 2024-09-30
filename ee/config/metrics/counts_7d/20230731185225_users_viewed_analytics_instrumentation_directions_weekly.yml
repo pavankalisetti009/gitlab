@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.optional.users_viewed_analytics_instrumentation_directions_weekly
 description: Count of users who have viewed analytics instrumentation directions in the last 7 days
-product_group: product_analytics
+product_group: platform_insights
 value_type: number
 status: active
 milestone: "16.3"

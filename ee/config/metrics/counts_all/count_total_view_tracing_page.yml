@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_view_tracing_page
 description: Total count of users who visited tracing page
-product_group: observability
+product_group: platform_insights
 performance_indicator_type: []
 value_type: number
 status: active

@@ -1,7 +1,7 @@
 ---
 key_path: count_distinct_user_id_from_user_viewed_custom_dashboard_7d
 description: Count of distinct users who visted any user defined custom dashboard in the last 7d.
-product_group: product_analytics
+product_group: platform_insights
 performance_indicator_type: []
 value_type: number
 status: active
