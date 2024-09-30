@@ -27,6 +27,7 @@ module Ai
             ConfigFiles::JavaGradle,
             ConfigFiles::JavaMaven,
             ConfigFiles::KotlinGradle,
+            ConfigFiles::PhpComposerLock,
             ConfigFiles::PythonConda,
             ConfigFiles::PythonPip,
             ConfigFiles::PythonPoetry,
