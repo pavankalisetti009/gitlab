@@ -247,6 +247,15 @@ module QA
             find_element('approve-button', text: "Revoke approval")
           end
 
+          def generate_commit
+            click_button('Generate commit message')
+            click_button('Insert')
+          end
+
+          def commit_message
+            find('#merge-message-edit').value
+          end
+
           private
 
           def approvals_content
