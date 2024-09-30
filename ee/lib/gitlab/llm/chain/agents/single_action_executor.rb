@@ -93,12 +93,23 @@ module Gitlab
                 error_code: "A1003"
               )
             when AgentEventError
-              Answer.error_answer(
-                error: error,
-                context: context,
-                source: "chat_v2",
-                error_code: "A1004"
-              )
+              if error.message.present? && error.message.include?("prompt is too long")
+                Answer.error_answer(
+                  error: error,
+                  context: context,
+                  content: _("I'm sorry, you've entered too many prompts. Please run /clear " \
+                    "or /reset before asking the next question."),
+                  source: "chat_v2",
+                  error_code: "A1005"
+                )
+              else
+                Answer.error_answer(
+                  error: error,
+                  context: context,
+                  source: "chat_v2",
+                  error_code: "A1004"
+                )
+              end
             else
               Answer.error_answer(
                 error: error,

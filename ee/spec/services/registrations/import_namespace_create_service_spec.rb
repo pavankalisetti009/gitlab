@@ -135,18 +135,16 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
         end
 
         it 'applies a trial without the duo_enterprise add on' do
-          expect(GitlabSubscriptions::Trials::ApplyTrialWorker).to receive(:perform_async)
-                                                                     .with(user.id, trial_user_information)
-                                                                     .and_call_original
+          expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
+            .to receive(:perform_async).with(user.id, trial_user_information.stringify_keys).and_call_original
 
           expect(execute).to be_success
         end
       end
 
       it 'applies a trial' do
-        expect(GitlabSubscriptions::Trials::ApplyTrialWorker).to receive(:perform_async)
-                                                                   .with(user.id, trial_user_information)
-                                                                   .and_call_original
+        expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
+          .to receive(:perform_async).with(user.id, trial_user_information.stringify_keys).and_call_original
 
         expect(execute).to be_success
       end
