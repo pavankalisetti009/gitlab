@@ -27,14 +27,14 @@ module Search
         query_hash = if options[:group_level_authorization]
                        ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash, options: options)
                      else
-                       ::Search::Elastic::Filters.by_authorization(query_hash: query_hash, options: options)
+                       ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
                      end
 
         query_hash = if options[:group_level_confidentiality]
                        ::Search::Elastic::Filters.by_group_level_confidentiality(query_hash: query_hash,
                          options: options)
                      else
-                       ::Search::Elastic::Filters.by_confidentiality(query_hash: query_hash, options: options)
+                       ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash, options: options)
                      end
 
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)

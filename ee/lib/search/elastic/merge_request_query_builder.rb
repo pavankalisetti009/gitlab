@@ -9,7 +9,7 @@ module Search
 
       def build
         query_hash = build_query_hash(query: query, options: options)
-        query_hash = ::Search::Elastic::Filters.by_authorization(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
 

@@ -51,13 +51,17 @@ module EE
       noteable.is_a?(Epic)
     end
 
+    def for_group_wiki?
+      for_wiki_page? && noteable&.for_group_wiki?
+    end
+
     def for_vulnerability?
       noteable.is_a?(Vulnerability)
     end
 
     override :for_project_noteable?
     def for_project_noteable?
-      !for_epic? && super
+      !(for_epic? || for_group_wiki?) && super
     end
 
     override :banzai_render_context
