@@ -260,6 +260,7 @@ module EE
           dismissal_descriptions: dismissal_descriptions.to_json,
           hide_third_party_offers: ::Gitlab::CurrentSettings.current_application_settings.hide_third_party_offers?.to_s
         }.merge!(security_dashboard_pipeline_data(project))
+         .merge!(vulnerability_quota: vulnerability_quota_information(project))
       end
     end
 
@@ -429,6 +430,14 @@ module EE
       end
 
       pipelines
+    end
+
+    def vulnerability_quota_information(project)
+      {
+        full: project.vulnerability_quota.full?.to_s,
+        critical: project.vulnerability_quota.critical?.to_s,
+        enforced: project.vulnerability_quota.enforced?.to_s
+      }
     end
 
     def allowed_subgroups(group_id)

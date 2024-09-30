@@ -75,7 +75,7 @@ module Vulnerabilities
     end
 
     def vulnerability_count
-      statistics.reset.vulnerability_count
+      statistics.vulnerability_count
     end
 
     def project_limit
