@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- Test uses a lot of helpers, and will be reviewed in https://gitlab.com/gitlab-org/gitlab/-/issues/495021
 RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :cloud_connector do
   describe '#read_available_services' do
     let_it_be(:cs_cut_off_date) { Time.zone.parse("2024-02-15 00:00:00 UTC").utc }
@@ -24,6 +25,8 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let_it_be(:self_hosted_models_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:ai_proxy_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:duo_chat_cutoff_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
+    let_it_be(:glab_ask_git_command_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
+    let_it_be(:generate_commit_message_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let_it_be(:self_hosted_models_bundled_with) { { "duo_enterprise" => [:code_suggestions, :duo_chat] } }
 
     let_it_be(:anthropic_proxy_bundled_with) do
@@ -144,8 +147,9 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           resolve_vulnerability: [nil, resolve_vulnerability_bundled_with, backend],
           self_hosted_models: [self_hosted_models_cut_off_date, self_hosted_models_bundled_with, backend],
           generate_description: [nil, generate_description_bundled_with, backend],
-          generate_commit_message: [nil, generate_commit_message_bundled_with, backend],
-          glab_ask_git_command: [nil, glab_ask_git_command_bundled_with, backend],
+          generate_commit_message: [generate_commit_message_cut_off_date, generate_commit_message_bundled_with,
+            backend],
+          glab_ask_git_command: [glab_ask_git_command_cut_off_date, glab_ask_git_command_bundled_with, backend],
           explain_vulnerability: [nil, explain_vulnerability_bundled_with, backend],
           summarize_comments: [nil, summarize_comments_bundled_with, backend],
           observability_all: [nil, observability_all_bundled_with, gob_backend],
@@ -156,3 +160,4 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers

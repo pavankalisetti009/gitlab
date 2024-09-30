@@ -10,6 +10,7 @@ module ProductAnalyticsHelpers
     return false unless ::Gitlab::CurrentSettings.product_analytics_enabled?
 
     return false unless is_a?(Project)
+    return false unless ::Feature.enabled?(:product_analytics_features, self)
     return false unless licensed_feature_available?(:product_analytics)
 
     root_group = group&.root_ancestor

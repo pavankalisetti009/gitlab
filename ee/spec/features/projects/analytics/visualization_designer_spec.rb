@@ -147,6 +147,7 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
 
     def setup_valid_state
       sign_in(user)
+      stub_feature_flags(product_analytics_features: true)
       stub_licensed_features(combined_project_analytics_dashboards: true, product_analytics: true)
       stub_application_setting(product_analytics_enabled?: true)
       stub_application_setting(product_analytics_data_collector_host: 'https://collector.example.com')

@@ -24,10 +24,8 @@ module AntiAbuse
       return unless reporter.gitlab_employee?
       return unless bannable_user?
 
-      ApplicationRecord.transaction do
-        Users::AutoBanService.new(user: user, reason: abuse_report.category).execute!
-        UserCustomAttribute.set_banned_by_abuse_report(abuse_report)
-      end
+      Users::AutoBanService.new(user: user, reason: abuse_report.category).execute!
+      UserCustomAttribute.set_banned_by_abuse_report(abuse_report)
 
       log_event
     end

@@ -5,6 +5,7 @@ import { groupBy, isEqual, isNumber } from 'lodash';
 import { mapState, mapActions } from 'vuex';
 import ProtectedBranchesSelector from 'ee/vue_shared/components/branches_selector/protected_branches_selector.vue';
 import ListSelector from '~/vue_shared/components/list_selector/index.vue';
+import { GROUPS_TYPE, USERS_TYPE } from '~/vue_shared/components/list_selector/constants';
 import { sprintf } from '~/locale';
 import {
   ALL_BRANCHES,
@@ -27,6 +28,8 @@ function mapServerResponseToValidationErrors(messages) {
 }
 
 export default {
+  GROUPS_TYPE,
+  USERS_TYPE,
   components: {
     ListSelector,
     GlFormGroup,
@@ -426,7 +429,7 @@ export default {
       data-testid="approvers-group"
     >
       <list-selector
-        type="users"
+        :type="$options.USERS_TYPE"
         data-testid="users-selector"
         :selected-items="users"
         :project-path="settings.projectId"
@@ -434,7 +437,7 @@ export default {
         @select="(approver) => handleSelectApprover(approver, 'user')"
       />
       <list-selector
-        type="groups"
+        :type="$options.GROUPS_TYPE"
         data-testid="groups-selector"
         class="gl-mt-5"
         is-project-scoped

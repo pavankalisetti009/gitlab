@@ -62,6 +62,16 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
         end
       end
 
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(product_analytics_features: false)
+        end
+
+        it 'contains only user defined dashboards' do
+          expect(result.size).to eq(1)
+        end
+      end
+
       context 'when clickhouse is configured' do
         before do
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
@@ -110,6 +120,17 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
             expect(result.first.slug).to eq(slug)
           end
 
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(product_analytics_features: false)
+            end
+
+            it 'still returns the dashboard' do
+              expect(result.size).to eq(1)
+              expect(result.first.slug).to eq(slug)
+            end
+          end
+
           context 'when product analytics toggle is disabled' do
             before do
               project.group.root_ancestor.namespace_settings.update!(product_analytics_enabled: false)
@@ -128,6 +149,16 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
           it 'contains only one dashboard and it is the one with the matching slug' do
             expect(result.size).to eq(1)
             expect(result.first.slug).to eq(slug)
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(product_analytics_features: false)
+            end
+
+            it 'is empty' do
+              expect(result.size).to eq(0)
+            end
           end
         end
       end

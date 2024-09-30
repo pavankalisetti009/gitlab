@@ -187,6 +187,23 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         worker
       end
     end
+
+    context 'when the feature flag is disabled' do
+      before do
+        stub_feature_flags(product_analytics_features: false)
+        create_valid_funnel
+      end
+
+      after do
+        delete_funnel("example1.yml")
+      end
+
+      it 'does not attempt to post to the API' do
+        expect(Gitlab::HTTP).not_to receive(:post)
+
+        worker
+      end
+    end
   end
 
   include RepoHelpers

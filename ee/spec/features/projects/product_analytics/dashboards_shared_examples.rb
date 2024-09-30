@@ -77,7 +77,19 @@ RSpec.shared_examples 'product analytics dashboards' do
       stub_application_setting(**application_settings)
     end
 
-    context 'when default enabled' do
+    context 'with the feature flag disabled' do
+      before do
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it_behaves_like 'does not render the product analytics list item'
+    end
+
+    context 'with the feature flag enabled' do
+      before do
+        stub_feature_flags(product_analytics_features: true)
+      end
+
       context 'with the licensed feature disabled' do
         before do
           stub_licensed_features(combined_project_analytics_dashboards: true, product_analytics: false)
