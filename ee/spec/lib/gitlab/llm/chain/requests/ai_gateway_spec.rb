@@ -193,6 +193,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           model: expected_model,
           model_endpoint: self_hosted_model.endpoint,
           model_api_key: self_hosted_model.api_token,
+          model_identifier: "provider/some-model",
           params: params
         }
       end
@@ -205,7 +206,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:prompt) { { prompt: user_prompt, options: options } }
 
       let(:model_metadata) do
-        { api_key: "test_token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
+        { api_key: "test_token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-cool-model' }
       end
 
       let(:options) do
@@ -286,7 +287,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:inputs) { { field: :test_field } }
 
       let(:model_metadata) do
-        { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
+        { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-model' }
       end
 
       context 'with no unit primitive corresponding a feature setting' do
@@ -300,9 +301,11 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
       context 'with a unit primitive corresponding a feature setting' do
         let_it_be(:model_api_key) { 'explain_code_token_model' }
+        let_it_be(:model_identifier) { 'provider/some-cool-model' }
         let_it_be(:model_endpoint) { 'http://example.explain_code.dev' }
         let_it_be(:self_hosted_model) do
-          create(:ai_self_hosted_model, name: 'explain_code', endpoint: model_endpoint, api_token: model_api_key)
+          create(:ai_self_hosted_model, name: 'explain_code', endpoint: model_endpoint, api_token: model_api_key,
+            identifier: model_identifier)
         end
 
         let_it_be(:sub_feature_setting) do
@@ -331,7 +334,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
         context 'when ai_duo_chat_sub_features_settings feature is enabled' do
           let(:model_metadata) do
-            { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai }
+            { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai,
+              identifier: model_identifier }
           end
 
           it_behaves_like 'performing request to the AI Gateway'

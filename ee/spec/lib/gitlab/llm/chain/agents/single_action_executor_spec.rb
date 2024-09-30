@@ -304,7 +304,8 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
           api_key: "test_token",
           endpoint: "http://localhost:11434/v1",
           name: "mistral",
-          provider: :openai
+          provider: :openai,
+          identifier: "provider/some-model"
         }
 
         expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
