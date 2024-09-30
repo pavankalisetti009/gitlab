@@ -47,7 +47,8 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
     context 'when there is no existing predictions' do
       let(:reviewer_ids) { [1, 2] }
 
-      it 'returns an error response', :aggregate_failures do
+      it 'returns an error response', :aggregate_failures,
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485615' do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('No predictions are recorded')
