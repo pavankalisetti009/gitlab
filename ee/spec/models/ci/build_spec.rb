@@ -83,7 +83,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     context 'with project runner' do
       before do
-        job.runner = create(:ci_runner, :project)
+        job.runner = create(:ci_runner, :project, projects: [job.project])
       end
 
       it { is_expected.to be_falsey }

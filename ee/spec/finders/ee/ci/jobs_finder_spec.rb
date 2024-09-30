@@ -4,6 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integration do
   let_it_be(:admin) { create(:user, :admin) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, group: group) }
 
   let(:params) { {} }
 
@@ -15,8 +17,8 @@ RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integra
 
       context 'when admin mode is enabled', :enable_admin_mode do
         let_it_be(:instance_runner) { create(:ci_runner, :instance) }
-        let_it_be(:group_runner) { create(:ci_runner, :group) }
-        let_it_be(:project_runner) { create(:ci_runner, :project) }
+        let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
+        let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project]) }
         let_it_be(:job_args) { { runner: instance_runner, failure_reason: :runner_system_failure } }
         let_it_be(:job1) { create(:ci_build, :failed, finished_at: 1.minute.ago, **job_args) }
         let_it_be(:job2) { create(:ci_build, :failed, finished_at: 2.minutes.ago, **job_args) }

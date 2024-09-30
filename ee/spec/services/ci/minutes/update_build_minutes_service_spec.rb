@@ -118,7 +118,7 @@ RSpec.describe Ci::Minutes::UpdateBuildMinutesService, feature_category: :hosted
     end
 
     context 'for project runner' do
-      let(:runner) { create(:ci_runner, :project) }
+      let(:runner) { create(:ci_runner, :project, projects: [project]) }
 
       it_behaves_like 'does nothing'
     end

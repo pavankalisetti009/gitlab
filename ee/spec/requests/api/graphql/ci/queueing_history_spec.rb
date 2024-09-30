@@ -8,7 +8,7 @@ RSpec.describe 'Query.ciQueueingHistory', :click_house, feature_category: :fleet
 
   let_it_be(:project) { create(:project) }
   let_it_be(:instance_runner) { create(:ci_runner, :instance, :with_runner_manager) }
-  let_it_be(:project_runner) { create(:ci_runner, :project, :with_runner_manager) }
+  let_it_be(:project_runner) { create(:ci_runner, :project, :with_runner_manager, projects: [project]) }
 
   let_it_be(:admin) { create(:user, :admin) }
   let(:current_user) { admin }

@@ -24,7 +24,7 @@ RSpec.describe Ci::Minutes::CostSetting, feature_category: :hosted_runners do
     end
 
     context 'when the runner is not shared' do
-      let(:runner) { build(:ci_runner, :project) }
+      let(:runner) { build(:ci_runner, :project, :without_projects) }
 
       it 'is invalid' do
         expect(subject).to be_invalid
