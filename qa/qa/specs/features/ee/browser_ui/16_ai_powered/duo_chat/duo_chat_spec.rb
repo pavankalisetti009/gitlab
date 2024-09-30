@@ -36,7 +36,7 @@ module QA
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 
-        context 'on Self-managed', :orchestrated, :ai_gateway do
+        context 'on Self-managed', :blocking, :orchestrated, :ai_gateway do
           # As an orchestrated test we use an ai-gateway with a fake model, so we can assert part of the prompt
           # https://gitlab.com/gitlab-org/gitlab/-/blob/481a3af0ded95cb24fc1e34b004d104c72ed95e4/ee/lib/gitlab/llm/chain/agents/zero_shot/executor.rb#L229-229
           let(:expected_response) { 'Question: the input question you must answer' }
