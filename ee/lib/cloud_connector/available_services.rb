@@ -14,7 +14,7 @@ module CloudConnector
       end
 
       def select_reader(service_name)
-        if use_self_signed_token?(service_name)
+        if use_self_signed_token?(service_name) # gitlab.com or self-hosted AI Gateway
           SelfSigned::AccessDataReader.new
         else
           SelfManaged::AccessDataReader.new

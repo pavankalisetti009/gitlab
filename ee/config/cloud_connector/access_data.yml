@@ -140,3 +140,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       _irrelevant_: # not checked when cut_off_date is null
         unit_primitives:
           - security_scans
+  duo_workflow:
+    backend: 'gitlab-duo-workflow-service'
+    bundled_with:
+      _irrelevant: # not checked when cut_off_date is null
+        unit_primitives:
+          - duo_workflow_execute_workflow
+          - duo_workflow_generate_token
