@@ -62,7 +62,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     end
 
     let_it_be(:other_self_hosted_model) do
-      create(:ai_self_hosted_model, name: 'other_model', model: :mixtral)
+      create(:ai_self_hosted_model, name: 'other_model', model: :codegemma)
     end
 
     let_it_be(:other_feature_setting) do
@@ -139,7 +139,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
 
     context 'when feature metadata exists' do
       let(:feature_metadata) do
-        { 'title' => 'Duo Chat', 'main_feature' => 'duo_chat', 'compatible_llms' => ['mixtral_8x22b'],
+        { 'title' => 'Duo Chat', 'main_feature' => 'duo_chat', 'compatible_llms' => ['codellama'],
           'release_state' => 'BETA' }
       end
 
@@ -149,7 +149,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
         expect(metadata.title).to eq('Duo Chat')
         expect(metadata.main_feature).to eq('duo_chat')
-        expect(metadata.compatible_llms).to eq(['mixtral_8x22b'])
+        expect(metadata.compatible_llms).to eq(['codellama'])
         expect(metadata.release_state).to eq('BETA')
       end
     end
@@ -170,7 +170,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   end
 
   describe '#compatible_self_hosted_models' do
-    let_it_be(:llm_names) { %w[codegemma_2b deepseekcoder mixtral codellama_13b_code] }
+    let_it_be(:llm_names) { %w[codegemma deepseekcoder mistral codellama] }
     let_it_be(:models) do
       llm_names.map do |llm_name|
         create(:ai_self_hosted_model, name: "vllm_#{llm_name}", model: llm_name)
@@ -188,7 +188,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     context 'with compatible LLMs assigned to the feature' do
       let(:feature_metadata) do
         { 'title' => 'Code Generation', 'main_feature' => 'Code Suggestion',
-          'compatible_llms' => %w[deepseekcoder codellama_13b_code], 'release_state' => 'GA' }
+          'compatible_llms' => %w[deepseekcoder codellama], 'release_state' => 'GA' }
       end
 
       it 'returns the compatible self-hosted models' do
@@ -244,7 +244,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       end
 
       context 'when compatible_llms is present' do
-        let(:compatible_llms) { %w[mistral mixtral_8x22b mixtral] }
+        let(:compatible_llms) { %w[mistral deepseekcoder codegemma] }
 
         before do
           allow(feature_setting).to receive(:compatible_llms).and_return(compatible_llms)
@@ -260,7 +260,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
 
         context 'when self_hosted_model is not compatible' do
           it 'adds an error message' do
-            incompatible_model = :codegemma_7b
+            incompatible_model = :codellama
             self_hosted_model.model = incompatible_model
             feature_setting.validate
             expect(feature_setting.errors[:base])

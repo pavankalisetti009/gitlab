@@ -8,37 +8,21 @@ code_generations:
     - codestral
     - deepseekcoder
     - mistral
-    - mixtral
-    - mixtral_8x22b
     - llama3
-    - llama3_text
-    - llama3_70b
-    - llama3_70b_text
 code_completions:
   title: Code Completion
   release_state: GA
   main_feature: Code Suggestions
   compatible_llms:
-    - codegemma_2b
-    - codegemma_7b
-    - codellama_13b_code
+    - codegemma
+    - codellama
     - codestral
     - deepseekcoder
     - mistral
-    - mixtral
-    - mixtral_8x22b
-    - mistral_text
-    - mixtral_text
-    - mixtral_8x22b_text
     - llama3
-    - llama3_text
-    - llama3_70b
-    - llama3_70b_text
 duo_chat:
   title: Duo Chat
   release_state: BETA
   main_feature: Duo Chat
   compatible_llms:
     - mistral
-    - mixtral_8x22b
-    - mixtral

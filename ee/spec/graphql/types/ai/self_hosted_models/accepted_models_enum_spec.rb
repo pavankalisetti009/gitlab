@@ -6,16 +6,13 @@ RSpec.describe GitlabSchema.types['AiAcceptedSelfHostedModels'], feature_categor
   it { expect(described_class.graphql_name).to eq('AiAcceptedSelfHostedModels') }
 
   it 'exposes all the curated LLMs for self-hosted feature' do
-    expect(described_class.values.keys).to include(*%w[
-      CODEGEMMA_2B
+    expect(described_class.values.keys).to match_array(%w[
       CODEGEMMA
-      CODEGEMMA_7B
-      CODELLAMA_13B_CODE
       CODELLAMA
       CODESTRAL
       MISTRAL
-      MIXTRAL_8X22B
-      MIXTRAL
+      DEEPSEEKCODER
+      LLAMA3
     ])
   end
 end

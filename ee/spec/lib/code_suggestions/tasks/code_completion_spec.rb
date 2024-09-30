@@ -115,7 +115,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
     it_behaves_like 'code suggestion task' do
       let_it_be(:ai_self_hosted_model) do
-        create(:ai_self_hosted_model, model: :codellama_13b_code, name: 'whatever')
+        create(:ai_self_hosted_model, model: :codellama, name: 'whatever')
       end
 
       let_it_be(:ai_feature_setting) do
@@ -139,8 +139,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => nil,
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codellama_13b_code",
           "model_identifier" => "provider/some-model",
+          "model_name" => "codellama",
           "model_api_key" => "token"
         }
       end

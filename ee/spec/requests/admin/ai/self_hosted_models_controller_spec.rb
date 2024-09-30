@@ -97,7 +97,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
   describe 'GET #edit' do
     let(:page) { Nokogiri::HTML(response.body) }
     let(:self_hosted_model) do
-      create(:ai_self_hosted_model, model: :mixtral, api_token: nil)
+      create(:ai_self_hosted_model, model: :mistral, api_token: nil)
     end
 
     subject :perform_request do
@@ -110,7 +110,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
       expect(response).to have_gitlab_http_status(:ok)
 
       expect(page.at('#self_hosted_model_name')['value']).to eq(self_hosted_model.name)
-      expect(page.at('#self_hosted_model_model option[@selected="selected"]')['value']).to eq('mixtral')
+      expect(page.at('#self_hosted_model_model option[@selected="selected"]')['value']).to eq('mistral')
       expect(page.at('#self_hosted_model_endpoint')['value']).to eq(self_hosted_model.endpoint)
     end
 
@@ -145,7 +145,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
       {
         self_hosted_model: {
           name: 'test',
-          model: :mixtral,
+          model: :mistral,
           endpoint: 'https://example.com'
         }
       }
@@ -160,7 +160,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
 
       self_hosted_model = ::Ai::SelfHostedModel.last
       expect(self_hosted_model.name).to eq 'test'
-      expect(self_hosted_model.model).to eq 'mixtral'
+      expect(self_hosted_model.model).to eq 'mistral'
       expect(self_hosted_model.endpoint).to eq 'https://example.com'
 
       expect(response).to redirect_to(admin_ai_self_hosted_models_url)
@@ -172,7 +172,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
 
   describe 'PATCH #update' do
     let(:self_hosted_model) do
-      create(:ai_self_hosted_model, name: 'test', model: :mixtral, api_token: 'did_not_change')
+      create(:ai_self_hosted_model, name: 'test', model: :mistral, api_token: 'did_not_change')
     end
 
     subject :perform_request do
