@@ -42,9 +42,9 @@ module Vulnerabilities
             delete_resources_by_vulnerabilities
             delete_vulnerabilities
             delete_findings
-          end
 
-          update_project_vulnerabilities_count if update_counts
+            update_project_vulnerabilities_count if update_counts
+          end
 
           true
         end
@@ -70,7 +70,7 @@ module Vulnerabilities
         end
 
         def update_project_vulnerabilities_count
-          project.statistics.decrease_vulnerability_counter!(batch_size)
+          project.security_statistics.decrease_vulnerability_counter!(batch_size)
         end
 
         def batch_size

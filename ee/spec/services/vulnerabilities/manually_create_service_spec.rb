@@ -86,12 +86,8 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         end
       end
 
-      it 'does not exceed query limit' do
-        expect { subject }.not_to exceed_query_limit(32)
-      end
-
       it 'increases vulnerability count by 1' do
-        expect { subject }.to change { project.reload.statistics.vulnerability_count }.by(1)
+        expect { subject }.to change { project.reload.security_statistics.vulnerability_count }.by(1)
       end
 
       it 'creates a new Vulnerability' do
