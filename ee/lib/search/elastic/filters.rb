@@ -307,7 +307,7 @@ module Search
           end
         end
 
-        def by_confidentiality(query_hash:, options:)
+        def by_project_confidentiality(query_hash:, options:)
           confidential = options[:confidential]
           user = options[:current_user]
           project_ids = options[:project_ids]
@@ -381,7 +381,7 @@ module Search
         end
 
         # deprecated - use by_search_level_and_membership
-        def by_authorization(query_hash:, options:)
+        def by_project_authorization(query_hash:, options:)
           user = options[:current_user]
           project_ids = options[:project_ids]
           group_ids = options[:group_ids]
