@@ -88,7 +88,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
       wait_for_all_requests
 
       expect(page).to have_selector('.board', text: label2.title)
-      expect(find('.board:nth-child(3) .board-card')).to have_content(epic3.title)
+      expect(find('[data-testid="board-list"]:nth-child(3) .board-card')).to have_content(epic3.title)
     end
 
     it 'moves to the bottom of another list' do
@@ -169,7 +169,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
       end
 
       it 'moves to end of list' do
-        page.within(find('.board:nth-child(1)')) do
+        page.within(find('[data-testid="board-list"]:nth-child(1)')) do
           expect(all('.board-card').first).to have_content(epic4.title)
 
           first('.board-card').hover
@@ -182,7 +182,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
       end
 
       it 'moves to start of list' do
-        page.within(find('.board:nth-child(1)')) do
+        page.within(find('[data-testid="board-list"]:nth-child(1)')) do
           expect(all('.board-card').last).to have_content(epic2.title)
 
           all('.board-card').last.hover
@@ -219,7 +219,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
       end
 
       it 'dragging does not duplicate list' do
-        selector = '.board:not(.is-ghost) .board-header'
+        selector = '[data-testid="board-list"]:not(.is-ghost) .board-header'
         expect(page).to have_selector(selector, text: label.title, count: 1)
 
         drag(list_from_index: 2, list_to_index: 1, selector: '.board-header', perform_drop: false)
@@ -231,7 +231,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
         selector = '[data-testid="board-list-header"]'
         expect(page).to have_selector(selector, text: label.title, count: 1)
 
-        page.within(find('.board:nth-child(2)')) do
+        page.within(find('[data-testid="board-list"]:nth-child(2)')) do
           click_button 'Edit list settings'
         end
 
@@ -308,7 +308,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
     end
 
     it 'does not show Remove list in list settings sidebar' do
-      page.within(find('.board:nth-child(2)')) do
+      page.within(find('[data-testid="board-list"]:nth-child(2)')) do
         click_button 'Edit list settings'
       end
 
@@ -413,7 +413,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   end
 
   def list_header(list)
-    find(".board[data-list-id='gid://gitlab/Boards::EpicList/#{list.id}'] .board-header")
+    find("[data-list-id='gid://gitlab/Boards::EpicList/#{list.id}'] .board-header")
   end
 
   def drag(selector: '.board-list', list_from_index: 0, from_index: 0, to_index: 0, list_to_index: 0, perform_drop: true)
@@ -494,6 +494,6 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   end
 
   def find_board_list(board_number)
-    find(".board:nth-child(#{board_number})")
+    find("[data-testid='board-list']:nth-child(#{board_number})")
   end
 end

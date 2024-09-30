@@ -43,21 +43,21 @@ RSpec.describe 'User adds milestone/iterations lists', :js, :aggregate_failures,
       add_list('Milestone', milestone.title)
 
       expect(page).to have_selector('.board', text: milestone.title)
-      expect(find('.board:nth-child(2) .board-card')).to have_content(issue_with_milestone.title)
+      expect(find('[data-testid="board-list"]:nth-child(2) .board-card')).to have_content(issue_with_milestone.title)
     end
 
     it 'creates assignee column' do
       add_list('Assignee', user.name)
 
       expect(page).to have_selector('.board', text: user.name)
-      expect(find('.board:nth-child(2) .board-card')).to have_content(issue_with_assignee.title)
+      expect(find('[data-testid="board-list"]:nth-child(2) .board-card')).to have_content(issue_with_assignee.title)
     end
 
     it 'creates iteration column' do
       add_list('Iteration', iteration.period)
 
       expect(page).to have_selector('.board', text: iteration.display_text)
-      expect(find('.board:nth-child(2) .board-card')).to have_content(issue_with_iteration.title)
+      expect(find('[data-testid="board-list"]:nth-child(2) .board-card')).to have_content(issue_with_iteration.title)
     end
   end
 
