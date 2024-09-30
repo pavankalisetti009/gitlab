@@ -6,7 +6,7 @@ import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
@@ -64,6 +64,11 @@ export default {
         this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC &&
         this.glFeatures.bulkUpdateWorkItemsMutation
       );
+    },
+    workItemTypeName() {
+      return this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC
+        ? WORK_ITEM_TYPE_ENUM_EPIC
+        : WORK_ITEM_TYPE_ENUM_ISSUE;
     },
   },
   methods: {
@@ -135,7 +140,7 @@ export default {
         >
         <create-work-item-modal
           class="gl-grow"
-          :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+          :work-item-type-name="workItemTypeName"
           @workItemCreated="incrementUpdateCount"
         />
       </div>
