@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.count_distinct_user_id_from_view_metrics_details_page_weekly
 description: Weekly count of unique users who visited metrics details page
-product_group: observability
+product_group: platform_insights
 performance_indicator_type: []
 value_type: number
 status: active
