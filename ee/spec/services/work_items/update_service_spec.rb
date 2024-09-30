@@ -365,7 +365,10 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
     end
 
     context 'with a synced epic' do
-      let_it_be(:work_item, refind: true) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be(:work_item, refind: true) do
+        create(:work_item, :epic_with_legacy_epic, namespace: group, updated_by: create(:user))
+      end
+
       let_it_be(:epic) { work_item.synced_epic }
       let(:start_date) { (Time.current + 1.day).to_date }
       let(:due_date) { (Time.current + 2.days).to_date }
