@@ -6,43 +6,64 @@ module GitlabSubscriptions
       include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
       include ::Gitlab::Utils::StrongMemoize
 
-      def initialize(current_user:, params:, users: nil, members: nil, source: nil)
+      def initialize(current_user:, params:)
         @current_user = current_user
-        assign_users_members_and_source(users, members, source, params)
-        source_namespace
-        @user_ids = @users.map(&:id)
         @params = params
+
+        assign_users_members_emails_and_source
+        source_namespace
       end
 
       def execute
-        return success(users, members) unless promotion_management_required?
+        return nothing_to_queue unless promotion_management_required?
 
+        # before we perform billable_role_change? ensure access_level and member_role_id have valid values
         sanitize_access_level_and_member_role_id
-
-        return success(users, members) unless non_billable_to_billable_role_change?
+        return nothing_to_queue unless billable_role_change?
 
         non_billable_to_billable_users, billable_users = partition_non_billable_and_billable_users
-        return success(users, members) if non_billable_to_billable_users.empty?
+        return nothing_to_queue unless non_billable_to_billable_users.present?
 
         response = queue_non_billable_to_billable_users_for_approval(non_billable_to_billable_users)
-
-        billable_members = billable_members(billable_users)
-        non_billable_to_billable_members = build_non_billable_to_billable_members_with_service_errors(
+        queued_non_billable_to_billable_members = build_non_billable_to_billable_members_with_service_errors(
           non_billable_to_billable_users, response.error?
         )
+        queued_member_approvals = response[:users_queued_for_approval]
 
-        return error(billable_users, billable_members, non_billable_to_billable_members) if response.error?
+        billable_members = billable_members(billable_users)
+
+        emails_not_queued_for_approval = []
+        unless emails.empty?
+          non_billable_emails_downcased = non_billable_to_billable_users.map { |user| user.email.downcase }
+
+          # Remove emails of queued members from emails list to ensure they don't get promoted
+          emails_not_queued_for_approval = emails.reject do |email|
+            non_billable_emails_downcased.include?(email.downcase)
+          end
+        end
+
+        if response.error?
+          return error(
+            billable_users: billable_users,
+            billable_members: billable_members,
+            emails_not_queued_for_approval: emails_not_queued_for_approval,
+            non_billable_to_billable_members: queued_non_billable_to_billable_members
+          )
+        end
 
         success(
-          billable_users, billable_members, non_billable_to_billable_members,
-          response.payload[:users_queued_for_approval]
+          billable_users: billable_users,
+          billable_members: billable_members,
+          emails_not_queued_for_approval: emails_not_queued_for_approval,
+          non_billable_to_billable_members: queued_non_billable_to_billable_members,
+          queued_member_approvals: queued_member_approvals
         )
       end
 
       private
 
-      attr_accessor :users, :user_ids, :members, :existing_members_hash, :params, :new_access_level,
-        :source, :member_role_id
+      attr_accessor :users, :members, :existing_members_hash, :params, :new_access_level,
+        :source, :member_role_id, :emails, :users_by_emails_hash
 
       def source_namespace
         case source
@@ -54,20 +75,26 @@ module GitlabSubscriptions
       end
       strong_memoize_attr :source_namespace
 
-      def assign_users_members_and_source(users, members, source, params)
-        @source = source || params[:source]
+      def assign_users_members_emails_and_source
+        @source = params[:source]
+        @emails = params[:emails] || []
+        @users_by_emails_hash = params[:users_by_emails] || {}
 
-        if users
-          @users = users
+        if params[:users].present? || emails.present?
+          # invite flow with users or emails passed, we should at least have users or emails
+          @users = params[:users] || []
           @existing_members_hash = params[:existing_members] || {}
           @members = existing_members_hash.values
-        elsif members
-          @members = members
+
+          # hash contains nil values for users not present in the system, removing them
+          users_by_emails_hash.reject! { |_, value| value.nil? }
+        elsif params[:members].present?
+          # update flow with members passed
+          @members = params[:members]
           @users = members.map(&:user)
           @existing_members_hash = members.index_by(&:user_id)
-          @source ||= members.first.source
         else
-          raise ArgumentError, 'Invalid argument. Either members or users should be passed'
+          raise ArgumentError, 'Invalid argument. Either members or users or email should be passed.'
         end
       end
 
@@ -107,7 +134,7 @@ module GitlabSubscriptions
         promotion_management_applicable?
       end
 
-      def non_billable_to_billable_role_change?
+      def billable_role_change?
         new_access_level.present? &&
           promotion_management_required_for_role?(
             new_access_level: new_access_level,
@@ -138,28 +165,41 @@ module GitlabSubscriptions
       end
 
       def partition_non_billable_and_billable_users
-        non_billable_to_billable_users = GitlabSubscriptions::MemberManagement::SelfManaged::NonBillableUsersFinder
-                               .new(current_user, user_ids).execute
+        all_users = users + users_by_emails_hash.values
+        all_user_ids = all_users.map(&:id)
 
-        users.partition { |user| non_billable_to_billable_users.include?(user) }
+        non_billable_to_billable_users = GitlabSubscriptions::MemberManagement::SelfManaged::NonBillableUsersFinder
+                               .new(current_user, all_user_ids).execute
+
+        # since all_users will contain users added by email as well, we need to just return
+        # users added by users list
+        billable_users = users.select { |user| non_billable_to_billable_users.exclude?(user) }
+
+        [non_billable_to_billable_users, billable_users]
       end
 
       def billable_members(billable_users)
         members.select { |member| billable_users.include?(member.user) }
       end
 
+      def nothing_to_queue
+        success(billable_users: users, billable_members: members, emails_not_queued_for_approval: emails)
+      end
+
       def success(
-        billable_users, billable_members, non_billable_to_billable_members = [], users_queued_for_promotion = []
+        billable_users:, billable_members:, emails_not_queued_for_approval:,
+        non_billable_to_billable_members: [], queued_member_approvals: []
       )
         ServiceResponse.success(payload: {
           billable_users: billable_users,
           billable_members: billable_members,
           non_billable_to_billable_members: non_billable_to_billable_members,
-          users_queued_for_promotion: users_queued_for_promotion
+          emails_not_queued_for_approval: emails_not_queued_for_approval,
+          queued_member_approvals: queued_member_approvals
         })
       end
 
-      def error(billable_users, billable_members, non_billable_to_billable_members)
+      def error(billable_users:, billable_members:, emails_not_queued_for_approval:, non_billable_to_billable_members:)
         ServiceResponse.error(
           message: "Invalid record while enqueuing users for approval",
           payload: {
@@ -167,6 +207,7 @@ module GitlabSubscriptions
             members: members,
             billable_users: billable_users,
             billable_members: billable_members,
+            emails_not_queued_for_approval: emails_not_queued_for_approval,
             non_billable_to_billable_members: non_billable_to_billable_members
           }.compact
         )
