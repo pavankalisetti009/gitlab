@@ -211,6 +211,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
           },
           "model_api_key" => "token",
           "model_endpoint" => "http://localhost:11434/v1",
+          "model_identifier" => "provider/some-model",
           "model_name" => "mistral",
           "model_provider" => "litellm",
           "prompt" => "",

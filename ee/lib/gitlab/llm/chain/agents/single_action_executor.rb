@@ -229,7 +229,8 @@ module Gitlab
               provider: :openai, # for self-hosted models we support Messages API format at the moment
               name: self_hosted_model.model,
               endpoint: self_hosted_model.endpoint,
-              api_key: self_hosted_model.api_token
+              api_key: self_hosted_model.api_token,
+              identifier: self_hosted_model.identifier
             }
           end
 
