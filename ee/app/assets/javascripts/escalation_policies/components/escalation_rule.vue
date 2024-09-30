@@ -221,9 +221,8 @@ export default {
         <gl-sprintf :message="$options.i18n.fields.rules.condition">
           <template #alertStatus>
             <gl-collapsible-listbox
-              block
               data-testid="alert-status-dropdown"
-              toggle-class="rule-control gl-mx-3"
+              toggle-class="gl-mx-3"
               :items="alertStatusesListBoxItems"
               :selected="status"
               :toggle-text="$options.ALERT_STATUSES[status]"
@@ -245,8 +244,7 @@ export default {
         <gl-sprintf :message="$options.i18n.fields.rules.action">
           <template #doAction>
             <gl-collapsible-listbox
-              block
-              toggle-class="rule-control gl-mx-3"
+              toggle-class="gl-mx-3"
               data-testid="action-dropdown"
               :selected="action"
               :toggle-text="$options.ACTIONS[action]"
@@ -257,9 +255,7 @@ export default {
           <template #scheduleOrUser>
             <template v-if="isEmailOncallScheduleUserActionSelected">
               <gl-collapsible-listbox
-                block
                 data-testid="schedules-dropdown"
-                toggle-class="rule-control"
                 :disabled="noSchedules"
                 :items="schedulesListBoxItems"
                 :selected="oncallScheduleIid"
