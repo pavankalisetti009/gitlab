@@ -220,6 +220,13 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'Find a project secrets manager.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsManagerResolver
+
+        field :ai_feature_settings,
+          ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
+          null: true,
+          description: 'List of configurable AI features.',
+          resolver: ::Resolvers::Ai::FeatureSettings::FeatureSettingsResolver,
+          alpha: { milestone: '17.4' }
       end
 
       def vulnerability(id:)
