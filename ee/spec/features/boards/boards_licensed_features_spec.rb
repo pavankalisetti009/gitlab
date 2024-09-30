@@ -8,7 +8,7 @@ RSpec.describe 'Boards licensed features', :js, feature_category: :portfolio_man
   let_it_be(:user) { create(:user) }
 
   let(:card) do
-    within '.board:nth-child(1)' do
+    within '[data-testid="board-list"]:nth-child(1)' do
       find_by_testid('board-card')
     end
   end

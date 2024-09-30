@@ -177,7 +177,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
         let(:total_development_issues) { "1" }
 
         it 'displays issue and max issue size' do
-          page.within(".board:nth-child(2)") do
+          page.within("[data-testid='board-list']:nth-child(2)") do
             expect(find_by_testid('board-items-count')).to have_text(total_development_issues)
             expect(page.find('.max-issue-size')).to have_text(max_issue_count)
           end
@@ -202,7 +202,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       end
 
       it 'shows the list settings button' do
-        page.within(find(".board:nth-child(2)")) do
+        page.within(find("[data-testid='board-list']:nth-child(2)")) do
           expect(page).to have_selector(:button, "Edit list settings")
         end
         expect(page).not_to have_selector(".js-board-settings-sidebar")
@@ -210,7 +210,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
       context 'when settings button is clicked' do
         it 'shows the board list settings sidebar' do
-          page.within(find(".board:nth-child(2)")) do
+          page.within(find("[data-testid='board-list']:nth-child(2)")) do
             click_button('Edit list settings')
           end
 
@@ -220,7 +220,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
       context 'when boards setting sidebar is open' do
         before do
-          page.within(find(".board:nth-child(2)")) do
+          page.within(find("[data-testid='board-list']:nth-child(2)")) do
             click_button('Edit list settings')
           end
         end
@@ -265,7 +265,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
             wait_for_requests
 
-            page.within(find(".board:nth-child(2)")) do
+            page.within(find("[data-testid='board-list']:nth-child(2)")) do
               click_button('Edit list settings')
             end
 
@@ -355,7 +355,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
     end
 
     it 'displays blocked icon on blocked issue card displayed info on hover' do
-      page.within(find('.board:nth-child(1)')) do
+      page.within(find('[data-testid="board-list"]:nth-child(1)')) do
         page.within(first('.board-card')) do
           expect(page).to have_content(issue1.title)
           expect(page).to have_selector('[data-testid="issuable-blocked-icon"]')
@@ -372,13 +372,13 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
   end
 
   def list_weight_badge(list)
-    within(".board[data-list-id='gid://gitlab/List/#{list.id}']") do
+    within("[data-testid='board-list'][data-list-id='gid://gitlab/List/#{list.id}']") do
       find_by_testid('issue-count-badge')
     end
   end
 
   def card_weight_badge(list)
-    within(".board[data-list-id='gid://gitlab/List/#{list.id}']") do
+    within("[data-testid='board-list'][data-list-id='gid://gitlab/List/#{list.id}']") do
       find_by_testid('board-card-weight')
     end
   end

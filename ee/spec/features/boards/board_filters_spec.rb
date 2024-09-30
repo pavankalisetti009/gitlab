@@ -157,7 +157,7 @@ RSpec.describe 'Issue board filters', :js, feature_category: :team_planning do
   end
 
   def expect_board_list_issue_count(count)
-    expect(find('.board:nth-child(1)')).to have_selector('.board-card', count: count)
+    expect(all('[data-testid="board-list"]')[0]).to have_selector('.board-card', count: count)
   end
 
   def expect_board_list_to_contain(issue)
