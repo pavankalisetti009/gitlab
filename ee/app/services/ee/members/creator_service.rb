@@ -21,15 +21,17 @@ module EE
 
           return super unless current_user.present?
           return super if current_user.can_admin_all_resources?
+          return super unless users.present? || emails.present?
 
-          params = common_arguments.dup
-          params[:access_level] = parsed_access_level(params[:access_level])
+          params = common_arguments.merge(
+            access_level: parsed_access_level(common_arguments[:access_level]),
+            emails: emails,
+            users: users
+          )
 
           response = GitlabSubscriptions::MemberManagement::QueueNonBillableToBillableService.new(
             current_user: current_user,
-            params: params,
-            source: common_arguments[:source],
-            users: users
+            params: params
           ).execute
 
           if response.error?
@@ -38,8 +40,9 @@ module EE
           end
 
           billable_users = response.payload[:billable_users]
+          emails_not_queued_for_approval = response.payload[:emails_not_queued_for_approval]
           members = response.payload[:non_billable_to_billable_members]
-          members += super(emails, billable_users, common_arguments)
+          members += super(emails_not_queued_for_approval, billable_users, common_arguments)
 
           members
         end

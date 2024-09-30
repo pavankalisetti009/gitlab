@@ -112,7 +112,8 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
           expect(member_approval.old_access_level).to eq(members.first.access_level)
           expect(member_approval.new_access_level).to eq(new_access_level)
           expect(member_approval.requested_by).to eq(current_user)
-          expect(update_members[:members_queued_for_approval]).to contain_exactly(member_approval)
+          expect(update_members[:members_queued_for_approval]).to contain_exactly(members.first)
+          expect(update_members[:queued_member_approvals]).to contain_exactly(member_approval)
         end
       end
     end
