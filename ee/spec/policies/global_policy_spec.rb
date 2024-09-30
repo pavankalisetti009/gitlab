@@ -314,6 +314,42 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       end
     end
 
+    describe 'view_member_roles' do
+      let(:permissions) { [:view_member_roles] }
+
+      where(license: [:custom_roles, :default_roles_assignees])
+
+      with_them do
+        context 'when feature is enabled' do
+          before do
+            stub_licensed_features(license => true)
+          end
+
+          it { is_expected.to be_disallowed(*permissions) }
+
+          context 'when admin mode enabled', :enable_admin_mode do
+            let(:current_user) { admin }
+
+            it { is_expected.to be_allowed(*permissions) }
+          end
+
+          context 'when admin mode disabled' do
+            let(:current_user) { admin }
+
+            it { is_expected.to be_disallowed(*permissions) }
+          end
+        end
+
+        context 'when feature is disabled' do
+          let(:current_user) { admin }
+
+          context 'when admin mode enabled', :enable_admin_mode do
+            it { is_expected.to be_disallowed(*permissions) }
+          end
+        end
+      end
+    end
+
     describe 'read_member_role' do
       let(:permissions) { [:read_member_role] }
 

@@ -32,13 +32,14 @@ describe('Roles app', () => {
     groupRolesQueryHandler = groupRolesSuccessQueryHandler,
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
     groupFullPath = 'test-group',
+    newRolePath = 'new/role/path',
   } = {}) => {
     wrapper = shallowMountExtended(RolesApp, {
       apolloProvider: createMockApollo([
         [groupMemberRolesQuery, groupRolesQueryHandler],
         [instanceMemberRolesQuery, instanceRolesQueryHandler],
       ]),
-      propsData: { groupFullPath, newRolePath: 'new/role/path' },
+      propsData: { groupFullPath, newRolePath },
       stubs: { GlSprintf },
       mocks: { $toast: { show: mockToastShow } },
     });
@@ -180,6 +181,18 @@ describe('Roles app', () => {
       it('refetches custom roles query', () => {
         expect(groupRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
       });
+    });
+  });
+
+  describe('when newRolePath is not set', () => {
+    beforeEach(() => {
+      createComponent({ newRolePath: null });
+    });
+
+    it('does not show the New role button', () => {
+      const button = wrapper.findComponent(GlButton);
+
+      expect(button.exists()).toBe(false);
     });
   });
 });

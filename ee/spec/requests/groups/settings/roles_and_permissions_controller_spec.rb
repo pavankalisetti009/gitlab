@@ -4,12 +4,12 @@ require 'spec_helper'
 
 RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category: :user_management do
   include AdminModeHelper
+  using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user) }
   let_it_be(:admin) { create(:admin) }
   let_it_be_with_reload(:group) { create(:group) }
-  let_it_be(:member_role) { create(:member_role, namespace: group, name: 'Custom role') }
-  let_it_be(:role_id) { member_role.id }
+  let_it_be(:role_id) { Gitlab::Access.options.each_key.first }
 
   before do
     stub_saas_features(gitlab_com_subscriptions: true)
@@ -23,7 +23,7 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
     end
   end
 
-  shared_examples 'access control' do
+  shared_examples 'access control' do |licenses|
     shared_examples 'page is found under proper conditions' do
       it 'returns a 200 status code' do
         get_method
@@ -37,72 +37,76 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
         it_behaves_like 'page is not found'
       end
 
-      context 'when `custom_roles` license is disabled' do
+      context 'when license is disabled' do
         before do
-          stub_licensed_features(custom_roles: false)
+          stub_licensed_features(license => false)
         end
 
         it_behaves_like 'page is not found'
       end
     end
 
-    before do
-      stub_licensed_features(custom_roles: true)
-    end
+    where(license: licenses)
 
-    context 'when not logged in' do
-      it_behaves_like 'page is not found'
-    end
+    with_them do
+      before do
+        stub_licensed_features(license => true)
+      end
 
-    context 'with different access levels not allowed' do
-      where(access_level: [nil, :guest, :reporter, :developer, :maintainer])
+      context 'when not logged in' do
+        it_behaves_like 'page is not found'
+      end
 
-      with_them do
+      context 'with different access levels not allowed' do
+        where(access_level: [nil, :guest, :reporter, :developer, :maintainer])
+
+        with_them do
+          before do
+            group.add_member(user, access_level)
+            sign_in(user)
+          end
+
+          it_behaves_like 'page is not found'
+        end
+      end
+
+      context 'with admins' do
         before do
-          group.add_member(user, access_level)
+          sign_in(admin)
+          enable_admin_mode!(admin)
+        end
+
+        it_behaves_like 'page is found under proper conditions'
+
+        context 'on self-managed' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          it_behaves_like 'page is not found'
+        end
+      end
+
+      context 'with group owners' do
+        before do
+          group.add_member(user, :owner)
           sign_in(user)
         end
 
-        it_behaves_like 'page is not found'
-      end
-    end
-
-    context 'with admins' do
-      before do
-        sign_in(admin)
-        enable_admin_mode!(admin)
+        it_behaves_like 'page is found under proper conditions'
       end
 
-      it_behaves_like 'page is found under proper conditions'
+      context 'with ldap synced group owner' do
+        let_it_be(:group_link) { create(:ldap_group_link, group: group, group_access: Gitlab::Access::OWNER) }
+        let_it_be(:group_member) { create(:group_member, :owner, :ldap, :active, user: user, source: group) }
 
-      context 'on self-managed' do
         before do
-          stub_saas_features(gitlab_com_subscriptions: false)
+          stub_application_setting(lock_memberships_to_ldap: true)
+          sign_in(user)
         end
 
-        it_behaves_like 'page is not found'
+        it_behaves_like 'page is found under proper conditions'
       end
-    end
-
-    context 'with group owners' do
-      before do
-        group.add_member(user, :owner)
-        sign_in(user)
-      end
-
-      it_behaves_like 'page is found under proper conditions'
-    end
-
-    context 'with ldap synced group owner' do
-      let_it_be(:group_link) { create(:ldap_group_link, group: group, group_access: Gitlab::Access::OWNER) }
-      let_it_be(:group_member) { create(:group_member, :owner, :ldap, :active, user: user, source: group) }
-
-      before do
-        stub_application_setting(lock_memberships_to_ldap: true)
-        sign_in(user)
-      end
-
-      it_behaves_like 'page is found under proper conditions'
     end
   end
 
@@ -143,20 +147,20 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
   describe 'GET #index' do
     subject(:get_method) { get(group_settings_roles_and_permissions_path(group)) }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
   end
 
   describe 'GET #show' do
     subject(:get_method) { get(group_settings_roles_and_permission_path(group, role_id)) }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
     it_behaves_like 'role existence check'
   end
 
   describe 'GET #edit' do
     subject(:get_method) { get(edit_group_settings_roles_and_permission_path(group, role_id)) }
 
-    it_behaves_like 'access control'
+    it_behaves_like 'access control', [:custom_roles]
     it_behaves_like 'role existence check'
   end
 end

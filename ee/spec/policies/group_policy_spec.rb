@@ -2419,8 +2419,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       describe ':admin_member_role' do
         using RSpec::Parameterized::TableSyntax
 
-        let(:permissions) { [:admin_member_role] }
-
         where(:role, :allowed) do
           :guest      | false
           :reporter   | false
@@ -2438,30 +2436,56 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             enable_admin_mode!(current_user) if role == :admin
           end
 
-          context 'when custom_roles feature is enabled' do
-            before do
-              stub_licensed_features(custom_roles: true)
+          context 'custom roles license' do
+            let(:license) { :custom_roles }
+            let(:permissions) { [:admin_member_role, :view_member_roles] }
+
+            context 'when licensed feature is enabled' do
+              before do
+                stub_licensed_features(license => true)
+              end
+
+              it { is_expected.to(allowed ? be_allowed(*permissions) : be_disallowed(*permissions)) }
+
+              context 'when memberships are locked to LDAP' do
+                before do
+                  allow(group).to receive(:ldap_synced?).and_return(true)
+                  stub_application_setting(allow_group_owners_to_manage_ldap: true)
+                  stub_application_setting(lock_memberships_to_ldap: true)
+                end
+
+                it { is_expected.to(allowed ? be_allowed(*permissions) : be_disallowed(*permissions)) }
+              end
             end
 
-            it { is_expected.to(allowed ? be_allowed(*permissions) : be_disallowed(*permissions)) }
-
-            context 'when memberships are locked to LDAP' do
+            context 'when licensed feature is disabled' do
               before do
-                allow(group).to receive(:ldap_synced?).and_return(true)
-                stub_application_setting(allow_group_owners_to_manage_ldap: true)
-                stub_application_setting(lock_memberships_to_ldap: true)
+                stub_licensed_features(license => false)
+              end
+
+              it { is_expected.to be_disallowed(*permissions) }
+            end
+          end
+
+          context 'default roles assignees license' do
+            let(:license) { :default_roles_assignees }
+            let(:permissions) { [:view_member_roles] }
+
+            context 'when licensed feature is enabled' do
+              before do
+                stub_licensed_features(license => true)
               end
 
               it { is_expected.to(allowed ? be_allowed(*permissions) : be_disallowed(*permissions)) }
             end
-          end
 
-          context 'when custom_roles feature is disabled' do
-            before do
-              stub_licensed_features(custom_roles: false)
+            context 'when licensed feature is disabled' do
+              before do
+                stub_licensed_features(license => false)
+              end
+
+              it { is_expected.to be_disallowed(*permissions) }
             end
-
-            it { is_expected.to be_disallowed(*permissions) }
           end
         end
       end

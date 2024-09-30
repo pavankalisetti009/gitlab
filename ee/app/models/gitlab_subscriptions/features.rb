@@ -175,6 +175,7 @@ module GitlabSubscriptions
       group_saved_replies
       requested_changes_block_merge_request
       project_saved_replies
+      default_roles_assignees
     ].freeze
 
     ULTIMATE_FEATURES = %i[

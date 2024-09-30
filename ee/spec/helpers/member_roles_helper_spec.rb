@@ -18,31 +18,18 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     context 'when on self-managed' do
       subject(:data) { helper.member_roles_data }
 
-      context 'for admin user', :enable_admin_mode do
-        let_it_be(:user) { build_stubbed(:admin) }
-
-        context 'when custom roles are available' do
-          it 'matches the expected data' do
-            expect(data[:new_role_path]).to eq new_admin_application_settings_roles_and_permission_path
-            expect(data[:group_full_path]).to be_nil
-          end
-        end
-
-        context 'when custom roles are not available' do
-          before do
-            stub_licensed_features(custom_roles: false)
-          end
-
-          it 'matches the expected data' do
-            expect(data[:new_role_path]).to be_nil
-            expect(data[:group_full_path]).to be_nil
-          end
-        end
+      it 'matches the expected data' do
+        expect(data[:new_role_path]).to be_nil
+        expect(data[:group_full_path]).to be_nil
       end
 
-      context 'for non-admin user' do
+      context 'with admin member role rights' do
+        before do
+          allow(helper).to receive(:can?).with(user, :admin_member_role).and_return(true)
+        end
+
         it 'matches the expected data' do
-          expect(data[:new_role_path]).to be_nil
+          expect(data[:new_role_path]).to eq new_admin_application_settings_roles_and_permission_path
           expect(data[:group_full_path]).to be_nil
         end
       end
@@ -52,36 +39,20 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       context 'when on group page' do
         subject(:data) { helper.member_roles_data(source) }
 
-        shared_examples 'custom roles are not available' do
+        it 'matches the expected data' do
+          expect(data[:new_role_path]).to be_nil
+          expect(data[:group_full_path]).to eq source.full_path
+        end
+
+        context 'with admin member role rights' do
+          before do
+            allow(helper).to receive(:can?).with(user, :admin_member_role, root_group).and_return(true)
+          end
+
           it 'matches the expected data' do
-            expect(data[:new_role_path]).to be_nil
+            expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)
             expect(data[:group_full_path]).to eq source.full_path
           end
-        end
-
-        context 'as group owner' do
-          before do
-            allow(helper).to receive(:can?).with(user, :admin_group_member, root_group).and_return(true)
-          end
-
-          context 'when custom roles are available' do
-            it 'matches the expected data' do
-              expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)
-              expect(data[:group_full_path]).to eq source.full_path
-            end
-          end
-
-          context 'when custom roles are not available' do
-            before do
-              stub_licensed_features(custom_roles: false)
-            end
-
-            it_behaves_like 'custom roles are not available'
-          end
-        end
-
-        context 'as group non-owner' do
-          it_behaves_like 'custom roles are not available'
         end
       end
     end

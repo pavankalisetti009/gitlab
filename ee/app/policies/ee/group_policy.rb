@@ -261,6 +261,10 @@ module EE
         ::Gitlab::ClickHouse.configured?
       end
 
+      condition(:default_roles_assignees_allowed, scope: :subject) do
+        @subject.root_ancestor.licensed_feature_available?(:default_roles_assignees)
+      end
+
       rule { user_banned_from_namespace }.prevent_all
 
       rule { public_group | logged_in_viewable }.policy do
@@ -562,8 +566,13 @@ module EE
         enable :read_member_role
       end
 
+      rule { default_roles_assignees_allowed & owner }.policy do
+        enable :view_member_roles
+      end
+
       rule { custom_roles_allowed & owner }.policy do
         enable :admin_member_role
+        enable :view_member_roles
       end
 
       rule { custom_role_enables_admin_cicd_variables }.policy do
