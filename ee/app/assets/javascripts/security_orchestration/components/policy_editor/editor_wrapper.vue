@@ -81,6 +81,7 @@ export default {
       error: '',
       errorMessages: [],
       errorSources: [],
+      extraMergeRequestInput: null,
       isCreating: false,
       isDeleting: false,
       policy: null,
@@ -143,7 +144,8 @@ export default {
       // Process error to pass to specific component
       this.errorSources = [...newErrorSources, ...parseError(error)];
     },
-    async handleSave({ action, policy, isActiveRuleMode = false }) {
+    async handleSave({ action, extraMergeRequestInput = null, policy, isActiveRuleMode = false }) {
+      this.extraMergeRequestInput = extraMergeRequestInput;
       this.policyModificationAction = action || this.policyActionName;
       this.policy = policy;
       this.isActiveRuleMode = isActiveRuleMode;
@@ -172,6 +174,7 @@ export default {
         await goToPolicyMR({
           action: this.policyModificationAction,
           assignedPolicyProject,
+          extraMergeRequestInput: this.extraMergeRequestInput,
           name: this.originalName || fromYaml({ manifest: this.policy })?.name,
           namespacePath: this.namespacePath,
           yamlEditorValue: this.policy,

@@ -91,7 +91,7 @@ describe('EditorComponent', () => {
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
 
-  describe('when url params are passed', () => {
+  describe('when url params are passed w/ securityPoliciesProjectBackgroundWorker false', () => {
     beforeEach(() => {
       Object.defineProperty(window, 'location', {
         writable: true,
@@ -141,6 +141,61 @@ describe('EditorComponent', () => {
       expect(description).toContain(
         `[Foo](http://test.host/groups/path/to/project/-/security/compliance_dashboard/frameworks/1)`,
       );
+    });
+
+    afterEach(() => {
+      window.location.search = '';
+    });
+  });
+
+  describe('when url params are passed w/ securityPoliciesProjectBackgroundWorker true', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: { search: '' },
+      });
+
+      window.location.search = new URLSearchParams(Object.entries(customYamlUrlParams)).toString();
+      factory({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+    });
+
+    it('configures initial policy from passed url params', () => {
+      expect(findPolicyEditorLayout().props('policy')).toMatchObject({
+        type: customYamlUrlParams.type,
+        content: {
+          include: [{ file: 'foo', project: 'bar' }],
+        },
+        pipeline_config_strategy: 'override_project_ci',
+        metadata: {
+          compliance_pipeline_migration: true,
+        },
+      });
+    });
+
+    it('saves a new policy with correct title and description', async () => {
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(wrapper.emitted('save')[0]).toHaveLength(1);
+      expect(wrapper.emitted('save')[0][0]).toMatchObject({
+        extraMergeRequestInput: expect.objectContaining({
+          title: 'Compliance pipeline migration to pipeline execution policy',
+          description: expect.stringContaining('This merge request migrates compliance pipeline'),
+        }),
+      });
+    });
+
+    it('uses absolute links in description', async () => {
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(wrapper.emitted('save')[0][0]).toMatchObject({
+        extraMergeRequestInput: expect.objectContaining({
+          description: expect.stringContaining(
+            `[Foo](http://test.host/groups/path/to/project/-/security/compliance_dashboard/frameworks/1)`,
+          ),
+        }),
+      });
     });
 
     afterEach(() => {
@@ -220,7 +275,9 @@ describe('EditorComponent', () => {
       factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
       findPolicyEditorLayout().vm.$emit(event);
       await waitForPromises();
-      expect(wrapper.emitted('save')).toEqual([[{ action, policy: yamlEditorValue }]]);
+      expect(wrapper.emitted('save')).toEqual([
+        [{ action, extraMergeRequestInput: null, policy: yamlEditorValue }],
+      ]);
     });
   });
 
