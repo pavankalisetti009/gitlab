@@ -111,8 +111,11 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     context 'when called for a personal namespace' do
       let(:namespace) { build_stubbed(:user_namespace) }
 
-      it 'returns the default purchase' do
-        more_minutes_url = ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url
+      it 'returns correct path' do
+        more_minutes_url = ::Gitlab::Utils.add_url_parameters(
+          ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url,
+          gl_namespace_id: namespace.root_ancestor.id
+        )
 
         expect(helper.buy_additional_minutes_path(namespace)).to eq more_minutes_url
       end
@@ -139,7 +142,14 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     context 'when called for a personal namespace' do
       let(:namespace) { build_stubbed(:user_namespace) }
 
-      it { is_expected.to eq ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url }
+      it 'returns correct path' do
+        more_minutes_url = ::Gitlab::Utils.add_url_parameters(
+          ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url,
+          gl_namespace_id: namespace.root_ancestor.id
+        )
+
+        is_expected.to eq more_minutes_url
+      end
     end
 
     context 'when called from a subgroup' do
@@ -229,34 +239,33 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
         stub_ee_application_setting(should_check_namespace_plan: true)
       end
 
-      shared_examples 'returns a hash with proper SaaS data' do
-        it 'matches the returned hash' do
-          more_minutes_url = ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url
+      it 'returns a hash with proper SaaS data' do
+        more_minutes_url = ::Gitlab::Utils.add_url_parameters(
+          ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url,
+          gl_namespace_id: user_group.root_ancestor.id
+        )
 
-          expect(helper.pipeline_usage_app_data(user_group)).to eql({
-            namespace_actual_plan_name: user_group.actual_plan_name,
-            namespace_path: user_group.full_path,
-            namespace_id: user_group.id,
-            user_namespace: user_group.user_namespace?.to_s,
-            page_size: Kaminari.config.default_per_page,
-            ci_minutes: {
-              any_project_enabled: minutes_usage_presenter.any_project_enabled?.to_s,
-              last_reset_date: minutes_usage.reset_date,
-              display_minutes_available_data: minutes_usage_presenter.display_minutes_available_data?.to_s,
-              monthly_minutes_used: minutes_usage_presenter.monthly_minutes_report.used,
-              monthly_minutes_used_percentage: minutes_usage_presenter.monthly_percent_used,
-              monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_report.limit,
-              purchased_minutes_used: minutes_usage_presenter.purchased_minutes_report.used,
-              purchased_minutes_used_percentage: minutes_usage_presenter.purchased_percent_used,
-              purchased_minutes_limit: minutes_usage_presenter.purchased_minutes_report.limit
-            },
-            buy_additional_minutes_path: more_minutes_url,
-            buy_additional_minutes_target: '_blank'
-          })
-        end
+        expect(helper.pipeline_usage_app_data(user_group)).to eql({
+          namespace_actual_plan_name: user_group.actual_plan_name,
+          namespace_path: user_group.full_path,
+          namespace_id: user_group.id,
+          user_namespace: user_group.user_namespace?.to_s,
+          page_size: Kaminari.config.default_per_page,
+          ci_minutes: {
+            any_project_enabled: minutes_usage_presenter.any_project_enabled?.to_s,
+            last_reset_date: minutes_usage.reset_date,
+            display_minutes_available_data: minutes_usage_presenter.display_minutes_available_data?.to_s,
+            monthly_minutes_used: minutes_usage_presenter.monthly_minutes_report.used,
+            monthly_minutes_used_percentage: minutes_usage_presenter.monthly_percent_used,
+            monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_report.limit,
+            purchased_minutes_used: minutes_usage_presenter.purchased_minutes_report.used,
+            purchased_minutes_used_percentage: minutes_usage_presenter.purchased_percent_used,
+            purchased_minutes_limit: minutes_usage_presenter.purchased_minutes_report.limit
+          },
+          buy_additional_minutes_path: more_minutes_url,
+          buy_additional_minutes_target: '_blank'
+        })
       end
-
-      it_behaves_like 'returns a hash with proper SaaS data'
     end
 
     context 'when gitlab self managed' do

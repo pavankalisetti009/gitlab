@@ -11,13 +11,13 @@ module EE
     end
 
     def buy_additional_minutes_path(namespace)
-      return more_minutes_url if use_customers_dot_for_addon_path?(namespace)
+      return more_minutes_url(namespace) if use_customers_dot_for_addon_path?(namespace)
 
       buy_minutes_subscriptions_path(selected_group: namespace.root_ancestor.id)
     end
 
     def buy_additional_minutes_url(namespace)
-      return more_minutes_url if use_customers_dot_for_addon_path?(namespace)
+      return more_minutes_url(namespace) if use_customers_dot_for_addon_path?(namespace)
 
       buy_minutes_subscriptions_url(selected_group: namespace.root_ancestor.id)
     end
@@ -102,8 +102,11 @@ module EE
 
     private
 
-    def more_minutes_url
-      ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url
+    def more_minutes_url(namespace)
+      ::Gitlab::Utils.add_url_parameters(
+        ::Gitlab::Routing.url_helpers.subscription_portal_more_minutes_url,
+        gl_namespace_id: namespace.root_ancestor.id
+      )
     end
 
     def use_customers_dot_for_addon_path?(namespace)
