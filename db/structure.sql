@@ -1177,6 +1177,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_2dafd0d13605() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "pages_domains"
+  WHERE "pages_domains"."id" = NEW."pages_domain_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_30209d0fba3e() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -15746,7 +15762,8 @@ CREATE TABLE pages_domain_acme_orders (
     challenge_token character varying NOT NULL,
     challenge_file_content text NOT NULL,
     encrypted_private_key text NOT NULL,
-    encrypted_private_key_iv text NOT NULL
+    encrypted_private_key_iv text NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE pages_domain_acme_orders_id_seq
@@ -30068,6 +30085,8 @@ CREATE INDEX index_pages_domain_acme_orders_on_challenge_token ON pages_domain_a
 
 CREATE INDEX index_pages_domain_acme_orders_on_pages_domain_id ON pages_domain_acme_orders USING btree (pages_domain_id);
 
+CREATE INDEX index_pages_domain_acme_orders_on_project_id ON pages_domain_acme_orders USING btree (project_id);
+
 CREATE INDEX index_pages_domains_need_auto_ssl_renewal_user_provided ON pages_domains USING btree (id) WHERE ((auto_ssl_enabled = true) AND (auto_ssl_failed = false) AND (certificate_source = 0));
 
 CREATE INDEX index_pages_domains_need_auto_ssl_renewal_valid_not_after ON pages_domains USING btree (certificate_valid_not_after) WHERE ((auto_ssl_enabled = true) AND (auto_ssl_failed = false));
@@ -33450,6 +33469,8 @@ CREATE TRIGGER trigger_2a994bb5629f BEFORE INSERT OR UPDATE ON incident_manageme
 
 CREATE TRIGGER trigger_2b8fdc9b4a4e BEFORE INSERT OR UPDATE ON ml_experiment_metadata FOR EACH ROW EXECUTE FUNCTION trigger_2b8fdc9b4a4e();
 
+CREATE TRIGGER trigger_2dafd0d13605 BEFORE INSERT OR UPDATE ON pages_domain_acme_orders FOR EACH ROW EXECUTE FUNCTION trigger_2dafd0d13605();
+
 CREATE TRIGGER trigger_30209d0fba3e BEFORE INSERT OR UPDATE ON alert_management_alert_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_30209d0fba3e();
 
 CREATE TRIGGER trigger_3691f9f6a69f BEFORE INSERT OR UPDATE ON remote_development_agent_configs FOR EACH ROW EXECUTE FUNCTION trigger_3691f9f6a69f();
@@ -34408,6 +34429,9 @@ ALTER TABLE ONLY merge_request_metrics
 
 ALTER TABLE ONLY namespaces
     ADD CONSTRAINT fk_7f813d8c90 FOREIGN KEY (parent_id) REFERENCES namespaces(id) ON DELETE RESTRICT NOT VALID;
+
+ALTER TABLE ONLY pages_domain_acme_orders
+    ADD CONSTRAINT fk_7fa123c002 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY group_import_states
     ADD CONSTRAINT fk_8053b3ebd6 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
