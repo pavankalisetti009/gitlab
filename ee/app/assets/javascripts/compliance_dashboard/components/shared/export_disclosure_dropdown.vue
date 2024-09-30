@@ -206,7 +206,7 @@ export default {
     data-testid="exports-disclosure-dropdown"
   >
     <template #header>
-      <div class="gl-border-b gl-border-b-gray-200 gl-p-4">
+      <div class="gl-border-b gl-border-b-dropdown gl-p-4">
         <span class="gl-font-bold">
           {{ exportDropdownTitle }}
         </span>

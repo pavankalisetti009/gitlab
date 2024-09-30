@@ -148,7 +148,7 @@ export default {
     @select="onSelect"
   >
     <template #footer>
-      <div class="gl-border-t-1 gl-border-t-gray-200 !gl-p-2 gl-border-t-solid">
+      <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
         <gl-button
           data-testid="add-self-hosted-model-button"
           :href="newSelfHostedModelPath"
