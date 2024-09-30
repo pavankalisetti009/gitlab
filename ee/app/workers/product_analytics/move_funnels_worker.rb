@@ -10,6 +10,9 @@ module ProductAnalytics
 
     def perform(project_id, previous_custom_project_id, new_custom_project_id)
       @project = Project.find_by_id(project_id)
+
+      return unless ::Feature.enabled?(:product_analytics_features, @project)
+
       @previous_custom_project = Project.find_by_id(previous_custom_project_id)
       @new_custom_project = Project.find_by_id(new_custom_project_id)
       @payload = build_payload

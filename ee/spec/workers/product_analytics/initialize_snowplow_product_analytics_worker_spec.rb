@@ -13,6 +13,7 @@ RSpec.describe ProductAnalytics::InitializeSnowplowProductAnalyticsWorker, featu
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(product_analytics: true)
+    stub_feature_flags(product_analytics_features: true)
     stub_application_setting(product_analytics_configurator_connection_string: 'https://gl-product-analytics-configurator.gl.com:4567')
   end
 
@@ -83,6 +84,14 @@ RSpec.describe ProductAnalytics::InitializeSnowplowProductAnalyticsWorker, featu
   context 'when feature is not licensed' do
     before do
       stub_licensed_features(product_analytics: false)
+    end
+
+    it_behaves_like 'a worker that did not make any HTTP calls'
+  end
+
+  context 'when the feature flag is disabled' do
+    before do
+      stub_feature_flags(product_analytics_features: false)
     end
 
     it_behaves_like 'a worker that did not make any HTTP calls'

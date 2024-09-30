@@ -10,6 +10,9 @@ module ProductAnalytics
 
     def perform(project_id, newrev, user_id)
       @project = Project.find_by_id(project_id)
+
+      return unless ::Feature.enabled?(:product_analytics_features, @project)
+
       @commit = @project.repository.commit(newrev)
       @user_id = user_id
       @payload = configurator_url_project_map

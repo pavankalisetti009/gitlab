@@ -17,14 +17,14 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
   describe '#product_analytics_enabled?' do
     subject { project.product_analytics_enabled? }
 
-    where(:instance_enabled, :licensed, :toggle, :outcome) do
-      false | false | false | false
-      true  | false | false | false
-      false | true  | false | false
-      false | false | false | false
-      false | false | true  | false
-      false | true  | true  | false
-      true  | true  | true  | true
+    where(:instance_enabled, :feature_flag_enabled, :licensed, :toggle, :outcome) do
+      false | false | false | false | false
+      true  | false | false | false | false
+      false | true  | false | false | false
+      false | false | true  | false | false
+      false | false | false | true  | false
+      false | true  | true  | true  | false
+      true  | true  | true  | true  | true
     end
 
     with_them do
@@ -32,6 +32,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(instance_enabled)
         allow(project.group.root_ancestor.namespace_settings).to receive(:experiment_settings_allowed?).and_return(true)
         stub_licensed_features(product_analytics: licensed)
+        stub_feature_flags(product_analytics_features: feature_flag_enabled)
       end
 
       it { is_expected.to eq(outcome) }
@@ -51,7 +52,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
 
     context 'when the product_analytics_billing flag is enabled' do
       before do
-        stub_feature_flags(product_analytics_billing: group)
+        stub_feature_flags(product_analytics_billing: group, product_analytics_features: true)
       end
 
       it { is_expected.to be_zero }
@@ -100,11 +101,18 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       expect(project.product_analytics_dashboards(user)).to be_empty
     end
 
+    it 'returns nothing if feature flag is disabled' do
+      stub_licensed_features(product_analytics: false)
+      stub_feature_flags(product_analytics_features: false)
+      expect(project.product_analytics_dashboards(user)).to be_empty
+    end
+
     context 'with configuration project' do
       let_it_be(:config_project) { create(:project, :with_product_analytics_dashboard, group: group) }
 
       before do
         stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: true)
         project.update!(analytics_dashboards_configuration_project: config_project)
       end
 
@@ -117,6 +125,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       before do
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return true
         stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: true)
         project.project_setting.update!(product_analytics_instrumentation_key: "key")
         allow_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
           allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
@@ -153,6 +162,15 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       it { is_expected.to be_empty }
     end
 
+    context 'when the feature flag is disabled' do
+      before do
+        stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it { is_expected.to be_empty }
+    end
+
     context 'when the toggle is disabled' do
       before do
         stub_licensed_features(product_analytics: false)
@@ -165,6 +183,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
     context 'when the feature is available and toggle is enabled' do
       before do
         stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: true)
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return true
         group.root_ancestor.namespace_settings.update!(product_analytics_enabled: true)
       end
@@ -196,9 +215,21 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       end
     end
 
+    context 'when the feature flag is disabled' do
+      before do
+        stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it 'returns nil' do
+        expect(project.product_analytics_dashboard('test', user)).to be_nil
+      end
+    end
+
     context 'when product analytics is available' do
       before do
         stub_licensed_features(product_analytics: true)
+        stub_feature_flags(product_analytics_features: true)
       end
 
       context 'when the project has defined a configuration project' do

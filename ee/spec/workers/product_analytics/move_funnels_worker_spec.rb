@@ -59,6 +59,18 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
   end
 
   describe "perform" do
+    context "when feature flag is disabled" do
+      before do
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it "does not call the configurator" do
+        expect(Gitlab::HTTP).not_to receive(:post)
+
+        described_class.new.perform(project.id, nil, new_custom_dashboard_project.id)
+      end
+    end
+
     context "when previous custom project doesn't exist" do
       it "calls configurator with 'created' funnel" do
         expect(Gitlab::HTTP)
