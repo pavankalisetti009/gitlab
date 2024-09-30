@@ -74,6 +74,7 @@ module Epics
       items = by_my_reaction_emoji(items)
       items = by_confidential(items)
       items = by_milestone(items)
+      items = by_subscribed(items)
 
       starts_with_iid(items)
     end
