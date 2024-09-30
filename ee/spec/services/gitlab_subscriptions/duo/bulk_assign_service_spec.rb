@@ -127,7 +127,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
 
           it 'executes a limited number of queries', :use_clean_rails_redis_caching do
             control = ActiveRecord::QueryRecorder.new { bulk_assign }
-            expect(control.count).to be <= 11
+            expect(control.count).to be <= 12
           end
 
           it 'returns assigned and not eligible users' do
@@ -140,8 +140,11 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
           end
 
           it 'calls the iterable triggers worker', :sidekiq_inline do
-            expect(::Onboarding::CreateIterableTriggersWorker).to receive(:perform_async).with(namespace.id, user_ids)
-                                                                                         .and_call_original
+            worker_params = { 'product_interaction' => 'duo_pro_add_on_seat_assigned' }
+
+            expect(::Onboarding::AddOnSeatAssignmentIterableTriggerWorker)
+              .to receive(:perform_async).with(namespace.id, user_ids, worker_params).and_call_original
+            expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).thrice
 
             bulk_assign
           end
@@ -267,7 +270,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
           end
 
           it 'does not create any iterable triggers' do
-            expect(::Onboarding::CreateIterableTriggersWorker).not_to receive(:perform_async)
+            expect(::Onboarding::AddOnSeatAssignmentIterableTriggerWorker).not_to receive(:perform_async)
 
             bulk_assign
           end
@@ -392,7 +395,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
           end
 
           it 'does not call the iterable triggers worker', :sidekiq_inline do
-            expect(::Onboarding::CreateIterableTriggersWorker).not_to receive(:perform_async)
+            expect(::Onboarding::AddOnSeatAssignmentIterableTriggerWorker).not_to receive(:perform_async)
 
             bulk_assign
           end

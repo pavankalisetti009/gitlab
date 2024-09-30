@@ -47,7 +47,7 @@ module GitlabSubscriptions
             last_name: user.last_name,
             work_email: user.email,
             namespace_id: namespace.id,
-            product_interaction: "duo_pro_add_on_seat_assigned",
+            product_interaction: ::GitlabSubscriptions::AddOns::PRODUCT_INTERACTION[add_on_purchase.add_on_name.to_sym],
             opt_in: user.onboarding_status_email_opt_in,
             preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language)
           }
