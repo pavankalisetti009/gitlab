@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_mode, feature_category: :fleet_visibility do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, group: group) }
   let_it_be(:instance_runner) { create(:ci_runner, :instance, :with_runner_manager) }
-  let_it_be(:project_runner) { create(:ci_runner, :project, :with_runner_manager) }
-  let_it_be(:group_runner) { create(:ci_runner, :group, :with_runner_manager) }
+  let_it_be(:project_runner) { create(:ci_runner, :project, :with_runner_manager, projects: [project]) }
+  let_it_be(:group_runner) { create(:ci_runner, :group, :with_runner_manager, groups: [group]) }
   let_it_be(:current_user) { create(:user, :admin) }
 
   let_it_be(:starting_time) { Time.utc(2023) }
@@ -287,7 +288,8 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
     end
 
     it 'filters by owner_namespace' do
-      ignored_runner = create(:ci_runner, :group, :with_runner_manager)
+      group2 = create(:group)
+      ignored_runner = create(:ci_runner, :group, :with_runner_manager, groups: [group2])
 
       builds = [
         build_stubbed(:ci_build,
@@ -312,10 +314,10 @@ RSpec.describe ::Ci::CollectQueueingHistoryService, :click_house, :enable_admin_
 
       expect(result.success?).to eq(true)
 
-      expect(result.payload).to eq([
+      expect(result.payload).to contain_exactly(
         { 'p50' => 3.seconds, 'p75' => 3.seconds, 'p90' => 3.seconds, 'p95' => 3.seconds, 'p99' => 3.seconds,
           'time' => starting_time + 10.minutes }
-      ])
+      )
     end
 
     context 'when user is a developer' do

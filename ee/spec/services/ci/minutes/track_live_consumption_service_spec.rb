@@ -69,7 +69,7 @@ RSpec.describe Ci::Minutes::TrackLiveConsumptionService, :saas, feature_category
     end
 
     context 'when runner is not of instance type' do
-      let(:runner) { create(:ci_runner, :project) }
+      let(:runner) { create(:ci_runner, :project, projects: [project]) }
 
       it_behaves_like 'returns early', 'Cost factor not enabled for build'
     end

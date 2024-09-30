@@ -39,7 +39,7 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
       end
 
       let_it_be(:_system_failure_on_project_runner) do
-        project_runner = create(:ci_runner, :project)
+        project_runner = create(:ci_runner, :project, projects: [create(:project)])
 
         create(:ci_build, :failed, failure_reason: :runner_system_failure, runner: project_runner,
           name: 'system_failure_job2')

@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Ci::Runner, feature_category: :hosted_runners do
+  let_it_be(:namespace) { create(:group, created_at: Date.new(2021, 7, 16)) }
+  let_it_be(:project) { create(:project) }
+
   let(:shared_runners_minutes) { 400 }
 
   before do
@@ -22,11 +25,13 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     subject { runner.cost_factor_for_project(project) }
 
     context 'with group type runner' do
-      let(:runner) { create(:ci_runner, :group) }
+      let_it_be(:runner) { create(:ci_runner, :group, groups: [namespace]) }
 
       ::Gitlab::VisibilityLevel.options.each do |level_name, level_value|
         context "with #{level_name}" do
-          let(:project) { create(:project, visibility_level: level_value) }
+          before do
+            project.update!(visibility_level: level_value)
+          end
 
           it { is_expected.to eq(0.0) }
         end
@@ -34,11 +39,13 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     end
 
     context 'with project type runner' do
-      let(:runner) { create(:ci_runner, :project) }
+      let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
       ::Gitlab::VisibilityLevel.options.each do |level_name, level_value|
         context "with #{level_name}" do
-          let(:project) { create(:project, visibility_level: level_value) }
+          before do
+            project.update!(visibility_level: level_value)
+          end
 
           it { is_expected.to eq(0.0) }
         end
@@ -83,7 +90,6 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
 
   describe '#cost_factor_enabled?' do
     let_it_be_with_reload(:project) do
-      namespace = create(:group, created_at: Date.new(2021, 7, 16))
       create(:project, namespace: namespace)
     end
 
