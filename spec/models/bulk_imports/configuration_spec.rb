@@ -18,8 +18,16 @@ RSpec.describe BulkImports::Configuration, type: :model, feature_category: :impo
   describe '#source_hostname' do
     let(:configuration) { described_class.new(url: 'http://example.com/subdir') }
 
-    it 'returns the scheme, hostname and port of the URL' do
-      expect(configuration.source_hostname).to eq('http://example.com:80')
+    it 'returns the hostname with scheme' do
+      expect(configuration.source_hostname).to eq('http://example.com')
+    end
+
+    context 'when URL has a port' do
+      let(:configuration) { described_class.new(url: 'http://example.com:8080/subdir') }
+
+      it 'includes the port' do
+        expect(configuration.source_hostname).to eq('http://example.com:8080')
+      end
     end
   end
 end

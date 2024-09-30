@@ -29,7 +29,7 @@ module Import
     end
 
     def source_hostname
-      Addressable::URI.parse(bulk_import.configuration.source_hostname).host
+      Gitlab::Utils.parse_url(bulk_import.configuration.source_hostname).host
     end
 
     def title

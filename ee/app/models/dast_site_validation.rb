@@ -71,7 +71,7 @@ class DastSiteValidation < Gitlab::Database::SecApplicationRecord
   end
 
   def self.get_normalized_url_base(url)
-    ::Gitlab::UrlHelpers.normalized_base_url(url)
+    ::Gitlab::UrlHelpers.normalized_base_url(url, always_port: true)
   end
 
   private
