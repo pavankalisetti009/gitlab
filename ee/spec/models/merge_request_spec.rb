@@ -2588,6 +2588,37 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#find_pipeline_with_dependency_scanning_reports' do
+    let_it_be(:merge_request) { create(:merge_request) }
+    let_it_be(:pipeline_with_ds) { create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch) }
+    let_it_be(:pipeline_without_ds) { create(:ee_ci_pipeline) }
+
+    it 'returns the pipeline with dependency_scanning reports' do
+      pipelines = [pipeline_without_ds, pipeline_with_ds]
+
+      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
+
+      expect(result).to eq(pipeline_with_ds)
+    end
+
+    it 'returns nil if no pipeline has dependency_scanning reports' do
+      pipelines = [pipeline_without_ds]
+
+      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
+
+      expect(result).to be_nil
+    end
+
+    it 'returns the first pipeline with dependency_scanning reports if multiple exist' do
+      another_pipeline_with_ds = create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch)
+      pipelines = [pipeline_without_ds, pipeline_with_ds, another_pipeline_with_ds]
+
+      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
+
+      expect(result).to eq(pipeline_with_ds)
+    end
+  end
+
   describe '#blocking_merge_requests_feature_available?' do
     let(:merge_request) { build_stubbed(:merge_request) }
 
