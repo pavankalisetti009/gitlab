@@ -65,7 +65,8 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
         allow(merge_request).to receive(:predictions).and_return(predictions)
       end
 
-      it 'returns an error response', :aggregate_failures do
+      it 'returns an error response', :aggregate_failures,
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485616' do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('Record invalid')
