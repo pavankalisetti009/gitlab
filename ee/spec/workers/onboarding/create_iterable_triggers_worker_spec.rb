@@ -42,7 +42,7 @@ RSpec.describe Onboarding::CreateIterableTriggersWorker, :saas, type: :worker, f
       end
 
       it 'calls the iterable trigger worker for each user', :sidekiq_inline do
-        expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).and_call_original
+        expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).with(params).and_call_original
 
         perform
       end

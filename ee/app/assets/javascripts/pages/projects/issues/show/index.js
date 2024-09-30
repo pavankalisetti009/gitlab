@@ -20,7 +20,7 @@ const initLegacyIssuePage = async () => {
 const initWorkItemPage = async () => {
   const [{ initWorkItemsRoot }] = await Promise.all([import('~/work_items')]);
 
-  initWorkItemsRoot();
+  initWorkItemsRoot({ workItemType: 'issue' });
 };
 
 if (gon.features.workItemsViewPreference && gon.current_user_use_work_items_view) {

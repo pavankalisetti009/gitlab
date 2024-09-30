@@ -278,7 +278,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             end
 
             it 'initiates iterable trigger creation', :sidekiq_inline do
-              expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).and_call_original
+              expect(::Onboarding::CreateIterableTriggerWorker)
+                .to receive(:perform_async).with(params).and_call_original
 
               patch_update
             end

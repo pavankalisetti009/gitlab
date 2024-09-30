@@ -14,7 +14,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
   let_it_be(:closed_list) { create(:epic_list, epic_board: epic_board, list_type: :closed) }
   let_it_be(:epic1) { create(:epic, group: group, title: 'Epic1') }
 
-  let(:card) { find('.board:nth-child(1)').first("[data-testid='board-card']") }
+  let(:card) { find('[data-testid="board-list"]:nth-child(1)').first("[data-testid='board-card']") }
 
   before do
     stub_licensed_features(epics: true)

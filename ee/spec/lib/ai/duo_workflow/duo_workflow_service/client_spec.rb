@@ -10,6 +10,7 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
   let(:request) { instance_double('DuoWorkflowService::GenerateTokenRequest') }
   let(:response) { double(token: 'a user jwt', expiresAt: 'a timestamp') } # rubocop:disable RSpec/VerifiedDoubles -- instance_double keeps raising error  the DuoWorkflowService::GenerateTokenResponse class does not implement the class method: token
   let(:channel_credentials) { instance_of(GRPC::Core::ChannelCredentials) }
+  let(:cloud_connector_service_data_double) { instance_of(CloudConnector::SelfSigned::AvailableServiceData) }
 
   subject(:client) do
     described_class.new(
@@ -20,9 +21,10 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
   end
 
   before do
-    allow_next_instance_of(::Gitlab::CloudConnector::SelfIssuedToken) do |token|
-      allow(token).to receive(:encoded).and_return('instance jwt')
-    end
+    allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_workflow).and_return(
+      cloud_connector_service_data_double
+    )
+    allow(cloud_connector_service_data_double).to receive(:access_token).and_return('instance jwt')
     allow(DuoWorkflowService::DuoWorkflow::Stub).to receive(:new).with(anything, channel_credentials).and_return(stub)
     allow(stub).to receive(:generate_token).and_return(response)
     allow(DuoWorkflowService::GenerateTokenRequest).to receive(:new).and_return(request)

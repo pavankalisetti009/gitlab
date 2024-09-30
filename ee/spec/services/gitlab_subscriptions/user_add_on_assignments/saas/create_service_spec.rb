@@ -41,17 +41,17 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
       end
 
       it 'creates an iterable trigger' do
-        expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).with(
-          hash_including(
-            first_name: user.first_name,
-            last_name: user.last_name,
-            work_email: user.email,
-            namespace_id: namespace.id,
-            product_interaction: "duo_pro_add_on_seat_assigned",
-            preferred_language: 'English',
-            opt_in: user.onboarding_status_email_opt_in
-          )
-        )
+        params = {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          work_email: user.email,
+          namespace_id: namespace.id,
+          product_interaction: "duo_pro_add_on_seat_assigned",
+          preferred_language: 'English',
+          opt_in: user.onboarding_status_email_opt_in
+        }.stringify_keys
+
+        expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).with(params)
 
         subject
       end

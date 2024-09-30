@@ -84,7 +84,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
       end
 
       it 'enqueues a create event worker' do
-        expect(Groups::CreateEventWorker).to receive(:perform_async).with(anything, user.id, :created)
+        expect(Groups::CreateEventWorker).to receive(:perform_async).with(anything, user.id, 'created')
 
         execute
       end

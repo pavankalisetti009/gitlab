@@ -76,6 +76,14 @@ RSpec.describe EE::Ci::PipelinesHelper, feature_category: :continuous_integratio
           identity_verification_path: identity_verification_path
         )
       end
+
+      context 'when the user has the `:admin_runners` permission' do
+        before do
+          allow(::Authz::CustomAbility).to receive(:allowed?).with(current_user, :admin_runners, project).and_return(true)
+        end
+
+        it { is_expected.to include(reset_cache_path: reset_cache_project_settings_ci_cd_path(project)) }
+      end
     end
 
     context 'when the user is not authorized to run jobs' do

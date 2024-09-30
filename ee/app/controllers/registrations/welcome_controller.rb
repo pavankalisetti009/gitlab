@@ -89,7 +89,7 @@ module Registrations
         opt_in: current_user.onboarding_status_email_opt_in,
         preferred_language: ::Gitlab::I18n.trimmed_language_name(current_user.preferred_language),
         setup_for_company: current_user.setup_for_company
-      }.merge(update_params.slice(:role).to_h.symbolize_keys)
+      }.merge(update_params.slice(:role).to_h)
     end
 
     def update_success_path
@@ -110,7 +110,7 @@ module Registrations
 
       return unless onboarding_status.eligible_for_iterable_trigger?
 
-      ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params) # rubocop:disable CodeReuse/Worker
+      ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys) # rubocop:todo CodeReuse/Worker -- this should be moved into a service layer https://gitlab.com/gitlab-org/gitlab/-/issues/465532
     end
 
     def signup_onboarding_path

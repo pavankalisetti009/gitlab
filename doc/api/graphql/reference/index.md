@@ -2651,6 +2651,7 @@ Input type: `BoardListCreateInput`
 | <a id="mutationboardlistcreateiterationid"></a>`iterationId` | [`IterationID`](#iterationid) | Global ID of an existing iteration. |
 | <a id="mutationboardlistcreatelabelid"></a>`labelId` | [`LabelID`](#labelid) | Global ID of an existing label. |
 | <a id="mutationboardlistcreatemilestoneid"></a>`milestoneId` | [`MilestoneID`](#milestoneid) | Global ID of an existing milestone. |
+| <a id="mutationboardlistcreateposition"></a>`position` | [`Int`](#int) | Position of the list. |
 
 #### Fields
 

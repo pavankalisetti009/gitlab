@@ -26,8 +26,8 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
   let_it_be(:board)        { create(:board, project: project) }
   let_it_be(:list)         { create(:list, board: board, label: development, position: 0) }
 
-  let(:card1) { find('.board:nth-child(2)').find('.board-card:nth-child(2)') }
-  let(:card2) { find('.board:nth-child(2)').find('.board-card:nth-child(1)') }
+  let(:card1) { find('[data-testid="board-list"]:nth-child(2)').find('.board-card:nth-child(2)') }
+  let(:card2) { find('[data-testid="board-list"]:nth-child(2)').find('.board-card:nth-child(1)') }
 
   before do
     stub_licensed_features(multiple_issue_assignees: true)
@@ -337,7 +337,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
       context 'with scoped label assigned' do
         let!(:issue3) { create(:labeled_issue, project: project, labels: [development, scoped_label_1, scoped_label_2], relative_position: 3) }
-        let(:card3) { find('.board:nth-child(2)').find('.board-card:nth-child(1)') }
+        let(:card3) { find('[data-testid="board-list"]:nth-child(2)').find('.board-card:nth-child(1)') }
 
         before do
           stub_licensed_features(scoped_labels: true)
@@ -386,7 +386,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
         expect(page).to have_selector('[data-testid="issue-boards-sidebar"]')
 
-        page.within(find('.board:nth-child(2)')) do
+        page.within(find('[data-testid="board-list"]:nth-child(2)')) do
           find_button('Edit list settings').click
         end
 
@@ -395,7 +395,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
       end
 
       it 'closes settings sidebar when opening card sidebar' do
-        page.within(find('.board:nth-child(2)')) do
+        page.within(find('[data-testid="board-list"]:nth-child(2)')) do
           find_button('Edit list settings').click
         end
 
@@ -672,7 +672,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
       context 'with scoped label assigned' do
         let!(:issue3) { create(:labeled_issue, project: project, labels: [development, scoped_label_1, scoped_label_2], relative_position: 3) }
-        let(:card3) { find('.board:nth-child(2)').find('.board-card:nth-child(1)') }
+        let(:card3) { find('[data-testid="board-list"]:nth-child(2)').find('.board-card:nth-child(1)') }
 
         before do
           stub_licensed_features(scoped_labels: true)
