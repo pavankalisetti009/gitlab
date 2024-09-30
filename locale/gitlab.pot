@@ -21410,9 +21410,6 @@ msgstr ""
 msgid "Environments|Edit environment"
 msgstr ""
 
-msgid "Environments|Edit your search and try again"
-msgstr ""
-
 msgid "Environments|Enable Review Apps"
 msgstr ""
 
@@ -21462,9 +21459,6 @@ msgid "Environments|New environment"
 msgstr ""
 
 msgid "Environments|No deployments yet"
-msgstr ""
-
-msgid "Environments|No results found"
 msgstr ""
 
 msgid "Environments|No selection shows all authorized resources in the cluster. %{linkStart}Learn more.%{linkEnd}"
