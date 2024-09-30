@@ -32,6 +32,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:compliance_standards_adherence).class_name('Projects::ComplianceStandards::Adherence') }
     it { is_expected.to have_one(:security_setting).class_name('ProjectSecuritySetting') }
     it { is_expected.to have_one(:vulnerability_statistic).class_name('Vulnerabilities::Statistic') }
+    it { is_expected.to have_one(:security_statistics).class_name('Security::ProjectStatistics') }
     it { is_expected.to have_one(:security_orchestration_policy_configuration).class_name('Security::OrchestrationPolicyConfiguration').inverse_of(:project) }
     it { is_expected.to have_one(:dependency_proxy_packages_setting).class_name('DependencyProxy::Packages::Setting').inverse_of(:project) }
 
@@ -4915,6 +4916,35 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     context 'when there is no associated framework' do
       it 'returns nil' do
         expect(project.pipeline_configuration_full_path).to eq(nil)
+      end
+    end
+  end
+
+  describe '#security_statistics' do
+    let_it_be(:project) { create(:project) }
+
+    subject(:security_statistics) { project.security_statistics }
+
+    context 'when there is no `project_security_statistics` for the project' do
+      it 'returns a new persisted `Security::ProjectStatistics` instance' do
+        expect(security_statistics).to be_an_instance_of(Security::ProjectStatistics)
+                                   .and have_attributes(project_id: project.id)
+      end
+
+      it 'does not fire additional queries after the first access' do
+        security_statistics # warmup
+
+        queries = ActiveRecord::QueryRecorder.new { security_statistics }
+
+        expect(queries.count).to be_zero
+      end
+    end
+
+    context 'when there is already a `project_security_statistics` for the project' do
+      let_it_be(:statistics) { create(:project_security_statistics, project: project) }
+
+      it 'returns the existing record' do
+        expect(security_statistics).to eq(statistics)
       end
     end
   end
