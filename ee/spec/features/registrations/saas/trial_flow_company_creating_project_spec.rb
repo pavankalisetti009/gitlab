@@ -92,7 +92,7 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
       expect(page).not_to have_content('What would you like to do?')
       expect(page).not_to have_content(_("I'd like to receive updates about GitLab via email"))
       expect(page).to have_content('Who will be using this GitLab trial?')
-      expect(page).not_to have_content('Enables a free GitLab Ultimate trial when you create a new project.')
+      expect(page).not_to have_content(_('Enables a free GitLab Ultimate trial when you create a new project.'))
     end
   end
 
