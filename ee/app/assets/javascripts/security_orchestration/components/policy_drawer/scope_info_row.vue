@@ -83,20 +83,26 @@ export default {
     isProject() {
       return isProject(this.namespaceType);
     },
+    showScopeSection() {
+      return this.isGroup || this.hasMultipleProjectsLinked;
+    },
     policyScopeHasComplianceFrameworks() {
-      return policyScopeHasComplianceFrameworks(this.policyScope);
+      return policyScopeHasComplianceFrameworks(this.policyScope) && this.showScopeSection;
     },
     policyScopeHasIncludingProjects() {
       return policyScopeHasIncludingProjects(this.policyScope);
     },
     policyScopeHasGroups() {
-      return policyScopeHasGroups(this.policyScope) && this.showGroupScope;
+      return policyScopeHasGroups(this.policyScope) && this.showGroupScope && this.showScopeSection;
     },
     policyScopeHasExcludingProjects() {
       return policyScopeHasExcludingProjects(this.policyScope);
     },
     policyHasProjects() {
-      return this.policyScopeHasIncludingProjects || this.policyScopeHasExcludingProjects;
+      return (
+        (this.policyScopeHasIncludingProjects || this.policyScopeHasExcludingProjects) &&
+        this.showScopeSection
+      );
     },
     policyScopeGroups() {
       return policyScopeGroups(this.policyScope);
