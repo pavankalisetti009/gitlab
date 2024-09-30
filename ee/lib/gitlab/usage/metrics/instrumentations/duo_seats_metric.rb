@@ -5,29 +5,46 @@ module Gitlab
     module Metrics
       module Instrumentations
         class DuoSeatsMetric < GenericMetric
-          value do
-            {
-              pro: duo_seats_data(:pro),
-              enterprise: duo_seats_data(:enterprise)
-            }
+          SUBSCRIPTION_TYPES = %w[pro enterprise].freeze
+          SEATS_TYPES = %w[purchased assigned].freeze
+
+          def initialize(metric_definition)
+            super
+
+            return if options[:subscription_type].in?(SUBSCRIPTION_TYPES) && options[:seats_type].in?(SEATS_TYPES)
+
+            error_params = []
+            unless options[:subscription_type].in?(SUBSCRIPTION_TYPES)
+              error_params << "subscription: #{options[:subscription_type]}"
+            end
+
+            error_params << "seats:#{options[:seats_type]}" unless options[:seats_type].in?(SEATS_TYPES)
+
+            raise ArgumentError, "Unknown parameters: #{error_params.join(', ')}" if error_params.any?
+          end
+
+          def value
+            duo_seats_data(options[:subscription_type], options[:seats_type])
           end
 
           private
 
-          def duo_seats_data(type)
-            purchases = case type
-                        when :pro
-                          GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro
-                        when :enterprise
-                          GitlabSubscriptions::AddOnPurchase.for_duo_enterprise
-                        end
+          def duo_seats_data(subscription_type, seats_type)
+            add_ons = case subscription_type
+                      when "pro"
+                        GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro
+                      when "enterprise"
+                        GitlabSubscriptions::AddOnPurchase.for_duo_enterprise
+                      end
 
-            active_duo = purchases.active.first
+            active_duo = add_ons.active.first
 
-            {
-              seats: active_duo&.quantity,
-              assigned: active_duo&.assigned_users&.count
-            }
+            case seats_type
+            when "purchased"
+              active_duo&.quantity
+            when "assigned"
+              active_duo&.assigned_users&.count
+            end
           end
         end
       end
