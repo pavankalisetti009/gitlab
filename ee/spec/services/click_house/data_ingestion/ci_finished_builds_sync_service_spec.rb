@@ -14,7 +14,8 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
       architecture: 'amd64')
   end
 
-  let_it_be(:group_runner) { create(:ci_runner, :group) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
 
   let_it_be(:build1) { create(:ci_build, :success, runner_manager: runner_manager1) }
   let_it_be(:build2) { create(:ci_build, :canceled) }

@@ -46,7 +46,7 @@ RSpec.describe Ci::InstanceRunnerFailedJobs, :freeze_time, :clean_gitlab_redis_s
         end
 
         context 'when job is executed in a project runner' do
-          let_it_be(:project_runner) { create(:ci_runner, :project) }
+          let_it_be(:project_runner) { create(:ci_runner, :project, projects: [create(:project)]) }
 
           let(:runner) { project_runner }
 
