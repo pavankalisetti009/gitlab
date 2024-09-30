@@ -38,7 +38,7 @@ module GitlabSubscriptions
         end
 
         def create_iterable_trigger
-          ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params)
+          ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys)
         end
 
         def iterable_params
