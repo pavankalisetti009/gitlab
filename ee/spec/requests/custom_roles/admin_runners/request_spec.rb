@@ -109,6 +109,21 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     end
   end
 
+  describe Projects::PipelinesController do
+    let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
+
+    before do
+      sign_in(user)
+    end
+
+    it "#index" do
+      get project_pipelines_path(project)
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(response.body).to include("data-reset-cache-path=\"#{reset_cache_project_settings_ci_cd_path(project)}\"")
+    end
+  end
+
   describe ::Projects::Settings::CiCdController do
     let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
 
@@ -121,6 +136,12 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response.body).to include('CI/CD Settings')
+    end
+
+    it '#reset_cache' do
+      post reset_cache_project_settings_ci_cd_path(project, format: :json)
+
+      expect(response).to have_gitlab_http_status(:ok)
     end
   end
 
