@@ -13,10 +13,6 @@ module QA
       end
 
       it 'by creating a formatted page with an image uploaded', :blocking,
-        quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/409542',
-          type: :bug
-        },
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/375655' do
         initial_wiki.visit!
 
