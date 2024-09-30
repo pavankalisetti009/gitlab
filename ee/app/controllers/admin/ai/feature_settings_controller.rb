@@ -11,11 +11,7 @@ module Admin
       before_action :ensure_feature_enabled!
 
       def index
-        feature_settings_by_name = ::Ai::FeatureSetting.all.index_by(&:feature)
-
-        @feature_settings = ::Ai::FeatureSetting.allowed_features.keys.map do |feature|
-          feature_settings_by_name[feature] || ::Ai::FeatureSetting.new(feature: feature)
-        end
+        @feature_settings = ::Ai::FeatureSettings::FeatureSettingFinder.new.execute
 
         return unless Feature.enabled?(:custom_models_feature_settings_vue_app, current_user)
 

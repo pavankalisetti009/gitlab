@@ -105,6 +105,26 @@ Returns [`[AddOnPurchase!]`](#addonpurchase).
 | ---- | ---- | ----------- |
 | <a id="queryaddonpurchasesnamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | ID of namespace that the add-ons were purchased for. |
 
+### `Query.aiFeatureSettings`
+
+List of configurable AI features.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`AiFeatureSettingConnection`](#aifeaturesettingconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaifeaturesettingsselfhostedmodelid"></a>`selfHostedModelId` | [`AiSelfHostedModelID`](#aiselfhostedmodelid) | Global ID of the self-hosted model. |
+
 ### `Query.aiMessages`
 
 Find GitLab Duo Chat messages.
@@ -17661,9 +17681,14 @@ Duo Chat feature setting.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aifeaturesettingfeature"></a>`feature` | [`String!`](#string) | AI feature. |
-| <a id="aifeaturesettingprovider"></a>`provider` | [`String!`](#string) | Chosen method to provide the feature. |
-| <a id="aifeaturesettingselfhostedmodel"></a>`selfHostedModel` | [`AiSelfHostedModel`](#aiselfhostedmodel) | Self-hosted model server which provide the feature. |
+| <a id="aifeaturesettingcompatiblellms"></a>`compatibleLlms` | [`[String!]`](#string) | LLMs Compatible with the feature. |
+| <a id="aifeaturesettingfeature"></a>`feature` | [`String!`](#string) | Identifier for the AI feature. |
+| <a id="aifeaturesettingmainfeature"></a>`mainFeature` | [`String`](#string) | Displayed name of the main feature. |
+| <a id="aifeaturesettingprovider"></a>`provider` | [`String!`](#string) | Humanized name for the AI feature, e.g "Code Completion". |
+| <a id="aifeaturesettingreleasestate"></a>`releaseState` | [`String`](#string) | Current release state of the feature. |
+| <a id="aifeaturesettingselfhostedmodel"></a>`selfHostedModel` | [`AiSelfHostedModel`](#aiselfhostedmodel) | Self-hosted model selected for use with the AI feature. |
+| <a id="aifeaturesettingtitle"></a>`title` | [`String`](#string) | Displayed AI feature name. |
+| <a id="aifeaturesettingvalidmodels"></a>`validModels` | [`AiSelfHostedModelConnection!`](#aiselfhostedmodelconnection) | Compatible self-hosted models for the feature. (see [Connections](#connections)) |
 
 ### `AiMessage`
 
