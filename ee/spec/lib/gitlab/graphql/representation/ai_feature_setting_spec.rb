@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_category: :"self-hosted_models" do
-  let(:feature_setting) { create(:ai_feature_setting, feature: :code_generations, provider: :vendored) }
+  let(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :vendored) }
 
   let(:feature_settings) { [feature_setting] }
 
@@ -11,8 +11,7 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
     [
       { name: 'ollama-codellama', model: :codellama },
       { name: 'vllm-codegemma', model: :codegemma, api_token: "test_api_token" },
-      { name: 'ollama-mixtral-text', model: :mixtral_8x22b_text },
-      { name: 'gcp-codegemma_2b', model: :codegemma_2b }
+      { name: 'vllm-mistral', model: :mistral }
     ]
   end
 
@@ -21,7 +20,7 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
   end
 
   let :expected_valid_models do
-    valid_model_names = %w[vllm-mixtral vllm-codegemma ollama-codellama]
+    valid_model_names = %w[vllm-mistral]
 
     self_hosted_models
       .select { |m| valid_model_names.include?(m.name) }
