@@ -24,7 +24,8 @@ module CodeSuggestions
             prompt: prompt,
             model_endpoint: self_hosted_model&.endpoint,
             model_api_key: self_hosted_model&.api_token,
-            model_name: self_hosted_model&.model
+            model_name: self_hosted_model&.model,
+            model_identifier: self_hosted_model&.identifier
           }.merge(extra_params)
         end
 

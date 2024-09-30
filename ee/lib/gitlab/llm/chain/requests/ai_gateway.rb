@@ -144,7 +144,8 @@ module Gitlab
                 provider: self_hosted_model.provider,
                 name: self_hosted_model.model,
                 endpoint: self_hosted_model.endpoint,
-                api_key: self_hosted_model.api_token
+                api_key: self_hosted_model.api_token,
+                identifier: self_hosted_model.identifier
               }
             end
 
@@ -159,7 +160,8 @@ module Gitlab
                 provider: :litellm,
                 model: self_hosted_model.model,
                 model_endpoint: self_hosted_model.endpoint,
-                model_api_key: self_hosted_model.api_token
+                model_api_key: self_hosted_model.api_token,
+                model_identifier: self_hosted_model.identifier
               }
             else
               {

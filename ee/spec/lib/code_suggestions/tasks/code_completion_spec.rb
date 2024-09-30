@@ -140,6 +140,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt" => nil,
           "model_endpoint" => "http://localhost:11434/v1",
           "model_name" => "codellama_13b_code",
+          "model_identifier" => "provider/some-model",
           "model_api_key" => "token"
         }
       end
