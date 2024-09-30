@@ -90,6 +90,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - explain_vulnerability
   glab_ask_git_command:
     backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
@@ -116,6 +117,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - duo_chat
   generate_commit_message:
     backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
