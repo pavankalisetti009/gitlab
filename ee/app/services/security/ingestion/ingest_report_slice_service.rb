@@ -37,7 +37,7 @@ module Security
       private
 
       def quota
-        pipeline.project.vulnerability_quota
+        pipeline.project.reset.vulnerability_quota
       end
     end
   end

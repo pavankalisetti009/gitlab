@@ -78,6 +78,31 @@ module BillingPlansHelper
     root.trial_active?
   end
 
+  def trial_alert_message(namespace)
+    if Feature.enabled?(:duo_enterprise_trials, current_user)
+      safe_format(
+        s_(
+          'BillingPlans|Congratulations, your free Ultimate and GitLab Duo Enterprise trial is activated and will ' \
+            'expire on %{exp_date}. The new licenses might take a minute to show on the page. To give members access ' \
+            'to new GitLab Duo Enterprise features, %{assign_link_start}assign them%{assign_link_end} to GitLab Duo ' \
+            'Enterprise seats.'
+        ),
+        assign_seats_link,
+        exp_date: namespace.root_ancestor.trial_ends_on.iso8601
+      )
+    else
+      s_("BillingPlans|Congratulations, your free trial is activated.")
+    end
+  end
+
+  def assign_seats_link
+    url = help_page_path(
+      'subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-seats'
+    )
+    link = link_to('', url, target: '_blank', rel: 'noopener noreferrer')
+    tag_pair(link, :assign_link_start, :assign_link_end)
+  end
+
   def upgrade_button_css_classes(namespace, plan, is_current_plan)
     css_classes = []
 

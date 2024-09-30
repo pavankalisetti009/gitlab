@@ -431,8 +431,17 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           security_configuration_path: kind_of(String),
           new_vulnerability_path: end_with('/security/vulnerabilities/new'),
           dismissal_descriptions: dismissal_descriptions_json,
-          hide_third_party_offers: 'false'
+          hide_third_party_offers: 'false',
+          vulnerability_quota: {
+            critical: 'true',
+            enforced: 'false',
+            full: 'false'
+          }
         }
+      end
+
+      before do
+        allow(project.vulnerability_quota).to receive(:critical?).and_return(true)
       end
 
       context 'with related_url_root set' do
