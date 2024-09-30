@@ -46,7 +46,7 @@ module DependenciesHelper
   def shared_dependencies_data
     {
       documentation_path: help_page_path('user/application_security/dependency_list/index'),
-      empty_state_svg_path: image_path('illustrations/Dependency-list-empty-state.svg')
+      empty_state_svg_path: image_path('illustrations/empty-state/empty-radar-md.svg')
     }
   end
 
