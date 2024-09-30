@@ -1,4 +1,4 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -28,71 +28,58 @@ import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/sco
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
 import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 import { DEFAULT_PROVIDE } from '../mocks';
+import {
+  groups as includingGroups,
+  projects as excludingProjects,
+  generateMockResponse,
+  openDrawer,
+} from './utils';
 
 Vue.use(VueApollo);
 
-const includingGroups = [
-  {
-    __typename: 'Group',
-    id: 'gid://gitlab/Group/98',
-    name: 'gitlab-policies-sub',
-    fullPath: 'gitlab-policies/gitlab-policies-sub',
+const policyGroupScope = {
+  includingGroups: {
+    nodes: includingGroups,
+    pageInfo: {},
   },
-  {
-    __typename: 'Group',
-    id: 'gid://gitlab/Group/99',
-    name: 'gitlab-policies-sub-2',
-    fullPath: 'gitlab-policies/gitlab-policies-sub-2',
+  excludingProjects: {
+    nodes: excludingProjects,
+    pageInfo: {},
   },
-];
-
-const excludingProjects = [
-  {
-    __typename: 'Project',
-    fullPath: 'gitlab-policies/test',
-    id: 'gid://gitlab/Project/37',
-    name: 'test',
-  },
-];
-
-const generateMockResponse = (index, basis) => ({
-  ...basis[index],
-  policyScope: {
-    ...basis[index].policyScope,
-    includingGroups: {
-      nodes: includingGroups,
-      pageInfo: {},
-    },
-    excludingProjects: {
-      nodes: excludingProjects,
-      pageInfo: {},
-    },
-  },
-});
+};
 
 const mockPipelineExecutionPoliciesProjectResponse = generateMockResponse(
   0,
   mockPipelineExecutionPoliciesResponse,
+  policyGroupScope,
 );
 const mockPipelineExecutionPoliciesGroupResponse = generateMockResponse(
   1,
   mockPipelineExecutionPoliciesResponse,
+  policyGroupScope,
 );
 
 const mockScanExecutionPoliciesProjectResponse = generateMockResponse(
   0,
   mockScanExecutionPoliciesResponse,
+  policyGroupScope,
 );
 const mockScanExecutionPoliciesGroupResponse = generateMockResponse(
   1,
   mockScanExecutionPoliciesResponse,
+  policyGroupScope,
 );
 
 const mockScanResultPoliciesProjectResponse = generateMockResponse(
   0,
   mockScanResultPoliciesResponse,
+  policyGroupScope,
 );
-const mockScanResultPoliciesGroupResponse = generateMockResponse(1, mockScanResultPoliciesResponse);
+const mockScanResultPoliciesGroupResponse = generateMockResponse(
+  1,
+  mockScanResultPoliciesResponse,
+  policyGroupScope,
+);
 
 /**
  * New mocks for policy scope including linked groups on project level
@@ -172,12 +159,6 @@ describe('Policies List policy scope', () => {
   const findAllListComponentScope = () => wrapper.findAllComponents(ListComponentScope);
   const findGroupsToggleList = () => wrapper.findComponent(GroupsToggleList);
 
-  const openDrawer = async (rows) => {
-    findTable().vm.$emit('row-selected', rows);
-    await nextTick();
-    await waitForPromises();
-  };
-
   const expectDrawerScopeInfoRow = () => {
     expect(findGroupsToggleList().exists()).toBe(true);
     expect(findGroupsToggleList().props('groups')).toEqual(includingGroups);
@@ -205,7 +186,7 @@ describe('Policies List policy scope', () => {
           await waitForPromises();
           expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe('This project');
 
-          await openDrawer([selectedRow]);
+          await openDrawer(findTable(), [selectedRow]);
 
           expect(findScopeInfoRow().text()).toContain('This policy is applied to current project.');
         },
@@ -237,7 +218,7 @@ describe('Policies List policy scope', () => {
 
           expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe(expectedResult);
 
-          await openDrawer([selectedRow]);
+          await openDrawer(findTable(), [selectedRow]);
 
           expectDrawerScopeInfoRow();
         },
@@ -267,7 +248,7 @@ describe('Policies List policy scope', () => {
 
         expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe(expectedResult);
 
-        await openDrawer([selectedRow]);
+        await openDrawer(findTable(), [selectedRow]);
 
         expectDrawerScopeInfoRow();
       },
