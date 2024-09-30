@@ -33,28 +33,18 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
     describe 'Roles and permissions menu', feature_category: :user_management do
       let(:item_id) { :roles_and_permissions }
 
-      context 'when custom_roles feature is licensed' do
+      it { is_expected.not_to be_present }
+
+      context 'when user can view member roles' do
         before do
-          stub_licensed_features(custom_roles: true)
+          allow(Ability).to receive(:allowed?).with(user, :view_member_roles).and_return(true)
         end
 
         it { is_expected.to be_present }
 
-        context 'when in SaaS mode' do
-          before do
-            stub_saas_features(gitlab_com_subscriptions: true)
-          end
-
+        context 'when in SaaS mode', :saas do
           it { is_expected.not_to be_present }
         end
-      end
-
-      context 'when custom_roles feature is not licensed' do
-        before do
-          stub_licensed_features(custom_roles: false)
-        end
-
-        it { is_expected.not_to be_present }
       end
     end
   end

@@ -42,9 +42,9 @@ module MemberRolesHelper
   def new_role_path(source)
     root_group = source&.root_ancestor
 
-    if root_group&.custom_roles_enabled? && can?(current_user, :admin_group_member, root_group)
+    if gitlab_com_subscription? && can?(current_user, :admin_member_role, root_group)
       new_group_settings_roles_and_permission_path(root_group)
-    elsif current_user&.can_admin_all_resources? && License.feature_available?(:custom_roles)
+    elsif !gitlab_com_subscription? && can?(current_user, :admin_member_role)
       new_admin_application_settings_roles_and_permission_path
     end
   end

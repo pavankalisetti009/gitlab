@@ -43,7 +43,8 @@ export default {
     },
     newRolePath: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
   },
   data() {
@@ -127,7 +128,9 @@ export default {
         </gl-sprintf>
       </span>
 
-      <gl-button :href="newRolePath" variant="confirm">{{ $options.i18n.newRoleText }}</gl-button>
+      <gl-button v-if="newRolePath" :href="newRolePath" variant="confirm">
+        {{ $options.i18n.newRoleText }}
+      </gl-button>
     </div>
 
     <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />

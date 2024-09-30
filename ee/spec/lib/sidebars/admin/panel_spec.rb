@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Sidebars::Admin::Panel, feature_category: :navigation do
+RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :navigation do
   let_it_be(:user) { build(:admin) }
 
   let(:context) { Sidebars::Context.new(current_user: user, container: nil) }
