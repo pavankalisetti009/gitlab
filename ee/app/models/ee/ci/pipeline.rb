@@ -210,6 +210,10 @@ module EE
         complete_or_manual_and_has_reports?(::Ci::JobArtifact.of_report_type(:sbom))
       end
 
+      def has_dependency_scanning_reports?
+        complete_or_manual_and_has_reports?(::Ci::JobArtifact.of_report_type(:dependency_list))
+      end
+
       def can_store_security_reports?
         project.can_store_security_reports? && has_security_reports?
       end

@@ -858,6 +858,24 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
+  describe '#has_depdency_scanning_reports?', feature_category: :security_policy_management do
+    let_it_be(:pipeline) do
+      create(:ee_ci_pipeline, :success, :with_dependency_scanning_report)
+    end
+
+    subject(:has_dependency_scanning_reports?) { pipeline.has_dependency_scanning_reports? }
+
+    it { is_expected.to be_truthy }
+
+    context 'when the pipeline does not have dependency scanning reports' do
+      let_it_be(:pipeline) do
+        create(:ee_ci_pipeline, :success)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '#has_repository_xray_reports?', feature_category: :code_suggestions do
     subject { pipeline.has_repository_xray_reports? }
 
