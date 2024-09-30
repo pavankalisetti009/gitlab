@@ -44,6 +44,14 @@ RSpec.describe ProductAnalytics::CubeDataQueryService, feature_category: :produc
   end
 
   shared_examples 'does basics of a cube query' do |is_dry_run: false|
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it_behaves_like 'a not found error'
+    end
+
     context 'when feature is unlicensed' do
       before do
         stub_licensed_features(product_analytics: false)

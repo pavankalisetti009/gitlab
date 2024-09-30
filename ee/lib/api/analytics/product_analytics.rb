@@ -51,7 +51,8 @@ module API
       end
 
       resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
-        desc 'Proxy analytics request to cube installation.'
+        desc 'Proxy analytics request to cube installation.
+            Requires :product_analytics_features flag to be enabled.'
         params do
           use :cube_query_params
         end

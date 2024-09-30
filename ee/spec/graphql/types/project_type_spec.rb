@@ -60,6 +60,7 @@ RSpec.describe GitlabSchema.types['Project'] do
 
           stub_application_setting(product_analytics_enabled: can_read_product_analytics)
           stub_licensed_features(product_analytics: can_read_product_analytics)
+          stub_feature_flags(product_analytics_features: can_read_product_analytics)
         end
 
         let(:query) do

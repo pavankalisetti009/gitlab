@@ -79,5 +79,16 @@ RSpec.describe 'Initialize Product Analytics', feature_category: :product_analyt
       it_behaves_like 'a mutation that returns errors in the response',
         errors: ['Product analytics is disabled']
     end
+
+    context 'when the feature flag is disabled' do
+      before do
+        project.add_maintainer(current_user)
+        stub_application_setting(product_analytics_enabled: true)
+        stub_feature_flags(product_analytics_features: false)
+      end
+
+      it_behaves_like 'a mutation that returns errors in the response',
+        errors: ['Product analytics is disabled for this project']
+    end
   end
 end
