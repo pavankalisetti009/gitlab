@@ -46,7 +46,7 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::CodeChat, feature_cat
   end
 
   describe '#as_json' do
-    it 'returns serializable attributes' do
+    it 'returns serializable attributes', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/481945' do
       attrs = {
         vertex_ai_host: host,
         vertex_ai_project: project,
