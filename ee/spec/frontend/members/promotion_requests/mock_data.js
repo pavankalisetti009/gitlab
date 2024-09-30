@@ -8,6 +8,7 @@ export const groupDefaultProvide = {
   canManageMembers: true,
   context: CONTEXT_TYPE.GROUP,
   group: {
+    id: 24,
     name: 'gitlab',
     path: 'gitlab-org',
   },
@@ -24,6 +25,7 @@ export const projectDefaultProvide = {
     path: 'gitlab-org',
   },
   project: {
+    id: 24,
     path: 'gitlab-org/gitlab-test',
   },
 };
