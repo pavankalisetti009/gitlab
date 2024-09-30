@@ -35,4 +35,12 @@ RSpec.describe 'GroupMemberBulkUpdate', feature_category: :groups_and_projects d
     expect(mutation_response['errors']).to be_empty
     expect(new_access_level).to eq(Gitlab::Access::GUEST)
   end
+
+  context 'with promotion management feature' do
+    let_it_be_with_refind(:source) { create(:group) }
+    let(:source_id_key) { 'group_id' }
+    let(:response_member_field) { "groupMembers" }
+
+    it_behaves_like 'promotion management for members bulk update'
+  end
 end
