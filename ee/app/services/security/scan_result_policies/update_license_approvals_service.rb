@@ -99,9 +99,28 @@ module Security
       strong_memoize_attr :violations
 
       def target_branch_pipeline
-        merge_request.latest_comparison_pipeline_with_sbom_reports
+        target_pipeline = merge_request.latest_comparison_pipeline_with_sbom_reports
+
+        return target_pipeline if target_pipeline.present?
+
+        related_target_pipeline
       end
       strong_memoize_attr :target_branch_pipeline
+
+      def related_target_pipeline
+        target_pipeline_without_report = merge_request.merge_base_pipeline || merge_request.base_pipeline
+
+        return unless target_pipeline_without_report
+
+        related_pipeline_ids = Security::RelatedPipelinesFinder.new(target_pipeline_without_report, {
+          sources: Enums::Ci::Pipeline.ci_and_security_orchestration_sources.values,
+          ref: merge_request.target_branch
+        }).execute
+
+        pipelines = project.all_pipelines.id_in(related_pipeline_ids)
+
+        merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
+      end
 
       def validation_context
         { pipeline_ids: [pipeline&.id].compact, target_pipeline_ids: [target_branch_pipeline&.id].compact }

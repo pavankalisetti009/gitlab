@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_user_edited_custom_dashboard_monthly
 description: Monthly count of custom dashboards edited using the dashboard designer.
-product_group: product_analytics
+product_group: platform_insights
 performance_indicator_type: []
 value_type: number
 status: active

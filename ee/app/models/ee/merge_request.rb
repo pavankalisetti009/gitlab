@@ -456,6 +456,10 @@ module EE
       find_common_ancestor_pipeline_with_security_reports
     end
 
+    def find_pipeline_with_dependency_scanning_reports(pipelines)
+      find_pipeline_with_reports(pipelines, :has_dependency_scanning_reports?)
+    end
+
     def diff_head_pipeline?(pipeline)
       pipeline.source_sha == diff_head_sha || pipeline.sha == diff_head_sha
     end

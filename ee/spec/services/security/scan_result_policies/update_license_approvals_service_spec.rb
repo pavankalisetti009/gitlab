@@ -200,6 +200,25 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         target_pipeline.update!(ref: merge_request.source_branch)
       end
 
+      context 'when there are multiple pipelines without reports and one related pipeline' do
+        before do
+          create_list(:ee_ci_pipeline, 10, :success, project: project, ref: merge_request.target_branch,
+            sha: merge_request.diff_base_sha, source: :schedule)
+        end
+
+        let_it_be(:related_target_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :success,
+            :with_dependency_scanning_feature_branch,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_base_sha)
+        end
+
+        it_behaves_like 'requires approval'
+      end
+
       context 'when fail_open is true' do
         before do
           license_finding_rule.scan_result_policy_read.update!(fallback_behavior: { fail: 'open' })
