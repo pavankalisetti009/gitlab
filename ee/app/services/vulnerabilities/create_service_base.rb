@@ -165,5 +165,9 @@ module Vulnerabilities
     def reloaded_project
       @reloaded_project ||= project.reset
     end
+
+    def update_security_statistics!
+      project.security_statistics.increase_vulnerability_counter!(1)
+    end
   end
 end

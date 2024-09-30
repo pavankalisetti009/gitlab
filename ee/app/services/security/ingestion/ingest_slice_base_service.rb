@@ -15,7 +15,8 @@ module Security
       def execute
         Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
           %w[
-            project_statistics
+            project_security_statistics
+            project_settings
             security_findings
             vulnerabilities
             vulnerability_flags

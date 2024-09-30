@@ -9,13 +9,13 @@ RSpec.describe Security::Ingestion::Tasks::IncreaseCountersTask, feature_categor
       let(:finding_map_1) { create(:finding_map, pipeline: pipeline, new_record: true) }
       let(:finding_map_2) { create(:finding_map, pipeline: pipeline, new_record: false) }
 
-      let(:project_statistics) { pipeline.project.statistics }
+      let(:security_statistics) { pipeline.project.security_statistics }
       let(:service_object) { described_class.new(pipeline, [finding_map_1, finding_map_2]) }
 
       subject(:execute_task) { service_object.execute }
 
       it 'increases vulnerability count' do
-        expect { execute_task }.to change { project_statistics.reload.vulnerability_count }.by(1)
+        expect { execute_task }.to change { security_statistics.reload.vulnerability_count }.by(1)
       end
     end
 
@@ -34,8 +34,8 @@ RSpec.describe Security::Ingestion::Tasks::IncreaseCountersTask, feature_categor
       subject(:execute_task) { service_object.execute }
 
       it 'increases the vulnerability count for projects' do
-        expect { execute_task }.to change { pipeline_1.project.statistics.reload.vulnerability_count }.by(1)
-                               .and change { pipeline_2.project.statistics.reload.vulnerability_count }.by(1)
+        expect { execute_task }.to change { pipeline_1.project.security_statistics.reload.vulnerability_count }.by(1)
+                               .and change { pipeline_2.project.security_statistics.reload.vulnerability_count }.by(1)
       end
     end
   end

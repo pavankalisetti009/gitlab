@@ -6,7 +6,7 @@ module Security
       class IncreaseCountersTask < AbstractTask
         def execute
           counts_by_projects.each do |project, new_vulnerability_count|
-            project.statistics.increase_vulnerability_counter!(new_vulnerability_count)
+            project.security_statistics.increase_vulnerability_counter!(new_vulnerability_count)
           end
         end
 

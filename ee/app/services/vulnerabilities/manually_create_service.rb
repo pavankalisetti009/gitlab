@@ -41,15 +41,14 @@ module Vulnerabilities
 
         vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
 
+        update_security_statistics!
+
         Statistics::UpdateService.update_for(vulnerability)
 
         ServiceResponse.success(payload: { vulnerability: vulnerability })
       end
 
-      Project.transaction do
-        project.mark_as_vulnerable!
-        project.statistics.increase_vulnerability_counter!(1)
-      end
+      project.mark_as_vulnerable!
 
       process_archival_and_traversal_ids_changes if response.success?
 
