@@ -77,6 +77,7 @@ module EE
       has_many :compliance_management_frameworks, through: :compliance_framework_settings, source: 'compliance_management_framework'
       has_one :security_setting, class_name: 'ProjectSecuritySetting'
       has_one :vulnerability_statistic, class_name: 'Vulnerabilities::Statistic'
+      has_one :security_statistics, class_name: 'Security::ProjectStatistics'
 
       has_one :dependency_proxy_packages_setting, class_name: '::DependencyProxy::Packages::Setting', inverse_of: :project
       has_one :zoekt_repository, class_name: '::Search::Zoekt::Repository', inverse_of: :project
@@ -462,6 +463,10 @@ module EE
       alias_attribute :marked_for_deletion_on, :marked_for_deletion_at
 
       with_replicator Geo::ProjectRepositoryReplicator
+
+      def security_statistics
+        super || (self.security_statistics = Security::ProjectStatistics.create_for(self))
+      end
 
       def pipeline_configuration_full_path
         compliance_framework_settings
