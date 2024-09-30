@@ -229,10 +229,34 @@ describe('EditorWrapper component', () => {
         expect(goToPolicyMR).toHaveBeenCalledWith({
           action,
           assignedPolicyProject: existingAssignedPolicyProject,
+          extraMergeRequestInput: null,
           name: mockDastScanExecutionObject.name,
           namespacePath: defaultProjectPath,
           yamlEditorValue: mockDastScanExecutionManifest,
         });
+      });
+    });
+
+    describe('compliance framework migration', () => {
+      it('passes extra merge request input to goToPolicyMR', async () => {
+        factory({
+          provide: { assignedPolicyProject: existingAssignedPolicyProject },
+          subscriptionMock: getSecurityPolicyProjectSubscriptionErrorHandlerMock,
+        });
+        const extraMergeRequestInput = {
+          title: 'test',
+          description: 'test',
+        };
+        findScanExecutionPolicyEditor().vm.$emit('save', {
+          action: undefined,
+          policy: mockDastScanExecutionManifest,
+          extraMergeRequestInput,
+        });
+        await waitForPromises();
+        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        expect(goToPolicyMR).toHaveBeenCalledWith(
+          expect.objectContaining({ extraMergeRequestInput }),
+        );
       });
     });
 
