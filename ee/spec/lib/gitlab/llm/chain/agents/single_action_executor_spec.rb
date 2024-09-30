@@ -228,6 +228,35 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
     end
 
+    context "when error event received and it's prompt length error" do
+      let(:message) do
+        <<~MESSAGE
+        Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'prompt is too long: 200082 tokens > 199999 maximum'}}
+        MESSAGE
+      end
+
+      before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+
+        event = Gitlab::Duo::Chat::AgentEvents::Error.new({ "message" => message })
+
+        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          allow(react_agent).to receive(:step).with(step_params)
+                                              .and_yield(event).and_return([event])
+        end
+      end
+
+      it "returns an error" do
+        expect(answer.is_final).to eq(true)
+        expect(answer.content).to include("I'm sorry, you've entered too many prompts. Please run " \
+          "/clear or /reset before asking the next question.")
+        expect(answer.error_code).to include("A1005")
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
+          kind_of(described_class::AgentEventError)
+        )
+      end
+    end
+
     context "when resource is not authorized" do
       let!(:user) { create(:user) }
 
