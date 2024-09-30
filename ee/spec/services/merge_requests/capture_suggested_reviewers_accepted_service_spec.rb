@@ -23,7 +23,8 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
     context 'when the reviewer IDs param is empty' do
       let(:reviewer_ids) { [] }
 
-      it 'returns an error response', :aggregate_failures do
+      it 'returns an error response', :aggregate_failures,
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485613' do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('Reviewer IDs are empty')
