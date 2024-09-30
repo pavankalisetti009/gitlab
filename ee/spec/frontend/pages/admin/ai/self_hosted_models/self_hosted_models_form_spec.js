@@ -86,23 +86,12 @@ describe('SelfHostedModelForm', () => {
 
       const modelOptions = modelDropdownSelector.props('items');
       expect(modelOptions.map((model) => model.text)).toEqual([
-        'CodeGemma 2b',
-        'CodeGemma 7b-it',
-        'CodeGemma 7b',
-        'Code-Llama 13b-code',
-        'Code-Llama 13b',
-        'Codestral 22B',
-        'Mistral 7B',
-        'Mixtral 8x22B',
-        'Mixtral 8x7B',
-        'DEEPSEEKCODER',
-        'Mistral Text 7B',
-        'Mixtral Text 8x7B',
-        'Mixtral Text 8X22B',
-        'LLaMA 3 - 13B',
-        'LLaMA 3 - 13B Text',
-        'LLaMA 3 - 70B',
-        'LLaMA 3 - 70B Text',
+        'CodeGemma',
+        'Code-Llama',
+        'Codestral',
+        'Mistral',
+        'Deepseek Coder',
+        'LLaMA 3',
       ]);
     });
 
@@ -149,7 +138,7 @@ describe('SelfHostedModelForm', () => {
       it('renders an error message', async () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
-        await findCollapsibleListBox().vm.$emit('select', 'MIXTRAL');
+        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -180,7 +169,7 @@ describe('SelfHostedModelForm', () => {
       it('renders an error message', async () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('invalid endpoint');
-        await findCollapsibleListBox().vm.$emit('select', 'MIXTRAL');
+        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -201,7 +190,7 @@ describe('SelfHostedModelForm', () => {
 
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
-        await findCollapsibleListBox().vm.$emit('select', 'MIXTRAL');
+        await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -228,7 +217,7 @@ describe('SelfHostedModelForm', () => {
     it('invokes the create mutation with correct input variables', async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MIXTRAL');
+      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
 
       wrapper.find('form').trigger('submit.prevent');
 
@@ -238,7 +227,7 @@ describe('SelfHostedModelForm', () => {
         input: {
           name: 'test deployment',
           endpoint: 'http://test.com',
-          model: 'MIXTRAL',
+          model: 'MISTRAL',
           apiToken: '',
         },
       });
@@ -277,7 +266,7 @@ describe('SelfHostedModelForm', () => {
     it('invokes the update mutation with correct input variables', async () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MIXTRAL');
+      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
       await findApiKeyInputField().vm.$emit('input', 'abc123');
 
       wrapper.find('form').trigger('submit.prevent');
@@ -289,7 +278,7 @@ describe('SelfHostedModelForm', () => {
           id: mockModelData.id,
           name: 'test deployment',
           endpoint: 'http://test.com',
-          model: 'MIXTRAL',
+          model: 'MISTRAL',
           apiToken: 'abc123',
         },
       });
