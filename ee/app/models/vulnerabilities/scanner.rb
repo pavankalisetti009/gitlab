@@ -37,7 +37,6 @@ module Vulnerabilities
       joins("JOIN LATERAL (#{lateral.to_sql}) report_types ON true")
         .select('DISTINCT ON ("vulnerability_scanners"."external_id", "report_types"."report_type") "vulnerability_scanners".*, "report_types"."report_type" AS "report_type"')
         .order('"vulnerability_scanners"."external_id" ASC, "report_types"."report_type" ASC')
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478017')
     end
 
     def report_type
