@@ -3,14 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::ResponseModifiers::Base, feature_category: :ai_abstraction_layer do
-  let(:response) { "I'm GitLab Duo!" }
-  let(:response_body) { %("#{response}") }
-  let(:ai_response) { instance_double(HTTParty::Response, body: response_body) }
+  let(:ai_response) { %("I'm GitLab Duo") }
   let(:base_modifier) { described_class.new(ai_response) }
 
   describe '#response_body' do
-    it 'returns the parsed response body' do
-      expect(base_modifier.response_body).to eq(response)
+    it 'returns the response body' do
+      expect(base_modifier.response_body).to eq(ai_response)
     end
   end
 
@@ -25,7 +23,7 @@ RSpec.describe Gitlab::Llm::AiGateway::ResponseModifiers::Base, feature_category
       let(:error) { 'Error message' }
 
       context 'when the detail is an string' do
-        let(:response_body) { %({"detail": "#{error}"}) }
+        let(:ai_response) { { 'detail' => error } }
 
         it 'returns an array with the error message' do
           expect(base_modifier.errors).to eq([error])
@@ -33,7 +31,7 @@ RSpec.describe Gitlab::Llm::AiGateway::ResponseModifiers::Base, feature_category
       end
 
       context 'when the detail is an array' do
-        let(:response_body) { %({"detail": [{"msg": "#{error}"}]}) }
+        let(:ai_response) { { 'detail' => [{ 'msg' => error }] } }
 
         it 'returns an array with the error message' do
           expect(base_modifier.errors).to eq([error])

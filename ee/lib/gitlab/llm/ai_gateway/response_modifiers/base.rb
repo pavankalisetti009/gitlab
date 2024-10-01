@@ -5,23 +5,29 @@ module Gitlab
     module AiGateway
       module ResponseModifiers
         class Base < Gitlab::Llm::BaseResponseModifier
+          extend ::Gitlab::Utils::Override
+
           def initialize(ai_response)
-            @ai_response = Gitlab::Json.parse(ai_response.body)
+            @ai_response = ai_response
           end
 
+          override :response_body
           def response_body
             ai_response
           end
 
+          override :errors
           def errors
             # On success, the response is just a plain JSON string
-            @errors ||= if ai_response.is_a?(String)
-                          []
-                        else
-                          detail = ai_response&.dig('detail')
+            @errors ||= ai_response.is_a?(String) ? [] : error_from_response
+          end
 
-                          [detail.is_a?(String) ? detail : detail&.dig(0, 'msg')].compact
-                        end
+          private
+
+          def error_from_response
+            detail = ai_response['detail']
+
+            [detail.is_a?(String) ? detail : detail&.dig(0, 'msg')].compact
           end
         end
       end
