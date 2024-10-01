@@ -21,8 +21,7 @@ module Groups
           IssuesFinder
         end
 
-      relation = finder_class.new(current_user, finder_params)
-                  .execute
+      relation = finder_class.new(current_user, finder_params).execute
 
       relation = relation.gfm_autocomplete_search(params[:search]).limit(SEARCH_LIMIT) if params[:search]
 

@@ -303,7 +303,7 @@ module Issuable
         .with(issuables_cte.to_arel)
         .from(issuables_cte.table)
         .merge(search_conditions)
-        .order("#{table_name}.id DESC")
+        .order(issuables_cte.table[:id].desc)
     end
 
     def available_states

@@ -8,8 +8,7 @@ module Projects
     SEARCH_LIMIT = 5
 
     def issues
-      relation = IssuesFinder.new(current_user, project_id: project.id, state: 'opened')
-        .execute
+      relation = IssuesFinder.new(current_user, project_id: project.id, state: 'opened').execute
 
       relation = relation.gfm_autocomplete_search(params[:search]).limit(SEARCH_LIMIT) if params[:search]
 
