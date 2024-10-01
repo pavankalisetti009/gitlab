@@ -1401,6 +1401,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_627949f72f05() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "packages_packages"
+  WHERE "packages_packages"."id" = NEW."package_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_664594a3d0a7() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -15451,6 +15467,7 @@ CREATE TABLE packages_rpm_metadata (
     license text,
     url text,
     epoch integer DEFAULT 0 NOT NULL,
+    project_id bigint,
     CONSTRAINT check_3798bae3d6 CHECK ((char_length(arch) <= 255)),
     CONSTRAINT check_5d29ba59ac CHECK ((char_length(description) <= 5000)),
     CONSTRAINT check_6e8cbd536d CHECK ((char_length(url) <= 1000)),
@@ -29925,6 +29942,8 @@ CREATE INDEX index_packages_project_id_name_partial_for_nuget ON packages_packag
 
 CREATE INDEX index_packages_rpm_metadata_on_package_id ON packages_rpm_metadata USING btree (package_id);
 
+CREATE INDEX index_packages_rpm_metadata_on_project_id ON packages_rpm_metadata USING btree (project_id);
+
 CREATE INDEX index_packages_rpm_repository_files_on_project_id_and_file_name ON packages_rpm_repository_files USING btree (project_id, file_name);
 
 CREATE INDEX index_packages_tags_on_package_id_and_updated_at ON packages_tags USING btree (package_id, updated_at DESC);
@@ -33371,6 +33390,8 @@ CREATE TRIGGER trigger_5ca97b87ee30 BEFORE INSERT OR UPDATE ON merge_request_con
 
 CREATE TRIGGER trigger_5f6432d2dccc BEFORE INSERT OR UPDATE ON operations_strategies_user_lists FOR EACH ROW EXECUTE FUNCTION trigger_5f6432d2dccc();
 
+CREATE TRIGGER trigger_627949f72f05 BEFORE INSERT OR UPDATE ON packages_rpm_metadata FOR EACH ROW EXECUTE FUNCTION trigger_627949f72f05();
+
 CREATE TRIGGER trigger_664594a3d0a7 BEFORE INSERT OR UPDATE ON merge_request_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_664594a3d0a7();
 
 CREATE TRIGGER trigger_68435a54ee2b BEFORE INSERT OR UPDATE ON packages_debian_project_architectures FOR EACH ROW EXECUTE FUNCTION trigger_68435a54ee2b();
@@ -34461,6 +34482,9 @@ ALTER TABLE ONLY alert_management_alerts
 
 ALTER TABLE ONLY approval_policy_rule_project_links
     ADD CONSTRAINT fk_9ed5cf0600 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_rpm_metadata
+    ADD CONSTRAINT fk_9f1814eb36 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_branch_push_access_levels
     ADD CONSTRAINT fk_9ffc86a3d9 FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
