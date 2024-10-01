@@ -169,6 +169,20 @@ RSpec.describe Users::UpdateService, feature_category: :user_profile do
             expect(AuditEvent.last.present.action).to eq(expected_message)
           end
         end
+
+        context 'updating name' do
+          it 'logs audit event' do
+            previous_name = user.name
+            new_name = 'my_new_name'
+            expected_message = "Changed name from #{previous_name} to #{new_name}"
+
+            expect do
+              update_user_as_self(user, name: new_name)
+            end.to change { AuditEvent.count }.by(1)
+
+            expect(AuditEvent.last.present.action).to eq(expected_message)
+          end
+        end
       end
     end
 
