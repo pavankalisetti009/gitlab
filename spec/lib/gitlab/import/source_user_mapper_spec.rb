@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Import::SourceUserMapper, :request_store, feature_category: :importers do
   let_it_be(:namespace) { create(:namespace) }
   let_it_be(:import_type) { 'github' }
-  let_it_be(:source_hostname) { 'github.com' }
+  let_it_be(:source_hostname) { 'https://github.com' }
 
   let_it_be(:existing_import_source_user) do
     create(
