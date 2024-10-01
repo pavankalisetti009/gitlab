@@ -2,18 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feature_category: :global_search do
-  before do
-    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-  end
-
+RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, feature_category: :global_search do
   subject(:proxy) { described_class.new(Issue, use_separate_indices: true) }
 
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, :public, group: group) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let!(:label) { create(:label, project: project) }
-  let!(:issue) { create(:labeled_issue, title: 'test', project: project, labels: [label]) }
+  let_it_be(:label) { create(:label, project: project) }
+  let_it_be_with_reload(:issue) { create(:labeled_issue, title: 'test', project: project, labels: [label]) }
   let(:query) { 'test' }
 
   let(:options) do
@@ -27,35 +23,34 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
     }
   end
 
+  before do
+    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+    Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+    ensure_elasticsearch_index!
+  end
+
   describe '#issue_aggregations' do
-    before do
-      ensure_elasticsearch_index!
+    it 'filters by labels' do
+      result = proxy.issue_aggregations('test', options)
+
+      expect(result.first.name).to eq('labels')
+      expect(result.first.buckets.first.symbolize_keys).to match(
+        key: label.id.to_s,
+        count: 1,
+        title: label.title,
+        type: label.type,
+        color: label.color.to_s,
+        parent_full_name: label.project.full_name
+      )
     end
-
-    shared_examples 'returns aggregations' do
-      it 'filters by labels' do
-        result = proxy.issue_aggregations('test', options)
-
-        expect(result.first.name).to eq('labels')
-        expect(result.first.buckets.first.symbolize_keys).to match(
-          key: label.id.to_s,
-          count: 1,
-          title: label.title,
-          type: label.type,
-          color: label.color.to_s,
-          parent_full_name: label.project.full_name
-        )
-      end
-    end
-
-    it_behaves_like 'returns aggregations'
   end
 
   describe '#elastic_search' do
     let(:result) { proxy.elastic_search(query, options: options) }
 
     describe 'search on basis of hidden attribute' do
-      context 'when author of the issue is banned' do
+      context 'when author of the issue is banned', :sidekiq_inline do
         before do
           issue.author.ban
           ensure_elasticsearch_index!
@@ -78,10 +73,6 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
       end
 
       context 'when author of the issue is active' do
-        before do
-          ensure_elasticsearch_index!
-        end
-
         it 'current_user is an admin user then user can see the issue' do
           allow(user).to receive(:can_admin_all_resources?).and_return(true)
           expect(elasticsearch_hit_ids(result)).to include issue.id
