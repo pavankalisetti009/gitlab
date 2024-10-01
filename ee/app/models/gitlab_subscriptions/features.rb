@@ -42,7 +42,6 @@ module GitlabSubscriptions
       product_analytics_usage_quotas
       zoekt_code_search
       disable_private_profiles
-      observability
     ].freeze
 
     STARTER_FEATURES = %i[
