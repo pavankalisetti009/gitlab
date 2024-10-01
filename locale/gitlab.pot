@@ -39958,6 +39958,9 @@ msgstr ""
 msgid "PipelineCharts|Failure rate"
 msgstr ""
 
+msgid "PipelineCharts|Pipelines"
+msgstr ""
+
 msgid "PipelineCharts|Success rate"
 msgstr ""
 
