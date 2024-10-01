@@ -405,6 +405,21 @@ module Gitlab
         distribution == :elasticsearch && info[:distribution] == 'elasticsearch' && info[:version].to_f >= 8
       end
 
+      # Checks if the Elasticsearch/OpenSearch distribution and version match the specified requirements.
+      # @param distribution [Symbol]: The expected distribution (:elasticsearch or :opensearch)
+      # @param min_version [String]: The minimum required version (optional)
+      # Examples:
+      #   matching_distribution?(:opensearch)
+      #   matching_distribution?(:elasticsearch, min_version: '7.10.0')
+      def matching_distribution?(distribution, min_version: nil)
+        info = server_info
+        return false if info.empty?
+        return false unless info[:distribution] == distribution.to_s
+        return true unless min_version
+
+        Gitlab::VersionInfo.parse(info[:version]) >= Gitlab::VersionInfo.parse(min_version)
+      end
+
       def create_index(index_name:, alias_name:, with_alias:, settings:, mappings:, options: {})
         if index_exists?(index_name: index_name)
           return if options[:skip_if_exists]
