@@ -5,5 +5,9 @@ FactoryBot.define do
     association :namespace, factory: :group
     field_type { :single_select }
     name { generate(:title) }
+
+    trait :archived do
+      archived_at { Time.current }
+    end
   end
 end

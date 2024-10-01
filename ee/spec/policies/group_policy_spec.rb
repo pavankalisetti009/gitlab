@@ -177,6 +177,34 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  context 'when custom fields are available' do
+    before do
+      stub_licensed_features(custom_fields: true)
+    end
+
+    context 'when user is a guest' do
+      let(:current_user) { guest }
+
+      it { is_expected.to be_allowed(:read_custom_field) }
+    end
+
+    context 'when user is logged out' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:read_custom_field) }
+    end
+  end
+
+  context 'when custom fields are not available' do
+    let(:current_user) { guest }
+
+    before do
+      stub_licensed_features(custom_fields: false)
+    end
+
+    it { is_expected.to be_disallowed(:read_custom_field) }
+  end
+
   context 'when cluster deployments is available' do
     let(:current_user) { maintainer }
 

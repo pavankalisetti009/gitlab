@@ -96,6 +96,7 @@ module GitlabSubscriptions
       commit_committer_name_check
       compliance_framework
       custom_compliance_frameworks
+      custom_fields
       custom_file_templates
       custom_project_templates
       cycle_analytics_for_groups
