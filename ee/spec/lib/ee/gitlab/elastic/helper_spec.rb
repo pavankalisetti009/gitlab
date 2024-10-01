@@ -713,6 +713,68 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     end
   end
 
+  describe '#matching_distribution?' do
+    let(:server_info) { {} }
+
+    before do
+      allow(helper).to receive(:server_info).and_return(server_info)
+    end
+
+    context 'when server_info is empty' do
+      it 'returns false' do
+        expect(helper.matching_distribution?(:elasticsearch)).to be false
+      end
+    end
+
+    context 'when distribution does not match' do
+      let(:server_info) { { distribution: 'opensearch', version: '1.0.0' } }
+
+      it 'returns false' do
+        expect(helper.matching_distribution?(:elasticsearch)).to be false
+      end
+    end
+
+    context 'when distribution matches' do
+      let(:server_info) { { distribution: 'elasticsearch', version: '7.10.0' } }
+
+      context 'and no minimum version is specified' do
+        it 'returns true' do
+          expect(helper.matching_distribution?(:elasticsearch)).to be true
+        end
+      end
+
+      context 'and minimum version is specified' do
+        it 'returns true when version meets minimum' do
+          expect(helper.matching_distribution?(:elasticsearch, min_version: '7.9.0')).to be true
+        end
+
+        it 'returns false when version does not meet minimum' do
+          expect(helper.matching_distribution?(:elasticsearch, min_version: '7.11.0')).to be false
+        end
+
+        it 'returns true when version exactly matches minimum' do
+          expect(helper.matching_distribution?(:elasticsearch, min_version: '7.10.0')).to be true
+        end
+      end
+    end
+
+    context 'when checking OpenSearch distribution' do
+      let(:server_info) { { distribution: 'opensearch', version: '1.2.3' } }
+
+      it 'returns true for matching distribution' do
+        expect(helper.matching_distribution?(:opensearch)).to be true
+      end
+
+      it 'returns true when version meets minimum' do
+        expect(helper.matching_distribution?(:opensearch, min_version: '1.0.0')).to be true
+      end
+
+      it 'returns false when version does not meet minimum' do
+        expect(helper.matching_distribution?(:opensearch, min_version: '2.0.0')).to be false
+      end
+    end
+  end
+
   describe '#klass_to_alias_name' do
     it 'returns results for every listed class' do
       described_class::ES_SEPARATE_CLASSES.each do |klass|
