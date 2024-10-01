@@ -468,11 +468,18 @@ module EE
         enable :read_vulnerability_scanner
       end
 
-      condition(:resolve_vulnerability_authorized) do
-        ::Gitlab::Llm::Utils::UserAuthorizer.new(@user, subject, :resolve_vulnerability).allowed?
+      condition(:resolve_vulnerability_allowed) do
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: subject,
+          feature_name: :resolve_vulnerability
+        ).allowed?
       end
 
-      rule { can?(:read_security_resource) & resolve_vulnerability_authorized }.policy do
+      condition(:resolve_vulnerability_enabled) do
+        @user.allowed_to_use?(:resolve_vulnerability)
+      end
+
+      rule { can?(:read_security_resource) & resolve_vulnerability_allowed & resolve_vulnerability_enabled }.policy do
         enable :resolve_vulnerability_with_ai
       end
 

@@ -61,30 +61,22 @@ module EE
 
       condition(:code_suggestions_enabled_for_user) do
         next false unless @user
-        next true if CloudConnector::AvailableServices.find_by_name(:code_suggestions).allowed_for?(@user)
+        next true if @user.allowed_to_use?(:code_suggestions)
 
         next false unless ::Ai::FeatureSetting.code_suggestions_self_hosted?
 
-        self_hosted_models_available_for?(@user)
+        @user.allowed_to_use?(:code_suggestions, service_name: :self_hosted_models)
       end
 
-      condition(:glab_ask_git_command_licensed) do
-        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          next @user.any_group_with_ga_ai_available?(:glab_ask_git_command)
-        end
-
-        next false unless ::Gitlab::CurrentSettings.duo_features_enabled?
-
-        ::License.feature_available?(:glab_ask_git_command)
+      condition(:glab_ask_git_command_enabled) do
+        ::Gitlab::CurrentSettings.duo_features_enabled?
       end
 
       condition(:user_allowed_to_use_glab_ask_git_command) do
-        next true if glab_ask_git_command_data.free_access?
-
-        glab_ask_git_command_data.allowed_for?(@user)
+        @user.allowed_to_use?(:glab_ask_git_command, licensed_feature: :glab_ask_git_command)
       end
 
-      rule { glab_ask_git_command_licensed & user_allowed_to_use_glab_ask_git_command }.policy do
+      rule { glab_ask_git_command_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
         enable :access_glab_ask_git_command
       end
 
@@ -226,10 +218,6 @@ module EE
       rule { security_policy_bot }.policy do
         enable :access_git
       end
-    end
-
-    def glab_ask_git_command_data
-      CloudConnector::AvailableServices.find_by_name(:glab_ask_git_command)
     end
 
     def duo_chat_free_access_was_cut_off?

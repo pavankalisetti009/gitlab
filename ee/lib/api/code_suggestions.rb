@@ -96,11 +96,7 @@ module API
 
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
 
-          if Feature.enabled?(:self_hosted_models_beta_ended, current_user)
-            unauthorized! unless service.allowed_for?(current_user)
-          else
-            unauthorized! unless service.free_access? || service.allowed_for?(current_user)
-          end
+          unauthorized! unless current_user.allowed_to_use?(:code_suggestions, service_name: task.feature_name)
 
           token = service.access_token(current_user)
           unauthorized! if token.nil?

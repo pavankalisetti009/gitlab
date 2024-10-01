@@ -26,11 +26,8 @@ RSpec.describe 'AiAction for Generate Commit Message', :saas, feature_category: 
     stub_licensed_features(generate_commit_message: true, ai_features: true, experimental_features: true)
     group.namespace_settings.update!(experiment_features_enabled: true)
 
-    service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
-    allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                  .with(:generate_commit_message)
-                                                  .and_return(service_data)
-    allow(service_data).to receive(:allowed_for?).with(current_user).and_return(true)
+    allow(current_user).to receive(:allowed_to_use?)
+      .with(:generate_commit_message, licensed_feature: :generate_commit_message).and_return(true)
   end
 
   it 'successfully performs an generate commit message request' do

@@ -7,7 +7,6 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
 
   describe 'troubleshoot_job_with_ai' do
     let(:authorized) { true }
-    let(:cloud_connector_free_access) { true }
     let(:cloud_connector_user_access) { true }
     let_it_be(:project) { create(:project, :private) }
     let_it_be(:pipeline) { create(:ci_empty_pipeline, project: project) }
@@ -28,13 +27,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_chat).and_return(true)
       allow(user).to receive(:can?).with(:access_duo_features, build.project).and_return(true)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:troubleshoot_job).and_return(
-        instance_double(
-          CloudConnector::BaseAvailableServiceData,
-          free_access?: cloud_connector_free_access,
-          allowed_for?: cloud_connector_user_access
-        )
-      )
+      allow(user).to receive(:allowed_to_use?).and_return(cloud_connector_user_access)
     end
 
     context 'when feature is chat authorized' do
@@ -88,49 +81,20 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
       it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
     end
 
-    # TODO: remove these tests when implementing https://gitlab.com/gitlab-org/gitlab/-/issues/473087
-    describe 'cloud connector' do
+    context 'when on .org or .com', :saas do
       using RSpec::Parameterized::TableSyntax
-      where(:free_access, :user_access, :allowed) do
-        true  | true  | true
-        true  | false | true
-        false | true  | true
+      where(:user_access, :licensed, :allowed) do
+        true | true | true
+        true | false | false
+        false | true | false
         false | false | false
       end
 
       with_them do
-        let(:cloud_connector_free_access) { free_access }
-        let(:cloud_connector_user_access) { user_access }
-        let(:policy) { :troubleshoot_job_with_ai }
-
-        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
-      end
-    end
-
-    context 'when on .org or .com', :saas do
-      using RSpec::Parameterized::TableSyntax
-      where(:group_with_ai_membership, :free_access, :user_access, :licensed, :allowed) do
-        true  | true   | true  | true  | true
-        true  | false  | true  | true  | true
-        false | false  | true  | true  | true
-        false | false  | false | true  | false
-        true  | true   | false | true  | true
-        false | true   | false | true  | false
-        true  | true   | true  | false | false
-        true  | false  | true  | false | false
-        false | false  | true  | false | false
-        false | false  | false | false | false
-        true  | true   | false | false | false
-        false | true   | false | false | false
-      end
-
-      with_them do
         before do
-          allow(user).to receive(:any_group_with_ga_ai_available?).and_return(group_with_ai_membership)
           allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(licensed)
         end
 
-        let(:cloud_connector_free_access) { free_access }
         let(:cloud_connector_user_access) { user_access }
         let(:policy) { :troubleshoot_job_with_ai }
 
