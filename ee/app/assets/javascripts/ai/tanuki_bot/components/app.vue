@@ -63,6 +63,11 @@ export default {
       required: false,
       default: null,
     },
+    projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -170,6 +175,7 @@ export default {
           variables: {
             question,
             resourceId: this.computedResourceId,
+            projectId: this.projectId,
             clientSubscriptionId: this.clientSubscriptionId,
             ...variables,
           },
