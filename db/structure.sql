@@ -841,6 +841,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_0a29d4d42b62() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "approval_project_rules"
+  WHERE "approval_project_rules"."id" = NEW."approval_project_rule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_0da002390fdc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -1417,6 +1433,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_627949f72f05() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "packages_packages"
+  WHERE "packages_packages"."id" = NEW."package_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_664594a3d0a7() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -1586,6 +1618,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "dast_site_tokens"
   WHERE "dast_site_tokens"."id" = NEW."dast_site_token_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_81b4c93e7133() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "pages_deployments"
+  WHERE "pages_deployments"."id" = NEW."pages_deployment_id";
 END IF;
 
 RETURN NEW;
@@ -6636,7 +6684,8 @@ ALTER SEQUENCE approval_project_rules_id_seq OWNED BY approval_project_rules.id;
 
 CREATE TABLE approval_project_rules_protected_branches (
     approval_project_rule_id bigint NOT NULL,
-    protected_branch_id bigint NOT NULL
+    protected_branch_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE TABLE approval_project_rules_users (
@@ -15469,6 +15518,7 @@ CREATE TABLE packages_rpm_metadata (
     license text,
     url text,
     epoch integer DEFAULT 0 NOT NULL,
+    project_id bigint,
     CONSTRAINT check_3798bae3d6 CHECK ((char_length(arch) <= 255)),
     CONSTRAINT check_5d29ba59ac CHECK ((char_length(description) <= 5000)),
     CONSTRAINT check_6e8cbd536d CHECK ((char_length(url) <= 1000)),
@@ -15592,6 +15642,7 @@ CREATE TABLE pages_deployment_states (
     verification_retry_count smallint,
     verification_checksum bytea,
     verification_failure text,
+    project_id bigint,
     CONSTRAINT check_15217e8c3a CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -27517,6 +27568,8 @@ CREATE INDEX index_approval_project_rules_on_project_id ON approval_project_rule
 
 CREATE INDEX index_approval_project_rules_on_rule_type ON approval_project_rules USING btree (rule_type);
 
+CREATE INDEX index_approval_project_rules_protected_branches_on_project_id ON approval_project_rules_protected_branches USING btree (project_id);
+
 CREATE INDEX index_approval_project_rules_protected_branches_pb_id ON approval_project_rules_protected_branches USING btree (protected_branch_id);
 
 CREATE INDEX index_approval_project_rules_report_type ON approval_project_rules USING btree (report_type);
@@ -29945,6 +29998,8 @@ CREATE INDEX index_packages_project_id_name_partial_for_nuget ON packages_packag
 
 CREATE INDEX index_packages_rpm_metadata_on_package_id ON packages_rpm_metadata USING btree (package_id);
 
+CREATE INDEX index_packages_rpm_metadata_on_project_id ON packages_rpm_metadata USING btree (project_id);
+
 CREATE INDEX index_packages_rpm_repository_files_on_project_id_and_file_name ON packages_rpm_repository_files USING btree (project_id, file_name);
 
 CREATE INDEX index_packages_tags_on_package_id_and_updated_at ON packages_tags USING btree (package_id, updated_at DESC);
@@ -29958,6 +30013,8 @@ CREATE INDEX index_pages_deployment_states_failed_verification ON pages_deployme
 CREATE INDEX index_pages_deployment_states_needs_verification ON pages_deployment_states USING btree (verification_state) WHERE ((verification_state = 0) OR (verification_state = 3));
 
 CREATE INDEX index_pages_deployment_states_on_pages_deployment_id ON pages_deployment_states USING btree (pages_deployment_id);
+
+CREATE INDEX index_pages_deployment_states_on_project_id ON pages_deployment_states USING btree (project_id);
 
 CREATE INDEX index_pages_deployment_states_on_verification_state ON pages_deployment_states USING btree (verification_state);
 
@@ -33321,6 +33378,8 @@ CREATE TRIGGER trigger_05ce163deddf BEFORE INSERT OR UPDATE ON status_check_resp
 
 CREATE TRIGGER trigger_0a1b0adcf686 BEFORE INSERT OR UPDATE ON packages_debian_project_components FOR EACH ROW EXECUTE FUNCTION trigger_0a1b0adcf686();
 
+CREATE TRIGGER trigger_0a29d4d42b62 BEFORE INSERT OR UPDATE ON approval_project_rules_protected_branches FOR EACH ROW EXECUTE FUNCTION trigger_0a29d4d42b62();
+
 CREATE TRIGGER trigger_0da002390fdc BEFORE INSERT OR UPDATE ON operations_feature_flags_issues FOR EACH ROW EXECUTE FUNCTION trigger_0da002390fdc();
 
 CREATE TRIGGER trigger_0e13f214e504 BEFORE INSERT OR UPDATE ON merge_request_assignment_events FOR EACH ROW EXECUTE FUNCTION trigger_0e13f214e504();
@@ -33393,6 +33452,8 @@ CREATE TRIGGER trigger_5ca97b87ee30 BEFORE INSERT OR UPDATE ON merge_request_con
 
 CREATE TRIGGER trigger_5f6432d2dccc BEFORE INSERT OR UPDATE ON operations_strategies_user_lists FOR EACH ROW EXECUTE FUNCTION trigger_5f6432d2dccc();
 
+CREATE TRIGGER trigger_627949f72f05 BEFORE INSERT OR UPDATE ON packages_rpm_metadata FOR EACH ROW EXECUTE FUNCTION trigger_627949f72f05();
+
 CREATE TRIGGER trigger_664594a3d0a7 BEFORE INSERT OR UPDATE ON merge_request_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_664594a3d0a7();
 
 CREATE TRIGGER trigger_68435a54ee2b BEFORE INSERT OR UPDATE ON packages_debian_project_architectures FOR EACH ROW EXECUTE FUNCTION trigger_68435a54ee2b();
@@ -33414,6 +33475,8 @@ CREATE TRIGGER trigger_77d9fbad5b12 BEFORE INSERT OR UPDATE ON packages_debian_p
 CREATE TRIGGER trigger_7a8b08eed782 BEFORE INSERT OR UPDATE ON boards_epic_board_positions FOR EACH ROW EXECUTE FUNCTION trigger_7a8b08eed782();
 
 CREATE TRIGGER trigger_7de792ddbc05 BEFORE INSERT OR UPDATE ON dast_site_validations FOR EACH ROW EXECUTE FUNCTION trigger_7de792ddbc05();
+
+CREATE TRIGGER trigger_81b4c93e7133 BEFORE INSERT OR UPDATE ON pages_deployment_states FOR EACH ROW EXECUTE FUNCTION trigger_81b4c93e7133();
 
 CREATE TRIGGER trigger_8204480b3a2e BEFORE INSERT OR UPDATE ON incident_management_escalation_rules FOR EACH ROW EXECUTE FUNCTION trigger_8204480b3a2e();
 
@@ -34343,6 +34406,9 @@ ALTER TABLE ONLY requirements
 ALTER TABLE ONLY catalog_resource_components
     ADD CONSTRAINT fk_85bb1d1e79 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY pages_deployment_states
+    ADD CONSTRAINT fk_8610d3d1cc FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY ci_build_pending_states
     ADD CONSTRAINT fk_861cd17da3_p FOREIGN KEY (partition_id, build_id) REFERENCES p_ci_builds(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
@@ -34486,6 +34552,9 @@ ALTER TABLE ONLY alert_management_alerts
 
 ALTER TABLE ONLY approval_policy_rule_project_links
     ADD CONSTRAINT fk_9ed5cf0600 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_rpm_metadata
+    ADD CONSTRAINT fk_9f1814eb36 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_branch_push_access_levels
     ADD CONSTRAINT fk_9ffc86a3d9 FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
@@ -34936,6 +35005,9 @@ ALTER TABLE ONLY user_preferences
 
 ALTER TABLE ONLY packages_debian_group_components
     ADD CONSTRAINT fk_e63e8ee3b1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY approval_project_rules_protected_branches
+    ADD CONSTRAINT fk_e6ee913fc2 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_requests
     ADD CONSTRAINT fk_e719a85f8a FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
