@@ -45,6 +45,21 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(described_class.non_ready).to contain_exactly zoekt_repository
       end
     end
+
+    describe '.for_zoekt_indices' do
+      let_it_be(:zoekt_index) { create(:zoekt_index) }
+      let_it_be(:zoekt_index2) { create(:zoekt_index) }
+      let_it_be(:zoekt_index3) { create(:zoekt_index) }
+      let_it_be(:zoekt_repository) { create(:zoekt_repository, zoekt_index: zoekt_index) }
+      let_it_be(:zoekt_repository2) { create(:zoekt_repository, zoekt_index: zoekt_index) }
+      let_it_be(:zoekt_repository3) { create(:zoekt_repository, zoekt_index: zoekt_index2) }
+
+      it 'returns records for matching zoekt indices' do
+        create(:zoekt_repository, zoekt_index: zoekt_index3)
+        expect(described_class.for_zoekt_indices([zoekt_index, zoekt_index2])).to contain_exactly zoekt_repository,
+          zoekt_repository2, zoekt_repository3
+      end
+    end
   end
 
   describe '.create_tasks', :freeze_time do

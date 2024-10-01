@@ -52,6 +52,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Search::Zoekt::OrphanedRepoEvent,
         Search::Zoekt::RepoMarkedAsToDeleteEvent,
         Search::Zoekt::TaskFailedEvent,
+        Search::Zoekt::LostNodeEvent,
         Security::PolicyDeletedEvent,
         ::Members::MembershipModifiedByAdminEvent
       ])

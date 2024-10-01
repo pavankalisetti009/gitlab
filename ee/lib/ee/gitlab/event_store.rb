@@ -177,6 +177,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::InitialIndexingEventWorker,
             to: ::Search::Zoekt::InitialIndexingEvent
+
+          store.subscribe ::Search::Zoekt::LostNodeEventWorker,
+            to: ::Search::Zoekt::LostNodeEvent
         end
       end
     end

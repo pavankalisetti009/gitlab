@@ -45,6 +45,8 @@ module Search
         where(state: [:orphaned, :pending_deletion])
       end
 
+      scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }
+
       def self.create_tasks(project_id:, zoekt_index:, task_type:, perform_at:)
         project = Project.find_by_id(project_id)
         find_or_initialize_by(project_identifier: project_id, project: project, zoekt_index: zoekt_index).tap do |item|

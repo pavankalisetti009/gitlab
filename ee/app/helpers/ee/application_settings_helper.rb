@@ -76,6 +76,7 @@ module EE
         :duo_features_enabled,
         :lock_duo_features_enabled,
         :duo_availability,
+        :zoekt_auto_delete_lost_nodes,
         :zoekt_auto_index_root_namespace,
         :zoekt_cpu_to_tasks_ratio,
         :zoekt_indexing_enabled,
@@ -251,6 +252,12 @@ module EE
 
     def zoekt_settings_checkboxes(form)
       [
+        form.gitlab_ui_checkbox_component(
+          :zoekt_auto_delete_lost_nodes,
+          format(_("Delete offline nodes automatically after %{label}"),
+            label: ::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect),
+          checkbox_options: { checked: @application_setting.zoekt_auto_delete_lost_nodes, multiple: false }
+        ),
         form.gitlab_ui_checkbox_component(
           :zoekt_auto_index_root_namespace,
           _('Index root namespaces automatically'),
