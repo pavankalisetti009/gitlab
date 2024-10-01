@@ -45,7 +45,7 @@ RSpec.describe Security::CreateSecurityPolicyProjectWorker, "#perform", feature_
       end
 
       expect(GraphqlTriggers).to receive(:security_policy_project_created).with(
-        project, :success, "a policy project", nil)
+        project, :success, "a policy project", [])
 
       run_worker
     end
@@ -63,7 +63,7 @@ RSpec.describe Security::CreateSecurityPolicyProjectWorker, "#perform", feature_
         end
 
         expect(GraphqlTriggers).to receive(:security_policy_project_created).with(
-          project, :error, nil, 'Security Policy project already exists.'
+          project, :error, nil, ['Security Policy project already exists.']
         )
 
         run_worker
@@ -77,7 +77,7 @@ RSpec.describe Security::CreateSecurityPolicyProjectWorker, "#perform", feature_
 
       it 'triggers the subscription with an error' do
         expect(GraphqlTriggers).to receive(:security_policy_project_created).with(
-          project, :error, nil, 'User not found.'
+          project, :error, nil, ['User not found.']
         )
 
         run_worker
@@ -91,7 +91,7 @@ RSpec.describe Security::CreateSecurityPolicyProjectWorker, "#perform", feature_
 
       it 'triggers the subscription with an error' do
         expect(GraphqlTriggers).to receive(:security_policy_project_created).with(
-          nil, :error, nil, 'Group or project not found.'
+          nil, :error, nil, ['Group or project not found.']
         )
 
         run_worker
@@ -106,7 +106,7 @@ RSpec.describe Security::CreateSecurityPolicyProjectWorker, "#perform", feature_
 
       it 'triggers the subscription with an error' do
         expect(GraphqlTriggers).to receive(:security_policy_project_created).with(
-          nil, :error, nil, 'Group or project not found. User not found.'
+          nil, :error, nil, ['Group or project not found.', 'User not found.']
         )
 
         run_worker

@@ -30,6 +30,7 @@ module Graphql
                     name
                   }
                   status
+                  errors
                   errorMessage
                 }
               }

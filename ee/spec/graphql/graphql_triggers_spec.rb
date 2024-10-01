@@ -156,22 +156,36 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
 
   describe '.security_policy_project_created' do
     subject(:trigger) do
-      described_class.security_policy_project_created(container, status, security_policy_project, error_message)
+      described_class.security_policy_project_created(container, status, security_policy_project, errors)
     end
 
     let_it_be(:container) { create(:project) }
     let_it_be(:security_policy_project) { create(:project) }
     let(:status) { :success }
-    let(:error_message) { nil }
+    let(:errors) { [] }
 
     it 'triggers the subscription' do
       expect(GitlabSchema.subscriptions).to receive(:trigger).with(
         :security_policy_project_created,
         { full_path: container.full_path },
-        { status: status, project: security_policy_project, error_message: error_message }
+        { status: status, project: security_policy_project, errors: errors, error_message: nil }
       )
 
       trigger
+    end
+
+    context 'with errors' do
+      let(:errors) { %w[error1 error2] }
+
+      it 'triggers the subscription with errors' do
+        expect(GitlabSchema.subscriptions).to receive(:trigger).with(
+          :security_policy_project_created,
+          { full_path: container.full_path },
+          { status: status, project: security_policy_project, errors: errors, error_message: 'error1 error2' }
+        )
+
+        trigger
+      end
     end
   end
 end
