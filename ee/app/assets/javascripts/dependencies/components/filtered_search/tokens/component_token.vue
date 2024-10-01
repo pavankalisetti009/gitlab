@@ -8,7 +8,6 @@ import {
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import componentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
 
 export default {
@@ -60,9 +59,6 @@ export default {
     },
     selectedComponentNames() {
       return this.selectedComponents.map(({ name }) => name);
-    },
-    selectedComponentIds() {
-      return this.selectedComponents.map(({ id }) => getIdFromGraphQLId(id));
     },
     tokenValue() {
       return {
@@ -128,7 +124,7 @@ export default {
   <gl-filtered-search-token
     :config="config"
     v-bind="{ ...$props, ...$attrs }"
-    :multi-select-values="selectedComponentIds"
+    :multi-select-values="selectedComponentNames"
     :value="tokenValue"
     v-on="$listeners"
     @select="toggleSelectedComponent"

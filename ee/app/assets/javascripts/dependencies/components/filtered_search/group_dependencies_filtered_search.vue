@@ -61,7 +61,7 @@ export default {
         ...(this.glFeatures.groupLevelDependenciesFilteringByComponent
           ? [
               {
-                type: 'component_ids',
+                type: 'component_names',
                 title: __('Component'),
                 multiSelect: true,
                 unique: true,
