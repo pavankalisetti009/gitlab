@@ -14,6 +14,9 @@ describe('ee/workspaces/components/common/workspace_actions', () => {
       propsData: {
         ...props,
       },
+      stubs: {
+        GlTooltip,
+      },
     });
   };
 

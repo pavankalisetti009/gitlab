@@ -33,7 +33,6 @@ module Search
           bool_expr = ::Search::Elastic::BoolExpr.new
 
           if query.present?
-            bool_expr = ::Search::Elastic::BoolExpr.new
             unless options[:no_join_project]
               bool_expr.filter << {
                 term: {
