@@ -8888,6 +8888,7 @@ CREATE TABLE ci_runners (
     creator_id bigint,
     creation_state smallint DEFAULT 0 NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    sharding_key_id bigint,
     CONSTRAINT check_46c685e76f CHECK ((char_length((description)::text) <= 1024)),
     CONSTRAINT check_91230910ec CHECK ((char_length((name)::text) <= 256)),
     CONSTRAINT check_ce275cee06 CHECK ((char_length(maintainer_note) <= 1024))
