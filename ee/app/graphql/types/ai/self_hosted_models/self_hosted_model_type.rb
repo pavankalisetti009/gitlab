@@ -22,6 +22,11 @@ module Types
         field :name, String, null: false, description: 'Deployment name of the self-hosted model.'
         field :updated_at, Types::TimeType, null: true, description: 'Timestamp of last update.'
 
+        field :feature_settings,
+          Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
+          null: true,
+          description: 'AI feature settings using the self-hosted model.'
+
         def has_api_token # rubocop:disable Naming/PredicateName -- otherwise resolver matcher don't work
           object.api_token.present?
         end
