@@ -130,40 +130,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
           end
         end
       end
-
-      context 'with billable promotion management' do
-        let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-        let_it_be(:new_members) { create_list(:user, 2) }
-        let(:access_level) { Gitlab::Access::DEVELOPER }
-
-        subject(:post_members) do
-          post api("/groups/#{group.id}/members", owner),
-            params: { user_id: new_members.map(&:id).join(','), access_level: access_level }
-        end
-
-        before do
-          stub_feature_flags(member_promotion_management: true)
-          stub_application_setting(enable_member_promotion_management: true)
-          allow(License).to receive(:current).and_return(license)
-        end
-
-        it 'queues users invite for admin approval' do
-          expect do
-            post_members
-          end.not_to change { group.all_group_members.count }
-
-          expect(::Members::MemberApproval.count).to eq(2)
-
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to eq({
-            'status' => 'success',
-            'queued_users' => {
-              new_members[0].username => 'Request queued for administrator approval.',
-              new_members[1].username => 'Request queued for administrator approval.'
-            }
-          })
-        end
-      end
     end
 
     describe 'PUT /groups/:id/members/:user_id' do
@@ -2341,6 +2307,211 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         let_it_be(:awaiting_member) { create(:project_member, :awaiting, project: project) }
         let_it_be(:active_member)   { create(:project_member, project: project) }
       end
+    end
+  end
+
+  context 'with billable member management' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:owner) { create(:user) }
+    let_it_be(:users) { create_list(:user, 1) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let(:source) { group }
+
+    let(:access_level) { Gitlab::Access::DEVELOPER }
+
+    before do
+      stub_application_setting(enable_member_promotion_management: true)
+      allow(License).to receive(:current).and_return(license)
+      source.add_owner(owner)
+    end
+
+    RSpec.shared_context "with feature disabled" do
+      before do
+        stub_application_setting(enable_member_promotion_management: false)
+      end
+    end
+
+    RSpec.shared_examples 'creates multiple memberships' do
+      it do
+        expect { post_request }.to change { ::Member.count }.by(2)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response).to eq({
+          'status' => 'success'
+        })
+      end
+    end
+
+    RSpec.shared_examples 'creates single membership' do
+      it do
+        expect { post_request }.to change { ::Member.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['username']).to eq(users[0].username)
+      end
+    end
+
+    RSpec.shared_examples "multiple members passed in api" do
+      let(:users) { create_list(:user, 2) }
+
+      context 'when feature is disabled' do
+        include_context "with feature disabled"
+
+        it_behaves_like "creates multiple memberships"
+      end
+
+      context 'when both users are already billable' do
+        let(:another_group) { create(:group) }
+
+        before do
+          users.each do |user|
+            another_group.add_developer(user)
+          end
+        end
+
+        it_behaves_like "creates multiple memberships"
+      end
+
+      context 'when both users will increase billable count' do
+        it 'queues users memberships for admin approval' do
+          expect { post_request }.not_to change { ::Member.count }
+
+          expect(::Members::MemberApproval.count).to eq(2)
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to eq({
+            'status' => 'success',
+            'queued_users' => {
+              users[0].username => 'Request queued for administrator approval.',
+              users[1].username => 'Request queued for administrator approval.'
+            }
+          })
+        end
+      end
+    end
+
+    RSpec.shared_examples "single member api response" do
+      let(:users) { create_list(:user, 1) }
+
+      context 'when feature is disabled' do
+        include_context "with feature disabled"
+
+        it_behaves_like "creates single membership"
+      end
+
+      context 'when user is already billable' do
+        let(:another_group) { create(:group) }
+
+        before do
+          users.each do |user|
+            another_group.add_developer(user)
+          end
+        end
+
+        it_behaves_like "creates single membership"
+      end
+
+      context 'when user will increase billable count' do
+        it 'queues user membership for admin approval' do
+          expect { post_request }.not_to change { ::Member.count }
+
+          expect(::Members::MemberApproval.count).to eq(1)
+
+          expect(response).to have_gitlab_http_status(:accepted)
+          expect(json_response).to eq({
+            'message' => {
+              users[0].username => 'Request queued for administrator approval.'
+            }
+          })
+        end
+      end
+    end
+
+    RSpec.shared_examples 'updates membership' do
+      it do
+        expect { put_request }.to change { membership.reload.access_level }.to(access_level)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    RSpec.shared_examples 'update membership api response' do
+      context 'when feature is disabled' do
+        include_context "with feature disabled"
+
+        it_behaves_like "updates membership"
+      end
+
+      context 'when user is already billable' do
+        before do
+          membership.update!(access_level: Gitlab::Access::DEVELOPER)
+        end
+
+        let(:access_level) { Gitlab::Access::MAINTAINER }
+
+        it_behaves_like "updates membership"
+      end
+
+      context 'when user is non billable' do
+        it 'queues the membership request' do
+          expect { put_request }.not_to change { membership.reload.access_level }
+          expect(json_response).to eq({
+            'message' => {
+              user.username => 'Request queued for administrator approval.'
+            }
+          })
+          expect(response).to have_gitlab_http_status(:accepted)
+        end
+      end
+    end
+
+    describe 'POST /groups/:id/members' do
+      subject(:post_request) do
+        post api("/groups/#{group.id}/members", owner),
+          params: { user_id: users.map(&:id).join(","), access_level: access_level }
+      end
+
+      let(:source) { group }
+
+      it_behaves_like "multiple members passed in api"
+      it_behaves_like "single member api response"
+    end
+
+    describe 'POST /projects/:id/members' do
+      subject(:post_request) do
+        post api("/projects/#{project.id}/members", owner),
+          params: { user_id: users.map(&:id).join(","), access_level: access_level }
+      end
+
+      let(:source) { project }
+
+      it_behaves_like "multiple members passed in api"
+      it_behaves_like "single member api response"
+    end
+
+    describe 'PUT /groups/:id/members/:user_id' do
+      let(:source) { group }
+      let(:membership) { create(:group_member, :guest, group: source, user: user) }
+
+      subject(:put_request) do
+        put api("/groups/#{source.id}/members/#{user.id}", owner),
+          params: { access_level: access_level }
+      end
+
+      it_behaves_like 'update membership api response'
+    end
+
+    describe 'PUT /projects/:id/members/:user_id' do
+      let(:source) { project }
+      let(:membership) { create(:project_member, :guest, project: source, user: user) }
+
+      subject(:put_request) do
+        put api("/projects/#{source.id}/members/#{user.id}", owner),
+          params: { access_level: access_level }
+      end
+
+      it_behaves_like 'update membership api response'
     end
   end
 end

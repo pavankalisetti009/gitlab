@@ -84,6 +84,28 @@ module EE
 
           users.include?(user)
         end
+
+        override :present_put_membership_response
+        def present_put_membership_response(result)
+          if result[:status] != :error && result[:members_queued_for_approval].present?
+            member = result[:members_queued_for_approval].first
+
+            return accepted!({
+              member.user.username => _("Request queued for administrator approval.")
+            })
+          end
+
+          super
+        end
+
+        private
+
+        override :present_add_single_member_response
+        def present_add_single_member_response(result, _member)
+          return accepted!(result[:queued_users]) if result[:status] != :error && result[:queued_users].present?
+
+          super
+        end
       end
     end
   end
