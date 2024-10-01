@@ -48,45 +48,55 @@ const makeFakeResponse = () => ({
   data: {
     namespace: {
       id: 'gid://gitlab/Group/29',
+      approvalPolicies: {
+        nodes: [
+          makePolicy({
+            name: 'test',
+            enabled: false,
+            description: 'Test1',
+            __typename: 'ApprovalPolicy',
+          }),
+          makePolicy({
+            name: 'test2',
+            enabled: true,
+            description: 'Test2',
+            __typename: 'ApprovalPolicy',
+          }),
+        ],
+        pageInfo: pageInfo('A1'),
+        __typename: 'ApprovalPolicyConnection',
+      },
+      scanExecutionPolicies: {
+        nodes: [
+          makePolicy({
+            name: 'testE',
+            enabled: false,
+            description: 'E1',
+            __typename: 'ScanExecutionPolicy',
+          }),
+          makePolicy({
+            name: 'testE2',
+            enabled: true,
+            description: 'E2',
+            __typename: 'ScanExecutionPolicy',
+          }),
+        ],
+        pageInfo: pageInfo('SE1'),
+        __typename: 'ScanExecutionPolicyConnection',
+      },
       complianceFrameworks: {
         nodes: [
           {
             id: 'gid://gitlab/ComplianceManagement::Framework/7',
             name: 'ddd',
             scanResultPolicies: {
-              nodes: [
-                makePolicy({
-                  name: 'test',
-                  enabled: false,
-                  description: 'Test1',
-                  __typename: 'ScanResultPolicy',
-                }),
-                makePolicy({
-                  name: 'test2',
-                  enabled: true,
-                  description: 'Test2',
-                  __typename: 'ScanResultPolicy',
-                }),
-              ],
-              pageInfo: pageInfo('A1'),
+              nodes: [{ name: 'test', __typename: 'ScanResultPolicy' }],
+              pageInfo: pageInfo('A2'),
               __typename: 'ScanResultPolicyConnection',
             },
             scanExecutionPolicies: {
-              nodes: [
-                makePolicy({
-                  name: 'testE',
-                  enabled: false,
-                  description: 'E1',
-                  __typename: 'ScanExecutionPolicy',
-                }),
-                makePolicy({
-                  name: 'testE2',
-                  enabled: true,
-                  description: 'E2',
-                  __typename: 'ScanExecutionPolicy',
-                }),
-              ],
-              pageInfo: pageInfo('SE1'),
+              nodes: [{ name: 'testE2', __typename: 'ScanExecutionPolicy' }],
+              pageInfo: pageInfo('SE2'),
               __typename: 'ScanExecutionPolicyConnection',
             },
             __typename: 'ComplianceFramework',
@@ -127,7 +137,7 @@ describe('PoliciesSection component', () => {
 
     beforeEach(() => {
       const responseWithNextPages = makeFakeResponse();
-      responseWithNextPages.data.namespace.complianceFrameworks.nodes[0].scanResultPolicies.pageInfo.hasNextPage = true;
+      responseWithNextPages.data.namespace.approvalPolicies.pageInfo.hasNextPage = true;
 
       loadHandler = jest
         .fn()
@@ -142,8 +152,10 @@ describe('PoliciesSection component', () => {
     it('loads next pages with appropriate cursors if has next pages', async () => {
       await waitForPromises();
       expect(loadHandler).toHaveBeenCalledWith({
-        scanResultPoliciesAfter: 'A1',
-        scanExecutionPoliciesAfter: 'SE1',
+        approvalPoliciesGlobalAfter: 'A1',
+        approvalPoliciesAfter: 'A2',
+        scanExecutionPoliciesGlobalAfter: 'SE1',
+        scanExecutionPoliciesAfter: 'SE2',
         complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
         fullPath: 'Commit451',
       });
@@ -190,10 +202,8 @@ describe('PoliciesSection component', () => {
 
     it('correctly calculates policies', () => {
       const { items: policies } = findPoliciesTable().vm.$attrs;
-      expect(policies).toHaveLength(4);
+      expect(policies).toHaveLength(2);
       expect(policies.find((p) => p.name === 'test')).toBeDefined();
-      expect(policies.find((p) => p.name === 'test2')).toBeDefined();
-      expect(policies.find((p) => p.name === 'testE')).toBeDefined();
       expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
     });
 
@@ -201,11 +211,11 @@ describe('PoliciesSection component', () => {
       const disabledBadge = wrapper
         .findAllComponents(GlBadge)
         .filter((badge) => badge.text() === 'Disabled');
-      expect(disabledBadge).toHaveLength(2);
+      expect(disabledBadge).toHaveLength(1);
       const disabledPolicyNames = disabledBadge.wrappers.map((badgeWrapper) =>
         badgeWrapper.element.closest('tr').querySelector('td span').textContent.trim(),
       );
-      expect(disabledPolicyNames).toEqual(['test', 'testE']);
+      expect(disabledPolicyNames).toEqual(['test']);
     });
 
     it('renders buttons to view policy details', async () => {
