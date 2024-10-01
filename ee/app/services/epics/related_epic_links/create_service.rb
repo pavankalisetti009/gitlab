@@ -88,8 +88,11 @@ module Epics
         WorkItem.id_in(referenced_issuables.filter_map(&:issue_id))
       end
 
-      def issuables_no_permission_error_message
-        _("Couldn't link epics. You must have at least the Guest role in the epic's group.")
+      def error_message
+        ::Gitlab::WorkItems::IssuableLinks::ErrorMessage.new(
+          target_type: target_issuable_type,
+          container_type: 'group'
+        )
       end
 
       def create_notes(issuable_link)
