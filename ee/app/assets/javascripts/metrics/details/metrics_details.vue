@@ -4,7 +4,7 @@ import EMPTY_CHART_SVG from '@gitlab/svgs/dist/illustrations/chart-empty-state.s
 import { uniqueId } from 'lodash';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrl, visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import {
   prepareTokens,
   processFilters as processFilteredSearchFilters,
@@ -17,6 +17,8 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { logError } from '~/lib/logger';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { ingestedAtTimeAgo } from '../utils';
 import { VIEW_METRICS_DETAILS_PAGE } from '../events';
 import MetricsLineChart from './metrics_line_chart.vue';
@@ -26,6 +28,7 @@ import MetricsHeatMap from './metrics_heatmap.vue';
 import { createIssueUrlWithMetricDetails, isHistogram } from './utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 import RelatedTraces from './related_traces.vue';
+import { uploadMetricsSnapshot } from './metrics_snapshot';
 
 const VISUAL_HEATMAP = 'heatmap';
 
@@ -38,6 +41,9 @@ export default {
     lastIngested: s__('ObservabilityMetrics|Last ingested'),
     cancelledWarning: s__('ObservabilityMetrics|Metrics search has been cancelled.'),
     createIssueTitle: __('Create issue'),
+    creatingSnapshotError: s__(
+      'ObservabilityMetrics|Error: Unable to create metric snapshot image.',
+    ),
   },
   components: {
     GlSprintf,
@@ -80,6 +86,10 @@ export default {
       required: true,
       type: String,
     },
+    projectId: {
+      required: true,
+      type: Number,
+    },
     tracingIndexUrl: {
       type: String,
       required: true,
@@ -94,6 +104,7 @@ export default {
       loading: false,
       queryCancelled: false,
       selectedDatapoints: [],
+      creatingIssue: false,
     };
   },
   computed: {
@@ -128,14 +139,6 @@ export default {
     },
     noMetric() {
       return !this.metricData || !this.metricData.length;
-    },
-    createIssueUrlWithQuery() {
-      return createIssueUrlWithMetricDetails({
-        metricName: this.metricId,
-        metricType: this.metricType,
-        filters: this.filters,
-        createIssueUrl: this.createIssueUrl,
-      });
     },
   },
   created() {
@@ -235,6 +238,49 @@ export default {
     onChartSelected(datapoints) {
       this.selectedDatapoints = datapoints;
     },
+    async uploadChartSnapshot() {
+      const chartDomElement = this.$refs.chartComponent?.$refs.chart;
+
+      if (!chartDomElement) return '';
+
+      return uploadMetricsSnapshot(chartDomElement, this.projectId, {
+        metricName: this.metricId,
+        metricType: this.metricType,
+        filters: this.filters,
+      });
+    },
+    buildIssueUrl(imageSnapshotUrl = '') {
+      return createIssueUrlWithMetricDetails({
+        metricName: this.metricId,
+        metricType: this.metricType,
+        filters: this.filters,
+        createIssueUrl: this.createIssueUrl,
+        imageSnapshotUrl,
+      });
+    },
+    async onCreateIssue() {
+      this.creatingIssue = true;
+
+      try {
+        const imageSnapshotUrl = await this.uploadChartSnapshot();
+
+        visitUrl(this.buildIssueUrl(imageSnapshotUrl));
+      } catch (error) {
+        // eslint-disable-next-line @gitlab/require-i18n-strings
+        logError('Unexpected error while uploading image', error);
+        Sentry.captureException(error);
+
+        visitUrlWithAlerts(this.buildIssueUrl(), [
+          {
+            id: 'metrics-snapshot-creation-failed',
+            message: this.$options.i18n.creatingSnapshotError,
+            variant: 'danger',
+          },
+        ]);
+      }
+
+      this.creatingIssue = false;
+    },
   },
   EMPTY_CHART_SVG,
   relatedIssuesHelpPath: helpPagePath('/operations/metrics', {
@@ -267,7 +313,12 @@ export default {
                 :error="error"
                 :anchor-id="$options.relatedIssuesId"
               />
-              <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
+              <gl-button
+                category="primary"
+                variant="confirm"
+                :loading="creatingIssue"
+                @click="onCreateIssue"
+              >
                 {{ $options.i18n.createIssueTitle }}
               </gl-button>
             </template>
@@ -301,6 +352,7 @@ export default {
           <div v-if="metricData && metricData.length">
             <component
               :is="getChartComponent()"
+              ref="chartComponent"
               :metric-data="metricData"
               :loading="loading"
               :cancelled="queryCancelled"

@@ -79,7 +79,8 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
 
         expected_view_model = {
           apiConfig: expected_api_config,
-          projectFullPath: project.full_path
+          projectFullPath: project.full_path,
+          projectId: project.id
         }.to_json
         expect(element.attributes['data-view-model'].value).to eq(expected_view_model)
       end
@@ -102,6 +103,7 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
         expected_view_model = {
           apiConfig: expected_api_config,
           projectFullPath: project.full_path,
+          projectId: project.id,
           traceId: 'test-trace-id',
           tracingIndexUrl: project_tracing_index_path(project),
           logsIndexUrl: namespace_project_logs_path(project.group, project),

@@ -49,9 +49,9 @@ export default {
   },
   computed: {
     bgColor() {
-      return this.$refs.rootContainer
+      return this.$refs.chart
         ? window
-            .getComputedStyle(this.$refs.rootContainer)
+            .getComputedStyle(this.$refs.chart)
             .getPropertyValue('--gl-background-color-default')
         : '#fff';
     },
@@ -166,7 +166,7 @@ export default {
 </script>
 
 <template>
-  <div ref="rootContainer" class="gl-relative">
+  <div ref="chart" class="gl-relative">
     <gl-line-chart
       disabled
       :class="{ 'gl-opacity-3': loading || cancelled }"
