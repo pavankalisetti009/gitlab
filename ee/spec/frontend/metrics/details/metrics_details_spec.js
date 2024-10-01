@@ -21,6 +21,11 @@ import RelatedIssue from '~/observability/components/observability_related_issue
 import { stubComponent } from 'helpers/stub_component';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
+import { uploadMetricsSnapshot } from 'ee/metrics/details/metrics_snapshot';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { logError } from '~/lib/logger';
+
+jest.mock('ee/metrics/details/metrics_snapshot');
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
@@ -28,6 +33,8 @@ jest.mock('ee/metrics/utils');
 jest.mock('lodash/uniqueId', () => {
   return jest.fn((input) => `${input}1`);
 });
+jest.mock('~/lib/logger');
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('MetricsDetails', () => {
   let wrapper;
@@ -39,6 +46,7 @@ describe('MetricsDetails', () => {
   const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
   const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
   const projectFullPath = 'test/project';
+  const projectId = 1234;
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
@@ -69,6 +77,7 @@ describe('MetricsDetails', () => {
     createIssueUrl,
     projectFullPath,
     tracingIndexUrl,
+    projectId,
   };
 
   const showToast = jest.fn();
@@ -547,9 +556,13 @@ describe('MetricsDetails', () => {
     expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
   });
 
-  it('renders the create issue button', () => {
-    const button = findHeader().findComponent(GlButton);
-    expect(button.text()).toBe('Create issue');
+  describe('create issue', () => {
+    const findButton = () => findHeader().findComponent(GlButton);
+    const onButtonClicked = async () => {
+      await findButton().vm.$emit('click');
+      await waitForPromises();
+    };
+
     const metricsDetails = {
       fullUrl:
         'http://test.host/?type=Sum&date_range=custom&date_start=2020-07-05T23%3A00%3A00.000Z&date_end=2020-07-06T00%3A00%3A00.000Z',
@@ -557,11 +570,107 @@ describe('MetricsDetails', () => {
       type: 'Sum',
       timeframe: ['Sun, 05 Jul 2020 23:00:00 GMT', 'Mon, 06 Jul 2020 00:00:00 GMT'],
     };
-    expect(button.attributes('href')).toBe(
-      `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
-        JSON.stringify(metricsDetails),
-      )}&${encodeURIComponent('issue[confidential]')}=true`,
-    );
+
+    let visitUrlMock;
+    let visitUrlWithAlertsMock;
+
+    beforeEach(() => {
+      visitUrlMock = jest.spyOn(urlUtility, 'visitUrl').mockReturnValue({});
+      visitUrlWithAlertsMock = jest.spyOn(urlUtility, 'visitUrlWithAlerts').mockReturnValue({});
+      wrapper.vm.$refs.chartComponent = { $refs: { chart: {} } };
+      uploadMetricsSnapshot.mockResolvedValue('http://test.host/share/url');
+    });
+
+    it('renders the create issue button', () => {
+      const button = findButton();
+      expect(button.text()).toBe('Create issue');
+    });
+
+    describe('on button clicked', () => {
+      beforeEach(async () => {
+        await onButtonClicked();
+      });
+
+      it('uploads the metric snapshot', () => {
+        expect(uploadMetricsSnapshot).toHaveBeenCalledWith(
+          wrapper.vm.$refs.chartComponent.$refs.chart,
+          projectId,
+          {
+            metricName: metricsDetails.name,
+            metricType: metricsDetails.type,
+            filters: expect.objectContaining({
+              dateRange: { value: '1h' },
+            }),
+          },
+        );
+      });
+
+      it('does not add the loading icon to the create issue button when done uploading the snapshot', () => {
+        expect(findButton().props('loading')).toBe(false);
+      });
+
+      it('appends the share url to the create issue params if uploadMetricsSnapshot succeeds', () => {
+        expect(visitUrlMock).toHaveBeenCalledWith(
+          `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
+            JSON.stringify({ ...metricsDetails, imageSnapshotUrl: 'http://test.host/share/url' }),
+          )}&${encodeURIComponent('issue[confidential]')}=true`,
+        );
+      });
+    });
+
+    it('redirects to the create issue page without the image url if share url is not returned', async () => {
+      uploadMetricsSnapshot.mockResolvedValue(null);
+
+      await onButtonClicked();
+
+      expect(visitUrlMock).toHaveBeenCalledWith(
+        `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
+          JSON.stringify(metricsDetails),
+        )}&${encodeURIComponent('issue[confidential]')}=true`,
+      );
+    });
+
+    it('does not upload the metric snapshot if the chart does not exist', async () => {
+      wrapper.vm.$refs.chartComponent = { $refs: { chart: null } };
+
+      await onButtonClicked();
+
+      expect(uploadMetricsSnapshot).not.toHaveBeenCalled();
+    });
+
+    it('redirects to the create issue page with alerts if an unexpected error is thrown', async () => {
+      const mockError = new Error('Upload failed');
+
+      uploadMetricsSnapshot.mockRejectedValue(mockError);
+
+      await onButtonClicked();
+
+      expect(logError).toHaveBeenCalledWith('Unexpected error while uploading image', mockError);
+      expect(Sentry.captureException).toHaveBeenCalledWith(mockError);
+      expect(visitUrlWithAlertsMock).toHaveBeenCalledWith(
+        `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
+          JSON.stringify(metricsDetails),
+        )}&${encodeURIComponent('issue[confidential]')}=true`,
+        [
+          {
+            id: 'metrics-snapshot-creation-failed',
+            message: 'Error: Unable to create metric snapshot image.',
+            variant: 'danger',
+          },
+        ],
+      );
+    });
+
+    describe('while uploading the snapshot', () => {
+      beforeEach(async () => {
+        uploadMetricsSnapshot.mockReturnValue(new Promise(() => {}));
+        await onButtonClicked();
+      });
+
+      it('adds a loading icon to the create issue button while uploading the snapshot', () => {
+        expect(findButton().props('loading')).toBe(true);
+      });
+    });
   });
 
   it('renders the relate issues badge', () => {

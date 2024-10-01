@@ -31,6 +31,10 @@ export default {
       type: String,
       required: true,
     },
+    projectId: {
+      type: Number,
+      required: true,
+    },
     tracingIndexUrl: {
       type: String,
       required: true,
@@ -52,6 +56,7 @@ export default {
     :observability-client="observabilityClient"
     :create-issue-url="createIssueUrl"
     :project-full-path="projectFullPath"
+    :project-id="projectId"
     :tracing-index-url="tracingIndexUrl"
   />
 </template>

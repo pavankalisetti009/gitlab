@@ -65,7 +65,8 @@ module Projects
           logsSearchUrl: ::Gitlab::Observability.logs_search_url(project),
           logsSearchMetadataUrl: ::Gitlab::Observability.logs_search_metadata_url(project)
         },
-        projectFullPath: project.full_path
+        projectFullPath: project.full_path,
+        projectId: project.id
       }
     end
   end

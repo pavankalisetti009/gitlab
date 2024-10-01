@@ -79,7 +79,8 @@ RSpec.describe Projects::MetricsController, feature_category: :observability do
 
         expected_view_model = {
           apiConfig: expected_api_config,
-          projectFullPath: project.full_path
+          projectFullPath: project.full_path,
+          projectId: project.id
         }.to_json
         expect(element.attributes['data-view-model'].value).to eq(expected_view_model)
       end
@@ -102,6 +103,7 @@ RSpec.describe Projects::MetricsController, feature_category: :observability do
         expected_view_model = {
           apiConfig: expected_api_config,
           projectFullPath: project.full_path,
+          projectId: project.id,
           metricId: "test.metric",
           metricType: "metric_type",
           metricsIndexUrl: namespace_project_metrics_path(project.group, project),
