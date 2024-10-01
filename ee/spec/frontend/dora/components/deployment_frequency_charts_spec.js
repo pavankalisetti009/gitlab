@@ -7,6 +7,7 @@ import lastWeekData from 'test_fixtures/api/dora/metrics/daily_deployment_freque
 import lastMonthData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_month.json';
 import last90DaysData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_90_days.json';
 import * as utils from 'ee_component/dora/components/util';
+import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useFixturesFakeDate } from 'helpers/fake_date';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
@@ -39,13 +40,14 @@ jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal');
 const forecastLineStyle = { type: 'dashed', color: DATA_VIZ_BLUE_500 };
 const forecastAreaStyle = { opacity: 0.2, color: GRAY_50 };
 const contextId = 'gid://gitlab/project/1';
-const makeMockCiCdAnalyticsCharts = ({ selectedChart = 0 } = {}) => ({
-  render() {
-    return this.$scopedSlots.metrics({
-      selectedChart,
-    });
-  },
-});
+const makeMockCiCdAnalyticsCharts = ({ selectedChart = 0 } = {}) =>
+  stubComponent(CiCdAnalyticsCharts, {
+    render() {
+      return this.$scopedSlots.metrics({
+        selectedChart,
+      });
+    },
+  });
 
 describe('deployment_frequency_charts.vue', () => {
   useFixturesFakeDate();
