@@ -1,4 +1,6 @@
 import {
+  getAbsoluteDateRange,
+  getTimeframe,
   createIssueUrlWithMetricDetails,
   viewTracesUrlWithMetric,
   isHistogram,
@@ -6,12 +8,56 @@ import {
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { useFakeDate } from 'helpers/fake_date';
 
+describe('getAbsoluteDateRange', () => {
+  useFakeDate('2024-08-01 11:00:00');
+
+  it('returns the absolute date range for custom dates', () => {
+    const dateRange = {
+      value: 'custom',
+      startDate: new Date('2023-01-01'),
+      endDate: new Date('2023-01-31'),
+    };
+
+    expect(getAbsoluteDateRange(dateRange)).toStrictEqual({
+      endDate: new Date('2023-01-31'),
+      startDate: new Date('2023-01-01'),
+      value: 'custom',
+    });
+  });
+
+  it('returns the absolute date range for date periods', () => {
+    const dateRange = { value: '5m' };
+
+    expect(getAbsoluteDateRange(dateRange)).toStrictEqual({
+      endDate: new Date('2024-08-01 11:00:00'),
+      startDate: new Date('2024-08-01 10:55:00'),
+      value: 'custom',
+    });
+  });
+});
+
+describe('getTimeframe', () => {
+  it('returns the timeframe array', () => {
+    const dateRange = {
+      value: 'custom',
+      startDate: new Date('2023-01-01'),
+      endDate: new Date('2023-01-31'),
+    };
+
+    expect(getTimeframe(dateRange)).toStrictEqual([
+      'Sun, 01 Jan 2023 00:00:00 GMT',
+      'Tue, 31 Jan 2023 00:00:00 GMT',
+    ]);
+  });
+});
+
 describe('createIssueUrlWithMetricDetails', () => {
   useFakeDate('2024-08-01 11:00:00');
 
   const metricName = 'Test Metric';
   const metricType = 'Sum';
   const createIssueUrl = 'https://example.com/issues/new';
+  const imageSnapshotUrl = 'https://example.com/image.png';
   const filters = {
     dateRange: {
       value: '5m',
@@ -34,11 +80,18 @@ describe('createIssueUrlWithMetricDetails', () => {
       name: metricName,
       type: metricType,
       timeframe: ['Thu, 01 Aug 2024 10:55:00 GMT', 'Thu, 01 Aug 2024 11:00:00 GMT'],
+      imageSnapshotUrl,
     };
     const expectedUrl = `https://example.com/issues/new?observability_metric_details=${encodeURIComponent(JSON.stringify(metricsDetails))}&${encodeURIComponent('issue[confidential]')}=true`;
 
     expect(
-      createIssueUrlWithMetricDetails({ metricName, metricType, filters, createIssueUrl }),
+      createIssueUrlWithMetricDetails({
+        metricName,
+        metricType,
+        filters,
+        createIssueUrl,
+        imageSnapshotUrl,
+      }),
     ).toBe(expectedUrl);
   });
 

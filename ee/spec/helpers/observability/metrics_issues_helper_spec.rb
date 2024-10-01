@@ -35,6 +35,22 @@ RSpec.describe Observability::MetricsIssuesHelper, feature_category: :observabil
           TEXT
         )
       end
+
+      it 'adds the image to the text description if imageSnapshotUrl is present' do
+        params['imageSnapshotUrl'] = 'http://example.com/image.png'
+        result = helper.observability_metrics_issues_params(params)
+        expect(result[:description]).to eq(
+          <<~TEXT
+            [Metric details](http://example.com/metric/123) \\
+            Name: `CPU Usage High` \\
+            Type: `gauge` \\
+            Timeframe: `2024-08-14T00:00:00Z - 2024-08-14T23:59:59Z`
+            | Snapshot |
+            | ------ |
+            | ![metric_snapshot](http://example.com/image.png) |
+          TEXT
+        )
+      end
     end
   end
 end

@@ -37282,6 +37282,9 @@ msgstr ""
 msgid "ObservabilityMetrics|Error: Failed to load metrics details. Try reloading the page."
 msgstr ""
 
+msgid "ObservabilityMetrics|Error: Unable to create metric snapshot image."
+msgstr ""
+
 msgid "ObservabilityMetrics|Failed to load metrics."
 msgstr ""
 

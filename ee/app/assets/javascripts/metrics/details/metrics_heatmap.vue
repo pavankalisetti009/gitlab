@@ -114,7 +114,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-relative">
+  <div ref="chart" class="gl-relative">
     <gl-heatmap
       :class="{ 'gl-opacity-3': loading || cancelled }"
       :x-axis-labels="xAxisLabels"

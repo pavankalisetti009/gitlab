@@ -2,7 +2,10 @@
 
 module QA
   RSpec.describe 'Ai-powered', :runner, :requires_admin, :external_ai_provider, product_group: :pipeline_execution,
-    only: { pipeline: %i[staging staging-canary] } do
+    only: { pipeline: %i[staging staging-canary] }, quarantine: {
+      type: :stale,
+      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/496560'
+    } do
     describe 'Troubleshooting failed CI job' do
       let(:executor) { "qa-runner-#{SecureRandom.hex(4)}" }
       let(:pipeline_job_name) { 'test-root-cause-analysis' }

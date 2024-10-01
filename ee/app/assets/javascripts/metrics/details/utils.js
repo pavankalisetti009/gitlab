@@ -5,16 +5,26 @@ import { tracingListQueryFromAttributes } from 'ee/tracing/list/filter_bar/filte
 import { METRIC_TYPE } from '../constants';
 import { filterObjToQuery } from './filters';
 
+export function getAbsoluteDateRange(dateRange) {
+  if (dateRange.value === CUSTOM_DATE_RANGE_OPTION) {
+    return dateRange;
+  }
+
+  return periodToDateRange(dateRange.value);
+}
+
+export function getTimeframe(dateRange) {
+  return [dateRange.startDate.toUTCString(), dateRange.endDate.toUTCString()];
+}
+
 export function createIssueUrlWithMetricDetails({
   metricName,
   metricType,
   filters,
   createIssueUrl,
+  imageSnapshotUrl,
 }) {
-  const absoluteDateRange =
-    filters.dateRange.value === CUSTOM_DATE_RANGE_OPTION
-      ? filters.dateRange
-      : periodToDateRange(filters.dateRange.value);
+  const absoluteDateRange = getAbsoluteDateRange(filters.dateRange);
 
   const queryWithUpdatedDateRange = filterObjToQuery({
     ...filters,
@@ -27,7 +37,8 @@ export function createIssueUrlWithMetricDetails({
     }),
     name: metricName,
     type: metricType,
-    timeframe: [absoluteDateRange.startDate.toUTCString(), absoluteDateRange.endDate.toUTCString()],
+    timeframe: getTimeframe(absoluteDateRange),
+    imageSnapshotUrl: imageSnapshotUrl || undefined,
   };
 
   return createIssueUrlWithDetails(createIssueUrl, metricsDetails, 'observability_metric_details');

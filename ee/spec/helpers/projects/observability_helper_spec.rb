@@ -28,7 +28,8 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
     it 'generates the correct JSON' do
       expected_json = {
         apiConfig: expected_api_config,
-        projectFullPath: project.full_path
+        projectFullPath: project.full_path,
+        projectId: project.id
       }.to_json
 
       expect(helper.observability_tracing_view_model(project)).to eq(expected_json)
@@ -40,6 +41,7 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
       expected_json = {
         apiConfig: expected_api_config,
         projectFullPath: project.full_path,
+        projectId: project.id,
         traceId: "trace-id",
         tracingIndexUrl: namespace_project_tracing_index_path(project.group, project),
         logsIndexUrl: namespace_project_logs_path(project.group, project),
@@ -55,7 +57,8 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
     it 'generates the correct JSON' do
       expected_json = {
         apiConfig: expected_api_config,
-        projectFullPath: project.full_path
+        projectFullPath: project.full_path,
+        projectId: project.id
       }.to_json
 
       expect(helper.observability_metrics_view_model(project)).to eq(expected_json)
@@ -67,6 +70,7 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
       expected_json = {
         apiConfig: expected_api_config,
         projectFullPath: project.full_path,
+        projectId: project.id,
         metricId: "test.metric",
         metricType: "metric_type",
         metricsIndexUrl: namespace_project_metrics_path(project.group, project),
@@ -84,6 +88,7 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
       expected_json = {
         apiConfig: expected_api_config,
         projectFullPath: project.full_path,
+        projectId: project.id,
         tracingIndexUrl: namespace_project_tracing_index_path(project.group, project),
         createIssueUrl: new_namespace_project_issue_path(project.group, project)
       }.to_json
@@ -96,7 +101,8 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
     it 'generates the correct JSON' do
       expected_json = {
         apiConfig: expected_api_config,
-        projectFullPath: project.full_path
+        projectFullPath: project.full_path,
+        projectId: project.id
       }.to_json
 
       expect(helper.observability_usage_quota_view_model(project)).to eq(expected_json)

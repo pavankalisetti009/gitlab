@@ -13,6 +13,7 @@ describe('DetailsIndex', () => {
     tracingIndexUrl: 'https://example.com/traces/index',
     apiConfig: { ...mockApiConfig },
     projectFullPath: 'foo/bar',
+    projectId: 1234,
   };
 
   let wrapper;
@@ -39,6 +40,7 @@ describe('DetailsIndex', () => {
     expect(detailsCmp.props('metricType')).toBe(props.metricType);
     expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
     expect(detailsCmp.props('projectFullPath')).toBe(props.projectFullPath);
+    expect(detailsCmp.props('projectId')).toBe(props.projectId);
     expect(detailsCmp.props('tracingIndexUrl')).toBe(props.tracingIndexUrl);
   });
 
