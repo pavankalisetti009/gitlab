@@ -86,7 +86,7 @@ module Gitlab
               self.class.to_s,
               "ai_question_category",
               context: [context],
-              property: tracking_context[:request_id],
+              requestId: tracking_context[:request_id],
               user: user
             )
           end
