@@ -13,7 +13,7 @@ export default {
       const options = {
         ...defaultSortableOptions,
         fallbackOnBody: false,
-        group: 'gl-new-card-body',
+        group: 'crud-body',
         tag: 'ul',
         'ghost-class': 'tree-item-drag-active',
         'data-parent-reference': this.parentItem.reference,

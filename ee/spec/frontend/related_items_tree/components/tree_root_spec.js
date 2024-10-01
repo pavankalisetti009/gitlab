@@ -118,7 +118,7 @@ describe('RelatedItemsTree', () => {
                   forcefallback: 'true',
                   fallbackclass: 'is-dragging',
                   ghostclass: 'is-ghost',
-                  group: 'gl-new-card-body',
+                  group: 'crud-body',
                   tag: 'ul',
                   'data-parent-reference': mockParentItem.reference,
                   'data-parent-id': mockParentItem.id,
