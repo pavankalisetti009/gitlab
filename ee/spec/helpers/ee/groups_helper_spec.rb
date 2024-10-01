@@ -499,6 +499,29 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
+  describe '#active_subscription_data' do
+    context 'when there is a current subscription', :saas do
+      let(:subscription) { create(:gitlab_subscription, namespace: group) }
+
+      before do
+        group.gitlab_subscription = subscription
+      end
+
+      it 'returns the subscription start date and end date' do
+        expect(helper.active_subscription_data(group)).to eq({
+          subscription_start_date: subscription.start_date,
+          subscription_end_date: subscription.end_date
+        })
+      end
+    end
+
+    context 'when there is no current subscription' do
+      it 'returns empty' do
+        expect(helper.active_subscription_data(group)).to eq({})
+      end
+    end
+  end
+
   describe '#active_duo_pro_trial_data' do
     context 'when an active duo pro trial exists' do
       let(:trial_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group) }

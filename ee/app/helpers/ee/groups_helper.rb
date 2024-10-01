@@ -3,6 +3,7 @@
 module EE
   module GroupsHelper
     extend ::Gitlab::Utils::Override
+    include ::Gitlab::Utils::StrongMemoize
     include ::GitlabSubscriptions::CodeSuggestionsHelper
     include ::Subscriptions::HandRaiseLeadsHelper
     include ::Nav::GitlabDuoUsageSettingsPage
@@ -115,7 +116,22 @@ module EE
         hand_raise_lead: code_suggestions_usage_app_hand_raise_lead_data,
         is_free_namespace: group.has_free_or_no_subscription?.to_s,
         buy_subscription_path: group_billings_path(group)
-      }.merge(duo_pro_trial_link(group), active_duo_pro_trial_data(group))
+      }.merge(duo_pro_trial_link(group), active_duo_pro_trial_data(group), active_subscription_data(group))
+    end
+
+    def active_subscription_data(group)
+      return {} unless group_gitlab_subscription(group)
+
+      {
+        subscription_start_date: group_gitlab_subscription(group).start_date,
+        subscription_end_date: group_gitlab_subscription(group).end_date
+      }
+    end
+
+    def group_gitlab_subscription(group)
+      strong_memoize(:group_gitlab_subscription) do
+        group.gitlab_subscription
+      end
     end
 
     def active_duo_pro_trial_data(group)
