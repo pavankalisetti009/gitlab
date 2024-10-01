@@ -20,7 +20,7 @@ module Security
       end
 
       if errors.any?
-        error(errors.join(' '), container)
+        error(errors, container)
 
         return
       end
@@ -33,18 +33,18 @@ module Security
         container,
         service_result[:status],
         service_result[:policy_project],
-        service_result[:message]
+        [service_result[:message]].compact
       )
     end
 
     private
 
-    def error(message, container = nil)
+    def error(messages, container = nil)
       GraphqlTriggers.security_policy_project_created(
         container,
         :error,
         nil,
-        message
+        messages
       )
     end
   end

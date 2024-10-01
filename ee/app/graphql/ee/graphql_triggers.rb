@@ -54,11 +54,13 @@ module EE
           checkpoint)
       end
 
-      def self.security_policy_project_created(container, status, security_policy_project, error_message)
+      def self.security_policy_project_created(container, status, security_policy_project, errors)
+        error_message = errors.any? ? errors.join(' ') : nil
+
         ::GitlabSchema.subscriptions.trigger(
           :security_policy_project_created,
           { full_path: container.full_path },
-          { status: status, error_message: error_message, project: security_policy_project }
+          { status: status, errors: errors, error_message: error_message, project: security_policy_project }
         )
       end
     end

@@ -13,7 +13,7 @@ RSpec.describe Subscriptions::Security::PolicyProjectCreated, feature_category: 
   let(:current_user) { nil }
   let(:subscribe) { security_policy_project_created_subscription(project, current_user) }
   let(:status) { :success }
-  let(:error_message) { nil }
+  let(:errors) { [] }
 
   let(:security_policy_project_created) do
     graphql_dig_at(graphql_data(response[:result]), :securityPolicyProjectCreated)
@@ -32,7 +32,7 @@ RSpec.describe Subscriptions::Security::PolicyProjectCreated, feature_category: 
 
   subject(:response) do
     subscription_response do
-      GraphqlTriggers.security_policy_project_created(project, status, security_policy_project, error_message)
+      GraphqlTriggers.security_policy_project_created(project, status, security_policy_project, errors)
     end
   end
 
@@ -49,7 +49,8 @@ RSpec.describe Subscriptions::Security::PolicyProjectCreated, feature_category: 
       created_response = security_policy_project_created
 
       expect(created_response['project']).to be_nil
-      expect(created_response['error_message']).to eq(nil)
+      expect(created_response['errors']).to eq([])
+      expect(created_response['errorMessage']).to eq(nil)
       expect(created_response['status']).to eq('SUCCESS')
     end
 
@@ -62,20 +63,22 @@ RSpec.describe Subscriptions::Security::PolicyProjectCreated, feature_category: 
         created_response = security_policy_project_created
 
         expect(created_response['project']['name']).to eq(security_policy_project.name)
-        expect(created_response['error_message']).to eq(nil)
+        expect(created_response['errors']).to eq([])
+        expect(created_response['errorMessage']).to eq(nil)
         expect(created_response['status']).to eq('SUCCESS')
       end
 
-      context 'and there is an error_message' do
+      context 'and there is an error' do
         let_it_be(:security_policy_project) { nil }
 
-        let(:error_message) { 'Error' }
+        let(:errors) { ['Error'] }
         let(:status) { :error }
 
         it 'receives the error message' do
           created_response = security_policy_project_created
 
           expect(created_response['project']).to eq(nil)
+          expect(created_response['errors']).to contain_exactly('Error')
           expect(created_response['errorMessage']).to eq('Error')
           expect(created_response['status']).to eq('ERROR')
         end

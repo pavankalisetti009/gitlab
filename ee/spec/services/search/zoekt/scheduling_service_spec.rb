@@ -636,4 +636,57 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         .with(expected_data)
     end
   end
+
+  describe '#lost_nodes_check', :zoekt_settings_enabled do
+    let(:task) { :lost_nodes_check }
+    let_it_be_with_reload(:lost_node) { create(:zoekt_node, :lost) }
+
+    before do
+      create(:zoekt_node)
+    end
+
+    it 'publishes LostNodeEvent' do
+      expect { execute_task }.to publish_event(Search::Zoekt::LostNodeEvent).with({ zoekt_node_id: lost_node.id })
+    end
+
+    context 'when there are no lost nodes' do
+      before do
+        Search::Zoekt::Node.update_all(last_seen_at: Time.current)
+      end
+
+      it 'does not publish LostNodeEvent' do
+        expect { execute_task }.to not_publish_event(Search::Zoekt::LostNodeEvent)
+      end
+    end
+
+    context 'when on development environment' do
+      before do
+        allow(Rails.env).to receive(:development?).and_return(true)
+      end
+
+      it 'does not publish LostNodeEvent' do
+        expect { execute_task }.to not_publish_event(Search::Zoekt::LostNodeEvent)
+      end
+    end
+
+    context 'when marking_lost_enabled? is false' do
+      before do
+        allow(Search::Zoekt::Node).to receive(:marking_lost_enabled?).and_return false
+      end
+
+      it 'does not publish LostNodeEvent' do
+        expect { execute_task }.to not_publish_event(Search::Zoekt::LostNodeEvent)
+      end
+    end
+
+    context 'when marking_lost_enabled? is true' do
+      before do
+        allow(Search::Zoekt::Node).to receive(:marking_lost_enabled?).and_return true
+      end
+
+      it 'publishes LostNodeEvent' do
+        expect { execute_task }.to publish_event(Search::Zoekt::LostNodeEvent).with({ zoekt_node_id: lost_node.id })
+      end
+    end
+  end
 end

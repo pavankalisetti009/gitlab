@@ -7,6 +7,8 @@ module Search
 
       DEFAULT_CONCURRENCY_LIMIT = 20
       MAX_CONCURRENCY_LIMIT = 200
+      LOST_DURATION_THRESHOLD = 12.hours
+      ONLINE_DURATION_THRESHOLD = 1.minute
       WATERMARK_LIMIT_LOW = 0.6
       WATERMARK_LIMIT_HIGH = 0.7
       WATERMARK_LIMIT_CRITICAL = 0.85
@@ -29,7 +31,8 @@ module Search
       attribute :metadata, :ind_jsonb # for indifferent access
 
       scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
-      scope :online, -> { where(last_seen_at: 1.minute.ago..) }
+      scope :lost, -> { where(last_seen_at: ..LOST_DURATION_THRESHOLD.ago) }
+      scope :online, -> { where(last_seen_at: ONLINE_DURATION_THRESHOLD.ago..) }
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
@@ -48,6 +51,15 @@ module Search
           s.metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
           s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
         end
+      end
+
+      def self.marking_lost_enabled?
+        return false if Feature.disabled?(:zoekt_internal_api_register_nodes, Feature.current_request)
+        return false if Gitlab::CurrentSettings.zoekt_indexing_paused?
+        return false unless Gitlab::CurrentSettings.zoekt_indexing_enabled?
+        return false unless Gitlab::CurrentSettings.zoekt_auto_delete_lost_nodes?
+
+        true
       end
 
       def concurrency_limit
@@ -94,6 +106,10 @@ module Search
         return 0 unless total_bytes.to_i > 0
 
         used_bytes / total_bytes.to_f
+      end
+
+      def lost?
+        last_seen_at <= LOST_DURATION_THRESHOLD.ago
       end
     end
   end

@@ -433,8 +433,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
 
         it_behaves_like 'search results filtered by archived' do
           before do
-            ::Elastic::ProcessBookkeepingService.track!(unarchived_result)
-            ::Elastic::ProcessBookkeepingService.track!(archived_result)
+            ::Elastic::ProcessBookkeepingService.track!(unarchived_result, archived_result)
             ensure_elasticsearch_index!
           end
         end
@@ -1351,7 +1350,8 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     let_it_be_with_reload(:private_project2) do
-      create(:project, :private, :repository, :wiki_repo, description: "Private project where I'm a member")
+      create(:project, :private, :repository, :wiki_repo, developers: user,
+        description: "Private project where I'm a member")
     end
 
     let_it_be_with_reload(:public_project) do
@@ -1363,8 +1363,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     before do
       Elastic::ProcessInitialBookkeepingService.backfill_projects!(internal_project,
         private_project1, private_project2, public_project)
-
-      private_project2.project_members.create!(user: user, access_level: ProjectMember::DEVELOPER)
 
       ensure_elasticsearch_index!
     end
@@ -1667,8 +1665,8 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
           project.repository.create_file(
             user,
             'test-file-commits',
-            'search test',
-            message: 'search test',
+            'commits test',
+            message: 'commits test',
             branch_name: 'master'
           )
 
@@ -1678,14 +1676,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         ensure_elasticsearch_index!
 
         # Authenticated search
-        results = described_class.new(user, 'search', limit_project_ids)
+        results = described_class.new(user, 'commits test', limit_project_ids)
         commits = results.objects('commits')
 
         expect(commits.map(&:project)).to match_array [internal_project, private_project2, public_project]
         expect(results.commits_count).to eq 3
 
         # Unauthenticated search
-        results = described_class.new(nil, 'search', [])
+        results = described_class.new(nil, 'commits test', [])
         commits = results.objects('commits')
 
         expect(commits.first.project).to eq public_project
@@ -1699,8 +1697,8 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
           project.repository.create_file(
             user,
             'test-file-blobs',
-            'tesla',
-            message: 'search test',
+            'blobs test',
+            message: 'blobs test',
             branch_name: 'master'
           )
 
@@ -1710,14 +1708,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         ensure_elasticsearch_index!
 
         # Authenticated search
-        results = described_class.new(user, 'tesla', limit_project_ids)
+        results = described_class.new(user, 'blobs test', limit_project_ids)
         blobs = results.objects('blobs')
 
         expect(blobs.map(&:project)).to match_array [internal_project, private_project2, public_project]
         expect(results.blobs_count).to eq 3
 
         # Unauthenticated search
-        results = described_class.new(nil, 'tesla', [])
+        results = described_class.new(nil, 'blobs test', [])
         blobs = results.objects('blobs')
 
         expect(blobs.first.project).to eq public_project

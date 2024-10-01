@@ -21,6 +21,7 @@ module Subscriptions # rubocop:disable Gitlab/BoundedContexts -- Subscriptions i
         {
           project: object[:project],
           status: object[:status],
+          errors: object[:errors],
           error_message: object[:error_message]
         }
       end
