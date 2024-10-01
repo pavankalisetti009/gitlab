@@ -31,6 +31,9 @@ module EE
         audit_changes(:username, as: 'username',
                                  event_type: 'user_username_updated')
 
+        audit_changes(:name, as: 'name',
+                                 event_type: 'user_name_updated')
+
         audit_changes(:admin, as: 'admin status',
                               event_type: 'user_admin_status_updated')
 
