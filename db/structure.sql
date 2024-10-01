@@ -841,6 +841,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_0a29d4d42b62() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "approval_project_rules"
+  WHERE "approval_project_rules"."id" = NEW."approval_project_rule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_0da002390fdc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -6636,7 +6652,8 @@ ALTER SEQUENCE approval_project_rules_id_seq OWNED BY approval_project_rules.id;
 
 CREATE TABLE approval_project_rules_protected_branches (
     approval_project_rule_id bigint NOT NULL,
-    protected_branch_id bigint NOT NULL
+    protected_branch_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE TABLE approval_project_rules_users (
@@ -27517,6 +27534,8 @@ CREATE INDEX index_approval_project_rules_on_project_id ON approval_project_rule
 
 CREATE INDEX index_approval_project_rules_on_rule_type ON approval_project_rules USING btree (rule_type);
 
+CREATE INDEX index_approval_project_rules_protected_branches_on_project_id ON approval_project_rules_protected_branches USING btree (project_id);
+
 CREATE INDEX index_approval_project_rules_protected_branches_pb_id ON approval_project_rules_protected_branches USING btree (protected_branch_id);
 
 CREATE INDEX index_approval_project_rules_report_type ON approval_project_rules USING btree (report_type);
@@ -33321,6 +33340,8 @@ CREATE TRIGGER trigger_05ce163deddf BEFORE INSERT OR UPDATE ON status_check_resp
 
 CREATE TRIGGER trigger_0a1b0adcf686 BEFORE INSERT OR UPDATE ON packages_debian_project_components FOR EACH ROW EXECUTE FUNCTION trigger_0a1b0adcf686();
 
+CREATE TRIGGER trigger_0a29d4d42b62 BEFORE INSERT OR UPDATE ON approval_project_rules_protected_branches FOR EACH ROW EXECUTE FUNCTION trigger_0a29d4d42b62();
+
 CREATE TRIGGER trigger_0da002390fdc BEFORE INSERT OR UPDATE ON operations_feature_flags_issues FOR EACH ROW EXECUTE FUNCTION trigger_0da002390fdc();
 
 CREATE TRIGGER trigger_0e13f214e504 BEFORE INSERT OR UPDATE ON merge_request_assignment_events FOR EACH ROW EXECUTE FUNCTION trigger_0e13f214e504();
@@ -34936,6 +34957,9 @@ ALTER TABLE ONLY user_preferences
 
 ALTER TABLE ONLY packages_debian_group_components
     ADD CONSTRAINT fk_e63e8ee3b1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY approval_project_rules_protected_branches
+    ADD CONSTRAINT fk_e6ee913fc2 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_requests
     ADD CONSTRAINT fk_e719a85f8a FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
