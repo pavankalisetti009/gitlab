@@ -117,10 +117,11 @@ module Ai
         return true if service.add_on_purchases.assigned_to_user(self).any?
 
         # If the user doesn't have add-on purchases and the service isn't free, they don't have access
-        return false unless service.free_access?
+        return false if !service.free_access? ||
+          (service.name == :self_hosted_models && Feature.enabled?(:self_hosted_models_beta_ended, self))
 
         if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          licensed_to_use_in_com?(service, feature_data[:maturity])
+          licensed_to_use_in_com?(feature_data[:maturity])
         else
           licensed_to_use_in_sm?(licensed_feature)
         end
@@ -128,8 +129,10 @@ module Ai
 
       private
 
-      def licensed_to_use_in_com?(ai_action, maturity)
-        requiring_seat = member_namespaces.with_ai_supported_plan.select do |namespace|
+      def licensed_to_use_in_com?(maturity)
+        with_plan = member_namespaces.with_ai_supported_plan
+
+        requiring_seat = with_plan.select do |namespace|
           ::Feature.enabled?(:duo_chat_requires_licensed_seat, namespace)
         end
 
@@ -137,7 +140,7 @@ module Ai
         # to the user, they don't have access
         return false if requiring_seat.any?
 
-        maturity == :ga ? any_group_with_ga_ai_available?(ai_action) : any_group_with_ai_available?
+        maturity == :ga ? with_plan.any? : any_group_with_ai_available?
       end
 
       def licensed_to_use_in_sm?(licensed_feature)

@@ -539,6 +539,14 @@ module EE
         enable :admin_vulnerability
       end
 
+      condition(:resolve_vulnerability_authorized) do
+        ::Gitlab::Llm::Utils::UserAuthorizer.new(@user, subject, :resolve_vulnerability).allowed?
+      end
+
+      rule { can?(:read_security_resource) & resolve_vulnerability_authorized }.policy do
+        enable :resolve_vulnerability_with_ai
+      end
+
       rule { custom_role_enables_admin_group_member }.policy do
         enable :admin_group_member
         enable :update_group_member

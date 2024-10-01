@@ -640,35 +640,29 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     let_it_be_with_reload(:current_user) { create(:user) }
 
     where(:code_suggestions_licensed, :duo_pro_seat_assigned, :self_hosted_enabled, :self_hosted_licensed,
-      :self_hosted_free_access, :self_hosted_beta_ended, :code_suggestions_enabled_for_user) do
-      true  | true  | true  | true   | false  | false | be_allowed(:access_code_suggestions)
-      true  | true  | false | false  | false  | false | be_allowed(:access_code_suggestions)
-      true  | false | true  | true   | false  | false | be_allowed(:access_code_suggestions)
-      true  | false | true  | false  | true   | false | be_allowed(:access_code_suggestions)
-      true  | false | true  | false  | true   | true  | be_disallowed(:access_code_suggestions)
-      true  | false | true  | false  | false  | false | be_disallowed(:access_code_suggestions)
-      true  | false | true  | false  | false  | false | be_disallowed(:access_code_suggestions)
-      true  | false | false | false  | false  | false | be_disallowed(:access_code_suggestions)
-      false | true  | true  | true   | false  | false | be_disallowed(:access_code_suggestions)
-      false | false | false | false  | false  | false | be_disallowed(:access_code_suggestions)
+      :code_suggestions_enabled_for_user) do
+      true  | true  | true  | true   |  be_allowed(:access_code_suggestions)
+      true  | true  | false | false  |  be_allowed(:access_code_suggestions)
+      true  | false | true  | true   |  be_allowed(:access_code_suggestions)
+      true  | false | true  | false  |  be_disallowed(:access_code_suggestions)
+      true  | false | false | false  |  be_disallowed(:access_code_suggestions)
+      false | true  | true  | true   |  be_disallowed(:access_code_suggestions)
+      false | false | false | false  |  be_disallowed(:access_code_suggestions)
     end
 
     with_them do
       before do
         stub_licensed_features(code_suggestions: code_suggestions_licensed)
-        stub_feature_flags(self_hosted_models_beta_ended: self_hosted_beta_ended)
-        code_suggestions_service_data = instance_double(CloudConnector::BaseAvailableServiceData)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
-                                                                          .and_return(code_suggestions_service_data)
-        allow(code_suggestions_service_data).to receive(:allowed_for?).with(current_user)
-                                                                      .and_return(duo_pro_seat_assigned)
+
+        # This is needed to allow responding differently based on the arguments. We make the default throw an error
+        # to check we don't get unexpected calls.
+        # See https://rspec.info/features/3-12/rspec-mocks/setting-constraints/matching-arguments/
+        allow(current_user).to receive(:allowed_to_use?).and_raise(StandardError)
+
+        allow(current_user).to receive(:allowed_to_use?).with(:code_suggestions).and_return(duo_pro_seat_assigned)
         allow(::Ai::FeatureSetting).to receive(:code_suggestions_self_hosted?).and_return(:self_hosted_enabled)
-        self_hosted_models_service_data = instance_double(CloudConnector::BaseAvailableServiceData)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:self_hosted_models)
-                                                                          .and_return(self_hosted_models_service_data)
-        allow(self_hosted_models_service_data).to receive(:allowed_for?).with(current_user)
-                                                                      .and_return(self_hosted_licensed)
-        allow(self_hosted_models_service_data).to receive(:free_access?).and_return(self_hosted_free_access)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:code_suggestions, service_name: :self_hosted_models).and_return(self_hosted_licensed)
       end
 
       it { is_expected.to code_suggestions_enabled_for_user }
@@ -845,56 +839,21 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   describe 'explain git commands' do
     let(:policy) { :access_glab_ask_git_command }
 
-    context 'for self-managed' do
-      where(:duo_features_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
-        true  | false | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | true  | false | false | be_disallowed(:access_glab_ask_git_command)
-        false | true  | true  | true  | be_disallowed(:access_glab_ask_git_command)
-        true  | true  | false | true  | be_allowed(:access_glab_ask_git_command)
-        true  | true  | true  | false | be_allowed(:access_glab_ask_git_command)
-        true  | true  | true  | true  | be_allowed(:access_glab_ask_git_command)
+    where(:duo_features_enabled, :allowed_to_use, :enabled_for_user) do
+      true | false | be_disallowed(:access_glab_ask_git_command)
+      false | true | be_disallowed(:access_glab_ask_git_command)
+      true | true | be_allowed(:access_glab_ask_git_command)
+    end
+
+    with_them do
+      before do
+        stub_application_setting(duo_features_enabled: duo_features_enabled)
+
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:glab_ask_git_command, licensed_feature: :glab_ask_git_command).and_return(allowed_to_use)
       end
 
-      with_them do
-        before do
-          stub_licensed_features(glab_ask_git_command: licensed)
-          stub_application_setting(duo_features_enabled: duo_features_enabled)
-
-          service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:glab_ask_git_command, nil, nil)
-          allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                        .with(:glab_ask_git_command)
-                                                        .and_return(service_data)
-          allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
-          allow(service_data).to receive(:free_access?).and_return(free_access)
-        end
-
-        it { is_expected.to enabled_for_user }
-      end
-
-      context 'for SaaS', :saas do
-        where(:free_access, :any_group_with_ga_ai_available, :allowed_for, :enabled_for_user) do
-          false | false | false | be_disallowed(:access_glab_ask_git_command)
-          true  | false | false | be_disallowed(:access_glab_ask_git_command)
-          false | false | true  | be_disallowed(:access_glab_ask_git_command)
-          true  | true  | false | be_allowed(:access_glab_ask_git_command)
-          true  | true  | true  | be_allowed(:access_glab_ask_git_command)
-        end
-
-        with_them do
-          before do
-            service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:glab_ask_git_command, nil, nil)
-            allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                          .with(:glab_ask_git_command)
-                                                          .and_return(service_data)
-            allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
-            allow(service_data).to receive(:free_access?).and_return(free_access)
-            allow(current_user).to receive(:any_group_with_ga_ai_available?)
-                                     .and_return(any_group_with_ga_ai_available)
-          end
-
-          it { is_expected.to enabled_for_user }
-        end
-      end
+      it { is_expected.to enabled_for_user }
     end
   end
 

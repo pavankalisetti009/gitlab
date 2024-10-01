@@ -8,15 +8,7 @@ module EE
       prepended do
         # Authorize access to the troubleshoot job to Cloud Connector Service
         condition(:troubleshoot_job_cloud_connector_authorized) do
-          next true if troubleshoot_job_connection.allowed_for?(@user)
-
-          next false unless troubleshoot_job_connection.free_access?
-
-          if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-            user&.any_group_with_ga_ai_available?(:troubleshoot_job)
-          else
-            License.feature_available?(:ai_features)
-          end
+          @user.allowed_to_use?(:troubleshoot_job)
         end
 
         # Authorize access to Troubleshoot Job
@@ -37,10 +29,6 @@ module EE
             troubleshoot_job_cloud_connector_authorized &
             troubleshoot_job_with_ai_authorized
         end.enable(:troubleshoot_job_with_ai)
-
-        def troubleshoot_job_connection
-          CloudConnector::AvailableServices.find_by_name(:troubleshoot_job)
-        end
       end
     end
   end

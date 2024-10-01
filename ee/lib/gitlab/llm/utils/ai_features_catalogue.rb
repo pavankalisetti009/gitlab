@@ -122,7 +122,26 @@ module Gitlab
             maturity: :ga,
             self_managed: true,
             internal: true
+          },
+          code_suggestions: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :continuous_integration,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          troubleshoot_job: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :code_suggestions,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
           }
+
         }.freeze
 
         def self.external

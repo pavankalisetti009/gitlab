@@ -4,18 +4,40 @@ module Search
   module Elastic
     module Types
       class WorkItem
-        def self.index_name
-          Search::Elastic::References::WorkItem.index
-        end
+        VERTEX_TEXT_EMBEDDING_DIMENSION = 768
+        OPENSEARCH_EF_CONSTRUCTION = 100
+        OPENSEARCH_M = 16
 
-        def self.target
-          ::WorkItem
-        end
+        class << self
+          def index_name
+            Search::Elastic::References::WorkItem.index
+          end
 
-        def self.mappings
-          {
-            dynamic: 'strict',
-            properties: {
+          def target
+            ::WorkItem
+          end
+
+          def mappings
+            mappings = base_mappings
+            mappings = elasticsearch_8_plus_mappings(mappings)
+            mappings = opensearch_mappings(mappings)
+
+            {
+              dynamic: 'strict',
+              properties: mappings
+            }
+          end
+
+          def settings
+            ::Elastic::Latest::Config.settings.to_hash.deep_merge(
+              index: ::Elastic::Latest::Config.separate_index_specific_settings(index_name)
+            )
+          end
+
+          private
+
+          def base_mappings
+            {
               type: { type: 'keyword' },
               id: { type: 'integer' },
               iid: { type: 'integer' },
@@ -28,6 +50,7 @@ module Search
               due_date: { type: 'date' },
               state: { type: 'keyword' },
               project_id: { type: 'integer' },
+              routing: { type: 'text' },
               author_id: { type: 'integer' },
               confidential: { type: 'boolean' },
               hidden: { type: 'boolean' },
@@ -43,13 +66,43 @@ module Search
               work_item_type_id: { type: 'integer' },
               schema_version: { type: 'short' }
             }
-          }
-        end
+          end
 
-        def self.settings
-          ::Elastic::Latest::Config.settings.to_hash.deep_merge(
-            index: ::Elastic::Latest::Config.separate_index_specific_settings(index_name)
-          )
+          def elasticsearch_8_plus_mappings(mappings)
+            return mappings unless helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+
+            mappings.merge({
+              embedding_0: {
+                type: 'dense_vector',
+                dims: VERTEX_TEXT_EMBEDDING_DIMENSION,
+                similarity: 'cosine',
+                index: true
+              }
+            })
+          end
+
+          def opensearch_mappings(mappings)
+            return mappings unless helper.matching_distribution?(:opensearch)
+
+            mappings.merge({
+              embedding_0: {
+                type: 'knn_vector',
+                dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
+                method: {
+                  name: 'hnsw',
+                  space_type: 'cosinesimil',
+                  parameters: {
+                    ef_construction: OPENSEARCH_EF_CONSTRUCTION,
+                    m: OPENSEARCH_M
+                  }
+                }
+              }
+            })
+          end
+
+          def helper
+            @helper ||= Gitlab::Elastic::Helper.default
+          end
         end
       end
     end

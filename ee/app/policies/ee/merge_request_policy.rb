@@ -63,18 +63,8 @@ module EE
           subject.project.project_setting.duo_features_enabled?
       end
 
-      condition(:generate_commit_message_licensed) do
-        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          next @user.any_group_with_ga_ai_available?(:generate_commit_message)
-        end
-
-        ::License.feature_available?(:generate_commit_message)
-      end
-
       condition(:user_allowed_to_use_generate_commit_message) do
-        next true if generate_commit_message_data.free_access?
-
-        generate_commit_message_data.allowed_for?(@user)
+        @user.allowed_to_use?(:generate_commit_message, licensed_feature: :generate_commit_message)
       end
 
       def read_only?
@@ -120,7 +110,6 @@ module EE
 
       rule do
         generate_commit_message_enabled &
-          generate_commit_message_licensed &
           user_allowed_to_use_generate_commit_message
       end.enable :access_generate_commit_message
     end
