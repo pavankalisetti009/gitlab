@@ -17,7 +17,7 @@ module QA
 
           def has_trial_activated_alert?
             within_element('trial-activated-content') do
-              has_text?('Congratulations, your free trial is activated')
+              has_text?('Congratulations, your free Ultimate and GitLab Duo Enterprise trial is activated')
             end
           end
         end
