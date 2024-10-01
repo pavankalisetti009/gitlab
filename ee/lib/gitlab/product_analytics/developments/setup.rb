@@ -56,8 +56,10 @@ module Gitlab
         def ensure_feature_flags
           puts "Enabling feature flags...."
 
+          flag_groups = ['group::product analytics', 'group::platform insights']
+
           feature_flag_names = Feature::Definition.definitions.filter_map do |k, v|
-            k if v.group == 'group::product analytics'
+            k if flag_groups.include?(v.group)
           end
 
           feature_flag_names.flatten.each do |ff|

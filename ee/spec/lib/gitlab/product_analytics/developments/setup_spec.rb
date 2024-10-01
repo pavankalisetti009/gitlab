@@ -65,6 +65,10 @@ RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_cat
       expect(Feature.enabled?(:product_analytics_usage_quota_annual_data)).to eq(true)
       expect(Feature.enabled?(:product_analytics_features)).to eq(true)
     end
+
+    it 'enables feature flags for platform insights' do
+      expect(Feature.enabled?(:product_analytics_admin_settings)).to eq(true)
+    end
   end
 
   context 'when not configured' do
