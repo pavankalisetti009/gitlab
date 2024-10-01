@@ -36,6 +36,15 @@ module Ai
             File.fnmatch?("**/#{file_name_glob}", path, File::FNM_PATHNAME | File::FNM_DOTMATCH)
           end
 
+          # Set to `true` if the dependency manager supports more than one config file
+          def self.supports_multiple_files?
+            false
+          end
+
+          def self.matching_paths(paths)
+            supports_multiple_files? ? paths.select { |p| matches?(p) } : Array.wrap(paths.find { |p| matches?(p) })
+          end
+
           def initialize(blob)
             @blob = blob
             @content = blob.data

@@ -34,6 +34,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     expect { described_class.file_name_glob }.to raise_error(NotImplementedError)
     expect { described_class.lang_name }.to raise_error(NotImplementedError)
     expect { described_class.new(blob).parse! }.to raise_error(NotImplementedError)
+    expect(described_class.supports_multiple_files?).to eq(false)
   end
 
   it 'returns the expected language value' do
@@ -130,6 +131,36 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     with_them do
       it 'matches the file name glob pattern at various directory levels' do
         expect(config_file_class.matches?(path)).to eq(matches)
+      end
+    end
+  end
+
+  describe '.matching_paths' do
+    let(:paths) { ['other.rb', 'dir/test.json', 'test.txt', 'test.json', 'README.md'] }
+
+    subject(:matching_paths) { config_file_class.matching_paths(paths) }
+
+    it 'returns the first matching path' do
+      expect(matching_paths).to contain_exactly('dir/test.json')
+    end
+
+    context 'when multiple files are supported' do
+      before do
+        stub_const('ConfigFileClass',
+          Class.new(described_class) do
+            def self.file_name_glob
+              'test.json'
+            end
+
+            def self.supports_multiple_files?
+              true
+            end
+          end
+        )
+      end
+
+      it 'returns all matching paths' do
+        expect(matching_paths).to contain_exactly('dir/test.json', 'test.json')
       end
     end
   end

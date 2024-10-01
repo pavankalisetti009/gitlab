@@ -55,12 +55,14 @@ module Ai
         def config_file_classes_by_path
           CONFIG_FILE_CLASSES.group_by(&:lang).each_with_object({}) do |(_lang, klasses), hash|
             klasses.each do |klass|
-              matching_path = worktree_paths.find { |path| klass.matches?(path) }
+              matching_paths = klass.matching_paths(worktree_paths)
 
-              next unless matching_path
+              matching_paths.each do |path|
+                hash[path] ||= []
+                hash[path] << klass
+              end
 
-              hash[matching_path] ||= []
-              hash[matching_path] << klass
+              break if matching_paths.any?
             end
           end
         end
