@@ -111,6 +111,36 @@ export const workItemObjectiveMetadataWidgetsEE = {
   },
 };
 
+export const workItemTaskEE = {
+  id: 'gid://gitlab/WorkItem/4',
+  iid: '4',
+  workItemType: {
+    id: 'gid://gitlab/WorkItems::Type/5',
+    name: 'Task',
+    iconName: 'issue-type-task',
+    __typename: 'WorkItemType',
+  },
+  title: 'bar',
+  state: 'OPEN',
+  confidential: false,
+  reference: 'test-project-path#4',
+  namespace: {
+    __typename: 'Project',
+    id: '1',
+    fullPath: 'test-project-path',
+    name: 'Project name',
+  },
+  createdAt: '2022-08-03T12:41:54Z',
+  closedAt: null,
+  webUrl: '/gitlab-org/gitlab-test/-/work_items/4',
+  widgets: [
+    workItemObjectiveMetadataWidgetsEE.WEIGHT,
+    workItemObjectiveMetadataWidgetsEE.ITERATION,
+    workItemObjectiveMetadataWidgetsEE.START_AND_DUE_DATE,
+  ],
+  __typename: 'WorkItem',
+};
+
 export const workItemColorWidget = {
   id: 'gid://gitlab/WorkItem/1',
   iid: '1',

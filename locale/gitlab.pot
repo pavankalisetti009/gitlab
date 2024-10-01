@@ -61996,6 +61996,11 @@ msgid_plural "WorkItem|%{workItemType} is blocked by %{itemCount} items"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "WorkItem|+%d more item"
+msgid_plural "WorkItem|+%d more items"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "WorkItem|A non-confidential %{workItemType} cannot be assigned to a confidential parent %{parentWorkItemType}."
 msgstr ""
 
