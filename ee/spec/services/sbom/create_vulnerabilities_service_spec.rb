@@ -119,18 +119,21 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
         end
       end
 
-      it 'calls track cvs service with the right parameters', :freeze_time do
+      it 'tracks internal metrics with the right parameters', :freeze_time do
         expect { result }.to trigger_internal_events('cvs_on_sbom_change')
-          .with(additional_properties:
-                {
-                  label: 'pipeline_info',
-                  property: pipeline.id.to_s,
-                  start_time: Time.current.iso8601,
-                  end_time: Time.current.iso8601,
-                  possibly_affected_sbom_occurrences: pipeline_components.count,
-                  known_affected_sbom_occurrences: occurrences.count
-                }
-               )
+          .with(
+            project: pipeline.project,
+            additional_properties:
+              {
+                label: 'pipeline_info',
+                property: pipeline.id.to_s,
+                start_time: Time.current.iso8601,
+                end_time: Time.current.iso8601,
+                possibly_affected_sbom_occurrences: pipeline_components.count,
+                known_affected_sbom_occurrences: occurrences.count,
+                sbom_occurrences_semver_dialects_errors_count: 0
+              }
+          )
       end
 
       include_examples 'creates vulnerabilities related to occurrences'
@@ -188,6 +191,32 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
           it 'does not create vulnerabilities' do
             expect { result }.not_to change { Vulnerability.count }
           end
+        end
+      end
+
+      context 'when any SemverDialect:Error is raised' do
+        before do
+          create(:pm_affected_package, purl_type: occurrence[:purl_type],
+            package_name: occurrence[:name], affected_range: ">=3.0.0alpha <= 3.8.2 || <= 2.15.0")
+        end
+
+        include_examples 'creates vulnerabilities related to occurrences'
+
+        it 'captures the error and tracks internal metrics with the right parameters', :freeze_time do
+          expect { result }.to trigger_internal_events('cvs_on_sbom_change')
+            .with(
+              project: pipeline.project,
+              additional_properties:
+                {
+                  label: 'pipeline_info',
+                  property: pipeline.id.to_s,
+                  start_time: Time.current.iso8601,
+                  end_time: Time.current.iso8601,
+                  possibly_affected_sbom_occurrences: pipeline_components.count,
+                  known_affected_sbom_occurrences: occurrences.count,
+                  sbom_occurrences_semver_dialects_errors_count: 1
+                }
+            )
         end
       end
     end
