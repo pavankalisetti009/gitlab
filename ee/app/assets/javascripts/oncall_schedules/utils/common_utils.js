@@ -1,6 +1,6 @@
 import * as designTokens from '@gitlab/ui/src/tokens/build/js/tokens';
 import { darkModeEnabled } from '~/lib/utils/color_utils';
-import { newDateAsLocaleTime } from '~/lib/utils/datetime_utility';
+import { newDate } from '~/lib/utils/datetime_utility';
 import {
   ASSIGNEE_COLORS_COMBO,
   LIGHT_TO_DARK_MODE_SHADE_MAPPING,
@@ -122,7 +122,7 @@ export const parseRotationDate = (dateTimeString, scheduleTimezone) => {
   const parts = formatter.formatToParts(Date.parse(dateTimeString));
   const [month, , day, , year, , hour] = parts.map((part) => part.value);
   // The datepicker uses local time
-  const date = newDateAsLocaleTime(`${year}-${month}-${day}`);
+  const date = newDate(`${year}-${month}-${day}`);
   const time = parseInt(hour, 10);
 
   return { date, time };
