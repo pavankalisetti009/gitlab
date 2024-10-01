@@ -7,6 +7,10 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
     expect(described_class.lang).to eq('python')
   end
 
+  it 'supports multiple files' do
+    expect(described_class.supports_multiple_files?).to eq(true)
+  end
+
   it_behaves_like 'parsing a valid dependency config file' do
     let(:config_file_content) do
       <<~CONTENT
@@ -21,9 +25,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
         urllib3 @ https://github.com/path/main.zip
         requests [security] >= 2.8.1, == 2.8.*
 
-        # Nested requirement files currently not supported
+        # Options
         -r other_requirements.txt
-        # Other options
         -i https://pypi.org/simple
         --python-version 3
         --no-clean
@@ -54,14 +57,15 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
     using RSpec::Parameterized::TableSyntax
 
     where(:path, :matches) do
-      'requirements.txt'            | true
-      'dir/requirements.txt'        | true
-      'dir/subdir/requirements.txt' | true
-      'dir/requirements'            | false
-      'xrequirements.txt'           | false
-      'Requirements.txt'            | false
-      'requirements_txt'            | false
-      'requirements'                | false
+      'requirements.txt'                | true
+      'dir/requirements_other.txt'      | true
+      'dir/subdir/dev-requirements.txt' | true
+      'dir/requirements.c'              | false
+      'test_requirements.txt'           | true
+      'devrequirements.txt'             | true
+      'Requirements.txt'                | false
+      'requirements_txt'                | false
+      'requirements'                    | false
     end
 
     with_them do

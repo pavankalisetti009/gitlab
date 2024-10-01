@@ -98,7 +98,7 @@ export default {
 <template>
   <div
     v-if="selectedUsers.length"
-    class="rule-control gl-rounded-base gl-px-3 gl-py-2 gl-shadow-inner-1-gray-400"
+    class="gl-w-30 gl-rounded-base gl-px-3 gl-py-2 gl-shadow-inner-1-gray-400"
   >
     <gl-token :style="backgroundStyle" :class="textClass" @close="clearSelectedUsers">
       <gl-avatar :src="user.avatarUrl" :size="16" />
@@ -113,7 +113,7 @@ export default {
     :dropdown-items="users"
     :loading="loading"
     :placeholder="placeholderText"
-    container-class="rule-control"
+    container-class="gl-w-30"
     class="escalation-email-user-dropdown"
     @text-input="filterUsers"
     @token-add="emitUserUpdate"

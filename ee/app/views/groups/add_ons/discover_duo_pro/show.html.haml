@@ -20,7 +20,7 @@
     .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-2
       = render Pajamas::CardComponent.with_collection(duo_pro_discover_card_collection(@group), card_options: { class: 'gl-rounded-lg gl-p-2' },
         body_options: { class: 'gl-pt-0' },
-        header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' })
+        header_options: { class: 'gl-bg-default gl-py-4 gl-font-bold gl-border-b-0' })
 
 .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
   .container.gl-mt-5{ 'data-testid': 'whats-new-section' }
@@ -29,9 +29,9 @@
     .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-4
       = render Pajamas::CardComponent.with_collection(duo_pro_whats_new_card_collection(@group),
         card_options: { class: 'gl-h-full gl-flex gl-flex-col' },
-        header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' },
-        body_options: { class: 'gl-p-4 gl-pt-0 gl-grow' },
-        footer_options: { class: 'gl-new-card-footer gl-border-0 gl-p-4 gl-mt-auto' })
+        header_options: { class: 'gl-bg-default gl-py-4 gl-font-bold gl-border-b-0' },
+        body_options: { class: 'gl-px-5 gl-py-4 gl-pt-0 gl-grow' },
+        footer_options: { class: 'gl-bg-default gl-border-0 gl-px-5 gl-py-4 gl-mt-auto' })
 
 .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
   .container.gl-mt-5{ "data-testid": 'code-suggestions-section' }
@@ -40,9 +40,9 @@
     .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-3
       = render Pajamas::CardComponent.with_collection(duo_pro_code_suggestions_card_collection(@group),
         card_options: { class: 'gl-h-full gl-flex gl-flex-col' },
-        header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' },
-        body_options: { class: 'gl-p-4 gl-pt-0 gl-grow' },
-        footer_options: { class: 'gl-new-card-footer gl-border-0 gl-p-4 gl-mt-auto' })
+        header_options: { class: 'gl-bg-default gl-py-4 gl-font-bold gl-border-b-0' },
+        body_options: { class: 'gl-px-5 gl-py-4 gl-pt-0 gl-grow' },
+        footer_options: { class: 'gl-bg-default gl-border-0 gl-px-5 gl-py-4 gl-mt-auto' })
 
 .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
   .container.gl-mt-5

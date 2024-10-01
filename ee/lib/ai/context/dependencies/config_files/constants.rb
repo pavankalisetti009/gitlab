@@ -13,7 +13,7 @@ module Ai
           #    #supported-languages-and-package-managers.
           #
           # This ordering affects the result of
-          # ConfigFileParser#find_config_file_paths_with_class.
+          # ConfigFileParser#config_file_classes_by_path.
           #
           CONFIG_FILE_CLASSES = [
             ConfigFiles::CConanPy,

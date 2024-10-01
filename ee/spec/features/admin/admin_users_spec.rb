@@ -12,6 +12,24 @@ RSpec.describe "Admin::Users", :js, feature_category: :user_management do
   end
 
   describe 'GET /admin/users' do
+    describe 'user stat cards' do
+      before do
+        visit admin_users_path
+      end
+
+      it "has 'users blocked pending approval' filter" do
+        expect(page).to have_link(href: admin_users_path(filter: "blocked_pending_approval"))
+      end
+
+      it "has 'users with two factor disabled' filter" do
+        expect(page).to have_link(href: admin_users_path(filter: "two_factor_disabled"))
+      end
+
+      it "has 'admin users' filter" do
+        expect(page).to have_link(href: admin_users_path(filter: "admins"))
+      end
+    end
+
     describe 'send emails to users' do
       context 'when `send_emails_from_admin_area` feature is enabled' do
         before do
