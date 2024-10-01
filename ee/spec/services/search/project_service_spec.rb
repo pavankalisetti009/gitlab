@@ -8,13 +8,18 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   include UserHelpers
   using RSpec::Parameterized::TableSyntax
 
+  let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project, :public) }
+  let_it_be(:group) { create(:group) }
+
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_feature_flags(search_uses_match_queries: false)
   end
 
   context 'when a single project provided' do
-    it_behaves_like 'EE search service shared examples', ::Gitlab::ProjectSearchResults, ::Gitlab::Elastic::ProjectSearchResults do
+    it_behaves_like 'EE search service shared examples', ::Gitlab::ProjectSearchResults,
+      ::Gitlab::Elastic::ProjectSearchResults do
       let_it_be(:scope) { create(:project) }
 
       let(:user) { scope.first_owner }
@@ -23,13 +28,9 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   describe '#search_type' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project, :public) }
     let(:search_service) { described_class.new(user, project, scope: scope) }
 
     subject(:search_type) { search_service.search_type }
-
-    using RSpec::Parameterized::TableSyntax
 
     where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
       true   | true  | 'blobs'  | 'zoekt'
@@ -71,8 +72,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   describe '#elasticsearchable_scope' do
     let(:service) { described_class.new(user, project, scope: scope) }
     let(:scope) { 'blobs' }
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project) }
 
     it 'is set to project' do
       expect(service.elasticsearchable_scope).to eq(project)
@@ -88,7 +87,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   context 'when searching with Zoekt', :zoekt_settings_enabled do
-    let_it_be(:user) { create(:user) }
     let_it_be_with_reload(:project) { create(:project, :public) }
 
     let(:service) do
@@ -106,7 +104,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let(:user_preference_enabled_zoekt) { true }
     let(:scope) { 'blobs' }
     let(:advanced_search) { nil }
-    let(:zoekt_nodes) { create_list(:zoekt_node, 2) }
+    let_it_be(:zoekt_nodes) { create_list(:zoekt_node, 2) }
     let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
     let(:circuit_breaker_operational) { true }
     let(:anonymous_user) { false }
@@ -252,8 +250,8 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   context 'when a multiple projects provided' do
-    it_behaves_like 'EE search service shared examples', ::Gitlab::ProjectSearchResults, ::Gitlab::Elastic::SearchResults do
-      let_it_be(:group) { create(:group) }
+    it_behaves_like 'EE search service shared examples', ::Gitlab::ProjectSearchResults,
+      ::Gitlab::Elastic::SearchResults do
       let_it_be(:scope) { create_list(:project, 3, namespace: group) }
 
       let(:user) { group.owner }
@@ -261,7 +259,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
   end
 
-  context 'default branch support' do
+  context 'with default branch support' do
     let_it_be(:scope) { create(:project) }
 
     let(:user) { scope.owner }
@@ -325,10 +323,9 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
   end
 
-  context 'visibility', :elastic_delete_by_query, :sidekiq_inline do
+  context 'for visibility', :elastic_delete_by_query do
     include_context 'ProjectPolicyTable context'
 
-    let_it_be(:group) { create(:group) }
     let_it_be(:public_project) { create(:project, :wiki_repo, :public) }
     let_it_be_with_reload(:project) { create(:project, namespace: group) }
     let_it_be_with_reload(:project2) { create(:project) }
@@ -337,9 +334,12 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let(:projects) { [project, project2] }
     let(:search_level) { project }
 
-    context 'merge request' do
+    context 'for merge request' do
       let!(:merge_request) { create :merge_request, target_project: project, source_project: project }
-      let!(:merge_request2) { create :merge_request, target_project: project2, source_project: project2, title: merge_request.title }
+      let!(:merge_request2) do
+        create :merge_request, target_project: project2, source_project: project2, title: merge_request.title
+      end
+
       let(:scope) { 'merge_requests' }
       let(:search) { merge_request.title }
 
@@ -352,7 +352,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'note' do
+    context 'for note' do
       let(:scope) { 'notes' }
       let(:search) { note.note }
 
@@ -362,7 +362,8 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
         let!(:confidential_note) do
           note_author_and_assignee = user || project.creator
           issue = create(:issue, project: project, assignees: [note_author_and_assignee])
-          create(:note, note: note.note, confidential: true, project: project, noteable: issue, author: note_author_and_assignee)
+          create(:note, note: note.note, confidential: true, project: project, noteable: issue,
+            author: note_author_and_assignee)
         end
 
         where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
@@ -422,7 +423,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'issue' do
+    context 'for issue' do
       let(:scope) { 'issues' }
 
       [:work_item, :issue].each do |document_type|
@@ -446,7 +447,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'wiki' do
+    context 'for wiki', :sidekiq_inline do
       let_it_be_with_reload(:project) { create(:project, :wiki_repo) }
 
       let(:projects) { [project] }
@@ -473,7 +474,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'milestone' do
+    context 'for milestone' do
       let_it_be_with_reload(:milestone) { create :milestone, project: project }
 
       before do
@@ -481,7 +482,8 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
         ensure_elasticsearch_index!
       end
 
-      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode, :expected_count) do
+      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode,
+        :expected_count) do
         permission_table_for_milestone_access
       end
 
@@ -504,12 +506,11 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
   end
 
-  context 'sorting', :elastic_delete_by_query, :sidekiq_inline do
-    context 'issues' do
+  context 'for sorting', :elastic_delete_by_query do
+    context 'with issues' do
       [:work_item, :issue].each do |document_type|
         context "when we have document_type as #{document_type}" do
           let(:scope) { 'issues' }
-          let_it_be(:project) { create(:project, :public) }
 
           let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
           let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
@@ -517,7 +518,9 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
           let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
           let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
-          let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
+          let!(:very_old_updated) do
+            create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago)
+          end
 
           before do
             stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
@@ -532,19 +535,42 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'merge requests' do
+    context 'with merge requests' do
       let(:scope) { 'merge_requests' }
-      let(:project) { create(:project, :public) }
 
-      let!(:old_result) { create(:merge_request, :opened, source_project: project, source_branch: 'old-1', title: 'sorted old', created_at: 1.month.ago) }
-      let!(:new_result) { create(:merge_request, :opened, source_project: project, source_branch: 'new-1', title: 'sorted recent', created_at: 1.day.ago) }
-      let!(:very_old_result) { create(:merge_request, :opened, source_project: project, source_branch: 'very-old-1', title: 'sorted very old', created_at: 1.year.ago) }
+      let_it_be(:old_result) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'old-1', title: 'sorted old',
+          created_at: 1.month.ago)
+      end
 
-      let!(:old_updated) { create(:merge_request, :opened, source_project: project, source_branch: 'updated-old-1', title: 'updated old', updated_at: 1.month.ago) }
-      let!(:new_updated) { create(:merge_request, :opened, source_project: project, source_branch: 'updated-new-1', title: 'updated recent', updated_at: 1.day.ago) }
-      let!(:very_old_updated) { create(:merge_request, :opened, source_project: project, source_branch: 'updated-very-old-1', title: 'updated very old', updated_at: 1.year.ago) }
+      let_it_be(:new_result) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'new-1', title: 'sorted recent',
+          created_at: 1.day.ago)
+      end
+
+      let_it_be(:very_old_result) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'very-old-1', title: 'sorted very old',
+          created_at: 1.year.ago)
+      end
+
+      let_it_be(:old_updated) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'updated-old-1', title: 'updated old',
+          updated_at: 1.month.ago)
+      end
+
+      let_it_be(:new_updated) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'updated-new-1',
+          title: 'updated recent', updated_at: 1.day.ago)
+      end
+
+      let_it_be(:very_old_updated) do
+        create(:merge_request, :opened, source_project: project, source_branch: 'updated-very-old-1',
+          title: 'updated very old', updated_at: 1.year.ago)
+      end
 
       before do
+        Elastic::ProcessInitialBookkeepingService.track!(old_result, new_result, very_old_result, old_updated,
+          new_updated, very_old_updated)
         ensure_elasticsearch_index!
       end
 
@@ -556,9 +582,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   describe '#scope' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project, :public) }
-
     subject(:service) { described_class.new(user, project, scope: scope) }
 
     context 'when scope passed is included in allowed_scopes' do
