@@ -165,10 +165,14 @@ export default {
     },
     async handleModifyPolicy(act) {
       this.policyModificationAction = act || this.policyActionName;
+      const extraMergeRequestInput = getMergeRequestConfig(queryToObject(window.location.search), {
+        namespacePath: this.namespacePath,
+      });
 
       if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
         this.$emit('save', {
           action: this.policyModificationAction,
+          extraMergeRequestInput,
           policy: this.yamlEditorValue,
         });
         return;
@@ -179,12 +183,6 @@ export default {
 
       try {
         const assignedPolicyProject = await this.getSecurityPolicyProject();
-        const extraMergeRequestInput = getMergeRequestConfig(
-          queryToObject(window.location.search),
-          {
-            namespacePath: this.namespacePath,
-          },
-        );
         await goToPolicyMR({
           action: this.policyModificationAction,
           assignedPolicyProject,
