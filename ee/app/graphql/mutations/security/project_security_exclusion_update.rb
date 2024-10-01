@@ -51,6 +51,8 @@ module Mutations
         project_security_exclusion.assign_attributes(args.slice(*permitted_params))
 
         if project_security_exclusion.save
+          log_audit_event(current_user, project_security_exclusion.project, project_security_exclusion)
+
           {
             security_exclusion: project_security_exclusion,
             errors: []
@@ -69,6 +71,18 @@ module Mutations
 
       def permitted_params
         self.class.own_arguments.keys.map(&:to_sym) - [:id]
+      end
+
+      def log_audit_event(user, project, security_exclusion)
+        audit_context = {
+          name: 'project_security_exclusion_updated',
+          author: user,
+          target: security_exclusion,
+          scope: project,
+          message: "Updated a security exclusion with type (#{security_exclusion.type})"
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

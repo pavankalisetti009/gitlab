@@ -25,13 +25,18 @@ RSpec.describe 'Deleting a ProjectSecurityExclusion', feature_category: :secret_
         stub_licensed_features(security_exclusions: true)
       end
 
+      subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
+
       it 'destroys the project security exclusion' do
-        expect { post_graphql_mutation(mutation, current_user: current_user) }
-          .to change { project.security_exclusions.reload.count }.by(-1)
-
+        expect { request }.to change { project.security_exclusions.reload.count }.by(-1)
         expect(response).to have_gitlab_http_status(:success)
-
         expect(mutation_response['errors']).to be_empty
+      end
+
+      it 'creates an audit event' do
+        expect { request }.to change { AuditEvent.count }.by(1)
+        expect(AuditEvent.last.details[:custom_message])
+          .to eq("Deleted a security exclusion with type (path)")
       end
 
       context 'with an invalid global id' do

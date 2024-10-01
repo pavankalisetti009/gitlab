@@ -47,6 +47,22 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
     end
   end
 
+  describe '#audit_details' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:exclusion) { create(:project_security_exclusion, :with_rule, project: project, description: 'foobar') }
+
+    it 'contains some attributes of the object' do
+      expect(exclusion.audit_details).to match(
+        a_hash_including(
+          scanner: 'secret_push_protection',
+          value: 'gitlab_personal_access_token',
+          active: true,
+          description: 'foobar'
+        )
+      )
+    end
+  end
+
   context 'with loose foreign key on project_security_exclusions.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:project) }
