@@ -13,7 +13,7 @@ module EE
         super
 
         # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Need to initialize pending members
-        @pending_promotion_members = pending_promotion_members
+        @pending_promotion_members_count = pending_promotion_members_count
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
@@ -37,14 +37,13 @@ module EE
         super.non_awaiting
       end
 
-      def pending_promotion_members
+      def pending_promotion_members_count
         return unless can?(current_user, :admin_project_member, project)
 
         GitlabSubscriptions::MemberManagement::MemberApprovalFinder
           .new(current_user: current_user, params: params, source: project)
           .execute
-          .page(params[:promotion_requests_page])
-          .per(MEMBER_PER_PAGE_LIMIT)
+          .count
       end
     end
   end

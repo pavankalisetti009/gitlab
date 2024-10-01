@@ -102,23 +102,10 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
 
       context 'with member_promotion management feature enabled' do
         context 'when user can admin group' do
-          it 'assigns @pending_promotion_members with the correct pending members' do
+          it 'assigns @pending_promotion_members_count with the correct pending members' do
             get_group_members
 
-            expect(assigns(:pending_promotion_members)).to match_array(pending_member_approvals)
-          end
-
-          context 'with pagination' do
-            let(:params) { { promotion_requests_page: 2 } }
-
-            it 'paginates @pending_promotion_members correctly' do
-              stub_const("EE::#{described_class}::MEMBER_PER_PAGE_LIMIT", 1)
-
-              get_group_members
-
-              expect(assigns(:pending_promotion_members).size).to eq(1)
-              expect(assigns(:pending_promotion_members)).to contain_exactly(pending_member_approvals.second)
-            end
+            expect(assigns(:pending_promotion_members_count)).to eq(2)
           end
         end
 
@@ -127,19 +114,19 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
             group.add_developer(user)
           end
 
-          it 'does not assigns @pending_promotion_members' do
+          it 'does not assigns @pending_promotion_members_count' do
             get_group_members
 
-            expect(assigns(:pending_promotion_members)).to eq(nil)
+            expect(assigns(:pending_promotion_members_count)).to eq(nil)
           end
         end
       end
 
       shared_examples "empty response" do
-        it 'assigns @pending_promotion_members be empty' do
+        it 'assigns @pending_promotion_members_count to be 0' do
           get_group_members
 
-          expect(assigns(:pending_promotion_members)).to be_empty
+          expect(assigns(:pending_promotion_members_count)).to eq(0)
         end
       end
 
