@@ -2,12 +2,13 @@ import initDeprecatedRemoveRowBehavior from '~/behaviors/deprecated_remove_row_b
 
 initDeprecatedRemoveRowBehavior();
 
-const locks = document.querySelector('.locks');
+const locks = document.querySelector('.js-path-locks');
 
 locks.addEventListener('ajax:success', () => {
   const allRowsHidden = [...locks.querySelectorAll('li')].every((x) => x.offsetParent === null);
 
   if (allRowsHidden) {
-    locks.querySelector('.nothing-here-block.hidden')?.classList?.remove('hidden');
+    locks.querySelector('.js-path-locks-empty-state.hidden')?.classList?.remove('hidden');
+    locks.querySelector('.js-path-locks-header')?.classList?.add('hidden');
   }
 });

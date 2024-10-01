@@ -12,6 +12,8 @@ module Observability
     worker_has_external_dependencies!
 
     def perform
+      return unless License.feature_available?(:observability)
+
       api_response = fetch_alerts
       return unless api_response
 

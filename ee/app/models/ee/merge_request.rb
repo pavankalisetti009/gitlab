@@ -129,6 +129,8 @@ module EE
       end
 
       def create_pending_status_check_responses
+        return unless diff_head_sha.present?
+
         ::ComplianceManagement::PendingStatusCheckWorker.perform_async(id, project.id, diff_head_sha)
       end
 
