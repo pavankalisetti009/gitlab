@@ -1,7 +1,7 @@
 import { sortBy } from 'lodash';
 import {
   parsePikadayDate,
-  pikadayToString,
+  toISODateFormat,
   nDaysAfter,
   differenceInMilliseconds,
 } from '~/lib/utils/datetime_utility';
@@ -88,8 +88,8 @@ export const restrictRequestEndDate = (startDate, maxEndDate) => {
   }
 
   return {
-    endDate: pikadayToString(endDate),
-    nextStartDate: pikadayToString(nDaysAfter(endDate, 1)),
+    endDate: toISODateFormat(endDate),
+    nextStartDate: toISODateFormat(nDaysAfter(endDate, 1)),
   };
 };
 

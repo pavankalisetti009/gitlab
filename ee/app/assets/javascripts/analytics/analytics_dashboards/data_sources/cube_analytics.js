@@ -1,6 +1,6 @@
 import { CubeApi, HttpTransport } from '@cubejs-client/core';
 import { convertToSnakeCase } from '~/lib/utils/text_utility';
-import { pikadayToString } from '~/lib/utils/datetime_utility';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import csrf from '~/lib/utils/csrf';
 import { joinPaths } from '~/lib/utils/url_utility';
 import {
@@ -117,7 +117,7 @@ const buildDateRangeFilter = (query, queryOverrides, { startDate, endDate }) => 
     {
       member: getDateRangeDimension(query),
       operator: 'inDateRange',
-      values: [pikadayToString(startDate ?? SEVEN_DAYS_AGO), pikadayToString(endDate ?? TODAY)],
+      values: [toISODateFormat(startDate ?? SEVEN_DAYS_AGO), toISODateFormat(endDate ?? TODAY)],
     },
   ],
 });
