@@ -158,10 +158,8 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_dot_com_rollout)
 
-        search_enabled_count = Search::Zoekt::EnabledNamespace
-          .joins(:indices)
+        search_enabled_count = Search::Zoekt::EnabledNamespace.with_all_ready_indices
           .where(search: false, created_at: ..DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
-          .where(zoekt_indices: { state: :ready })
           .order(:id)
           .limit(DOT_COM_ROLLOUT_SEARCH_LIMIT)
           .update_all(search: true, updated_at: Time.zone.now)
