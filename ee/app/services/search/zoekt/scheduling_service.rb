@@ -6,19 +6,20 @@ module Search
       include Gitlab::Loggable
 
       TASKS = %i[
+        auto_index_self_managed
         dot_com_rollout
         eviction
-        remove_expired_subscriptions
-        node_assignment
-        mark_indices_as_ready
-        initial_indexing
-        auto_index_self_managed
-        update_replica_states
-        report_metrics
         index_should_be_marked_as_orphaned_check
         index_to_delete_check
+        initial_indexing
+        lost_nodes_check
+        mark_indices_as_ready
+        node_assignment
+        remove_expired_subscriptions
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
+        report_metrics
+        update_replica_states
       ].freeze
 
       BUFFER_FACTOR = 3
@@ -376,6 +377,17 @@ module Search
                 data: { zoekt_repo_ids: batch.pluck_primary_key }
               )
             )
+          end
+        end
+      end
+
+      def lost_nodes_check
+        return false if Rails.env.development?
+        return false unless Node.marking_lost_enabled?
+
+        execute_every 10.minutes, cache_key: :lost_nodes_check do
+          Node.lost.select(:id).find_each do |node|
+            Gitlab::EventStore.publish(Search::Zoekt::LostNodeEvent.new(data: { zoekt_node_id: node.id }))
           end
         end
       end

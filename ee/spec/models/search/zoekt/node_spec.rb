@@ -24,9 +24,18 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
   end
 
   describe 'scopes' do
-    describe '.online' do
-      let_it_be(:online_node) { create(:zoekt_node, last_seen_at: 1.second.ago) }
+    describe '.lost', :freeze_time do
       let_it_be(:offline_node) { create(:zoekt_node, last_seen_at: 10.minutes.ago) }
+      let_it_be(:lost_node) { create(:zoekt_node, :lost) }
+
+      it 'returns all the lost nodes' do
+        expect(described_class.lost).to contain_exactly(lost_node)
+      end
+    end
+
+    describe '.online', :freeze_time do
+      let_it_be(:online_node) { create(:zoekt_node) }
+      let_it_be(:offline_node) { create(:zoekt_node, :offline) }
 
       it 'returns nodes considered to be online' do
         expect(described_class.online).to contain_exactly(node, online_node)
@@ -126,6 +135,52 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
       it 'sets indexed_bytes to the disk.indexed from params' do
         expect(tasked_node.indexed_bytes).to eq(params['disk.indexed'])
+      end
+    end
+  end
+
+  describe '.marking_lost_enabled?', :zoekt_settings_enabled do
+    it 'returns true' do
+      expect(described_class.marking_lost_enabled?).to eq true
+    end
+
+    context 'when FF zoekt_internal_api_register_nodes is disabled' do
+      before do
+        stub_feature_flags(zoekt_internal_api_register_nodes: false)
+      end
+
+      it 'returns false' do
+        expect(described_class.marking_lost_enabled?).to eq false
+      end
+    end
+
+    context 'when application setting zoekt_indexing_paused? is enabled' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_paused: true)
+      end
+
+      it 'returns false' do
+        expect(described_class.marking_lost_enabled?).to eq false
+      end
+    end
+
+    context 'when application setting zoekt_indexing_enabled? is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_enabled: false)
+      end
+
+      it 'returns false' do
+        expect(described_class.marking_lost_enabled?).to eq false
+      end
+    end
+
+    context 'when application setting zoekt_auto_delete_lost_nodes? is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_auto_delete_lost_nodes: false)
+      end
+
+      it 'returns false' do
+        expect(described_class.marking_lost_enabled?).to eq false
       end
     end
   end

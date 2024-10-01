@@ -21,6 +21,7 @@ module EE
         use_clickhouse_for_analytics: [:boolean, { default: false }]
 
       jsonb_accessor :zoekt_settings,
+        zoekt_auto_delete_lost_nodes: [:boolean, { default: true }],
         zoekt_indexing_enabled: [:boolean, { default: false }],
         zoekt_indexing_paused: [:boolean, { default: false }],
         zoekt_search_enabled: [:boolean, { default: false }],
