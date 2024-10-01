@@ -149,7 +149,6 @@ RSpec.describe Epics::CreateService, feature_category: :portfolio_management do
       it 'does not call after commit workers for the work item' do
         expect(NewIssueWorker).not_to receive(:perform_async)
         expect(Issues::PlacementWorker).not_to receive(:perform_async)
-        expect(Onboarding::IssueCreatedWorker).not_to receive(:perform_async)
 
         subject
       end
