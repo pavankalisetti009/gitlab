@@ -553,7 +553,7 @@ enabled: true`;
           expect(goToPolicyMR).toHaveBeenCalledTimes(0);
         });
 
-        it('dismisses the warning and save the policy', async () => {
+        it('dismisses the warning and saves the policy', async () => {
           await selectScheduleRule();
           await waitForPromises();
 
@@ -568,6 +568,47 @@ enabled: true`;
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
           expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        });
+
+        it('dismisses the warning and deletes the policy', async () => {
+          await selectScheduleRule();
+          await waitForPromises();
+
+          findPolicyEditorLayout().vm.$emit('remove-policy');
+          await waitForPromises();
+
+          expect(findOverloadWarningModal().props('visible')).toBe(true);
+          expect(wrapper.emitted('save')).toBeUndefined();
+
+          await findOverloadWarningModal().vm.$emit('confirm-submit');
+          await waitForPromises();
+
+          expect(findOverloadWarningModal().props('visible')).toBe(false);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+          expect(goToPolicyMR).toHaveBeenCalledWith(
+            expect.objectContaining({
+              action: SECURITY_POLICY_ACTIONS.REMOVE,
+            }),
+          );
+        });
+
+        it('dismisses the warning without deleting the policy and then edits it', async () => {
+          await selectScheduleRule();
+          await waitForPromises();
+          findPolicyEditorLayout().vm.$emit('remove-policy');
+          await waitForPromises();
+          await findOverloadWarningModal().vm.$emit('cancel-submit');
+          findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+          await findOverloadWarningModal().vm.$emit('confirm-submit');
+          await waitForPromises();
+
+          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+          expect(goToPolicyMR).toHaveBeenCalledWith(
+            expect.objectContaining({
+              action: SECURITY_POLICY_ACTIONS.APPEND,
+            }),
+          );
         });
 
         it('also shows warning modal in yaml mode', async () => {

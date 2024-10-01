@@ -183,12 +183,13 @@ export default {
       this.updateYamlEditorValue(this.policy);
     },
     cancelPolicySubmit() {
+      this.policyModificationAction = null;
       this.showPerformanceWarningModal = false;
     },
     confirmPolicySubmit() {
       this.showPerformanceWarningModal = false;
       this.dismissPerformanceWarningModal = true;
-      this.handleModifyPolicy();
+      this.handleModifyPolicy(this.policyModificationAction);
     },
     removeActionOrRule(type, index) {
       this.policy[type].splice(index, 1);
@@ -240,12 +241,12 @@ export default {
       return this.newlyCreatedPolicyProject || this.assignedPolicyProject;
     },
     async handleModifyPolicy(act) {
+      this.policyModificationAction = act || this.policyActionName;
+
       if (this.hasPerformanceRisk() && !this.dismissPerformanceWarningModal) {
         this.showPerformanceWarningModal = true;
         return;
       }
-
-      this.policyModificationAction = act || this.policyActionName;
 
       if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
         this.$emit('save', {
