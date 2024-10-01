@@ -1577,6 +1577,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_81b4c93e7133() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "pages_deployments"
+  WHERE "pages_deployments"."id" = NEW."pages_deployment_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_8204480b3a2e() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -15574,6 +15590,7 @@ CREATE TABLE pages_deployment_states (
     verification_retry_count smallint,
     verification_checksum bytea,
     verification_failure text,
+    project_id bigint,
     CONSTRAINT check_15217e8c3a CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -29939,6 +29956,8 @@ CREATE INDEX index_pages_deployment_states_needs_verification ON pages_deploymen
 
 CREATE INDEX index_pages_deployment_states_on_pages_deployment_id ON pages_deployment_states USING btree (pages_deployment_id);
 
+CREATE INDEX index_pages_deployment_states_on_project_id ON pages_deployment_states USING btree (project_id);
+
 CREATE INDEX index_pages_deployment_states_on_verification_state ON pages_deployment_states USING btree (verification_state);
 
 CREATE INDEX index_pages_deployment_states_pending_verification ON pages_deployment_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
@@ -33393,6 +33412,8 @@ CREATE TRIGGER trigger_7a8b08eed782 BEFORE INSERT OR UPDATE ON boards_epic_board
 
 CREATE TRIGGER trigger_7de792ddbc05 BEFORE INSERT OR UPDATE ON dast_site_validations FOR EACH ROW EXECUTE FUNCTION trigger_7de792ddbc05();
 
+CREATE TRIGGER trigger_81b4c93e7133 BEFORE INSERT OR UPDATE ON pages_deployment_states FOR EACH ROW EXECUTE FUNCTION trigger_81b4c93e7133();
+
 CREATE TRIGGER trigger_8204480b3a2e BEFORE INSERT OR UPDATE ON incident_management_escalation_rules FOR EACH ROW EXECUTE FUNCTION trigger_8204480b3a2e();
 
 CREATE TRIGGER trigger_84d67ad63e93 BEFORE INSERT OR UPDATE ON wiki_page_slugs FOR EACH ROW EXECUTE FUNCTION trigger_84d67ad63e93();
@@ -34317,6 +34338,9 @@ ALTER TABLE ONLY requirements
 
 ALTER TABLE ONLY catalog_resource_components
     ADD CONSTRAINT fk_85bb1d1e79 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY pages_deployment_states
+    ADD CONSTRAINT fk_8610d3d1cc FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_build_pending_states
     ADD CONSTRAINT fk_861cd17da3_p FOREIGN KEY (partition_id, build_id) REFERENCES p_ci_builds(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
