@@ -1,16 +1,16 @@
 - page_title _("Locked files")
 
-.top-area
-  .nav-text
-    = sprite_icon('lock', size: 16, css_class: 'gl-align-middle')
-    = _("The following files or directories can only be modified by the user who locked them.")
-
-.locks
+.js-path-locks
   - if @path_locks.any?
+    = render ::Layouts::PageHeadingComponent.new(_('Locked files'),
+      description: _("The following files or directories can only be modified by the user who locked them."),
+      options: { class: 'js-path-locks-header' })
+
     %ul.content-list
       = render @path_locks
 
     = paginate @path_locks, theme: 'gitlab'
 
-  .nothing-here-block{ class: ('hidden' if @path_locks.any?) }
-    = _("Repository has no locks.")
+  .js-path-locks-empty-state{ class: ('hidden' if @path_locks.any?) }
+    = render Pajamas::EmptyStateComponent.new(svg_path: 'illustrations/status/status-nothing-md.svg',
+      title: _("Repository has no locks"))

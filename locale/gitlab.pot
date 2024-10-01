@@ -46007,7 +46007,7 @@ msgstr ""
 msgid "Repository has more than one branch."
 msgstr ""
 
-msgid "Repository has no locks."
+msgid "Repository has no locks"
 msgstr ""
 
 msgid "Repository has tags."

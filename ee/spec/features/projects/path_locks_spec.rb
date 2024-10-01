@@ -74,7 +74,7 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
 
     click_link "Locked files"
 
-    within '.locks' do
+    within '.js-path-locks' do
       expect(page).to have_content('encoding')
     end
 
