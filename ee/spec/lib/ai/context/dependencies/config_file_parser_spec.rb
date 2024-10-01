@@ -57,7 +57,9 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
             lang: 'go',
             valid: true,
             error_message: nil,
-            payload: a_hash_including(libs: [{ name: 'abc.org/mylib (1.3.0)' }, { name: 'golang.org/x/mod (0.5.0)' }])
+            payload: a_hash_including(
+              fileName: 'dir1/dir2/go.mod',
+              libs: [{ name: 'abc.org/mylib (1.3.0)' }, { name: 'golang.org/x/mod (0.5.0)' }])
           }
         )
       end
@@ -81,15 +83,122 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
               lang: 'c',
               valid: true,
               error_message: nil,
-              payload: a_hash_including(libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+              payload: a_hash_including(
+                fileName: 'dir1/dir2/conanfile.txt',
+                libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
             },
             {
               lang: 'cpp',
               valid: true,
               error_message: nil,
-              payload: a_hash_including(libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+              payload: a_hash_including(
+                fileName: 'dir1/dir2/conanfile.txt',
+                libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
             }
           )
+        end
+      end
+
+      context 'with files matching multiple config file classes for the same language' do
+        let_it_be(:project) do
+          create(:project, :custom_repo, files:
+            {
+              'pom.xml' =>
+                <<~CONTENT,
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.junit.jupiter</groupId>
+                              <artifactId>junit-jupiter-engine</artifactId>
+                              <version>1.2.0</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                CONTENT
+              'dir1/dir2/build.gradle' =>
+                <<~CONTENT
+                  dependencies {
+                      implementation 'org.codehaus.groovy:groovy:3.+'
+                      "implementation" 'org.ow2.asm:asm:9.6'
+                  }
+                CONTENT
+            })
+        end
+
+        it 'returns an object of only the first matching config file class in the order of `CONFIG_FILE_CLASSES`' do
+          expect(config_files_array).to contain_exactly(
+            {
+              lang: 'java',
+              valid: true,
+              error_message: nil,
+              payload: a_hash_including(
+                fileName: 'dir1/dir2/build.gradle',
+                libs: [{ name: 'groovy (3.+)' }, { name: 'asm (9.6)' }])
+            }
+          )
+        end
+      end
+
+      context 'with multiple files matching the same config file class' do
+        context 'when the config file class does not support multiple files' do
+          let_it_be(:project) do
+            create(:project, :custom_repo, files:
+              {
+                'go.mod' =>
+                  <<~CONTENT,
+                    require abc.org/mylib v1.3.0
+                  CONTENT
+                'dir1/dir2/go.mod' =>
+                  <<~CONTENT
+                    require golang.org/x/mod v0.5.0
+                  CONTENT
+              })
+          end
+
+          it 'returns a config file object for only one of the matching files' do
+            # We can't be sure which file is found first because it depends on the order of the worktree paths
+            expect(config_files_array.size).to eq(1)
+          end
+        end
+
+        context 'when the config file class supports multiple files' do
+          let_it_be(:project) do
+            create(:project, :custom_repo, files:
+              {
+                'requirements.txt' =>
+                  <<~CONTENT,
+                    requests>=2.0,<3.0
+                    numpy==1.26.4
+                    -r dir1/dir2/dev-requirements.txt
+                  CONTENT
+                'dir1/dir2/dev-requirements.txt' =>
+                  <<~CONTENT
+                    python_dateutil>=2.5.3
+                    fastapi-health!=0.3.0
+                  CONTENT
+              })
+          end
+
+          it 'returns a config file object for each matching file' do
+            expect(config_files_array).to contain_exactly(
+              {
+                lang: 'python',
+                valid: true,
+                error_message: nil,
+                payload: a_hash_including(
+                  fileName: 'requirements.txt',
+                  libs: [{ name: 'requests (>=2.0,<3.0)' }, { name: 'numpy (==1.26.4)' }])
+              },
+              {
+                lang: 'python',
+                valid: true,
+                error_message: nil,
+                payload: a_hash_including(
+                  fileName: 'dir1/dir2/dev-requirements.txt',
+                  libs: [{ name: 'python_dateutil (>=2.5.3)' }, { name: 'fastapi-health (!=0.3.0)' }])
+              }
+            )
+          end
         end
       end
     end

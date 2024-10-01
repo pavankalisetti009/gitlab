@@ -11,12 +11,18 @@ module Ai
           COMMENT_ONLY_REGEX = /^#/
           INLINE_COMMENT_REGEX = /\s+#.*$/
 
+          # We support nested requirements files by processing all files matching
+          # this glob. See https://gitlab.com/gitlab-org/gitlab/-/issues/491800.
           def self.file_name_glob
-            'requirements.txt'
+            '*requirements*.txt'
           end
 
           def self.lang_name
             'Python'
+          end
+
+          def self.supports_multiple_files?
+            true
           end
 
           private
@@ -32,10 +38,8 @@ module Ai
           # openpyxl == 3.1.2
           # urllib3 @ https://github.com/path/main.zip
           #
-          # # Nested requirement files currently not supported
-          # # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/491800
-          # -r other_requirements.txt
-          # # Other options
+          # # Options
+          # -r other_requirements.txt # A nested requirements file
           # -i https://pypi.org/simple
           # --python-version 3
           #
