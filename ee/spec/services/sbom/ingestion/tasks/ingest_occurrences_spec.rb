@@ -345,27 +345,23 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
   end
 
   def expected_attributes_for(occurrence_map)
-    Gitlab::Database.allow_cross_joins_across_databases(
-      url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480165'
-    ) do
-      {
-        ancestors: occurrence_map.ancestors,
-        archived: project.archived,
-        commit_sha: pipeline.sha,
-        component_id: occurrence_map.component_id,
-        component_name: occurrence_map.name,
-        component_version_id: occurrence_map.component_version_id,
-        input_file_path: occurrence_map.input_file_path,
-        licenses: default_licenses,
-        package_manager: occurrence_map.packager,
-        pipeline_id: pipeline.id,
-        project_id: project.id,
-        reachability: occurrence_map.reachability,
-        source_id: occurrence_map.source_id,
-        source_package_id: occurrence_map.source_package_id,
-        traversal_ids: project.namespace.traversal_ids
-      }.deep_stringify_keys!
-    end
+    {
+      ancestors: occurrence_map.ancestors,
+      archived: project.archived,
+      commit_sha: pipeline.sha,
+      component_id: occurrence_map.component_id,
+      component_name: occurrence_map.name,
+      component_version_id: occurrence_map.component_version_id,
+      input_file_path: occurrence_map.input_file_path,
+      licenses: default_licenses,
+      package_manager: occurrence_map.packager,
+      pipeline_id: pipeline.id,
+      project_id: project.id,
+      reachability: occurrence_map.reachability,
+      source_id: occurrence_map.source_id,
+      source_package_id: occurrence_map.source_package_id,
+      traversal_ids: project.namespace.traversal_ids
+    }.deep_stringify_keys!
   end
 
   def create_pm_packages
