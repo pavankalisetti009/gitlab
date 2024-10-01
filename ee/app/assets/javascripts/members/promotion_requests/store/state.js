@@ -1,5 +1,5 @@
-export default ({ pagination }) => ({
+export default ({ totalItems }) => ({
   pagination: {
-    totalItems: pagination?.totalItems ?? 0,
+    totalItems: totalItems ?? 0,
   },
 });

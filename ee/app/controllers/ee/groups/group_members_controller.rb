@@ -40,7 +40,7 @@ module EE
         # rubocop:disable Gitlab/ModuleWithInstanceVariables
         @banned = presented_banned_members
         @memberships_with_custom_role = present_group_members(group_memberships_with_custom_role)
-        @pending_promotion_members = pending_promotion_members
+        @pending_promotion_members_count = pending_promotion_members_count
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
@@ -168,14 +168,13 @@ module EE
           .banned_from(group)
       end
 
-      def pending_promotion_members
+      def pending_promotion_members_count
         return unless can?(current_user, :admin_group_member, group)
 
         GitlabSubscriptions::MemberManagement::MemberApprovalFinder
           .new(current_user: current_user, params: params, source: group)
           .execute
-          .page(params[:promotion_requests_page])
-          .per(MEMBER_PER_PAGE_LIMIT)
+          .count
       end
     end
   end
