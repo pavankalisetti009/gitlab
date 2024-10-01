@@ -31,8 +31,16 @@ module Search
 
       attr_reader :task
 
-      def self.execute(task)
-        new(task).execute
+      def self.execute!(task)
+        execute(task, without_cache: true)
+      end
+
+      def self.execute(task, without_cache: false)
+        instance = new(task)
+
+        Gitlab::Redis::SharedState.with { |r| r.del(instance.cache_key) } if without_cache
+
+        instance.execute
       end
 
       def initialize(task)
@@ -46,14 +54,16 @@ module Search
         send(task) # rubocop:disable GitlabSecurity/PublicSend -- We control the list of tasks in the source code
       end
 
+      def cache_key
+        [self.class.name.underscore, :execute_every, task].flatten.join(':')
+      end
+
       private
 
       def execute_every(period, cache_key:)
         # We don't want any delay interval in development environments,
         # so lets disable the cache unless we are in production.
         return yield if Rails.env.development?
-
-        cache_key = [self.class.name.underscore, :execute_every, cache_key].flatten.join(':')
 
         Gitlab::Redis::SharedState.with do |redis|
           key_set = redis.set(cache_key, 1, ex: period, nx: true)
@@ -148,10 +158,8 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_dot_com_rollout)
 
-        search_enabled_count = Search::Zoekt::EnabledNamespace
-          .joins(:indices)
+        search_enabled_count = Search::Zoekt::EnabledNamespace.with_all_ready_indices
           .where(search: false, created_at: ..DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
-          .where(zoekt_indices: { state: :ready })
           .order(:id)
           .limit(DOT_COM_ROLLOUT_SEARCH_LIMIT)
           .update_all(search: true, updated_at: Time.zone.now)

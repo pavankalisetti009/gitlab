@@ -26,6 +26,10 @@ module Search
       scope :search_enabled, -> { where(search: true) }
       scope :with_limit, ->(maximum) { limit(maximum) }
       scope :with_missing_indices, -> { left_joins(:indices).where(zoekt_indices: { zoekt_enabled_namespace_id: nil }) }
+      scope :with_all_ready_indices, -> do
+        raw_sql = 'min(zoekt_indices.state) = :state AND max(zoekt_indices.state) = :state'
+        joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
+      end
 
       def self.destroy_namespaces_with_expired_subscriptions!
         before_date = Date.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD

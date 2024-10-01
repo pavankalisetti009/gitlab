@@ -80,6 +80,26 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
+    describe '.with_all_ready_indices' do
+      let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace) } # With all ready indices
+      let_it_be(:zoekt_enabled_namespace2) { create(:zoekt_enabled_namespace) } # With some non ready indices
+      let_it_be(:zoekt_enabled_namespace3) { create(:zoekt_enabled_namespace) } # Without any indices
+
+      subject(:collection) { described_class.with_all_ready_indices }
+
+      before do
+        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace)
+        create(:zoekt_index, :ready, zoekt_enabled_namespace: zoekt_enabled_namespace2)
+        create(:zoekt_index, :pending, zoekt_enabled_namespace: zoekt_enabled_namespace2)
+      end
+
+      it 'returns Search::Zoekt::EnabledNamespace with all ready indices' do
+        expect(collection).to include(zoekt_enabled_namespace)
+        expect(collection).not_to include(zoekt_enabled_namespace2)
+        expect(collection).not_to include(zoekt_enabled_namespace3)
+      end
+    end
+
     describe '.destroy_namespaces_with_expired_subscriptions!', :saas do
       subject(:destroy_namespaces) { described_class.destroy_namespaces_with_expired_subscriptions! }
 
