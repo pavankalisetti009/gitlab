@@ -7,6 +7,7 @@ module Gitlab
         module FixCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = 'FixCode'
             HUMAN_NAME = 'Fix Code'
