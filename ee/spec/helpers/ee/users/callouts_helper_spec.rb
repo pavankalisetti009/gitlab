@@ -7,49 +7,74 @@ RSpec.describe EE::Users::CalloutsHelper do
   using RSpec::Parameterized::TableSyntax
 
   describe '#render_dashboard_ultimate_trial', :saas do
-    let_it_be(:namespace) { create(:namespace) }
-    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+    let_it_be(:namespace) { build_stubbed(:namespace) }
+    let_it_be(:user) { namespace.owner }
 
-    let(:user) { namespace.owner }
+    let(:show_ultimate_trial?) { true }
+    let(:user_default_dashboard?) { true }
+    let(:owns_paid_namespace?) { false }
+    let(:owns_group_without_trial?) { true }
+    let(:duo_enterprise_trials_enabled?) { true }
 
-    where(:owns_group_without_trial?, :show_ultimate_trial?, :user_default_dashboard?, :has_no_trial_or_paid_plan?, :should_render?) do
-      true  | true  | true  | true  | true
-      true  | true  | true  | false | false
-      true  | true  | false | true  | false
-      true  | false | true  | true  | false
-      true  | true  | false | false | false
-      true  | false | false | true  | false
-      true  | false | true  | false | false
-      true  | false | false | false | false
-      false | true  | true  | true  | false
-      false | true  | true  | false | false
-      false | true  | false | true  | false
-      false | false | true  | true  | false
-      false | true  | false | false | false
-      false | false | false | true  | false
-      false | false | true  | false | false
-      false | false | false | false | false
+    let(:render) { helper.render_dashboard_ultimate_trial(user) }
+
+    before do
+      allow(helper).to receive(:show_ultimate_trial?).with(user, described_class::ULTIMATE_TRIAL).and_return(show_ultimate_trial?)
+      allow(helper).to receive(:user_default_dashboard?).with(user).and_return(user_default_dashboard?)
+      allow(user).to receive(:owns_paid_namespace?).and_return(owns_paid_namespace?)
+      allow(user).to receive(:owns_group_without_trial?).and_return(owns_group_without_trial?)
+      stub_feature_flags(duo_enterprise_trials: duo_enterprise_trials_enabled?)
     end
 
-    with_them do
-      before do
-        allow(helper).to receive(:show_ultimate_trial?) { show_ultimate_trial? }
-        allow(helper).to receive(:user_default_dashboard?) { user_default_dashboard? }
-        allow(user).to receive(:owns_group_without_trial?) { owns_group_without_trial? }
-
-        unless has_no_trial_or_paid_plan?
-          create(:gitlab_subscription, hosted_plan: ultimate_plan, namespace: namespace)
-        end
+    context 'when all conditions are met' do
+      it 'renders the ultimate_with_enterprise_trial_callout_content' do
+        expect(helper).to receive(:render).with('shared/ultimate_with_enterprise_trial_callout_content')
+        render
       end
+    end
 
-      it do
-        if should_render?
-          expect(helper).to receive(:render).with('shared/ultimate_trial_callout_content')
-        else
-          expect(helper).not_to receive(:render)
-        end
+    context 'when duo_enterprise_trials feature flag is disabled' do
+      let(:duo_enterprise_trials_enabled?) { false }
 
-        helper.render_dashboard_ultimate_trial(user)
+      it 'renders the ultimate_trial_callout_content' do
+        expect(helper).to receive(:render).with('shared/ultimate_trial_callout_content')
+        render
+      end
+    end
+
+    context 'when show_ultimate_trial? is false' do
+      let(:show_ultimate_trial?) { false }
+
+      it 'does not render any content' do
+        expect(helper).not_to receive(:render)
+        render
+      end
+    end
+
+    context 'when user_default_dashboard? is false' do
+      let(:user_default_dashboard?) { false }
+
+      it 'does not render any content' do
+        expect(helper).not_to receive(:render)
+        render
+      end
+    end
+
+    context 'when user owns a paid namespace' do
+      let(:owns_paid_namespace?) { true }
+
+      it 'does not render any content' do
+        expect(helper).not_to receive(:render)
+        render
+      end
+    end
+
+    context 'when user does not own a group without trial' do
+      let(:owns_group_without_trial?) { false }
+
+      it 'does not render any content' do
+        expect(helper).not_to receive(:render)
+        render
       end
     end
   end
