@@ -57,7 +57,7 @@ module WorkItems
         .index_with { |attr| work_item[attr] }
         .merge(color_params(work_item))
         .merge(dates_params(work_item))
-        .merge(updated_at: work_item.updated_at)
+        .merge(updated_at: work_item.updated_at, updated_by_id: work_item.updated_by_id)
     end
 
     def base_attributes_params(work_item)
