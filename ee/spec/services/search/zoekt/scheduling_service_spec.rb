@@ -39,6 +39,30 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       described_class.execute(task)
     end
+
+    context 'when passed without_cache argument' do
+      let(:redis) { instance_double(Redis) }
+
+      it 'removes the cache key before executing the task' do
+        expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis)
+        expect(redis).to receive(:del).with(service.cache_key)
+
+        expect(described_class).to receive(:new).with(task).and_return(service)
+        expect(service).to receive(:execute)
+
+        described_class.execute(task, without_cache: true)
+      end
+    end
+  end
+
+  describe '.execute!' do
+    let(:task) { :foo }
+
+    it 'calls .execute specifying without_cache' do
+      expect(described_class).to receive(:execute).with(task, without_cache: true)
+
+      described_class.execute!(task)
+    end
   end
 
   describe '#execute' do
@@ -56,6 +80,14 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     it 'converts string task to symbol' do
       expect(described_class.new(task.to_s).task).to eq(task.to_sym)
+    end
+  end
+
+  describe '#cache_key' do
+    it 'is formatted correctly based on task name' do
+      %i[foo bar baz].each do |task|
+        expect(described_class.new(task).cache_key).to eq("search/zoekt/scheduling_service:execute_every:#{task}")
+      end
     end
   end
 
