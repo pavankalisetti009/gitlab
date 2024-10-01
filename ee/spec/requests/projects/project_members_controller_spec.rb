@@ -37,45 +37,31 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
 
       context 'with member_promotion management feature enabled' do
         context 'when user can admin project' do
-          it 'assigns @pending_promotion_members' do
+          it 'assigns @pending_promotion_members_count' do
             make_request
 
-            expect(assigns(:pending_promotion_members)).to match_array(pending_member_approvals)
-          end
-
-          context 'with pagination' do
-            let(:param) { { promotion_requests_page: 2 } }
-
-            it 'paginates @pending_promotion_members correctly' do
-              group.add_owner(user)
-              stub_const("EE::#{described_class}::MEMBER_PER_PAGE_LIMIT", 1)
-
-              make_request
-
-              expect(assigns(:pending_promotion_members).size).to eq(1)
-              expect(assigns(:pending_promotion_members)).to contain_exactly(pending_member_approvals.second)
-            end
+            expect(assigns(:pending_promotion_members_count)).to eq(2)
           end
         end
 
         context 'when user cannot admin project' do
-          it 'does not assigns @pending_promotion_members' do
+          it 'does not assigns @pending_promotion_members_count' do
             user = create(:user)
             sign_in(user)
             project.add_developer(user)
 
             make_request
 
-            expect(assigns(:pending_promotion_members)).to eq(nil)
+            expect(assigns(:pending_promotion_members_count)).to eq(nil)
           end
         end
       end
 
       shared_examples "empty response" do
-        it 'assigns @pending_promotion_members be empty' do
+        it 'assigns @pending_promotion_members_count be be 0' do
           make_request
 
-          expect(assigns(:pending_promotion_members)).to be_empty
+          expect(assigns(:pending_promotion_members_count)).to eq(0)
         end
       end
 

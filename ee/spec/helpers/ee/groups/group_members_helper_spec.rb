@@ -22,7 +22,7 @@ RSpec.describe Groups::GroupMembersHelper do
       banned: banned,
       include_relations: [:inherited, :direct],
       search: nil,
-      pending_members: [],
+      pending_members_count: [],
       placeholder_users: {}
     )
   end
@@ -139,7 +139,7 @@ RSpec.describe Groups::GroupMembersHelper do
       end
     end
 
-    context 'with promotion_request' do
+    context 'with promotion_request_count' do
       let(:type) { :for_group_member }
       let(:member_namespace) { group }
 
@@ -152,12 +152,12 @@ RSpec.describe Groups::GroupMembersHelper do
           banned: banned,
           include_relations: [:inherited, :direct],
           search: nil,
-          pending_members: pending_members,
+          pending_members_count: pending_members_count,
           placeholder_users: {}
         )
       end
 
-      it_behaves_like 'adding promotion_request in app data'
+      it_behaves_like 'adding promotion_request_count in app data'
     end
 
     describe 'available roles' do
