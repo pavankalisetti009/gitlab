@@ -31629,7 +31629,7 @@ msgstr ""
 msgid "Labels"
 msgstr ""
 
-msgid "Labels can be applied to issues and merge requests to categorize them."
+msgid "Labels can be applied to issues and merge requests to categorize them"
 msgstr ""
 
 msgid "Labels can be applied to issues and merge requests. Group labels are available for any project within the group."
