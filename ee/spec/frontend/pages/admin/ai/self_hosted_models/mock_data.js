@@ -12,6 +12,7 @@ export const mockSelfHostedModelsList = [
     name: 'mock-self-hosted-model-1',
     model: 'codellama',
     endpoint: 'https://mock-endpoint-1.com',
+    identifier: 'provider/some-model-1',
     hasApiToken: true,
   },
   {
@@ -19,6 +20,7 @@ export const mockSelfHostedModelsList = [
     name: 'mock-self-hosted-model-1',
     model: 'mistral',
     endpoint: 'https://mock-endpoint-2.com',
+    identifier: '',
     hasApiToken: true,
   },
 ];

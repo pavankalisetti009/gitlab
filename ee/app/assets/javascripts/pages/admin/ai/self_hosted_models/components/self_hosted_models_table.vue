@@ -43,6 +43,12 @@ export default {
       tdClass: 'gl-content-center gl-text-ellipsis',
     },
     {
+      key: 'identifier',
+      label: __('Model identifier'),
+      thClass: 'w-15p',
+      tdClass: 'gl-content-center',
+    },
+    {
       key: 'has_api_key',
       label: s__('AdminSelfHostedModels|API token'),
       thClass: 'gl-w-1/8 gl-text-center',

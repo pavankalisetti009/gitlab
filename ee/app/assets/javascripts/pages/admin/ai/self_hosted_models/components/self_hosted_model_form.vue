@@ -54,7 +54,13 @@ export default {
   },
   formId: 'self-hosted-model-form',
   data() {
-    const { name = '', model = '', endpoint = '', apiToken = '' } = this.initialFormValues;
+    const {
+      name = '',
+      model = '',
+      endpoint = '',
+      identifier = '',
+      apiToken = '',
+    } = this.initialFormValues;
     const modelToUpperCase = model.toUpperCase();
 
     return {
@@ -64,17 +70,27 @@ export default {
           validators: [formValidators.required(this.$options.i18n.missingDeploymentNameError)],
         },
         model: {
-          label: s__('AdminSelfHostedModels|Model'),
+          label: s__('AdminSelfHostedModels|Model family'),
           validators: [formValidators.required(this.$options.i18n.modelNotSelectedError)],
         },
         endpoint: {
           label: s__('AdminSelfHostedModels|Endpoint'),
           validators: [formValidators.required(this.$options.i18n.missingEndpointError)],
         },
+        identifier: {
+          label: s__('AdminSelfHostedModels|Model identifier (optional)'),
+          validators: [
+            formValidators.factory(
+              s__('AdminSelfHostedModels|Model identifier must be less than 255 characters.'),
+              (val) => val.length <= 255,
+            ),
+          ],
+        },
       },
       baseFormValues: {
         name,
         endpoint,
+        identifier,
         model: modelToUpperCase,
       },
       apiToken,
@@ -102,6 +118,7 @@ export default {
       return (
         this.baseFormValues.name !== '' &&
         this.baseFormValues.model !== '' &&
+        this.baseFormValues.identifier.length <= 255 &&
         this.baseFormValues.endpoint !== ''
       );
     },
@@ -203,7 +220,7 @@ export default {
 };
 </script>
 <template>
-  <gl-form :id="$options.formId" class="gl-max-w-48" @submit.prevent="onSubmit">
+  <gl-form :id="$options.formId" class="gl-max-w-62" @submit.prevent="onSubmit">
     <gl-form-fields
       v-model="baseFormValues"
       :fields="fields"
@@ -212,6 +229,34 @@ export default {
       @input-field="onInputField"
       @submit="$emit('submit', baseFormValues)"
     >
+      <template #group(name)-label-description>
+        {{ s__('AdminSelfHostedModels|A unique and descriptive name for your deployment.') }}
+      </template>
+
+      <template #group(model)-label-description>
+        {{
+          s__(
+            'AdminSelfHostedModels|Select an appropriate model family from the list of approved GitLab models.',
+          )
+        }}
+      </template>
+
+      <template #group(endpoint)-label-description>
+        {{
+          s__(
+            'AdminSelfHostedModels|Specify the URL endpoint where your self-hosted model is accessible',
+          )
+        }}
+      </template>
+
+      <template #group(identifier)-label-description>
+        {{
+          s__(
+            'AdminSelfHostedModels|If necessary, provide the model identifier in the form of provider/model-name',
+          )
+        }}
+      </template>
+
       <template #input(model)>
         <gl-collapsible-listbox
           :items="availableModels"
@@ -230,6 +275,11 @@ export default {
       :initial-visibility="false"
       :disabled="isSaving"
       :show-copy-button="false"
+      :label-description="
+        s__(
+          'AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment.',
+        )
+      "
     />
     <div class="gl-pt-5">
       <gl-button

@@ -3857,6 +3857,9 @@ msgstr ""
 msgid "AdminProjects|Delete Project %{projectName}?"
 msgstr ""
 
+msgid "AdminSelfHostedModels|A unique and descriptive name for your deployment."
+msgstr ""
+
 msgid "AdminSelfHostedModels|API Key (optional)"
 msgstr ""
 
@@ -3926,10 +3929,25 @@ msgstr ""
 msgid "AdminSelfHostedModels|Get started with Self‑hosted models"
 msgstr ""
 
+msgid "AdminSelfHostedModels|If necessary, provide the model identifier in the form of provider/model-name"
+msgstr ""
+
+msgid "AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Manage AI models that can be used for GitLab AI features."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model family"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model identifier (optional)"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model identifier must be less than 255 characters."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model uses an API token"
@@ -3959,6 +3977,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Please select a model."
 msgstr ""
 
+msgid "AdminSelfHostedModels|Select an appropriate model family from the list of approved GitLab models."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Select model"
 msgstr ""
 
@@ -3966,6 +3987,9 @@ msgid "AdminSelfHostedModels|Self-hosted models"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Self-hosted models are an experimental feature."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Specify the URL endpoint where your self-hosted model is accessible"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}"
@@ -35025,6 +35049,9 @@ msgid "Model description"
 msgstr ""
 
 msgid "Model experiments"
+msgstr ""
+
+msgid "Model identifier"
 msgstr ""
 
 msgid "Model registry"
