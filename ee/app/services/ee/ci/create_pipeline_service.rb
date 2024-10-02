@@ -16,7 +16,7 @@ module EE
       def after_successful_creation_hook
         super
 
-        ::Onboarding::ProgressTrackingWorker.perform_async(project.namespace_id, 'pipeline_created')
+        ::Onboarding::ProgressService.async(project.namespace_id, 'pipeline_created')
       end
 
       override :validate_options!

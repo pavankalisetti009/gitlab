@@ -123,7 +123,7 @@ module EE
       def enqueue_onboarding_progress_action
         return unless at_least_one_member_created?
 
-        ::Onboarding::ProgressTrackingWorker.perform_async(member_created_namespace_id, 'user_added')
+        ::Onboarding::ProgressService.async(member_created_namespace_id, 'user_added')
       end
 
       def execute_notification_worker?

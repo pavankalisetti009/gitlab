@@ -198,18 +198,17 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
   end
 
   context 'when pipeline is not created' do
-    it 'does not schedule an onboarding progress update' do
+    it 'does not invoke an async onboarding progress update' do
       stub_ci_pipeline_yaml_file(nil)
-      expect(Onboarding::ProgressTrackingWorker).not_to receive(:perform_async)
+      expect(Onboarding::ProgressService).not_to receive(:async)
 
       create_pipeline!
     end
   end
 
   context 'when pipeline is created' do
-    it 'schedules an onboarding progress update' do
-      expect(Onboarding::ProgressTrackingWorker)
-        .to receive(:perform_async).with(project.namespace_id, 'pipeline_created')
+    it 'invokes an async onboarding progress update' do
+      expect(Onboarding::ProgressService).to receive(:async).with(project.namespace_id, 'pipeline_created')
 
       create_pipeline!
     end
