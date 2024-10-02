@@ -26,6 +26,7 @@ module Ai
             ConfigFiles::GoModules,
             ConfigFiles::JavaGradle,
             ConfigFiles::JavaMaven,
+            ConfigFiles::JavascriptNpmLock,
             ConfigFiles::KotlinGradle,
             ConfigFiles::PhpComposerLock,
             ConfigFiles::PhpComposer,
