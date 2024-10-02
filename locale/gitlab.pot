@@ -36240,9 +36240,6 @@ msgstr ""
 msgid "No matching work item found. Make sure you are adding a valid ID and you have access to the item."
 msgstr ""
 
-msgid "No members found"
-msgstr ""
-
 msgid "No memberships found"
 msgstr ""
 
