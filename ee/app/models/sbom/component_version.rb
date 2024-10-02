@@ -2,6 +2,10 @@
 
 module Sbom
   class ComponentVersion < Gitlab::Database::SecApplicationRecord
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :organization_id
+
     belongs_to :component, optional: false
     has_many :occurrences, inverse_of: :component_version
     belongs_to :organization, class_name: 'Organizations::Organization'

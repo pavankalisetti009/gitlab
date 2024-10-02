@@ -4,6 +4,9 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
   class DependencyListExport
     class Part < Gitlab::Database::SecApplicationRecord
       include FileStoreMounter
+      include SafelyChangeColumnDefault
+
+      columns_changing_default :organization_id
 
       self.table_name = 'dependency_list_export_parts'
 

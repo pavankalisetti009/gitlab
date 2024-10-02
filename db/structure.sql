@@ -10069,7 +10069,7 @@ CREATE TABLE dependency_list_export_parts (
     dependency_list_export_id bigint NOT NULL,
     start_id bigint NOT NULL,
     end_id bigint NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     file_store integer,
@@ -17866,7 +17866,7 @@ CREATE TABLE sbom_component_versions (
     component_id bigint NOT NULL,
     version text NOT NULL,
     source_package_name text,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     CONSTRAINT check_39636b9a8a CHECK ((char_length(source_package_name) <= 255)),
     CONSTRAINT check_e71cad08d3 CHECK ((char_length(version) <= 255))
 );
@@ -17887,7 +17887,7 @@ CREATE TABLE sbom_components (
     component_type smallint NOT NULL,
     name text NOT NULL,
     purl_type smallint,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     CONSTRAINT check_91a8f6ad53 CHECK ((char_length(name) <= 255))
 );
 
@@ -17960,7 +17960,7 @@ CREATE TABLE sbom_source_packages (
     purl_type smallint NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     CONSTRAINT check_8fba79abed CHECK ((char_length(name) <= 255))
 );
 
@@ -17979,7 +17979,7 @@ CREATE TABLE sbom_sources (
     updated_at timestamp with time zone NOT NULL,
     source_type smallint NOT NULL,
     source jsonb DEFAULT '{}'::jsonb NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL
+    organization_id bigint NOT NULL
 );
 
 CREATE SEQUENCE sbom_sources_id_seq
@@ -19972,7 +19972,7 @@ CREATE TABLE vulnerability_export_parts (
     vulnerability_export_id bigint NOT NULL,
     start_id bigint NOT NULL,
     end_id bigint NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     file_store integer,
     file text,
     created_at timestamp with time zone NOT NULL,
@@ -20002,7 +20002,7 @@ CREATE TABLE vulnerability_exports (
     file_store integer,
     format smallint DEFAULT 0 NOT NULL,
     group_id bigint,
-    organization_id bigint DEFAULT 1 NOT NULL
+    organization_id bigint NOT NULL
 );
 
 CREATE SEQUENCE vulnerability_exports_id_seq
