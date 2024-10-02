@@ -17,17 +17,5 @@ RSpec.describe Gitlab::UrlHelpers, feature_category: :shared do
     with_them do
       it { expect(described_class.normalized_base_url(url)).to eq(value) }
     end
-
-    context 'when `always_port` is true' do
-      where(:url, :value) do
-        'ssh://foo:bar@example.com' | 'ssh://example.com:22'
-        'http://foo:bar@example.com:3000/dir' | 'http://example.com:3000'
-        'http://foo:bar@example.com/dir' | 'http://example.com:80'
-      end
-
-      with_them do
-        it { expect(described_class.normalized_base_url(url, always_port: true)).to eq(value) }
-      end
-    end
   end
 end
