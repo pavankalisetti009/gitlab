@@ -29470,9 +29470,6 @@ msgstr ""
 msgid "Invalid name %{input} was given for this default stage, allowed names: %{names}"
 msgstr ""
 
-msgid "Invalid period"
-msgstr ""
-
 msgid "Invalid pin code."
 msgstr ""
 
