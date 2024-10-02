@@ -29,7 +29,7 @@ import ListComponentScope from 'ee/security_orchestration/components/policies/li
 import { DEFAULT_PROVIDE } from '../mocks';
 import {
   groups as includingGroups,
-  projects as excludingProjects,
+  projects as includingProjects,
   generateMockResponse,
   openDrawer,
 } from './utils';
@@ -37,8 +37,8 @@ import {
 Vue.use(VueApollo);
 
 const projectWithExceptionsScope = {
-  excludingProjects: {
-    nodes: excludingProjects,
+  includingProjects: {
+    nodes: [includingProjects[0], includingProjects[0]],
     pageInfo: {},
   },
 };
@@ -122,7 +122,7 @@ const defaultRequestHandlers = {
   linkedSppItemsResponse: mockLinkedSppItemsResponse(),
 };
 
-describe('Policies List all projects without exceptions policy scope', () => {
+describe('Policies List specific projects policy scope', () => {
   let wrapper;
   let requestHandlers;
 
@@ -182,9 +182,9 @@ describe('Policies List all projects without exceptions policy scope', () => {
 
       it.each`
         policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'All projects linked to this project except: test'}
-        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'All projects linked to this project except: test'}
-        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'All projects linked to this project except: test'}
+        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'2 projects: testtest'}
+        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'2 projects: testtest'}
+        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'2 projects: testtest'}
       `(
         'scoped to linked groups when project is an SPP for $policyType',
         async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
@@ -217,9 +217,9 @@ describe('Policies List all projects without exceptions policy scope', () => {
   describe('group level', () => {
     it.each`
       policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'All projects in this group except: test'}
-      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'All projects in this group except: test'}
-      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'All projects in this group except: test'}
+      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'2 projects: testtest'}
+      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'2 projects: testtest'}
+      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'2 projects: testtest'}
     `(
       'scoped to linked groups on a group level for $policyType',
       async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
