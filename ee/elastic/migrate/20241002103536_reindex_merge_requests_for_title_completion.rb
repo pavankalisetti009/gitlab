@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ReindexMergeRequestsForTitleCompletion < Elastic::Migration
-  space_requirements!
+  skip_if -> { !Gitlab::Saas.feature_available?(:advanced_search) }
 
   def migrate
     Elastic::ReindexingTask.create!(targets: %w[MergeRequest], options: { skip_pending_migrations_check: true })
@@ -9,9 +9,5 @@ class ReindexMergeRequestsForTitleCompletion < Elastic::Migration
 
   def completed?
     true
-  end
-
-  def space_required_bytes
-    3 * helper.index_size_bytes(index_name: MergeRequest.index_name)
   end
 end

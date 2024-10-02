@@ -31,10 +31,6 @@ module Elastic
                 tokenizer: 'standard',
                 filter: %w[word_delimiter_graph_filter asciifolding lowercase stemmer flatten_graph remove_duplicates]
               },
-              title_completion_analyzer: {
-                tokenizer: 'standard',
-                filter: %w[lowercase stop]
-              },
               default: {
                 tokenizer: 'standard',
                 filter: %w[lowercase stemmer]
