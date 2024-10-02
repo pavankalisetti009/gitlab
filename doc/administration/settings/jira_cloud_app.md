@@ -325,9 +325,11 @@ Access through OAuth is only needed for the time a user configures the GitLab fo
 
 ## Using a reverse proxy
 
-To use the GitLab for Jira Cloud app on a self-managed instance that cannot be accessed
-from the internet, the self-managed instance must be accessible from Jira Cloud.
-You can use a reverse proxy, but keep the following in mind:
+You should avoid using a reverse proxy in front of your self-managed instance if possible.
+Instead, consider using a public IP address and securing the domain with a firewall.
+
+If you must use a reverse proxy for the GitLab for Jira Cloud app on a self-managed instance
+that cannot be accessed directly from the internet, keep the following in mind:
 
 - When you [install the GitLab for Jira Cloud app from the Atlassian Marketplace](#install-the-gitlab-for-jira-cloud-app-from-the-atlassian-marketplace),
   use a client with access to both the internal GitLab FQDN and the reverse proxy FQDN.
