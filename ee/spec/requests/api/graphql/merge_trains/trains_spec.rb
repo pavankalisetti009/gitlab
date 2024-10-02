@@ -6,7 +6,8 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
   include GraphqlHelpers
   include MergeTrainsHelpers
 
-  let_it_be(:target_project) { create(:project, :repository) }
+  let_it_be(:private_project) { create(:project, :repository) }
+  let(:target_project) { private_project }
   let(:car_fields) do
     <<~QUERY
       nodes {
@@ -66,16 +67,16 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
   end
 
   before_all do
-    target_project.ci_cd_settings.update!(merge_trains_enabled: true)
-    target_project.add_reporter(reporter)
-    target_project.add_guest(guest)
-    target_project.add_maintainer(maintainer)
-    create_merge_request_on_train(project: target_project, author: maintainer)
-    create_merge_request_on_train(project: target_project, source_branch: 'branch-1', author: maintainer)
-    create_merge_request_on_train(project: target_project, source_branch: 'branch-2', status: :merged,
+    private_project.ci_cd_settings.update!(merge_trains_enabled: true)
+    private_project.add_reporter(reporter)
+    private_project.add_guest(guest)
+    private_project.add_maintainer(maintainer)
+    create_merge_request_on_train(project: private_project, author: maintainer)
+    create_merge_request_on_train(project: private_project, source_branch: 'branch-1', author: maintainer)
+    create_merge_request_on_train(project: private_project, source_branch: 'branch-2', status: :merged,
       author: maintainer)
-    create_merge_request_on_train(project: target_project, target_branch: 'feature-1', author: maintainer)
-    create_merge_request_on_train(project: target_project, target_branch: 'feature-2', status: :merged,
+    create_merge_request_on_train(project: private_project, target_branch: 'feature-1', author: maintainer)
+    create_merge_request_on_train(project: private_project, target_branch: 'feature-2', status: :merged,
       author: maintainer)
     create(:merge_train_car, target_project: create(:project), target_branch: 'master')
   end
@@ -108,6 +109,7 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
 
     it 'returns a resource not available error' do
       post_query
+
       expect_graphql_errors_to_include(
         "The resource that you are attempting to access does not exist " \
           "or you don't have permission to perform this action"
@@ -127,6 +129,50 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
     it 'returns nil' do
       post_query
       expect(result).to be_nil
+    end
+  end
+
+  context 'when logged out' do
+    let(:user) { nil }
+
+    context 'with a public project' do
+      let_it_be(:public_project) { create(:project, :public) }
+      let(:target_project) { public_project }
+
+      before_all do
+        public_project.ci_cd_settings.update!(merge_trains_enabled: true)
+        create_merge_request_on_train(project: public_project, author: maintainer)
+        create_merge_request_on_train(project: public_project, target_branch: 'feature-1', author: maintainer)
+      end
+
+      it_behaves_like 'fetches the requested trains' do
+        let(:expected_branches) { %w[master feature-1] }
+
+        before do
+          public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::ENABLED)
+        end
+      end
+
+      context 'when merge request access level is PRIVATE' do
+        it 'returns a resource not available error' do
+          public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
+
+          post_query
+
+          expect_graphql_errors_to_include(
+            "The resource that you are attempting to access does not exist " \
+              "or you don't have permission to perform this action"
+          )
+        end
+      end
+    end
+
+    context 'with a private project' do
+      it 'returns nil for project' do
+        post_query
+
+        expect(graphql_data_at(:project)).to be_nil
+      end
     end
   end
 
