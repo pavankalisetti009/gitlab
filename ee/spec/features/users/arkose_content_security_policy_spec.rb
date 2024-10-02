@@ -6,10 +6,21 @@ RSpec.describe 'ArkoseLabs content security policy', feature_category: :system_a
   include ContentSecurityPolicyHelpers
 
   shared_examples 'configures Content Security Policy headers correctly' do |controller_class|
-    it 'adds ArkoseLabs URL to Content Security Policy headers' do
+    it 'adds Arkose host value to the correct Content Security Policy directives', :aggregate_failures do
       visit page_path
 
-      expect(response_headers['Content-Security-Policy']).to include('https://*.arkoselabs.com')
+      arkose_url = 'https://*.arkoselabs.com'
+      csp = response_headers['Content-Security-Policy']
+      directives = csp.split(';').map(&:strip)
+      script_src = directives.find { |d| /^script-src/.match d }
+      frame_src = directives.find { |d| /^frame-src/.match d }
+      connect_src = directives.find { |d| /^connect-src/.match d }
+      style_src = directives.find { |d| /^style-src/.match d }
+
+      expect(script_src).to include(arkose_url)
+      expect(frame_src).to include(arkose_url)
+      expect(connect_src).to include(arkose_url)
+      expect(style_src).to include(%q(unsafe-inline))
     end
 
     context 'when there is no global CSP config' do

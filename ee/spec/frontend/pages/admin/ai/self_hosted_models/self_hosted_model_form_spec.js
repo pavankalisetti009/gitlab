@@ -63,8 +63,10 @@ describe('SelfHostedModelForm', () => {
   });
 
   const findGlForm = () => wrapper.findComponent(GlForm);
-  const findNameInputField = () => wrapper.findByLabelText('Deployment name');
-  const findEndpointInputField = () => wrapper.findByLabelText('Endpoint');
+  const findNameInputField = () => wrapper.findByLabelText('Deployment name', { exact: false });
+  const findEndpointInputField = () => wrapper.findByLabelText('Endpoint', { exact: false });
+  const findIdentifierInputField = () =>
+    wrapper.findByLabelText('Model identifier', { exact: false });
   const findApiKeyInputField = () => wrapper.findComponent(InputCopyToggleVisibility);
   const findCollapsibleListBox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findCreateButton = () => wrapper.find('button[type="submit"]');
@@ -218,6 +220,7 @@ describe('SelfHostedModelForm', () => {
       await findNameInputField().setValue('test deployment');
       await findEndpointInputField().setValue('http://test.com');
       await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findIdentifierInputField().setValue('provider/model-name');
 
       wrapper.find('form').trigger('submit.prevent');
 
@@ -229,6 +232,7 @@ describe('SelfHostedModelForm', () => {
           endpoint: 'http://test.com',
           model: 'MISTRAL',
           apiToken: '',
+          identifier: 'provider/model-name',
         },
       });
     });
@@ -268,6 +272,7 @@ describe('SelfHostedModelForm', () => {
       await findEndpointInputField().setValue('http://test.com');
       await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
       await findApiKeyInputField().vm.$emit('input', 'abc123');
+      await findIdentifierInputField().setValue('provider/model-name');
 
       wrapper.find('form').trigger('submit.prevent');
 
@@ -280,6 +285,7 @@ describe('SelfHostedModelForm', () => {
           endpoint: 'http://test.com',
           model: 'MISTRAL',
           apiToken: 'abc123',
+          identifier: 'provider/model-name',
         },
       });
     });

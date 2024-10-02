@@ -25,7 +25,7 @@ export const createValueStream = ({ commit, dispatch, getters }, data) => {
 };
 
 export const updateValueStream = (
-  { commit, dispatch, getters },
+  { state, commit, dispatch, getters },
   { id: valueStreamId, ...data },
 ) => {
   const { namespacePath } = getters;
@@ -33,7 +33,7 @@ export const updateValueStream = (
 
   return apiUpdateValueStream({ namespacePath, valueStreamId, data })
     .then(({ data: newValueStream }) => {
-      if (!gon.features?.vsaStandaloneSettingsPage) {
+      if (!state.features.vsaStandaloneSettingsPage) {
         commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
         return dispatch('fetchCycleAnalyticsData');
       }

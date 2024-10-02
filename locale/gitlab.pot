@@ -3857,6 +3857,9 @@ msgstr ""
 msgid "AdminProjects|Delete Project %{projectName}?"
 msgstr ""
 
+msgid "AdminSelfHostedModels|A unique and descriptive name for your deployment."
+msgstr ""
+
 msgid "AdminSelfHostedModels|API Key (optional)"
 msgstr ""
 
@@ -3926,10 +3929,25 @@ msgstr ""
 msgid "AdminSelfHostedModels|Get started with Self‑hosted models"
 msgstr ""
 
+msgid "AdminSelfHostedModels|If necessary, provide the model identifier in the form of provider/model-name"
+msgstr ""
+
+msgid "AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Manage AI models that can be used for GitLab AI features."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model family"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model identifier (optional)"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model identifier must be less than 255 characters."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model uses an API token"
@@ -3959,6 +3977,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Please select a model."
 msgstr ""
 
+msgid "AdminSelfHostedModels|Select an appropriate model family from the list of approved GitLab models."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Select model"
 msgstr ""
 
@@ -3966,6 +3987,9 @@ msgid "AdminSelfHostedModels|Self-hosted models"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Self-hosted models are an experimental feature."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Specify the URL endpoint where your self-hosted model is accessible"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}"
@@ -26548,9 +26572,6 @@ msgstr ""
 msgid "GroupSettings|Emails are not encrypted. Concerned administrators may want to disable diff previews."
 msgstr ""
 
-msgid "GroupSettings|Enable GitLab Duo features for this group. %{link_start}Learn more%{link_end}."
-msgstr ""
-
 msgid "GroupSettings|Enable caching of hierarchical objects (subgroups and projects) to improve the performance of group-level features within a large group."
 msgstr ""
 
@@ -26684,9 +26705,6 @@ msgid "GroupSettings|This setting is applied on %{ancestor_group}. You can overr
 msgstr ""
 
 msgid "GroupSettings|Transfer group"
-msgstr ""
-
-msgid "GroupSettings|Use GitLab Duo features"
 msgstr ""
 
 msgid "GroupSettings|Users can create %{link_start_project}project access tokens%{link_end} and %{link_start_group}group access tokens%{link_end} in this group"
@@ -35025,6 +35043,9 @@ msgid "Model description"
 msgstr ""
 
 msgid "Model experiments"
+msgstr ""
+
+msgid "Model identifier"
 msgstr ""
 
 msgid "Model registry"
@@ -50318,6 +50339,9 @@ msgstr ""
 msgid "SecurityReports|Failed updating vulnerabilities with the following IDs: %{ids}"
 msgstr ""
 
+msgid "SecurityReports|GitLab Duo (AI)"
+msgstr ""
+
 msgid "SecurityReports|Group your vulnerabilities by one of the provided categories. Leave feedback or suggestions in %{feedbackIssueStart}this issue%{feedbackIssueEnd}."
 msgstr ""
 
@@ -50558,6 +50582,12 @@ msgid "SecurityReports|Unable to add %{invalidProjectsMessage}: %{errorMessage}"
 msgstr ""
 
 msgid "SecurityReports|Undo dismiss"
+msgstr ""
+
+msgid "SecurityReports|Vulnerability Resolution available"
+msgstr ""
+
+msgid "SecurityReports|Vulnerability Resolution unavailable"
 msgstr ""
 
 msgid "SecurityReports|Vulnerability report"
