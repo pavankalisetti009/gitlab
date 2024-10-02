@@ -1,6 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlCollapsibleListbox, GlModal, GlModalDirective } from '@gitlab/ui';
-import { pikadayToString } from '~/lib/utils/datetime_utility';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
 import { __, sprintf } from '~/locale';
 import { downloadi18n as i18n, lastXDays } from '../constants';
@@ -39,9 +39,9 @@ export default {
     },
     csvReportPath() {
       const today = new Date();
-      const endDate = pikadayToString(today);
+      const endDate = toISODateFormat(today);
       today.setDate(today.getDate() - this.selectedDateRange.value);
-      const startDate = pikadayToString(today);
+      const startDate = toISODateFormat(today);
 
       const queryParams = {
         start_date: startDate,

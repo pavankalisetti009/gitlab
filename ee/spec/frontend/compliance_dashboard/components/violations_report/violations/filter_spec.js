@@ -8,7 +8,7 @@ import {
   convertProjectIdsToGraphQl,
 } from 'ee/compliance_dashboard/utils';
 import ProjectsDropdownFilter from '~/analytics/shared/components/projects_dropdown_filter.vue';
-import { getDateInPast, pikadayToString } from '~/lib/utils/datetime_utility';
+import { getDateInPast, toISODateFormat } from '~/lib/utils/datetime_utility';
 import { CURRENT_DATE } from 'ee/audit_events/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getGroupProjectsQuery from 'ee/compliance_dashboard/graphql/violation_group_projects.query.graphql';
@@ -25,8 +25,8 @@ describe('ViolationFilter component', () => {
   const startDate = getDateInPast(CURRENT_DATE, 20);
   const endDate = getDateInPast(CURRENT_DATE, 4);
   const dateRangeQuery = {
-    mergedAfter: pikadayToString(startDate),
-    mergedBefore: pikadayToString(endDate),
+    mergedAfter: toISODateFormat(startDate),
+    mergedBefore: toISODateFormat(endDate),
   };
   const defaultProjects = createDefaultProjects(2);
   const projectsResponse = createDefaultProjectsResponse(defaultProjects);

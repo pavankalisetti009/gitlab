@@ -1,4 +1,4 @@
-import { parsePikadayDate, pikadayToString } from '~/lib/utils/datetime_utility';
+import { parsePikadayDate, toISODateFormat } from '~/lib/utils/datetime_utility';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   AVAILABLE_TOKEN_TYPES,
@@ -40,8 +40,8 @@ export const createAuditEventSearchQuery = ({ filterValue, startDate, endDate, s
   const filterData = entityValue?.value.data;
 
   const params = {
-    created_after: startDate ? pikadayToString(startDate) : null,
-    created_before: endDate ? pikadayToString(endDate) : null,
+    created_after: startDate ? toISODateFormat(startDate) : null,
+    created_before: endDate ? toISODateFormat(endDate) : null,
     sort: sortBy,
     entity_type: entityType,
     entity_id: null,

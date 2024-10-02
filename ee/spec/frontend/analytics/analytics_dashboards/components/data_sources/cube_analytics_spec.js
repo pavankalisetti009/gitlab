@@ -6,7 +6,7 @@ import {
   TODAY,
   SEVEN_DAYS_AGO,
 } from 'ee/vue_shared/components/customizable_dashboard/filters/constants';
-import { pikadayToString } from '~/lib/utils/datetime_utility';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import {
   mockResultSet,
   mockFilters,
@@ -71,7 +71,7 @@ describe('Cube Analytics Data Source', () => {
           {
             member: 'TrackedEvents.derivedTstamp',
             operator: 'inDateRange',
-            values: [pikadayToString(SEVEN_DAYS_AGO), pikadayToString(TODAY)],
+            values: [toISODateFormat(SEVEN_DAYS_AGO), toISODateFormat(TODAY)],
           },
         ],
       };
@@ -294,8 +294,8 @@ describe('Cube Analytics Data Source', () => {
                 member: expectedDimension,
                 operator: 'inDateRange',
                 values: [
-                  pikadayToString(mockFilters.startDate),
-                  pikadayToString(mockFilters.endDate),
+                  toISODateFormat(mockFilters.startDate),
+                  toISODateFormat(mockFilters.endDate),
                 ],
               },
             ],

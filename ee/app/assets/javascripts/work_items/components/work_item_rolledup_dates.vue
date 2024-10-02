@@ -12,7 +12,7 @@ import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import { Mousetrap } from '~/lib/mousetrap';
 import { keysFor, SIDEBAR_CLOSE_WIDGET } from '~/behaviors/shortcuts/keybindings';
-import { formatDate, newDate, pikadayToString } from '~/lib/utils/datetime_utility';
+import { formatDate, newDate, toISODateFormat } from '~/lib/utils/datetime_utility';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
@@ -179,8 +179,8 @@ export default {
               ),
               {
                 ...workItemDatesWidget,
-                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
+                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
               },
             ],
           },
@@ -293,8 +293,8 @@ export default {
               rolledUpDates: {
                 dueDateIsFixed: true,
                 startDateIsFixed: true,
-                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
+                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
               },
             },
           },
@@ -313,8 +313,8 @@ export default {
               rolledupDatesWidget: {
                 dueDateIsFixed: true,
                 startDateIsFixed: true,
-                dueDateFixed: this.dirtyDueDate ? pikadayToString(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? pikadayToString(this.dirtyStartDate) : null,
+                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
               },
             },
           },

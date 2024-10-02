@@ -1,7 +1,7 @@
 import { isEqual } from 'lodash';
 import { convertToGraphQLIds, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
-import { formatDate, getDateInPast, pikadayToString } from '~/lib/utils/datetime_utility';
+import { formatDate, getDateInPast, toISODateFormat } from '~/lib/utils/datetime_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
 import { CURRENT_DATE } from '../audit_events/constants';
@@ -35,8 +35,8 @@ export const parseViolationsQueryFilter = ({
 });
 
 export const buildDefaultViolationsFilterParams = (queryString) => ({
-  mergedAfter: pikadayToString(getDateInPast(CURRENT_DATE, 30)),
-  mergedBefore: pikadayToString(CURRENT_DATE),
+  mergedAfter: toISODateFormat(getDateInPast(CURRENT_DATE, 30)),
+  mergedBefore: toISODateFormat(CURRENT_DATE),
   ...queryToObject(queryString, { gatherArrays: true }),
 });
 

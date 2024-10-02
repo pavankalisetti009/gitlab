@@ -3,7 +3,7 @@
 import { GlDaterangePicker, GlSearchBoxByClick } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ProjectsDropdownFilter from '~/analytics/shared/components/projects_dropdown_filter.vue';
-import { pikadayToString, parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { toISODateFormat, parsePikadayDate } from '~/lib/utils/datetime_utility';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import { CURRENT_DATE } from 'ee/audit_events/constants';
@@ -74,8 +74,8 @@ export default {
     },
     dateRangeChanged({ startDate = this.defaultStartDate, endDate = this.defaultEndDate }) {
       this.updateFilter({
-        mergedAfter: pikadayToString(startDate),
-        mergedBefore: pikadayToString(endDate),
+        mergedAfter: toISODateFormat(startDate),
+        mergedBefore: toISODateFormat(endDate),
       });
     },
     updateFilter(query) {

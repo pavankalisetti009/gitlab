@@ -358,6 +358,19 @@ export const timeToHoursMinutes = (time = '') => {
 };
 
 /**
+ * Converts a Date object to a date-only string in the ISO format `yyyy-mm-dd`
+ *
+ * @param {Date} date A Date object
+ * @returns {string} A string in the format `yyyy-mm-dd`
+ */
+export const toISODateFormat = (date) => {
+  const day = padWithZeros(date.getDate());
+  const month = padWithZeros(date.getMonth() + 1);
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * This combines a date and a time and returns the computed Date's ISO string representation.
  *
  * @param   {Date}   date Date object representing the base date.
