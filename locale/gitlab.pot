@@ -5621,6 +5621,9 @@ msgstr ""
 msgid "All paths must be unlocked"
 msgstr ""
 
+msgid "All policy rules must be satisfied."
+msgstr ""
+
 msgid "All project members"
 msgstr ""
 

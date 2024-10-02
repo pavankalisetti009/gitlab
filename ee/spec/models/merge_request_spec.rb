@@ -29,7 +29,49 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it { is_expected.to have_many(:approval_merge_request_rule_sources).through(:approval_rules) }
     it { is_expected.to have_many(:approval_project_rules).through(:approval_merge_request_rule_sources) }
     it { is_expected.to have_many(:status_check_responses).class_name('MergeRequests::StatusCheckResponse').inverse_of(:merge_request) }
-    it { is_expected.to have_many(:compliance_violations).class_name('MergeRequests::ComplianceViolation') }
+    it { is_expected.to have_many(:scan_result_policy_reads_through_violations).through(:scan_result_policy_violations).class_name('Security::ScanResultPolicyRead') }
+    it { is_expected.to have_many(:scan_result_policy_reads_through_approval_rules).through(:approval_rules).class_name('Security::ScanResultPolicyRead') }
+
+    describe 'policy violations' do
+      let(:policy_1) { create(:scan_result_policy_read, project: project) }
+      let(:policy_2) { create(:scan_result_policy_read, project: project) }
+      let(:policy_3) { create(:scan_result_policy_read, project: project) }
+      let(:policy_4) { create(:scan_result_policy_read, project: project) }
+
+      let!(:running_violation_1) do
+        create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_1, violation_data: nil)
+      end
+
+      let!(:running_violation_2) do
+        create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_2, violation_data: nil)
+      end
+
+      let!(:completed_violation_1) do
+        create(:scan_result_policy_violation, :completed, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_3, violation_data: nil)
+      end
+
+      let!(:completed_violation_2) do
+        create(:scan_result_policy_violation, :completed, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_4, violation_data: nil)
+      end
+
+      describe '.running_scan_result_policy_violations' do
+        it 'returns only the running violations' do
+          expect(merge_request.running_scan_result_policy_violations).to contain_exactly(running_violation_1,
+            running_violation_2)
+        end
+      end
+
+      describe '.completed_scan_result_policy_violations' do
+        it 'returns only the completed violations' do
+          expect(merge_request.completed_scan_result_policy_violations).to contain_exactly(completed_violation_1,
+            completed_violation_2)
+        end
+      end
+    end
 
     describe 'approval_rules association' do
       describe 'applicable_post_merge_approval_rules' do
