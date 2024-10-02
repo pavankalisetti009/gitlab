@@ -14,16 +14,13 @@ module RemoteDevelopment
     # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
     # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     has_one :remote_development_agent_config, through: :agent, source: :remote_development_agent_config
-
-    # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-    has_one :workspaces_agent_config, through: :agent, source: :workspaces_agent_config
     has_many :workspace_variables, class_name: 'RemoteDevelopment::WorkspaceVariable', inverse_of: :workspace
 
     validates :user, presence: true
     validates :agent, presence: true
     validates :editor, presence: true
     validates :personal_access_token, presence: true
-    validates :workspaces_agent_config, presence: true, if: -> { agent }
+    validates :workspaces_agent_config_version, presence: true, if: -> { agent&.workspaces_agent_config }
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
@@ -31,6 +28,10 @@ module RemoteDevelopment
     validates :actual_state, inclusion: { in: VALID_ACTUAL_STATES }
     validates :editor, inclusion: { in: ['webide'], message: "'webide' is currently the only supported editor" }
 
+    validate :validate_workspaces_agent_config_present, if: -> { agent }
+    validate :validate_workspaces_agent_config_version_is_within_range, if: -> do
+      workspaces_agent_config && workspaces_agent_config_version
+    end
     validate :validate_agent_config_enabled, if: ->(workspace) do
       workspace.new_record? && workspaces_agent_config
     end
@@ -69,9 +70,35 @@ module RemoteDevelopment
       )
     end
 
+    before_validation :set_workspaces_agent_config_version,
+      on: :create, if: -> { workspaces_agent_config }
+
     # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32287
     before_save :touch_desired_state_updated_at, if: ->(workspace) do
       workspace.new_record? || workspace.desired_state_changed?
+    end
+
+    def workspaces_agent_config
+      # If no agent or workspaces_agent_configs record exists, return nil
+      return unless agent&.workspaces_agent_config
+
+      actual_workspaces_agent_configs_table_record = agent.workspaces_agent_config
+
+      # TODO: This is only temporary until we make the workspaces_agent_config_version field NOT NULL.
+      #       After 17.5, we will replace this line with an exception.
+      #       See https://gitlab.com/gitlab-org/gitlab/-/issues/493992
+      return actual_workspaces_agent_configs_table_record if workspaces_agent_config_version.nil?
+
+      # If the workspaces_agent_config_version is not nil, then we will try to retrieve and reify the version
+      # from the PaperTrail versions table. If we don't find one, that means that the version is out of range
+      # (for a valid record, this should only ever be the case where the length of the versions array + 1).
+      # In this case we should return the latest version of the workspaces_agent_config.
+      # The `try()` approach avoids having to do a length check on the versions array, which would result in
+      # multiple `COUNT` queries to the database. The `try()` approach also ensures we can handle any invalid
+      # version numbers gracefully by just defaulting to the actual workspaces_agent_config record.
+      reified_version =
+        actual_workspaces_agent_configs_table_record.versions[workspaces_agent_config_version].try(:reify)
+      reified_version || actual_workspaces_agent_configs_table_record
     end
 
     def desired_state_updated_more_recently_than_last_response_to_agent?
@@ -127,6 +154,16 @@ module RemoteDevelopment
 
     private
 
+    def set_workspaces_agent_config_version
+      # If no versions for this workspace exist yet in the `workspaces_agent_config_versions` table, then
+      # the `workspace.workspaces_agent_config_version` field will be set to `0`.
+      # This indicates that the actual associated `agent.workspaces_agent_config` should be used directly.
+      # Otherwise, if a version exists in the `workspaces_agent_config_versions` table, then
+      # the `workspace.workspaces_agent_config_version` field will be set to `1` or greater, which
+      # indicates that the corresponding PaperTrail reified version of the model should be used.
+      self.workspaces_agent_config_version = agent.workspaces_agent_config.versions.size
+    end
+
     def validate_max_hours_before_termination
       agent_termination_limit = workspaces_agent_config.max_hours_before_termination_limit
       return true if max_hours_before_termination <= agent_termination_limit
@@ -135,10 +172,31 @@ module RemoteDevelopment
       false
     end
 
+    def validate_workspaces_agent_config_version_is_within_range
+      if workspaces_agent_config_version < 0
+        errors.add(:workspaces_agent_config_version, _('must be greater than or equal to 0'))
+        return false
+      end
+
+      if workspaces_agent_config_version > agent.workspaces_agent_config.versions.size
+        errors.add(:workspaces_agent_config_version, _('must be no greater than the number of agent config versions'))
+        return false
+      end
+
+      true
+    end
+
     def validate_agent_config_enabled
       return true if workspaces_agent_config.enabled
 
       errors.add(:agent, _("must have the 'enabled' flag set to true"))
+      false
+    end
+
+    def validate_workspaces_agent_config_present
+      return true if agent.workspaces_agent_config.present?
+
+      errors.add(:agent, _("must have an associated workspaces agent config"))
       false
     end
 
