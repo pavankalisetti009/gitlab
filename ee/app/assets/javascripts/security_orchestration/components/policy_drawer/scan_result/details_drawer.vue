@@ -1,4 +1,5 @@
 <script>
+import { GlSprintf } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { BOT_MESSAGE_TYPE, fromYaml } from '../../policy_editor/scan_result/lib';
@@ -17,6 +18,7 @@ export default {
     scanResult: s__('SecurityOrchestration|Merge request approval'),
   },
   components: {
+    GlSprintf,
     ToggleList,
     DrawerLayout,
     InfoRow,
@@ -108,12 +110,16 @@ export default {
         <approvals :action="requireApproval" :approvers="approvers" />
         <div
           v-for="(
-            { summary, branchExceptions, criteriaMessage, criteriaList }, idx
+            { summary, branchExceptions, licenses, criteriaMessage, criteriaList }, idx
           ) in humanizedRules"
           :key="idx"
           class="gl-pt-5"
         >
-          {{ summary }}
+          <gl-sprintf :message="summary">
+            <template #licenses>
+              <toggle-list data-testid="licences-list" class="gl-mb-2" :items="licenses" />
+            </template>
+          </gl-sprintf>
           <toggle-list
             v-if="showBranchExceptions(branchExceptions)"
             class="gl-mb-2"

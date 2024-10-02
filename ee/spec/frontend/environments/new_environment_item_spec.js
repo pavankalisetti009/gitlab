@@ -1,8 +1,7 @@
 import VueApollo from 'vue-apollo';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { stubTransition } from 'helpers/stub_transition';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EnvironmentItem from '~/environments/components/new_environment_item.vue';
 import EnvironmentAlert from 'ee/environments/components/environment_alert.vue';
 import EnvironmentApproval from 'ee/environments/components/environment_approval.vue';
@@ -13,8 +12,6 @@ Vue.use(VueApollo);
 
 describe('~/environments/components/new_environment_item.vue', () => {
   let wrapper;
-  let alert;
-  let approval;
 
   const createApolloProvider = () => {
     return createMockApollo([
@@ -41,35 +38,33 @@ describe('~/environments/components/new_environment_item.vue', () => {
     ]);
   };
 
-  const createWrapper = async ({ propsData = {}, apolloProvider } = {}) => {
-    wrapper = mountExtended(EnvironmentItem, {
+  const createWrapper = ({ propsData = {}, apolloProvider } = {}) => {
+    wrapper = shallowMountExtended(EnvironmentItem, {
       apolloProvider,
       propsData: { environment: resolvedEnvironment, ...propsData },
       provide: { helpPagePath: '/help', projectId: '1', projectPath: '/1' },
-      stubs: { transition: stubTransition() },
+      stubs: { EnvironmentAlert, EnvironmentApproval },
     });
-
-    await nextTick();
-
-    alert = wrapper.findComponent(EnvironmentAlert);
-    approval = wrapper.findComponent(EnvironmentApproval);
   };
 
-  it('shows an alert if one is opened', async () => {
+  const findAlert = () => wrapper.findComponent(EnvironmentAlert);
+  const findApproval = () => wrapper.findComponent(EnvironmentApproval);
+
+  it('shows an alert if one is opened', () => {
     const environment = { ...resolvedEnvironment, hasOpenedAlert: true };
-    await createWrapper({ propsData: { environment }, apolloProvider: createApolloProvider() });
+    createWrapper({ propsData: { environment }, apolloProvider: createApolloProvider() });
 
-    expect(alert.exists()).toBe(true);
-    expect(alert.props('environment')).toBe(environment);
+    expect(findAlert().exists()).toBe(true);
+    expect(findAlert().props('environment')).toBe(environment);
   });
 
-  it('does not show an alert if one is opened', async () => {
-    await createWrapper({ apolloProvider: createApolloProvider() });
+  it('does not show an alert if one is opened', () => {
+    createWrapper({ apolloProvider: createApolloProvider() });
 
-    expect(alert.exists()).toBe(false);
+    expect(findAlert().exists()).toBe(false);
   });
 
-  it('provides necessary data to environment-approval component', async () => {
+  it('provides necessary data to environment-approval component', () => {
     const upcomingDeployment = resolvedEnvironment.lastDeployment;
     const environment = {
       ...resolvedEnvironment,
@@ -77,9 +72,9 @@ describe('~/environments/components/new_environment_item.vue', () => {
       upcomingDeployment,
       requiredApprovalCount: 2,
     };
-    await createWrapper({ propsData: { environment }, apolloProvider: createApolloProvider() });
+    createWrapper({ propsData: { environment }, apolloProvider: createApolloProvider() });
 
-    expect(approval.props()).toMatchObject({
+    expect(findApproval().props()).toMatchObject({
       requiredApprovalCount: 2,
       deploymentWebPath: upcomingDeployment.webPath,
     });

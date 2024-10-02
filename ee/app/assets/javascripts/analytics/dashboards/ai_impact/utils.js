@@ -66,21 +66,21 @@ export const generateTableColumns = (now) => [
   {
     key: 'metric',
     label: __('Metric'),
-    thClass: 'gl-w-2/10',
+    thClass: 'gl-w-3/20',
   },
   ...generateDateRanges(now),
   {
     key: 'change',
     label: sprintf(__('Change (%%)')),
     description: __('Past 6 Months'),
-    thClass: 'gl-w-1/10',
+    thClass: 'gl-w-3/20',
   },
   {
     key: 'chart',
     label: __('Trend'),
     start: nMonthsBefore(now, 6),
     end: now,
-    thClass: 'gl-w-1/20',
+    thClass: 'gl-w-1/10',
     tdClass: '!gl-py-2',
   },
 ];
@@ -209,23 +209,29 @@ export const calculateRate = ({ numerator, denominator }) => {
 
 /**
  * Determines the metrics that should not be rendered in the comparison table due to
- * lack of permissions.
+ * lack of permissions. The returned list will be mutually exclusive from the metrics
+ * already excluded from the table (`exludeMetrics`)
  *
+ * @param {Array} excludeMetrics List of metric identifiers that are already removed
  * @param {Permissions}
  * @returns {Array} The metrics restricted due to lack of permissions
  */
-export const getRestrictedTableMetrics = ({
-  readDora4Analytics,
-  readCycleAnalytics,
-  readSecurityResource,
-}) =>
-  [
+export const getRestrictedTableMetrics = (
+  excludeMetrics,
+  { readDora4Analytics, readCycleAnalytics, readSecurityResource },
+) => {
+  const restricted = [
     [SUPPORTED_DORA_METRICS, readDora4Analytics],
     [SUPPORTED_FLOW_METRICS, readCycleAnalytics],
     [SUPPORTED_VULNERABILITY_METRICS, readSecurityResource],
   ].reduce((restrictedMetrics, [metrics, isAllowed]) => {
     return isAllowed ? restrictedMetrics : [...restrictedMetrics, ...metrics];
   }, []);
+
+  // Excluded/restricted metric sets should be mutually exclusive,
+  // so we need to remove any overlap.
+  return restricted.filter((metric) => !excludeMetrics.includes(metric));
+};
 
 /**
  * @typedef {Array<String>} MetricIds

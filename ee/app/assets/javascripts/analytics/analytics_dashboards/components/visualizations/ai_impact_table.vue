@@ -16,6 +16,12 @@ export default {
       required: true,
     },
   },
+  computed: {
+    excludeMetrics() {
+      const { filters: { excludeMetrics = [] } = {} } = this.data;
+      return excludeMetrics;
+    },
+  },
 };
 </script>
 <template>
@@ -30,6 +36,7 @@ export default {
       v-else
       :namespace="data.namespace"
       :is-project="isProject"
+      :exclude-metrics="excludeMetrics"
       @set-alerts="$emit('set-alerts', $event)"
     />
   </group-or-project-provider>

@@ -17,6 +17,8 @@ describe('AI Impact Table Visualization', () => {
 
   const namespace = 'Klaptrap';
   const title = `Metric trends for group: ${namespace}`;
+  const excludeMetrics = ['thing1', 'thing2'];
+  const filters = { excludeMetrics };
 
   const createWrapper = () => {
     wrapper = shallowMountExtended(AiImpactTable, {
@@ -24,7 +26,7 @@ describe('AI Impact Table Visualization', () => {
         [GetGroupOrProjectQuery, mockGroupOrProjectRequestHandler],
       ]),
       propsData: {
-        data: { namespace, title },
+        data: { namespace, title, filters },
       },
       stubs: { GroupOrProjectProvider },
     });
@@ -73,6 +75,7 @@ describe('AI Impact Table Visualization', () => {
     it('renders the metric table', () => {
       expect(findMetricTable().props()).toMatchObject({
         namespace,
+        excludeMetrics,
         isProject: false,
       });
     });

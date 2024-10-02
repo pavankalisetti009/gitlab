@@ -254,7 +254,7 @@ describe('ScopeInfoRow', () => {
       );
     });
 
-    it('renders group scope when groups and project exceptions are provided on project level', () => {
+    it('does not render group scope when groups and project exceptions are provided on project level', () => {
       createComponent({
         propsData: {
           policyScope: {
@@ -267,13 +267,47 @@ describe('ScopeInfoRow', () => {
           },
         },
         provide: {
-          namaspaceType: NAMESPACE_TYPES.PROJECT,
+          namespaceType: NAMESPACE_TYPES.PROJECT,
           glFeatures: {
-            policyGroupScope: true,
+            policyGroupScopeProject: true,
           },
         },
       });
 
+      expect(findGroupsToggleList().exists()).toBe(false);
+    });
+
+    it('renders group scope when groups and project exceptions are provided on project level', async () => {
+      createComponent({
+        handler: mockLinkedSppItemsResponse({
+          projects: [
+            { id: '1', name: 'name1', fullPath: 'fullPath1' },
+            { id: '2', name: 'name2', fullPath: 'fullPath2' },
+          ],
+          groups: [
+            { id: '1', name: 'name1', fullPath: 'fullPath1' },
+            { id: '2', name: 'name2', fullPath: 'fullPath2' },
+          ],
+        }),
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+            excludingProjects: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          namespaceType: NAMESPACE_TYPES.PROJECT,
+          glFeatures: {
+            policyGroupScopeProject: true,
+          },
+        },
+      });
+
+      await waitForPromises();
       expect(findGroupsToggleList().exists()).toBe(true);
       expect(findGroupsToggleList().props('groups')).toEqual(items);
       expect(findGroupsToggleList().props('projects')).toEqual(items);
