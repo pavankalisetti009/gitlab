@@ -82,7 +82,7 @@ module EE
         return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         return false unless ::Feature.enabled?(:duo_free_access_ending_banner, group)
         return false unless can?(current_user, :owner_access, group)
-        return false unless group.paid? && GitlabSubscriptions::DuoPro.no_add_on_purchase_for_namespace?(group)
+        return false unless group.paid? && GitlabSubscriptions::Duo.no_add_on_purchase_for_namespace?(group)
 
         !user_dismissed?(DUO_FREE_ACCESS_ENDING_BANNER)
       end
