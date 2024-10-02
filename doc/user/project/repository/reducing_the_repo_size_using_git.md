@@ -53,8 +53,9 @@ These refs are not automatically downloaded and hidden refs are not advertised, 
 
 WARNING:
 This process is not suitable for removing sensitive data like password or keys from your repository.
-Information about commits, including file content, is cached in the database, and remain
-visible even after they have been removed from the repository.
+Information about commits, including file content, is cached in the database, and remain visible
+even after they have been removed from the repository. To remove sensitive data, use the method
+described in [Remove blobs](#remove-blobs).
 
 To purge files from a GitLab repository:
 
@@ -256,7 +257,7 @@ Alternatively, to replace strings with `***REMOVED***`, see
 
 Prerequisites:
 
-- You must have the Owner role for the instance.
+- You must have the Owner role for the project.
 - You must have [a list of object IDs](#get-a-list-of-object-ids) to remove.
 
 To remove blobs from your repository:
