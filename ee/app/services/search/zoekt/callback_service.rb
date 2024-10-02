@@ -49,6 +49,8 @@ module Search
 
           task.done!
         end
+
+        publish_task_succeeded_event_for(task)
       end
 
       def process_failure
@@ -59,9 +61,16 @@ module Search
         publish_task_failed_event_for(task)
       end
 
+      def publish_task_succeeded_event_for(task)
+        publish_event(TaskSucceededEvent, data: { zoekt_repository_id: task.zoekt_repository_id, task_id: task.id })
+      end
+
       def publish_task_failed_event_for(task)
-        event = TaskFailedEvent.new(data: { zoekt_repository_id: task.zoekt_repository_id })
-        Gitlab::EventStore.publish(event)
+        publish_event(TaskFailedEvent, data: { zoekt_repository_id: task.zoekt_repository_id })
+      end
+
+      def publish_event(event, data:)
+        Gitlab::EventStore.publish(event.new(data: data))
       end
     end
   end
