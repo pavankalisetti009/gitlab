@@ -49159,9 +49159,6 @@ msgstr ""
 msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
 msgstr ""
 
-msgid "SecurityOrchestration|%{licenses} and %{lastLicense}"
-msgstr ""
-
 msgid "SecurityOrchestration|%{scanners}"
 msgstr ""
 
