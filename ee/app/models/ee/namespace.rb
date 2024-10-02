@@ -39,6 +39,7 @@ module EE
         inverse_of: :namespace
       has_one :upcoming_reconciliation, inverse_of: :namespace, class_name: "GitlabSubscriptions::UpcomingReconciliation"
       has_one :system_access_microsoft_application, class_name: '::SystemAccess::MicrosoftApplication'
+      has_one :onboarding_progress, class_name: 'Onboarding::Progress'
 
       has_many :gitlab_subscription_histories, class_name: "GitlabSubscriptions::SubscriptionHistory"
       has_many :ci_minutes_additional_packs, class_name: "Ci::Minutes::AdditionalPack"
