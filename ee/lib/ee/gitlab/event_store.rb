@@ -175,6 +175,9 @@ module EE
           store.subscribe ::Search::Zoekt::RepoMarkedAsToDeleteEventWorker,
             to: ::Search::Zoekt::RepoMarkedAsToDeleteEvent
 
+          store.subscribe ::Search::Zoekt::IndexOverWatermarkEventWorker,
+            to: ::Search::Zoekt::IndexOverWatermarkEvent
+
           store.subscribe ::Search::Zoekt::InitialIndexingEventWorker,
             to: ::Search::Zoekt::InitialIndexingEvent
 

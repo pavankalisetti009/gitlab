@@ -16,6 +16,7 @@ module Search
         mark_indices_as_ready
         node_assignment
         remove_expired_subscriptions
+        index_over_watermark_check
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
         report_metrics
@@ -383,6 +384,32 @@ module Search
             Gitlab::EventStore.publish(
               Search::Zoekt::RepoMarkedAsToDeleteEvent.new(
                 data: { zoekt_repo_ids: batch.pluck_primary_key }
+              )
+            )
+          end
+        end
+      end
+
+      def index_over_watermark_check
+        execute_every 10.minutes, cache_key: :index_over_watermark_check do
+          Search::Zoekt::Index.should_have_low_watermark.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::IndexOverWatermarkEvent.new(
+                data: {
+                  index_ids: batch.pluck_primary_key,
+                  watermark: ::Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+                }
+              )
+            )
+          end
+
+          Search::Zoekt::Index.should_have_high_watermark.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::IndexOverWatermarkEvent.new(
+                data: {
+                  index_ids: batch.pluck_primary_key,
+                  watermark: ::Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
+                }
               )
             )
           end
