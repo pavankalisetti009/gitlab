@@ -8,14 +8,14 @@ module EE
 
     def preloads
       super.tap do |h|
-        h[:mergeable] = [
+        h[:mergeable] += [
           *approved_mergeability_check_preloads,
           *blocked_by_other_mrs_mergeability_check_preloads,
           *commits_status_mergeability_check_preloads,
           *security_policy_evaluation_check_preloads
         ]
 
-        h[:detailed_merge_status] = [
+        h[:detailed_merge_status] += [
           *approved_mergeability_check_preloads,
           *blocked_by_other_mrs_mergeability_check_preloads,
           *commits_status_mergeability_check_preloads,

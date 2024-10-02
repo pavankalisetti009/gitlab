@@ -18143,6 +18143,9 @@ msgstr ""
 msgid "Delete offline nodes automatically after %{label}"
 msgstr ""
 
+msgid "Delete one-time password authenticator"
+msgstr ""
+
 msgid "Delete pipeline"
 msgstr ""
 
@@ -37916,6 +37919,9 @@ msgstr ""
 msgid "One or more of your personal access tokens will expire in %{days_to_expire} days or less:"
 msgstr ""
 
+msgid "One-time password authenticator has been deleted!"
+msgstr ""
+
 msgid "Online license"
 msgstr ""
 
@@ -56355,6 +56361,9 @@ msgstr ""
 msgid "This user cannot be unlocked manually from GitLab"
 msgstr ""
 
+msgid "This user does not have a one-time password authenticator registered."
+msgstr ""
+
 msgid "This user has an unconfirmed email address (%{email}). You may force a confirmation."
 msgstr ""
 
@@ -63563,7 +63572,10 @@ msgstr ""
 msgid "You're viewing members of %{strong_start}%{group_name}%{strong_end}."
 msgstr ""
 
-msgid "You've already enabled two-factor authentication using one time password authenticators. In order to register a different device, you must first disable two-factor authentication."
+msgid "You've already enabled two-factor authentication using a one-time password authenticator. In order to register a different device, you must first delete this authenticator."
+msgstr ""
+
+msgid "You've already enabled two-factor authentication using a one-time password authenticator. In order to register a different device, you must first disable two-factor authentication."
 msgstr ""
 
 msgid "You've reached your limit of %{limit} projects created. Contact your GitLab administrator."
