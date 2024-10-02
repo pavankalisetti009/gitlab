@@ -44,30 +44,34 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
 
     let(:anthropic_request_params) do
       {
-        "prompt_components" => [
+        'prompt_components' => [
           {
-            "type" => "code_editor_generation",
-            "payload" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "some prefix",
-              "content_below_cursor" => "some suffix",
-              "language_identifier" => "Python",
-              "prompt_id" => "code_suggestions/generations",
-              "prompt_enhancer" => {
-                "examples_array" => [
+            'type' => 'code_editor_generation',
+            'payload' => {
+              'file_name' => 'test.py',
+              'content_above_cursor' => 'some prefix',
+              'content_below_cursor' => 'some suffix',
+              'language_identifier' => 'Python',
+              'prompt_id' => 'code_suggestions/generations',
+              'prompt_enhancer' => {
+                'examples_array' => [
                   {
-                    "example" => "class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ",
-                    "response" => "return self.visibility == 'PUBLIC'",
-                    "trigger_type" => "comment"
+                    'example' => 'class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ',
+                    'response' => "return self.visibility == 'PUBLIC'",
+                    'trigger_type' => 'comment'
                   },
                   {
-                    "example" => "# get the current user's name from the session data\\n{{cursor}}",
-                    "response" => "username = session['username']\\nreturn username",
-                    "trigger_type" => "comment"
+                    'example' => "# get the current user's name from the session data\\n{{cursor}}",
+                    'response' => "username = session['username']\\nreturn username",
+                    'trigger_type' => 'comment'
                   }
                 ],
-                "trimmed_prefix" => "some prefix",
-                "trimmed_suffix" => "some suffix"
+                'trimmed_prefix' => 'some prefix',
+                'trimmed_suffix' => 'some suffix',
+                'related_files' => '',
+                'related_snippets' => '',
+                'libraries' => '',
+                'user_instruction' => 'Generate the best possible code based on instructions.'
               }
             }
           }
@@ -94,40 +98,44 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
       let(:endpoint_path) { 'v3/code/completions' }
       let(:expected_body) do
         {
-          "current_file" => {
-            "content_above_cursor" => "fix",
-            "content_below_cursor" => "som",
-            "file_name" => "test.py"
+          'current_file' => {
+            'content_above_cursor' => 'fix',
+            'content_below_cursor' => 'som',
+            'file_name' => 'test.py'
           },
-          "prompt_components" => [
+          'prompt_components' => [
             {
-              "payload" => {
-                "content_above_cursor" => "some prefix",
-                "content_below_cursor" => "some suffix",
-                "file_name" => "test.py",
-                "language_identifier" => "Python",
-                "prompt_enhancer" => {
-                  "examples_array" => [
+              'payload' => {
+                'content_above_cursor' => 'some prefix',
+                'content_below_cursor' => 'some suffix',
+                'file_name' => 'test.py',
+                'language_identifier' => 'Python',
+                'prompt_enhancer' => {
+                  'examples_array' => [
                     {
-                      "example" => "class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ",
-                      "response" => "return self.visibility == 'PUBLIC'",
-                      "trigger_type" => "comment"
+                      'example' => 'class Project:\\n  def __init__(self, name, public):{{cursor}}\\n\\n ',
+                      'response' => "return self.visibility == 'PUBLIC'",
+                      'trigger_type' => 'comment'
                     },
                     {
-                      "example" => "# get the current user's name from the session data\\n{{cursor}}",
-                      "response" => "username = session['username']\\nreturn username",
-                      "trigger_type" => "comment"
+                      'example' => "# get the current user's name from the session data\\n{{cursor}}",
+                      'response' => "username = session['username']\\nreturn username",
+                      'trigger_type' => 'comment'
                     }
                   ],
-                  "trimmed_prefix" => "some prefix",
-                  "trimmed_suffix" => "some suffix"
+                  'trimmed_prefix' => 'some prefix',
+                  'trimmed_suffix' => 'some suffix',
+                  'related_files' => '',
+                  'related_snippets' => '',
+                  'libraries' => '',
+                  'user_instruction' => 'Generate the best possible code based on instructions.'
                 },
-                "prompt_id" => "code_suggestions/generations"
+                'prompt_id' => 'code_suggestions/generations'
               },
-              "type" => "code_editor_generation"
+              'type' => 'code_editor_generation'
             }
           ],
-          "telemetry" => [{ "model_engine" => "anthropic" }]
+          'telemetry' => [{ 'model_engine' => 'anthropic' }]
         }
       end
 

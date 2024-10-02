@@ -191,9 +191,13 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                     "trigger_type" => "comment"
                   }
                 ],
-                "trimmed_prefix" => "def is_even(n: int) ->\n# A " \
+                'trimmed_prefix' => "def is_even(n: int) ->\n# A " \
                   "function that outputs the first 20 fibonacci numbers\n",
-                "trimmed_suffix" => ""
+                'trimmed_suffix' => '',
+                'related_files' => [],
+                'related_snippets' => [],
+                'libraries' => [],
+                'user_instruction' => 'Generate the best possible code based on instructions.'
               }
             }
           }
