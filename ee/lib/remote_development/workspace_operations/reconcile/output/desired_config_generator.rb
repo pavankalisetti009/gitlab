@@ -24,7 +24,7 @@ module RemoteDevelopment
             domain_template = get_domain_template_annotation(name: workspace.name, dns_zone: workspace.dns_zone)
             inventory_name = "#{workspace.name}-workspace-inventory"
 
-            workspaces_agent_config = workspace.agent.workspaces_agent_config
+            workspaces_agent_config = workspace.workspaces_agent_config
             max_resources_per_workspace =
               workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
             default_resources_per_workspace_container =

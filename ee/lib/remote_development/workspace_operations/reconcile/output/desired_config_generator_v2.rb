@@ -54,7 +54,7 @@ module RemoteDevelopment
 
             desired_config.append(k8s_inventory_for_workspace_core, *k8s_resources_for_workspace_core)
 
-            workspaces_agent_config = workspace.agent.workspaces_agent_config
+            workspaces_agent_config = workspace.workspaces_agent_config
             if workspaces_agent_config.network_policy_enabled
               gitlab_workspaces_proxy_namespace = workspaces_agent_config.gitlab_workspaces_proxy_namespace
               network_policy = get_network_policy(

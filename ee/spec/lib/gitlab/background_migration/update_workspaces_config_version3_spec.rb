@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion3, schema: 20240924214435, feature_category: :workspaces do
+RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion3, schema: 20240918130437, feature_category: :workspaces do
   describe "#perform" do
     let(:v2) { 2 }
     let(:v3) { 3 }
