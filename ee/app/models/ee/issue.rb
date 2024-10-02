@@ -20,6 +20,9 @@ module EE
       # widget supporting custom issue types - see https://gitlab.com/gitlab-org/gitlab/-/issues/292035
       include IssueWidgets::ActsLikeRequirement
 
+      # we'd need to make sure these override the existing associations so we prepend this.
+      include ::WorkItems::EpicAsWorkItem
+
       scope :order_blocking_issues_asc, -> { reorder(blocking_issues_count: :asc) }
       scope :order_blocking_issues_desc, -> { reorder(blocking_issues_count: :desc) }
       scope :order_weight_desc, -> { reorder(arel_table[:weight].desc.nulls_last) }
@@ -132,8 +135,8 @@ module EE
       has_many :observability_logs, class_name: 'Observability::LogsIssuesConnection', inverse_of: :issue
       has_many :observability_traces, class_name: 'Observability::TracesIssuesConnection', inverse_of: :issue
 
+      has_one :sync_object, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :sync_object
       has_one :synced_epic, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :work_item, dependent: :destroy
-      alias_method :sync_object, :synced_epic
 
       validates :weight, allow_nil: true, numericality: { greater_than_or_equal_to: 0 }
       validate :validate_confidential_epic
@@ -156,7 +159,7 @@ module EE
       end
 
       def with_api_entity_associations
-        super.preload(epic: { group: :route }, iteration: { group: :route })
+        super.preload(:sync_object, epic: { group: :route }, iteration: { group: :route })
       end
 
       # override
