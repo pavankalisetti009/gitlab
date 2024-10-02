@@ -25,7 +25,7 @@ exports[`Learn GitLab Section Card renders correctly 1`] = `
     class="gl-card-body gl-pt-0"
   >
     <learn-gitlab-section-link-stub
-      action="gitWrite"
+      action="created"
       value="[object Object]"
     />
     <learn-gitlab-section-link-stub

@@ -11,7 +11,7 @@ RSpec.describe Onboarding::Completion, feature_category: :onboarding do
 
   describe '#percentage' do
     let(:tracked_action_columns) do
-      [*described_class::ACTION_PATHS, :git_write].map do |key|
+      described_class::ACTION_PATHS.map do |key|
         ::Onboarding::Progress.column_name(key)
       end
     end
@@ -25,7 +25,11 @@ RSpec.describe Onboarding::Completion, feature_category: :onboarding do
     end
 
     context 'when no action has been completed' do
-      it { is_expected.to eq(0) }
+      let(:repository_created_percentage) { 8 }
+
+      it 'returns the created repository action as always completed' do
+        is_expected.to eq(repository_created_percentage)
+      end
     end
 
     context 'when all tracked actions have been completed' do

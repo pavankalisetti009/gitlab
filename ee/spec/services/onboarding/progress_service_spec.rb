@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Onboarding::ProgressService, feature_category: :onboarding do
   describe '#execute' do
     let(:namespace) { create(:namespace) }
-    let(:action) { :namespace_action }
+    let(:action) { :merge_request_created }
 
-    subject(:execute_service) { described_class.new(namespace).execute(action: :merge_request_created) }
+    subject(:execute_service) { described_class.new(namespace).execute(action: action) }
 
     context 'when the namespace is a root' do
       before do
@@ -17,7 +17,7 @@ RSpec.describe Onboarding::ProgressService, feature_category: :onboarding do
       it 'registers a namespace onboarding progress action for the given namespace' do
         execute_service
 
-        expect(Onboarding::Progress.completed?(namespace, :merge_request_created)).to eq(true)
+        expect(Onboarding::Progress.completed?(namespace, action)).to eq(true)
       end
     end
 
@@ -31,7 +31,7 @@ RSpec.describe Onboarding::ProgressService, feature_category: :onboarding do
       it 'does not register a namespace onboarding progress action' do
         execute_service
 
-        expect(Onboarding::Progress.completed?(group, :merge_request_created)).to be(false)
+        expect(Onboarding::Progress.completed?(group, action)).to be(false)
       end
     end
 
@@ -41,7 +41,7 @@ RSpec.describe Onboarding::ProgressService, feature_category: :onboarding do
       it 'does not register a namespace onboarding progress action' do
         execute_service
 
-        expect(Onboarding::Progress.completed?(namespace, :merge_request_created)).to be(false)
+        expect(Onboarding::Progress.completed?(namespace, action)).to be(false)
       end
     end
   end
