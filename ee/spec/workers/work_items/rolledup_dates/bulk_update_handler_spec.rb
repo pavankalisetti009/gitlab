@@ -56,7 +56,7 @@ RSpec.describe WorkItems::RolledupDates::BulkUpdateHandler, feature_category: :t
     subject(:handler) { described_class.new }
 
     it "calls the service with the given work_items" do
-      expect_next_instance_of(service_class, work_items) do |service|
+      expect_next_instance_of(service_class, WorkItem.id_in(work_items.map(&:id))) do |service|
         expect(service).to receive(:execute)
       end
 
