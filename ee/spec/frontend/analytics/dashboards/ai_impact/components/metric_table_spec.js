@@ -21,6 +21,12 @@ import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_met
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
 import AiCodeContributorsMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_code_contributors_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
+import {
+  SUPPORTED_FLOW_METRICS,
+  SUPPORTED_DORA_METRICS,
+  SUPPORTED_VULNERABILITY_METRICS,
+  SUPPORTED_AI_METRICS,
+} from 'ee/analytics/dashboards/ai_impact/constants';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
@@ -352,6 +358,77 @@ describe('Metric table', () => {
         alerts: expect.arrayContaining([
           'You have insufficient permissions to view: Deployment frequency, Change failure rate',
         ]),
+      });
+    });
+  });
+
+  describe('excludeMetrics set', () => {
+    const flowMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const doraMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const vulnerabilityMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const aiMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    let apolloProvider;
+
+    beforeEach(() => {
+      apolloProvider = createMockApolloProvider({
+        flowMetricsRequest,
+        doraMetricsRequest,
+        vulnerabilityMetricsRequest,
+        aiMetricsRequest,
+      });
+    });
+
+    describe.each([
+      {
+        group: 'DORA metrics',
+        excludeMetrics: SUPPORTED_DORA_METRICS,
+        testIds: [deploymentFrequencyTestId, changeFailureRateTestId],
+        apiRequest: doraMetricsRequest,
+      },
+      {
+        group: 'Flow metrics',
+        excludeMetrics: SUPPORTED_FLOW_METRICS,
+        testIds: [cycleTimeTestId, leadTimeTestId],
+        apiRequest: flowMetricsRequest,
+      },
+      {
+        group: 'Vulnerability metrics',
+        excludeMetrics: SUPPORTED_VULNERABILITY_METRICS,
+        testIds: [vulnerabilityCriticalTestId],
+        apiRequest: vulnerabilityMetricsRequest,
+      },
+      {
+        group: 'AI metrics',
+        excludeMetrics: SUPPORTED_AI_METRICS,
+        testIds: [codeSuggestionsUsageRateTestId],
+        apiRequest: aiMetricsRequest,
+      },
+    ])('for $group', ({ excludeMetrics, testIds, apiRequest }) => {
+      describe('when all metrics excluded', () => {
+        beforeEach(() => {
+          return createWrapper({ apolloProvider, props: { excludeMetrics } });
+        });
+
+        it.each(testIds)('does not render `%s`', (id) => {
+          expect(findTableRow(id).exists()).toBe(false);
+        });
+
+        it('does not send a request', () => {
+          expect(apiRequest).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when almost all metrics excluded', () => {
+        beforeEach(() => {
+          return createWrapper({
+            apolloProvider,
+            props: { excludeMetrics: excludeMetrics.slice(1) },
+          });
+        });
+
+        it('requests metrics', () => {
+          expect(apiRequest).toHaveBeenCalled();
+        });
       });
     });
   });

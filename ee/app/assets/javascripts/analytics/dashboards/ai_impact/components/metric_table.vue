@@ -1,4 +1,5 @@
 <script>
+import { uniq } from 'lodash';
 import {
   GlTableLite,
   GlSkeletonLoader,
@@ -90,6 +91,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    excludeMetrics: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -109,10 +115,13 @@ export default {
           metrics: SUPPORTED_VULNERABILITY_METRICS,
           queryFn: this.fetchVulnerabilitiesMetricsQuery,
         },
-      ].filter(({ metrics }) => !this.areAllMetricsRestricted(metrics));
+      ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
     restrictedMetrics() {
-      return getRestrictedTableMetrics(this.glAbilities);
+      return getRestrictedTableMetrics(this.excludeMetrics, this.glAbilities);
+    },
+    skippedMetrics() {
+      return uniq([...this.restrictedMetrics, ...this.excludeMetrics]);
     },
   },
   async mounted() {
@@ -130,11 +139,11 @@ export default {
     }
   },
   created() {
-    this.tableData = generateSkeletonTableData(this.restrictedMetrics);
+    this.tableData = generateSkeletonTableData(this.skippedMetrics);
   },
   methods: {
-    areAllMetricsRestricted(metrics) {
-      return metrics.every((metric) => this.restrictedMetrics.includes(metric));
+    areAllMetricsSkipped(metrics) {
+      return metrics.every((metric) => this.skippedMetrics.includes(metric));
     },
 
     rowAttributes({ metric: { identifier } }) {
@@ -290,7 +299,7 @@ export default {
   <gl-table-lite
     :fields="dashboardTableFields"
     :items="tableData"
-    table-class="gl-my-0"
+    table-class="gl-my-0 gl-table-fixed"
     :tbody-tr-attr="rowAttributes"
   >
     <template #head(change)="{ field: { label, description } }">
