@@ -57,6 +57,28 @@ module API
 
         destroy_conditionally!(block)
       end
+
+      params do
+        requires :merge_request_iid, type: Integer, desc: 'The internal IID of the blocked merge request'
+        requires :blocking_merge_request_id, type: Integer, desc: 'The internal ID of the blocking merge request'
+      end
+      post ":id/merge_requests/:merge_request_iid/blocks", urgency: :low do
+        merge_request = find_project_merge_request(params[:merge_request_iid])
+
+        result =
+          ::MergeRequests::CreateBlockService
+          .new(
+            merge_request: merge_request,
+            user: current_user,
+            blocking_merge_request_id: params[:blocking_merge_request_id]
+          ).execute
+
+        if result.success?
+          present result.payload[:merge_request_block], with: EE::API::Entities::MergeRequestDependency
+        else
+          render_api_error!(result.message, result.reason)
+        end
+      end
     end
   end
 end

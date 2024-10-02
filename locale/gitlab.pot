@@ -9123,6 +9123,9 @@ msgstr ""
 msgid "Block"
 msgstr ""
 
+msgid "Block already exists"
+msgstr ""
+
 msgid "Block secrets such as keys and API tokens from being pushed to your repositories. Secret push protection is triggered when commits are pushed to a repository. If any secrets are detected, the push is blocked."
 msgstr ""
 
@@ -9150,6 +9153,9 @@ msgid "Blocking epics"
 msgstr ""
 
 msgid "Blocking issues"
+msgstr ""
+
+msgid "Blocking merge request not found"
 msgstr ""
 
 msgid "Blocks"
@@ -31699,6 +31705,12 @@ msgid "Labels|Promoting %{labelTitle} will make it available for all projects in
 msgstr ""
 
 msgid "Label|Assignee"
+msgstr ""
+
+msgid "Lacking permissions to the blocking merge request"
+msgstr ""
+
+msgid "Lacking permissions to update the merge request"
 msgstr ""
 
 msgid "Language"
