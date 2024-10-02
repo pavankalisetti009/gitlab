@@ -32,8 +32,8 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
         visit_group_value_streams_dashboard(group)
       end
 
-      it_behaves_like 'renders metrics comparison table' do
-        let(:panel_title) { "#{group.name} group" }
+      it_behaves_like 'renders metrics comparison tables' do
+        let(:panel_title) { "#{group.name} (group)" }
       end
 
       it_behaves_like 'renders contributor count'
@@ -46,8 +46,8 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
         visit_group_value_streams_dashboard(group)
       end
 
-      it_behaves_like 'renders metrics comparison table' do
-        let(:panel_title) { "#{group.name} group" }
+      it_behaves_like 'renders metrics comparison tables' do
+        let(:panel_title) { "#{group.name} (group)" }
       end
 
       it_behaves_like 'does not render contributor count'

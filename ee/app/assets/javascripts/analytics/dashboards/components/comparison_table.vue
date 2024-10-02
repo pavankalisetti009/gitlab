@@ -71,7 +71,7 @@ export default {
   <gl-table-lite
     :fields="dashboardTableFields"
     :items="tableData"
-    table-class="gl-my-0"
+    table-class="gl-my-0 gl-table-fixed"
     :tbody-tr-attr="rowAttributes"
   >
     <template #head()="{ field: { label, start, end } }">
