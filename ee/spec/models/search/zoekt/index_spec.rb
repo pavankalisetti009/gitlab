@@ -7,8 +7,9 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   let_it_be_with_reload(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
   let_it_be(:zoekt_node) { create(:zoekt_node) }
   let_it_be(:zoekt_replica) { create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
-  let_it_be(:zoekt_index) do
-    create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: zoekt_node, replica: zoekt_replica)
+  let_it_be_with_refind(:zoekt_index) do
+    create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: zoekt_node, replica: zoekt_replica,
+      reserved_storage_bytes: 100.megabytes)
   end
 
   subject { zoekt_index }
@@ -93,6 +94,10 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     let_it_be(:node_2) { create(:zoekt_node) }
     let_it_be(:zoekt_index_2) do
       create(:zoekt_index, node: node_2, zoekt_enabled_namespace: zoekt_enabled_namespace_2)
+    end
+
+    before do
+      create_list(:zoekt_repository, 5, zoekt_index: zoekt_index, size_bytes: 100.megabytes)
     end
 
     describe '#for_node' do
@@ -197,6 +202,63 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       it 'returns indices that are marked as either orphaned or pending_deletion' do
         expect(described_class.should_be_deleted).to match_array([idx_orphaned, idx_pending_deletion])
+      end
+    end
+
+    describe '.should_have_low_watermark' do
+      it 'returns indices that have over low watermark of storage' do
+        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+
+        zoekt_index.update!(used_storage_bytes: saturated_storage)
+        expect(described_class.should_have_low_watermark).to match_array(zoekt_index)
+
+        zoekt_index.update!(reserved_storage_bytes: zoekt_index.used_storage_bytes * 2)
+        expect(described_class.should_have_low_watermark).to be_empty
+      end
+
+      it 'does not return indices that already have any watermarked state' do
+        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+
+        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :low_watermark_exceeded)
+        expect(described_class.should_have_low_watermark).to be_empty
+
+        zoekt_index.update!(reserved_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
+        expect(described_class.should_have_low_watermark).to be_empty
+      end
+    end
+
+    describe '.should_have_high_watermark' do
+      it 'returns indices that have over high watermark of storage' do
+        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
+
+        zoekt_index.update!(used_storage_bytes: saturated_storage)
+        expect(described_class.should_have_high_watermark).to match_array(zoekt_index)
+
+        zoekt_index.update!(reserved_storage_bytes: zoekt_index.used_storage_bytes * 2)
+        expect(described_class.should_have_high_watermark).to be_empty
+      end
+
+      it 'does not return indices that already have high watermark state' do
+        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
+
+        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
+        expect(described_class.should_have_high_watermark).to be_empty
+      end
+    end
+
+    describe '.with_storage_over_percent' do
+      it 'returns indices over percent' do
+        zoekt_index.update!(used_storage_bytes: 10.megabytes)
+        expect(described_class.with_storage_over_percent(0.1).pluck_primary_key).to match_array([zoekt_index.id])
+        expect(described_class.with_storage_over_percent(0.2).pluck_primary_key).to be_empty
+      end
+
+      it 'does not return zoekt indices with nothing reserved' do
+        zoekt_index.update!(used_storage_bytes: 100.megabytes, reserved_storage_bytes: 0)
+        expect(described_class.with_storage_over_percent(0.01).pluck_primary_key).to be_empty
+
+        zoekt_index.update!(used_storage_bytes: 100.megabytes, reserved_storage_bytes: nil)
+        expect(described_class.with_storage_over_percent(0.01).pluck_primary_key).to be_empty
       end
     end
   end

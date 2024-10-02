@@ -8,7 +8,10 @@ module Search
       include NamespaceValidateable
       include Gitlab::Loggable
 
+      WATERMARKED_STATES = %i[low_watermark_exceeded high_watermark_exceeded].freeze
       SEARCHEABLE_STATES = %i[ready].freeze
+      STORAGE_LOW_WATERMARK = 0.7
+      STORAGE_HIGH_WATERMARK = 0.85
 
       belongs_to :zoekt_enabled_namespace, inverse_of: :indices, class_name: '::Search::Zoekt::EnabledNamespace'
       belongs_to :node, foreign_key: :zoekt_node_id, inverse_of: :indices, class_name: '::Search::Zoekt::Node'
@@ -28,6 +31,13 @@ module Search
         reallocating: 20,
         orphaned: 230,
         pending_deletion: 240
+      }
+
+      enum watermark_level: {
+        healthy: 0,
+        low_watermark_exceeded: 30,
+        high_watermark_exceeded: 60,
+        critical_watermark_exceeded: 90
       }
 
       scope :for_node, ->(node) do
@@ -64,6 +74,32 @@ module Search
 
       scope :should_be_deleted, -> do
         where(state: [:orphaned, :pending_deletion])
+      end
+
+      scope :should_have_low_watermark, -> do
+        where.not(watermark_level: WATERMARKED_STATES).with_storage_over_percent(STORAGE_LOW_WATERMARK)
+      end
+
+      scope :should_have_high_watermark, -> do
+        where.not(watermark_level: :high_watermark_exceeded).with_storage_over_percent(STORAGE_HIGH_WATERMARK)
+      end
+
+      scope :with_storage_over_percent, ->(percent) do
+        where('reserved_storage_bytes > 0')
+          .where('(used_storage_bytes / reserved_storage_bytes::double precision) >= ?', percent)
+      end
+
+      scope :should_have_low_watermark, -> do
+        where.not(watermark_level: WATERMARKED_STATES).with_storage_over_percent(STORAGE_LOW_WATERMARK)
+      end
+
+      scope :should_have_high_watermark, -> do
+        where.not(watermark_level: :high_watermark_exceeded).with_storage_over_percent(STORAGE_HIGH_WATERMARK)
+      end
+
+      scope :with_storage_over_percent, ->(percent) do
+        where.not(reserved_storage_bytes: [0, nil])
+          .where('(used_storage_bytes / reserved_storage_bytes::double precision) >= ?', percent)
       end
 
       def update_used_storage_bytes!

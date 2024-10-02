@@ -731,4 +731,30 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
     end
   end
+
+  describe '#index_over_watermark_check' do
+    let(:task) { :index_over_watermark_check }
+
+    it 'publishes an IndexOverWatermarkEvent with indices that use too much storage' do
+      stubbed_low_watermark_indices = Search::Zoekt::Index.all
+      stubbed_high_watermark_indices = Search::Zoekt::Index.all
+
+      expect(Search::Zoekt::Index).to receive_message_chain(:should_have_low_watermark,
+        :each_batch).and_yield(stubbed_low_watermark_indices)
+      expect(stubbed_low_watermark_indices).to receive(:pluck_primary_key).and_return([1, 2, 3])
+
+      expect(Search::Zoekt::Index).to receive_message_chain(:should_have_high_watermark,
+        :each_batch).and_yield(stubbed_high_watermark_indices)
+      expect(stubbed_high_watermark_indices).to receive(:pluck_primary_key).and_return([4, 5, 6])
+
+      expected_low_watermarked = { index_ids: [1, 2, 3], watermark: Search::Zoekt::Index::STORAGE_LOW_WATERMARK }
+      expected_high_watermarked = { index_ids: [4, 5, 6], watermark: Search::Zoekt::Index::STORAGE_HIGH_WATERMARK }
+
+      expect { execute_task }
+        .to publish_event(Search::Zoekt::IndexOverWatermarkEvent)
+        .with(expected_low_watermarked)
+        .and publish_event(Search::Zoekt::IndexOverWatermarkEvent)
+        .with(expected_high_watermarked)
+    end
+  end
 end
