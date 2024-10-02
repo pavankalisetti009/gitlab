@@ -8,7 +8,7 @@ export const ACTION_LABELS = {
     position: 1,
     openInNewTab: true,
   },
-  gitWrite: {
+  created: {
     title: s__('LearnGitLab|Create a repository'),
     actionLabel: s__('LearnGitLab|Create a repository'),
     description: s__('LearnGitLab|Create or import your first repository into your new project.'),

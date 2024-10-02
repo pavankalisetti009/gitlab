@@ -12,21 +12,21 @@ RSpec.describe Gitlab::Llm::Templates::CategorizeQuestion, feature_category: :du
     it 'includes question' do
       prompt = subject.to_prompt
 
-      expect(prompt).to include(question)
+      expect(prompt.dig(:messages, 0, :content)).to include(question)
     end
 
     it 'includes xmls' do
       prompt = subject.to_prompt
 
-      expect(prompt).to include("Categories:\n<root>")
-      expect(prompt).to include("Labels:\n<root>")
+      expect(prompt.dig(:messages, 0, :content)).to include("Categories:\n<root>")
+      expect(prompt.dig(:messages, 0, :content)).to include("Labels:\n<root>")
     end
 
     context 'when previous answer is absent' do
       it 'does not include previous answer' do
         prompt = subject.to_prompt
 
-        expect(prompt).not_to include("Previous answer:\n<answer>")
+        expect(prompt.dig(:messages, 0, :content)).not_to include("Previous answer:\n<answer>")
       end
     end
 
@@ -41,7 +41,7 @@ RSpec.describe Gitlab::Llm::Templates::CategorizeQuestion, feature_category: :du
       it 'includes previous answer' do
         prompt = subject.to_prompt
 
-        expect(prompt).to include("Previous answer:\n<answer>")
+        expect(prompt.dig(:messages, 0, :content)).to include("Previous answer:\n<answer>")
       end
     end
   end

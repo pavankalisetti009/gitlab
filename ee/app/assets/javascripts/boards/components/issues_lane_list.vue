@@ -86,6 +86,16 @@ export default {
       required: false,
       default: false,
     },
+    columnIndex: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    rowIndex: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -451,7 +461,9 @@ export default {
         :class="{
           'board-column-highlighted': highlighted,
           'gl-rounded-base gl-bg-red-50': boardItemsSizeExceedsMax,
+          'list-empty': !issuesToUse.length,
         }"
+        :data-row-index="rowIndex"
         data-testid="tree-root-wrapper"
         @start="handleDragOnStart"
         @end="handleDragOnEnd"
@@ -465,6 +477,8 @@ export default {
             :list="list"
             :item="issue"
             :can-admin="canAdminEpic"
+            :row-index="rowIndex"
+            :column-index="columnIndex"
             @setFilters="$emit('setFilters', $event)"
           />
         </template>

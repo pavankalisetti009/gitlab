@@ -8,7 +8,7 @@ import { ACTION_LABELS } from 'ee/pages/projects/learn_gitlab/constants';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
-const defaultAction = 'gitWrite';
+const defaultAction = 'codeAdded';
 const defaultProps = {
   title: 'Create Repository',
   description: 'Some description',

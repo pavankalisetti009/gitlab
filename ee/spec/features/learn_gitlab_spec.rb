@@ -54,7 +54,6 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
           :onboarding_progress,
           namespace: namespace,
           issue_created_at: yesterday,
-          git_write_at: yesterday,
           pipeline_created_at: yesterday,
           merge_request_created_at: yesterday,
           user_added_at: yesterday,
@@ -86,8 +85,9 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
 
         issue_link = find_link('Create an issue')
 
+        expect_completed_section('Create a repository')
+
         expect_correct_candidate_link(issue_link, project_issues_path(project))
-        expect_correct_candidate_link(find_link('Create a repository'), project_path(project))
         expect_correct_candidate_link(find_link('Invite your colleagues'), '#')
         expect_correct_candidate_link(find_link("Set up your first project's CI/CD"), project_pipelines_path(project))
         expect_correct_candidate_link(find_link('Submit a merge request (MR)'), project_merge_requests_path(project))

@@ -298,7 +298,7 @@ RSpec.describe EE::Users::CalloutsHelper do
     let(:current_user) { user }
     let(:group_paid?) { true }
     let(:owner_of_group?) { true }
-    let(:no_duo_pro_subscription?) { true }
+    let(:no_duo_subscription?) { true }
     let(:dismissed_callout?) { false }
 
     before do
@@ -308,7 +308,7 @@ RSpec.describe EE::Users::CalloutsHelper do
 
       allow(helper).to receive(:can?).with(current_user, :owner_access, group).and_return(owner_of_group?)
       allow(group).to receive(:paid?).and_return(group_paid?)
-      allow(GitlabSubscriptions::DuoPro).to receive(:no_add_on_purchase_for_namespace?).with(group).and_return(no_duo_pro_subscription?)
+      allow(GitlabSubscriptions::Duo).to receive(:no_add_on_purchase_for_namespace?).with(group).and_return(no_duo_subscription?)
       allow(helper).to receive(:user_dismissed?).with('duo_free_access_ending_banner').and_return(dismissed_callout?)
     end
 
@@ -350,8 +350,8 @@ RSpec.describe EE::Users::CalloutsHelper do
       it { is_expected.to be(false) }
     end
 
-    context 'when a duo pro subscription exists for a group' do
-      let(:no_duo_pro_subscription?) { false }
+    context 'when a duo subscription exists for a group' do
+      let(:no_duo_subscription?) { false }
 
       it { is_expected.to be(false) }
     end

@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Onboarding::ProgressTrackingWorker, '#perform', feature_category: :onboarding do
   let_it_be(:namespace) { create(:namespace) }
-  let(:action) { 'git_write' }
+  let(:action) { 'user_added' }
 
-  it_behaves_like 'records an onboarding progress action', :git_write do
+  it_behaves_like 'records an onboarding progress action', :user_added do
     subject { described_class.new.perform(namespace.id, action) }
   end
 

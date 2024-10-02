@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
   describe '#execute' do
     let(:user) { build(:user) }
     let(:ai_client) { ::Gitlab::Llm::Anthropic::Client.new(nil) }
-    let(:response) {  { 'completion' => llm_analysis_response.to_s } }
+    let(:response) {  { 'type' => 'message', 'content' => [{ 'text' => llm_analysis_response.to_s }] } }
     let(:llm_analysis_response) do
       {
         detailed_category: "Summarize issue",
@@ -27,7 +27,12 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
     let(:options) { { question: chat_message.content, message_id: chat_message.id } }
 
     let(:template_class) { ::Gitlab::Llm::Templates::CategorizeQuestion }
-    let(:prompt) { '<prompt>' }
+    let(:prompt_content) { "foo" }
+    let(:prompt) do
+      { max_tokens: 200,
+        messages: [{ content: prompt_content }],
+        model: "claude-3-5-sonnet-20240620" }
+    end
 
     subject(:categorize_action) do
       described_class.new(prompt_message, template_class, **options).execute
@@ -38,7 +43,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
         allow(template).to receive(:to_prompt).and_return(prompt)
       end
       allow_next_instance_of(::Gitlab::Llm::Anthropic::Client) do |ai_client|
-        allow(ai_client).to receive(:complete).with(prompt: prompt, max_tokens_to_sample: 200).and_return(response)
+        allow(ai_client).to receive(:messages_complete).with(**prompt).and_return(response)
       end
       allow_next_instance_of(::Gitlab::Llm::ChatStorage, user) do |storage|
         allow(storage).to receive(:messages_up_to).with(chat_message.id).and_return(messages)
@@ -94,6 +99,34 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::CategorizeQuestion, feature_
       let(:llm_analysis_response) { "invalid" }
 
       it 'does not track event' do
+        expect(categorize_action.errors).to include('Event not tracked')
+
+        expect_no_snowplow_event(
+          category: described_class.to_s,
+          action: 'ai_question_category',
+          requestId: 'uuid',
+          user: user,
+          context: anything
+        )
+      end
+    end
+
+    context 'with error response' do
+      let(:response) { { 'type' => 'error', 'error' => { 'type' => 'error_type' } } }
+      let(:logger) { instance_double(Gitlab::Llm::Logger) }
+
+      before do
+        allow(::Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+        allow(logger).to receive(:error)
+      end
+
+      it 'does not track event' do
+        expect(logger).to receive(:error).with(message: 'Error response received while categorizing question',
+          event_name: 'error',
+          ai_component: 'duo_chat',
+          error_type: 'error_type',
+          klass: described_class.to_s)
+
         expect(categorize_action.errors).to include('Event not tracked')
 
         expect_no_snowplow_event(

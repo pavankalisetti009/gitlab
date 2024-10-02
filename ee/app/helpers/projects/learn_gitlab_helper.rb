@@ -82,7 +82,7 @@ module Projects
       urls = {
         pipeline_created: project_pipelines_path(project),
         issue_created: project_issues_path(project),
-        git_write: project_path(project),
+        created: project_path(project),
         merge_request_created: project_merge_requests_path(project),
         user_added: '#',
         code_added: CGI.unescape(ide_project_edit_path(project.full_path)),
