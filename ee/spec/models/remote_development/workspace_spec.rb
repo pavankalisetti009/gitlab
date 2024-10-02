@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/ MultipleMemoizedHelpers -- this is a complex model, it requires many helpers for thorough testing
 RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let(:workspace_dns_zone) { agent_config.dns_zone }
@@ -12,6 +13,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let(:agent_dns_zone) { 'workspace.me' }
   let(:workspace_max_hours_before_termination) { agent_config.max_hours_before_termination_limit }
   let(:workspace_timestamps) { { responded_to_agent_at: nil, desired_state_updated_at: nil } }
+  let(:workspaces_agent_config_version) { nil }
   let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
 
   let(:agent_config) do
@@ -41,15 +43,12 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
       personal_access_token: personal_access_token, desired_state: desired_state,
       responded_to_agent_at: workspace_timestamps[:responded_to_agent_at],
       desired_state_updated_at: workspace_timestamps[:desired_state_updated_at],
-      actual_state: actual_state, max_hours_before_termination: workspace_max_hours_before_termination
+      actual_state: actual_state, max_hours_before_termination: workspace_max_hours_before_termination,
+      workspaces_agent_config_version: workspaces_agent_config_version
     )
   end
 
   describe 'associations' do
-    context "for has_one" do
-      it { is_expected.to have_one(:workspaces_agent_config) }
-    end
-
     context "for has_many" do
       it { is_expected.to have_many(:workspace_variables) }
     end
@@ -84,6 +83,11 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
         expect(workspace.dns_zone).to eq(agent.workspaces_agent_config.dns_zone)
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
+      end
+
+      it 'has correct workspaces_agent_config associations from factory' do
+        expect(workspace.workspaces_agent_config_version).to eq(agent_config.versions.size)
+        expect(workspace.workspaces_agent_config).to eq(agent_config)
       end
     end
   end
@@ -146,15 +150,130 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
     end
   end
 
-  describe 'validations' do
-    context "on editor" do
-      it 'validates editor is webide' do
-        workspace.editor = 'not-webide'
-        expect(workspace).not_to be_valid
+  describe 'before_validation on: :create' do
+    context 'when agent_config is newly created' do
+      it 'sets set_workspaces_agent_config_version with size 1' do
+        workspace.valid?
+        expect(workspace.workspaces_agent_config_version).to eq(1)
       end
     end
 
-    context 'on workspaces_agent_config' do
+    context 'when agent_config has more than 1 version' do
+      before do
+        agent_config.touch
+      end
+
+      it 'sets workspaces_agent_config_version to number of versions' do
+        workspace.valid?
+        expect(workspace.workspaces_agent_config_version).to eq(2)
+      end
+    end
+  end
+
+  describe '#workspaces_agent_config' do
+    context 'with new unpersisted workspace record' do
+      context 'when workspaces_agent_config_version is nil' do
+        it 'returns latest workspaces_agent_config' do
+          expect(workspace.workspaces_agent_config).to eq(agent_config)
+        end
+      end
+    end
+
+    context 'with persisted workspace record' do
+      context "when workspaces_agent_config_version is 0" do
+        before do
+          agent_config.versions.destroy_all # rubocop:disable Cop/DestroyAll -- can't use delete_all, it causes a validation err
+          workspace.save!
+        end
+
+        it 'returns actual workspaces_agent_config record' do
+          # fixture sanity check, ensure workspaces_agent_config_version was set properly by before_validation
+          expect(workspace.workspaces_agent_config_version).to eq(0)
+
+          expect(workspace.workspaces_agent_config).to eq(agent_config)
+        end
+      end
+
+      context "when workspaces_agent_config_version is 1" do
+        before do
+          workspace.save!
+        end
+
+        it 'returns actual workspaces_agent_config record' do
+          # fixture sanity check, ensure workspaces_agent_config_version was set properly by before_validation
+          expect(workspace.workspaces_agent_config_version).to eq(1)
+
+          # fixture sanity check, ensure a single 'create' event version exists
+          versions = agent_config.reload.versions
+          expect(versions.size).to eq(1)
+
+          expect(workspace.workspaces_agent_config).to eq(agent_config)
+        end
+      end
+
+      context "when workspaces_agent_config_version is greater than 1" do
+        before do
+          agent_config.touch
+          workspace.save!
+        end
+
+        it 'returns reified version of workspaces_agent_config' do
+          # fixture sanity check, ensure workspaces_agent_config_version was set properly by before_validation
+          expect(workspace.workspaces_agent_config_version).to eq(2)
+
+          # fixture sanity check, ensure a second version ('update' event type) exists
+          versions = agent_config.versions.reload
+          expect(versions.size).to eq(2)
+
+          expect(workspace.workspaces_agent_config).to eq(agent_config)
+        end
+
+        context 'when workspaces_agent_config_versions gets a new version' do
+          it 'still returns same workspaces_agent_config which matches the old version' do
+            # fixture sanity check, ensure workspaces_agent_config_version was set properly by before_validation
+            expect(workspace.workspaces_agent_config_version).to eq(2)
+
+            agent_config.touch
+
+            # fixture sanity check, ensure a third version ('update' event type) exists
+            versions = agent_config.versions.reload
+            expect(versions.size).to eq(3)
+
+            agent_config_on_workspace = workspace.reload.workspaces_agent_config
+            expect(agent_config_on_workspace.updated_at).to eq(versions[2].reify.updated_at)
+            expect(agent_config_on_workspace).to eql(versions[2].reify)
+
+            # should also not match any of the other previous versions
+            expect(agent_config_on_workspace.updated_at).not_to eq(versions[1].reify.updated_at)
+            # TODO: Why don't these pass? Something seems off with equality checks...
+            #       We should understand this, or else it could cause unexpected behavior or bugs.
+            #       https://gitlab.com/gitlab-org/gitlab/-/issues/494671
+            # expect(agent_config_on_workspace).not_to eql(versions[1].reify)
+            # expect(agent_config_on_workspace).not_to eq(versions[0].reify) # versions[0].reify will be nil
+          end
+
+          it 'does not return the latest workspaces_agent_config' do
+            agent_config.touch
+
+            agent_config_on_workspace = workspace.reload.workspaces_agent_config
+            expect(agent_config_on_workspace.updated_at).not_to eq(agent_config.updated_at)
+
+            # TODO: Why don't these pass? Something seems off with equality checks...
+            #       We should understand this, or else it could cause unexpected behavior or bugs.
+            #       https://gitlab.com/gitlab-org/gitlab/-/issues/494671
+            # expect(agent_config == agent_config_on_workspace).to eq(false)
+            # expect(agent_config_on_workspace == agent_config).to eq(false)
+            # expect(agent_config_on_workspace).to_not eq(agent_config)
+            # expect(agent_config_on_workspace.eql?(agent_config)).to eq(false)
+            # expect(agent_config_on_workspace).to_not eql(agent_config)
+          end
+        end
+      end
+    end
+  end
+
+  describe 'validations' do
+    context 'on agent.workspaces_agent_config' do
       context 'when no config is present' do
         let(:agent_with_no_workspaces_config) { create(:cluster_agent) }
 
@@ -167,6 +286,9 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
           expect(agent_with_no_workspaces_config.workspaces_agent_config).not_to be_present
 
           expect(invalid_workspace).not_to be_valid
+          expect(invalid_workspace.errors.full_messages).to include(
+            "Agent must have an associated workspaces agent config"
+          )
         end
       end
 
@@ -187,11 +309,61 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
           end
 
           it "is only validated on create" do
+            workspace.workspaces_agent_config_version = 1
             workspace.save(validate: false) # rubocop:disable Rails/SaveBang -- intentional to test validation
             workspace.valid?
             expect(workspace.errors[:agent]).to be_blank
           end
         end
+      end
+    end
+
+    context 'on workspaces_agent_config_version' do
+      context 'when version is nil' do
+        before do
+          workspace.save!
+          workspace.workspaces_agent_config_version = nil
+        end
+
+        it 'raises error message as expected' do
+          expect(workspace).not_to be_valid
+          expect(workspace.errors.full_messages).to include("Workspaces agent config version can't be blank")
+        end
+      end
+
+      context 'when version is greater than version range' do
+        before do
+          workspace.save!
+          workspace.workspaces_agent_config_version = agent_config.versions.size + 1
+        end
+
+        it 'raises error message as expected' do
+          expect(workspace).not_to be_valid
+          expect(workspace.errors.full_messages).to include(
+            'Workspaces agent config version must be no greater than the number of agent config versions'
+          )
+        end
+      end
+
+      context 'when version is less than 0' do
+        before do
+          workspace.save!
+          workspace.workspaces_agent_config_version = -1
+        end
+
+        it 'raises error message as expected' do
+          expect(workspace).not_to be_valid
+          expect(workspace.errors.full_messages).to include(
+            'Workspaces agent config version must be greater than or equal to 0'
+          )
+        end
+      end
+    end
+
+    context "on editor" do
+      it 'validates editor is webide' do
+        workspace.editor = 'not-webide'
+        expect(workspace).not_to be_valid
       end
     end
 
@@ -220,6 +392,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
 
       context 'when max_hours_before_termination is less than agent max_hours_before_termination limit' do
         it "is passes the validation" do
+          workspace.workspaces_agent_config_version = 1
           workspace.save(validate: false) # rubocop:disable Rails/SaveBang -- intentional to test validation
           workspace.valid?
           expect(workspace.errors[:max_hours_before_termination]).to be_blank
@@ -476,8 +649,8 @@ existing workspaces for the given agent with a total quota of \"3\" workspaces"
 
         context 'when desired_state_updated_at is greater than responded_to_agent_at' do
           let(:workspace_timestamps) do
-            { desired_state_updated_at: DateTime.now.new_offset(20),
-              responded_to_agent_at: DateTime.now.new_offset(10) }
+            { desired_state_updated_at: DateTime.now.new_offset("+20"),
+              responded_to_agent_at: DateTime.now.new_offset("+10") }
           end
 
           it 'returns workspace' do
@@ -498,8 +671,8 @@ existing workspaces for the given agent with a total quota of \"3\" workspaces"
 
       context 'when desired_state_updated_at is greater than responded_to_agent_at' do
         let(:workspace_timestamps) do
-          { desired_state_updated_at: DateTime.now.new_offset(20),
-            responded_to_agent_at: DateTime.now.new_offset(10) }
+          { desired_state_updated_at: DateTime.now.new_offset("+20"),
+            responded_to_agent_at: DateTime.now.new_offset("+10") }
         end
 
         it 'returns true' do
@@ -510,3 +683,4 @@ existing workspaces for the given agent with a total quota of \"3\" workspaces"
     end
   end
 end
+# rubocop:enable RSpec/ MultipleMemoizedHelpers
