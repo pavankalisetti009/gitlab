@@ -32,6 +32,10 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
       end
 
       delegate :exportable, to: :dependency_list_export, private: true
+
+      def uploads_sharding_key
+        { organization_id: organization_id }
+      end
     end
   end
 end
