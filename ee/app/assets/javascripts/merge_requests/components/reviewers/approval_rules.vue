@@ -132,7 +132,10 @@ export default {
                     {{ rule.section }}
                   </span>
                   <span
-                    :class="{ 'gl-text-sm gl-font-monospace': rule.type === $options.CODE_OWNERS }"
+                    :class="{
+                      'gl-break-all gl-text-sm gl-font-monospace':
+                        rule.type === $options.CODE_OWNERS,
+                    }"
                   >
                     {{ rule.name }}
                   </span>
