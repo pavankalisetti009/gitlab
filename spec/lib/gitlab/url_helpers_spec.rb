@@ -11,6 +11,7 @@ RSpec.describe Gitlab::UrlHelpers, feature_category: :shared do
       'ssh://foo:bar@example.com' | 'ssh://example.com'
       'http://foo:bar@example.com:3000/dir' | 'http://example.com:3000'
       'http://foo:bar@example.com/dir' | 'http://example.com'
+      'https://foo:bar@subdomain.example.com/dir' | 'https://subdomain.example.com'
     end
 
     with_them do

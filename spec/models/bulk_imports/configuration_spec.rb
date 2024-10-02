@@ -14,20 +14,4 @@ RSpec.describe BulkImports::Configuration, type: :model, feature_category: :impo
     it { is_expected.to validate_presence_of(:url) }
     it { is_expected.to validate_presence_of(:access_token) }
   end
-
-  describe '#source_hostname' do
-    let(:configuration) { described_class.new(url: 'http://example.com/subdir') }
-
-    it 'returns the hostname with scheme' do
-      expect(configuration.source_hostname).to eq('http://example.com')
-    end
-
-    context 'when URL has a port' do
-      let(:configuration) { described_class.new(url: 'http://example.com:8080/subdir') }
-
-      it 'includes the port' do
-        expect(configuration.source_hostname).to eq('http://example.com:8080')
-      end
-    end
-  end
 end

@@ -33,7 +33,7 @@ module Import
         s_('Import|already assigned to another placeholder')
       }
     }
-    validate :validate_source_hostname, if: -> { source_hostname_changed? }
+    validate :validate_source_hostname
 
     scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
     scope :by_source_hostname, ->(source_hostname) { where(source_hostname: source_hostname) }
