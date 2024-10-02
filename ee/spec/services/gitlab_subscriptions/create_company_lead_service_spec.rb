@@ -28,6 +28,8 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
         provider: 'gitlab',
         skip_email_confirmation: true,
         gitlab_com_trial: true,
+        with_add_on: true,
+        add_on_name: 'duo_enterprise',
         jtbd: '_jtbd_',
         comment: '_comment_'
       }
