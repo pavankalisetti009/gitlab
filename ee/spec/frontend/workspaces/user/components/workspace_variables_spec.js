@@ -88,7 +88,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
     });
   });
 
-  it('adds a new variable', () => {
+  it('adds a new variable', async () => {
     const variables = [
       {
         key: 'foo1',
@@ -99,7 +99,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
     ];
     buildWrapper({ variables });
 
-    findAddButton().vm.$emit('click');
+    await findAddButton().trigger('click');
     const emittedEvents = wrapper.emitted();
     expect(emittedEvents.addVariable).toHaveLength(1);
     expect(emittedEvents.input).toMatchObject([
