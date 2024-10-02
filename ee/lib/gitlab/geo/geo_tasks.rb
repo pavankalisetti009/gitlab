@@ -83,16 +83,12 @@ module Gitlab
 
       def disable_non_geo_cron_jobs
         # Apply Sidekiq Cron modification to all shards
-        # rubocop:disable Cop/RedisQueueUsage -- valid usage
-        Gitlab::Redis::Queues.instances.each_value do |inst|
-          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
-            Sidekiq::Cron::Job.all.each(&:disable!) # rubocop:disable Rails/FindEach -- not an ActiveRecord::Relation
+        Gitlab::SidekiqSharding::Router.with_routed_client do
+          Sidekiq::Cron::Job.all.each(&:disable!) # rubocop:disable Rails/FindEach -- not an ActiveRecord::Relation
 
-            # Do not enable `geo_sidekiq_cron_config_worker`, due to https://gitlab.com/gitlab-org/gitlab/-/issues/37135
-            geo_primary_jobs.filter_map { |name| Sidekiq::Cron::Job.find(name) }.map(&:enable!)
-          end
+          # Do not enable `geo_sidekiq_cron_config_worker`, due to https://gitlab.com/gitlab-org/gitlab/-/issues/37135
+          geo_primary_jobs.filter_map { |name| Sidekiq::Cron::Job.find(name) }.map(&:enable!)
         end
-        # rubocop:enable Cop/RedisQueueUsage
       end
 
       def wait_until_replicated_and_verified
@@ -181,22 +177,18 @@ module Gitlab
       # true, poll its size until empty.
       def poll_selected_queues_until_empty
         # Watch Sidekiq Queues on all shards
-        # rubocop:disable Cop/RedisQueueUsage -- valid usage
-        Gitlab::Redis::Queues.instances.each_value do |inst|
-          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
-            # rubocop:disable Cop/SidekiqApiUsage -- valid usage
-            selected_queues = Sidekiq::Queue.all.select { |queue| yield(queue) }
+        Gitlab::SidekiqSharding::Router.with_routed_client do
+          # rubocop:disable Cop/SidekiqApiUsage -- valid usage
+          selected_queues = Sidekiq::Queue.all.select { |queue| yield(queue) }
 
-            loop do
-              selected_queues = selected_queues.select { |queue| queue_has_jobs?(queue) }
-              break if selected_queues.empty?
+          loop do
+            selected_queues = selected_queues.select { |queue| queue_has_jobs?(queue) }
+            break if selected_queues.empty?
 
-              sleep(1)
-            end
-            # rubocop:enable Cop/SidekiqApiUsage
+            sleep(1)
           end
+          # rubocop:enable Cop/SidekiqApiUsage
         end
-        # rubocop:enable Cop/RedisQueueUsage
       end
 
       # It's possible to configure GitLab Sidekiq queues and their names. If there are no queues
@@ -206,17 +198,13 @@ module Gitlab
         any_geo_queues = false
 
         # Watch Sidekiq Queues on all shards
-        # rubocop:disable Cop/RedisQueueUsage -- valid usage
-        Gitlab::Redis::Queues.instances.each_value do |inst|
-          Sidekiq::Client.via(inst.sidekiq_redis) do # scope all Sidekiq operations to use shard's redis pool
-            # rubocop:disable Cop/SidekiqApiUsage -- valid usage
-            any_geo_queues ||= Sidekiq::Queue.all.any? { |queue| geo_queue?(queue) }
-            # rubocop:enable Cop/SidekiqApiUsage
-          end
+        Gitlab::SidekiqSharding::Router.with_routed_client do
+          # rubocop:disable Cop/SidekiqApiUsage -- valid usage
+          any_geo_queues ||= Sidekiq::Queue.all.any? { |queue| geo_queue?(queue) }
+          # rubocop:enable Cop/SidekiqApiUsage
 
           break if any_geo_queues
         end
-        # rubocop:enable Cop/RedisQueueUsage
 
         raise "No Geo queues detected. Unable to check if Geo or non-Geo jobs are drained" unless any_geo_queues
       end
