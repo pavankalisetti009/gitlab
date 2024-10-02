@@ -518,6 +518,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
   end
 
+  describe 'delegations' do
+    it { is_expected.to delegate_method(:name).to(:add_on).with_prefix.allow_nil }
+  end
+
   describe '.uniq_add_on_names' do
     let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
 

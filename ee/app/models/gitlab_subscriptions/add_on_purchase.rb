@@ -52,6 +52,8 @@ module GitlabSubscriptions
         .limit(limit)
     end
 
+    delegate :name, to: :add_on, prefix: true, allow_nil: true
+
     def self.find_by_namespace_and_add_on(namespace, add_on)
       find_by(namespace: namespace, add_on: add_on)
     end
@@ -124,12 +126,8 @@ module GitlabSubscriptions
 
     def self_managed_eligible_users_relation
       @self_managed_eligible_users_relation ||= GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(
-        add_on_type: add_on_type
+        add_on_type: add_on_name.to_sym
       ).execute
-    end
-
-    def add_on_type
-      add_on.name.to_sym
     end
 
     def gitlab_com?
