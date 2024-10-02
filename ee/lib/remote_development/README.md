@@ -522,7 +522,7 @@ In the future, we may also add linter or static analysis enforcement (e.g. `rubo
 
 In general, we follow the [standard GitLab testing pyramid and testing levels](https://docs.gitlab.com/ee/development/testing_guide/testing_levels.html) (see also [this good article on the Testing Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html)).
 
-For frontend testing, we follow the GitLab standards closely for all testing levels.
+For frontend testing, we closely follow the [documented GitLab standards for frontend testing levels](https://docs.gitlab.com/ee/development/testing_guide/frontend_testing.html#overview-of-frontend-testing-levels).
 
 However, when exercising the backend/fullstack code where the business logic lives, we have some additional patterns and guideline for the Workspaces feature, especially around integration testing. Here's a summary of the main testing levels we rely on:
 
@@ -533,6 +533,10 @@ These main-method integration tests use real DB models and allow us to catch edg
 - Request Integration Test: This spec is [at `ee/spec/requests/remote_development/integration_spec.rb`](../../spec/requests/remote_development/integration_spec.rb). It serves to fully exercise all of the Rails stack logic, as a near-the-top-of-the-testing-pyramid, happy-path scenario testing of the full lifecycle of creating a workspace. It uses the same use-case and scenario as the Feature Testing specs, except that it does not exercise the Web UI. It mocks out the agent reconciliation requests. This means that it is a "sweet spot" for integration testing because it is comprehensive, while still remaining both fast and reliable (compared to other integration-level specs which involve the web UI). Thus, we should prefer this spec to add the majority of our happy-path integration testing coverage.
 - Feature Integration Tests: These specs are under [`ee/spec/features/remote_development`](../../spec/features/remote_development). They exercise the features via the web UI, but still mock out the agent reconciliation requests.
 - End-to-End (E2E) Tests: There are two versions of these tests, one which creates all prerequisites ([`qa/qa/specs/features/ee/browser_ui/3_create/remote_development/workspace_actions_spec.rb`](../../../qa/qa/specs/features/ee/browser_ui/3_create/remote_development/workspace_actions_spec.rb)), and one which assumes prerequisites already exist ([`qa/qa/specs/features/ee/browser_ui/3_create/remote_development/with_prerequisite_done/workspace_actions_with_prerequisite_done_spec.rb`](../../../qa/qa/specs/features/ee/browser_ui/3_create/remote_development/with_prerequisite_done/workspace_actions_with_prerequisite_done_spec.rb). These involve testing a whole end-to-end scenario of the workspace feature, including interaction with the actual agent. The `workspace_actions_with_prerequisite_done_spec.rb` can be more easily run in local development via `scripts/remote_development/run-e2e-tests.sh`. However, these tests can be very slow and flaky, and require that all the workspaces and agent infrastructure be set up properly in order to pass. See [the GitLab testing guide for end-to-end testing](https://docs.gitlab.com/ee/development/testing_guide/end_to_end/) for more context.
+
+We also have a video of a pairing session where we discuss the testing pyramid and these levels as they relate to the Workspaces feature (the discussion of testing levels starts at about [6:58](https://youtu.be/wFI9ijOP-98?si=JdNc1JJYQd84hM_Q&t=418)):
+
+* **[Video of pairing session discussing Workspaces feature testing levels](https://youtu.be/wFI9ijOP-98?si=JdNc1JJYQd84hM_Q&t=418)**
 
 ## Testing ROP main classes
 
