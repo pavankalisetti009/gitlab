@@ -8,10 +8,6 @@ module EE
     prepended do
       include FilterableByTestReports
 
-      # we'd need to make sure these override the existing associations so we prepend this.
-      include ::WorkItems::EpicAsWorkItem
-
-      has_one :sync_object, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :sync_object
       has_one :progress, class_name: 'WorkItems::Progress', foreign_key: 'issue_id', inverse_of: :work_item
       has_one :color, class_name: 'WorkItems::Color', foreign_key: 'issue_id', inverse_of: :work_item
 

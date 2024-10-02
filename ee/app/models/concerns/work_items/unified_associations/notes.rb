@@ -11,6 +11,9 @@ module WorkItems
         has_many :notes, -> { extending ::WorkItems::UnifiedAssociations::NotesExtension }, inverse_of: :noteable,
           as: :noteable, dependent: :destroy
         # rubocop:enable Cop/ActiveRecordDependent
+
+        has_many :note_authors, -> { distinct }, through: :notes, source: :author
+        has_many :user_note_authors, -> { distinct.where("notes.system = false") }, through: :notes, source: :author
       end
     end
   end
