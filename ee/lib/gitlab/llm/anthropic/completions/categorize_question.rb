@@ -6,7 +6,6 @@ module Gitlab
       module Completions
         class CategorizeQuestion < Gitlab::Llm::Completions::Base
           SCHEMA_URL = 'iglu:com.gitlab/ai_question_category/jsonschema/1-2-0'
-          OUTPUT_TOKEN_LIMIT = 200
 
           private_class_method def self.load_xml(filename)
             File.read(File.join(File.dirname(__FILE__), '..', '..', 'fixtures', filename)).tr("\n", '')
@@ -41,10 +40,19 @@ module Gitlab
           attr_reader :messages
 
           def request(template)
-            @ai_client.complete(
-              max_tokens_to_sample: OUTPUT_TOKEN_LIMIT,
-              prompt: template.to_prompt
-            )&.dig("completion").to_s.strip
+            response = @ai_client.messages_complete(**template.to_prompt)
+
+            if response&.dig('type') == 'message'
+              response.dig('content', 0, 'text').to_s.strip
+            else
+              log_error(
+                message: 'Error response received while categorizing question',
+                event_name: 'error',
+                ai_component: 'duo_chat',
+                error_type: response.dig('error', 'type')
+              )
+              {}
+            end
           end
 
           def attributes
