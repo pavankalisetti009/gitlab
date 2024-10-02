@@ -79,7 +79,7 @@ export default {
           label: __('Repository'),
           description: s__('UsageQuota|Git repository.'),
           icon: 'infrastructure-registry',
-          helpPath: helpPagePath('user/project/repository/reducing_the_repo_size_using_git'),
+          helpPath: helpPagePath('user/project/repository/repository_size'),
           humanSize: numberToHumanSize(this.egressTypesCombined[EGRESS_TYPE_REPOSITORY]),
           value: this.egressTypesCombined[EGRESS_TYPE_REPOSITORY],
           formattedValue: numberToHumanSize(this.egressTypesCombined[EGRESS_TYPE_REPOSITORY]),
