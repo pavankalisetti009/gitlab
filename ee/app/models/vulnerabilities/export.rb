@@ -4,6 +4,9 @@ module Vulnerabilities
   class Export < ApplicationRecord
     include Gitlab::Utils::StrongMemoize
     include FileStoreMounter
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :organization_id
 
     EXPORTER_CLASS = VulnerabilityExports::ExportService
     MAX_EXPORT_DURATION = 24.hours

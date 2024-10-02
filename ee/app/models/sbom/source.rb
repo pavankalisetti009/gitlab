@@ -3,6 +3,9 @@
 module Sbom
   class Source < Gitlab::Database::SecApplicationRecord
     include ::Sbom::SourceHelper
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :organization_id
 
     DEFAULT_SOURCES = {
       dependency_scanning: 0,
