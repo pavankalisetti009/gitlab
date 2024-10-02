@@ -289,7 +289,7 @@ export default {
           :scrollelement="$refs.scrollableContainer"
         >
           <epic-lane
-            v-for="epic in epics"
+            v-for="(epic, index) in epics"
             :key="epic.id"
             :epic="epic"
             :lists="lists"
@@ -300,6 +300,7 @@ export default {
             :highlighted-lists="highlightedLists"
             :can-admin-epic="canAdminEpic"
             :total-issues-count-by-list-id="totalIssuesCountByListId"
+            :row-index="index"
             @setFilters="$emit('setFilters', $event)"
           />
         </virtual-list>
@@ -359,7 +360,7 @@ export default {
           <div v-if="!isUnassignedCollapsed" data-testid="board-lane-unassigned-issues">
             <div class="gl-flex gl-pt-3">
               <issues-lane-list
-                v-for="list in lists"
+                v-for="(list, index) in lists"
                 :key="`${list.id}-issues`"
                 :list="list"
                 :is-unassigned-issues-lane="true"
@@ -370,6 +371,8 @@ export default {
                 :highlighted-lists="highlightedLists"
                 :can-admin-epic="canAdminEpic"
                 :lists="lists"
+                :row-index="epics.length"
+                :column-index="index"
                 :total-issues-count="totalIssuesCountByListId[list.id]"
                 :show-new-form="showNewForm.indexOf(list.id) > -1"
                 @toggleNewForm="toggleNewForm(list.id)"
