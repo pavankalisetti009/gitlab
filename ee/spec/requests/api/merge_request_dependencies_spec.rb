@@ -110,7 +110,7 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
     end
 
     context 'when the block id is invalid' do
-      let(:block_id) { -1 }
+      let(:block_id) { non_existing_record_id }
 
       it 'returns a 404 when block is not found' do
         request
@@ -120,7 +120,7 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
     end
 
     context 'when the merge request iid is invalid' do
-      let(:merge_request_iid) { -1 }
+      let(:merge_request_iid) { non_existing_record_iid }
 
       it 'returns a 404 when merge_request is not found' do
         request
@@ -154,6 +154,86 @@ RSpec.describe API::MergeRequestDependencies, 'MergeRequestDependencies', featur
 
         expect(response).to have_gitlab_http_status(:forbidden)
         expect(json_response['message']).to eq('403 Forbidden')
+      end
+    end
+  end
+
+  describe 'POST /projects/:id/merge_requests/:merge_request_iid/blocks' do
+    let(:merge_request_iid) { merge_request.iid }
+    let(:extra_merge_request) { create(:merge_request, :unique_branches, source_project: project, author: user) }
+    let(:user) { maintainer }
+
+    let(:request) do
+      post api("/projects/#{project.id}/merge_requests/#{merge_request_iid}/blocks", user), params:
+        { blocking_merge_request_id: extra_merge_request.id }
+    end
+
+    it 'returns 201 for a valid merge request' do
+      request
+
+      new_blockee = MergeRequestBlock.last
+
+      aggregate_failures('response') do
+        expect(response).to have_gitlab_http_status(:created)
+      end
+
+      aggregate_failures('json_response') do
+        expect(json_response['id']).to eq(new_blockee.id)
+        expect(json_response.dig('blocking_merge_request', 'id'))
+          .to eq(new_blockee.blocking_merge_request.id)
+        expect(json_response.dig('blocked_merge_request', 'id'))
+          .to eq(new_blockee.blocked_merge_request.id)
+      end
+    end
+
+    context 'when the merge request iid is invalid' do
+      let(:merge_request_iid) { non_existing_record_iid }
+
+      it 'returns a 404 when merge_request is not found' do
+        request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when merge request is already blocking' do
+      it 'returns a 400 error' do
+        ::MergeRequestBlock.create!(
+          blocking_merge_request_id: extra_merge_request.id,
+          blocked_merge_request_id: merge_request.id
+        )
+
+        request
+
+        expect(response).to have_gitlab_http_status(:conflict)
+        expect(json_response['message']).to eq('Block already exists')
+      end
+    end
+
+    context 'when user can not read the blocking merge request' do
+      let(:other_project_merge_request) do
+        create(:merge_request, :unique_branches, source_project: other_project)
+      end
+
+      let(:user) { maintainer }
+      let(:extra_merge_request) { other_project_merge_request }
+
+      it 'returns a 403 error' do
+        request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq('Lacking permissions to the blocking merge request')
+      end
+    end
+
+    context 'when merge request author has only guest access' do
+      let(:user) { guest }
+
+      it 'returns a 404 error' do
+        request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 Not found')
       end
     end
   end
