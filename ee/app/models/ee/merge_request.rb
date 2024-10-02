@@ -86,6 +86,9 @@ module EE
       has_many :running_scan_result_policy_violations, -> { running }, class_name:
         'Security::ScanResultPolicyViolation', inverse_of: :merge_request
 
+      has_many :completed_scan_result_policy_violations, -> { completed }, class_name:
+        'Security::ScanResultPolicyViolation', inverse_of: :merge_request
+
       has_many :merge_request_stage_events, class_name: 'Analytics::CycleAnalytics::MergeRequestStageEvent'
 
       delegate :sha, to: :head_pipeline, prefix: :head_pipeline, allow_nil: true
@@ -214,6 +217,7 @@ module EE
           ::MergeRequests::Mergeability::CheckBlockedByOtherMrsService,
           ::MergeRequests::Mergeability::CheckJiraStatusService,
           ::MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService,
+          ::MergeRequests::Mergeability::CheckSecurityPolicyViolationsService,
           ::MergeRequests::Mergeability::CheckExternalStatusChecksPassedService,
           ::MergeRequests::Mergeability::CheckPathLocksService
         ] + super
