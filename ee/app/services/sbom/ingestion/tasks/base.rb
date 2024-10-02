@@ -22,6 +22,10 @@ module Sbom
 
         delegate :project, to: :pipeline, private: true
 
+        def organization_id
+          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
+        end
+
         def insertable_maps
           occurrence_maps
         end

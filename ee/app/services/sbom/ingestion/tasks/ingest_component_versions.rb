@@ -49,10 +49,6 @@ module Sbom
         def insertable_maps
           super.filter(&:version_present?)
         end
-
-        def organization_id
-          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
-        end
       end
     end
   end

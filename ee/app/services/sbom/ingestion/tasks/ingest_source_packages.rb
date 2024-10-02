@@ -35,10 +35,6 @@ module Sbom
         def grouping_key_for_map(map)
           [map.source_package_name, map.purl_type, organization_id]
         end
-
-        def organization_id
-          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
-        end
       end
     end
   end
