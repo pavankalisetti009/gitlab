@@ -7,7 +7,7 @@ export const testActions = {
     svg: 'http://example.com/images/illustration.svg',
     enabled: true,
   },
-  gitWrite: {
+  created: {
     url: 'http://example.com/',
     completed: true,
     svg: 'http://example.com/images/illustration.svg',

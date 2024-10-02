@@ -20,7 +20,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
 
     before do
       ::Onboarding::Progress.onboard(namespace)
-      ::Onboarding::Progress.register(namespace, :git_write)
+      ::Onboarding::Progress.register(namespace, :user_added)
     end
 
     subject(:learn_gitlab_data) { helper.learn_gitlab_data(project) }
@@ -29,7 +29,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
       it 'has all actions' do
         expected_keys = [
           :issue_created,
-          :git_write,
+          :created,
           :pipeline_created,
           :merge_request_created,
           :user_added,
@@ -69,10 +69,10 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
     it 'sets correct completion statuses' do
       result = {
         issue_created: a_hash_including(completed: false),
-        git_write: a_hash_including(completed: true),
+        created: a_hash_including(completed: true),
         pipeline_created: a_hash_including(completed: false),
         merge_request_created: a_hash_including(completed: false),
-        user_added: a_hash_including(completed: false),
+        user_added: a_hash_including(completed: true),
         trial_started: a_hash_including(completed: false),
         required_mr_approvals_enabled: a_hash_including(completed: false),
         code_owners_enabled: a_hash_including(completed: false),
@@ -90,7 +90,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
         trial_started: a_hash_including(url: %r{/#{project.path}/-/project_members\z}),
         pipeline_created: a_hash_including(url: %r{/#{project.path}/-/pipelines\z}),
         issue_created: a_hash_including(url: %r{/#{project.path}/-/issues\z}),
-        git_write: a_hash_including(url: %r{/#{project.path}\z}),
+        created: a_hash_including(url: %r{/#{project.path}\z}),
         user_added: a_hash_including(url: %r{#\z}),
         merge_request_created: a_hash_including(url: %r{/#{project.path}/-/merge_requests\z}),
         code_added: a_hash_including(url: %r{/-/ide/project/#{project.full_path}/edit\z}),

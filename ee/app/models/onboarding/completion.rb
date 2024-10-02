@@ -5,12 +5,12 @@ module Onboarding
     include Gitlab::Utils::StrongMemoize
 
     ACTION_PATHS = [
+      :created, # represents "create a repository" item and always checked
       :pipeline_created,
       :trial_started,
       :required_mr_approvals_enabled,
       :code_owners_enabled,
       :issue_created,
-      :git_write,
       :code_added,
       :merge_request_created,
       :user_added,
