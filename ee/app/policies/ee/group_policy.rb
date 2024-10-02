@@ -265,6 +265,13 @@ module EE
         @subject.root_ancestor.licensed_feature_available?(:default_roles_assignees)
       end
 
+      condition(:resolve_vulnerability_allowed) do
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: subject,
+          feature_name: :resolve_vulnerability
+        ).allowed?
+      end
+
       rule { user_banned_from_namespace }.prevent_all
 
       rule { public_group | logged_in_viewable }.policy do
@@ -624,6 +631,10 @@ module EE
         enable :read_group_security_dashboard
         enable :create_vulnerability_export
         enable :read_security_resource
+      end
+
+      rule { can?(:read_security_resource) & resolve_vulnerability_allowed }.policy do
+        enable :resolve_vulnerability_with_ai
       end
 
       rule { custom_role_enables_manage_merge_request_settings }.policy do

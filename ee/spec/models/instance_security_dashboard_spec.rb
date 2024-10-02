@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe InstanceSecurityDashboard do
-  let_it_be(:project1) { create(:project) }
-  let_it_be(:project2) { create(:project) }
-  let_it_be(:project3) { create(:project) }
+  let_it_be(:project1) { create(:project, :with_duo_features_disabled) }
+  let_it_be(:project2) { create(:project, :with_duo_features_disabled) }
+  let_it_be(:project3) { create(:project, :with_duo_features_disabled) }
   let_it_be(:pipeline1) { create(:ci_pipeline, project: project1) }
   let_it_be(:pipeline2) { create(:ci_pipeline, project: project2) }
   let_it_be(:pipeline3) { create(:ci_pipeline, project: project3) }
@@ -138,6 +138,48 @@ RSpec.describe InstanceSecurityDashboard do
         permitted_roles.each { |role| it_behaves_like 'user with project role', as: role, permitted: true }
         unpermitted_roles.each { |role| it_behaves_like 'user with project role', as: role, permitted: false }
       end
+    end
+  end
+
+  describe '#duo_features_enabled' do
+    subject { instance_dashboard.duo_features_enabled }
+
+    let(:user) { create(:auditor) }
+
+    context 'when a duo enabled project does not exist' do
+      it { is_expected.to eq false }
+
+      it "avoids N+1 database queries" do
+        control = ActiveRecord::QueryRecorder.new do
+          described_class.new(user).duo_features_enabled?
+        end
+
+        user.security_dashboard_projects << create(:project, :with_duo_features_disabled)
+
+        expect do
+          described_class.new(user).duo_features_enabled?
+        end.to issue_same_number_of_queries_as(control)
+      end
+    end
+
+    context 'when a duo enabled project exists' do
+      before do
+        user.security_dashboard_projects << create(:project, :with_duo_features_enabled)
+      end
+
+      it { is_expected.to eq true }
+    end
+
+    it "avoids N+1 database queries" do
+      control = ActiveRecord::QueryRecorder.new do
+        described_class.new(user).duo_features_enabled?
+      end
+
+      user.security_dashboard_projects << create(:project, :with_duo_features_enabled)
+
+      expect do
+        described_class.new(user).duo_features_enabled?
+      end.to issue_same_number_of_queries_as(control)
     end
   end
 
