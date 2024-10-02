@@ -25,7 +25,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
       }
     end
 
-    shared_examples 'success response' do
+    shared_examples 'success response' do |product_interaction = 'duo_pro_add_on_seat_assigned'|
       it 'creates new records' do
         expect(Gitlab::AppLogger).to receive(:info).with(log_params.merge(message: 'User AddOn assignment created'))
 
@@ -46,7 +46,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
           last_name: user.last_name,
           work_email: user.email,
           namespace_id: namespace.id,
-          product_interaction: "duo_pro_add_on_seat_assigned",
+          product_interaction: product_interaction,
           preferred_language: 'English',
           opt_in: user.onboarding_status_email_opt_in
         }.stringify_keys
@@ -213,7 +213,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
       let(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
 
-      it_behaves_like 'success response'
+      it_behaves_like 'success response', 'duo_enterprise_add_on_seat_assigned'
     end
   end
 end

@@ -14,28 +14,8 @@ module Onboarding
     feature_category :onboarding
 
     def perform(namespace_id, user_ids)
-      @namespace = Namespace.find_by_id(namespace_id)
-      return unless @namespace.present?
-
-      User.left_join_user_detail.id_in(user_ids).find_each do |user|
-        Onboarding::CreateIterableTriggerWorker.perform_async(user_iterable_params(user).stringify_keys)
-      end
-    end
-
-    private
-
-    attr_reader :namespace
-
-    def user_iterable_params(user)
-      {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        work_email: user.email,
-        namespace_id: namespace.id,
-        product_interaction: "duo_pro_add_on_seat_assigned",
-        opt_in: user.onboarding_status_email_opt_in,
-        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language)
-      }
+      # Deprecating as per https://docs.gitlab.com/ee/development/sidekiq/compatibility_across_updates.html#in-the-first-minor-release
+      # Continue deprecation in https://gitlab.com/gitlab-org/gitlab/-/issues/497157
     end
   end
 end

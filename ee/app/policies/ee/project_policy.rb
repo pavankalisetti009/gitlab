@@ -476,7 +476,7 @@ module EE
       end
 
       condition(:resolve_vulnerability_enabled) do
-        @user.allowed_to_use?(:resolve_vulnerability)
+        @user&.allowed_to_use?(:resolve_vulnerability)
       end
 
       rule { can?(:read_security_resource) & resolve_vulnerability_allowed & resolve_vulnerability_enabled }.policy do

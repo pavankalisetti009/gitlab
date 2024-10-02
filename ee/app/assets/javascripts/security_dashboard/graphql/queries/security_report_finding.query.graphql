@@ -157,6 +157,7 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
         stateComment
         vulnerability {
           id
+          aiResolutionEnabled
           externalIssueLinks {
             nodes {
               id
