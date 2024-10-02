@@ -13,6 +13,8 @@ module Types
         value 'MISTRAL', 'Mistral: Suitable for code suggestions and duo chat.', value: 'mistral'
         value 'DEEPSEEKCODER', description: 'Deepseek Coder base or instruct.', value: 'deepseekcoder'
         value 'LLAMA3', description: 'LLaMA 3: Suitable for code suggestions and duo chat.', value: 'llama3'
+        value 'CLAUDE_3', description: 'Claude 3 model family, suitable for code generation and duo chat.',
+          value: 'claude_3'
       end
     end
   end
