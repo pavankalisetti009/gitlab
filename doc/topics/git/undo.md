@@ -330,7 +330,7 @@ Alternatively, to completely delete specific files from a repository, see
 
 Prerequisites:
 
-- You must have the Owner role for the instance.
+- You must have the Owner role for the project.
 
 To redact text from your repository:
 
