@@ -32,7 +32,6 @@ RSpec.describe WebIde::ExtensionsMarketplace, feature_category: :web_ide do
       before do
         stub_feature_flags(
           web_ide_extensions_marketplace: current_user,
-          web_ide_oauth: current_user,
           vscode_web_ide: current_user
         )
 

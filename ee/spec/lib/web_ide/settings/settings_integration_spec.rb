@@ -15,7 +15,7 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
   subject(:settings) { described_class.get([:vscode_extensions_gallery_metadata], options) }
 
   before do
-    stub_feature_flags(vscode_web_ide: true, web_ide_oauth: true, web_ide_extensions_marketplace: true)
+    stub_feature_flags(vscode_web_ide: true, web_ide_extensions_marketplace: true)
     stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: true)
     user.update!(extensions_marketplace_enabled: true)
   end

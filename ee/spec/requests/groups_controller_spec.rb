@@ -369,7 +369,6 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       before do
         stub_feature_flags(
           vscode_web_ide: true,
-          web_ide_oauth: true,
           web_ide_extensions_marketplace: true
         )
       end
