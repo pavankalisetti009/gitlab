@@ -25,6 +25,7 @@ describe('ActivityToken', () => {
     active = false,
     stubs,
     mountFn = shallowMountExtended,
+    provide,
   } = {}) => {
     router = new VueRouter({ mode: 'history' });
 
@@ -39,6 +40,7 @@ describe('ActivityToken', () => {
         portalName: 'fake target',
         alignSuggestions: jest.fn(),
         termsAsTokens: () => false,
+        ...provide,
       },
       stubs: {
         QuerystringSync: true,
@@ -75,64 +77,95 @@ describe('ActivityToken', () => {
   describe('default view', () => {
     const findViewSlot = () => wrapper.findByTestId('slot-view');
     const findAllBadges = () => wrapper.findAllComponents(GlBadge);
-
-    beforeEach(() => {
+    const createWrapperWithAbility = ({ resolveVulnerabilityWithAi } = {}) => {
       createWrapper({
         stubs: {
           GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
             template: `
             <div>
-                <div data-testid="slot-view">
-                    <slot name="view"></slot>
-                </div>
-                <div data-testid="slot-suggestions">
-                    <slot name="suggestions"></slot>
-                </div>
+              <div data-testid="slot-view">
+                <slot name="view"></slot>
+              </div>
+              <div data-testid="slot-suggestions">
+                <slot name="suggestions"></slot>
+              </div>
             </div>`,
           }),
         },
+        provide: {
+          glFeatures: {
+            vulnerabilityReportVrFilter: true,
+          },
+          glAbilities: {
+            resolveVulnerabilityWithAi,
+          },
+        },
       });
-    });
+    };
 
     it('shows the label', () => {
+      createWrapperWithAbility();
       expect(findViewSlot().text()).toBe('Still detected');
     });
 
-    it('shows the dropdown with correct options', () => {
-      // All options are rendered in the #suggestions slot of GlFilteredSearchToken
-      const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
+    const baseOptions = [
+      'All activity',
+      'Detection', // group header
+      'Still detected',
+      'No longer detected',
+      'Issue', // group header
+      'Has issue',
+      'Does not have issue',
+      'Merge Request', // group header
+      'Has merge request',
+      'Does not have merge request',
+      'Solution available', // group header
+      'Has a solution',
+      'Does not have a solution',
+    ];
 
-      expect(
-        findDropdownOptions()
-          .text()
-          .split('\n')
-          .map((s) => s.trim())
-          .filter((i) => i),
-      ).toEqual([
-        'All activity',
-        'Detection', // group header
-        'Still detected',
-        'No longer detected',
-        'Issue', // group header
-        'Has issue',
-        'Does not have issue',
-        'Merge Request', // group header
-        'Has merge request',
-        'Does not have merge request',
-        'Solution available', // group header
-        'Has a solution',
-        'Does not have a solution',
-      ]);
-    });
+    const aiOptions = [
+      'GitLab Duo (AI)', // group header
+      'Vulnerability Resolution available',
+      'Vulnerability Resolution unavailable',
+    ];
 
-    it('shows the group headers with correct badges', () => {
-      expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
-        'check-circle-dashed',
-        'issues',
-        'merge-request',
-        'bulb',
-      ]);
-    });
+    it.each`
+      resolveVulnerabilityWithAi | expectedOptions
+      ${true}                    | ${[...baseOptions, ...aiOptions]}
+      ${false}                   | ${baseOptions}
+    `(
+      'shows the dropdown with correct options when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
+      ({ resolveVulnerabilityWithAi, expectedOptions }) => {
+        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+
+        // All options are rendered in the #suggestions slot of GlFilteredSearchToken
+        const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
+
+        expect(
+          findDropdownOptions()
+            .text()
+            .split('\n')
+            .map((s) => s.trim())
+            .filter((i) => i),
+        ).toEqual(expectedOptions);
+      },
+    );
+
+    it.each`
+      resolveVulnerabilityWithAi | expectedBadges
+      ${true}                    | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'tanuki-ai']}
+      ${false}                   | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb']}
+    `(
+      'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
+      ({ resolveVulnerabilityWithAi, expectedBadges }) => {
+        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+
+        expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
+          expectedBadges,
+        );
+      },
+    );
   });
 
   describe('item selection', () => {
@@ -277,6 +310,8 @@ describe('ActivityToken', () => {
           'DOES_NOT_HAVE_MERGE_REQUEST',
           'HAS_SOLUTION',
           'DOES_NOT_HAVE_SOLUTION',
+          'AI_RESOLUTION_AVAILABLE',
+          'AI_RESOLUTION_UNAVAILABLE',
         ],
       });
     });
@@ -302,6 +337,54 @@ describe('ActivityToken', () => {
       allOptionsExcept(expected).forEach((item) => {
         expect(isOptionChecked(item)).toBe(false);
       });
+    });
+  });
+
+  describe('when FF vulnerabilityReportVrFilter is off', () => {
+    beforeEach(() => {
+      createWrapper({
+        provide: {
+          glFeatures: { vulnerabilityReportVrFilter: false },
+        },
+        stubs: {
+          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
+            template: `
+            <div>
+                <div data-testid="slot-view">
+                    <slot name="view"></slot>
+                </div>
+                <div data-testid="slot-suggestions">
+                    <slot name="suggestions"></slot>
+                </div>
+            </div>`,
+          }),
+        },
+      });
+    });
+
+    it('does not show the "GitLab Duo" options in the dropdown', () => {
+      // All options are rendered in the #suggestions slot of GlFilteredSearchToken
+      const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
+      const dropdownOptions = findDropdownOptions()
+        .text()
+        .split('\n')
+        .map((s) => s.trim())
+        .filter((i) => i);
+
+      expect(dropdownOptions).not.toEqual(
+        expect.arrayContaining([
+          'GitLab Duo (AI)', // group header
+          'Vulnerability Resolution available',
+          'Vulnerability Resolution unavailable',
+        ]),
+      );
+    });
+
+    it('does not show the "tanuki ai" badge in the group header', () => {
+      const findAllBadges = () => wrapper.findAllComponents(GlBadge);
+      const icons = findAllBadges().wrappers.map((component) => component.props('icon'));
+
+      expect(icons).not.toContain('tanuki-ai');
     });
   });
 });
