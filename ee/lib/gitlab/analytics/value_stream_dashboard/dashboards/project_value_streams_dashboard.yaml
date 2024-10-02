@@ -3,14 +3,6 @@ title: Value Streams Dashboard
 description: Track key DevSecOps metrics throughout the development lifecycle.
 version: "2"
 panels:
-  - visualization: dora_chart
-    title: Metrics comparison for %{namespaceName} %{namespaceType}
-    gridAttributes:
-      yPos: 1
-      xPos: 0
-      width: 12
-      height: 6
-    options: {}
   - visualization: usage_overview
     title: Usage overview for %{namespaceName} %{namespaceType}
     gridAttributes:
@@ -19,3 +11,66 @@ panels:
       width: 12
       height: 1
     options: {}
+  - visualization: dora_chart
+    title: 'Lifecycle metrics: %{namespaceName} (%{namespaceType})'
+    gridAttributes:
+      yPos: 1
+      xPos: 0
+      width: 12
+      height: 4
+    options: {}
+    queryOverrides:
+      filters:
+        excludeMetrics:
+          - deployment_frequency
+          - lead_time_for_changes
+          - time_to_restore_service
+          - change_failure_rate
+          - vulnerability_critical
+          - vulnerability_high
+  - visualization: dora_chart
+    title: 'DORA metrics: %{namespaceName} (%{namespaceType})'
+    gridAttributes:
+      yPos: 5
+      xPos: 0
+      width: 12
+      height: 3
+    options: {}
+    queryOverrides:
+      filters:
+        excludeMetrics:
+          - lead_time
+          - cycle_time
+          - issues
+          - issues_completed
+          - commits
+          - deploys
+          - median_time_to_merge
+          - merge_request_throughput
+          - contributor_count
+          - vulnerability_critical
+          - vulnerability_high
+  - visualization: dora_chart
+    title: 'Security metrics: %{namespaceName} (%{namespaceType})'
+    gridAttributes:
+      yPos: 8
+      xPos: 0
+      width: 12
+      height: 2
+    options: {}
+    queryOverrides:
+      filters:
+        excludeMetrics:
+          - deployment_frequency
+          - lead_time_for_changes
+          - time_to_restore_service
+          - change_failure_rate
+          - lead_time
+          - cycle_time
+          - issues
+          - issues_completed
+          - commits
+          - deploys
+          - median_time_to_merge
+          - merge_request_throughput
+          - contributor_count
