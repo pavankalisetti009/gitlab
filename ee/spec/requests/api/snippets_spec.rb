@@ -8,9 +8,9 @@ RSpec.describe API::Snippets, :aggregate_failures, feature_category: :source_cod
   let_it_be(:admin) { create(:user, :admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:storage) { "default" }
-  let_it_be(:snippet1) { create(:snippet, :repository, author: admin) }
-  let_it_be(:snippet2) { create(:snippet, :repository, author: user) }
-  let_it_be(:snippet3) { create(:snippet, repository_storage: "extra", author: admin) }
+  let_it_be(:snippet1) { create(:personal_snippet, :repository, author: admin) }
+  let_it_be(:snippet2) { create(:personal_snippet, :repository, author: user) }
+  let_it_be(:snippet3) { create(:personal_snippet, repository_storage: "extra", author: admin) }
 
   describe 'GET /snippets/all' do
     let(:path) { "/snippets/all" }

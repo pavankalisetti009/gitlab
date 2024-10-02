@@ -22,10 +22,10 @@ RSpec.describe Snippet, :elastic, feature_category: :global_search do
     user = create(:user)
 
     Sidekiq::Testing.inline! do
-      create(:snippet, :public, title: 'home')
-      create(:snippet, :private, title: 'home 1')
-      create(:snippet, :public, description: 'a test snippet')
-      create(:snippet)
+      create(:personal_snippet, :public, title: 'home')
+      create(:personal_snippet, :private, title: 'home 1')
+      create(:personal_snippet, :public, description: 'a test snippet')
+      create(:personal_snippet)
 
       ensure_elasticsearch_index!
     end
