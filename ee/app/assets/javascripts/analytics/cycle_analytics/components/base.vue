@@ -14,7 +14,7 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { METRICS_REQUESTS } from '../constants';
 import DurationChart from './duration_chart.vue';
-import TypeOfWorkCharts from './type_of_work_charts.vue';
+import TypeOfWorkChartsLoader from './type_of_work_charts_loader.vue';
 import ValueStreamAggregationStatus from './value_stream_aggregation_status.vue';
 import ValueStreamAggregatingWarning from './value_stream_aggregating_warning.vue';
 import ValueStreamEmptyState from './value_stream_empty_state.vue';
@@ -27,7 +27,7 @@ export default {
     PageHeading,
     DurationChart,
     GlEmptyState,
-    TypeOfWorkCharts,
+    TypeOfWorkChartsLoader,
     StageTable,
     PathNavigation,
     ValueStreamAggregationStatus,
@@ -271,7 +271,7 @@ export default {
         <div :class="[isOverviewStageSelected ? 'gl-mt-2' : 'gl-mt-6']">
           <duration-overview-chart v-if="isOverviewStageSelected" class="gl-mb-6" />
           <duration-chart v-else class="gl-mb-6" />
-          <type-of-work-charts
+          <type-of-work-charts-loader
             v-if="enableTasksByTypeChart"
             v-show="isOverviewStageSelected"
             class="gl-mb-6"
