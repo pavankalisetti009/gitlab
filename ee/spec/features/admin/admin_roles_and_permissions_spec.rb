@@ -17,7 +17,7 @@ RSpec.describe 'Roles and permissions', feature_category: :user_management do
     end
 
     it 'shows a loading icon' do
-      expect(page).to have_css(".gl-spinner[aria-label=#{_('Loading')}]")
+      expect(page).to have_css('.gl-sr-only', text: 'Loading')
     end
   end
 end
