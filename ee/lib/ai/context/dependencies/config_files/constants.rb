@@ -28,10 +28,11 @@ module Ai
             ConfigFiles::JavaMaven,
             ConfigFiles::KotlinGradle,
             ConfigFiles::PhpComposerLock,
+            ConfigFiles::PhpComposer,
             ConfigFiles::PythonConda,
             ConfigFiles::PythonPip,
-            ConfigFiles::PythonPoetry,
             ConfigFiles::PythonPoetryLock,
+            ConfigFiles::PythonPoetry,
             ConfigFiles::RubyGemsLock
           ].freeze
         end
