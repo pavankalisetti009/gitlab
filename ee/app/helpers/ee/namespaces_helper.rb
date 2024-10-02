@@ -27,13 +27,13 @@ module EE
     end
 
     def buy_storage_path(namespace)
-      return purchase_storage_url if use_customers_dot_for_addon_path?(namespace)
+      return purchase_storage_url(namespace) if use_customers_dot_for_addon_path?(namespace)
 
       buy_storage_subscriptions_path(selected_group: namespace.root_ancestor.id)
     end
 
     def buy_storage_url(namespace)
-      return purchase_storage_url if use_customers_dot_for_addon_path?(namespace)
+      return purchase_storage_url(namespace) if use_customers_dot_for_addon_path?(namespace)
 
       buy_storage_subscriptions_url(selected_group: namespace.root_ancestor.id)
     end
@@ -96,8 +96,11 @@ module EE
       })
     end
 
-    def purchase_storage_url
-      ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url
+    def purchase_storage_url(namespace)
+      ::Gitlab::Utils.add_url_parameters(
+        ::Gitlab::Routing.url_helpers.subscription_portal_more_storage_url,
+        gl_namespace_id: namespace.root_ancestor.id
+      )
     end
 
     private
