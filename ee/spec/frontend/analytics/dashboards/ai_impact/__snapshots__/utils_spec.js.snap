@@ -193,7 +193,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
   {
     "key": "metric",
     "label": "Metric",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2019-10-31T23:59:59.000Z,
@@ -241,7 +241,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-1/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2020-03-31T00:00:00.000Z,
@@ -249,7 +249,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "label": "Trend",
     "start": 2019-10-01T00:00:00.000Z,
     "tdClass": "!gl-py-2",
-    "thClass": "gl-w-1/20",
+    "thClass": "gl-w-1/10",
   },
 ]
 `;
@@ -259,7 +259,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
   {
     "key": "metric",
     "label": "Metric",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2021-02-28T23:59:59.000Z,
@@ -307,7 +307,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-1/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2021-07-01T00:00:00.000Z,
@@ -315,7 +315,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "label": "Trend",
     "start": 2021-01-01T00:00:00.000Z,
     "tdClass": "!gl-py-2",
-    "thClass": "gl-w-1/20",
+    "thClass": "gl-w-1/10",
   },
 ]
 `;
@@ -325,7 +325,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
   {
     "key": "metric",
     "label": "Metric",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2020-10-31T23:59:59.000Z,
@@ -373,7 +373,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-1/10",
+    "thClass": "gl-w-3/20",
   },
   {
     "end": 2021-03-31T00:00:00.000Z,
@@ -381,7 +381,7 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "label": "Trend",
     "start": 2020-10-01T00:00:00.000Z,
     "tdClass": "!gl-py-2",
-    "thClass": "gl-w-1/20",
+    "thClass": "gl-w-1/10",
   },
 ]
 `;

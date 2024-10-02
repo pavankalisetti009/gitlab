@@ -95,17 +95,26 @@ describe('AI impact Dashboard utils', () => {
   describe('getRestrictedTableMetrics', () => {
     it('restricts DORA metrics when the permission is disabled', () => {
       const permissions = { readCycleAnalytics: true, readSecurityResource: true };
-      expect(getRestrictedTableMetrics(permissions)).toEqual(SUPPORTED_DORA_METRICS);
+      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_DORA_METRICS);
     });
 
     it('restricts flow metrics when the permission is disabled', () => {
       const permissions = { readDora4Analytics: true, readSecurityResource: true };
-      expect(getRestrictedTableMetrics(permissions)).toEqual(SUPPORTED_FLOW_METRICS);
+      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_FLOW_METRICS);
     });
 
     it('restricts vulnerability metrics when the permission is disabled', () => {
       const permissions = { readDora4Analytics: true, readCycleAnalytics: true };
-      expect(getRestrictedTableMetrics(permissions)).toEqual(SUPPORTED_VULNERABILITY_METRICS);
+      expect(getRestrictedTableMetrics([], permissions)).toEqual(SUPPORTED_VULNERABILITY_METRICS);
+    });
+
+    it('does not restrict metrics that are already excluded', () => {
+      const excludeMetrics = SUPPORTED_DORA_METRICS.slice(1);
+      expect(getRestrictedTableMetrics(excludeMetrics, {})).toEqual([
+        SUPPORTED_DORA_METRICS[0],
+        ...SUPPORTED_FLOW_METRICS,
+        ...SUPPORTED_VULNERABILITY_METRICS,
+      ]);
     });
   });
 
