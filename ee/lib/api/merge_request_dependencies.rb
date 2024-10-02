@@ -79,6 +79,24 @@ module API
           render_api_error!(result.message, result.reason)
         end
       end
+
+      desc 'Get all merge requests are blockees for this merge request' do
+        success EE::API::Entities::MergeRequestDependency
+        tags %w[merge_requests]
+        is_array true
+      end
+
+      params do
+        requires :merge_request_iid, type: Integer, desc: 'The internal ID of the merge request'
+        use :pagination
+      end
+      get ":id/merge_requests/:merge_request_iid/blockees" do
+        merge_request = find_merge_request_with_access(params[:merge_request_iid])
+
+        blockees = merge_request.blocks_as_blocker
+
+        present paginate(blockees), with: EE::API::Entities::MergeRequestDependency, current_user: current_user
+      end
     end
   end
 end
