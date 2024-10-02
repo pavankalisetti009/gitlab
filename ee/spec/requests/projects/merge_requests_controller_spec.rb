@@ -13,6 +13,71 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     login_as(user)
   end
 
+  describe 'GET #show' do
+    def get_show
+      get project_merge_request_path(project, merge_request)
+    end
+
+    context "when resolveVulnerabilityWithAi ability is allowed" do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, project).and_return(true)
+
+        get_show
+      end
+
+      it 'sets the frontend ability to true' do
+        expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: true)
+      end
+    end
+
+    context "when resolveVulnerabilityWithAi ability is not allowed" do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, project).and_return(false)
+
+        get_show
+      end
+
+      it 'sets the frontend ability to false' do
+        expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: false)
+      end
+    end
+
+    context "when the merge request is publicly accessible" do
+      let_it_be(:public_project) { create(:project, :public) }
+      let_it_be(:public_merge_request) { create(:merge_request, source_project: public_project) }
+
+      def get_public_show
+        get project_merge_request_path(public_project, public_merge_request)
+      end
+
+      context "with AI features available" do
+        before do
+          authorizer = instance_double(::Gitlab::Llm::FeatureAuthorizer)
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+          allow(authorizer).to receive(:allowed?).and_return(true)
+
+          service = instance_double(CloudConnector::BaseAvailableServiceData)
+          allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
+          allow(service).to receive_messages({ free_access?: true, allowed_for?: true })
+          allow(::Gitlab::Saas).to receive(:feature_available?).and_return(true)
+        end
+
+        context "when the user is logged out" do
+          before do
+            sign_out(user)
+            get_public_show
+          end
+
+          it 'sets the frontend ability to false' do
+            expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: false)
+          end
+        end
+      end
+    end
+  end
+
   describe 'GET #edit' do
     def get_edit
       get edit_project_merge_request_path(project, merge_request)
