@@ -4,6 +4,7 @@ query getSelfHostedModels {
       id
       name
       model
+      identifier
       endpoint
       hasApiToken
     }

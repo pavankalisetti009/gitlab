@@ -43,6 +43,7 @@ describe('SelfHostedModelsTable', () => {
       'Name',
       'Model',
       'Endpoint',
+      'Model identifier',
       'API token',
       '', // The 'edit' column does not have a header name
     ];
@@ -59,6 +60,7 @@ describe('SelfHostedModelsTable', () => {
     expect(firstModel.text()).toContain('codellama');
     expect(firstModel.text()).toContain('https://mock-endpoint-1.com');
     expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
+    expect(firstModel.text()).toContain('provider/some-model-1');
   });
 
   it('renders a disclosure dropdown for each self-hosted model entry', () => {
