@@ -35,19 +35,12 @@ module Gitlab
               PROJECT_REGEX
             end
 
-            def extract_resource(text, type)
-              project = extract_project(text, type)
-              return unless project
-
-              extractor = Gitlab::ReferenceExtractor.new(project, context.current_user)
-              extractor.analyze(text, {})
-              commits = extractor.commits
-
-              commits.first if commits.any?
-            end
-
             def resource_name
               RESOURCE_NAME
+            end
+
+            def get_resources(extractor)
+              extractor.commits
             end
           end
         end

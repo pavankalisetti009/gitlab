@@ -73,15 +73,15 @@ module Gitlab
             raise NotImplementedError
           end
 
+          def get_resources(extractor)
+            raise NotImplementedError
+          end
+
           def reference_pattern_by_type
             raise NotImplementedError
           end
 
           def by_iid
-            raise NotImplementedError
-          end
-
-          def extract_resource
             raise NotImplementedError
           end
 
@@ -124,6 +124,17 @@ module Gitlab
             ::Gitlab::Llm::Chain::Answer.new(
               status: :not_executed, context: context, content: content, tool: nil, is_final: false
             )
+          end
+
+          def extract_resource(text, type)
+            project = extract_project(text, type)
+            return unless project
+
+            extractor = Gitlab::ReferenceExtractor.new(project, context.current_user)
+            extractor.analyze(text, {})
+            resources = get_resources(extractor)
+
+            resources.first if resources.one?
           end
 
           def extract_project(text, type)
