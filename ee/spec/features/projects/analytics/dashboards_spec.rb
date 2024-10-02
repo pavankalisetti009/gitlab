@@ -114,8 +114,8 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
             visit_project_value_streams_dashboard(project)
           end
 
-          it_behaves_like 'renders metrics comparison table' do
-            let(:panel_title) { "#{project.name} project" }
+          it_behaves_like 'renders metrics comparison tables' do
+            let(:panel_title) { "#{project.name} (project)" }
           end
         end
 

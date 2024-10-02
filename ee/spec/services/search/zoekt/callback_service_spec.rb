@@ -29,10 +29,11 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
       }
     end
 
+    let(:success) { true }
+
     context 'when task is not found' do
       let(:task_id) { non_existing_record_id }
       let(:task_type) { 'index' }
-      let(:success) { true }
 
       it 'does not performs anything' do
         expect(execute).to be nil
@@ -41,7 +42,14 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
     context 'for successful operation' do
       let_it_be_with_reload(:index_zoekt_task) { create(:zoekt_task, node: node) }
-      let(:success) { true }
+
+      shared_examples 'successful zoekt task that publishes to event store' do
+        it 'publishes the correct event to GitLab::EventStore' do
+          expected_data = { zoekt_repository_id: zoekt_task.zoekt_repository_id, task_id: task_id }
+
+          expect { service.execute }.to publish_event(Search::Zoekt::TaskSucceededEvent).with(expected_data)
+        end
+      end
 
       context 'when task is already done' do
         let(:task_type) { 'index' }
@@ -63,6 +71,10 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
         let(:task_type) { 'index' }
         let(:task_id) { index_zoekt_task.id }
+
+        it_behaves_like 'successful zoekt task that publishes to event store' do
+          let_it_be(:zoekt_task) { index_zoekt_task }
+        end
 
         it 'updates the task state, zoekt_repository data' do
           freeze_time do
@@ -86,6 +98,10 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
           expect(delete_zoekt_task.zoekt_repository).to be nil
         end
 
+        it_behaves_like 'successful zoekt task that publishes to event store' do
+          let_it_be(:zoekt_task) { delete_zoekt_task }
+        end
+
         context 'when repository is already deleted' do
           before do
             delete_zoekt_task.zoekt_repository.destroy!
@@ -93,6 +109,10 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
           it 'moves the task to done' do
             expect { execute }.to change { delete_zoekt_task.reload.state }.to('done')
+          end
+
+          it_behaves_like 'successful zoekt task that publishes to event store' do
+            let_it_be(:zoekt_task) { delete_zoekt_task }
           end
         end
       end

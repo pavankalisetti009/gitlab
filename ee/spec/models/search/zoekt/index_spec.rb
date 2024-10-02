@@ -201,12 +201,40 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
-  describe '#used_storage_bytes' do
-    let_it_be(:size_bytes) { 100.megabytes }
-    let_it_be(:repos) { create_list(:zoekt_repository, 5, zoekt_index: zoekt_index, size_bytes: size_bytes) }
+  describe '#update_used_storage_bytes!' do
+    let_it_be(:idx) { create(:zoekt_index, reserved_storage_bytes: 100.megabytes) }
+    let_it_be(:idx_project) { create(:project, namespace_id: idx.namespace_id) }
+    let_it_be(:idx_project_2) { create(:project, namespace_id: idx.namespace_id) }
 
-    it 'returns the sum of size_bytes for all repository associated with this index' do
-      expect(zoekt_index.used_storage_bytes).to eq(repos.length * size_bytes)
+    it 'updates indices with the sum of size_bytes for all all associated repositories' do
+      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :ready,
+        size_bytes: 50.megabytes)
+      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project_2, state: :ready,
+        size_bytes: 50.megabytes)
+
+      expect { idx.update_used_storage_bytes! }.to change {
+        described_class.find(idx.id).used_storage_bytes
+      }.from(0).to(100.megabytes)
+    end
+
+    context 'when an exception occurs' do
+      it 'logs the error and re-raises the exception' do
+        stubbed_logger = instance_double(::Search::Zoekt::Logger)
+        expect(::Search::Zoekt::Logger).to receive(:build).and_return stubbed_logger
+
+        expected_error_message = "Ka-Boom"
+
+        expect(stubbed_logger).to receive(:error).with({
+          class: "Search::Zoekt::Index",
+          message: 'Error attempting to update used_storage_bytes',
+          error: expected_error_message,
+          index_id: idx.id
+        }.with_indifferent_access)
+
+        expect(idx).to receive(:update!).and_raise expected_error_message
+
+        expect { idx.update_used_storage_bytes! }.to raise_error expected_error_message
+      end
     end
   end
 

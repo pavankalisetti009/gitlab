@@ -6,6 +6,7 @@ module Search
       self.table_name = 'zoekt_indices'
       include EachBatch
       include NamespaceValidateable
+      include Gitlab::Loggable
 
       SEARCHEABLE_STATES = %i[ready].freeze
 
@@ -65,8 +66,17 @@ module Search
         where(state: [:orphaned, :pending_deletion])
       end
 
-      def used_storage_bytes
-        zoekt_repositories.sum(:size_bytes)
+      def update_used_storage_bytes!
+        update!(used_storage_bytes: zoekt_repositories.sum(:size_bytes))
+
+      rescue StandardError => err
+        logger.error(build_structured_payload(
+          message: 'Error attempting to update used_storage_bytes',
+          index_id: id,
+          error: err.message
+        ))
+
+        raise err
       end
 
       def free_storage_bytes
@@ -83,6 +93,10 @@ module Search
 
       def delete_from_index
         ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, :delete, zoekt_node_id)
+      end
+
+      def logger
+        @logger ||= ::Search::Zoekt::Logger.build
       end
     end
   end
