@@ -12,7 +12,6 @@ module CodeSuggestions
         # response time grows with prompt size, so we don't use upper limit size of prompt window
         MAX_INPUT_CHARS = 50000
         GATEWAY_PROMPT_VERSION = 3
-        CONTENT_TYPES = { file: 'file', snippet: 'snippet' }.freeze
 
         def request_params
           {
@@ -37,7 +36,10 @@ module CodeSuggestions
         def code_generation_enhancer
           {
             **examples_section_params,
-            **existing_code_block_params
+            **existing_code_block_params,
+            **context_block_params,
+            **libraries_block_params,
+            **user_instruction_params
           }
         end
 
@@ -50,8 +52,6 @@ module CodeSuggestions
         end
 
         def existing_code_block_params
-          return {} unless params[:prefix].present?
-
           trimmed_prefix = prefix.to_s.last(MAX_INPUT_CHARS)
           trimmed_suffix = suffix.to_s.first(MAX_INPUT_CHARS - trimmed_prefix.size)
 
@@ -59,6 +59,64 @@ module CodeSuggestions
             trimmed_prefix: trimmed_prefix,
             trimmed_suffix: trimmed_suffix
           }
+        end
+
+        def context_block_params
+          related_files = []
+          related_snippets = []
+
+          params[:context]&.each do |context|
+            if context[:type] == ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES[:file]
+              related_files << <<~FILE_CONTENT
+              <file_content file_name="#{context[:name]}">
+              #{context[:content]}
+              </file_content>
+              FILE_CONTENT
+            elsif context[:type] == ::Ai::AdditionalContext::CODE_SUGGESTIONS_CONTEXT_TYPES[:snippet]
+              related_snippets << <<~SNIPPET_CONTENT
+              <snippet_content name="#{context[:name]}">
+              #{context[:content]}
+              </snippet_content>
+              SNIPPET_CONTENT
+            end
+          end
+
+          {
+            related_files: related_files,
+            related_snippets: related_snippets
+          }
+        end
+
+        def libraries_block_params
+          if libraries.any?
+            Gitlab::InternalEvents.track_event(
+              'include_repository_xray_data_into_code_generation_prompt',
+              project: params[:project],
+              namespace: params[:project]&.namespace,
+              user: params[:current_user]
+            )
+          end
+
+          { libraries: libraries }
+        end
+
+        def libraries
+          return [] unless xray_report
+
+          xray_report.libs.map { |l| l['name'] } # rubocop:disable Rails/Pluck -- libs is an array
+        end
+        strong_memoize_attr :libraries
+
+        def xray_report
+          ::Projects::XrayReport.for_project(params[:project]).for_lang(language.x_ray_lang).first
+        end
+        strong_memoize_attr :xray_report
+
+        def user_instruction_params
+          instruction = params[:instruction]&.instruction.presence ||
+            'Generate the best possible code based on instructions.'
+
+          { user_instruction: instruction }
         end
       end
     end
