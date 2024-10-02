@@ -28,8 +28,8 @@ RSpec.describe Snippet do
   end
 
   describe '.by_repository_storage' do
-    let_it_be(:snippet_in_default_storage) { create(:snippet, :repository) }
-    let_it_be(:snippet_without_storage) { create(:snippet) }
+    let_it_be(:snippet_in_default_storage) { create(:project_snippet, :repository) }
+    let_it_be(:snippet_without_storage) { create(:project_snippet) }
 
     it 'filters snippet by repository storage name' do
       snippets = described_class.by_repository_storage("default")
