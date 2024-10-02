@@ -171,7 +171,6 @@ export default {
         __('Productivity analytics can help identify the problems that are delaying your team')
       "
       :svg-path="emptyStateSvgPath"
-      :svg-height="null"
       :description="
         __(
           'Start by choosing a group to start exploring the merge requests in that group. You can then proceed to filter by projects, labels, milestones and authors.',
@@ -183,7 +182,6 @@ export default {
       class="js-empty-state"
       :title="__('You don’t have access to Productivity Analytics in this group')"
       :svg-path="noAccessSvgPath"
-      :svg-height="null"
       :description="
         __(
           'Only ‘Reporter’ roles and above on tiers Premium and above can see Productivity Analytics.',
