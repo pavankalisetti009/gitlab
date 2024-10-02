@@ -2677,7 +2677,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
 
     let_it_be(:grp_private_2) { create(:group, :private) }
-    let_it_be(:grp_private_2_prj_private) { create(:project, :private, group: grp_private_2) }
+    let_it_be(:sub_grp_private_2) { create(:group, :private, parent: grp_private_2) }
+    let_it_be(:sub_grp_private_2_prj_private) { create(:project, :private, group: sub_grp_private_2) }
     let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: grp_private_2) }
     let_it_be(:member) do
       create(:group_member, :guest, member_role: role, user: user_with_access, source: grp_private_2)
@@ -2790,7 +2791,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             [[ref(:grp_public)]],
             [[ref(:sub_grp_internal)]],
             [[ref(:sub_grp_private)]],
-            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private), ref(:sub_grp_internal)]],
             [[ref(:sub_grp_internal), ref(:grp_private)]],
             [[ref(:sub_grp_private), ref(:grp_private)]],
             [[ref(:grp_private)]],
@@ -2820,11 +2821,12 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           [ref(:grp_public)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_internal)]
           [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)] | []
           [ref(:sub_grp_internal)] | [] | [ref(:sub_grp_internal)]
-          [ref(:grp_public), ref(:sub_grp_internal)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_internal)]
+          [ref(:sub_grp_private), ref(:sub_grp_internal)] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_internal)]
           [ref(:sub_grp_internal), ref(:grp_private)] | [ref(:grp_private_prj_private)] | [ref(:sub_grp_internal)]
           [ref(:sub_grp_private), ref(:grp_private)] | [ref(:sub_grp_private_prj_private), ref(:grp_private_prj_private)] | []
           [ref(:grp_private)] | [ref(:grp_private_prj_private)] | []
           [ref(:grp_private_2)] | [] | [ref(:grp_private_2)]
+          [ref(:sub_grp_private_2)] | [] | [ref(:sub_grp_private_2)]
         end
         # rubocop:enable Layout/LineLength
 
@@ -2842,7 +2844,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             [[ref(:grp_public)]],
             [[ref(:sub_grp_internal)]],
             [[ref(:sub_grp_private)]],
-            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private), ref(:sub_grp_internal)]],
             [[ref(:sub_grp_internal), ref(:grp_private)]],
             [[ref(:sub_grp_private), ref(:grp_private)]],
             [[ref(:grp_private)]],
@@ -2864,7 +2866,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             [[ref(:grp_public)]],
             [[ref(:sub_grp_internal)]],
             [[ref(:sub_grp_private)]],
-            [[ref(:grp_public), ref(:sub_grp_internal)]],
+            [[ref(:sub_grp_private), ref(:sub_grp_internal)]],
             [[ref(:sub_grp_internal), ref(:grp_private)]],
             [[ref(:sub_grp_private), ref(:grp_private)]],
             [[ref(:grp_private)]],
@@ -2900,12 +2902,14 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           [ref(:sub_grp_private)] | [ref(:sub_grp_private_prj_private)]
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
           [ref(:grp_private)] | [ref(:grp_private_prj_private)]
-          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [ref(:sub_grp_private_2)] | [ref(:sub_grp_private_2_prj_private)]
           [] | [ref(:grp_public_prj_internal)]
+          [] | [ref(:grp_public_prj_internal), ref(:sub_grp_private_prj_private)]
           [] | [ref(:sub_grp_private_prj_private)]
+          [] | [ref(:sub_grp_private_prj_private), ref(:sub_grp_private_2_prj_private)]
           [] | [ref(:sub_grp_internal_prj_internal)]
           [] | [ref(:grp_private_prj_private)]
-          [] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:sub_grp_private_2_prj_private)]
         end
 
         with_them do
@@ -2932,13 +2936,13 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)] | [] | [ref(:sub_grp_internal)]
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)] | [] | [ref(:sub_grp_internal)]
           [ref(:grp_private)] | [ref(:grp_private_prj_private)] | [ref(:grp_private_prj_private)] | []
-          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)] | [] | [ref(:grp_private_2)]
+          [ref(:sub_grp_private_2)] | [ref(:sub_grp_private_2_prj_private)] | [] | [ref(:sub_grp_private_2)]
           [] | [ref(:grp_public_prj_internal)] | [] | []
           [] | [ref(:sub_grp_private_prj_private)] | [ref(:sub_grp_private_prj_private)] | []
           [] | [ref(:sub_grp_internal_prj_internal)] | [] | [ref(:sub_grp_internal)]
           [] | [ref(:sub_grp_internal_prj_private)] | [] | [ref(:sub_grp_internal)]
           [] | [ref(:grp_private_prj_private)] | [ref(:grp_private_prj_private)] | []
-          [] | [ref(:grp_private_2_prj_private)] | [] | [ref(:grp_private_2)]
+          [] | [ref(:sub_grp_private_2_prj_private)] | [] | [ref(:sub_grp_private_2)]
         end
 
         with_them do
@@ -2957,13 +2961,13 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)]
           [ref(:grp_private)] | [ref(:grp_private_prj_private)]
-          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [ref(:sub_grp_private_2)] | [ref(:sub_grp_private_2_prj_private)]
           [] | [ref(:grp_public_prj_internal)]
           [] | [ref(:sub_grp_private_prj_private)]
           [] | [ref(:sub_grp_internal_prj_internal)]
           [] | [ref(:sub_grp_internal_prj_private)]
           [] | [ref(:grp_private_prj_private)]
-          [] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:sub_grp_private_2_prj_private)]
         end
 
         with_them do
@@ -2982,13 +2986,13 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_internal)]
           [ref(:sub_grp_internal)] | [ref(:sub_grp_internal_prj_private)]
           [ref(:grp_private)] | [ref(:grp_private_prj_private)]
-          [ref(:grp_private_2)] | [ref(:grp_private_2_prj_private)]
+          [ref(:sub_grp_private_2)] | [ref(:sub_grp_private_2_prj_private)]
           [] | [ref(:grp_public_prj_internal)]
           [] | [ref(:sub_grp_private_prj_private)]
           [] | [ref(:sub_grp_internal_prj_internal)]
           [] | [ref(:sub_grp_internal_prj_private)]
           [] | [ref(:grp_private_prj_private)]
-          [] | [ref(:grp_private_2_prj_private)]
+          [] | [ref(:sub_grp_private_2_prj_private)]
         end
 
         with_them do

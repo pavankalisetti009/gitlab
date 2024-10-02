@@ -3,11 +3,17 @@
 module Search
   module Elastic
     module Filters
+      ALLOWED_SEARCH_LEVELS = %i[global group project].freeze
+
       class << self
         include ::Elastic::Latest::QueryContext::Aware
 
         def by_search_level_and_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
+
+          unless ALLOWED_SEARCH_LEVELS.include?(options[:search_level].to_sym)
+            raise ArgumentError, 'search_level invalid'
+          end
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
 
@@ -482,8 +488,6 @@ module Search
                        else
                          authorized_projects.id_in(project_ids)
                        end
-                     else
-                       raise ArgumentError, "Invalid search level: #{search_level}"
                      end
 
           features = Array.wrap(options[:features])
@@ -496,38 +500,51 @@ module Search
           return [] unless user
 
           search_level = options.fetch(:search_level).to_sym
+
+          allowed_traversal_ids = case search_level
+                                  when :global
+                                    authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+                                    ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
+                                  when :group
+                                    authorized_traversal_ids_for_groups(user, options[:group_ids])
+                                  when :project
+                                    authorized_traversal_ids_for_projects(user, options[:project_ids])
+                                  end
+
+          allowed_traversal_ids.map { |id| "#{id.join('-')}-" }
+        end
+
+        def authorized_traversal_ids_for_groups(user, namespace_ids)
           authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+          namespaces = Namespace.id_in(namespace_ids)
 
-          groups = case search_level
-                   when :global
-                     authorized_groups
-                   when :group
-                     namespace_ids = options[:group_ids]
-                     namespaces = Namespace.id_in(namespace_ids)
-                     if !namespaces.id_not_in(authorized_groups).exists?
-                       namespaces
-                     else
-                       namespaces.map do |namespace|
-                         authorized_groups.by_contains_all_traversal_ids(namespace.traversal_ids)
-                       end
-                     end
-                   when :project
-                     project_ids = options[:project_ids]
-                     namespace_ids = Project.id_in(project_ids).select(:namespace_id)
-                     namespaces = Namespace.id_in(namespace_ids)
+          return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
 
-                     if !namespaces.id_not_in(authorized_groups).exists?
-                       namespaces
-                     else
-                       namespaces.map do |namespace|
-                         authorized_groups.by_traversal_ids(namespace.traversal_ids)
-                       end
-                     end
-                   else
-                     raise ArgumentError, "Invalid search_level: #{search_level}"
-                   end
+          authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
 
-          Group.from_union(groups).map(&:elastic_namespace_ancestry)
+          [].tap do |allowed_traversal_ids|
+            namespaces.map do |namespace|
+              traversal_ids = namespace.traversal_ids
+              if authorized_trie.covered?(traversal_ids)
+                allowed_traversal_ids << traversal_ids
+                next
+              end
+
+              allowed_traversal_ids.concat(authorized_trie.prefix_search(traversal_ids))
+            end
+          end
+        end
+
+        def authorized_traversal_ids_for_projects(user, project_ids)
+          authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+          namespace_ids = Project.id_in(project_ids).select(:namespace_id)
+          namespaces = Namespace.id_in(namespace_ids)
+
+          return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
+
+          authorized_trie = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
+
+          namespaces.map(&:traversal_ids).select { |s| authorized_trie.covered?(s) }
         end
 
         def visibility_level_for_user(user)
@@ -915,8 +932,6 @@ module Search
                 { bool:
                   { _name: context.name,
                     must: { terms: { project_id: project_ids } } } }
-              else
-                raise ArgumentError, "Invalid search level: #{search_level}"
               end
             end
           end
