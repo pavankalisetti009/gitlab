@@ -11,34 +11,6 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
     allow(view).to receive(:current_user).and_return(build(:user))
   end
 
-  context 'for duo features enabled' do
-    before do
-      allow(group).to receive(:licensed_ai_features_available?).and_call_original
-    end
-
-    context 'when licensed ai features is not available' do
-      it 'renders nothing' do
-        allow(group).to receive(:licensed_ai_features_available?).and_return(false)
-
-        render
-
-        expect(rendered).to render_template('groups/settings/_duo_features_enabled')
-        expect(rendered).not_to have_content('Use GitLab Duo features')
-      end
-    end
-
-    context 'when licensed ai features are available and feature flag is available' do
-      it 'renders the experiment settings' do
-        allow(group).to receive(:licensed_ai_features_available?).and_return(true)
-
-        render
-
-        expect(rendered).to render_template('groups/settings/_duo_features_enabled')
-        expect(rendered).to have_content('Use GitLab Duo features')
-      end
-    end
-  end
-
   context 'for auto assign duo pro seats' do
     context 'when on SM' do
       before do
