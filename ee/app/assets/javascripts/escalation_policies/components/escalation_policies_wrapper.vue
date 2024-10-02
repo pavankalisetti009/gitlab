@@ -127,7 +127,6 @@ export default {
       v-else
       :title="$options.i18n.emptyState.title"
       :svg-path="emptyEscalationPoliciesSvgPath"
-      :svg-height="null"
     >
       <template #description>
         <p v-if="userCanCreateEscalationPolicy">
