@@ -160,7 +160,7 @@ export default {
 
     <gl-button
       v-if="showButton"
-      class="gl-ml-6 gl-mt-2"
+      class="gl-ml-8 gl-mt-2"
       category="tertiary"
       variant="link"
       @click="toggleItemsLength"

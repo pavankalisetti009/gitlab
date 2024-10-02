@@ -233,20 +233,6 @@ const humanizeLicenseDetection = (licenseStates) => {
   });
 };
 
-const humanizeLicenses = (originalLicenses) => {
-  const licenses = [...originalLicenses];
-
-  if (licenses.length === 1) {
-    return licenses[0];
-  }
-
-  const lastLicense = licenses.pop();
-  return sprintf(s__('SecurityOrchestration|%{licenses} and %{lastLicense}'), {
-    licenses: licenses.join(', '),
-    lastLicense,
-  });
-};
-
 /**
  * Validate commits type
  * @param type commit type
@@ -305,13 +291,13 @@ const humanizeRule = (rule) => {
 
     return {
       summary: sprintf(summaryText, {
-        licenses: humanizeLicenses(rule.license_types),
         detection: humanizeLicenseDetection(rule.license_states),
         branches: humanizedValue,
         targeting: targetingValue,
         branchExceptionsString: branchExceptions.length ? branchExceptionsString : '.',
       }),
       branchExceptions,
+      licenses: rule.license_types,
     };
   }
 
@@ -393,7 +379,7 @@ const humanizeRule = (rule) => {
 
 /**
  * Create a human-readable version of the rules
- * @param {Array} rules [{type: 'scan_finding', branches: ['master'], scanners: ['container_scanning'], vulnerabilities_allowed: 1, severity_levels: ['critical']}]
+ * @param rules {Array} [{type: 'scan_finding', branches: ['master'], scanners: ['container_scanning'], vulnerabilities_allowed: 1, severity_levels: ['critical']}]
  * @returns {Array} [{summary: '', criteriaList: []}]
  */
 export const humanizeRules = (rules) => {

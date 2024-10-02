@@ -219,8 +219,9 @@ const singleValuedLicenseScanRule = {
   },
   humanized: {
     branchExceptions: [],
+    licenses: ['MIT License'],
     summary:
-      'When license scanner finds any license matching MIT License that is pre-existing and is in an open merge request targeting the main branch.',
+      'When license scanner finds any license matching %{licenses} that is pre-existing and is in an open merge request targeting the main branch.',
   },
 };
 
@@ -234,8 +235,9 @@ const multipleValuedLicenseScanRule = {
   },
   humanized: {
     branchExceptions: [],
+    licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
     summary:
-      'When license scanner finds any license except CMU License, CNRI Jython License and CNRI Python License in an open merge request targeting the staging or main branches.',
+      'When license scanner finds any license except %{licenses} in an open merge request targeting the staging or main branches.',
   },
 };
 
@@ -249,7 +251,8 @@ const branchTypeLicenseScanRule = (branchType = PROJECT_DEFAULT_BRANCH.value) =>
   },
   humanized: {
     branchExceptions: [],
-    summary: `When license scanner finds any license except CMU License, CNRI Jython License and CNRI Python License in an open merge request targeting ${HUMANIZED_BRANCH_TYPE_TEXT_DICT[branchType]}.`,
+    summary: `When license scanner finds any license except %{licenses} in an open merge request targeting ${HUMANIZED_BRANCH_TYPE_TEXT_DICT[branchType]}.`,
+    licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
   },
 });
 
@@ -263,10 +266,11 @@ const branchExceptionLicenseScanRule = (branchExceptions = []) => ({
     license_states: ['detected', 'newly_detected'],
   },
   humanized: {
-    summary: `When license scanner finds any license except CMU License, CNRI Jython License and CNRI Python License in an open merge request targeting ${
+    summary: `When license scanner finds any license except %{licenses} in an open merge request targeting ${
       HUMANIZED_BRANCH_TYPE_TEXT_DICT[PROJECT_DEFAULT_BRANCH.value]
     } except branches:`,
     branchExceptions: ['test', 'test1'],
+    licenses: ['CMU License', 'CNRI Jython License', 'CNRI Python License'],
   },
 });
 
