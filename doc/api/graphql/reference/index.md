@@ -147,26 +147,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryaimessagesrequestids"></a>`requestIds` | [`[ID!]`](#id) | Array of request IDs to fetch. |
 | <a id="queryaimessagesroles"></a>`roles` | [`[AiMessageRole!]`](#aimessagerole) | Array of roles to fetch. |
 
-### `Query.aiSelfHostedModelFeatureSettings`
-
-List of AI feature settings for a given self-hosted model.
-
-DETAILS:
-**Introduced** in GitLab 17.5.
-**Status**: Experiment.
-
-Returns [`AiFeatureSettingConnection`](#aifeaturesettingconnection).
-
-This field returns a [connection](#connections). It accepts the
-four standard [pagination arguments](#pagination-arguments):
-`before: String`, `after: String`, `first: Int`, and `last: Int`.
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="queryaiselfhostedmodelfeaturesettingsselfhostedmodelid"></a>`selfHostedModelId` | [`AiSelfHostedModelID!`](#aiselfhostedmodelid) | Global ID of the self-hosted model. |
-
 ### `Query.aiSelfHostedModels`
 
 List of self-hosted LLM servers.
