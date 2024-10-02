@@ -909,6 +909,7 @@ Use `detailed_merge_status` instead of `merge_status` to account for all potenti
     [Require associated Jira issue for merge requests to be merged](../integration/jira/issues.md#require-associated-jira-issue-for-merge-requests-to-be-merged).
   - `mergeable`: The branch can merge cleanly into the target branch.
   - `merge_request_blocked`: Blocked by another merge request.
+  - `merge_time`: May not be merged until after the specified time.
   - `need_rebase`: The merge request must be rebased.
   - `not_approved`: Approval is required before merge.
   - `not_open`: The merge request must be open before merge.
