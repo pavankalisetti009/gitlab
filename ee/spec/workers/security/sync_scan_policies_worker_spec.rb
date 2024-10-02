@@ -8,6 +8,14 @@ RSpec.describe Security::SyncScanPoliciesWorker, feature_category: :security_pol
 
     subject(:worker) { described_class.new }
 
+    include_examples 'an idempotent worker' do
+      let(:job_args) { [configuration.id] }
+    end
+
+    it 'has the `until_executed` deduplicate strategy' do
+      expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
+    end
+
     it 'calls update_policy_configuration' do
       expect(worker).to receive(:update_policy_configuration).with(configuration)
 
