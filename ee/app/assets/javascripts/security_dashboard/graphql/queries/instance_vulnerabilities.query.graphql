@@ -18,6 +18,7 @@ query instanceVulnerabilities(
   $hasResolution: Boolean
   $hasMergeRequest: Boolean
   $hasRemediations: Boolean
+  $hasAiResolution: Boolean
   $vetEnabled: Boolean = false
   $clusterAgentId: [ClustersAgentID!]
   $owaspTopTen: [VulnerabilityOwaspTop10!]
@@ -39,6 +40,7 @@ query instanceVulnerabilities(
     hasResolution: $hasResolution
     hasMergeRequest: $hasMergeRequest
     hasRemediations: $hasRemediations
+    hasAiResolution: $hasAiResolution
     clusterAgentId: $clusterAgentId
     owaspTopTen: $owaspTopTen
   ) {
