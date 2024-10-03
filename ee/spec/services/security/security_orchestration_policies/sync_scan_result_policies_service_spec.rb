@@ -2,19 +2,48 @@
 
 require "spec_helper"
 
-RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService,
-  feature_category: :security_policy_management do
+RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService, feature_category: :security_policy_management do
   let_it_be(:configuration, refind: true) { create(:security_orchestration_policy_configuration, configured_at: nil) }
 
+  let(:service) { described_class.new(configuration) }
+
   describe '#execute' do
-    subject { described_class.new(configuration).execute }
+    subject { service.execute }
+
+    context 'with delay' do
+      let_it_be(:project1) { create(:project) }
+      let_it_be(:project2) { create(:project) }
+      let_it_be(:project3) { create(:project) }
+
+      let(:sync_project_service) do
+        instance_double(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
+      end
+
+      let(:projects) { [project1, project2, project3] }
+
+      before do
+        allow(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).to receive(:new)
+          .and_return(sync_project_service)
+        allow(service).to receive(:projects).and_return(projects)
+      end
+
+      it 'increases delay by 1 minute for each batch' do
+        allow(projects).to receive(:each_batch).and_yield(projects[0..1]).and_yield([projects[2]])
+
+        expect(sync_project_service).to receive(:execute).with(project1.id, { delay: 0.seconds })
+        expect(sync_project_service).to receive(:execute).with(project2.id, { delay: 0.seconds })
+        expect(sync_project_service).to receive(:execute).with(project3.id, { delay: 10.seconds })
+
+        service.execute
+      end
+    end
 
     it 'triggers worker for the configuration' do
       expect_next_instance_of(
         Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService,
         configuration
       ) do |sync_service|
-        expect(sync_service).to receive(:execute).with(configuration.project_id)
+        expect(sync_service).to receive(:execute).with(configuration.project_id, { delay: 0 })
       end
 
       subject
@@ -32,7 +61,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
           Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService,
           configuration
         ) do |sync_service|
-          expect(sync_service).to receive(:execute).with(project.id)
+          expect(sync_service).to receive(:execute).with(project.id, { delay: 0 })
         end
 
         subject
@@ -44,7 +73,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
         it 'does trigger SyncScanResultPoliciesProjectService for each project in group' do
           create_list(:project, 2, namespace: namespace)
 
-          expect(worker).to receive(:perform_async).and_call_original.exactly(3).times
+          expect(worker).to receive(:perform_in).and_call_original.exactly(3).times
 
           subject
         end

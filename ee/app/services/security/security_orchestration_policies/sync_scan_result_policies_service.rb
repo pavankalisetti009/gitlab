@@ -9,8 +9,13 @@ module Security
       end
 
       def execute
-        projects.find_each do |project|
-          @sync_project_service.execute(project.id)
+        delay = 0
+        projects.each_batch do |projects|
+          projects.each do |project|
+            @sync_project_service.execute(project.id, { delay: delay })
+          end
+
+          delay += 10.seconds
         end
       end
 
@@ -20,7 +25,7 @@ module Security
 
       def projects
         @projects ||= if configuration.namespace?
-                        configuration.namespace.all_projects.select(:id)
+                        configuration.namespace.all_project_ids
                       else
                         Project.id_in(configuration.project_id)
                       end
