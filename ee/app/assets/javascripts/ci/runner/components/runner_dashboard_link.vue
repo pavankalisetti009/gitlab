@@ -13,7 +13,7 @@ export default {
 };
 </script>
 <template>
-  <gl-button v-if="runnerDashboardPath" variant="link" :href="runnerDashboardPath">
+  <gl-button v-if="runnerDashboardPath" variant="link" :href="runnerDashboardPath" class="gl-mr-2">
     {{ s__('Runners|Fleet dashboard') }}
   </gl-button>
 </template>

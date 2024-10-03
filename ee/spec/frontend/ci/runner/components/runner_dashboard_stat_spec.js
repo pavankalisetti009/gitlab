@@ -1,3 +1,4 @@
+import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -25,19 +26,20 @@ describe('RunnerDashboardStat', () => {
             return this.$scopedSlots.default({ count });
           },
         },
+        GlSingleStat,
       },
       ...options,
     });
   };
 
-  it('shows title in slot', () => {
+  it('shows title', () => {
     createComponent({
-      scopedSlots: {
-        title: () => 'My title',
+      props: {
+        title: 'My title',
       },
     });
 
-    expect(wrapper.find('h2').text()).toBe('My title');
+    expect(wrapper.findByTestId('title-text').text()).toBe('My title');
   });
 
   it('shows formatted runner count', () => {
