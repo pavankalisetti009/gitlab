@@ -25,6 +25,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
   describe 'validations' do
     it { is_expected.to validate_presence_of(:add_on) }
     it { is_expected.to validate_presence_of(:expires_on) }
+    it { is_expected.to validate_presence_of(:started_at) }
 
     context 'when validating namespace' do
       context 'when on .com', :saas do
@@ -684,18 +685,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
     context 'when subscription has expired' do
       it { travel_to(add_on_purchase.expires_on + 1.day) { is_expected.to eq(false) } }
-    end
-
-    context 'when subscription has not started yet' do
-      context 'when started_at is nil' do
-        before do
-          add_on_purchase.update!(started_at: nil)
-        end
-
-        it { is_expected.to eq(true) }
-      end
-
-      it { travel_to(add_on_purchase.started_at - 1.day) { is_expected.to eq(false) } }
     end
   end
 

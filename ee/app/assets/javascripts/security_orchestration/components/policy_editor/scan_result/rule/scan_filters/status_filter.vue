@@ -15,7 +15,6 @@ export default {
   APPROVAL_VULNERABILITY_STATE_GROUPS,
   APPROVAL_VULNERABILITY_STATES,
   i18n: {
-    label: s__('ScanResultPolicy|Status is:'),
     headerText: __('Choose an option'),
     vulnerabilityStates: s__('ScanResultPolicy|vulnerability states'),
   },
@@ -45,6 +44,16 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    label: {
+      type: String,
+      required: false,
+      default: s__('ScanResultPolicy|Status is:'),
+    },
+    labelClasses: {
+      type: String,
+      required: false,
+      default: '',
     },
   },
   data() {
@@ -82,11 +91,12 @@ export default {
   <section-layout
     :key="filter"
     class="gl-w-full gl-bg-white gl-pr-2"
+    :rule-label="label"
+    :label-classes="labelClasses"
     :show-remove-button="showRemoveButton"
     @remove="remove"
   >
-    <template #selector>
-      <label class="gl-mb-0 gl-mr-5" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
+    <template #content>
       <slot>
         <gl-collapsible-listbox
           :header-text="$options.i18n.headerText"

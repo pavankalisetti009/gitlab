@@ -67,7 +67,9 @@ export default {
     @remove="remove"
   >
     <template #selector>
-      <label class="gl-mb-0" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
+      <label class="gl-mb-0 gl-font-normal" :title="$options.i18n.label">{{
+        $options.i18n.label
+      }}</label>
       <number-range-select
         id="vulnerability-age-select"
         :value="value"

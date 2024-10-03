@@ -6,8 +6,8 @@ FactoryBot.define do
     organization { namespace ? namespace.organization : association(:organization, :default) }
     namespace { association(:group) }
     quantity { 1 }
-    started_at { 1.day.ago.to_date }
-    expires_on { 1.year.from_now.to_date }
+    started_at { Time.current }
+    expires_on { 60.days.from_now }
     purchase_xid { SecureRandom.hex(16) }
     trial { false }
 
@@ -18,7 +18,7 @@ FactoryBot.define do
 
     trait :trial do
       trial { true }
-      expires_on { GitlabSubscriptions::Trials::AddOns::DURATION.from_now }
+      expires_on { 60.days.from_now.to_date }
     end
 
     trait :active_trial do

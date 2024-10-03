@@ -43,8 +43,13 @@ describe('SectionLayout', () => {
   describe('with custom props', () => {
     it('renders with custom CSS class', () => {
       const CUSTOM_CLASS = 'custom-class';
-      createComponent({ contentClasses: CUSTOM_CLASS });
+      createComponent({
+        contentClasses: CUSTOM_CLASS,
+        labelClasses: CUSTOM_CLASS,
+        ruleLabel: 'label',
+      });
       expect(findContent().attributes('class')).toContain(CUSTOM_CLASS);
+      expect(findBaseLayoutLabel().attributes('class')).toContain(CUSTOM_CLASS);
     });
 
     it('displays the label', () => {

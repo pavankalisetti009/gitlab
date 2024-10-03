@@ -49,9 +49,10 @@ module GitlabSubscriptions
       strong_memoize_attr :duo_pro_trial_add_on_purchase
 
       def trial_status
-        starts_on = duo_pro_trial_add_on_purchase.expires_on - GitlabSubscriptions::Trials::AddOns::DURATION
-
-        GitlabSubscriptions::TrialStatus.new(starts_on, duo_pro_trial_add_on_purchase.expires_on)
+        GitlabSubscriptions::TrialStatus.new(
+          duo_pro_trial_add_on_purchase.started_at,
+          duo_pro_trial_add_on_purchase.expires_on
+        )
       end
       strong_memoize_attr :trial_status
 

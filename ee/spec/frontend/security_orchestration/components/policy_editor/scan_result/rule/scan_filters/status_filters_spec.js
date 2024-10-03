@@ -124,4 +124,17 @@ describe('StatusFilters', () => {
       expect(wrapper.emitted('remove')).toContainEqual([PREVIOUSLY_EXISTING]);
     });
   });
+
+  describe('custom label and css class', () => {
+    it('add custom padding when all filters selected', () => {
+      createComponent({
+        filters: filtersBoth,
+      });
+
+      expect(findStatusFilters().at(0).classes()).toContain('gl-pb-3');
+      expect(findStatusFilters().at(1).classes()).toContain('gl-pt-2');
+
+      expect(findStatusFilters().at(1).props('label')).toBe('or');
+    });
+  });
 });

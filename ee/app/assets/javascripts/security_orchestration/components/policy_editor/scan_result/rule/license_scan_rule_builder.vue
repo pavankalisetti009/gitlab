@@ -118,7 +118,11 @@ export default {
 
     <section-layout class="gl-pr-0 gl-pt-3" :show-remove-button="false">
       <template #content>
-        <status-filter :show-remove-button="false" class="!gl-bg-white">
+        <status-filter
+          :show-remove-button="false"
+          class="!gl-bg-white md:gl-items-center"
+          label-classes="!gl-text-base !gl-w-12 !gl-pl-0"
+        >
           <rule-multi-select
             v-model="licenseStatuses"
             class="!gl-inline gl-align-middle"
