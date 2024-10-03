@@ -19,8 +19,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   before do
     stub_ee_application_setting(vertex_ai_host: host)
     available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: current_token,
-      enabled_by_namespace_ids: enabled_by_namespace_ids)
+      name: :vertex_ai_proxy)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
+    allow(user).to receive(:allowed_to_use?).and_yield(enabled_by_namespace_ids)
   end
 
   describe '#access_token' do

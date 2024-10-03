@@ -293,6 +293,10 @@ client_subscription_id: 'someid' }
       it_behaves_like 'tool behind a feature flag'
 
       it 'pushes feature flag to AI Gateway' do
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
+          allow(instance).to receive(:execute).and_return(answer)
+        end
+
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
           .with(:ai_build_reader_for_chat, user).and_return(:ai_build_reader_for_chat)
 
@@ -321,6 +325,10 @@ client_subscription_id: 'someid' }
       it_behaves_like 'tool behind a feature flag'
 
       it 'pushes feature flag to AI Gateway' do
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
+          allow(instance).to receive(:execute).and_return(answer)
+        end
+
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
           .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)

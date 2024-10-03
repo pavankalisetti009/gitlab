@@ -82,7 +82,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
     let(:enabled_by_namespace_ids) { [1, 2] }
-    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
+    let(:service_name) { :test }
+    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
     let(:agent) { nil }
     let(:lsp_version) { nil }
     let(:expected_headers) do
@@ -107,7 +108,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
     before do
       allow(service).to receive(:access_token).with(user).and_return(token)
-      allow(service).to receive(:enabled_by_namespace_ids).with(user).and_return(enabled_by_namespace_ids)
+      allow(user).to receive(:allowed_to_use?).with(service_name).and_yield(enabled_by_namespace_ids)
     end
 
     it { is_expected.to match(expected_headers) }

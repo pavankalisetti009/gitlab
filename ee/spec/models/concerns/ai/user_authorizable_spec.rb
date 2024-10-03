@@ -36,6 +36,14 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         it { is_expected.to be false }
       end
 
+      context 'when the AI feature is missing' do
+        before do
+          stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", {})
+        end
+
+        it { is_expected.to be false }
+      end
+
       context 'when the user has an active assigned seat' do
         before do
           create(
@@ -46,6 +54,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         end
 
         it { is_expected.to be true }
+
+        it { expect { |b| user.allowed_to_use?(ai_feature, &b) }.to yield_with_args(allowed_by_namespace_ids) }
       end
 
       context "when the user doesn't have an active assigned seat and free access is not available" do
@@ -72,7 +82,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         active_gitlab_purchase.namespace.add_owner(user)
       end
 
-      include_examples 'checking assigned seats'
+      include_examples 'checking assigned seats' do
+        let(:allowed_by_namespace_ids) { [active_gitlab_purchase.namespace.id] }
+      end
 
       context "when the user doesn't have a seat but the service has free access" do
         context "when the user doesn't belong to any namespaces with eligible plans" do
@@ -127,6 +139,20 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
           it_behaves_like 'checking available groups'
 
+          describe 'yielding namespace ids that allow using a feature' do
+            it 'yields the relevant namespace ids' do
+              expect do |b|
+                user.allowed_to_use?(ai_feature, &b)
+              end.to yield_with_args(match_array([group.id, group_without_experiment_features_enabled.id]))
+            end
+
+            context 'when the feature is not GA' do
+              let(:maturity) { :beta }
+
+              it { expect { |b| user.allowed_to_use?(ai_feature, &b) }.to yield_with_args([group.id]) }
+            end
+          end
+
           context 'when specifying a service name' do
             let(:service_name) { :my_service }
 
@@ -153,7 +179,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)
       end
 
-      include_examples 'checking assigned seats'
+      include_examples 'checking assigned seats' do
+        let(:allowed_by_namespace_ids) { [] }
+      end
 
       context "when the user doesn't have a seat but the service has free access" do
         shared_examples 'when checking licensed features' do

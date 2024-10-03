@@ -150,8 +150,27 @@ module Gitlab
             maturity: :experimental,
             self_managed: true,
             internal: true
+          },
+          # The proxies are not features per-se, but an entry in the catalogue is required when building the AI
+          # Gateway headers. See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168117#note_2142272386
+          anthropic_proxy: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :ai_abstraction_layer,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          vertex_ai_proxy: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :ai_abstraction_layer,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
           }
-
         }.freeze
 
         def self.external

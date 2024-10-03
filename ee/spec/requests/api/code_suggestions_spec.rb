@@ -233,9 +233,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
-      allow(service).to receive_messages({ access_token: token, name: service_name,
-        enabled_by_namespace_ids: enabled_by_namespace_ids })
+      allow(service).to receive_messages(access_token: token, name: service_name)
       allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
+      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
+        .and_return(enabled_by_namespace_ids)
       stub_feature_flags(use_codestral_for_code_completions: false)
     end
 

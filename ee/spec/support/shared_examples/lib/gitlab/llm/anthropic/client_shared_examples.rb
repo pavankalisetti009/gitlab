@@ -53,10 +53,11 @@ RSpec.shared_examples 'anthropic client' do
   before do
     stub_env('AI_GATEWAY_URL', ai_gateway_url)
 
-    available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: api_key,
-      enabled_by_namespace_ids: enabled_by_namespace_ids)
+    available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, name: service_name,
+      access_token: api_key)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
       .and_return(available_service_data)
+    allow(user).to receive(:allowed_to_use?).with(service_name).and_yield(enabled_by_namespace_ids)
 
     stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
       .with(

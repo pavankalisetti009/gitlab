@@ -59,9 +59,10 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, fea
                                         .and_return(true)
     allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-    allow(service).to receive_messages({ access_token: 'token', name: 'code_suggestions',
-        enabled_by_namespace_ids: [1, 2] })
+    allow(service).to receive_messages(access_token: 'token', name: 'code_suggestions')
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
+    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
+      .and_return([1, 2])
   end
 
   subject(:post_api) do
