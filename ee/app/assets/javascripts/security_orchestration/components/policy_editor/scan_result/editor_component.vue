@@ -57,7 +57,6 @@ export default {
   i18n: {
     ADD_ACTION_LABEL,
     PARSING_ERROR_MESSAGE,
-    buttonText: s__('SecurityOrchestration|Add new action'),
     createMergeRequest: __('Configure with a merge request'),
     filterHeaderText: s__('SecurityOrchestration|Choose an action'),
     notOwnerButtonText: __('Learn more'),
@@ -467,7 +466,7 @@ export default {
         <scan-filter-selector
           v-if="availableActionListboxItems.length"
           class="gl-w-full"
-          :button-text="$options.i18n.buttonText"
+          :button-text="$options.i18n.ADD_ACTION_LABEL"
           :header="$options.i18n.filterHeaderText"
           :filters="availableActionListboxItems"
           @select="addAction"
