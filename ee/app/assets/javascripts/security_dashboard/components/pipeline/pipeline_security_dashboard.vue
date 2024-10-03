@@ -1,17 +1,14 @@
 <script>
-import { GlEmptyState, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
 import pipelineSecurityReportSummaryQuery from 'ee/security_dashboard/graphql/queries/pipeline_security_report_summary.query.graphql';
 import { reportTypeToSecurityReportTypeEnum } from 'ee/vue_shared/security_reports/constants';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { DOC_PATH_SECURITY_CONFIGURATION } from 'ee/security_dashboard/constants';
 import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import ScanAlerts, { TYPE_ERRORS, TYPE_WARNINGS } from './scan_alerts.vue';
 import ReportStatusAlert, { STATUS_PURGED } from './report_status_alert.vue';
 import SecurityReportsSummary from './security_reports_summary.vue';
-import SecurityDashboard from './security_dashboard_vuex.vue';
 
 export default {
   name: 'PipelineSecurityDashboard',
@@ -19,30 +16,20 @@ export default {
   warningsAlertType: TYPE_WARNINGS,
   scanPurgedStatus: STATUS_PURGED,
   components: {
-    GlEmptyState,
     ReportStatusAlert,
     ScanAlerts,
     SecurityReportsSummary,
-    SecurityDashboard,
     PipelineVulnerabilityReport: () => import('./pipeline_vulnerability_report.vue'),
     GlSprintf,
     GlLink,
     SbomReportsErrorsAlert,
   },
-  mixins: [glFeatureFlagMixin()],
   provide() {
     return {
       dismissalDescriptions: this.dismissalDescriptions,
     };
   },
-  inject: [
-    'emptyStateSvgPath',
-    'loadingErrorIllustrations',
-    'pipeline',
-    'projectFullPath',
-    'projectId',
-    'vulnerabilitiesEndpoint',
-  ],
+  inject: ['pipeline', 'projectFullPath'],
   props: {
     dismissalDescriptions: {
       type: Object,
@@ -85,21 +72,6 @@ export default {
     },
     jobs() {
       return this.securityReportSummary?.jobs;
-    },
-    shouldShowGraphqlVulnerabilityReport() {
-      return this.glFeatures.pipelineSecurityDashboardGraphql;
-    },
-    emptyStateProps() {
-      return {
-        svgPath: this.emptyStateSvgPath,
-        svgHeight: null,
-        title: s__('SecurityReports|No vulnerabilities found for this pipeline'),
-        description: s__(
-          `SecurityReports|While it's rare to have no vulnerabilities for your pipeline, it can happen. In any event, we ask that you double check your settings to make sure all security scanning jobs have passed successfully.`,
-        ),
-        primaryButtonLink: DOC_PATH_SECURITY_CONFIGURATION,
-        primaryButtonText: s__('SecurityReports|Learn more about setting up your dashboard'),
-      };
     },
     scans() {
       const getScans = (reportSummary) => reportSummary?.scans?.nodes || [];
@@ -202,20 +174,6 @@ export default {
       <security-reports-summary :summary="reportSummary" :jobs="jobs" />
     </div>
 
-    <security-dashboard
-      v-if="!shouldShowGraphqlVulnerabilityReport"
-      :vulnerabilities-endpoint="vulnerabilitiesEndpoint"
-      :lock-to-project="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
-        id: projectId,
-      } /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */"
-      :pipeline-id="pipeline.id"
-      :loading-error-illustrations="loadingErrorIllustrations"
-      :security-report-summary="reportSummary"
-    >
-      <template #empty-state>
-        <gl-empty-state v-bind="emptyStateProps" />
-      </template>
-    </security-dashboard>
-    <pipeline-vulnerability-report v-else data-testid="pipeline-vulnerability-report" />
+    <pipeline-vulnerability-report data-testid="pipeline-vulnerability-report" />
   </div>
 </template>
