@@ -1,6 +1,7 @@
 <script>
 import { GlEmptyState, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import EmptyEnvironmentSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-environment-md.svg?url';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
@@ -13,6 +14,7 @@ export default {
     GlButton,
     GlSkeletonLoader,
     SelfHostedModelsTable,
+    PageHeading,
   },
   props: {
     basePath: {
@@ -77,23 +79,20 @@ export default {
       </div>
     </div>
     <div v-else>
-      <section>
-        <h1 class="page-title gl-text-size-h-display">
-          {{ s__('AdminSelfHostedModels|Self-hosted models') }}
-        </h1>
-        <div class="gl-items-top gl-flex gl-justify-between gl-pb-2">
-          <p>
-            {{
-              s__('AdminSelfHostedModels|Manage AI models that can be used for GitLab AI features.')
-            }}
-          </p>
-          <div v-if="hasModels" class="gl-pb-4">
-            <gl-button category="primary" variant="confirm" :href="newSelfHostedModelPath"
-              >{{ s__('AdminSelfHostedModels|Add self-hosted model') }}
-            </gl-button>
-          </div>
-        </div>
-      </section>
+      <page-heading :heading="s__('AdminSelfHostedModels|Self-hosted models')">
+        <template #description>
+          {{
+            s__('AdminSelfHostedModels|Manage AI models that can be used for GitLab AI features.')
+          }}
+        </template>
+
+        <template v-if="hasModels" #actions>
+          <gl-button category="primary" variant="confirm" :href="newSelfHostedModelPath"
+            >{{ s__('AdminSelfHostedModels|Add self-hosted model') }}
+          </gl-button>
+        </template>
+      </page-heading>
+
       <gl-skeleton-loader v-if="isLoading" />
       <self-hosted-models-table v-else :models="selfHostedModels" :base-path="basePath" />
     </div>

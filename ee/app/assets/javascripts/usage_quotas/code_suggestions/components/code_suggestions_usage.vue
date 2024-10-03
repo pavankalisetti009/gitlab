@@ -2,6 +2,7 @@
 import { GlBadge, GlAlert, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
@@ -52,6 +53,7 @@ export default {
     GlBadge,
     GlAlert,
     GlSprintf,
+    PageHeading,
   },
   inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
@@ -240,24 +242,25 @@ export default {
       </gl-alert>
 
       <template v-if="showTitleAndSubtitle">
-        <section>
-          <header class="gl-flex gl-items-center">
-            <h1 data-testid="code-suggestions-title" class="page-title gl-text-size-h-display">
-              {{ $options.i18n.codeSuggestionTitle }}
-            </h1>
+        <page-heading>
+          <template #heading>
+            <span class="gl-flex gl-items-center gl-gap-3">
+              <span data-testid="code-suggestions-title">{{
+                $options.i18n.codeSuggestionTitle
+              }}</span>
+              <gl-badge variant="tier" icon="license" class="gl-capitalize">{{ duoTier }}</gl-badge>
+            </span>
+          </template>
 
-            <gl-badge variant="tier" icon="license" class="gl-ml-3 gl-px-3 gl-py-2 gl-capitalize">{{
-              duoTier
-            }}</gl-badge>
-          </header>
-
-          <p v-if="isSaaS" data-testid="code-suggestions-subtitle">
-            {{ saasSubtitle }}
-          </p>
-          <p v-else data-testid="code-suggestions-subtitle">
-            {{ selfManagedSubtitle }}
-          </p>
-        </section>
+          <template #description>
+            <span v-if="isSaaS" data-testid="code-suggestions-subtitle">
+              {{ saasSubtitle }}
+            </span>
+            <span v-else data-testid="code-suggestions-subtitle">
+              {{ selfManagedSubtitle }}
+            </span>
+          </template>
+        </page-heading>
 
         <health-check-list v-if="statusCheckEnabled" />
       </template>
