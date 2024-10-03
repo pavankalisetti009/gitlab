@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Issuable do
+RSpec.describe EE::Issuable, feature_category: :team_planning do
   describe "Validation" do
     context 'general validations' do
       subject { build(:epic) }
