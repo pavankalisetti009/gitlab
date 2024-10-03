@@ -1,9 +1,7 @@
 - add_to_breadcrumbs s_('AdminSelfHostedModels|Self-hosted models'), admin_labels_path
 - breadcrumb_title s_('AdminSelfHostedModels|Edit self-hosted model')
 - if Feature.enabled?(:custom_models_vue_app, current_user)
-  - model_options = Ai::SelfHostedModel.models.map { |name, _| { modelValue: name.upcase, modelName: name.capitalize  } }
-
-  #js-edit-self-hosted-model{ data: { view_model: { model: @self_hosted_model, modelOptions: model_options, basePath: admin_ai_self_hosted_models_path }.to_json(methods: [:api_token]) } }
+  #js-edit-self-hosted-model{ data: { view_model: { model: @self_hosted_model, modelOptions: model_choices_as_options, basePath: admin_ai_self_hosted_models_path }.to_json(methods: [:api_token]) } }
 - else
   - page_title _('Edit'), @self_hosted_model.model, s_('AdminSelfHostedModels|Self-hosted models')
   %h1.page-title.gl-text-size-h-display
