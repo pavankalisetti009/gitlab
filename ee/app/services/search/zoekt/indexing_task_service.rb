@@ -3,7 +3,11 @@
 module Search
   module Zoekt
     class IndexingTaskService
+      include ::Gitlab::Utils::StrongMemoize
+      include Gitlab::Loggable
+
       REINDEXING_CHANCE_PERCENTAGE = 0.5
+      WATERMARK_RESCHEDULE_INTERVAL = 30.minutes
 
       def self.execute(...)
         new(...).execute
@@ -24,6 +28,25 @@ module Search
 
         current_task_type = random_force_reindexing? ? :force_index_repo : task_type
         Router.fetch_indices_for_indexing(project_id, root_namespace_id: root_namespace_id).find_each do |idx|
+          # Note: we skip indexing tasks depending on storage watermark levels.
+          #
+          # If the low watermark is exceeded, we don't allow any new initial indexing tasks through,
+          # but we permit incremental indexing or force reindexing for existing repos.
+          #
+          # If the high watermark is exceeded, we don't allow any indexing tasks at all anymore.
+          if idx.high_watermark_exceeded? || (idx.low_watermark_exceeded? && initial_indexing?)
+            IndexingTaskWorker.perform_in(WATERMARK_RESCHEDULE_INTERVAL, project_id, task_type, { index_id: idx.id })
+            logger.info(
+              build_structured_payload(
+                indexing_task_type: task_type,
+                message: 'Indexing rescheduled due to storage watermark',
+                index_id: idx.id,
+                index_state: idx.state
+              )
+            )
+            next
+          end
+
           perform_at = Time.current
           perform_at += delay if delay
           ApplicationRecord.transaction do
@@ -34,9 +57,22 @@ module Search
         end
       end
 
+      def initial_indexing?
+        repo = Repository.find_by_project_identifier(project_id)
+
+        return true if repo.nil?
+        return true if repo.ready? && random_force_reindexing?
+
+        repo.pending? || repo.initializing? || repo.failed?
+      end
+
       private
 
       attr_reader :project_id, :project, :node_id, :root_namespace_id, :force, :task_type, :delay
+
+      def logger
+        @logger ||= ::Search::Zoekt::Logger.build
+      end
 
       def preflight_check?
         return true if task_type == :delete_repo
@@ -48,10 +84,13 @@ module Search
 
       def random_force_reindexing?
         return true if task_type == :force_index_repo
-        return false unless task_type == :index_repo
-        return false if Feature.disabled?(:zoekt_random_force_reindexing, project, type: :ops)
 
-        rand * 100 <= REINDEXING_CHANCE_PERCENTAGE
+        eligible_for_force_reindexing? && (rand * 100 <= REINDEXING_CHANCE_PERCENTAGE)
+      end
+      strong_memoize_attr :random_force_reindexing?
+
+      def eligible_for_force_reindexing?
+        task_type == :index_repo && Feature.enabled?(:zoekt_random_force_reindexing, project, type: :ops)
       end
     end
   end
