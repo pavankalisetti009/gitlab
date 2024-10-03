@@ -41,19 +41,20 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatus, :saas, feature_categor
     context 'with an expired ultimate trial' do
       let(:trial_starts_on) { 2.days.ago }
       let(:trial_ends_on) { 1.day.ago }
-      let(:duo_pro_exprires_on) { 1.day.ago + GitlabSubscriptions::Trials::AddOns::DURATION }
+      let(:duo_pro_expires_on) { 1.day.ago }
+      let(:trial_duration) { 60 }
 
       before do
         gitlab_subscription = build(:gitlab_subscription, :ultimate, namespace: group)
         gitlab_subscription.trial_starts_on = trial_starts_on
         gitlab_subscription.trial_ends_on = trial_ends_on
-        add_on_purchase.expires_on = duo_pro_exprires_on
+        add_on_purchase.expires_on = duo_pro_expires_on
       end
 
       it { is_expected.to be(true) }
 
       context 'with an expired duo pro trial add on' do
-        let(:duo_pro_exprires_on) { 1.day.ago }
+        let(:duo_pro_expires_on) { trial_duration.days.ago + 1.day.ago }
 
         it { is_expected.to be(true) }
       end

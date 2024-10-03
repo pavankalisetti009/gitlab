@@ -14,7 +14,7 @@ RSpec.describe 'shared/billings/_trial_status.html.haml', :saas do
   before do
     allow(group).to receive(:eligible_for_trial?).and_return(false)
 
-    create(:gitlab_subscription, namespace: group, hosted_plan: plan, trial_ends_on: trial_ends_on, trial: trial)
+    create(:gitlab_subscription, namespace: group, hosted_plan: plan, trial_starts_on: Time.current, trial_ends_on: trial_ends_on, trial: trial)
   end
 
   context 'when not eligible for trial' do

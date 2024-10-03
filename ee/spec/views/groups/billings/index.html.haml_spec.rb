@@ -128,7 +128,12 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
 
       context 'with an expired trial' do
-        let_it_be(:group) { create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.yesterday) }
+        let_it_be(:group) do
+          create(:group_with_plan,
+            plan: :free_plan,
+            trial_starts_on: Time.current,
+            trial_ends_on: Date.yesterday)
+        end
 
         it_behaves_like 'without ultimate trial cta alert'
         it_behaves_like 'without duo pro component'
@@ -146,7 +151,12 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     end
 
     context 'with an active trial' do
-      let_it_be(:group) { create(:group_with_plan, plan: :ultimate_trial_plan, trial_ends_on: 10.days.from_now) }
+      let_it_be(:group) do
+        create(:group_with_plan,
+          plan: :ultimate_trial_plan,
+          trial_starts_on: Time.current,
+          trial_ends_on: 10.days.from_now)
+      end
 
       it_behaves_like 'without ultimate trial cta alert'
       it_behaves_like 'without duo pro component'

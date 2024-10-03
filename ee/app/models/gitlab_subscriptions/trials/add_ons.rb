@@ -3,9 +3,6 @@
 module GitlabSubscriptions
   module Trials
     module AddOns
-      DURATION_NUMBER = 60
-      DURATION = DURATION_NUMBER.days
-
       def self.eligible_namespace?(namespace_id, eligible_namespaces)
         return true if namespace_id.blank?
 
