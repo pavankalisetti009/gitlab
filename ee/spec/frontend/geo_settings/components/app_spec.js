@@ -4,6 +4,7 @@ import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import GeoSettingsApp from 'ee/geo_settings/components/app.vue';
 import GeoSettingsForm from 'ee/geo_settings/components/geo_settings_form.vue';
 import initStore from 'ee/geo_settings/store';
@@ -23,6 +24,9 @@ describe('GeoSettingsApp', () => {
   const createComponent = () => {
     wrapper = shallowMount(GeoSettingsApp, {
       store,
+      stubs: {
+        PageHeading,
+      },
     });
   };
 
