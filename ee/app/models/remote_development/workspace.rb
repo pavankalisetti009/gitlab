@@ -20,7 +20,9 @@ module RemoteDevelopment
     validates :agent, presence: true
     validates :editor, presence: true
     validates :personal_access_token, presence: true
-    validates :workspaces_agent_config_version, presence: true, if: -> { agent&.workspaces_agent_config }
+    # TODO: uncomment this line with below issue in 17.6
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
+    # validates :workspaces_agent_config_version, presence: true, if: -> { agent&.workspaces_agent_config }
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
