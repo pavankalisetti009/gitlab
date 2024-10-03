@@ -42,6 +42,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
         name
         fullPath
       }
+      ciDuration
       ciMinutesUsed
       ciBuildCount
     QUERY
@@ -137,11 +138,13 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
       expected_result = top_projects.flat_map.with_index(1) do |project, index|
         {
           'project' => a_graphql_entity_for(project, :name, :full_path),
+          'ciDuration' => (20 * index).to_s,
           'ciMinutesUsed' => (20 * index).to_s,
           'ciBuildCount' => index.to_s
         }
       end.reverse + [{
         'project' => nil,
+        'ciDuration' => (other_projects.count * 3 * 2).to_s,
         'ciMinutesUsed' => (other_projects.count * 3 * 2).to_s,
         'ciBuildCount' => (other_projects.count * 3).to_s
       }]
@@ -166,6 +169,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
 
       expect(runner_usage_by_project).to contain_exactly({
         'project' => a_graphql_entity_for(project, :name, :full_path),
+        'ciDuration' => '5',
         'ciMinutesUsed' => '5',
         'ciBuildCount' => '2'
       })
@@ -200,6 +204,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
 
         expect(runner_usage_by_project).to contain_exactly({
           'project' => a_graphql_entity_for(project, :name, :full_path),
+          'ciDuration' => '5',
           'ciMinutesUsed' => '5',
           'ciBuildCount' => '2'
         })
@@ -219,6 +224,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
 
         expect(runner_usage_by_project).to contain_exactly({
           'project' => a_graphql_entity_for(project, :name, :full_path),
+          'ciDuration' => '33',
           'ciMinutesUsed' => '33',
           'ciBuildCount' => '1'
         })
@@ -325,6 +331,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
           it "returns only group's projects" do
             expect(runner_usage_by_project).to contain_exactly({
               'project' => a_graphql_entity_for(project, :name, :full_path),
+              'ciDuration' => '21',
               'ciMinutesUsed' => '21',
               'ciBuildCount' => '1'
             })
@@ -337,6 +344,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
           it "returns only group2's projects" do
             expect(runner_usage_by_project).to contain_exactly({
               'project' => a_graphql_entity_for(project2, :name, :full_path),
+              'ciDuration' => '33',
               'ciMinutesUsed' => '33',
               'ciBuildCount' => '1'
             })
@@ -376,6 +384,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
           it "returns only stats referring to project" do
             expect(runner_usage_by_project).to contain_exactly({
               'project' => a_graphql_entity_for(project, :name, :full_path),
+              'ciDuration' => '21',
               'ciMinutesUsed' => '21',
               'ciBuildCount' => '1'
             })
@@ -388,6 +397,7 @@ RSpec.describe 'Query.ciRunnerUsageByProject', :click_house, feature_category: :
           it "returns only stats referring to project2" do
             expect(runner_usage_by_project).to contain_exactly({
               'project' => a_graphql_entity_for(project2, :name, :full_path),
+              'ciDuration' => '33',
               'ciMinutesUsed' => '33',
               'ciBuildCount' => '1'
             })
