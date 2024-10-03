@@ -163,13 +163,7 @@ describe('Policies List specific projects policy scope', () => {
       `(
         'scoped to itself when project is not SPP for $policyType',
         async ({ policyScopeRowIndex, selectedRow }) => {
-          createWrapper({
-            provide: {
-              glFeatures: {
-                policyGroupScopeProject: true,
-              },
-            },
-          });
+          createWrapper();
 
           await waitForPromises();
           expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe('This project');
@@ -194,11 +188,6 @@ describe('Policies List specific projects policy scope', () => {
                 groups: includingGroups,
                 namespaces: includingGroups,
               }),
-            },
-            provide: {
-              glFeatures: {
-                policyGroupScopeProject: true,
-              },
             },
           });
 
@@ -226,9 +215,6 @@ describe('Policies List specific projects policy scope', () => {
         createWrapper({
           provide: {
             namespaceType: NAMESPACE_TYPES.GROUP,
-            glFeatures: {
-              policyGroupScope: true,
-            },
           },
         });
 

@@ -29,16 +29,17 @@ import ListComponentScope from 'ee/security_orchestration/components/policies/li
 import { DEFAULT_PROVIDE } from '../mocks';
 import {
   groups as includingGroups,
-  projects as excludingProjects,
+  complianceFrameworks,
   generateMockResponse,
   openDrawer,
+  normaliseText,
 } from './utils';
 
 Vue.use(VueApollo);
 
 const projectWithExceptionsScope = {
-  excludingProjects: {
-    nodes: excludingProjects,
+  complianceFrameworks: {
+    nodes: complianceFrameworks,
     pageInfo: {},
   },
 };
@@ -122,7 +123,7 @@ const defaultRequestHandlers = {
   linkedSppItemsResponse: mockLinkedSppItemsResponse(),
 };
 
-describe('Policies List all projects without exceptions policy scope', () => {
+describe('Policies List specific projects policy scope', () => {
   let wrapper;
   let requestHandlers;
 
@@ -176,9 +177,9 @@ describe('Policies List all projects without exceptions policy scope', () => {
 
       it.each`
         policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'All projects linked to this project except: test'}
-        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'All projects linked to this project except: test'}
-        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'All projects linked to this project except: test'}
+        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
       `(
         'scoped to linked groups when project is an SPP for $policyType',
         async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
@@ -193,11 +194,13 @@ describe('Policies List all projects without exceptions policy scope', () => {
 
           await waitForPromises();
 
-          expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe(expectedResult);
+          expect(normaliseText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
+            expectedResult,
+          );
 
           await openDrawer(findTable(), [selectedRow]);
 
-          expect(findScopeInfoRow().text()).toContain(expectedResult);
+          expect(normaliseText(findScopeInfoRow().text())).toContain(expectedResult);
         },
       );
     });
@@ -206,9 +209,9 @@ describe('Policies List all projects without exceptions policy scope', () => {
   describe('group level', () => {
     it.each`
       policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'All projects in this group except: test'}
-      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'All projects in this group except: test'}
-      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'All projects in this group except: test'}
+      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
     `(
       'scoped to linked groups on a group level for $policyType',
       async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
@@ -220,11 +223,13 @@ describe('Policies List all projects without exceptions policy scope', () => {
 
         await waitForPromises();
 
-        expect(findAllListComponentScope().at(policyScopeRowIndex).text()).toBe(expectedResult);
+        expect(normaliseText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
+          expectedResult,
+        );
 
         await openDrawer(findTable(), [selectedRow]);
 
-        expect(findScopeInfoRow().text()).toContain(expectedResult);
+        expect(normaliseText(findScopeInfoRow().text())).toContain(expectedResult);
       },
     );
   });

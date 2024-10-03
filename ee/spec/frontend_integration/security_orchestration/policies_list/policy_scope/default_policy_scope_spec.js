@@ -146,9 +146,6 @@ describe('Policy list all projects scope', () => {
         createWrapper({
           provide: {
             namespaceType: NAMESPACE_TYPES.GROUP,
-            glFeatures: {
-              policyGroupScope: true,
-            },
           },
         });
 
