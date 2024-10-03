@@ -10,16 +10,12 @@ export default {
     ModelSelectDropdown,
   },
   props: {
-    featureSettings: {
+    aiFeatureSettings: {
       type: Array,
       required: true,
     },
     newSelfHostedModelPath: {
       type: String,
-      required: true,
-    },
-    models: {
-      type: Array,
       required: true,
     },
   },
@@ -48,7 +44,7 @@ export default {
 <template>
   <gl-table-lite
     :fields="$options.fields"
-    :items="featureSettings"
+    :items="aiFeatureSettings"
     stacked="md"
     :hover="true"
     :selectable="false"
@@ -61,8 +57,7 @@ export default {
     </template>
     <template #cell(model_name)="{ item }">
       <model-select-dropdown
-        :feature-setting="item"
-        :models="models"
+        :ai-feature-setting="item"
         :new-self-hosted-model-path="newSelfHostedModelPath"
       />
     </template>

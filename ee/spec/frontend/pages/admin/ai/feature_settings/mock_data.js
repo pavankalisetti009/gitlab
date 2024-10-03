@@ -1,29 +1,36 @@
+export const mockSelfHostedModels = [
+  { id: 1, name: 'Model 1', model: 'mistral' },
+  { id: 2, name: 'Model 2', model: 'codellama' },
+  { id: 3, name: 'Model 3', model: 'codegemma' },
+];
+
 export const mockAiFeatureSettings = [
   {
     feature: 'code_generations',
     title: 'Code Generation',
     mainFeature: 'Code Suggestions',
-    provider: 'self_hosted',
+    provider: 'vendored',
     selfHostedModel: null,
+    validModels: { nodes: mockSelfHostedModels },
   },
   {
     feature: 'code_completions',
     title: 'Code Completion',
     mainFeature: 'Code Suggestions',
-    provider: 'vendored',
+    provider: 'disabled',
     selfHostedModel: null,
+    validModels: { nodes: mockSelfHostedModels },
   },
   {
     feature: 'duo_chat',
     title: 'Duo Chat',
     mainFeature: 'Duo Chat',
     provider: 'self_hosted',
-    selfHostedModel: null,
+    selfHostedModel: {
+      id: 2,
+      name: 'Model 2',
+      model: 'codellama',
+    },
+    validModels: { nodes: mockSelfHostedModels },
   },
-];
-
-export const mockSelfHostedModels = [
-  { id: 1, name: 'Model 1', model: 'mistral' },
-  { id: 2, name: 'Model 2', model: 'codellama' },
-  { id: 3, name: 'Model 3', model: 'codegemma' },
 ];

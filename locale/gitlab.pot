@@ -3587,6 +3587,12 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Add self-hosted model"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again."
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Compatible models"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Disabled"
 msgstr ""
 
@@ -3600,9 +3606,6 @@ msgid "AdminAIPoweredFeatures|Model name"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Select a self-hosted model"
-msgstr ""
-
-msgid "AdminAIPoweredFeatures|Self-hosted models"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Sub feature"

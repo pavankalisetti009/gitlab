@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ModelSelectDropdown from 'ee/pages/admin/ai/feature_settings/components/model_select_dropdown.vue';
-import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/mutations/update_ai_feature_setting.graphql';
+import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import { createAlert } from '~/alert';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
 
@@ -38,8 +38,7 @@ describe('ModelSelectDropdown', () => {
       apolloProvider: mockApollo,
       propsData: {
         newSelfHostedModelPath,
-        featureSetting: mockAiFeatureSetting,
-        models: mockSelfHostedModels,
+        aiFeatureSetting: mockAiFeatureSetting,
         ...props,
       },
       mocks: {
