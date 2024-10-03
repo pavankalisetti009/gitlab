@@ -8,8 +8,8 @@ export const ExclusionType = {
 };
 
 export const StatusType = {
-  ENABLE: 'enable',
-  DISABLE: 'disable',
+  ENABLE: true,
+  DISABLE: false,
 };
 
 export const ExclusionScannerEnum = {
@@ -50,3 +50,9 @@ export const STATUS_TYPES = [
   { text: s__('SecurityExclusions|Enable'), value: StatusType.ENABLE },
   { text: s__('SecurityExclusions|Disable'), value: StatusType.DISABLE },
 ];
+
+export const DRAWER_MODES = {
+  VIEW: 'view',
+  ADD: 'add',
+  EDIT: 'edit',
+};

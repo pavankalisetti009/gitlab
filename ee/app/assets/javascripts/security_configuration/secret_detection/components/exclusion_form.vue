@@ -11,6 +11,7 @@ import {
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, __, n__ } from '~/locale';
 import {
+  DRAWER_MODES,
   STATUS_TYPES,
   ExclusionType,
   EXCLUSION_TYPE_MAP,
@@ -18,6 +19,7 @@ import {
   ExclusionScannerEnum,
 } from '../constants';
 import projectSecurityExclusionCreateMutation from '../graphql/project_security_exclusion_create.mutation.graphql';
+import projectSecurityExclusionUpdateMutation from '../graphql/project_security_exclusion_update.mutation.graphql';
 
 export default {
   components: {
@@ -30,11 +32,41 @@ export default {
     GlButton,
   },
   inject: ['projectFullPath'],
+  i18n: {
+    typeLabel: s__('SecurityExclusions|Type'),
+    typeDescription: s__('SecurityExclusions|Select which type of content to exclude'),
+    contentLabel: s__('SecurityExclusions|Value'),
+    descriptionLabel: s__('SecurityExclusions|Description'),
+    descriptionDescription: s__(
+      'SecurityExclusions|Provide context for why the content is being excluded.',
+    ),
+    descriptionPlaceholder: s__('SecurityExclusions|ex: This secret is used for testing'),
+    enforcementLabel: s__('SecurityExclusions|Enforcement'),
+    enforcementDescription: s__(
+      'SecurityExclusions|Select the secret detection methods this exclusion should apply to.',
+    ),
+    secretPushProtection: s__('SecurityExclusions|Secret push protection'),
+    statusLabel: s__('SecurityExclusions|Status'),
+    cancelButton: __('Cancel'),
+    addButton: s__('SecurityExclusions|Add Exclusion'),
+    saveButton: s__('SecurityExclusions|Save Changes'),
+    unknownError: __('Something went wrong. Please try again.'),
+  },
+  projectSecurityExclusionCreateMutation,
+  projectSecurityExclusionUpdateMutation,
   props: {
     exclusion: {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    mode: {
+      type: String,
+      required: false,
+      default: DRAWER_MODES.ADD,
+      validator(value) {
+        return Object.values(DRAWER_MODES).includes(value);
+      },
     },
   },
   data() {
@@ -46,14 +78,18 @@ export default {
         value: this.exclusion.value || '',
         description: this.exclusion.description || '',
         secretPushProtection: this.exclusion.secretPushProtection ?? true,
-        status: this.exclusion.status || StatusType.ENABLE,
+        status: this.exclusion.active ?? StatusType.ENABLE,
       },
       isLoading: false,
       showAlert: false,
       errors: [],
+      isEdit: this.mode === DRAWER_MODES.EDIT,
     };
   },
   computed: {
+    saveButtonTitle() {
+      return this.isEdit ? this.$options.i18n.saveButton : this.$options.i18n.addButton;
+    },
     errorTitle() {
       return n__(
         'SecurityExclusions|The following error occured while saving the exclusion:',
@@ -66,7 +102,7 @@ export default {
     },
     mutationVariables() {
       return {
-        projectPath: this.projectFullPath,
+        ...(this.isEdit ? { id: this.exclusion.id } : { projectPath: this.projectFullPath }),
         type: this.form.type,
         value: this.form.value,
         description: this.form.description,
@@ -79,13 +115,17 @@ export default {
     async saveExclusions() {
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: projectSecurityExclusionCreateMutation,
+          mutation: this.isEdit
+            ? projectSecurityExclusionUpdateMutation
+            : projectSecurityExclusionCreateMutation,
           variables: {
             input: this.mutationVariables,
           },
         });
 
-        const { errors } = data.projectSecurityExclusionCreate;
+        const { errors } = this.isEdit
+          ? data.projectSecurityExclusionUpdate
+          : data.projectSecurityExclusionCreate;
 
         if (errors.length > 0) {
           this.showErrors(errors);
@@ -116,26 +156,6 @@ export default {
       this.showAlert = false;
     },
   },
-  i18n: {
-    typeLabel: s__('SecurityExclusions|Type'),
-    typeDescription: s__('SecurityExclusions|Select which type of content to exclude'),
-    contentLabel: s__('SecurityExclusions|Value'),
-    descriptionLabel: s__('SecurityExclusions|Description'),
-    descriptionDescription: s__(
-      'SecurityExclusions|Provide context for why the content is being excluded.',
-    ),
-    descriptionPlaceholder: s__('SecurityExclusions|ex: This secret is used for testing'),
-    enforcementLabel: s__('SecurityExclusions|Enforcement'),
-    enforcementDescription: s__(
-      'SecurityExclusions|Select the secret detection methods this exclusion should apply to.',
-    ),
-    secretPushProtection: s__('SecurityExclusions|Secret push protection'),
-    statusLabel: s__('SecurityExclusions|Status'),
-    cancelButton: __('Cancel'),
-    saveButton: s__('SecurityExclusions|Add Exclusion'),
-    unknownError: __('Something went wrong. Please try again.'),
-  },
-  projectSecurityExclusionCreateMutation,
 };
 </script>
 
@@ -189,7 +209,7 @@ export default {
       :label="$options.i18n.enforcementLabel"
       :label-description="$options.i18n.enforcementDescription"
     >
-      <gl-form-checkbox v-model="form.secretPushProtection">
+      <gl-form-checkbox v-model="form.secretPushProtection" disabled>
         {{ $options.i18n.secretPushProtection }}
       </gl-form-checkbox>
     </gl-form-group>
@@ -205,7 +225,7 @@ export default {
         variant="confirm"
         data-testid="form-submit-button"
         @click.prevent="submit"
-        >{{ $options.i18n.saveButton }}</gl-button
+        >{{ saveButtonTitle }}</gl-button
       >
       <gl-button
         class="gl-ml-3"
