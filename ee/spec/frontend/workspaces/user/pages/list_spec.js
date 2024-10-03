@@ -1,13 +1,13 @@
-import { mount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { GlAlert, GlButton, GlLink, GlSkeletonLoader, GlTabs } from '@gitlab/ui';
+import { GlAlert, GlButton, GlLink, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import WorkspaceEmptyState from 'ee/workspaces/common/components/workspaces_list/empty_state.vue';
 import WorkspaceTab from 'ee/workspaces/common/components/workspace_tab.vue';
-import WorkspaceTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
+import BaseWorkspacesList from 'ee/workspaces/common/components/workspaces_list/base_workspaces_list.vue';
 import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import getProjectsDetailsQuery from 'ee/workspaces/common/graphql/queries/get_projects_details.query.graphql';
 import getWorkspaceStateQuery from 'ee/workspaces/common/graphql/queries/get_workspace_state.query.graphql';
@@ -49,21 +49,22 @@ describe('workspaces/user/pages/list.vue', () => {
     ]);
   };
 
-  const createWrapper = () => {
+  const createWrapper = ({ mountFn = shallowMount, stubs = {} } = {}) => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
-    wrapper = mount(List, {
+    wrapper = mountFn(List, {
       apolloProvider: mockApollo,
       provide: {
         emptyStateSvgPath: SVG_PATH,
       },
+      stubs,
     });
   };
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findHelpLink = () => wrapper.findComponent(GlLink);
   const findTabContainer = () => wrapper.findComponent(GlTabs);
   const findTabs = () => wrapper.findAllComponents(WorkspaceTab);
-  const findTable = () => wrapper.findComponent(WorkspaceTable);
   const findNewWorkspaceButton = () => wrapper.findComponent(GlButton);
+  const findBaseWorkspacesList = () => wrapper.findComponent(BaseWorkspacesList);
 
   const findAllConfirmButtons = () =>
     wrapper.findAllComponents(GlButton).filter((button) => button.props().variant === 'confirm');
@@ -79,7 +80,11 @@ describe('workspaces/user/pages/list.vue', () => {
         USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
       );
 
-      createWrapper();
+      createWrapper({
+        stubs: {
+          WorkspaceTab,
+        },
+      });
       await waitForPromises();
     });
 
@@ -92,16 +97,13 @@ describe('workspaces/user/pages/list.vue', () => {
     });
 
     it('does not render the workspace tabs', () => {
-      const tabContainer = findTabContainer();
-      const tabs = findTabs();
-      expect(tabContainer.exists()).toBe(false);
-      expect(tabs.exists()).toBe(false);
+      expect(findTabs().at(0).findComponent(WorkspaceEmptyState).exists()).toBe(true);
     });
   });
 
   it('shows loading state when workspaces are being fetched', () => {
     createWrapper();
-    expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
+    expect(findBaseWorkspacesList().props('loading')).toBe(true);
   });
 
   describe('default (with nodes)', () => {
@@ -119,8 +121,8 @@ describe('workspaces/user/pages/list.vue', () => {
 
       expect(tabs.exists()).toBe(true);
       expect(tabs).toHaveLength(2);
-      expect(tabs.at(0).props('tabName')).toEqual('active');
-      expect(tabs.at(1).props('tabName')).toEqual('terminated');
+      expect(tabs.at(0).props('tabName')).toBe('active');
+      expect(tabs.at(1).props('tabName')).toBe('terminated');
     });
 
     it('does not call log error', () => {
@@ -138,25 +140,27 @@ describe('workspaces/user/pages/list.vue', () => {
     beforeEach(async () => {
       createWrapper();
       await waitForPromises();
-
-      findTable().vm.$emit('updateFailed', { error });
     });
 
     it('displays the error attached to the event', async () => {
+      findTabs().at(0).vm.$emit('error', error);
       await nextTick();
 
-      expect(findAlert().text()).toBe(error);
+      expect(findBaseWorkspacesList().props('error')).toBe(error);
     });
 
     describe('when workspace table emits updateSucceed event', () => {
       it('dismisses the previous update error', async () => {
-        expect(findAlert().text()).toBe(error);
+        findTabs().at(0).vm.$emit('error', error);
+        await nextTick();
 
-        findTable().vm.$emit('updateSucceed');
+        expect(findBaseWorkspacesList().props('error')).toBe(error);
+
+        findTabs().at(0).vm.$emit('error', '');
 
         await nextTick();
 
-        expect(findAlert().exists()).toBe(false);
+        expect(findBaseWorkspacesList().props('error')).toBe('');
       });
     });
   });
@@ -222,7 +226,7 @@ describe('workspaces/user/pages/list.vue', () => {
       queryHandler.mockReset();
       queryHandler.mockRejectedValueOnce(ERROR);
 
-      createWrapper();
+      createWrapper({ mountFn: mount });
       await waitForPromises();
     });
 
@@ -247,7 +251,11 @@ describe('workspaces/user/pages/list.vue', () => {
 
   describe('fixed elements', () => {
     beforeEach(async () => {
-      createWrapper();
+      createWrapper({
+        stubs: {
+          BaseWorkspacesList,
+        },
+      });
 
       await waitForPromises();
     });

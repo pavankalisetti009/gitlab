@@ -63,7 +63,6 @@ export default {
     MonitorTerminatingWorkspace,
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     userWorkspacesTabList: {
       query: userWorkspacesTabListQuery,
       pollInterval: WORKSPACES_LIST_POLL_INTERVAL,
@@ -118,6 +117,7 @@ export default {
       terminated: { ...DEFAULT_WORKSPACES_DATA },
       terminatingWorkspaces: [],
       loading: true,
+      userWorkspacesTabList: [],
       paginationVariables: {
         first: WORKSPACES_LIST_PAGE_SIZE,
         activeAfter: null,
