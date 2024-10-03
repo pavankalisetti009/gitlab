@@ -16,5 +16,9 @@ module Security
     scope :by_scanner, ->(scanner) { where(scanner: scanner) }
     scope :by_type, ->(type) { where(type: type) }
     scope :by_status, ->(status) { where(active: status) }
+
+    def audit_details
+      attributes.slice('scanner', 'value', 'active', 'description').symbolize_keys
+    end
   end
 end
