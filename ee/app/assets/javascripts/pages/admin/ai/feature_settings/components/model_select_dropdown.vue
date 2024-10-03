@@ -2,13 +2,12 @@
 import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.graphql';
+import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 
 const PROVIDERS = {
-  DISABLED: 'DISABLED',
-  VENDORED: 'VENDORED',
-  SELF_HOSTED: 'SELF_HOSTED',
+  DISABLED: 'disabled',
+  VENDORED: 'vendored',
+  SELF_HOSTED: 'self_hosted',
 };
 
 const FEATURE_DISABLED = 'DISABLED';
@@ -20,12 +19,8 @@ export default {
     GlButton,
   },
   props: {
-    featureSetting: {
+    aiFeatureSetting: {
       type: Object,
-      required: true,
-    },
-    models: {
-      type: Array,
       required: true,
     },
     newSelfHostedModelPath: {
@@ -40,17 +35,21 @@ export default {
     successMessage: s__('AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}'),
   },
   data() {
+    const { provider, selfHostedModel, validModels } = this.aiFeatureSetting;
+
+    const selectedOption = provider === PROVIDERS.DISABLED ? FEATURE_DISABLED : selfHostedModel?.id;
+
     return {
-      feature: this.featureSetting.feature,
-      provider: this.featureSetting.provider,
-      selfHostedModelId: this.featureSetting.selfHostedModelId,
-      selectedOption: null,
+      provider,
+      selfHostedModelId: selfHostedModel?.id,
+      compatibleModels: validModels?.nodes,
+      selectedOption,
       isSaving: false,
     };
   },
   computed: {
     dropdownItems() {
-      const modelOptions = this.models.map((model) => ({
+      const modelOptions = this.compatibleModels.map((model) => ({
         value: model.id,
         text: `${model.name} (${model.model})`,
       }));
@@ -64,13 +63,13 @@ export default {
       return [...modelOptions, disableOption];
     },
     selectedModel() {
-      return this.models.find((m) => m.id === this.selfHostedModelId);
+      return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
     },
     dropdownToggleText() {
-      if (!this.selectedOption) {
+      if (this.provider === PROVIDERS.VENDORED) {
         return s__('AdminAIPoweredFeatures|Select a self-hosted model');
       }
-      if (this.selectedOption === FEATURE_DISABLED) {
+      if (this.provider === PROVIDERS.DISABLED) {
         return s__('AdminAIPoweredFeatures|Disabled');
       }
 
@@ -82,18 +81,19 @@ export default {
       this.isSaving = true;
 
       try {
-        const provider = option === FEATURE_DISABLED ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED;
+        const selectedOption = {
+          option,
+          provider: option === FEATURE_DISABLED ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED,
+          selfHostedModelId: option === FEATURE_DISABLED ? null : option,
+        };
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiFeatureSetting,
           variables: {
             input: {
-              feature: this.feature.toUpperCase(),
-              provider,
-              selfHostedModelId:
-                option === FEATURE_DISABLED
-                  ? null
-                  : convertToGraphQLId('Ai::SelfHostedModel', option),
+              feature: this.aiFeatureSetting.feature.toUpperCase(),
+              provider: selectedOption.provider.toUpperCase(),
+              selfHostedModelId: selectedOption.selfHostedModelId,
             },
           },
         });
@@ -105,11 +105,9 @@ export default {
             throw new Error(errors[0]);
           }
 
-          this.selectedOption = option;
-          this.provider = provider;
-          this.selfHostedModelId = option === FEATURE_DISABLED ? null : option;
+          this.updateSelection(selectedOption);
           this.isSaving = false;
-          this.$toast.show(this.successMessage(this.featureSetting));
+          this.$toast.show(this.successMessage(this.aiFeatureSetting));
         }
       } catch (error) {
         createAlert({
@@ -120,13 +118,18 @@ export default {
         this.isSaving = false;
       }
     },
+    updateSelection(selectedOption) {
+      this.selectedOption = selectedOption.option;
+      this.provider = selectedOption.provider;
+      this.selfHostedModelId = selectedOption.selfHostedModelId;
+    },
     errorMessage(error) {
       return error.message || this.$options.i18n.defaultErrorMessage;
     },
-    successMessage(featureSetting) {
+    successMessage(aiFeatureSetting) {
       return sprintf(this.$options.i18n.successMessage, {
-        mainFeature: featureSetting.mainFeature,
-        title: featureSetting.title,
+        mainFeature: aiFeatureSetting.mainFeature,
+        title: aiFeatureSetting.title,
       });
     },
   },
@@ -138,7 +141,7 @@ export default {
     :selected="selectedOption"
     :items="dropdownItems"
     :toggle-text="dropdownToggleText"
-    :header-text="s__('AdminAIPoweredFeatures|Self-hosted models')"
+    :header-text="s__('AdminAIPoweredFeatures|Compatible models')"
     :loading="isSaving"
     category="primary"
     block

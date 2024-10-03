@@ -1,4 +1,4 @@
-import { GlEmptyState, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
 import { mapValues, pick } from 'lodash';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -12,10 +12,7 @@ import ScanAlerts, {
   TYPE_ERRORS,
   TYPE_WARNINGS,
 } from 'ee/security_dashboard/components/pipeline/scan_alerts.vue';
-import SecurityDashboard from 'ee/security_dashboard/components/pipeline/security_dashboard_vuex.vue';
 import SecurityReportsSummary from 'ee/security_dashboard/components/pipeline/security_reports_summary.vue';
-import { DOC_PATH_SECURITY_CONFIGURATION } from 'ee/security_dashboard/constants';
-import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
 import { dismissalDescriptions } from 'ee_jest/vulnerabilities/mock_data';
 import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import {
@@ -29,40 +26,25 @@ import {
   pipelineSecurityReportSummaryEmpty,
 } from './mock_data';
 
-const projectId = 5678;
-const emptyStateSvgPath = '/svgs/empty/svg';
-const pipelineId = 1234;
 const pipelineIid = 4321;
-const vulnerabilitiesEndpoint = '/vulnerabilities';
-const loadingErrorIllustrations = {
-  [HTTP_STATUS_UNAUTHORIZED]: '/401.svg',
-  [HTTP_STATUS_FORBIDDEN]: '/403.svg',
-};
 
 describe('Pipeline Security Dashboard component', () => {
   let store;
   let wrapper;
 
-  const findSecurityDashboard = () => wrapper.findComponent(SecurityDashboard);
   const findVulnerabilityReport = () => wrapper.findByTestId('pipeline-vulnerability-report');
   const findScanAlerts = () => wrapper.findComponent(ScanAlerts);
   const findReportStatusAlert = () => wrapper.findComponent(ReportStatusAlert);
 
-  const factory = ({ stubs, provide, propsData, apolloProvider } = {}) => {
+  const factory = ({ stubs, propsData, apolloProvider } = {}) => {
     wrapper = shallowMountExtended(PipelineSecurityDashboard, {
       apolloProvider,
       store,
       provide: {
-        projectId,
         projectFullPath: 'my-path',
-        emptyStateSvgPath,
         pipeline: {
-          id: pipelineId,
           iid: pipelineIid,
         },
-        vulnerabilitiesEndpoint,
-        loadingErrorIllustrations,
-        ...provide,
       },
       propsData: {
         dismissalDescriptions,
@@ -79,61 +61,10 @@ describe('Pipeline Security Dashboard component', () => {
     factory({ apolloProvider: createMockApollo(requestHandlers) });
   };
 
-  describe('on creation', () => {
-    beforeEach(() => {
-      factory();
-    });
+  it('renders pipeline vulnerability report', () => {
+    factory();
 
-    it('renders the security dashboard', () => {
-      expect(findSecurityDashboard().props()).toMatchObject({
-        pipelineId,
-        vulnerabilitiesEndpoint,
-      });
-    });
-  });
-
-  describe(':pipeline_security_dashboard_graphql feature flag', () => {
-    const factoryWithFeatureFlag = (value) =>
-      factory({
-        provide: {
-          glFeatures: {
-            pipelineSecurityDashboardGraphql: value,
-          },
-        },
-      });
-
-    it('does not show the security layout when the feature flag is on but the vulnerability report', () => {
-      factoryWithFeatureFlag(true);
-      expect(findSecurityDashboard().exists()).toBe(false);
-      expect(findVulnerabilityReport().exists()).toBe(true);
-    });
-
-    it('shows the security layout when the feature flag is off', () => {
-      factoryWithFeatureFlag(false);
-      expect(findSecurityDashboard().exists()).toBe(true);
-    });
-  });
-
-  describe('with a stubbed dashboard for slot testing', () => {
-    beforeEach(() => {
-      factory({
-        stubs: {
-          'security-dashboard': { template: '<div><slot name="empty-state"></slot></div>' },
-        },
-      });
-    });
-
-    it('renders empty state component with correct props', () => {
-      const emptyState = wrapper.findComponent(GlEmptyState);
-
-      expect(emptyState.props()).toMatchObject({
-        svgPath: '/svgs/empty/svg',
-        title: 'No vulnerabilities found for this pipeline',
-        description: `While it's rare to have no vulnerabilities for your pipeline, it can happen. In any event, we ask that you double check your settings to make sure all security scanning jobs have passed successfully.`,
-        primaryButtonLink: DOC_PATH_SECURITY_CONFIGURATION,
-        primaryButtonText: 'Learn more about setting up your dashboard',
-      });
-    });
+    expect(findVulnerabilityReport().exists()).toBe(true);
   });
 
   describe('report status alert', () => {

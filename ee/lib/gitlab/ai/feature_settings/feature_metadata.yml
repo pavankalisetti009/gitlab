@@ -9,6 +9,7 @@ code_generations:
     - deepseekcoder
     - mistral
     - llama3
+    - claude_3
 code_completions:
   title: Code Completion
   release_state: GA
@@ -26,3 +27,4 @@ duo_chat:
   main_feature: Duo Chat
   compatible_llms:
     - mistral
+    - claude_3

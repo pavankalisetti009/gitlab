@@ -76,10 +76,16 @@ export default {
       this.itemToBeDeleted = item;
       this.$refs.deleteModal.show();
     },
-    editItem() {
+    prepareExclusionEdit(item) {
+      this.$emit('editExclusion', item);
+    },
+    viewItem(item) {
+      this.$emit('viewExclusion', item);
+    },
+    editItem(item) {
       return {
         text: __('Edit'),
-        to: `#`,
+        action: () => this.prepareExclusionEdit(item),
       };
     },
     deleteItem(item) {
@@ -143,7 +149,16 @@ export default {
       }}</gl-button>
     </div>
 
-    <gl-table :items="exclusions" :fields="fields" stacked="md">
+    <gl-table
+      :items="exclusions"
+      :fields="fields"
+      stacked="md"
+      hover
+      selectable
+      select-mode="single"
+      selected-variant="primary"
+      @row-clicked="viewItem"
+    >
       <template #cell(status)="{ item }">
         <gl-toggle
           :value="item.active"

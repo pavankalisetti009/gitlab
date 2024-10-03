@@ -13,6 +13,7 @@ RSpec.describe GitlabSchema.types['AiAcceptedSelfHostedModels'], feature_categor
       MISTRAL
       DEEPSEEKCODER
       LLAMA3
+      CLAUDE_3
     ])
   end
 end
