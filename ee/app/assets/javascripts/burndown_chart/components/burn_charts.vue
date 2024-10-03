@@ -8,7 +8,7 @@ import { createAlert } from '~/alert';
 import { STATUS_CLOSED, WORKSPACE_GROUP } from '~/issues/constants';
 import dateFormat from '~/lib/dateformat';
 import axios from '~/lib/utils/axios_utils';
-import { getDayDifference, nDaysAfter, newDateAsLocaleTime } from '~/lib/utils/datetime_utility';
+import { getDayDifference, nDaysAfter, newDate } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BurndownChartData from '../burn_chart_data';
@@ -281,14 +281,14 @@ export default {
       if (date !== this.startDate) {
         const { date: prevDate, ...previousValues } = acc[acc.length - 1] || {};
 
-        const currentDateUTC = newDateAsLocaleTime(date);
-        const prevDateUTC = newDateAsLocaleTime(prevDate);
+        const currentDate = newDate(date);
+        const previousDate = newDate(prevDate);
 
-        const gap = getDayDifference(prevDateUTC, currentDateUTC);
+        const gap = getDayDifference(previousDate, currentDate);
 
         for (let i = 1; i < gap; i += 1) {
           acc.push({
-            date: dateFormat(nDaysAfter(prevDateUTC, i), 'yyyy-mm-dd'),
+            date: dateFormat(nDaysAfter(previousDate, i), 'yyyy-mm-dd'),
             ...previousValues,
           });
         }
