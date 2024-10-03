@@ -141,7 +141,7 @@ module EE
       end
 
       def override_params
-        params.require(:group_member).permit(:override).merge({ source: source })
+        params.require(:group_member).permit(:override)
       end
 
       override :membershipable_members
