@@ -1,0 +1,22 @@
+query getAiFeatureSetting {
+  aiFeatureSettings {
+    nodes {
+      feature
+      title
+      mainFeature
+      provider
+      selfHostedModel {
+        id
+        name
+        model
+      }
+      validModels {
+        nodes {
+          id
+          name
+          model
+        }
+      }
+    }
+  }
+}

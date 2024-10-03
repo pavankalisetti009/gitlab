@@ -12,10 +12,6 @@ module Admin
 
       def index
         @feature_settings = ::Ai::FeatureSettings::FeatureSettingFinder.new.execute
-
-        return unless Feature.enabled?(:custom_models_feature_settings_vue_app, current_user)
-
-        @self_hosted_models = ::Ai::SelfHostedModel.all
       end
 
       # rubocop:disable CodeReuse/ActiveRecord -- Using find_or_initialize_by is reasonable

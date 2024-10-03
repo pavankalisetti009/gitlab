@@ -1,7 +1,7 @@
 import { GlTableLite } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTable from 'ee/pages/admin/ai/feature_settings/components/feature_settings_table.vue';
-import { mockAiFeatureSettings, mockSelfHostedModels } from './mock_data';
+import { mockAiFeatureSettings } from './mock_data';
 
 describe('FeatureSettingsTable', () => {
   let wrapper;
@@ -19,8 +19,7 @@ describe('FeatureSettingsTable', () => {
   beforeEach(() => {
     createComponent({
       props: {
-        featureSettings: mockAiFeatureSettings,
-        models: mockSelfHostedModels,
+        aiFeatureSettings: mockAiFeatureSettings,
         newSelfHostedModelPath,
       },
     });
