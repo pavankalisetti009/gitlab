@@ -157,31 +157,29 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
         }
       end
 
-      it 'returns empty projects' do
+      it 'still returns associated projects' do
         response = service.execute
 
         expect(response[:compliance_frameworks]).to contain_exactly(framework1)
-        expect(response[:including_projects]).to be_empty
-        expect(response[:excluding_projects]).to be_empty
+        expect(response[:including_projects]).to contain_exactly(project1)
+        expect(response[:excluding_projects]).to contain_exactly(project2)
       end
     end
 
     context 'when groups are not associated with the namespace' do
-      let_it_be(:namespace1) { create(:namespace) }
-      let_it_be(:namespace2) { create(:namespace) }
       let(:policy_scope) do
         {
-          compliance_frameworks: [{ id: framework1.id }],
+          compliance_frameworks: [],
           groups: { including: [{ id: namespace1.id }], excluding: [{ id: namespace2.id }] }
         }
       end
 
-      it 'returns empty groups' do
+      it 'still returns associated projects' do
         response = service.execute
 
-        expect(response[:compliance_frameworks]).to contain_exactly(framework1)
-        expect(response[:including_groups]).to be_empty
-        expect(response[:excluding_groups]).to be_empty
+        expect(response[:compliance_frameworks]).to be_empty
+        expect(response[:including_groups]).to contain_exactly(namespace1)
+        expect(response[:excluding_groups]).to contain_exactly(namespace2)
       end
     end
   end
