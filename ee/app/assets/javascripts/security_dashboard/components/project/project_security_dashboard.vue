@@ -1,10 +1,11 @@
 <script>
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
+import { DOC_PATH_PROJECT_SECURITY_DASHBOARD } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
@@ -26,6 +27,8 @@ export default {
     SecurityTrainingPromoBanner,
     GlLoadingIcon,
     GlLineChart,
+    GlSprintf,
+    GlLink,
   },
   props: {
     projectFullPath: {
@@ -158,20 +161,44 @@ export default {
       };
     },
   },
+  i18n: {
+    title: s__('SecurityReports|Security dashboard'),
+    subtitle: s__(
+      'SecurityReports|Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. %{linkStart}Learn more.%{linkEnd}',
+    ),
+  },
+  DOC_PATH_PROJECT_SECURITY_DASHBOARD,
 };
 </script>
 
 <template>
-  <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-6" />
-
-  <div v-else>
+  <div>
     <security-training-promo-banner v-if="shouldShowPromoBanner" />
-    <gl-line-chart
-      class="gl-mt-6"
-      :data="dataSeries"
-      :option="chartOptions"
-      responsive
-      :include-legend-avg-max="false"
-    />
+
+    <header class="vulnerability-header gl-my-5 gl-grid">
+      <h2 class="header-title gl-my-0">
+        {{ $options.i18n.title }}
+      </h2>
+      <p class="header-description gl-mb-0" data-testid="security-dashboard-description">
+        <gl-sprintf :message="$options.i18n.subtitle">
+          <template #link="{ content }">
+            <gl-link :href="$options.DOC_PATH_PROJECT_SECURITY_DASHBOARD" target="_blank">{{
+              content
+            }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </p>
+    </header>
+    <div>
+      <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-6" />
+      <gl-line-chart
+        v-else
+        class="gl-mt-6"
+        :data="dataSeries"
+        :option="chartOptions"
+        responsive
+        :include-legend-avg-max="false"
+      />
+    </div>
   </div>
 </template>
