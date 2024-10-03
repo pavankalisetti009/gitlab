@@ -2,7 +2,7 @@
 import { GlAlert, GlButton, GlDatepicker, GlForm, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { STATUS_ALL } from '~/issues/constants';
-import { dayAfter, formatDate, parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { dayAfter, formatDate, newDate } from '~/lib/utils/datetime_utility';
 import { TYPENAME_ITERATION, TYPENAME_ITERATIONS_CADENCE } from '~/graphql_shared/constants';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
@@ -66,8 +66,8 @@ export default {
 
         this.title = iteration.title;
         this.description = iteration.description;
-        this.startDate = parsePikadayDate(iteration.startDate);
-        this.dueDate = parsePikadayDate(iteration.dueDate);
+        this.startDate = newDate(iteration.startDate);
+        this.dueDate = newDate(iteration.dueDate);
         this.automatic = iteration.iterationCadence.automatic;
 
         return iteration;

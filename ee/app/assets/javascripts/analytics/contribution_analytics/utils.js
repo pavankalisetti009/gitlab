@@ -1,6 +1,6 @@
 import { sortBy } from 'lodash';
 import {
-  parsePikadayDate,
+  newDate,
   toISODateFormat,
   nDaysAfter,
   differenceInMilliseconds,
@@ -80,9 +80,9 @@ export const filterIssues = (contributions) => {
  * @return { Object.nextStartDate } The start date to be used for the next request
  */
 export const restrictRequestEndDate = (startDate, maxEndDate) => {
-  const endDate = nDaysAfter(parsePikadayDate(startDate), MAX_DAYS_PER_REQUEST);
+  const endDate = nDaysAfter(newDate(startDate), MAX_DAYS_PER_REQUEST);
 
-  const atMaxEndDate = differenceInMilliseconds(parsePikadayDate(maxEndDate), endDate) >= 0;
+  const atMaxEndDate = differenceInMilliseconds(newDate(maxEndDate), endDate) >= 0;
   if (atMaxEndDate) {
     return { endDate: maxEndDate, nextStartDate: null };
   }

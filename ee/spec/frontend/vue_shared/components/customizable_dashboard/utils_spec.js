@@ -10,7 +10,7 @@ import {
   getVisualizationCategory,
   parsePanelToGridItem,
 } from 'ee/vue_shared/components/customizable_dashboard/utils';
-import { parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { newDate } from '~/lib/utils/datetime_utility';
 import {
   CUSTOM_DATE_RANGE_KEY,
   DATE_RANGE_OPTIONS,
@@ -79,8 +79,8 @@ describe('buildDefaultDashboardFilters', () => {
     const queryString = `date_range_option=${CUSTOM_DATE_RANGE_KEY}&start_date=2023-01-10&end_date=2023-02-08`;
 
     expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
-      startDate: parsePikadayDate('2023-01-10'),
-      endDate: parsePikadayDate('2023-02-08'),
+      startDate: newDate('2023-01-10'),
+      endDate: newDate('2023-02-08'),
       dateRangeOption: CUSTOM_DATE_RANGE_KEY,
       filterAnonUsers: false,
     });
