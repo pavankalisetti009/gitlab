@@ -20,7 +20,7 @@ module CloudConnector
 
         override :success_message
         def success_message
-          _('Authentication with GitLab Cloud services succeeded.')
+          _('Authentication with the AI gateway services succeeded.')
         end
 
         def check_user_exists
@@ -35,7 +35,7 @@ module CloudConnector
         end
 
         def failure_text(error)
-          format(_('Authentication with GitLab Cloud services failed: %{error}'), error: error)
+          format(_('Authentication with the AI gateway services failed: %{error}'), error: error)
         end
       end
     end
