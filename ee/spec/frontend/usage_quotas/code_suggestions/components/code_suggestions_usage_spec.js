@@ -538,7 +538,10 @@ describe('GitLab Duo Usage', () => {
   describe('Subscription Activation Form', () => {
     describe('activating the license', () => {
       beforeEach(async () => {
-        createComponent({ currentLicenseHandler: currentLicenseDataHandler });
+        createComponent({
+          currentLicenseHandler: currentLicenseDataHandler,
+          provideProps: { isSaaS: false },
+        });
 
         await waitForPromises();
       });
@@ -586,14 +589,35 @@ describe('GitLab Duo Usage', () => {
     });
 
     describe('when fetch subscription with error', () => {
-      beforeEach(async () => {
-        createComponent({ currentLicenseHandler: currentLicenseErrorHandler });
+      describe('when instance is SaaS', () => {
+        beforeEach(async () => {
+          createComponent({
+            currentLicenseHandler: currentLicenseErrorHandler,
+          });
 
-        await waitForPromises();
+          await waitForPromises();
+        });
+
+        it('does not show an error alert', () => {
+          expect(currentLicenseErrorHandler).not.toHaveBeenCalled();
+          expect(findSubscriptionFetchErrorAlert().exists()).toBe(false);
+        });
       });
 
-      it('shows an error alert with cause', () => {
-        expect(findSubscriptionFetchErrorAlert().props('title')).toBe('Subscription unavailable');
+      describe('when instance is SM', () => {
+        beforeEach(async () => {
+          createComponent({
+            currentLicenseHandler: currentLicenseErrorHandler,
+            provideProps: { isSaaS: false },
+          });
+
+          await waitForPromises();
+        });
+
+        it('shows an error alert with cause', () => {
+          expect(currentLicenseErrorHandler).toHaveBeenCalledTimes(1);
+          expect(findSubscriptionFetchErrorAlert().props('title')).toBe('Subscription unavailable');
+        });
       });
     });
   });
