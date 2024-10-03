@@ -58,7 +58,11 @@ export default {
         }
       } catch (error) {
         captureException(error);
-        this.emitAlert({ message: I18N_ROLE_SAVE_ERROR, variant: 'danger', dismissible: false });
+        this.emitAlert({
+          message: error.response?.data?.message || I18N_ROLE_SAVE_ERROR,
+          variant: 'danger',
+          dismissible: false,
+        });
       } finally {
         this.emitBusy(false);
       }

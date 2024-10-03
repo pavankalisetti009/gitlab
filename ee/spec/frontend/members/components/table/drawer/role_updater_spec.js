@@ -142,6 +142,30 @@ describe('Role updater EE', () => {
     });
   });
 
+  describe('when save has an error with a message', () => {
+    const error = new Error();
+    const message =
+      "The member's email address is not allowed for this group. Check with your administrator.";
+    error.response = {
+      data: { message },
+    };
+
+    beforeEach(() => {
+      callRoleUpdateApi.mockRejectedValue(error);
+      createWrapper();
+      wrapper.vm.saveRole();
+    });
+
+    it('emits error alert with that message', () => {
+      expect(wrapper.emitted('alert')).toHaveLength(2);
+      expect(wrapper.emitted('alert')[1][0]).toEqual({
+        message,
+        variant: 'danger',
+        dismissible: false,
+      });
+    });
+  });
+
   describe('guest overage confirmation', () => {
     beforeEach(createWrapper);
 
