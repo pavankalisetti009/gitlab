@@ -20,6 +20,120 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
   end
 
   describe '#execute' do
+    context 'when a watermark is exceeded' do
+      let(:service) { described_class.new(project.id, task_type) }
+      let(:task_type) { :index_repo }
+
+      before do
+        allow(Search::Zoekt::Router).to receive(:fetch_indices_for_indexing)
+          .with(project.id, root_namespace_id: zoekt_enabled_namespace.root_namespace_id)
+          .and_return(zoekt_index)
+
+        allow(zoekt_index).to receive(:find_each).and_yield(zoekt_index)
+      end
+
+      context 'on low watermark' do
+        before do
+          allow(zoekt_index).to receive(:low_watermark_exceeded?).and_return(true)
+        end
+
+        context 'with initial indexing' do
+          it 'does not create Search::Zoekt::Task record for initial indexing' do
+            expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+          end
+
+          it 'reschedules the indexing task worker' do
+            expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
+              30.minutes, project.id, task_type, { index_id: zoekt_index.id }
+            )
+
+            service.execute
+          end
+        end
+
+        context 'with force reindexing' do
+          let(:task_type) { :force_index_repo }
+
+          context 'when a repo does not exist' do
+            it 'does not create Search::Zoekt::Task record for initial indexing' do
+              expect(service.initial_indexing?).to eq(true)
+              expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+            end
+
+            it 'reschedules the indexing task worker' do
+              expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
+                30.minutes, project.id, task_type, { index_id: zoekt_index.id }
+              )
+
+              service.execute
+            end
+          end
+
+          context 'when a repo already exists' do
+            let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:pending) }
+            let_it_be(:zoekt_repo) do
+              create(:zoekt_repository, project: project, zoekt_index: zoekt_index, state: repo_state)
+            end
+
+            context 'and is ready' do
+              let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:ready) }
+
+              it 'does not create Search::Zoekt::Task record for initial indexing' do
+                expect(service.initial_indexing?).to eq(true)
+                expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+              end
+
+              it 'reschedules the indexing task worker' do
+                expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
+                  30.minutes, project.id, task_type, { index_id: zoekt_index.id }
+                )
+
+                service.execute
+              end
+            end
+
+            context 'and is not ready' do
+              let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:orphaned) }
+
+              it 'does not create Search::Zoekt::Task record for initial indexing' do
+                expect(service.initial_indexing?).to eq(true)
+                expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+              end
+
+              it 'reschedules the indexing task worker' do
+                expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
+                  30.minutes, project.id, task_type, { index_id: zoekt_index.id }
+                )
+
+                service.execute
+              end
+            end
+          end
+        end
+
+        context 'with incremental indexing' do
+          before do
+            create(:zoekt_repository, project: project, zoekt_index: zoekt_index, state: :ready)
+          end
+
+          it 'allows incremental indexing' do
+            expect(service.initial_indexing?).to eq(false)
+            expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
+          end
+        end
+      end
+
+      context 'on high watermark' do
+        before do
+          allow(zoekt_index).to receive(:high_watermark_exceeded?).and_return(true)
+        end
+
+        it 'does not create Search::Zoekt::Task record' do
+          expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+        end
+      end
+    end
+
     context 'when task_type is delete_repo' do
       let(:service) { described_class.new(project.id, :delete_repo) }
 
