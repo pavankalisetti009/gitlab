@@ -14,36 +14,31 @@ module Groups
       def duo_pro_discover_card_collection(namespace)
         [
           {
-            header: s_("DuoProDiscover|Accelerate your path to market"),
+            header: s_('DuoProDiscover|Privacy-first AI'),
             body: s_(
-              "DuoProDiscover|Develop and deploy secure software faster with AI in every phase " \
-                "of the software development lifecycle — from planning and code creation to testing, " \
-                "security, and monitoring."
+              "DuoProDiscover|Maintain control over the data that's sent to an external large language model (LLM) " \
+                "service. Your organization's proprietary data or code are never used to train external AI models."
             )
           },
           {
-            header: s_("DuoProDiscover|Adopt AI with guardrails"),
+            header: s_('DuoProDiscover|Boost team collaboration'),
             body: s_(
-              "DuoProDiscover|With GitLab Duo, you control which users, projects, and groups can use " \
-                "AI-powered capabilities. Also, your organization's proprietary code and data aren't used " \
-                "to train AI models."
+              "DuoProDiscover|Streamline communication, facilitate knowledge sharing, and improve project management."
             )
           },
           {
-            header: s_("DuoProDiscover|Improve developer experience"),
+            header: s_('DuoProDiscover|Improve developer experience'),
             body: s_(
-              "DuoProDiscover|Give your developers a single platform that integrates the best AI model " \
-                "for each use case across the entire workflow, from understanding code to fixing security " \
-                "vulnerabilities."
+              "DuoProDiscover|A single platform integrates the best AI model for each use case across the entire " \
+                "development workflow."
             )
           },
           {
-            header: s_("DuoProDiscover|Committed to transparent AI"),
+            header: s_('DuoProDiscover|Transparent AI'),
             body: safe_format(
               s_(
-                "DuoProDiscover|For organizations and teams to trust AI, it must be transparent. " \
-                  "GitLab's %{link_start}AI Transparency Center%{link_end} details how we uphold ethics and " \
-                  "transparency in our AI-powered features."
+                "DuoProDiscover|The GitLab %{link_start}AI Transparency Center%{link_end} details how we uphold " \
+                  "ethics and transparency in our AI-powered features."
               ),
               tag_pair(
                 link_to('', 'https://about.gitlab.com/ai-transparency-center/',
@@ -52,8 +47,8 @@ module Groups
                     track_label: 'ai_transparency_center_feature'
                   },
                   class: 'gl-contents',
-                  target: "_blank",
-                  rel: "noopener noreferrer"),
+                  target: '_blank',
+                  rel: 'noopener noreferrer'),
                 :link_start,
                 :link_end
               )
@@ -62,100 +57,68 @@ module Groups
         ]
       end
 
-      def duo_pro_whats_new_card_collection(namespace)
+      def duo_pro_core_section_one_card_collection(namespace)
         [
           {
-            header: s_("DuoProDiscover|Test Generation"),
-            body: s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."),
+            header: s_('DuoProDiscover|Boost productivity with smart code assistance'),
+            body: s_(
+              "DuoProDiscover|Write secure code faster and save time with Code Suggestions in more than 20 " \
+                "languages, available in your favorite IDE."
+            ),
             footer: render_footer_link(
-              link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat/examples", anchor: "write-tests-in-the-ide"),
-              track_label: 'test_generation_feature',
+              link_text: s_('DuoProDiscover|GitLab Duo Code Suggestions'),
+              link_path: 'https://www.youtube.com/watch?v=ds7SG1wgcVM',
+              track_label: 'code_assistance_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
           },
           {
-            header: s_("DuoProDiscover|Code Explanation"),
-            body: s_("DuoProDiscover|Helps you understand code by explaining it in natural language."),
+            header: s_('DuoProDiscover|Real-time guidance'),
+            body: s_(
+              "DuoProDiscover|Use Chat to get up to speed on the status of projects, and quickly learn about " \
+                "GitLab, directly in your IDE or web interface."
+            ),
             footer: render_footer_link(
-              link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat/examples",
-                anchor: "explain-code-in-the-ide"),
-              track_label: 'code_explanation_feature',
+              link_text: s_('DuoProDiscover|GitLab Duo Chat'),
+              link_path: 'https://www.youtube.com/watch?v=ZQBAuf-CTAY&list=PLFGfElNsQthYDx0A_FaNNfUm9NHsK6zED',
+              track_label: 'real_time_guidance_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
           },
           {
-            header: s_("DuoProDiscover|Code Refactoring"),
-            body: s_("DuoProDiscover|Work to improve existing code quality."),
+            header: s_('DuoProDiscover|Automate mundane tasks'),
+            body: s_("DuoProDiscover|Catch bugs early in the workflow by generating tests for the selected content."),
             footer: render_footer_link(
-              link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat/examples", anchor: "refactor-code-in-the-ide"),
-              track_label: 'code_refactoring_feature',
+              link_text: s_('DuoProDiscover|GitLab Duo Test generation'),
+              link_path: 'https://www.youtube.com/watch?v=zWhwuixUkYU&list=PLFGfElNsQthYDx0A_FaNNfUm9NHsK6zED',
+              track_label: 'automate_tasks_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
           },
           {
-            header: s_("DuoProDiscover|Chat from any location"),
-            body: s_("DuoProDiscover|Access Chat from the GitLab UI or your preferred IDE."),
+            header: s_('DuoProDiscover|Modernize code faster'),
+            body: s_(
+              "DuoProDiscover|Streamline the refactoring process with AI-powered recommendations to optimize " \
+                "code structure and improve readability."
+            ),
             footer: render_footer_link(
-              link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat/index", anchor: "supported-editor-extensions"),
-              track_label: 'chat_feature',
+              link_text: s_('DuoProDiscover|Refactor code into modern languages with AI-powered GitLab Duo'),
+              link_path: 'https://about.gitlab.com/blog/2024/08/26/refactor-code-into-modern-languages-with-ai-powered-gitlab-duo/',
+              track_label: 'modernize_code_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
           }
         ]
       end
 
-      def duo_pro_code_suggestions_card_collection(namespace)
-        [
-          {
-            header: s_("DuoProDiscover|Code generation"),
-            body: s_("DuoProDiscover|Automatically generate lines of code, " \
-              "including full functions, from single and multi-line comments " \
-              "as well as comment blocks."),
-            footer: render_footer_link(
-              link_path: help_page_path("user/project/repository/code_suggestions", anchor: "use-code-suggestions"),
-              link_text: s_("DuoProDiscover|Read documentation"),
-              track_action: duo_pro_documentation_link_track_action(namespace),
-              track_label: 'code_generation_feature',
-              icon: "external-link"
-            )
-          },
-          {
-            header: s_("DuoProDiscover|Code completion"),
-            body: s_("DuoProDiscover|Automatically generate new lines of code from a few typed characters."),
-            footer: render_footer_link(
-              link_path: "https://gitlab.navattic.com/code-suggestions",
-              link_text: s_("DuoProDiscover|Launch Demo"),
-              track_action: duo_pro_documentation_link_track_action(namespace),
-              track_label: 'code_completion_feature',
-              icon: "live-preview"
-            )
-          },
-          {
-            header: s_("DuoProDiscover|Language and IDE support"),
-            body: s_("DuoProDiscover|Available in 15 languages, including C++, " \
-              "C#, Go, Java, JavaScript, Python, PHP, Ruby, Rust, Scala, Kotlin, " \
-              "and TypeScript. And you can use your favorite IDE — VS Code, Visual Studio, " \
-              "JetBrains' suite of IDEs, and Neovim are all supported.")
-          }
-        ]
-      end
-
-      def render_footer_link(link_path:, link_text:, track_action:, track_label:, icon: nil)
-        link_to(link_path,
-          class: 'gl-link',
-          target: '_blank',
-          rel: 'noopener noreferrer',
+      def render_footer_link(link_path:, link_text:, track_action:, track_label:)
+        link_to(
+          link_text, link_path, class: 'gl-link', target: '_blank', rel: 'noopener noreferrer',
           data: {
             track_label: track_label,
             track_action: track_action
-          }) do
-          concat(link_text)
-          concat(sprite_icon(icon, css_class: 'gl-icon gl-ml-2')) if icon.present?
-        end
+          }
+        )
       end
     end
   end
