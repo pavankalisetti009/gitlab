@@ -8,7 +8,6 @@ module Search
       include NamespaceValidateable
       include Gitlab::Loggable
 
-      WATERMARKED_STATES = %i[low_watermark_exceeded high_watermark_exceeded].freeze
       SEARCHEABLE_STATES = %i[ready].freeze
       STORAGE_LOW_WATERMARK = 0.7
       STORAGE_HIGH_WATERMARK = 0.85
@@ -77,29 +76,25 @@ module Search
       end
 
       scope :should_have_low_watermark, -> do
-        where.not(watermark_level: WATERMARKED_STATES).with_storage_over_percent(STORAGE_LOW_WATERMARK)
+        where.not(watermark_level: :low_watermark_exceeded)
+          .with_storage_over_percent(STORAGE_LOW_WATERMARK)
+          .with_storage_under_percent(STORAGE_HIGH_WATERMARK)
       end
 
       scope :should_have_high_watermark, -> do
         where.not(watermark_level: :high_watermark_exceeded).with_storage_over_percent(STORAGE_HIGH_WATERMARK)
       end
 
+      scope :with_reserved_storage_bytes, -> { where('reserved_storage_bytes > 0') }
+
       scope :with_storage_over_percent, ->(percent) do
-        where('reserved_storage_bytes > 0')
+        with_reserved_storage_bytes
           .where('(used_storage_bytes / reserved_storage_bytes::double precision) >= ?', percent)
       end
 
-      scope :should_have_low_watermark, -> do
-        where.not(watermark_level: WATERMARKED_STATES).with_storage_over_percent(STORAGE_LOW_WATERMARK)
-      end
-
-      scope :should_have_high_watermark, -> do
-        where.not(watermark_level: :high_watermark_exceeded).with_storage_over_percent(STORAGE_HIGH_WATERMARK)
-      end
-
-      scope :with_storage_over_percent, ->(percent) do
-        where.not(reserved_storage_bytes: [0, nil])
-          .where('(used_storage_bytes / reserved_storage_bytes::double precision) >= ?', percent)
+      scope :with_storage_under_percent, ->(percent) do
+        with_reserved_storage_bytes
+          .where('(used_storage_bytes / reserved_storage_bytes::double precision) < ?', percent)
       end
 
       def update_used_storage_bytes!
