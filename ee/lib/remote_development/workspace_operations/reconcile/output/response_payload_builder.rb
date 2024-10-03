@@ -73,8 +73,8 @@ module RemoteDevelopment
             resources_include_type = include_all_resources ? ALL_RESOURCES_INCLUDED : PARTIAL_RESOURCES_INCLUDED
 
             workspace_resources =
-              case workspace.config_version
-              when ConfigVersion::LATEST_VERSION
+              case workspace.desired_config_generator_version
+              when DesiredConfigGeneratorVersion::LATEST_VERSION
                 DesiredConfigGenerator.generate_desired_config(
                   workspace: workspace,
                   include_all_resources: include_all_resources,
@@ -82,7 +82,8 @@ module RemoteDevelopment
                 )
               else
                 namespace = "RemoteDevelopment::WorkspaceOperations::Reconcile::Output"
-                generator_class_name = "#{namespace}::DesiredConfigGeneratorV#{workspace.config_version}"
+                generator_class_name =
+                  "#{namespace}::DesiredConfigGeneratorV#{workspace.desired_config_generator_version}"
                 generator_class = Object.const_get(generator_class_name, false)
                 generator_class.generate_desired_config(
                   workspace: workspace,
