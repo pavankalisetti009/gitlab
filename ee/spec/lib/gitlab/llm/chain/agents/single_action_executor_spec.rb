@@ -412,6 +412,26 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
     end
 
+    context "when forbidden error is raised" do
+      let(:error) { ::Gitlab::AiGateway::ForbiddenError.new }
+
+      before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+
+        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          allow(react_agent).to receive(:step).and_raise(error)
+        end
+      end
+
+      it "returns an error" do
+        expect(answer.is_final).to eq(true)
+        expect(answer.content).to include("I'm sorry, you don't have the GitLab Duo subscription required " \
+          "to use Duo Chat. Please contact your administrator.")
+        expect(answer.error_code).to include("M3006")
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
+      end
+    end
+
     context "when eof error is raised" do
       let(:error) { EOFError.new }
 
