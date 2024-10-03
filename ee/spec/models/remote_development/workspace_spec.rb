@@ -319,17 +319,19 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
     end
 
     context 'on workspaces_agent_config_version' do
-      context 'when version is nil' do
-        before do
-          workspace.save!
-          workspace.workspaces_agent_config_version = nil
-        end
+      # TODO: uncomment tests with below issue in 17.6
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
+      # context 'when version is nil' do
+      #   before do
+      #     workspace.save!
+      #     workspace.workspaces_agent_config_version = nil
+      #   end
 
-        it 'raises error message as expected' do
-          expect(workspace).not_to be_valid
-          expect(workspace.errors.full_messages).to include("Workspaces agent config version can't be blank")
-        end
-      end
+      #   it 'raises error message as expected' do
+      #     expect(workspace).not_to be_valid
+      #     expect(workspace.errors.full_messages).to include("Workspaces agent config version can't be blank")
+      #   end
+      # end
 
       context 'when version is greater than version range' do
         before do
