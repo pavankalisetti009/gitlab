@@ -7,7 +7,7 @@ import {
   formatDate,
   getTimeago,
   isToday,
-  newDateAsLocaleTime,
+  newDate,
   timeagoLanguageCode,
 } from '~/lib/utils/datetime_utility';
 import { SUPPORTED_FORMATS, getFormatter } from '~/lib/utils/unit_format';
@@ -160,7 +160,7 @@ export default {
       if (!this.latestCoverageDate) {
         return null;
       }
-      if (isToday(newDateAsLocaleTime(this.latestCoverageDate))) {
+      if (isToday(newDate(this.latestCoverageDate))) {
         return __('today');
       }
       return getTimeago().format(this.latestCoverageDate, timeagoLanguageCode);

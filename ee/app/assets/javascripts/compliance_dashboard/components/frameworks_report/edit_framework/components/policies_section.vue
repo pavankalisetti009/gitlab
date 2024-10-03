@@ -1,5 +1,5 @@
 <script>
-import { GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink, GlBadge, GlButton } from '@gitlab/ui';
+import { GlBadge, GlButton, GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
 
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
@@ -9,17 +9,25 @@ import complianceFrameworkPoliciesQuery from '../graphql/compliance_frameworks_p
 
 import EditSection from './edit_section.vue';
 
+function extractPolicies(policies) {
+  return {
+    policies: policies.nodes,
+    hasNextPage: policies.pageInfo.hasNextPage,
+    endCursor: policies.pageInfo.endCursor,
+  };
+}
+
 export default {
   components: {
     DrawerWrapper,
     EditSection,
     GlIcon,
     GlBadge,
+    GlButton,
     GlLoadingIcon,
     GlSprintf,
     GlTable,
     GlLink,
-    GlButton,
   },
   provide() {
     return {
@@ -42,32 +50,82 @@ export default {
   data() {
     return {
       selectedPolicy: null,
-      policiesData: {
-        scanResultPolicies: [],
+      rawPolicies: {
+        globalApprovalPolicies: [],
+        globalScanExecutionPolicies: [],
+        approvalPolicies: [],
         scanExecutionPolicies: [],
       },
       policiesLoaded: false,
       policiesLoadCursor: {
-        scanResultPoliciesAfter: null,
+        approvalPoliciesGlobalAfter: null,
+        scanExecutionPoliciesGlobalAfter: null,
+        approvalPoliciesAfter: null,
         scanExecutionPoliciesAfter: null,
       },
     };
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    rawPolicies: {
+    rawGroupPolicies: {
       query: complianceFrameworkPoliciesQuery,
       variables() {
-        const { scanResultPoliciesAfter, scanExecutionPoliciesAfter } = this.policiesLoadCursor;
         return {
           fullPath: this.fullPath,
           complianceFramework: this.graphqlId,
-          scanResultPoliciesAfter,
-          scanExecutionPoliciesAfter,
+          ...this.policiesLoadCursor,
         };
       },
       update(data) {
-        this.updatePoliciesData(data);
+        const {
+          policies: pendingGlobalApprovalPolicies,
+          hasNextPage: hasNextGlobalApprovalPolicies,
+          endCursor: approvalPoliciesGlobalAfter,
+        } = extractPolicies(data.namespace.approvalPolicies);
+        const {
+          policies: pendingGlobalScanExecutionPolicies,
+          hasNextPage: hasNextGlobalScanExecutionPolicies,
+          endCursor: scanExecutionPoliciesGlobalAfter,
+        } = extractPolicies(data.namespace.scanExecutionPolicies);
+        const {
+          policies: pendingApprovalPolicies,
+          hasNextPage: hasNextApprovalPolicies,
+          endCursor: approvalPoliciesAfter,
+        } = extractPolicies(data.namespace.complianceFrameworks.nodes[0].scanResultPolicies);
+        const {
+          policies: pendingScanExecutionPolicies,
+          hasNextPage: hasNextScanExecutionPolicies,
+          endCursor: scanExecutionPoliciesAfter,
+        } = extractPolicies(data.namespace.complianceFrameworks.nodes[0].scanExecutionPolicies);
+
+        this.policiesLoaded =
+          !hasNextGlobalApprovalPolicies &&
+          !hasNextGlobalScanExecutionPolicies &&
+          !hasNextApprovalPolicies &&
+          !hasNextScanExecutionPolicies;
+
+        const newCursor = {
+          approvalPoliciesGlobalAfter,
+          scanExecutionPoliciesGlobalAfter,
+          approvalPoliciesAfter,
+          scanExecutionPoliciesAfter,
+        };
+
+        [
+          'approvalPoliciesGlobalAfter',
+          'scanExecutionPoliciesGlobalAfter',
+          'approvalPoliciesAfter',
+          'scanExecutionPoliciesAfter',
+        ].forEach((cursorField) => {
+          if (newCursor[cursorField]) {
+            this.policiesLoadCursor[cursorField] = newCursor[cursorField];
+          }
+        });
+
+        this.rawPolicies.approvalPolicies.push(...pendingApprovalPolicies);
+        this.rawPolicies.scanExecutionPolicies.push(...pendingScanExecutionPolicies);
+        this.rawPolicies.globalApprovalPolicies.push(...pendingGlobalApprovalPolicies);
+        this.rawPolicies.globalScanExecutionPolicies.push(...pendingGlobalScanExecutionPolicies);
       },
       error(error) {
         this.errorMessage = this.$options.i18n.fetchError;
@@ -81,9 +139,24 @@ export default {
 
   computed: {
     policies() {
+      const approvalPoliciesSet = new Set(this.rawPolicies.approvalPolicies.map((p) => p.name));
+      const scanExecutionPoliciesSet = new Set(
+        this.rawPolicies.scanExecutionPolicies.map((p) => p.name),
+      );
+
       return [
-        ...this.policiesData.scanResultPolicies,
-        ...this.policiesData.scanExecutionPolicies,
+        ...this.rawPolicies.globalApprovalPolicies
+          .filter((p) => approvalPoliciesSet.has(p.name))
+          .map((p) => ({
+            ...p,
+            isLinked: true,
+          })),
+        ...this.rawPolicies.globalScanExecutionPolicies
+          .filter((p) => scanExecutionPoliciesSet.has(p.name))
+          .map((p) => ({
+            ...p,
+            isLinked: true,
+          })),
       ].sort((a, b) => (a.name > b.name ? 1 : -1));
     },
 
@@ -94,25 +167,6 @@ export default {
   },
 
   methods: {
-    updatePoliciesData(data) {
-      const complianceFramework = data.namespace?.complianceFrameworks?.nodes?.[0];
-      if (!complianceFramework) {
-        this.policiesLoaded = true;
-        return;
-      }
-
-      const { scanResultPolicies, scanExecutionPolicies } = complianceFramework;
-      this.updatePolicyType('scanResultPolicies', scanResultPolicies);
-      this.updatePolicyType('scanExecutionPolicies', scanExecutionPolicies);
-
-      this.policiesLoaded =
-        !scanResultPolicies.pageInfo.hasNextPage && !scanExecutionPolicies.pageInfo.hasNextPage;
-    },
-    updatePolicyType(policyType, policyData) {
-      const { nodes, pageInfo } = policyData;
-      this.policiesData[policyType] = [...this.policiesData[policyType], ...nodes];
-      this.policiesLoadCursor[`${policyType}After`] = pageInfo.endCursor;
-    },
     openPolicyDrawerFromRow(rows) {
       if (rows.length === 0) return;
       this.openPolicyDrawer(rows[0]);
@@ -142,7 +196,7 @@ export default {
       tdClass: '!gl-bg-white md:gl-w-2/5 !gl-border-b-white',
     },
     {
-      key: 'edit',
+      key: 'action',
       label: i18n.policiesTableFields.action,
       thAlignRight: true,
       thClass: '!gl-border-t-0',
@@ -164,7 +218,7 @@ export default {
       ref="policiesTable"
       :items="policies"
       :fields="$options.tableFields"
-      :busy="$apollo.queries.rawPolicies.loading"
+      :busy="$apollo.queries.rawGroupPolicies.loading"
       responsive
       stacked="md"
       hover
@@ -180,7 +234,7 @@ export default {
           {{ __('Disabled') }}
         </gl-badge>
       </template>
-      <template #cell(edit)="{ item }">
+      <template #cell(action)="{ item }">
         <gl-button variant="link" @click="openPolicyDrawer(item)">
           {{ __('View details') }}
         </gl-button>

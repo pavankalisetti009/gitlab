@@ -1,12 +1,12 @@
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
-import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import ProjectSecurityDashboard from 'ee/security_dashboard/components/project/project_security_dashboard.vue';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useFakeDate } from 'helpers/fake_date';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -35,7 +35,7 @@ describe('Project Security Dashboard component', () => {
   } = {}) => {
     severitiesCountQueryHandler = jest.fn().mockResolvedValue(severitiesCountQueryData);
 
-    wrapper = shallowMount(ProjectSecurityDashboard, {
+    wrapper = shallowMountExtended(ProjectSecurityDashboard, {
       apolloProvider: createApolloProvider(
         [projectsHistoryQuery, jest.fn().mockResolvedValue(historyQueryData)],
         [severitiesCountQuery, severitiesCountQueryHandler],
@@ -44,8 +44,23 @@ describe('Project Security Dashboard component', () => {
         projectFullPath,
         shouldShowPromoBanner,
       },
+      stubs: {
+        GlSprintf,
+      },
     });
   };
+
+  it('should display page header and subheader', () => {
+    createWrapper();
+
+    expect(wrapper.findByText('Security dashboard').exists()).toBe(true);
+    expect(wrapper.findByTestId('security-dashboard-description').text()).toBe(
+      'Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. Learn more.',
+    );
+    expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
+      '/help/user/application_security/security_dashboard/index#project-security-dashboard',
+    );
+  });
 
   it('should fetch the latest vulnerability count for "detected" and "confirmed" states', () => {
     createWrapper();

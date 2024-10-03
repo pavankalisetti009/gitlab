@@ -1,7 +1,7 @@
-import { dateToYearMonthDate, newDateAsLocaleTime } from '~/lib/utils/datetime_utility';
+import { dateToYearMonthDate, newDate } from '~/lib/utils/datetime_utility';
 
 const formatMonthData = (cur) => {
-  const date = newDateAsLocaleTime(cur.monthIso8601);
+  const date = newDate(cur.monthIso8601);
   const formattedDate = dateToYearMonthDate(date);
 
   return {
