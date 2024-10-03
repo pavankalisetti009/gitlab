@@ -12,7 +12,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoEnterpriseService, feature_
     let(:trial_params) { {} }
     let(:extra_lead_params) { {} }
     let(:trial_user_params) do
-      { trial_user: lead_params(user, extra_lead_params) }
+      { trial_user: lead_params(user, extra_lead_params).merge({ add_on_name: 'duo_enterprise' }) }
     end
 
     let(:lead_service_class) { GitlabSubscriptions::Trials::CreateAddOnLeadService }

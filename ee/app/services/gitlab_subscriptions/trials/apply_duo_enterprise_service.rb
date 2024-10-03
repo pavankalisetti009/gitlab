@@ -10,7 +10,7 @@ module GitlabSubscriptions
       private
 
       def execute_trial_request
-        client.generate_addon_trial(uid: uid, trial_user: trial_user_information)
+        client.generate_addon_trial(uid: uid, trial_user: trial_user_information.merge(add_on_name: 'duo_enterprise'))
       end
     end
   end

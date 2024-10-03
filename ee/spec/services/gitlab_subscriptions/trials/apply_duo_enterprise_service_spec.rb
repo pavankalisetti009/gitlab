@@ -41,6 +41,20 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, :saas, fe
 
         it { is_expected.to be_success }
 
+        context 'with expected parameters' do
+          specify do
+            expected_params = {
+              uid: user.id,
+              trial_user: trial_user_information.merge(add_on_name: 'duo_enterprise')
+            }
+
+            expect(Gitlab::SubscriptionPortal::Client)
+              .to receive(:generate_addon_trial).with(expected_params).and_return(response)
+
+            is_expected.to be_success
+          end
+        end
+
         context 'when on ultimate trial' do
           let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_trial_plan, owners: user) }
 
