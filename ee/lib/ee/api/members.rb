@@ -17,11 +17,10 @@ module EE
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end
           post ":id/members/:user_id/override", feature_category: :user_management do
-            group = find_group!(params[:id])
             member = find_member(params)
 
             result = ::Members::UpdateService
-              .new(current_user, { override: true, source: group })
+              .new(current_user, { override: true })
               .execute(member, permission: :override)
 
             updated_member = result[:members].first
@@ -40,11 +39,10 @@ module EE
             requires :user_id, type: Integer, desc: 'The user ID of the member'
           end
           delete ":id/members/:user_id/override", feature_category: :user_management do
-            group = find_group!(params[:id])
             member = find_member(params)
 
             result = ::Members::UpdateService
-              .new(current_user, { override: false, source: group })
+              .new(current_user, { override: false })
               .execute(member, permission: :override)
 
             updated_member = result[:members].first
