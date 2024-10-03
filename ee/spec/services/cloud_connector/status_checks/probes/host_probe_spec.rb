@@ -8,6 +8,30 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
     let(:uri) { 'https://example.com' }
 
+    context 'when the host is nil' do
+      let(:uri) { nil }
+
+      it 'returns a failure result' do
+        result = probe.execute
+
+        expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
+        expect(result.success?).to be false
+        expect(result.message).to match("Cannot validate connection to host because the URL is empty.")
+      end
+    end
+
+    context 'when the host is not a valid URL' do
+      let(:uri) { 'not_a_valid_url' }
+
+      it 'returns a failure result' do
+        result = probe.execute
+
+        expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
+        expect(result.success?).to be false
+        expect(result.message).to match("not_a_valid_url is not a valid URL.")
+      end
+    end
+
     context 'when the host is reachable' do
       before do
         allow(TCPSocket).to receive(:new).and_return(instance_double(TCPSocket, close: nil))

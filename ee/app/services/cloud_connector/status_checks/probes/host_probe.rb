@@ -10,15 +10,31 @@ module CloudConnector
 
         attr_reader :host, :port
 
-        validate :validate_connection
+        validate :validate_connection, if: :prerequisites_for_valid_url_met?
 
         def initialize(service_url)
-          uri = URI.parse(service_url)
+          @service_url = service_url
+
+          return if @service_url.blank?
+
+          uri = URI.parse(@service_url)
           @host = uri.host
           @port = uri.port
         end
 
         private
+
+        def prerequisites_for_valid_url_met?
+          return true if @host.present? && @port.present?
+
+          if @service_url.present?
+            errors.add(:base, format(_('%{service_url} is not a valid URL.'), service_url: @service_url))
+          else
+            errors.add(:base, _('Cannot validate connection to host because the URL is empty.'))
+          end
+
+          false
+        end
 
         override :success_message
         def success_message
