@@ -309,7 +309,11 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     let(:namespace) do
       build(
         :group,
-        gitlab_subscription: build(:gitlab_subscription, trial: trial_active, trial_ends_on: 1.week.from_now))
+        gitlab_subscription:
+          build(:gitlab_subscription,
+            trial: trial_active,
+            trial_starts_on: Time.current,
+            trial_ends_on: 1.week.from_now))
     end
 
     subject { helper.upgrade_button_css_classes(namespace, plan_data, is_current_plan) }

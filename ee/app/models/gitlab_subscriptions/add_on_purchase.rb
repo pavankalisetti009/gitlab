@@ -16,6 +16,7 @@ module GitlabSubscriptions
     has_many :users, through: :assigned_users
 
     validates :add_on, :expires_on, presence: true
+    validates :add_on, :started_at, presence: true
     validate :valid_namespace, if: :gitlab_com?
     validates :subscription_add_on_id, uniqueness: { scope: :namespace_id }
     validates :quantity,

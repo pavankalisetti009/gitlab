@@ -196,9 +196,7 @@ module BillingPlansHelper
       {
         title: s_('BillingPlans|Introducing GitLab Duo Enterprise'),
         body: [
-          s_('BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI capabilities from GitLab. You can try it for free for %{days} days, no credit card required.') % {
-            days: GitlabSubscriptions::Trials::AddOns::DURATION_NUMBER
-          }
+          s_('BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI capabilities from GitLab. You can try it for free for 60 days, no credit card required.')
         ]
       }
     elsif namespace.premium_plan?

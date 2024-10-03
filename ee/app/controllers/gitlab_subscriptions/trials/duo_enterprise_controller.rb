@@ -80,15 +80,11 @@ module GitlabSubscriptions
       end
 
       def success_flash_message
-        safe_format(
-          s_(
-            'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \
-              'expire on %{exp_date}. The new license might take a minute to show on the page. ' \
-              'To give members access to new GitLab Duo Enterprise features, ' \
-              '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats.'
-          ),
-          success_doc_link,
-          exp_date: GitlabSubscriptions::Trials::AddOns::DURATION.from_now.to_date.iso8601
+        s_(
+          "DuoEnterpriseTrial|You have successfully created a trial subscription from GitLab Duo Enterprise. " \
+            "To get started, enable the GitLab Duo Enterprise add-on for team members on this page by turning on " \
+            "the toggle for each team member. The subscription may take a minute to sync, so refresh " \
+            "the page if it's not visible yet"
         )
       end
     end

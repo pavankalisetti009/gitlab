@@ -202,6 +202,7 @@ module Gitlab
 
           response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
             quantity: 100,
+            started_on: Time.current,
             expires_on: 1.year.from_now,
             purchase_xid: 'C-12345'
           }).execute
@@ -218,6 +219,7 @@ module Gitlab
 
           response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
             quantity: 100,
+            started_on: Time.current,
             expires_on: 1.year.from_now,
             purchase_xid: 'C-98766'
           }).execute
