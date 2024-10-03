@@ -15,7 +15,7 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
       }
     end
 
-    let(:response) { instance_double(HTTParty::Response) }
+    let(:response) { instance_double(HTTParty::Response, headers: {}) }
 
     before do
       allow(response).to receive(:success?).and_return(true)

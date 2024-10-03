@@ -124,8 +124,16 @@ module Gitlab
             return
           end
 
-          log_error(message: "Received error from Duo Chat Agent", event_name: 'error_returned',
-            ai_component: 'duo_chat', status: response.code)
+          # Requests could fail at intermediate servers between GitLab-Sidekiq and AI Gateway.
+          # Here are the list of servers that could intervene:
+          # - Cloud Connector Cloud Flare
+          # - GCP Cloud Run ingress / autoscaler
+          # See https://gitlab.com/groups/gitlab-org/-/epics/15402 for more information.
+          log_error(message: "Failed to request to v2/chat/agent",
+            event_name: 'error_returned',
+            ai_component: 'duo_chat',
+            status: response.code,
+            ai_response_server: response.headers['server'])
 
           # TODO: Improve error handling
           raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
