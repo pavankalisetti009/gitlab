@@ -44,8 +44,8 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
 
     let(:response) { { success: true } }
 
-    context 'when valid should call generate_trial' do
-      it 'with expected paramaters' do
+    context 'when trial is applied successfully' do
+      it 'with expected parameters' do
         expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
           .with(generate_trial_params)
           .and_return(response)
@@ -53,12 +53,12 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
         expect(execute).to be_success
       end
 
-      context "when duo_enterprise_trials_registration feature flag is disabled" do
+      context 'when duo_enterprise_trials_registration feature flag is disabled' do
         before do
           stub_feature_flags(duo_enterprise_trials_registration: false)
         end
 
-        it 'with expected paramaters' do
+        it 'with expected parameters' do
           expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
             .with({ uid: user.id, trial_user: trial_user_information.without(:with_add_on, :add_on_name) })
             .and_return(response)

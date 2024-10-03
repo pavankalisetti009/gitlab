@@ -18,6 +18,13 @@ module GitlabSubscriptions
         'duo_enterprise_trial'
       end
 
+      override :trial_user_params
+      def trial_user_params
+        # We override here as we use a general add on lead service currently
+        # GitlabSubscriptions::Trials::CreateAddOnLeadService.
+        super.merge(add_on_name: 'duo_enterprise')
+      end
+
       override :tracking_prefix
       def tracking_prefix
         'duo_enterprise'
