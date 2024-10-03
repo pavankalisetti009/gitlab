@@ -36,12 +36,13 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
         expect(card_collection).to all(include(:header, :body))
 
         headers = card_collection.pluck(:header)
-        expect(headers).to contain_exactly(
-          s_("DuoProDiscover|Accelerate your path to market"),
-          s_("DuoProDiscover|Adopt AI with guardrails"),
-          s_("DuoProDiscover|Improve developer experience"),
-          s_("DuoProDiscover|Committed to transparent AI")
-        )
+        expected_headers = [
+          s_('DuoProDiscover|Privacy-first AI'),
+          s_('DuoProDiscover|Boost team collaboration'),
+          s_('DuoProDiscover|Improve developer experience'),
+          s_('DuoProDiscover|Transparent AI')
+        ]
+        expect(headers).to contain_exactly(*expected_headers)
 
         last_card = card_collection.last
         expect(last_card[:body]).to include('AI Transparency Center')
@@ -50,8 +51,8 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
       end
     end
 
-    describe '#duo_pro_whats_new_card_collection' do
-      subject(:card_collection) { helper.duo_pro_whats_new_card_collection(namespace) }
+    describe '#duo_pro_core_section_one_card_collection' do
+      subject(:card_collection) { helper.duo_pro_core_section_one_card_collection(namespace) }
 
       it 'returns correct card structure', :aggregate_failures do
         expect(card_collection).to be_an(Array).and(all(be_a(Hash)))
@@ -59,49 +60,16 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
         expect(card_collection).to all(include(:header, :body, :footer))
 
         headers = card_collection.pluck(:header)
-        expect(headers).to contain_exactly(
-          s_("DuoProDiscover|Test Generation"),
-          s_("DuoProDiscover|Code Explanation"),
-          s_("DuoProDiscover|Code Refactoring"),
-          s_("DuoProDiscover|Chat from any location")
-        )
+        expected_headers = [
+          s_('DuoProDiscover|Boost productivity with smart code assistance'),
+          s_('DuoProDiscover|Real-time guidance'),
+          s_('DuoProDiscover|Automate mundane tasks'),
+          s_('Duo ProDiscover|Modernize code faster')
+        ]
+        expect(headers).to contain_exactly(*expected_headers)
 
         footers = card_collection.pluck(:footer)
         expect(footers).to all(be_html_safe)
-        expect(footers).to all(include(helper.duo_pro_documentation_link_track_action(namespace)))
-      end
-    end
-
-    describe '#duo_pro_code_suggestions_card_collection' do
-      subject(:card_collection) { helper.duo_pro_code_suggestions_card_collection(namespace) }
-
-      it 'returns correct card structure', :aggregate_failures do
-        expect(card_collection).to be_an(Array).and(all(be_a(Hash)))
-        expect(card_collection.size).to eq(3)
-        expect(card_collection).to all(include(:header, :body))
-
-        headers = card_collection.pluck(:header)
-        expect(headers).to contain_exactly(
-          s_("DuoProDiscover|Code generation"),
-          s_("DuoProDiscover|Code completion"),
-          s_("DuoProDiscover|Language and IDE support")
-        )
-
-        expect(card_collection[0][:footer]).to be_html_safe
-        expect(card_collection[0][:footer]).to include('data-track-label="code_generation_feature"')
-        expect(card_collection[0][:footer]).to include(helper.duo_pro_documentation_link_track_action(namespace))
-        expect(card_collection[0][:footer]).to include(s_("DuoProDiscover|Read documentation"))
-        expect(card_collection[0][:footer]).to include(
-          'href="/help/user/project/repository/code_suggestions#use-code-suggestions"'
-        )
-
-        expect(card_collection[1][:footer]).to be_html_safe
-        expect(card_collection[1][:footer]).to include('data-track-label="code_completion_feature"')
-        expect(card_collection[1][:footer]).to include(helper.duo_pro_documentation_link_track_action(namespace))
-        expect(card_collection[1][:footer]).to include(s_("DuoProDiscover|Launch Demo"))
-        expect(card_collection[1][:footer]).to include('href="https://gitlab.navattic.com/code-suggestions"')
-
-        expect(card_collection[2]).not_to include(:footer)
       end
     end
   end
@@ -111,15 +79,13 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
     let(:link_text) { 'Test Link' }
     let(:track_action) { 'test_action' }
     let(:track_label) { 'test_label' }
-    let(:icon) { 'external-link' }
 
     subject(:rendered_link) do
       helper.render_footer_link(
         link_path: link_path,
         link_text: link_text,
         track_action: track_action,
-        track_label: track_label,
-        icon: icon
+        track_label: track_label
       )
     end
 
@@ -128,15 +94,6 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
       expect(rendered_link).to have_link(link_text, href: link_path)
       expect(rendered_link).to have_css('a.gl-link[target="_blank"][rel="noopener noreferrer"]')
       expect(rendered_link).to have_css("a[data-track-action='#{track_action}'][data-track-label='#{track_label}']")
-      expect(rendered_link).to have_css("svg.gl-icon.gl-ml-2")
-    end
-
-    context 'when icon is not provided' do
-      let(:icon) { nil }
-
-      it 'does not include the icon' do
-        expect(rendered_link).not_to have_css('svg.gl-icon')
-      end
     end
   end
 end

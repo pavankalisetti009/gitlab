@@ -22,8 +22,16 @@ RSpec.describe 'Groups > Add Ons > Discover Duo Pro > Hand Raise Lead', :js, :sa
     visit group_add_ons_discover_duo_pro_path(group)
   end
 
-  it 'renders and submits when user interacts with hand raise lead trigger' do
+  it 'renders and submits when user interacts with hand raise lead trigger in the header' do
     within_testid('discover-duo-pro-heading-actions') do
+      find_button('Contact sales').click
+    end
+
+    fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'discover-duo-pro')
+  end
+
+  it 'renders and submits when user interacts with hand raise lead trigger in the footer' do
+    within_testid('discover-duo-pro-footer-actions') do
       find_button('Contact sales').click
     end
 
