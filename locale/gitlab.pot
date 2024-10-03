@@ -50444,9 +50444,6 @@ msgstr ""
 msgid "SecurityReports|No vulnerabilities found"
 msgstr ""
 
-msgid "SecurityReports|No vulnerabilities found for this pipeline"
-msgstr ""
-
 msgid "SecurityReports|Oops, something doesn't seem right."
 msgstr ""
 
@@ -50618,9 +50615,6 @@ msgid "SecurityReports|Vulnerability report"
 msgstr ""
 
 msgid "SecurityReports|Warning parsing security reports"
-msgstr ""
-
-msgid "SecurityReports|While it's rare to have no vulnerabilities for your pipeline, it can happen. In any event, we ask that you double check your settings to make sure all security scanning jobs have passed successfully."
 msgstr ""
 
 msgid "SecurityReports|You do not have sufficient permissions to access this report"

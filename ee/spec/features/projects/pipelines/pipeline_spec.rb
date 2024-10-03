@@ -208,7 +208,7 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
       end
 
       it 'shows security dashboard' do
-        expect(page).to have_css('.js-security-dashboard-table')
+        expect(page).to have_css('[data-testid="pipeline-vulnerability-report"]')
       end
     end
 
