@@ -216,14 +216,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         expect(described_class.should_have_low_watermark).to be_empty
       end
 
-      it 'does not return indices that already have any watermarked state' do
+      it 'does not return indices that already have low watermarked state' do
         saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
 
         zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :low_watermark_exceeded)
         expect(described_class.should_have_low_watermark).to be_empty
+      end
 
-        zoekt_index.update!(reserved_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
-        expect(described_class.should_have_low_watermark).to be_empty
+      it 'returns indices that have high watermark state but storage that reflects low watermark' do
+        saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
+
+        zoekt_index.update!(used_storage_bytes: saturated_storage, watermark_level: :high_watermark_exceeded)
+        expect(described_class.should_have_low_watermark).to match_array(zoekt_index)
       end
     end
 
@@ -259,6 +263,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
         zoekt_index.update!(used_storage_bytes: 100.megabytes, reserved_storage_bytes: nil)
         expect(described_class.with_storage_over_percent(0.01).pluck_primary_key).to be_empty
+      end
+    end
+
+    describe '.with_reserved_storage_bytes' do
+      it 'returns indices with reserved storage' do
+        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to match_array([zoekt_index.id])
+
+        zoekt_index.update!(reserved_storage_bytes: 0)
+        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to be_empty
+
+        zoekt_index.update!(reserved_storage_bytes: nil)
+        expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to be_empty
       end
     end
   end

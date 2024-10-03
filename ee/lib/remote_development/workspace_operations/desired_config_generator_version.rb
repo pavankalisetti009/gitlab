@@ -2,7 +2,7 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
-    module ConfigVersion
+    module DesiredConfigGeneratorVersion
       VERSION_1 = 1
       VERSION_2 = 2
       VERSION_3 = 3

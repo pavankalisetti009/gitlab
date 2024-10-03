@@ -39,10 +39,6 @@ module Sbom
         def report_source
           @report_source ||= occurrence_maps.first&.report_source
         end
-
-        def organization_id
-          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
-        end
       end
     end
   end

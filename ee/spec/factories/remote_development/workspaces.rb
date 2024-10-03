@@ -9,7 +9,9 @@ FactoryBot.define do
     personal_access_token
 
     name { "workspace-#{agent.id}-#{user.id}-#{random_string}" }
-    config_version { RemoteDevelopment::WorkspaceOperations::ConfigVersion::LATEST_VERSION }
+    desired_config_generator_version do
+      RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+    end
     force_include_all_resources { true }
 
     add_attribute(:namespace) { "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}" }

@@ -11,6 +11,8 @@ module Security
     sidekiq_options retry: true
     feature_category :security_policy_management
 
+    concurrency_limit -> { 200 }
+
     HISTOGRAM = :gitlab_security_policies_scan_result_process_duration_seconds
 
     def perform(project_id, configuration_id)

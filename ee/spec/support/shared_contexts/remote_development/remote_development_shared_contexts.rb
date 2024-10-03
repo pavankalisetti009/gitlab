@@ -310,10 +310,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   def create_config_to_apply(workspace:, **args)
-    latest_config_version = ::RemoteDevelopment::WorkspaceOperations::ConfigVersion::LATEST_VERSION
-    config_version =
-      workspace.respond_to?(:config_version) ? workspace.config_version : latest_config_version
-    method_name = "create_config_to_apply_v#{config_version}"
+    latest_desired_config_generator_version =
+      ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+
+    desired_config_generator_version = if workspace.respond_to?(:desired_config_generator_version)
+                                         workspace.desired_config_generator_version
+                                       else
+                                         latest_desired_config_generator_version
+                                       end
+
+    method_name = "create_config_to_apply_v#{desired_config_generator_version}"
     send(method_name, workspace: workspace, **args)
   end
 
@@ -341,7 +347,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     project_name: "test-project",
     namespace_path: "test-group"
   )
-    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_3
+    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
     max_resources_per_workspace_sha256 = Digest::SHA256.hexdigest(
@@ -477,7 +483,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
     }]
   )
-    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
+    desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
     annotations = {
@@ -597,7 +603,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       }
     }
 
-    if desired_config_generator_version == RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
+    if desired_config_generator_version ==
+        RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
       configmap[:metadata].delete(:annotations)
     end
 
@@ -1111,7 +1118,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       }
     }
 
-    if desired_config_generator_version == RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2
+    if desired_config_generator_version ==
+        RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
       configmap[:metadata].delete(:annotations)
     end
 
