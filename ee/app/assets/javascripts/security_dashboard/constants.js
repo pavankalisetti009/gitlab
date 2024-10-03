@@ -26,6 +26,11 @@ export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_RETENTION_PERIOD = helpPagePa
   { anchor: 'retention-period-for-findings' },
 );
 
+export const DOC_PATH_PROJECT_SECURITY_DASHBOARD = helpPagePath(
+  'user/application_security/security_dashboard/index',
+  { anchor: 'project-security-dashboard' },
+);
+
 export const severityLevels = {
   CRITICAL: 'critical',
   HIGH: 'high',
