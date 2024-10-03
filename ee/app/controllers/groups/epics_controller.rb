@@ -15,7 +15,7 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_comment_tooltips_feature_flag, only: :show
   before_action :set_summarize_notes_feature_flag, only: :show
-  before_action :set_work_item_epics_feature_flag, only: :show
+  before_action :set_work_item_epics_feature_flag, only: [:show, :new]
   after_action :log_epic_show, only: :show
 
   before_action do
@@ -52,7 +52,11 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def new
-    @noteable = Epic.new
+    if work_item_view?
+      render 'groups/work_items/show'
+    else
+      @noteable = Epic.new
+    end
   end
 
   def index

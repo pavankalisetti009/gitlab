@@ -92,15 +92,15 @@ RSpec.describe Resolvers::Security::ProjectSecurityExclusionResolver, feature_ca
               expect(resolver).to contain_exactly(active_exclusion)
             end
           end
+        end
 
-          context 'for a role that cannot read security exclusions' do
-            before_all do
-              project.add_reporter(user)
-            end
+        context 'for a role that cannot read security exclusions' do
+          before_all do
+            project.add_reporter(user)
+          end
 
-            it 'returns no exclusions' do
-              expect(resolver).to be_empty
-            end
+          it 'returns no exclusions' do
+            expect(resolver).to be_empty
           end
         end
       end

@@ -63,6 +63,13 @@ describe('Create work item component', () => {
         workItemTypeName,
         ...props,
       },
+      mocks: {
+        $route: {
+          params: {
+            type: 'epic',
+          },
+        },
+      },
       provide: {
         fullPath: 'full-path',
         hasIssuableHealthStatusFeature: false,
