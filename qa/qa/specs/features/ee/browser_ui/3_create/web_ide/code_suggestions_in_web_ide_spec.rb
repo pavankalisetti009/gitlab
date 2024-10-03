@@ -82,12 +82,12 @@ module QA
       context 'on Self-managed', :orchestrated do
         context 'with a valid license' do
           context 'with a Duo Pro add-on' do
-            context 'when seat is assigned', :ai_gateway do
+            context 'when seat is assigned', :blocking, :ai_gateway do
               it_behaves_like 'a code completion suggestion',
                 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/439625'
             end
 
-            context 'when seat is not assigned', :ai_gateway_no_seat_assigned do
+            context 'when seat is not assigned', :blocking, :ai_gateway_no_seat_assigned do
               it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451486'
             end
           end
