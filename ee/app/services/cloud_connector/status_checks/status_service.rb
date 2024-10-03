@@ -13,7 +13,7 @@ module CloudConnector
 
       def initialize(user:, probes: nil)
         @user = user
-        @probes = probes || build_default_probes
+        @probes = probes || selected_probes
       end
 
       def execute
@@ -28,7 +28,17 @@ module CloudConnector
 
       private
 
-      def build_default_probes
+      def selected_probes
+        # An air-gapped instance, which requires that they run their own self-hosted AI Gateway,
+        # requires a different set of probes to be executed.
+        if ::Gitlab::Ai::SelfHosted::AiGateway.required?
+          ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
+        else
+          default_probes
+        end
+      end
+
+      def default_probes
         [
           CloudConnector::StatusChecks::Probes::LicenseProbe.new,
           CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_URL),
