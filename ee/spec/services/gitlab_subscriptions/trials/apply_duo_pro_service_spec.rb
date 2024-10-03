@@ -41,8 +41,20 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
       context 'when trial is applied successfully' do
         let(:response) { { success: true } }
 
-        it 'returns success: true' do
-          expect(execute).to be_success
+        it { is_expected.to be_success }
+
+        context 'with expected parameters' do
+          specify do
+            expected_params = {
+              uid: user.id,
+              trial_user: trial_user_information
+            }
+
+            expect(Gitlab::SubscriptionPortal::Client)
+              .to receive(:generate_addon_trial).with(expected_params).and_return(response)
+
+            is_expected.to be_success
+          end
         end
       end
 
