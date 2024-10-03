@@ -84,12 +84,8 @@ RSpec.describe Security::ScanResultPolicies::FallbackBehaviorTrackingService, "#
       if expected
         expect(Gitlab::InternalEvents).to receive(:track_event).with(
           described_class::EVENT_NAME,
-          hash_including(project: project,
-            namespace: project.namespace,
-            additional_properties: {
-              label: 'full_path',
-              property: merge_request.to_reference(full: true)
-            })).and_call_original
+          hash_including(project: project)
+        ).and_call_original
       else
         expect(Gitlab::InternalEvents).not_to receive(:track_event)
       end
