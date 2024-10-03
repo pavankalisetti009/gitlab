@@ -87,7 +87,7 @@ module EE
     end
 
     def user_access_allowed?(current_user)
-      current_user.id == user_id && active_project_member?(current_user)
+      current_user.id == user_id && project.member?(current_user)
     end
 
     def group_access_allowed?(current_user)
@@ -139,12 +139,6 @@ module EE
       return if project.member?(user)
 
       errors.add(:user, 'is not a member of the project')
-    end
-
-    def active_project_member?(current_user)
-      return true if ::Feature.disabled?(:check_membership_in_protected_ref_access) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This flag already exists, I don't want to add an actor and break it.
-
-      project.member?(current_user)
     end
   end
 end
