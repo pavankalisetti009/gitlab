@@ -355,7 +355,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
   describe '.by_label_ids' do
     let_it_be(:label_title) { 'My label' }
     let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:sub_group) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, group: sub_group) }
     # project label must be defined first or the title cannot match
     let_it_be(:project_label) { create(:label, project: project, title: label_title) }
     let_it_be(:project_2) { create(:project, group: group) }
@@ -577,7 +578,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       context 'for group search' do
         let(:search_level) { :group }
-        let(:group_ids) { [group.id] }
+        let(:group_ids) { [sub_group.id] }
         let(:project_ids) { nil }
 
         context 'when multiple label names are provided' do
@@ -591,7 +592,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                   {
                     terms: {
                       _name: 'filters:label_ids',
-                      label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                      label_ids: contain_exactly(group_label.id, project_label.id)
                     }
                   },
                   {
@@ -623,22 +624,46 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it_behaves_like 'does not modify the query_hash'
         end
 
-        it 'adds the label_ids filter to query_hash' do
-          expected_filter = [
-            bool: {
-              must: [{
-                terms: {
-                  _name: 'filters:label_ids',
-                  label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
-                }
-              }]
-            }
-          ]
+        context 'when top level group is searched' do
+          let(:group_ids) { [group.id] }
 
-          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
-          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: [{
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                  }
+                }]
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+
+        context 'when subgroup is searched' do
+          it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: [{
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(group_label.id, project_label.id)
+                  }
+                }]
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
         end
       end
 
