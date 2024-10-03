@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow do
   include HttpBasicAuthHelpers
 
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
   let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
@@ -14,6 +15,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
     let(:params) { { project_id: project.id } }
+
+    before do
+      stub_licensed_features(ai_workflows: true)
+    end
 
     context 'when success' do
       it 'creates the Ai::DuoWorkflows::Workflow' do
@@ -310,6 +315,7 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
     end
 
     before do
+      stub_licensed_features(ai_workflows: true)
       allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
         allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
       end

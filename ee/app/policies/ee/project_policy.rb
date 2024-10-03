@@ -948,11 +948,16 @@ module EE
         enable :read_pre_receive_secret_detection_info
       end
 
-      condition(:duo_workflow_available) do
+      condition(:duo_workflow_enabled) do
         ::Feature.enabled?(:duo_workflow, @user)
       end
 
-      rule { duo_workflow_available & can?(:developer_access) }.policy do
+      with_scope :subject
+      condition(:duo_workflow_available) do
+        @subject.namespace&.licensed_feature_available?(:ai_workflows)
+      end
+
+      rule { duo_workflow_enabled & duo_workflow_available & can?(:developer_access) }.policy do
         enable :duo_workflow
       end
 
