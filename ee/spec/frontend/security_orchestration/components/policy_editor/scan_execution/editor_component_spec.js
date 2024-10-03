@@ -331,10 +331,10 @@ enabled: true`;
   describe('policy rule builder', () => {
     beforeEach(() => {
       uniqueId.mockRestore();
-      factory();
     });
 
     it('should add new rule', async () => {
+      factory();
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
@@ -356,7 +356,16 @@ enabled: true`;
       expect(findAllRuleSections()).toHaveLength(2);
     });
 
+    it('should add a new rule if the rule property does not exist', async () => {
+      factory({ propsData: { existingPolicy: { name: 'test' }, isEditing: true } });
+      expect(findAllRuleSections()).toHaveLength(0);
+      findAddRuleButton().vm.$emit('click');
+      await nextTick();
+      expect(findAllRuleSections()).toHaveLength(1);
+    });
+
     it('should update rule', async () => {
+      factory();
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
@@ -374,6 +383,7 @@ enabled: true`;
     });
 
     it('should remove rule', async () => {
+      factory();
       findAddRuleButton().vm.$emit('click');
       await nextTick();
 
@@ -397,10 +407,10 @@ enabled: true`;
   describe('policy action builder', () => {
     beforeEach(() => {
       uniqueId.mockRestore();
-      factory();
     });
 
     it('should add new action', async () => {
+      factory();
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
@@ -420,7 +430,16 @@ enabled: true`;
       ).toStrictEqual(finalValue);
     });
 
+    it('should add a new action if the action property does not exist', async () => {
+      factory({ propsData: { existingPolicy: { name: 'test' }, isEditing: true } });
+      expect(findAllActionBuilders()).toHaveLength(0);
+      findAddActionButton().vm.$emit('click');
+      await nextTick();
+      expect(findAllActionBuilders()).toHaveLength(1);
+    });
+
     it('should update action', async () => {
+      factory();
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
@@ -438,6 +457,7 @@ enabled: true`;
     });
 
     it('should remove action', async () => {
+      factory();
       findAddActionButton().vm.$emit('click');
       await nextTick();
 

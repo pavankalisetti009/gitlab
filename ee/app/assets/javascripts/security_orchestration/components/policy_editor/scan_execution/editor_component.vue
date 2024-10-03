@@ -175,10 +175,18 @@ export default {
   },
   methods: {
     addAction() {
+      if (!this.policy.actions?.length) {
+        this.policy.actions = [];
+      }
+
       this.policy.actions.push(buildScannerAction({ scanner: DEFAULT_SCANNER }));
       this.updateYamlEditorValue(this.policy);
     },
     addRule() {
+      if (!this.policy.rules?.length) {
+        this.policy.rules = [];
+      }
+
       this.policy.rules.push(buildDefaultPipeLineRule());
       this.updateYamlEditorValue(this.policy);
     },
