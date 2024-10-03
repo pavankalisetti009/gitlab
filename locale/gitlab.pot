@@ -34923,9 +34923,6 @@ msgstr ""
 msgid "MlModelRegistry|Manage versions of your machine learning model"
 msgstr ""
 
-msgid "MlModelRegistry|Manage versions of your machine learning modelManage versions of your machine learning model"
-msgstr ""
-
 msgid "MlModelRegistry|May not contain spaces."
 msgstr ""
 
