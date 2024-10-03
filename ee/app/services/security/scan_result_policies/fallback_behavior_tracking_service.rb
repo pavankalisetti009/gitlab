@@ -31,12 +31,7 @@ module Security
       def track!
         track_internal_event(
           EVENT_NAME,
-          project: project,
-          namespace: project.namespace,
-          additional_properties: {
-            label: 'full_path',
-            property: merge_request.to_reference(full: true)
-          }
+          project: project
         )
       end
 
