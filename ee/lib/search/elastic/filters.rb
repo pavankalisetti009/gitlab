@@ -878,28 +878,53 @@ module Search
         def find_labels_by_name(names, options)
           raise ArgumentError, 'search_level is a required option' unless options.key?(:search_level)
 
-          return [] unless names.any?
+          return [] if names.empty?
 
           search_level = options[:search_level].to_sym
-          project_ids = options[:project_ids]
-          group_ids = options[:group_ids]
-
           finder_params = { name: names }
 
-          case search_level
-          when :global
-          # no-op
-          # no group or project filtering applied
-          when :group
-            finder_params[:group_id] = group_ids.first if group_ids&.any?
-          when :project
-            finder_params[:group_id] = group_ids.first if group_ids&.any?
-            finder_params[:project_ids] = project_ids if project_ids != :any && project_ids&.any?
-          else
-            raise ArgumentError, 'Invalid search_level option provided'
-          end
+          labels = case search_level
+                   when :global
+                     find_global_labels(finder_params)
+                   when :group
+                     find_group_labels(finder_params, options[:group_ids])
+                   when :project
+                     find_project_labels(finder_params, options[:group_ids], options[:project_ids])
+                   else
+                     raise ArgumentError, 'Invalid search_level option provided'
+                   end
 
-          labels = LabelsFinder.new(nil, finder_params).execute(skip_authorization: true)
+          group_labels_by_name(labels)
+        end
+
+        def find_global_labels(finder_params)
+          LabelsFinder.new(nil, finder_params).execute(skip_authorization: true)
+        end
+
+        def find_group_labels(finder_params, group_ids)
+          return find_global_labels(finder_params) if group_ids.blank?
+
+          finder_params[:include_descendant_groups] = true
+          finder_params[:include_ancestor_groups] = true
+
+          group_ids.flat_map do |group_id|
+            LabelsFinder.new(nil, finder_params.merge(group_id: group_id)).execute(skip_authorization: true)
+          end
+        end
+
+        def find_project_labels(finder_params, group_ids, project_ids)
+          # try group labels if no project_ids are provided or set to :any which means user has admin access
+          return find_group_labels(finder_params, group_ids) if project_ids.blank? || project_ids == :any
+
+          finder_params[:include_descendant_groups] = false
+          finder_params[:include_ancestor_groups] = true
+
+          project_ids.flat_map do |project_id|
+            LabelsFinder.new(nil, finder_params.merge(project_id: project_id)).execute(skip_authorization: true)
+          end
+        end
+
+        def group_labels_by_name(labels)
           labels.each_with_object(Hash.new { |h, k| h[k] = [] }) do |label, hash|
             hash[label.name] << label.id
           end

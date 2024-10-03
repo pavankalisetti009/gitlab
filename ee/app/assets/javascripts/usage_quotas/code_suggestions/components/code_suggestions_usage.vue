@@ -160,6 +160,9 @@ export default {
     },
     currentSubscription: {
       query: getCurrentLicense,
+      skip() {
+        return this.isSaaS;
+      },
       update({ currentLicense }) {
         return currentLicense || {};
       },

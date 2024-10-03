@@ -41,11 +41,11 @@ module Security
       end
 
       def scoped_projects
-        scoped_resources(:projects, root_ancestor.all_projects)
+        scoped_resources(:projects, Project)
       end
 
       def scoped_groups
-        scoped_resources(:groups, Group.by_root_id(root_ancestor.id))
+        scoped_resources(:groups, Group)
       end
 
       def scoped_resources(resource_type, root_ancestor_resources)
