@@ -120,10 +120,26 @@ describe('ExclusionList', () => {
       ]);
     });
 
+    it('renders the GlTable with correct attributes', () => {
+      const table = findTable();
+      expect(table.attributes('selectable')).toBeDefined();
+      expect(table.attributes('hover')).toBeDefined();
+      expect(table.attributes('select-mode')).toBe('single');
+      expect(table.attributes('stacked')).toBe('md');
+      expect(table.attributes('select-mode')).toBe('single');
+    });
+
+    it('emits correct even on row clicked', async () => {
+      wrapper = createFullComponent();
+      const rowCells = findTableRowCells(0);
+      await rowCells.at(0).trigger('click');
+      expect(wrapper.emitted('viewExclusion')).toEqual([[mockExclusion]]);
+    });
+
     it('renders correct values in table cells', () => {
       wrapper = createFullComponent();
       const rowCells = findTableRowCells(0);
-      const exclusion = projectSecurityExclusions[0];
+      const exclusion = mockExclusion;
 
       expect(rowCells).toHaveLength(6);
       expect(rowCells.at(0).text()).toBe('Toggle exclusion');
@@ -148,6 +164,17 @@ describe('ExclusionList', () => {
       expect(dropdownItems).toHaveLength(2);
       expect(dropdownItems.at(0).text()).toBe('Edit');
       expect(dropdownItems.at(1).text()).toBe('Delete');
+    });
+
+    it('emits correct event when edit is clicked', async () => {
+      const actionCell = findTableRowCells(0).at(5);
+      const editButton = actionCell
+        .findAllComponents(GlDisclosureDropdownItem)
+        .at(0)
+        .find('button');
+
+      await editButton.trigger('click');
+      expect(wrapper.emitted('editExclusion')).toEqual([[mockExclusion]]);
     });
 
     it('calls deleteModal.show() when delete is clicked', async () => {

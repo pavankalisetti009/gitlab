@@ -3258,9 +3258,6 @@ msgstr ""
 msgid "Add environment"
 msgstr ""
 
-msgid "Add exclusion"
-msgstr ""
-
 msgid "Add exclusions"
 msgstr ""
 
@@ -49062,6 +49059,9 @@ msgstr ""
 msgid "SecurityExclusions|Add exclusion"
 msgstr ""
 
+msgid "SecurityExclusions|Created"
+msgstr ""
+
 msgid "SecurityExclusions|Delete exclusion"
 msgstr ""
 
@@ -49087,6 +49087,9 @@ msgid "SecurityExclusions|Enter one or more rules to ignore, separated by line b
 msgstr ""
 
 msgid "SecurityExclusions|Exclusion deleted successfully."
+msgstr ""
+
+msgid "SecurityExclusions|Exclusion details"
 msgstr ""
 
 msgid "SecurityExclusions|Exclusion disabled successfully."
@@ -49122,6 +49125,9 @@ msgstr ""
 msgid "SecurityExclusions|Rule"
 msgstr ""
 
+msgid "SecurityExclusions|Save Changes"
+msgstr ""
+
 msgid "SecurityExclusions|Scanner rule identifier"
 msgstr ""
 
@@ -49152,6 +49158,12 @@ msgid "SecurityExclusions|Type"
 msgstr ""
 
 msgid "SecurityExclusions|Unprocessed data"
+msgstr ""
+
+msgid "SecurityExclusions|Update exclusion"
+msgstr ""
+
+msgid "SecurityExclusions|Updated"
 msgstr ""
 
 msgid "SecurityExclusions|Value"

@@ -12,16 +12,22 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import projectSecurityExclusionCreateMutation from 'ee/security_configuration/secret_detection/graphql/project_security_exclusion_create.mutation.graphql';
+import projectSecurityExclusionUpdatedMutation from 'ee/security_configuration/secret_detection/graphql/project_security_exclusion_update.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExclusionForm from 'ee/security_configuration/secret_detection/components/exclusion_form.vue';
 import {
   EXCLUSION_TYPE_MAP,
   STATUS_TYPES,
+  DRAWER_MODES,
 } from 'ee/security_configuration/secret_detection/constants';
+import { projectSecurityExclusions } from '../mock_data';
 
 Vue.use(VueApollo);
 
 const mockPreventDefault = { preventDefault: jest.fn() };
+
+const [mockExclusion1, mockExclusion2] = projectSecurityExclusions;
+const projectFullPath = 'group/project';
 
 const mockExclusion = {
   type: 'PATH',
@@ -43,20 +49,37 @@ const mutateCreate = jest.fn().mockResolvedValue({
   },
 });
 
+const mutateUpdate = jest.fn().mockResolvedValue({
+  data: {
+    projectSecurityExclusionUpdate: {
+      errors: [],
+      securityExclusion: {
+        id: 'gid://gitlab/Security::ProjectSecurityExclusion/31',
+        ...mockExclusion2,
+      },
+    },
+  },
+});
+
 describe('ExclusionForm', () => {
   let wrapper;
   let apolloProvider;
   const mockToastShow = jest.fn();
 
   const createComponent = (options = {}) => {
-    const { provide = {}, resolver = mutateCreate, props = {} } = options;
+    const {
+      provide = {},
+      mutation = projectSecurityExclusionCreateMutation,
+      resolver = mutateCreate,
+      props = {},
+    } = options;
 
-    apolloProvider = createMockApollo([[projectSecurityExclusionCreateMutation, resolver]]);
+    apolloProvider = createMockApollo([[mutation, resolver]]);
 
     wrapper = shallowMountExtended(ExclusionForm, {
       apolloProvider,
       provide: {
-        projectFullPath: 'group/project',
+        projectFullPath,
         ...provide,
       },
       propsData: {
@@ -135,74 +158,92 @@ describe('ExclusionForm', () => {
   });
 
   describe('form submission', () => {
-    it('submits the form with correct data', async () => {
-      await findSubmitButton().vm.$emit('click', mockPreventDefault);
-
-      expect(mutateCreate).toHaveBeenCalledWith({
-        input: {
-          projectPath: 'group/project',
-          type: mockExclusion.type,
-          value: mockExclusion.value,
-          description: mockExclusion.description,
-          scanner: 'SECRET_PUSH_PROTECTION',
-          active: mockExclusion.active,
-        },
-      });
-    });
-
-    it('captures exception in Sentry when unexpected error occurs', async () => {
-      jest.spyOn(Sentry, 'captureException');
-      const mockErrorResolver = jest.fn().mockRejectedValue(new Error('Unexpected error'));
-
-      createComponent({ resolver: mockErrorResolver });
-
-      await findSubmitButton().vm.$emit('click', mockPreventDefault);
-      await waitForPromises();
-
-      expect(Sentry.captureException).toHaveBeenCalledWith(new Error('Unexpected error'));
-    });
-
-    it('displays an error message when submission fails', async () => {
-      const errorMessage = 'Failed to create exclusion';
-      const mockErrorResolver = jest.fn().mockResolvedValue({
-        data: {
-          projectSecurityExclusionCreate: {
-            errors: [errorMessage],
-            securityExclusion: null,
+    describe.each`
+      mode      | mutation                                   | resolver        | exclusion
+      ${'ADD'}  | ${projectSecurityExclusionCreateMutation}  | ${mutateCreate} | ${mockExclusion}
+      ${'EDIT'} | ${projectSecurityExclusionUpdatedMutation} | ${mutateUpdate} | ${mockExclusion1}
+    `('form submission in $mode mode', ({ mode, mutation, resolver, exclusion }) => {
+      beforeEach(() => {
+        createComponent({
+          mutation,
+          resolver,
+          props: {
+            exclusion,
+            mode: mode === 'ADD' ? DRAWER_MODES.ADD : DRAWER_MODES.EDIT,
           },
-        },
+        });
       });
 
-      createComponent({ resolver: mockErrorResolver });
+      it('submits the form with correct data', async () => {
+        await findSubmitButton().vm.$emit('click', mockPreventDefault);
 
-      await findSubmitButton().vm.$emit('click', mockPreventDefault);
-      await waitForPromises();
-
-      expect(wrapper.findComponent(GlAlert).exists()).toBe(true);
-      expect(wrapper.findComponent(GlAlert).text()).toContain(errorMessage);
-    });
-
-    it('clears error messages when form is resubmitted', async () => {
-      const errorMessage = 'Failed to create exclusion';
-      const mockErrorResolver = jest.fn().mockResolvedValue({
-        data: {
-          projectSecurityExclusionCreate: {
-            errors: [errorMessage],
-            securityExclusion: null,
+        expect(resolver).toHaveBeenCalledWith({
+          input: {
+            ...(mode === 'ADD' && { projectPath: projectFullPath }),
+            ...(mode === 'EDIT' && { id: exclusion.id }),
+            type: exclusion.type,
+            value: exclusion.value,
+            description: exclusion.description,
+            scanner: 'SECRET_PUSH_PROTECTION',
+            active: exclusion.active,
           },
-        },
+        });
       });
 
-      createComponent({ resolver: mockErrorResolver });
+      it('captures exception in Sentry when unexpected error occurs', async () => {
+        jest.spyOn(Sentry, 'captureException');
+        const mockErrorResolver = jest.fn().mockRejectedValue(new Error('Unexpected error'));
 
-      await findSubmitButton().vm.$emit('click', mockPreventDefault);
-      await waitForPromises();
+        createComponent({ resolver: mockErrorResolver });
 
-      expect(wrapper.findComponent(GlAlert).exists()).toBe(true);
+        await findSubmitButton().vm.$emit('click', mockPreventDefault);
+        await waitForPromises();
 
-      await findSubmitButton().vm.$emit('click', mockPreventDefault);
+        expect(Sentry.captureException).toHaveBeenCalledWith(new Error('Unexpected error'));
+      });
 
-      expect(wrapper.findComponent(GlAlert).exists()).toBe(false);
+      it('displays an error message when submission fails', async () => {
+        const errorMessage = 'Failed to create exclusion';
+        const mockErrorResolver = jest.fn().mockResolvedValue({
+          data: {
+            projectSecurityExclusionCreate: {
+              errors: [errorMessage],
+              securityExclusion: null,
+            },
+          },
+        });
+
+        createComponent({ resolver: mockErrorResolver });
+
+        await findSubmitButton().vm.$emit('click', mockPreventDefault);
+        await waitForPromises();
+
+        expect(wrapper.findComponent(GlAlert).exists()).toBe(true);
+        expect(wrapper.findComponent(GlAlert).text()).toContain(errorMessage);
+      });
+
+      it('clears error messages when form is resubmitted', async () => {
+        const errorMessage = 'Failed to create exclusion';
+        const mockErrorResolver = jest.fn().mockResolvedValue({
+          data: {
+            projectSecurityExclusionCreate: {
+              errors: [errorMessage],
+              securityExclusion: null,
+            },
+          },
+        });
+
+        createComponent({ resolver: mockErrorResolver });
+
+        await findSubmitButton().vm.$emit('click', mockPreventDefault);
+        await waitForPromises();
+
+        expect(wrapper.findComponent(GlAlert).exists()).toBe(true);
+
+        await findSubmitButton().vm.$emit('click', mockPreventDefault);
+
+        expect(wrapper.findComponent(GlAlert).exists()).toBe(false);
+      });
     });
   });
 });
