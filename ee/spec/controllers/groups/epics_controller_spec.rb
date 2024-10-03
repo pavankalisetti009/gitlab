@@ -118,11 +118,28 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
     end
 
     describe 'GET #new' do
-      it 'renders template' do
-        group.add_developer(user)
-        get :new, params: { group_id: group }
+      context 'with authenticated user' do
+        before do
+          group.add_developer(user)
+        end
 
-        expect(response).to render_template 'groups/epics/new'
+        it 'renders template' do
+          get :new, params: { group_id: group }
+
+          expect(response).to render_template 'groups/work_items/show'
+        end
+
+        context 'when work_item_epics is disabled' do
+          before do
+            stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+          end
+
+          it 'renders template' do
+            get :new, params: { group_id: group }
+
+            expect(response).to render_template 'groups/epics/new'
+          end
+        end
       end
 
       context 'with unauthorized user' do
