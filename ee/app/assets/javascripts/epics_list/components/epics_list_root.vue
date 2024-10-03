@@ -11,7 +11,7 @@ import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_ro
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 import { issuableListTabs, DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
-import { humanTimeframe } from '~/lib/utils/datetime_utility';
+import { humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
 import { s__ } from '~/locale';
 
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
@@ -189,7 +189,7 @@ export default {
       return reference;
     },
     epicTimeframe({ startDate, dueDate }) {
-      return humanTimeframe(startDate, dueDate);
+      return humanTimeframe(newDate(startDate), newDate(dueDate));
     },
     fetchEpicsBy(propsName, propValue) {
       if (propsName === 'currentPage') {
