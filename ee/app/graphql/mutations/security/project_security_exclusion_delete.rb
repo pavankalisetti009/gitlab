@@ -19,6 +19,8 @@ module Mutations
         end
 
         if project_security_exclusion.destroy
+          log_audit_event(current_user, project_security_exclusion.project, project_security_exclusion)
+
           { errors: [] }
         else
           { errors: errors_on_object(project_security_exclusion) }
@@ -27,6 +29,18 @@ module Mutations
 
       def find_object(id:)
         GitlabSchema.object_from_id(id)
+      end
+
+      def log_audit_event(user, project, security_exclusion)
+        audit_context = {
+          name: 'project_security_exclusion_deleted',
+          author: user,
+          target: security_exclusion,
+          scope: project,
+          message: "Deleted a security exclusion with type (#{security_exclusion.type})"
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

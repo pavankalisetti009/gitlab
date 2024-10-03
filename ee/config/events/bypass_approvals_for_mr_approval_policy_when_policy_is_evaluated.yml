@@ -8,9 +8,6 @@ action: bypass_approvals_for_mr_approval_policy_when_policy_is_evaluated
 identifiers:
 - project
 - namespace
-additional_properties:
-  value:
-    description: "Merge request Id"
 product_group: security_policies
 milestone: '17.3'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155718

@@ -32,8 +32,10 @@ RSpec.describe 'Creating a ProjectSecurityExclusion', feature_category: :secret_
         project.add_maintainer(current_user)
       end
 
+      subject(:request) { post_graphql_mutation(mutation, current_user: current_user) }
+
       it 'creates a new project security exclusion' do
-        post_graphql_mutation(mutation, current_user: current_user)
+        request
 
         expect(response).to have_gitlab_http_status(:success)
         expect(mutation_response['securityExclusion']).to include(
@@ -44,6 +46,12 @@ RSpec.describe 'Creating a ProjectSecurityExclusion', feature_category: :secret_
           'description' => 'Test exclusion',
           'active' => true
         )
+      end
+
+      it 'creates an audit event' do
+        expect { request }.to change { AuditEvent.count }.by(1)
+        expect(AuditEvent.last.details[:custom_message])
+          .to eq("Created a new security exclusion with type (rule)")
       end
 
       context 'when invalid arguments are used' do

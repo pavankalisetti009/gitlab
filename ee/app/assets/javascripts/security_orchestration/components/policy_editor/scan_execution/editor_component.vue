@@ -367,7 +367,7 @@ export default {
         />
 
         <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
-          <gl-button variant="link" data-testid="add-action" icon="plus" @click="addAction">
+          <gl-button variant="link" data-testid="add-action" @click="addAction">
             {{ $options.i18n.ADD_ACTION_LABEL }}
           </gl-button>
         </div>
