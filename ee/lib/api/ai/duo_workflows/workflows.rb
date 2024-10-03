@@ -219,6 +219,7 @@ module API
               end
               post '/:id/start' do
                 workflow = find_workflow!(params[:id])
+                authorize_run_workflows!(workflow.project)
 
                 response = ::Ai::DuoWorkflows::StartWorkflowService.new(
                   workflow: workflow,

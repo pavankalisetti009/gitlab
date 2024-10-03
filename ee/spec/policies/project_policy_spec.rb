@@ -4148,22 +4148,35 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   end
 
   describe 'duo_workflow' do
-    where(:duo_workflow_feature_flag, :current_user, :match_expected_result) do
-      true  | ref(:owner)      | be_allowed(:duo_workflow)
-      true  | ref(:maintainer) | be_allowed(:duo_workflow)
-      true  | ref(:developer)  | be_allowed(:duo_workflow)
-      true  | ref(:guest)      | be_disallowed(:duo_workflow)
-      true  | ref(:non_member) | be_disallowed(:duo_workflow)
-      false | ref(:owner)      | be_disallowed(:duo_workflow)
-      false | ref(:maintainer) | be_disallowed(:duo_workflow)
-      false | ref(:developer)  | be_disallowed(:duo_workflow)
-      false | ref(:guest)      | be_disallowed(:duo_workflow)
-      false | ref(:non_member) | be_disallowed(:duo_workflow)
+    let(:project) { public_project_in_group }
+
+    where(:duo_workflow_feature_flag, :duo_workflow_license, :current_user, :match_expected_result) do
+      true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
+      true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
+      true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
+      true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      true  | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      true  | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      true  | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | false | ref(:non_member) | be_disallowed(:duo_workflow)
+      false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      false | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | false | ref(:non_member) | be_disallowed(:duo_workflow)
     end
 
     with_them do
       before do
         stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
+        stub_licensed_features(ai_workflows: duo_workflow_license)
       end
 
       it { is_expected.to match_expected_result }

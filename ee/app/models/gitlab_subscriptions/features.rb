@@ -181,6 +181,7 @@ module GitlabSubscriptions
     ULTIMATE_FEATURES = %i[
       ai_config_chat
       ai_features
+      ai_workflows
       glab_ask_git_command
       ai_agents
       ai_review_mr
