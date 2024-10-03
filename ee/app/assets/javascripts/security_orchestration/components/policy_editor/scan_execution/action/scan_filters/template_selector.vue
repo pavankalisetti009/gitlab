@@ -61,11 +61,7 @@ export default {
     :show-remove-button="false"
   >
     <template #selector>
-      <label
-        class="gl-mb-0 gl-mr-4 gl-font-normal"
-        for="policy-template"
-        :title="$options.i18n.label"
-      >
+      <label class="gl-mb-0 gl-mr-4" for="policy-template" :title="$options.i18n.label">
         {{ $options.i18n.label }}
       </label>
     </template>
