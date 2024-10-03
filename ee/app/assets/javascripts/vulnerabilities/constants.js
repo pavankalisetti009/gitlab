@@ -1,4 +1,4 @@
-import { __, s__ } from '~/locale';
+import { s__ } from '~/locale';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import dismissFindingMutation from 'ee/security_dashboard/graphql/mutations/dismiss_finding.mutation.graphql';
 import revertFindingToDetectedMutation from 'ee/security_dashboard/graphql/mutations/revert_finding_to_detected.mutation.graphql';
@@ -49,7 +49,7 @@ export const VULNERABILITY_STATE_OBJECTS = {
     state: 'detected',
     searchParamValue: 'DETECTED',
     buttonText: VULNERABILITY_STATES.detected,
-    dropdownText: s__('VulnerabilityManagement|Needs triage'),
+    dropdownText: s__('VulnerabilityStatusTypes|Needs triage'),
     dropdownDescription: s__('VulnerabilityManagement|Requires assessment'),
     description: s__('VulnerabilityManagement|An unverified non-confirmed finding'),
     mutation: vulnerabilityStateMutations.revert,
@@ -60,7 +60,7 @@ export const VULNERABILITY_STATE_OBJECTS = {
     state: 'confirmed',
     searchParamValue: 'CONFIRMED',
     buttonText: VULNERABILITY_STATES.confirmed,
-    dropdownText: __('Confirm'),
+    dropdownText: s__('VulnerabilityStatusTypes|Confirmed'),
     dropdownDescription: s__('VulnerabilityManagement|A true-positive and will fix'),
     description: s__('VulnerabilityManagement|A verified true-positive vulnerability'),
     mutation: vulnerabilityStateMutations.confirm,
@@ -70,7 +70,7 @@ export const VULNERABILITY_STATE_OBJECTS = {
     state: 'dismissed',
     searchParamValue: 'DISMISSED',
     buttonText: VULNERABILITY_STATES.dismissed,
-    dropdownText: __('Dismiss'),
+    dropdownText: s__('VulnerabilityStatusTypes|Dismissed'),
     dropdownDescription: falsePositiveMessage,
     mutation: vulnerabilityStateMutations.dismiss,
     findingMutation: dismissFindingMutation,
@@ -80,7 +80,7 @@ export const VULNERABILITY_STATE_OBJECTS = {
     state: 'resolved',
     searchParamValue: 'RESOLVED',
     buttonText: VULNERABILITY_STATES.resolved,
-    dropdownText: __('Resolve'),
+    dropdownText: s__('VulnerabilityStatusTypes|Resolved'),
     dropdownDescription: s__('VulnerabilityManagement|Verified as fixed or mitigated'),
     description: s__('VulnerabilityManagement|A removed or remediated vulnerability'),
     mutation: vulnerabilityStateMutations.resolve,
