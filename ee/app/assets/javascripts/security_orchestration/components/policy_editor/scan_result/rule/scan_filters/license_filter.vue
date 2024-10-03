@@ -117,7 +117,9 @@ export default {
 <template>
   <section-layout class="gl-w-full gl-pt-3" :show-remove-button="false">
     <template #selector>
-      <label class="gl-mb-0 gl-mr-4" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
+      <label class="gl-mb-0 gl-mr-4 gl-font-normal" :title="$options.i18n.label">{{
+        $options.i18n.label
+      }}</label>
       <slot>
         <gl-collapsible-listbox
           v-model="matchType"
