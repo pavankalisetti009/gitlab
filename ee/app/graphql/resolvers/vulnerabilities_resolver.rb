@@ -115,12 +115,12 @@ module Resolvers
 
     def vulnerabilities(params)
       finder_params = params.merge(before_severity: before_severity, after_severity: after_severity)
-      finder_params.delete(:has_ai_resolution) unless resolve_by_duo_filtering_enabled?
+      finder_params.delete(:has_ai_resolution) unless resolve_with_duo_filtering_enabled?
 
       apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, finder_params).execute.as_vulnerabilities)
     end
 
-    def resolve_by_duo_filtering_enabled?
+    def resolve_with_duo_filtering_enabled?
       return false if vulnerable.is_a?(::InstanceSecurityDashboard)
 
       Feature.enabled?(:vulnerability_report_vr_filter, vulnerable)
