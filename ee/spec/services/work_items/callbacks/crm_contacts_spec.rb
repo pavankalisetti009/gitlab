@@ -38,7 +38,7 @@ RSpec.describe WorkItems::Callbacks::CrmContacts, feature_category: :service_des
         allow(::Issues::SetCrmContactsService).to receive(:new).and_call_original
 
         expect { callback }.to raise_error(
-          WorkItems::Widgets::BaseService::WidgetError,
+          ::Issuable::Callbacks::Base::Error,
           /You have insufficient permissions to set customer relations contacts for this issue/
         )
       end

@@ -63,8 +63,8 @@ RSpec.describe WorkItems::Callbacks::Progress, feature_category: :team_planning 
       end
     end
 
-    shared_examples 'raises a WidgetError' do
-      it { expect { subject }.to raise_error(::WorkItems::Widgets::BaseService::WidgetError, message) }
+    shared_examples 'raises a callback error' do
+      it { expect { subject }.to raise_error(::Issuable::Callbacks::Base::Error, message) }
     end
 
     context 'when progress feature is licensed' do
@@ -135,7 +135,7 @@ RSpec.describe WorkItems::Callbacks::Progress, feature_category: :team_planning 
         context 'when current_value param is nil' do
           let(:params) { { current_value: nil } }
 
-          it_behaves_like 'raises a WidgetError' do
+          it_behaves_like 'raises a callback error' do
             let(:message) { "Progress is not a number, Current value can't be blank" }
           end
         end
