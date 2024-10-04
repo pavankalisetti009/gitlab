@@ -19601,7 +19601,7 @@ Returns [`[CiRunnerCloudProvisioningStep!]`](#cirunnercloudprovisioningstep).
 
 ### `CiRunnerUsage`
 
-Runner usage.
+Runner usage in minutes.
 
 #### Fields
 
@@ -19620,8 +19620,9 @@ Runner usage in minutes by project.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cirunnerusagebyprojectcibuildcount"></a>`ciBuildCount` | [`BigInt!`](#bigint) | Amount of builds executed during the selected period, encoded as a string. |
-| <a id="cirunnerusagebyprojectciminutesused"></a>`ciMinutesUsed` | [`BigInt!`](#bigint) | Amount of minutes used during the selected period, encoded as a string. |
+| <a id="cirunnerusagebyprojectcibuildcount"></a>`ciBuildCount` | [`BigInt!`](#bigint) | Amount of builds executed during the selected period. Encoded as a string. |
+| <a id="cirunnerusagebyprojectciduration"></a>`ciDuration` | [`BigInt!`](#bigint) | Number of minutes spent to process jobs during the selected period. Encoded as a string. |
+| <a id="cirunnerusagebyprojectciminutesused"></a>`ciMinutesUsed` **{warning-solid}** | [`BigInt!`](#bigint) | **Deprecated** in GitLab 17.5. Use `ciDuration`. |
 | <a id="cirunnerusagebyprojectproject"></a>`project` | [`Project`](#project) | Project that the usage refers to. Null means "Other projects". |
 
 ### `CiSecureFileRegistry`
