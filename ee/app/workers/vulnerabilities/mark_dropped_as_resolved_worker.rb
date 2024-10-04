@@ -37,15 +37,7 @@ module Vulnerabilities
           Vulnerabilities::StateTransition.bulk_insert!(state_transitions)
         end
 
-        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[
-            notes
-            system_note_metadata
-            vulnerability_user_mentions
-          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482726'
-        ) do
-          create_system_notes(Vulnerability.by_ids(vulnerability_ids))
-        end
+        create_system_notes(Vulnerability.by_ids(vulnerability_ids))
       end
     end
 
