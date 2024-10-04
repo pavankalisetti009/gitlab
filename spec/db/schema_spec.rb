@@ -3,7 +3,12 @@
 require 'spec_helper'
 require Rails.root.join('ee', 'spec', 'db', 'schema_support') if Gitlab.ee?
 
-RSpec.describe 'Database schema', feature_category: :database do
+RSpec.describe 'Database schema',
+  # These skip a bit of unnecessary setup for each spec invocation,
+  # and there are thousands of specs in this file. In total, this improves runtime by roughly 30%
+  :do_not_mock_admin_mode_setting, :do_not_stub_snowplow_by_default,
+  stackprof: { interval: 101000 },
+  feature_category: :database do
   prepend_mod_with('DB::SchemaSupport')
 
   let(:tables) { connection.tables }
@@ -396,7 +401,7 @@ RSpec.describe 'Database schema', feature_category: :database do
   end
 
   context 'existence of Postgres schemas' do
-    def get_schemas
+    let_it_be(:schemas) do
       sql = <<~SQL
         SELECT schema_name FROM
         information_schema.schemata
@@ -411,17 +416,17 @@ RSpec.describe 'Database schema', feature_category: :database do
     end
 
     it 'we have a public schema' do
-      expect(get_schemas).to include('public')
+      expect(schemas).to include('public')
     end
 
     Gitlab::Database::EXTRA_SCHEMAS.each do |schema|
       it "we have a '#{schema}' schema'" do
-        expect(get_schemas).to include(schema.to_s)
+        expect(schemas).to include(schema.to_s)
       end
     end
 
     it 'we do not have unexpected schemas' do
-      expect(get_schemas.size).to eq(Gitlab::Database::EXTRA_SCHEMAS.size + 1)
+      expect(schemas.size).to eq(Gitlab::Database::EXTRA_SCHEMAS.size + 1)
     end
   end
 
