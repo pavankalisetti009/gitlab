@@ -130,7 +130,7 @@ module Gitlab
           if Feature.enabled?(:v2_chat_agent_integration, user) &&
               Feature.disabled?(:v2_chat_agent_integration_override, user)
 
-            Gitlab::Llm::Chain::Agents::SingleActionExecutor.new(
+            Gitlab::Duo::Chat::ReactExecutor.new(
               user_input: prompt_message.content,
               tools: tools,
               context: context,

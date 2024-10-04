@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Deprecation: this executor will be removed in favor of SingleActionExecutor
+# Deprecation: this executor will be removed in favor of ReactExecutor
 # see https://gitlab.com/gitlab-org/gitlab/-/issues/469087
 
 module Gitlab

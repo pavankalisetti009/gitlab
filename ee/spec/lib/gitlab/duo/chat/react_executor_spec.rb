@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_category: :duo_chat do
+RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
   include FakeBlobHelpers
 
   describe "#execute" do
