@@ -24,6 +24,7 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
       let(:event_name) { 'code_suggestion_shown_in_ide' }
 
       it 'triggers AI tracking' do
+        allow(Gitlab::InternalEvents).to receive(:track_event)
         expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
                                                   .with(
                                                     event_name,
