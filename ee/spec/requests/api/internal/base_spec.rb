@@ -415,8 +415,8 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
 
           it 'rejects git push when the push size would exceed the limit' do
             set_used_storage(group, megabytes: 3)
-            usage_guide = ::Gitlab::Routing.url_helpers.help_page_url('user/usage_quotas', anchor: 'manage-storage-usage')
-            read_only_guide = ::Gitlab::Routing.url_helpers.help_page_url('user/read_only_namespaces', anchor: 'restricted-actions')
+            usage_guide = ::Gitlab::Routing.url_helpers.help_page_url('user/usage_quotas.md', anchor: 'manage-storage-usage')
+            read_only_guide = ::Gitlab::Routing.url_helpers.help_page_url('user/read_only_namespaces.md', anchor: 'restricted-actions')
 
             push(key, project, changes: "#{Gitlab::Git::SHA1_BLANK_SHA} #{sha_with_2_mb_file} refs/heads/my_branch_2")
 
