@@ -9897,6 +9897,46 @@ CREATE SEQUENCE custom_emoji_id_seq
 
 ALTER SEQUENCE custom_emoji_id_seq OWNED BY custom_emoji.id;
 
+CREATE TABLE custom_field_select_options (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    custom_field_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    "position" smallint NOT NULL,
+    value text NOT NULL,
+    CONSTRAINT check_fbed57c2bf CHECK ((char_length(value) <= 255))
+);
+
+CREATE SEQUENCE custom_field_select_options_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE custom_field_select_options_id_seq OWNED BY custom_field_select_options.id;
+
+CREATE TABLE custom_fields (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    archived_at timestamp with time zone,
+    field_type smallint NOT NULL,
+    name text NOT NULL,
+    CONSTRAINT check_b047b04af9 CHECK ((char_length(name) <= 255))
+);
+
+CREATE SEQUENCE custom_fields_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE custom_fields_id_seq OWNED BY custom_fields.id;
+
 CREATE TABLE custom_software_licenses (
     id bigint NOT NULL,
     project_id bigint NOT NULL,
@@ -20951,6 +20991,24 @@ CREATE SEQUENCE work_item_related_link_restrictions_id_seq
 
 ALTER SEQUENCE work_item_related_link_restrictions_id_seq OWNED BY work_item_related_link_restrictions.id;
 
+CREATE TABLE work_item_type_custom_fields (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    custom_field_id bigint NOT NULL,
+    work_item_type_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+CREATE SEQUENCE work_item_type_custom_fields_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE work_item_type_custom_fields_id_seq OWNED BY work_item_type_custom_fields.id;
+
 CREATE TABLE work_item_types (
     id bigint NOT NULL,
     base_type smallint DEFAULT 0 NOT NULL,
@@ -22083,6 +22141,10 @@ ALTER TABLE ONLY csv_issue_imports ALTER COLUMN id SET DEFAULT nextval('csv_issu
 
 ALTER TABLE ONLY custom_emoji ALTER COLUMN id SET DEFAULT nextval('custom_emoji_id_seq'::regclass);
 
+ALTER TABLE ONLY custom_field_select_options ALTER COLUMN id SET DEFAULT nextval('custom_field_select_options_id_seq'::regclass);
+
+ALTER TABLE ONLY custom_fields ALTER COLUMN id SET DEFAULT nextval('custom_fields_id_seq'::regclass);
+
 ALTER TABLE ONLY custom_software_licenses ALTER COLUMN id SET DEFAULT nextval('custom_software_licenses_id_seq'::regclass);
 
 ALTER TABLE ONLY customer_relations_contacts ALTER COLUMN id SET DEFAULT nextval('customer_relations_contacts_id_seq'::regclass);
@@ -22994,6 +23056,8 @@ ALTER TABLE ONLY work_item_hierarchy_restrictions ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY work_item_parent_links ALTER COLUMN id SET DEFAULT nextval('work_item_parent_links_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_related_link_restrictions ALTER COLUMN id SET DEFAULT nextval('work_item_related_link_restrictions_id_seq'::regclass);
+
+ALTER TABLE ONLY work_item_type_custom_fields ALTER COLUMN id SET DEFAULT nextval('work_item_type_custom_fields_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_widget_definitions ALTER COLUMN id SET DEFAULT nextval('work_item_widget_definitions_id_seq'::regclass);
 
@@ -24183,6 +24247,12 @@ ALTER TABLE ONLY csv_issue_imports
 
 ALTER TABLE ONLY custom_emoji
     ADD CONSTRAINT custom_emoji_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY custom_field_select_options
+    ADD CONSTRAINT custom_field_select_options_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY custom_fields
+    ADD CONSTRAINT custom_fields_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY custom_software_licenses
     ADD CONSTRAINT custom_software_licenses_pkey PRIMARY KEY (id);
@@ -25816,6 +25886,9 @@ ALTER TABLE ONLY work_item_progresses
 ALTER TABLE ONLY work_item_related_link_restrictions
     ADD CONSTRAINT work_item_related_link_restrictions_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY work_item_type_custom_fields
+    ADD CONSTRAINT work_item_type_custom_fields_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY work_item_types
     ADD CONSTRAINT work_item_types_pkey PRIMARY KEY (id);
 
@@ -27153,6 +27226,10 @@ CREATE INDEX idx_container_exp_policies_on_project_id_next_run_at_enabled ON con
 
 CREATE INDEX idx_container_repos_on_exp_cleanup_status_project_id_start_date ON container_repositories USING btree (expiration_policy_cleanup_status, project_id, expiration_policy_started_at);
 
+CREATE UNIQUE INDEX idx_custom_field_select_options_on_custom_field_id_lower_value ON custom_field_select_options USING btree (custom_field_id, lower(value));
+
+CREATE UNIQUE INDEX idx_custom_fields_on_namespace_id_and_lower_name ON custom_fields USING btree (namespace_id, lower(name));
+
 CREATE INDEX idx_deletions_on_project_id_and_id_where_pending ON ONLY p_batched_git_ref_updates_deletions USING btree (project_id, id) WHERE (status = 1);
 
 CREATE INDEX idx_dep_proxy_pkgs_settings_enabled_maven_on_project_id ON dependency_proxy_packages_settings USING btree (project_id) WHERE ((enabled = true) AND (maven_external_registry_url IS NOT NULL));
@@ -27424,6 +27501,8 @@ CREATE UNIQUE INDEX idx_vulnerability_issue_links_on_vulnerability_id_and_link_t
 CREATE INDEX idx_vulnerability_reads_for_traversal_ids_queries_srt_severity ON vulnerability_reads USING btree (state, report_type, severity, traversal_ids, vulnerability_id) WHERE (archived = false);
 
 CREATE INDEX idx_vulnerability_reads_project_id_scanner_id_vulnerability_id ON vulnerability_reads USING btree (project_id, scanner_id, vulnerability_id);
+
+CREATE UNIQUE INDEX idx_wi_type_custom_fields_on_ns_id_wi_type_id_custom_field_id ON work_item_type_custom_fields USING btree (namespace_id, work_item_type_id, custom_field_id);
 
 CREATE INDEX index_p_ci_builds_on_execution_config_id ON ONLY p_ci_builds USING btree (execution_config_id) WHERE (execution_config_id IS NOT NULL);
 
@@ -28462,6 +28541,8 @@ CREATE INDEX index_csv_issue_imports_on_user_id ON csv_issue_imports USING btree
 CREATE INDEX index_custom_emoji_on_creator_id ON custom_emoji USING btree (creator_id);
 
 CREATE UNIQUE INDEX index_custom_emoji_on_namespace_id_and_name ON custom_emoji USING btree (namespace_id, name);
+
+CREATE INDEX index_custom_field_select_options_on_namespace_id ON custom_field_select_options USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_custom_software_licenses_on_project_id_and_name ON custom_software_licenses USING btree (project_id, name);
 
@@ -31470,6 +31551,10 @@ CREATE UNIQUE INDEX index_work_item_parent_links_on_work_item_id ON work_item_pa
 CREATE INDEX index_work_item_parent_links_on_work_item_parent_id ON work_item_parent_links USING btree (work_item_parent_id);
 
 CREATE INDEX index_work_item_related_link_restrictions_on_target_type_id ON work_item_related_link_restrictions USING btree (target_type_id);
+
+CREATE INDEX index_work_item_type_custom_fields_on_custom_field_id ON work_item_type_custom_fields USING btree (custom_field_id);
+
+CREATE INDEX index_work_item_type_custom_fields_on_work_item_type_id ON work_item_type_custom_fields USING btree (work_item_type_id);
 
 CREATE INDEX index_work_item_types_on_base_type_and_id ON work_item_types USING btree (base_type, id);
 
@@ -34586,6 +34671,9 @@ ALTER TABLE ONLY todos
 ALTER TABLE ONLY packages_debian_group_architectures
     ADD CONSTRAINT fk_92714bcab1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY work_item_type_custom_fields
+    ADD CONSTRAINT fk_9447fad7b4 FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY workspaces_agent_configs
     ADD CONSTRAINT fk_94660551c8 FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
 
@@ -34762,6 +34850,9 @@ ALTER TABLE ONLY fork_network_members
 
 ALTER TABLE ONLY ml_candidate_metadata
     ADD CONSTRAINT fk_b044692715 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY custom_field_select_options
+    ADD CONSTRAINT fk_b16c0bad2c FOREIGN KEY (custom_field_id) REFERENCES custom_fields(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY sbom_occurrences
     ADD CONSTRAINT fk_b1b65d8d17 FOREIGN KEY (source_package_id) REFERENCES sbom_source_packages(id) ON DELETE CASCADE;
@@ -34987,6 +35078,9 @@ ALTER TABLE ONLY incident_management_oncall_rotations
 
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_cf3c0ac207 FOREIGN KEY (policy_configuration_id) REFERENCES security_orchestration_policy_configurations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY work_item_type_custom_fields
+    ADD CONSTRAINT fk_cf7da43538 FOREIGN KEY (custom_field_id) REFERENCES custom_fields(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issue_assignment_events
     ADD CONSTRAINT fk_cfd2073177 FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
@@ -35740,6 +35834,9 @@ ALTER TABLE ONLY packages_cleanup_policies
 
 ALTER TABLE ONLY approval_project_rules_groups
     ADD CONSTRAINT fk_rails_396841e79e FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY custom_fields
+    ADD CONSTRAINT fk_rails_39d50cbb4e FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY chat_teams
     ADD CONSTRAINT fk_rails_3b543909cb FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
@@ -37037,6 +37134,9 @@ ALTER TABLE ONLY description_versions
 ALTER TABLE ONLY merge_request_blocks
     ADD CONSTRAINT fk_rails_e9387863bc FOREIGN KEY (blocking_merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY work_item_type_custom_fields
+    ADD CONSTRAINT fk_rails_e990d7ad38 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY protected_branch_unprotect_access_levels
     ADD CONSTRAINT fk_rails_e9eb8dc025 FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
 
@@ -37159,6 +37259,9 @@ ALTER TABLE ONLY board_project_recent_visits
 
 ALTER TABLE ONLY ci_job_variables
     ADD CONSTRAINT fk_rails_fbf3b34792_p FOREIGN KEY (partition_id, job_id) REFERENCES p_ci_builds(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE ONLY custom_field_select_options
+    ADD CONSTRAINT fk_rails_fc0a0b8b00 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_nuget_metadata
     ADD CONSTRAINT fk_rails_fc0c19f5b4 FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE CASCADE;
