@@ -1,96 +1,46 @@
-import {
-  invalidatePromotionRequestsData,
-  refetchPromotionRequestsCount,
-} from 'ee/members/promotion_requests/store/actions';
-import * as listInvalidationService from 'ee/members/promotion_requests/services/promotion_request_list_invalidation_service';
+import { evictCache, fetchCount } from 'ee/members/promotion_requests/graphql/utils';
+import { invalidatePromotionRequestsData } from 'ee/members/promotion_requests/store/actions';
 import * as types from 'ee/members/promotion_requests/store/mutation_types';
 import testAction from 'helpers/vuex_action_helper';
-import { createMockClient } from 'helpers/mock_apollo_helper';
-import graphqlClientModule from '~/members/graphql_client';
-import GroupPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/group_pending_member_approvals.query.graphql';
-import ProjectPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/project_pending_member_approvals.query.graphql';
-import {
-  groupDefaultProvide,
-  groupPendingMemberApprovalsQueryMockData,
-  projectDefaultProvide,
-  projectPendingMemberApprovalsQueryMockData,
-} from '../mock_data';
+import { groupDefaultProvide } from '../mock_data';
 
-jest.mock('ee/members/promotion_requests/services/promotion_request_list_invalidation_service');
-jest.mock('~/members/graphql_client', () => ({}));
+jest.mock('ee/members/promotion_requests/graphql/utils');
 
 describe('Actions', () => {
   let state;
 
   beforeEach(() => {
     state = {};
-    jest.spyOn(listInvalidationService, 'invalidate');
+    evictCache.mockReturnValue(null);
+    fetchCount.mockResolvedValue(0);
   });
 
   describe('invalidatePromotionRequestsData', () => {
-    it('will dispatch refetchPromotionRequestsCount', () => {
-      const { group, project } = groupDefaultProvide;
-      testAction(
+    const { context, group, project } = groupDefaultProvide;
+
+    it('will reset the cache', async () => {
+      await testAction(
         invalidatePromotionRequestsData,
-        { group, project },
+        { context, group, project },
         state,
+        expect.anything(),
         [],
-        [{ type: 'refetchPromotionRequestsCount', payload: { group, project } }],
       );
-      expect(listInvalidationService.invalidate).toHaveBeenCalled();
-    });
-  });
 
-  describe('refetchPromotionRequestsCount', () => {
-    describe('Group context', () => {
-      /** @type {jest.Mock} */
-      let groupHandler;
-
-      beforeEach(() => {
-        groupHandler = jest.fn();
-        const requestHandlers = [[GroupPendingMemberApprovalsQuery, groupHandler]];
-        // eslint-disable-next-line import/no-named-as-default-member
-        graphqlClientModule.graphqlClient = createMockClient(requestHandlers);
-      });
-
-      it('will reset the counter', async () => {
-        groupHandler.mockResolvedValue(groupPendingMemberApprovalsQueryMockData);
-        const { group, project } = groupDefaultProvide;
-
-        await testAction(
-          refetchPromotionRequestsCount,
-          { group, project },
-          state,
-          [{ type: types.UPDATE_TOTAL_ITEMS, payload: 2 }],
-          [],
-        );
-      });
+      expect(evictCache).toHaveBeenCalledWith({ context, group, project });
     });
 
-    describe('Project context', () => {
-      /** @type {jest.Mock} */
-      let projectHandler;
+    it('will refetch and update the count', async () => {
+      const count = 42;
+      fetchCount.mockResolvedValue(count);
 
-      beforeEach(() => {
-        projectHandler = jest.fn();
-        const requestHandlers = [[ProjectPendingMemberApprovalsQuery, projectHandler]];
-        // eslint-disable-next-line import/no-named-as-default-member
-        graphqlClientModule.graphqlClient = createMockClient(requestHandlers);
-      });
-
-      it('will reset the counter', async () => {
-        const { group, project } = projectDefaultProvide;
-
-        projectHandler.mockResolvedValue(projectPendingMemberApprovalsQueryMockData);
-
-        await testAction(
-          refetchPromotionRequestsCount,
-          { group, project },
-          state,
-          [{ type: types.UPDATE_TOTAL_ITEMS, payload: 2 }],
-          [],
-        );
-      });
+      await testAction(
+        invalidatePromotionRequestsData,
+        { context, group, project },
+        state,
+        [{ type: types.UPDATE_TOTAL_ITEMS, payload: count }],
+        [],
+      );
     });
   });
 });

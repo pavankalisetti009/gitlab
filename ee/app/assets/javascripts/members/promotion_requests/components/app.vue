@@ -7,7 +7,6 @@ import { DEFAULT_PER_PAGE } from '~/api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ProjectPendingMemberApprovalsQuery from '../graphql/project_pending_member_approvals.query.graphql';
 import GroupPendingMemberApprovalsQuery from '../graphql/group_pending_member_approvals.query.graphql';
-import { subscribe } from '../services/promotion_request_list_invalidation_service';
 import UserAvatar from './user_avatar.vue';
 
 const FIELDS = [
@@ -55,18 +54,6 @@ export default {
         before: null,
       },
     };
-  },
-  mounted() {
-    this.unsubscribe = subscribe(() => {
-      this.first = DEFAULT_PER_PAGE;
-      this.last = null;
-      this.after = null;
-      this.before = null;
-      this.$apollo.queries.pendingMemberApprovals.refetch();
-    });
-  },
-  destroyed() {
-    this.unsubscribe?.();
   },
   apollo: {
     // NOTE: Promotion requests may exist in two different contexts: group and project member
