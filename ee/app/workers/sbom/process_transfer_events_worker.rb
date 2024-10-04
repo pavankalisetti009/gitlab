@@ -33,17 +33,23 @@ module Sbom
 
         return [] unless group
 
-        # rubocop:disable CodeReuse/ActiveRecord -- Does not work outside this context.
-        exists_subquery = Sbom::Occurrence.where(
-          Sbom::Occurrence.arel_table[:project_id].eq(Project.arel_table[:id]))
-        # rubocop:enable CodeReuse/ActiveRecord
-
-        group
-          .all_project_ids
-          .where_exists(exists_subquery)
-          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
-          .pluck_primary_key
+        Gitlab::Database::NamespaceProjectIdsEachBatch.new(
+          group_id: group.id,
+          resolver: method(:project_ids_with_sbom_occurrences)
+        ).execute
       end
+    end
+
+    # Given a batch of projects, filter to only return the project IDs that have Sbom::Occurrence records.
+    def project_ids_with_sbom_occurrences(batch)
+      # rubocop:disable CodeReuse/ActiveRecord -- Does not work outside this context.
+      id_list = Arel::Nodes::ValuesList.new(batch.pluck_primary_key.map { |v| [v] }).to_sql
+      filter_query = Sbom::Occurrence.where('project_ids.id = project_id').limit(1).select(1)
+
+      Sbom::Occurrence.from(
+        "(#{id_list}) AS project_ids(id), LATERAL (#{filter_query.to_sql}) AS #{Sbom::Occurrence.table_name}"
+      ).pluck("project_ids.id")
+      # rubocop:enable CodeReuse/ActiveRecord
     end
   end
 end
