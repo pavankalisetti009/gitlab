@@ -6,9 +6,9 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:guest) { create(:user, guest_of: group) }
 
-  let_it_be(:custom_field_1) { create(:custom_field, namespace: group, name: 'ZZZ') }
+  let_it_be(:custom_field_1) { create(:custom_field, namespace: group, name: 'ZZZ Field') }
   let_it_be(:custom_field_2) { create(:custom_field, namespace: group, name: 'CCC') }
-  let_it_be(:custom_field_archived) { create(:custom_field, :archived, namespace: group, name: 'AAA') }
+  let_it_be(:custom_field_archived) { create(:custom_field, :archived, namespace: group, name: 'AAA Field') }
   let_it_be(:other_custom_field) { create(:custom_field, namespace: create(:group), name: 'BBB') }
 
   let(:current_user) { guest }
@@ -37,6 +37,50 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
       let(:params) { { active: false } }
 
       it 'returns archived fields only' do
+        expect(custom_fields).to contain_exactly(custom_field_archived)
+      end
+    end
+  end
+
+  context 'when filtering by search term' do
+    let(:params) { { search: 'field' } }
+
+    it 'returns fields with matching name' do
+      expect(custom_fields).to contain_exactly(custom_field_1, custom_field_archived)
+    end
+  end
+
+  context 'when filtering by work item types' do
+    let_it_be(:issue_type) { create(:work_item_type, :issue) }
+    let_it_be(:task_type) { create(:work_item_type, :task) }
+
+    before_all do
+      create(:work_item_type_custom_field, custom_field: custom_field_1, work_item_type: issue_type)
+      create(:work_item_type_custom_field, custom_field: custom_field_1, work_item_type: task_type)
+
+      create(:work_item_type_custom_field, custom_field: custom_field_2, work_item_type: issue_type)
+    end
+
+    context 'with a single work item type ID' do
+      let(:params) { { work_item_type_ids: [issue_type.id] } }
+
+      it 'returns custom fields with matching work item type' do
+        expect(custom_fields).to contain_exactly(custom_field_1, custom_field_2)
+      end
+    end
+
+    context 'with multiple work item type IDs' do
+      let(:params) { { work_item_type_ids: [issue_type.id, task_type.id] } }
+
+      it 'returns custom fields that match all work item types' do
+        expect(custom_fields).to contain_exactly(custom_field_1)
+      end
+    end
+
+    context 'with an empty array' do
+      let(:params) { { work_item_type_ids: [] } }
+
+      it 'returns custom fields that are not associated with any work item type' do
         expect(custom_fields).to contain_exactly(custom_field_archived)
       end
     end

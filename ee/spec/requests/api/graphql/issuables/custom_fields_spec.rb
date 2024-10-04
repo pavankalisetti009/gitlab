@@ -12,7 +12,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
   let_it_be(:task_type) { create(:work_item_type, :task) }
 
   let_it_be(:text_field) do
-    create(:custom_field, namespace: group, field_type: 'text', name: 'ZZZ', work_item_types: [issue_type])
+    create(:custom_field, namespace: group, field_type: 'text', name: 'ZZZ Field', work_item_types: [issue_type])
   end
 
   let_it_be(:select_field) do
@@ -23,7 +23,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
   end
 
   let_it_be(:archived_field) do
-    create(:custom_field, :archived, field_type: 'number', namespace: group, name: 'AAA')
+    create(:custom_field, :archived, field_type: 'number', namespace: group, name: 'AAA Field')
   end
 
   let_it_be(:other_custom_field) { create(:custom_field, namespace: create(:group), name: 'BBB') }
@@ -33,10 +33,10 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
 
   let(:query) do
     <<~QUERY
-    query($active: Boolean) {
+    query($active: Boolean, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
       group(fullPath: "#{group.full_path}") {
         id
-        customFields(active: $active) {
+        customFields(active: $active, search: $search, workItemTypeIds: $workItemTypeIds) {
           nodes {
             id
             name
@@ -107,6 +107,29 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       expect(response).to have_gitlab_http_status(:ok)
       expect(graphql_data_at(:group, :customFields, :nodes)).to match([
         custom_field_attributes(archived_field)
+      ])
+    end
+  end
+
+  context 'when searching by name' do
+    it 'returns matching fields' do
+      post_graphql(query, current_user: guest, variables: { search: 'field' })
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+        custom_field_attributes(text_field),
+        custom_field_attributes(archived_field)
+      ])
+    end
+  end
+
+  context 'when filtering by work item type ids' do
+    it 'returns matching fields' do
+      post_graphql(query, current_user: guest, variables: { work_item_type_ids: [task_type.to_global_id] })
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+        custom_field_attributes(select_field)
       ])
     end
   end

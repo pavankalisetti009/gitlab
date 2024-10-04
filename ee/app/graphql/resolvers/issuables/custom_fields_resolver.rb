@@ -12,8 +12,24 @@ module Resolvers
         description: 'Filter for active fields. If `false`, excludes active fields. ' \
           'If `true`, returns only active fields.'
 
-      def resolve_with_lookahead(active: nil)
-        custom_fields = ::Issuables::CustomFieldsFinder.new(current_user, group: object, active: active).execute
+      argument :search, GraphQL::Types::String,
+        required: false,
+        description: 'Search query for custom field name.'
+
+      argument :work_item_type_ids, [Types::GlobalIDType[::WorkItems::Type]],
+        required: false,
+        description: 'Filter custom fields associated to the given work item types. ' \
+          'If empty, returns custom fields not associated to any work item type.',
+        prepare: ->(global_ids, _ctx) { global_ids.map(&:model_id) }
+
+      def resolve_with_lookahead(active: nil, search: nil, work_item_type_ids: nil)
+        custom_fields = ::Issuables::CustomFieldsFinder.new(
+          current_user,
+          group: object,
+          active: active,
+          search: search,
+          work_item_type_ids: work_item_type_ids
+        ).execute
 
         offset_pagination(
           apply_lookahead(custom_fields)

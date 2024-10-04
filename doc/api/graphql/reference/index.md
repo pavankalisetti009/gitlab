@@ -23781,6 +23781,8 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupcustomfieldsactive"></a>`active` | [`Boolean`](#boolean) | Filter for active fields. If `false`, excludes active fields. If `true`, returns only active fields. |
+| <a id="groupcustomfieldssearch"></a>`search` | [`String`](#string) | Search query for custom field name. |
+| <a id="groupcustomfieldsworkitemtypeids"></a>`workItemTypeIds` | [`[WorkItemsTypeID!]`](#workitemstypeid) | Filter custom fields associated to the given work item types. If empty, returns custom fields not associated to any work item type. |
 
 ##### `Group.customizableDashboardVisualizations`
 

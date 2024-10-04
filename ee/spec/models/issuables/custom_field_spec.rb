@@ -81,6 +81,52 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
         ])
       end
     end
+
+    describe 'work item type scopes' do
+      let_it_be(:issue_type) { create(:work_item_type, :issue) }
+      let_it_be(:task_type) { create(:work_item_type, :task) }
+
+      before_all do
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: issue_type)
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: task_type)
+
+        create(:work_item_type_custom_field, custom_field: custom_field_2, work_item_type: issue_type)
+      end
+
+      describe '.without_any_work_item_types' do
+        it 'returns custom fields that are not associated with any work item type' do
+          expect(described_class.without_any_work_item_types).to contain_exactly(
+            custom_field_archived, other_custom_field
+          )
+        end
+      end
+
+      describe '.with_work_item_types' do
+        context 'with empty array' do
+          it 'returns custom fields that are not associated with any work item type' do
+            expect(described_class.with_work_item_types([])).to contain_exactly(
+              custom_field_archived, other_custom_field
+            )
+          end
+        end
+
+        context 'with array of work item type IDs' do
+          it 'returns custom fields that match the work item type IDs' do
+            expect(described_class.with_work_item_types([issue_type.id, task_type.id])).to contain_exactly(
+              custom_field
+            )
+          end
+        end
+
+        context 'with array of work item type objects' do
+          it 'returns custom fields that match the work item types' do
+            expect(described_class.with_work_item_types([issue_type, task_type])).to contain_exactly(
+              custom_field
+            )
+          end
+        end
+      end
+    end
   end
 
   describe '#active?' do
