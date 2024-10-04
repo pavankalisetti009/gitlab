@@ -29,37 +29,11 @@ module Vulnerabilities
       when ::Groups::GroupTransferedEvent
         group = Group.find_by_id(event.data[:group_id])
 
-        project_ids_for(group)
+        Gitlab::Database::NamespaceProjectIdsEachBatch.new(
+          group_id: group.id,
+          resolver: method(:vulnerable_project_ids)
+        ).execute
       end
-    end
-
-    def project_ids_for(group)
-      return [] unless group
-
-      subgroup_ids_for(group).flat_map do |sub_group_id|
-        direct_project_ids_for(sub_group_id)
-      end
-    end
-
-    def subgroup_ids_for(group)
-      cursor = { current_id: group.id, depth: [group.id] }
-      iterator = Gitlab::Database::NamespaceEachBatch.new(namespace_class: Group, cursor: cursor)
-
-      group_ids = []
-
-      iterator.each_batch(of: 100) { |ids| group_ids += ids }
-
-      group_ids
-    end
-
-    def direct_project_ids_for(sub_group_id)
-      project_ids = []
-
-      Project.in_namespace(sub_group_id).each_batch(of: 100) do |batch|
-        project_ids += vulnerable_project_ids(batch)
-      end
-
-      project_ids
     end
 
     def vulnerable_project_ids(batch)

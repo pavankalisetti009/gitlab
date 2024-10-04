@@ -28,7 +28,8 @@ RSpec.describe Sbom::ProcessTransferEventsWorker, feature_category: :dependency_
   end
 
   before_all do
-    create(:sbom_occurrence, project: project)
+    # We create two to ensure we aren't enqueuing duplicate IDs
+    create_list(:sbom_occurrence, 2, project: project)
     create(:sbom_occurrence, project: other_project)
   end
 
@@ -55,7 +56,7 @@ RSpec.describe Sbom::ProcessTransferEventsWorker, feature_category: :dependency_
 
     it 'enqueues a sync job for each project id belonging to the namespace id' do
       expect(::Sbom::SyncProjectTraversalIdsWorker).to receive(:bulk_perform_async).with(
-        array_including([project.id], [other_project.id])
+        match_array([[project.id], [other_project.id]])
       )
 
       use_event
