@@ -63,7 +63,6 @@ describe('ProviderSelectionView', () => {
       provide: {
         analyticsSettingsPath: '/settings/analytics',
         canSelectGitlabManagedProvider: true,
-        chartEmptyStateIllustrationPath: '/path/to/illustration.svg',
         namespaceFullPath: 'group/project',
         projectLevelAnalyticsProviderSettings: {},
         ...provide,

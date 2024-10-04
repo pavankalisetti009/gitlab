@@ -5,7 +5,7 @@ export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';
 
 export const TEST_COLLECTOR_HOST = TEST_HOST;
 
-export const TEST_EMPTY_DASHBOARD_SVG_PATH = 'illustration/empty-dashboard';
+export const TEST_EMPTY_DASHBOARD_SVG_PATH = 'illustration/empty-state/empty-dashboard-md';
 
 export const TEST_ROUTER_BACK_HREF = 'go-back';
 

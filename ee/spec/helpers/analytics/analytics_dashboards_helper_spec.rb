@@ -15,7 +15,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
   before do
     allow(helper).to receive(:current_user) { user }
-    allow(helper).to receive(:image_path).and_return('illustrations/chart-empty-state.svg')
+    allow(helper).to receive(:image_path).and_return('illustrations/empty-state/empty-dashboard-md.svg')
     allow(helper).to receive(:project_analytics_dashboards_path).with(project).and_return('/-/analytics/dashboards')
 
     stub_application_setting(product_analytics_data_collector_host: 'https://new-collector.example.com')
@@ -73,8 +73,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             managed_cluster_purchased: 'true',
             tracking_key: user_has_permission ? product_analytics_instrumentation_key : nil,
             collector_host: user_has_permission ? 'https://new-collector.example.com' : nil,
-            chart_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
-            dashboard_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
+            dashboard_empty_state_illustration_path: 'illustrations/empty-state/empty-dashboard-md.svg',
             analytics_settings_path: "/#{project.full_path}/-/settings/analytics#js-analytics-dashboards-settings",
             namespace_name: project.name,
             namespace_full_path: project.full_path,
@@ -135,8 +134,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           managed_cluster_purchased: 'false',
           tracking_key: nil,
           collector_host: collector_host ? 'https://new-collector.example.com' : nil,
-          chart_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
-          dashboard_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
+          dashboard_empty_state_illustration_path: 'illustrations/empty-state/empty-dashboard-md.svg',
           analytics_settings_path: "/groups/#{sub_group.full_path}/-/edit#js-analytics-dashboards-settings",
           namespace_name: sub_group.name,
           namespace_full_path: sub_group.full_path,
@@ -201,8 +199,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           managed_cluster_purchased: 'false',
           tracking_key: nil,
           collector_host: collector_host ? 'https://new-collector.example.com' : nil,
-          chart_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
-          dashboard_empty_state_illustration_path: 'illustrations/chart-empty-state.svg',
+          dashboard_empty_state_illustration_path: 'illustrations/empty-state/empty-dashboard-md.svg',
           analytics_settings_path: "/groups/#{group.full_path}/-/edit#js-analytics-dashboards-settings",
           namespace_name: group.name,
           namespace_full_path: group.full_path,

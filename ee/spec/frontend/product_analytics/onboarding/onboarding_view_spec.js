@@ -5,7 +5,6 @@ import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onb
 import ProductAnalyticsOnboardingState from 'ee/product_analytics/onboarding/components/onboarding_state.vue';
 import ProviderSelectionView from 'ee/product_analytics/onboarding/components/providers/provider_selection_view.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { TEST_HOST } from 'spec/test_constants';
 import { createAlert } from '~/alert';
 import {
   STATE_LOADING_INSTANCE,
@@ -37,7 +36,6 @@ describe('ProductAnalyticsOnboardingView', () => {
     wrapper = shallowMountExtended(ProductAnalyticsOnboardingView, {
       provide: {
         namespaceFullPath: TEST_PROJECT_FULL_PATH,
-        chartEmptyStateIllustrationPath: TEST_HOST,
         collectorHost: TEST_COLLECTOR_HOST,
         trackingKey: TEST_TRACKING_KEY,
         dashboardsPath: '/analytics/dashboards',
