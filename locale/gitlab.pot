@@ -38647,9 +38647,6 @@ msgstr ""
 msgid "Package type must be NuGet"
 msgstr ""
 
-msgid "Package type must be PyPi"
-msgstr ""
-
 msgid "Package type must be Terraform Module"
 msgstr ""
 
