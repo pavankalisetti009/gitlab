@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  include ActionView::Helpers::TextHelper
   include AuthenticatesWithTwoFactorForAdminMode
   include Devise::Controllers::Rememberable
   include AuthHelper
@@ -266,7 +267,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
       message << safe_format(_("Create an account in %{simple_url} first, and then %{doc_start}connect it to your %{label} account%{doc_end}."), doc_pair, label: label, simple_url: simple_url)
     end
 
-    flash[:alert] = message.join(' ').html_safe # rubocop:disable Rails/OutputSafety -- Generated message is safe
+    flash[:alert] = sanitize(message.join(' '))
 
     redirect_to redirect_path
   end
