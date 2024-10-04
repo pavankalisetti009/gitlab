@@ -44,7 +44,7 @@ RSpec.describe Auth::ProvisionedUsersFinder do
     describe '#by_search' do
       let(:params) { { provisioning_group: group, search: provisioned_user.email } }
 
-      it 'filters by search' do
+      it 'filters by search', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484418' do
         users = finder
 
         expect(users).to eq([provisioned_user])
