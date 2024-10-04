@@ -9595,7 +9595,7 @@ Input type: `UpdateContainerExpirationPolicyInput`
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="mutationupdatecontainerexpirationpolicycadence"></a>`cadence` | [`ContainerExpirationPolicyCadenceEnum`](#containerexpirationpolicycadenceenum) | This container expiration policy schedule. |
+| <a id="mutationupdatecontainerexpirationpolicycadence"></a>`cadence` | [`ContainerExpirationPolicyCadenceEnum`](#containerexpirationpolicycadenceenum) | Schedule of the container expiration policy. |
 | <a id="mutationupdatecontainerexpirationpolicyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationupdatecontainerexpirationpolicyenabled"></a>`enabled` | [`Boolean`](#boolean) | Indicates whether the container expiration policy is enabled. |
 | <a id="mutationupdatecontainerexpirationpolicykeepn"></a>`keepN` | [`ContainerExpirationPolicyKeepEnum`](#containerexpirationpolicykeepenum) | Number of tags to retain. |
@@ -9609,7 +9609,8 @@ Input type: `UpdateContainerExpirationPolicyInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationupdatecontainerexpirationpolicyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationupdatecontainerexpirationpolicycontainerexpirationpolicy"></a>`containerExpirationPolicy` | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | Container expiration policy after mutation. |
+| <a id="mutationupdatecontainerexpirationpolicycontainerexpirationpolicy"></a>`containerExpirationPolicy` **{warning-solid}** | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated:** Use `container_tags_expiration_policy`. Deprecated in GitLab 17.5. |
+| <a id="mutationupdatecontainerexpirationpolicycontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy after mutation. |
 | <a id="mutationupdatecontainerexpirationpolicyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
 ### `Mutation.updateContainerRegistryProtectionRule`
@@ -17386,6 +17387,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="addonusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="addonusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="addonusercontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="addonusercontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="addonusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `AddOnUser.groups`
@@ -18286,6 +18288,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="autocompletedusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="autocompletedusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="autocompletedusercontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="autocompletedusercontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="autocompletedusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `AutocompletedUser.groups`
@@ -20405,6 +20408,24 @@ A tag from a container repository.
 | ---- | ---- | ----------- |
 | <a id="containerrepositorytagpermissionsdestroycontainerrepositorytag"></a>`destroyContainerRepositoryTag` | [`Boolean!`](#boolean) | If `true`, the user can perform `destroy_container_image` on this resource. |
 
+### `ContainerTagsExpirationPolicy`
+
+A tag expiration policy using regex patterns to control which images to keep or expire.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="containertagsexpirationpolicycadence"></a>`cadence` | [`ContainerExpirationPolicyCadenceEnum`](#containerexpirationpolicycadenceenum) | Schedule of the container expiration policy. |
+| <a id="containertagsexpirationpolicycreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp of when the container expiration policy was created. |
+| <a id="containertagsexpirationpolicyenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether the container expiration policy is enabled. |
+| <a id="containertagsexpirationpolicykeepn"></a>`keepN` | [`ContainerExpirationPolicyKeepEnum`](#containerexpirationpolicykeepenum) | Number of tags to retain. |
+| <a id="containertagsexpirationpolicynameregex"></a>`nameRegex` | [`UntrustedRegexp`](#untrustedregexp) | Tags with names matching the regex pattern will expire. |
+| <a id="containertagsexpirationpolicynameregexkeep"></a>`nameRegexKeep` | [`UntrustedRegexp`](#untrustedregexp) | Tags with names matching the regex pattern will be preserved. |
+| <a id="containertagsexpirationpolicynextrunat"></a>`nextRunAt` | [`Time`](#time) | Next time that the container expiration policy will get executed. |
+| <a id="containertagsexpirationpolicyolderthan"></a>`olderThan` | [`ContainerExpirationPolicyOlderThanEnum`](#containerexpirationpolicyolderthanenum) | Tags older than the given age will expire. |
+| <a id="containertagsexpirationpolicyupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the container expiration policy was updated. |
+
 ### `ContributionAnalyticsContribution`
 
 Represents the contributions of a user.
@@ -20688,6 +20709,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentusercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="currentusercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="currentusercontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="currentusercontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="currentusercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `CurrentUser.groups`
@@ -26293,6 +26315,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestassigneecontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestassigneecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestassigneecontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="mergerequestassigneecontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="mergerequestassigneecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestAssignee.groups`
@@ -26688,6 +26711,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestauthorcontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestauthorcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestauthorcontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="mergerequestauthorcontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="mergerequestauthorcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestAuthor.groups`
@@ -27129,6 +27153,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestparticipantcontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestparticipantcontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestparticipantcontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="mergerequestparticipantcontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="mergerequestparticipantcontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestParticipant.groups`
@@ -27543,6 +27568,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="mergerequestreviewercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="mergerequestreviewercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestreviewercontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="mergerequestreviewercontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="mergerequestreviewercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `MergeRequestReviewer.groups`
@@ -29660,10 +29686,11 @@ Project-level settings for product analytics provider.
 | <a id="projectcisubscriptionsprojects"></a>`ciSubscriptionsProjects` | [`CiSubscriptionsProjectConnection`](#cisubscriptionsprojectconnection) | Pipeline subscriptions for the project. (see [Connections](#connections)) |
 | <a id="projectcodecoveragesummary"></a>`codeCoverageSummary` | [`CodeCoverageSummary`](#codecoveragesummary) | Code coverage summary associated with the project. |
 | <a id="projectcomplianceframeworks"></a>`complianceFrameworks` | [`ComplianceFrameworkConnection`](#complianceframeworkconnection) | Compliance frameworks associated with the project. (see [Connections](#connections)) |
-| <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | Container expiration policy of the project. |
+| <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` **{warning-solid}** | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated** in GitLab 17.5. Use `container_tags_expiration_policy`. |
 | <a id="projectcontainerregistryenabled"></a>`containerRegistryEnabled` | [`Boolean`](#boolean) | Indicates if Container Registry is enabled for the current user. |
 | <a id="projectcontainerregistryprotectionrules"></a>`containerRegistryProtectionRules` **{warning-solid}** | [`ContainerRegistryProtectionRuleConnection`](#containerregistryprotectionruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
 | <a id="projectcontainerrepositoriescount"></a>`containerRepositoriesCount` | [`Int!`](#int) | Number of container repositories in the project. |
+| <a id="projectcontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy of the project. |
 | <a id="projectcorpuses"></a>`corpuses` | [`CoverageFuzzingCorpusConnection`](#coveragefuzzingcorpusconnection) | Find corpuses of the project. (see [Connections](#connections)) |
 | <a id="projectcreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp of the project creation. |
 | <a id="projectdastscannerprofiles"></a>`dastScannerProfiles` | [`DastScannerProfileConnection`](#dastscannerprofileconnection) | DAST scanner profiles associated with the project. (see [Connections](#connections)) |
@@ -34071,6 +34098,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercorecontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="usercorecontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercorecontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="usercorecontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="usercorecontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ##### `UserCore.groups`
@@ -41250,6 +41278,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="usercontributedprojectsincludepersonal"></a>`includePersonal` | [`Boolean`](#boolean) | Include personal projects. |
 | <a id="usercontributedprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercontributedprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="usercontributedprojectssearch"></a>`search` | [`String`](#string) | Search query. |
 | <a id="usercontributedprojectssort"></a>`sort` | [`ProjectSort`](#projectsort) | Sort contributed projects. |
 
 ###### `User.groups`
