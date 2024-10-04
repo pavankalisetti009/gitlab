@@ -18,13 +18,18 @@ module QA
                 view 'app/assets/javascripts/ci/reports/components/report_item.vue' do
                   element 'report-item-row'
                 end
+
+                view 'ee/app/assets/javascripts/security_dashboard/components/pipeline/' \
+                  'pipeline_security_dashboard.vue' do
+                  element 'pipeline-vulnerability-report'
+                end
               end
             end
 
             def click_on_security
               retry_until(sleep_interval: 3, message: "Security report didn't open") do
                 click_link('Security')
-                has_element?('security-report-content') || has_element?('pipeline-vulnerability-report')
+                has_element?('pipeline-vulnerability-report')
               end
             end
 

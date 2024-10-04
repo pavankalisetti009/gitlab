@@ -127,10 +127,10 @@ module QA
             end
           end
 
-          def dismiss_vulnerability_with_reason(name, reason)
+          def dismiss_vulnerability_with_comment(name, comment)
             expand_vulnerability_report
             click_vulnerability(name)
-            add_comment_and_dismiss(reason)
+            add_comment_and_dismiss(comment)
           end
 
           def add_comment_and_dismiss(comment)
@@ -207,10 +207,10 @@ module QA
             find_element('dast-scan-report').has_content?(/DAST detected \d*( new)?( potential)? vulnerabilit/)
           end
 
-          def has_security_finding_dismissed_on_mr_widget?(reason)
+          def has_security_finding_dismissed_on_mr_widget?(comment)
             within_element('vulnerability-modal-content') do
               has_element?('event-item-content', text: /Dismissed.*/) &&
-                has_element?('event-item-content', text: reason)
+                has_element?('event-item-content', text: comment)
             end
           end
 

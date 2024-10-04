@@ -11,7 +11,6 @@ module EE
 
         before_action :authorize_read_licenses!, only: [:licenses, :license_count]
         before_action do
-          push_frontend_feature_flag(:pipeline_security_dashboard_graphql, project, type: :development)
           push_frontend_feature_flag(:dora_charts_forecast, project.namespace)
           push_frontend_feature_flag(:use_holt_winters_forecast_for_deployment_frequency, project)
           push_frontend_feature_flag(:vulnerability_code_flow, project)
