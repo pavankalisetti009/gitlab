@@ -1801,6 +1801,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_8b39d532224c() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "ci_secure_files"
+  WHERE "ci_secure_files"."id" = NEW."ci_secure_file_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_8ba31bddd655() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -9095,6 +9111,7 @@ CREATE TABLE ci_secure_file_states (
     verification_retry_count smallint,
     verification_checksum bytea,
     verification_failure text,
+    project_id bigint,
     CONSTRAINT check_a79e5a9261 CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -28379,6 +28396,8 @@ CREATE INDEX index_ci_secure_file_states_needs_verification ON ci_secure_file_st
 
 CREATE INDEX index_ci_secure_file_states_on_ci_secure_file_id ON ci_secure_file_states USING btree (ci_secure_file_id);
 
+CREATE INDEX index_ci_secure_file_states_on_project_id ON ci_secure_file_states USING btree (project_id);
+
 CREATE INDEX index_ci_secure_file_states_on_verification_state ON ci_secure_file_states USING btree (verification_state);
 
 CREATE INDEX index_ci_secure_file_states_pending_verification ON ci_secure_file_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
@@ -33688,6 +33707,8 @@ CREATE TRIGGER trigger_84d67ad63e93 BEFORE INSERT OR UPDATE ON wiki_page_slugs F
 CREATE TRIGGER trigger_8a38ce2327de BEFORE INSERT OR UPDATE ON boards_epic_user_preferences FOR EACH ROW EXECUTE FUNCTION trigger_8a38ce2327de();
 
 CREATE TRIGGER trigger_8ac78f164b2d BEFORE INSERT OR UPDATE ON design_management_repositories FOR EACH ROW EXECUTE FUNCTION trigger_8ac78f164b2d();
+
+CREATE TRIGGER trigger_8b39d532224c BEFORE INSERT OR UPDATE ON ci_secure_file_states FOR EACH ROW EXECUTE FUNCTION trigger_8b39d532224c();
 
 CREATE TRIGGER trigger_8ba31bddd655 BEFORE INSERT OR UPDATE ON vulnerability_occurrence_pipelines FOR EACH ROW EXECUTE FUNCTION trigger_8ba31bddd655();
 
