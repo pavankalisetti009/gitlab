@@ -2009,6 +2009,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_9f3de326ea61() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "ci_pipeline_schedules"
+  WHERE "ci_pipeline_schedules"."id" = NEW."pipeline_schedule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_a1bc7c70cbdf() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -8680,7 +8696,8 @@ CREATE TABLE ci_pipeline_schedule_variables (
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
     variable_type smallint DEFAULT 1 NOT NULL,
-    raw boolean DEFAULT false NOT NULL
+    raw boolean DEFAULT false NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE ci_pipeline_schedule_variables_id_seq
@@ -28088,6 +28105,8 @@ CREATE INDEX index_ci_pipeline_messages_on_pipeline_id ON ci_pipeline_messages U
 
 CREATE INDEX index_ci_pipeline_metadata_on_project_id ON ci_pipeline_metadata USING btree (project_id);
 
+CREATE INDEX index_ci_pipeline_schedule_variables_on_project_id ON ci_pipeline_schedule_variables USING btree (project_id);
+
 CREATE UNIQUE INDEX index_ci_pipeline_schedule_variables_on_schedule_id_and_key ON ci_pipeline_schedule_variables USING btree (pipeline_schedule_id, key);
 
 CREATE INDEX index_ci_pipeline_schedules_on_id_and_next_run_at_and_active ON ci_pipeline_schedules USING btree (id, next_run_at) WHERE (active = true);
@@ -33589,6 +33608,8 @@ CREATE TRIGGER trigger_979e7f45114f BEFORE INSERT OR UPDATE ON ml_candidate_metr
 CREATE TRIGGER trigger_9e137c16de79 BEFORE INSERT OR UPDATE ON vulnerability_findings_remediations FOR EACH ROW EXECUTE FUNCTION trigger_9e137c16de79();
 
 CREATE TRIGGER trigger_9f3745f8fe32 BEFORE INSERT OR UPDATE ON merge_requests_closing_issues FOR EACH ROW EXECUTE FUNCTION trigger_9f3745f8fe32();
+
+CREATE TRIGGER trigger_9f3de326ea61 BEFORE INSERT OR UPDATE ON ci_pipeline_schedule_variables FOR EACH ROW EXECUTE FUNCTION trigger_9f3de326ea61();
 
 CREATE TRIGGER trigger_a1bc7c70cbdf BEFORE INSERT OR UPDATE ON vulnerability_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_a1bc7c70cbdf();
 

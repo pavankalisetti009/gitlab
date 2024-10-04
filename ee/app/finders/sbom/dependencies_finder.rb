@@ -105,7 +105,13 @@ module Sbom
     def occurrences
       return dependable.sbom_occurrences if params[:project_ids].blank? || project?
 
-      Sbom::Occurrence.by_project_ids(project_ids_in_group_hierarchy)
+      project_ids = []
+
+      project_ids_in_group_hierarchy.each_batch(of: 500) do |batch|
+        project_ids += batch.pluck_primary_key
+      end
+
+      Sbom::Occurrence.by_project_ids(project_ids)
     end
 
     def project_ids_in_group_hierarchy

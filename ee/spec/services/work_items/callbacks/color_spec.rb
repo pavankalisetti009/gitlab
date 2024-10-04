@@ -7,7 +7,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
   let_it_be(:reporter) { create(:user) }
   let_it_be(:group) { create(:group, reporters: reporter) }
   let_it_be_with_reload(:work_item) { create(:work_item, :epic, namespace: group, author: user) }
-  let_it_be(:error_class) { ::WorkItems::Widgets::BaseService::WidgetError }
+  let_it_be(:error_class) { ::Issuable::Callbacks::Base::Error }
 
   let(:current_user) { reporter }
   let(:params) { {} }
@@ -31,7 +31,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
     end
   end
 
-  shared_examples 'raises a WidgetError' do
+  shared_examples 'raises a callback error' do
     it { expect { subject }.to raise_error(error_class, message) }
   end
 
@@ -79,7 +79,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
     context 'when color param is nil' do
       let(:params) { { color: nil } }
 
-      it_behaves_like 'raises a WidgetError' do
+      it_behaves_like 'raises a callback error' do
         let(:message) { "Color can't be blank" }
       end
     end

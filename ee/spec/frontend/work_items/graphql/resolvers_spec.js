@@ -89,8 +89,8 @@ describe('work items graphql resolvers', () => {
           rolledUpDates: {
             dueDateIsFixed: true,
             startDateIsFixed: true,
-            dueDateFixed: new Date(2024, 1, 2),
-            startDateFixed: new Date(2023, 11, 22),
+            dueDateFixed: '2024-02-02',
+            startDateFixed: '2023-12-22',
           },
         });
 

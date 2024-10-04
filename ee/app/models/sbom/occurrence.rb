@@ -96,7 +96,6 @@ module Sbom
     scope :unarchived, -> { where(archived: false) }
     scope :by_project_ids, ->(project_ids) do
       where(project_id: project_ids)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
     end
     scope :by_uuids, ->(uuids) { where(uuid: uuids) }
     scope :for_namespace_and_descendants, ->(namespace) do

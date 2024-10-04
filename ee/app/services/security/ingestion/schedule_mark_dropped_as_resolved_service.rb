@@ -95,11 +95,8 @@ module Security
           .with_report_types(scan_type)
           .with_states(:detected)
           .resolved_on_default_branch
-          .for_projects(project_id)
+          .by_projects(::Project.non_archived.id_in(project_id).pluck_primary_key)
           .order_detected_at_desc
-          .allow_cross_joins_across_databases(
-            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/481468'
-          )
       end
 
       def primary_identifier_types
