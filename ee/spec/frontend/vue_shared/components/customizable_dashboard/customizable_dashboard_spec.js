@@ -78,8 +78,10 @@ describe('CustomizableDashboard', () => {
         ...props,
       },
       stubs: {
+        AnonUsersFilter,
         RouterLink: RouterLinkStub,
         GlSprintf,
+        DateRangeFilter,
         GridstackWrapper: stubComponent(GridstackWrapper, {
           props: ['value', 'editing'],
           template: `<div data-testid="gridstack-wrapper">
