@@ -147,26 +147,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryaimessagesrequestids"></a>`requestIds` | [`[ID!]`](#id) | Array of request IDs to fetch. |
 | <a id="queryaimessagesroles"></a>`roles` | [`[AiMessageRole!]`](#aimessagerole) | Array of roles to fetch. |
 
-### `Query.aiSelfHostedModelFeatureSettings`
-
-List of AI feature settings for a given self-hosted model.
-
-DETAILS:
-**Introduced** in GitLab 17.5.
-**Status**: Experiment.
-
-Returns [`AiFeatureSettingConnection`](#aifeaturesettingconnection).
-
-This field returns a [connection](#connections). It accepts the
-four standard [pagination arguments](#pagination-arguments):
-`before: String`, `after: String`, `first: Int`, and `last: Int`.
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="queryaiselfhostedmodelfeaturesettingsselfhostedmodelid"></a>`selfHostedModelId` | [`AiSelfHostedModelID!`](#aiselfhostedmodelid) | Global ID of the self-hosted model. |
-
 ### `Query.aiSelfHostedModels`
 
 List of self-hosted LLM servers.
@@ -16879,6 +16859,29 @@ The edge type for [`VulnerabilityIssueLink`](#vulnerabilityissuelink).
 | <a id="vulnerabilityissuelinkedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="vulnerabilityissuelinkedgenode"></a>`node` | [`VulnerabilityIssueLink`](#vulnerabilityissuelink) | The item at the end of the edge. |
 
+#### `VulnerabilityManagementPolicyConnection`
+
+The connection type for [`VulnerabilityManagementPolicy`](#vulnerabilitymanagementpolicy).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitymanagementpolicyconnectionedges"></a>`edges` | [`[VulnerabilityManagementPolicyEdge]`](#vulnerabilitymanagementpolicyedge) | A list of edges. |
+| <a id="vulnerabilitymanagementpolicyconnectionnodes"></a>`nodes` | [`[VulnerabilityManagementPolicy]`](#vulnerabilitymanagementpolicy) | A list of nodes. |
+| <a id="vulnerabilitymanagementpolicyconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `VulnerabilityManagementPolicyEdge`
+
+The edge type for [`VulnerabilityManagementPolicy`](#vulnerabilitymanagementpolicy).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitymanagementpolicyedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="vulnerabilitymanagementpolicyedgenode"></a>`node` | [`VulnerabilityManagementPolicy`](#vulnerabilitymanagementpolicy) | The item at the end of the edge. |
+
 #### `VulnerabilityScannerConnection`
 
 The connection type for [`VulnerabilityScanner`](#vulnerabilityscanner).
@@ -19601,7 +19604,7 @@ Returns [`[CiRunnerCloudProvisioningStep!]`](#cirunnercloudprovisioningstep).
 
 ### `CiRunnerUsage`
 
-Runner usage.
+Runner usage in minutes.
 
 #### Fields
 
@@ -19620,8 +19623,9 @@ Runner usage in minutes by project.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cirunnerusagebyprojectcibuildcount"></a>`ciBuildCount` | [`BigInt!`](#bigint) | Amount of builds executed during the selected period, encoded as a string. |
-| <a id="cirunnerusagebyprojectciminutesused"></a>`ciMinutesUsed` | [`BigInt!`](#bigint) | Amount of minutes used during the selected period, encoded as a string. |
+| <a id="cirunnerusagebyprojectcibuildcount"></a>`ciBuildCount` | [`BigInt!`](#bigint) | Amount of builds executed during the selected period. Encoded as a string. |
+| <a id="cirunnerusagebyprojectciduration"></a>`ciDuration` | [`BigInt!`](#bigint) | Number of minutes spent to process jobs during the selected period. Encoded as a string. |
+| <a id="cirunnerusagebyprojectciminutesused"></a>`ciMinutesUsed` **{warning-solid}** | [`BigInt!`](#bigint) | **Deprecated** in GitLab 17.5. Use `ciDuration`. |
 | <a id="cirunnerusagebyprojectproject"></a>`project` | [`Project`](#project) | Project that the usage refers to. Null means "Other projects". |
 
 ### `CiSecureFileRegistry`
@@ -31550,6 +31554,27 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectvulnerabilitiescountbydayenddate"></a>`endDate` | [`ISO8601Date!`](#iso8601date) | Last day for which to fetch vulnerability history. |
 | <a id="projectvulnerabilitiescountbydaystartdate"></a>`startDate` | [`ISO8601Date!`](#iso8601date) | First day for which to fetch vulnerability history. |
 
+##### `Project.vulnerabilityManagementPolicies`
+
+Vulnerability Management Policies of the project.
+
+DETAILS:
+**Introduced** in GitLab 17.5.
+**Status**: Experiment.
+
+Returns [`VulnerabilityManagementPolicyConnection`](#vulnerabilitymanagementpolicyconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectvulnerabilitymanagementpoliciesincludeunscoped"></a>`includeUnscoped` | [`Boolean`](#boolean) | Filter policies that are scoped to the project. |
+| <a id="projectvulnerabilitymanagementpoliciesrelationship"></a>`relationship` | [`SecurityPolicyRelationType`](#securitypolicyrelationtype) | Filter policies by the given policy relationship. |
+
 ##### `Project.vulnerabilitySeveritiesCount`
 
 Counts for each vulnerability severity in the project.
@@ -35052,6 +35077,23 @@ Represents the location of a vulnerability found by a secret detection scan.
 | <a id="vulnerabilitylocationsecretdetectionstartline"></a>`startLine` | [`String`](#string) | Number of the first relevant line in the vulnerable file. |
 | <a id="vulnerabilitylocationsecretdetectionvulnerableclass"></a>`vulnerableClass` | [`String`](#string) | Class containing the vulnerability. |
 | <a id="vulnerabilitylocationsecretdetectionvulnerablemethod"></a>`vulnerableMethod` | [`String`](#string) | Method containing the vulnerability. |
+
+### `VulnerabilityManagementPolicy`
+
+Represents the vulnerability management policy.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitymanagementpolicydescription"></a>`description` | [`String!`](#string) | Description of the policy. |
+| <a id="vulnerabilitymanagementpolicyeditpath"></a>`editPath` | [`String!`](#string) | URL of policy edit page. |
+| <a id="vulnerabilitymanagementpolicyenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether this policy is enabled. |
+| <a id="vulnerabilitymanagementpolicyname"></a>`name` | [`String!`](#string) | Name of the policy. |
+| <a id="vulnerabilitymanagementpolicypolicyscope"></a>`policyScope` | [`PolicyScope`](#policyscope) | Scope of the policy. |
+| <a id="vulnerabilitymanagementpolicysource"></a>`source` | [`SecurityPolicySource!`](#securitypolicysource) | Source of the policy. Its fields depend on the source type. |
+| <a id="vulnerabilitymanagementpolicyupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the policy YAML was last updated. |
+| <a id="vulnerabilitymanagementpolicyyaml"></a>`yaml` | [`String!`](#string) | YAML definition of the policy. |
 
 ### `VulnerabilityPermissions`
 
@@ -40900,6 +40942,7 @@ Implementations:
 - [`PipelineExecutionPolicy`](#pipelineexecutionpolicy)
 - [`ScanExecutionPolicy`](#scanexecutionpolicy)
 - [`ScanResultPolicy`](#scanresultpolicy)
+- [`VulnerabilityManagementPolicy`](#vulnerabilitymanagementpolicy)
 
 ##### Fields
 

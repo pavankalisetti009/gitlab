@@ -34908,9 +34908,6 @@ msgstr ""
 msgid "MlModelRegistry|Manage versions of your machine learning model"
 msgstr ""
 
-msgid "MlModelRegistry|Manage versions of your machine learning modelManage versions of your machine learning model"
-msgstr ""
-
 msgid "MlModelRegistry|May not contain spaces."
 msgstr ""
 
@@ -49237,9 +49234,6 @@ msgid "SecurityOrchestration|Actions"
 msgstr ""
 
 msgid "SecurityOrchestration|Add a numeric suffix to ensure unique job names."
-msgstr ""
-
-msgid "SecurityOrchestration|Add action"
 msgstr ""
 
 msgid "SecurityOrchestration|Add job name suffix %{suffixEditor} %{suffixIcon}"

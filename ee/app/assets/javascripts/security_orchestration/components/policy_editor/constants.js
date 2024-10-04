@@ -80,7 +80,7 @@ export const INVALID_PROTECTED_BRANCHES = s__(
 export const ADD_RULE_LABEL = s__('SecurityOrchestration|Add new rule');
 export const RULES_LABEL = s__('SecurityOrchestration|Rules');
 
-export const ADD_ACTION_LABEL = s__('SecurityOrchestration|Add action');
+export const ADD_ACTION_LABEL = s__('SecurityOrchestration|Add new action');
 export const ACTIONS_LABEL = s__('SecurityOrchestration|Actions');
 
 export const RULE_IF_LABEL = __('if');

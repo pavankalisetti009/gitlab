@@ -10,7 +10,7 @@ module Security
     end
 
     def execute
-      raise NotImplementedError
+      fetch_security_policies
     end
 
     private
@@ -80,6 +80,8 @@ module Security
         config.scan_execution_policy
       when :scan_result_policies
         config.scan_result_policies
+      when :vulnerability_management_policy
+        config.vulnerability_management_policy
       end
     end
 
