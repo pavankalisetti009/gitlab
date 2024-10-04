@@ -80,8 +80,8 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
 
         it 'uses them to create a Vulnerabilities::Identifier' do
           primary_identifier = vulnerability.finding.primary_identifier
-          expect(primary_identifier.external_id).to eq(identifier_attributes.dig(:external_id))
-          expect(primary_identifier.external_type).to eq(identifier_attributes.dig(:external_type))
+          expect(primary_identifier.external_id).to eq(identifier_attributes[:external_id])
+          expect(primary_identifier.external_type).to eq(identifier_attributes[:external_type])
           expect(primary_identifier.fingerprint).to eq(identifier_fingerprint)
         end
       end

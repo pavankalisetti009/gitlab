@@ -58,9 +58,9 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
     shared_examples 'successfully created vulnerability' do
       it 'returns the created vulnerability' do
         expect(mutated_vulnerability).to be_detected
-        expect(mutated_vulnerability.description).to eq(attributes.dig(:description))
-        expect(mutated_vulnerability.finding_description).to eq(attributes.dig(:description))
-        expect(mutated_vulnerability.solution).to eq(attributes.dig(:solution))
+        expect(mutated_vulnerability.description).to eq(attributes[:description])
+        expect(mutated_vulnerability.finding_description).to eq(attributes[:description])
+        expect(mutated_vulnerability.solution).to eq(attributes[:solution])
         expect(subject[:errors]).to be_empty
       end
     end

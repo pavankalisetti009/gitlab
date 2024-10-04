@@ -127,7 +127,7 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
 
     it 'associates the signatures' do
       expect(subject).to be_success
-      evidence_summary = subject.payload[:vulnerability_finding].finding_evidence.data.dig('summary')
+      evidence_summary = subject.payload[:vulnerability_finding].finding_evidence.data['summary']
       expect(evidence_summary).to eq('Set-Cookie: JSESSIONID')
     end
 

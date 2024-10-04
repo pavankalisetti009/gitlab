@@ -43,9 +43,9 @@ RSpec.describe 'Getting code coverage summary in a project', feature_category: :
       it 'contains code coverage summary data', :aggregate_failures do
         post_graphql(query, current_user: current_user)
 
-        expect(code_coverage_summary_graphql_data.dig('averageCoverage')).to eq(77.0)
-        expect(code_coverage_summary_graphql_data.dig('coverageCount')).to eq(1)
-        expect(code_coverage_summary_graphql_data.dig('lastUpdatedOn')).to eq(daily_build_group_report_result.date.to_s)
+        expect(code_coverage_summary_graphql_data['averageCoverage']).to eq(77.0)
+        expect(code_coverage_summary_graphql_data['coverageCount']).to eq(1)
+        expect(code_coverage_summary_graphql_data['lastUpdatedOn']).to eq(daily_build_group_report_result.date.to_s)
       end
     end
 
