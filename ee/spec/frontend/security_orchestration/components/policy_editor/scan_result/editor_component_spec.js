@@ -20,7 +20,6 @@ import {
   DEFAULT_SCAN_RESULT_POLICY,
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE,
   getInvalidBranches,
-  fromYaml,
   REQUIRE_APPROVAL_TYPE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
@@ -40,7 +39,6 @@ import {
   APPROVAL_POLICY_DEFAULT_POLICY,
   APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE,
   ASSIGNED_POLICY_PROJECT,
-  NEW_POLICY_PROJECT,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
   buildSettingsList,
@@ -52,10 +50,7 @@ import {
   REMOVE_APPROVALS_WITH_NEW_COMMIT,
   REQUIRE_PASSWORD_TO_APPROVE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
-import {
-  goToPolicyMR,
-  removeIdsFromPolicy,
-} from 'ee/security_orchestration/components/policy_editor/utils';
+import { removeIdsFromPolicy } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   SECURITY_POLICY_ACTIONS,
   PARSING_ERROR_MESSAGE,
@@ -63,22 +58,13 @@ import {
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
-import { goToRuleMode, goToYamlMode } from '../policy_editor_helper';
+import { goToRuleMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
 
 jest.mock('ee/security_orchestration/components/policy_editor/scan_result/lib', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/scan_result/lib'),
   getInvalidBranches: jest.fn().mockResolvedValue([]),
-}));
-
-jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
-  ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
-  assignSecurityPolicyProject: jest.fn().mockResolvedValue({
-    branch: 'main',
-    fullPath: 'path/to/new-project',
-  }),
-  goToPolicyMR: jest.fn().mockResolvedValue(),
 }));
 
 describe('EditorComponent', () => {
@@ -472,14 +458,14 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+  describe('modifying a policy', () => {
     it.each`
-      status                           | action                             | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}
-      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
-      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
+      status                           | action                            | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}
+      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
-      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      factoryFn();
       findPolicyEditorLayout().vm.$emit(event);
       await waitForPromises();
       expect(wrapper.emitted('save')).toEqual([
@@ -493,119 +479,19 @@ describe('EditorComponent', () => {
         message: 'Required approvals exceed eligible approvers.',
         title: 'Logic error',
       };
-      factory({
-        propsData: { errorSources: [['action', '0', 'approvers_ids', [errorCause]]] },
-        provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
-      });
+      factory({ propsData: { errorSources: [['action', '0', 'approvers_ids', [errorCause]]] } });
       expect(findActionSection().props('errors')).toEqual([errorCause]);
     });
 
     it('does not pass down non-action errors', () => {
       const errorSources = [['rule', '0', 'type']];
-      factory({
-        propsData: { errorSources },
-        provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } },
-      });
+      factory({ propsData: { errorSources } });
       expect(findActionSection().props('errors')).toEqual([]);
       expect(findAllRuleSections().at(0).props('errorSources')).toEqual(errorSources);
     });
   });
 
-  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
-    it.each`
-      status                            | action                             | event              | factoryFn                    | yamlEditorValue                          | currentlyAssignedPolicyProject
-      ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}            | ${NEW_POLICY_PROJECT}
-      ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest} | ${ASSIGNED_POLICY_PROJECT}
-      ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest} | ${ASSIGNED_POLICY_PROJECT}
-    `(
-      'navigates to the new merge request when "goToPolicyMR" is emitted $status',
-      async ({ action, event, factoryFn, yamlEditorValue, currentlyAssignedPolicyProject }) => {
-        factoryFn();
-        findPolicyEditorLayout().vm.$emit(event);
-        await waitForPromises();
-        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-        expect(goToPolicyMR).toHaveBeenCalledWith({
-          action,
-          assignedPolicyProject: currentlyAssignedPolicyProject,
-          name:
-            action === SECURITY_POLICY_ACTIONS.APPEND
-              ? fromYaml({ manifest: yamlEditorValue }).name
-              : mockDefaultBranchesScanResultObject.name,
-          namespacePath: defaultProjectPath,
-          yamlEditorValue,
-        });
-      },
-    );
-
-    describe('error handling', () => {
-      const createError = (cause) => ({ message: 'There was an error', cause });
-      const approverCause = { field: 'approvers_ids' };
-      const branchesCause = { field: 'branches' };
-      const unknownCause = { field: 'unknown' };
-
-      describe('when in rule mode', () => {
-        it('passes errors with the cause of `approvers_ids` to the action section', async () => {
-          const error = createError([approverCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(findActionSection().props('errors')).toEqual(error.cause);
-          expect(wrapper.emitted('error')).toStrictEqual([['']]);
-        });
-
-        it('emits error with the cause of `branches`', async () => {
-          const error = createError([branchesCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(findActionSection().props('errors')).toEqual([]);
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-
-        it('emits error with an unknown cause', async () => {
-          const error = createError([unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(findActionSection().props('errors')).toEqual([]);
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-
-        it('handles mixed errors', async () => {
-          const error = createError([approverCause, branchesCause, unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(findActionSection().props('errors')).toEqual([approverCause]);
-          expect(wrapper.emitted('error')).toStrictEqual([[''], ['There was an error']]);
-        });
-      });
-
-      describe('when in yaml mode', () => {
-        it('emits errors', async () => {
-          const error = createError([approverCause, branchesCause, unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          goToYamlMode(findPolicyEditorLayout);
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(findActionSection().props('errors')).toEqual([]);
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-      });
-    });
-  });
-
-  describe('errors', () => {
+  describe('yaml mode validation errors', () => {
     it('creates an error for invalid yaml', async () => {
       factory();
 
@@ -700,24 +586,21 @@ describe('EditorComponent', () => {
 
   describe('branches being validated', () => {
     it.each`
-      status                             | value       | errorMessage
+      status                             | value       | output
       ${'invalid branches do not exist'} | ${[]}       | ${''}
       ${'invalid branches exist'}        | ${['main']} | ${'The following branches do not exist on this development project: main. Please review all protected branches to ensure the values are accurate before updating this policy.'}
-    `(
-      'triggers error event with the correct content when $status',
-      async ({ value, errorMessage }) => {
-        const rule = { ...mockDefaultBranchesScanResultObject.rules[0], branches: ['main'] };
-        getInvalidBranches.mockReturnValue(value);
+    `('triggers error event with the correct content when $status', async ({ value, output }) => {
+      const rule = { ...mockDefaultBranchesScanResultObject.rules[0], branches: ['main'] };
+      getInvalidBranches.mockReturnValue(value);
 
-        factoryWithExistingPolicy({ policy: { rules: [rule] } });
+      factoryWithExistingPolicy({ policy: { rules: [rule] } });
 
-        await goToRuleMode(findPolicyEditorLayout);
-        await waitForPromises();
-        const errors = wrapper.emitted('error');
+      await goToRuleMode(findPolicyEditorLayout);
+      await waitForPromises();
+      const errors = wrapper.emitted('error');
 
-        expect(errors[errors.length - 1]).toEqual([errorMessage]);
-      },
-    );
+      expect(errors[errors.length - 1][0]).toEqual(output);
+    });
 
     it('does not query protected branches when namespaceType is other than project', async () => {
       factoryWithExistingPolicy({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
