@@ -3,7 +3,6 @@ import {
   buildProjectFromDataset,
   buildCycleAnalyticsInitialData,
   buildNullSeries,
-  toLocalDate,
   pairDataAndLabels,
   linearRegression,
 } from 'ee/analytics/shared/utils';
@@ -83,14 +82,6 @@ describe('buildProjectFromDataset', () => {
       path_with_namespace: 'my-group/my-project',
       avatar_url: undefined,
     });
-  });
-});
-
-describe('toLocalDate', () => {
-  it('returns a Date object', () => {
-    const expectedDate = new Date(2022, 1, 10); // month is zero-based
-
-    expect(toLocalDate('2022-02-10')).toEqual(expectedDate);
   });
 });
 
