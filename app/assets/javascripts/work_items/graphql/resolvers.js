@@ -1,7 +1,7 @@
 import { set, isEmpty } from 'lodash';
 import { produce } from 'immer';
 import { findWidget } from '~/issues/list/utils';
-import { toISODateFormat } from '~/lib/utils/datetime_utility';
+import { newDate, toISODateFormat } from '~/lib/utils/datetime_utility';
 import { updateDraft } from '~/lib/utils/autosave';
 import { getNewWorkItemAutoSaveKey, newWorkItemFullPath } from '../utils';
 import {
@@ -37,10 +37,10 @@ const updateRolledUpDatesWidget = (draftData, rolledUpDates) => {
   if (!rolledUpDates) return;
 
   const dueDateFixed = rolledUpDates.dueDateFixed
-    ? toISODateFormat(rolledUpDates.dueDateFixed)
+    ? toISODateFormat(newDate(rolledUpDates.dueDateFixed))
     : null;
   const startDateFixed = rolledUpDates.startDateFixed
-    ? toISODateFormat(rolledUpDates.startDateFixed)
+    ? toISODateFormat(newDate(rolledUpDates.startDateFixed))
     : null;
 
   const widget = findWidget(WIDGET_TYPE_ROLLEDUP_DATES, draftData.workspace.workItem);
