@@ -2,15 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_rate_limiter,
+RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
   feature_category: :global_search do
   include ListboxHelpers
 
-  let(:user) { create(:user) }
-  let(:wiki) { create(:project_wiki, project: project) }
-  let(:group_wiki) { create(:group_wiki, group: group) }
-  let(:group) { create(:group) }
-  let(:project) { create(:project, :repository, :wiki_repo, namespace: group) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :repository, :wiki_repo, namespace: group) }
+  let_it_be(:group_wiki) { create(:group_wiki, group: group) }
+  let_it_be(:wiki) { create(:project_wiki, project: project) }
 
   def choose_group(group)
     find_by_testid('group-filter').click
@@ -21,37 +21,76 @@ RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_
     end
   end
 
-  [:work_item, :issue].each do |document_type|
-    context "when we have document_type as #{document_type}" do
+  context 'when searching for all scopes except issues and epics', :sidekiq_inline do
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    before do
+      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+      project.repository.index_commits_and_blobs
+      stub_licensed_features(group_wikis: true)
+
+      Sidekiq::Worker.skipping_transaction_check do
+        [group_wiki, wiki].each do |w|
+          w.create_page('test.md', '# term')
+          w.index_wiki_blobs
+        end
+      end
+      ensure_elasticsearch_index!
+
+      sign_in(user)
+      visit(search_path)
+      wait_for_requests
+      choose_group(group)
+    end
+
+    it 'finds all the scopes' do
+      # blobs
+      submit_search('def')
+      select_search_scope('Code')
+      expect(page).to have_selector('.file-content .code')
+      expect(page).to have_button('Copy file path')
+
+      # commits
+      submit_search('add')
+      select_search_scope('Commits')
+      expect(page).to have_selector('.commit-list > .commit')
+
+      # wikis
+      submit_search('term')
+      select_search_scope('Wiki')
+      expect(page).to have_selector('.search-result-row .description', text: 'term').twice
+      expect(page).to have_link('test').twice
+    end
+  end
+
+  context 'when searching for issues and epics' do
+    before_all do
+      project.add_maintainer(user)
+    end
+
+    before do
+      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+      stub_licensed_features(epics: true)
+      Elastic::ProcessBookkeepingService.track!(*[epic, issue])
+      ensure_elasticsearch_index!
+      sign_in(user)
+      visit(search_path)
+      wait_for_requests
+      choose_group(group)
+    end
+
+    context 'when we do not use work_items index for search' do
+      let_it_be(:issue) { create(:issue, project: project, title: 'chosen issue title') }
+      let_it_be(:epic) { create(:epic, group: group, title: 'chosen epic title') }
+
       before do
-        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-        create(document_type, project: project, title: 'chosen issue title')
-        stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-        project.repository.index_commits_and_blobs
-        stub_licensed_features(epics: true, group_wikis: true)
-        stub_feature_flags(search_epics_uses_work_items_index: (document_type == :work_item))
-        if document_type == :work_item # rubocop:disable RSpec/AvoidConditionalStatements -- We need to create objects based on document type.
-          create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
-        else
-          create(:epic, group: group, title: 'chosen epic title')
-        end
-
-        Sidekiq::Worker.skipping_transaction_check do
-          [group_wiki, wiki].each do |w|
-            w.create_page('test.md', '# term')
-            w.index_wiki_blobs
-          end
-        end
-        ensure_elasticsearch_index!
-        project.add_maintainer(user)
-
-        sign_in(user)
-        visit(search_path)
-        wait_for_requests
-        choose_group(group)
+        stub_feature_flags(search_issues_uses_work_items_index: false)
+        stub_feature_flags(search_epics_uses_work_items_index: false)
       end
 
-      it 'finds all the scopes', :allowed_to_be_slow do
+      it 'finds issues and epics' do
         # issues
         submit_search('chosen')
         select_search_scope('Issues')
@@ -61,23 +100,25 @@ RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_
         submit_search('chosen')
         select_search_scope('Epics')
         expect(page).to have_content('chosen epic title')
+      end
+    end
 
-        # blobs
-        submit_search('def')
-        select_search_scope('Code')
-        expect(page).to have_selector('.file-content .code')
-        expect(page).to have_button('Copy file path')
+    context 'when we use work_items index for search' do
+      let(:issue) { create(:work_item, project: project, title: 'chosen issue title') }
+      let(:epic) do
+        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
+      end
 
-        # commits
-        submit_search('add')
-        select_search_scope('Commits')
-        expect(page).to have_selector('.commit-list > .commit')
+      it 'finds issues and epics' do
+        # issues
+        submit_search('chosen')
+        select_search_scope('Issues')
+        expect(page).to have_content('chosen issue title')
 
-        # wikis
-        submit_search('term')
-        select_search_scope('Wiki')
-        expect(page).to have_selector('.search-result-row .description', text: 'term').twice
-        expect(page).to have_link('test').twice
+        # epics
+        submit_search('chosen')
+        select_search_scope('Epics')
+        expect(page).to have_content('chosen epic title')
       end
     end
   end
