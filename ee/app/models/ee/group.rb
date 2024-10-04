@@ -307,6 +307,10 @@ module EE
         licensed_feature_available?(:epics)
     end
 
+    def work_item_epics_ssot_enabled?
+      ::Feature.enabled?(:work_item_epics_ssot, root_ancestor)
+    end
+
     class_methods do
       def groups_user_can(groups, user, action, same_root: false)
         # If :use_traversal_ids is enabled we can use filter optmization
