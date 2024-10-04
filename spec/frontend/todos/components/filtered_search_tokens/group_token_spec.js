@@ -12,7 +12,7 @@ import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_t
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { stubComponent } from 'helpers/stub_component';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { todosGroupsResponse } from './mock_data';
+import { todosGroupsResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
 
