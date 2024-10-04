@@ -34,7 +34,6 @@ export default {
     trackCTAClick() {
       this.track(TRACK_PROMOTION_BANNER_CTA_CLICK_ACTION, {
         label: TRACK_PROMOTION_BANNER_CTA_CLICK_LABEL,
-        property: this.projectFullPath,
       });
     },
   },
