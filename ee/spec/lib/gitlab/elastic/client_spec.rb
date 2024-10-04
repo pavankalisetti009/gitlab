@@ -96,7 +96,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
           let(:params) { { url: 'http://dummy-elastic:9200', retry_on_failure: retry_on_failure } }
 
           it 'sets retry in transport' do
-            expect(client.transport.transport.options.dig(:retry_on_failure)).to eq(client_retry)
+            expect(client.transport.transport.options[:retry_on_failure]).to eq(client_retry)
           end
         end
       end

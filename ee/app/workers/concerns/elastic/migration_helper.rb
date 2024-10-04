@@ -3,7 +3,7 @@
 module Elastic
   module MigrationHelper
     def get_number_of_shards(index_name: new_index_name)
-      helper.get_settings(index_name: index_name).dig('number_of_shards').to_i
+      helper.get_settings(index_name: index_name)['number_of_shards'].to_i
     end
 
     def get_max_slices(index_name: new_index_name)

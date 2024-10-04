@@ -24,8 +24,8 @@ RSpec.describe 'Query.project(fullPath).dastSiteProfiles', feature_category: :dy
     )
   end
 
-  let(:project_response) { subject.dig('project') }
-  let(:dast_site_profiles_response) { project_response.dig('dastSiteProfiles') }
+  let(:project_response) { subject['project'] }
+  let(:dast_site_profiles_response) { project_response['dastSiteProfiles'] }
   let(:first_dast_site_profile_response) { dast_site_profiles_response.dig('nodes', 0) }
 
   subject do

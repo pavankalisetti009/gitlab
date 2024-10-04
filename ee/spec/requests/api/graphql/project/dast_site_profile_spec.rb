@@ -19,8 +19,8 @@ RSpec.describe 'Query.project(fullPath).dastSiteProfile', feature_category: :dyn
     )
   end
 
-  let(:project_response) { subject.dig('project') }
-  let(:dast_site_profile_response) { project_response.dig('dastSiteProfile') }
+  let(:project_response) { subject['project'] }
+  let(:dast_site_profile_response) { project_response['dastSiteProfile'] }
 
   subject do
     post_graphql(

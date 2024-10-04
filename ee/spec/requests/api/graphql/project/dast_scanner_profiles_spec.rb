@@ -36,7 +36,7 @@ RSpec.describe 'Query.project(fullPath).dastScannerProfiles', feature_category: 
 
   context 'when a user does not have access to the project' do
     describe 'project response' do
-      subject { response_data.dig('project') }
+      subject { response_data['project'] }
 
       it { is_expected.to be_nil }
     end

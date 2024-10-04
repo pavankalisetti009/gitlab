@@ -102,8 +102,8 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Common, feature_category: :vulnera
               }
             }.deep_stringify_keys
 
-            expect(Gitlab::Json.parse(vulnerability1.raw_metadata).dig('remediations').first).to include remediation
-            expect(Gitlab::Json.parse(vulnerability2.raw_metadata).dig('remediations').first).to include remediation
+            expect(Gitlab::Json.parse(vulnerability1.raw_metadata)['remediations'].first).to include remediation
+            expect(Gitlab::Json.parse(vulnerability2.raw_metadata)['remediations'].first).to include remediation
           end
         end
 
@@ -128,14 +128,14 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Common, feature_category: :vulnera
             }
           }.deep_stringify_keys
 
-          expect(Gitlab::Json.parse(finding.raw_metadata).dig('remediations').first).to include remediation
+          expect(Gitlab::Json.parse(finding.raw_metadata)['remediations'].first).to include remediation
           expect(finding.remediations.first.checksum).to eq(expected_remediation.checksum)
         end
 
         it 'does not assign any remediation to the finding if there exists no related remediation' do
           finding = report.findings[6]
 
-          expect(Gitlab::Json.parse(finding.raw_metadata).dig('remediations').first).to be_nil
+          expect(Gitlab::Json.parse(finding.raw_metadata)['remediations'].first).to be_nil
           expect(finding.remediations).to match([])
         end
       end

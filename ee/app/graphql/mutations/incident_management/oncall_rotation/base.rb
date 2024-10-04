@@ -82,7 +82,7 @@ module Mutations
         end
 
         def active_period_times(args)
-          active_period_args = args.dig(:active_period)
+          active_period_args = args[:active_period]
 
           return [nil, nil] if active_period_args.blank?
 

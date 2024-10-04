@@ -194,7 +194,7 @@ class SubscriptionsController < ApplicationController
   end
 
   def current_group
-    find_group(plan_id: subscription_params[:plan_id]).dig(:namespace)
+    find_group(plan_id: subscription_params[:plan_id])[:namespace]
   end
 
   def create_group
@@ -243,7 +243,9 @@ class SubscriptionsController < ApplicationController
 
     return [] unless result.success?
 
-    (result.payload || []).map { |h| h.dig(:namespace) }
+    # rubocop:disable Rails/Pluck -- doing .pluck is only valid inside model hence disabling
+    (result.payload || []).map { |h| h[:namespace] }
+    # rubocop:enable Rails/Pluck
   end
 
   def ensure_registered!
