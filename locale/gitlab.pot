@@ -49236,9 +49236,6 @@ msgstr ""
 msgid "SecurityOrchestration|Add a numeric suffix to ensure unique job names."
 msgstr ""
 
-msgid "SecurityOrchestration|Add action"
-msgstr ""
-
 msgid "SecurityOrchestration|Add job name suffix %{suffixEditor} %{suffixIcon}"
 msgstr ""
 
