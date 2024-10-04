@@ -11,17 +11,10 @@ import {
   SUFFIX_NEVER,
   SUFFIX_ON_CONFLICT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
-import {
-  doesFileExist,
-  goToPolicyMR,
-} from 'ee/security_orchestration/components/policy_editor/utils';
+import { doesFileExist } from 'ee/security_orchestration/components/policy_editor/utils';
 import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 
-import {
-  ASSIGNED_POLICY_PROJECT,
-  NEW_POLICY_PROJECT,
-} from 'ee_jest/security_orchestration/mocks/mock_data';
+import { ASSIGNED_POLICY_PROJECT } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
   mockPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionManifest,
@@ -32,11 +25,6 @@ import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
-  assignSecurityPolicyProject: jest.fn().mockResolvedValue({
-    branch: 'main',
-    fullPath: 'path/to/new-project',
-  }),
-  goToPolicyMR: jest.fn().mockResolvedValue(),
   doesFileExist: jest.fn().mockResolvedValue({
     data: {
       project: {
@@ -91,7 +79,7 @@ describe('EditorComponent', () => {
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
 
-  describe('when url params are passed w/ securityPoliciesProjectBackgroundWorker false', () => {
+  describe('when url params are passed', () => {
     beforeEach(() => {
       Object.defineProperty(window, 'location', {
         writable: true,
@@ -99,64 +87,7 @@ describe('EditorComponent', () => {
       });
 
       window.location.search = new URLSearchParams(Object.entries(customYamlUrlParams)).toString();
-    });
-
-    it('configures initial policy from passed url params', () => {
       factory();
-      expect(findPolicyEditorLayout().props('policy')).toMatchObject({
-        type: customYamlUrlParams.type,
-        content: {
-          include: [{ file: 'foo', project: 'bar' }],
-        },
-        pipeline_config_strategy: 'override_project_ci',
-        metadata: {
-          compliance_pipeline_migration: true,
-        },
-      });
-    });
-
-    it('saves a new policy with correct title and description', async () => {
-      factory();
-      findPolicyEditorLayout().vm.$emit('save-policy');
-      await waitForPromises();
-
-      expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-      expect(goToPolicyMR.mock.calls.at(-1)[0]).toMatchObject({
-        extraMergeRequestInput: expect.objectContaining({
-          title: 'Compliance pipeline migration to pipeline execution policy',
-          description: expect.stringContaining('This merge request migrates compliance pipeline'),
-        }),
-      });
-    });
-
-    it('uses absolute links in description', async () => {
-      factory();
-      findPolicyEditorLayout().vm.$emit('save-policy');
-      await waitForPromises();
-
-      const {
-        extraMergeRequestInput: { description },
-      } = goToPolicyMR.mock.calls.at(-1)[0];
-
-      expect(description).toContain(
-        `[Foo](http://test.host/groups/path/to/project/-/security/compliance_dashboard/frameworks/1)`,
-      );
-    });
-
-    afterEach(() => {
-      window.location.search = '';
-    });
-  });
-
-  describe('when url params are passed w/ securityPoliciesProjectBackgroundWorker true', () => {
-    beforeEach(() => {
-      Object.defineProperty(window, 'location', {
-        writable: true,
-        value: { search: '' },
-      });
-
-      window.location.search = new URLSearchParams(Object.entries(customYamlUrlParams)).toString();
-      factory({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
     });
 
     it('configures initial policy from passed url params', () => {
@@ -265,103 +196,19 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+  describe('modifying a policy', () => {
     it.each`
-      status                           | action                             | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}
-      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
-      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+      status                           | action                            | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}
+      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
-      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      factoryFn();
       findPolicyEditorLayout().vm.$emit(event);
       await waitForPromises();
       expect(wrapper.emitted('save')).toEqual([
         [{ action, extraMergeRequestInput: null, policy: yamlEditorValue }],
       ]);
-    });
-  });
-
-  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
-    it.each`
-      status                            | action                             | event              | factoryFn                    | yamlEditorValue                            | currentlyAssignedPolicyProject
-      ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}       | ${NEW_POLICY_PROJECT}
-      ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest} | ${ASSIGNED_POLICY_PROJECT}
-      ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest} | ${ASSIGNED_POLICY_PROJECT}
-    `(
-      'navigates to the new merge request when "modifyPolicy" is emitted $status',
-      async ({ action, event, factoryFn, yamlEditorValue, currentlyAssignedPolicyProject }) => {
-        factoryFn();
-        findPolicyEditorLayout().vm.$emit(event);
-        await waitForPromises();
-        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-        expect(goToPolicyMR).toHaveBeenCalledWith({
-          action,
-          assignedPolicyProject: currentlyAssignedPolicyProject,
-          name:
-            action === SECURITY_POLICY_ACTIONS.APPEND
-              ? fromYaml({ manifest: yamlEditorValue }).name
-              : mockWithoutRefPipelineExecutionObject.name,
-          namespacePath: defaultProjectPath,
-          extraMergeRequestInput: null,
-          yamlEditorValue,
-        });
-      },
-    );
-
-    describe('error handling', () => {
-      describe('when in rule mode', () => {
-        it('clears the error message before making the network request', () => {
-          const error = { message: 'There was a graphql error', cause: '' };
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          findPolicyEditorLayout().vm.$emit('save-policy');
-          expect(wrapper.emitted('error')).toStrictEqual([['']]);
-        });
-
-        it('passes graphql errors', async () => {
-          const error = { message: 'There was a graphql error', cause: '' };
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-          expect(wrapper.emitted('error')).toStrictEqual([
-            [''],
-            ['There was a problem creating the new security policy'],
-          ]);
-        });
-
-        it('passes non-graphql errors', async () => {
-          const error = { message: 'There was an error', cause: '' };
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-          expect(wrapper.emitted('error')).toStrictEqual([[''], ['There was an error']]);
-        });
-
-        it('sets the loading flag on error', async () => {
-          const error = { message: 'There was an error', cause: '' };
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          expect(findPolicyEditorLayout().props('isUpdatingPolicy')).toBe(false);
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          expect(findPolicyEditorLayout().props('isUpdatingPolicy')).toBe(true);
-          await waitForPromises();
-          expect(findPolicyEditorLayout().props('isUpdatingPolicy')).toBe(false);
-        });
-      });
-
-      describe('when in yaml mode', () => {
-        it('emits errors', async () => {
-          const error = { message: 'There was an error', cause: '' };
-          goToPolicyMR.mockRejectedValue(error);
-          factory();
-          goToYamlMode(findPolicyEditorLayout);
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-      });
     });
   });
 

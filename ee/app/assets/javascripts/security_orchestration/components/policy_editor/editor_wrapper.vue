@@ -1,6 +1,5 @@
 <script>
 import { GlAlert, GlFormGroup, GlFormSelect } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getSecurityPolicyProjectSub from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
 import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
@@ -45,9 +44,6 @@ export default {
           this.setError(e);
           this.setLoadingFlag(false);
         },
-        skip() {
-          return !this.glFeatures.securityPoliciesProjectBackgroundWorker;
-        },
       },
     },
   },
@@ -60,7 +56,6 @@ export default {
     ScanResultPolicyEditor,
     VulnerabilityManagementPolicyEditor,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     assignedPolicyProject: { default: null },
     existingPolicy: { default: null },

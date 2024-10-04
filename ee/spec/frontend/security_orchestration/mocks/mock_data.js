@@ -80,11 +80,6 @@ export const ASSIGNED_POLICY_PROJECT = {
   fullPath: 'path/to/existing-project',
 };
 
-export const NEW_POLICY_PROJECT = {
-  ...ASSIGNED_POLICY_PROJECT,
-  fullPath: 'path/to/new-project',
-};
-
 export const generateMockProjects = (ids) =>
   ids.map((id) => ({
     id: convertToGraphQLId(TYPENAME_PROJECT, id),

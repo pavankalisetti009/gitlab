@@ -11,7 +11,6 @@ import {
   EDITOR_MODE_YAML,
   EDITOR_MODE_RULE,
   SECURITY_POLICY_ACTIONS,
-  GRAPHQL_ERROR_MESSAGE,
   PARSING_ERROR_MESSAGE,
   ACTIONS_LABEL,
   ADD_RULE_LABEL,
@@ -19,7 +18,6 @@ import {
   MAX_ALLOWED_RULES_LENGTH,
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
-import { assignSecurityPolicyProject, goToPolicyMR, parseError } from '../utils';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ScanFilterSelector from '../scan_filter_selector.vue';
 import SettingsSection from './settings/settings_section.vue';
@@ -34,7 +32,6 @@ import {
   createPolicyObject,
   getInvalidBranches,
   getPolicyYaml,
-  fromYaml,
   policyToYaml,
   approversOutOfSync,
   emptyBuildRule,
@@ -98,7 +95,6 @@ export default {
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
     'namespaceId',
-    'namespacePath',
     'scanPolicyDocumentationPath',
     'scanResultPolicyApprovers',
     'namespaceType',
@@ -142,13 +138,8 @@ export default {
 
     return {
       errors: { action: [] },
-      errorSourcesOld: [],
       invalidBranches: [],
-      isCreatingMR: false,
-      isRemovingPolicy: false,
-      newlyCreatedPolicyProject: null,
       policy,
-      policyModificationAction: null,
       hasParsingError,
       documentationPath: setUrlFragment(
         this.scanPolicyDocumentationPath,
@@ -161,13 +152,11 @@ export default {
   },
   computed: {
     actionError() {
-      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
-        const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
-        if (actionErrors.length) {
-          // Refactor action error messages to be consistent with the other `errorSources`
-          // as part of https://gitlab.com/gitlab-org/gitlab/-/issues/486021
-          return { action: actionErrors[0][3] };
-        }
+      const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
+      if (actionErrors.length) {
+        // Refactor action error messages to be consistent with the other `errorSources`
+        // as part of https://gitlab.com/gitlab-org/gitlab/-/issues/486021
+        return { action: actionErrors[0][3] };
       }
 
       return this.errors;
@@ -190,19 +179,8 @@ export default {
       const usedActionTypes = this.actionsForRuleMode.map((action) => action.type);
       return ACTION_LISTBOX_ITEMS.filter((item) => !usedActionTypes.includes(item.value));
     },
-    errorSourcesTemp() {
-      return this.glFeatures.securityPoliciesProjectBackgroundWorker
-        ? this.errorSources
-        : this.errorSourcesOld;
-    },
     fallbackBehaviorSetting() {
       return this.policy.fallback_behavior?.fail || CLOSED;
-    },
-    isCreatingMRTemp() {
-      return this.isCreatingMR || this.isCreating;
-    },
-    isRemovingPolicyTemp() {
-      return this.isRemovingPolicy || this.isDeleting;
     },
     isProject() {
       return isProject(this.namespaceType);
@@ -216,14 +194,6 @@ export default {
             this.glFeatures.scanResultPolicyBlockGroupBranchModification,
         },
       });
-    },
-    originalName() {
-      return this.existingPolicy?.name;
-    },
-    policyActionName() {
-      return this.isEditing
-        ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
-        : this.$options.SECURITY_POLICY_ACTIONS.APPEND;
     },
     isWithinLimit() {
       return this.policy.rules?.length < MAX_ALLOWED_RULES_LENGTH;
@@ -283,7 +253,7 @@ export default {
   watch: {
     invalidBranches(branches) {
       if (branches.length > 0) {
-        this.handleError(new Error(humanizeInvalidBranchesError([...branches])));
+        this.$emit('error', humanizeInvalidBranchesError([...branches]));
       } else {
         this.$emit('error', '');
       }
@@ -354,74 +324,15 @@ export default {
       this.updateSettings(this.settings);
       this.updateYamlEditorValue(this.policy);
     },
-    handleError(error) {
-      // Emit error for alert
-      if (this.isActiveRuleMode && error.cause?.length) {
-        const ACTION_ERROR_FIELDS = ['approvers_ids'];
-        const action = error.cause.filter((cause) => ACTION_ERROR_FIELDS.includes(cause.field));
-
-        if (error.cause.some((cause) => !ACTION_ERROR_FIELDS.includes(cause.field))) {
-          this.$emit('error', error.message);
-        }
-
-        if (action.length) {
-          this.errors = { action };
-        }
-      } else if (error.message.toLowerCase().includes('graphql')) {
-        this.$emit('error', GRAPHQL_ERROR_MESSAGE);
-      } else {
-        this.$emit('error', error.message);
-      }
-
-      // Process error to pass to specific component
-      this.errorSourcesOld = parseError(error);
-    },
     handleParsingError() {
       this.hasParsingError = true;
     },
-    async getSecurityPolicyProject() {
-      if (!this.newlyCreatedPolicyProject && !this.assignedPolicyProject.fullPath) {
-        this.newlyCreatedPolicyProject = await assignSecurityPolicyProject(this.namespacePath);
-      }
-
-      return this.newlyCreatedPolicyProject || this.assignedPolicyProject;
-    },
-    async handleModifyPolicy(act) {
-      this.policyModificationAction = act || this.policyActionName;
-
-      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
-        this.$emit('save', {
-          action: this.policyModificationAction,
-          policy: this.yamlEditorValue,
-          isActiveRuleMode: this.isActiveRuleMode,
-        });
-        return;
-      }
-
-      this.$emit('error', '');
-      this.setLoadingFlag(true);
-
-      try {
-        const assignedPolicyProject = await this.getSecurityPolicyProject();
-        await goToPolicyMR({
-          action: this.policyModificationAction,
-          assignedPolicyProject,
-          name: this.originalName || fromYaml({ manifest: this.yamlEditorValue })?.name,
-          namespacePath: this.namespacePath,
-          yamlEditorValue: this.yamlEditorValue,
-        });
-      } catch (e) {
-        this.handleError(e);
-        this.setLoadingFlag(false);
-        this.policyModificationAction = null;
-      }
-    },
-    setLoadingFlag(val) {
-      if (this.policyModificationAction === SECURITY_POLICY_ACTIONS.REMOVE) {
-        this.isRemovingPolicy = val;
-      } else {
-        this.isCreatingMR = val;
-      }
+    async handleModifyPolicy(action) {
+      this.$emit('save', {
+        action,
+        policy: this.yamlEditorValue,
+        isActiveRuleMode: this.isActiveRuleMode,
+      });
     },
     handleRemoveProperty(property) {
       const { [property]: removedProperty, ...updatedPolicy } = this.policy;
@@ -484,8 +395,8 @@ export default {
     :custom-save-button-text="$options.i18n.createMergeRequest"
     :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
-    :is-removing-policy="isRemovingPolicyTemp"
-    :is-updating-policy="isCreatingMRTemp"
+    :is-removing-policy="isDeleting"
+    :is-updating-policy="isCreating"
     :parsing-error="$options.i18n.PARSING_ERROR_MESSAGE"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
@@ -511,7 +422,7 @@ export default {
           :key="rule.id"
           :data-testid="`rule-${index}`"
           class="gl-mb-4"
-          :error-sources="errorSourcesTemp"
+          :error-sources="errorSources"
           :index="index"
           :init-rule="rule"
           @changed="updateRule(index, $event)"

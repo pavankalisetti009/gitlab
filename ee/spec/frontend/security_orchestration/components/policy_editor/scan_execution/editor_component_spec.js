@@ -15,7 +15,6 @@ import {
   SCAN_EXECUTION_DEFAULT_POLICY_WITH_SCOPE,
   SCAN_EXECUTION_DEFAULT_POLICY,
   ASSIGNED_POLICY_PROJECT,
-  NEW_POLICY_PROJECT,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
   DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
@@ -32,7 +31,6 @@ import {
   mockDastScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
-import { goToPolicyMR } from 'ee/security_orchestration/components/policy_editor/utils';
 import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_SCANNER,
@@ -46,15 +44,6 @@ import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
-
-jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
-  ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
-  assignSecurityPolicyProject: jest.fn().mockResolvedValue({
-    branch: 'main',
-    fullPath: 'path/to/new-project',
-  }),
-  goToPolicyMR: jest.fn().mockResolvedValue(),
-}));
 
 describe('EditorComponent', () => {
   let wrapper;
@@ -154,106 +143,17 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+  describe('modifying a policy', () => {
     it.each`
-      status                           | action                             | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE}
-      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
-      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
+      status                           | action                            | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE}
+      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
-      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      factoryFn();
       findPolicyEditorLayout().vm.$emit(event);
       await waitForPromises();
       expect(wrapper.emitted('save')).toEqual([[{ action, policy: yamlEditorValue }]]);
-    });
-  });
-
-  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
-    it.each`
-      status                            | action                             | event              | factoryFn                    | yamlEditorValue                             | currentlyAssignedPolicyProject
-      ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE} | ${NEW_POLICY_PROJECT}
-      ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}            | ${ASSIGNED_POLICY_PROJECT}
-      ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}            | ${ASSIGNED_POLICY_PROJECT}
-    `(
-      'navigates to the new merge request when "goToPolicyMR" is emitted $status',
-      async ({ action, event, factoryFn, yamlEditorValue, currentlyAssignedPolicyProject }) => {
-        factoryFn();
-        findPolicyEditorLayout().vm.$emit(event);
-        await waitForPromises();
-        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-        expect(goToPolicyMR).toHaveBeenCalledWith({
-          action,
-          assignedPolicyProject: currentlyAssignedPolicyProject,
-          name:
-            action === SECURITY_POLICY_ACTIONS.APPEND
-              ? fromYaml({ manifest: yamlEditorValue }).name
-              : mockDastScanExecutionObject.name,
-          namespacePath: defaultProjectPath,
-          yamlEditorValue,
-        });
-      },
-    );
-
-    describe('error handling', () => {
-      const createError = (cause) => ({ message: 'There was an error', cause });
-      const approverCause = { field: 'approvers_ids' };
-      const branchesCause = { field: 'branches' };
-      const unknownCause = { field: 'unknown' };
-
-      describe('when in rule mode', () => {
-        it('passes errors with the cause of `approvers_ids` to the action section', async () => {
-          const error = createError([approverCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factoryWithExistingPolicy();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-
-        it('emits error with the cause of `branches`', async () => {
-          const error = createError([branchesCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factoryWithExistingPolicy();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-
-        it('emits error with an unknown cause', async () => {
-          const error = createError([unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factoryWithExistingPolicy();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-
-        it('handles mixed errors', async () => {
-          const error = createError([approverCause, branchesCause, unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factoryWithExistingPolicy();
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(wrapper.emitted('error')).toStrictEqual([[''], ['There was an error']]);
-        });
-      });
-
-      describe('when in yaml mode', () => {
-        it('emits errors', async () => {
-          const error = createError([approverCause, branchesCause, unknownCause]);
-          goToPolicyMR.mockRejectedValue(error);
-          factoryWithExistingPolicy();
-          goToYamlMode(findPolicyEditorLayout);
-          await findPolicyEditorLayout().vm.$emit('save-policy');
-          await waitForPromises();
-
-          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
-        });
-      });
     });
   });
 
@@ -269,7 +169,7 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('modifying a policy', () => {
+  describe('yaml mode', () => {
     beforeEach(factory);
 
     it('updates the yaml and policy object when "update-yaml" is emitted', async () => {
@@ -490,7 +390,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(goToPolicyMR).toHaveBeenCalled();
+          expect(wrapper.emitted('save')[0]).toHaveLength(1);
         });
 
         it('saves policy when performance threshold is not reached and schedule rule is selected', async () => {
@@ -500,7 +400,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(goToPolicyMR).toHaveBeenCalled();
+          expect(wrapper.emitted('save')[0]).toHaveLength(1);
         });
       });
 
@@ -514,7 +414,7 @@ enabled: true`;
         await waitForPromises();
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
-        expect(goToPolicyMR).toHaveBeenCalled();
+        expect(wrapper.emitted('save')[0]).toHaveLength(1);
       });
 
       describe('performance threshold reached', () => {
@@ -534,7 +434,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
+          expect(wrapper.emitted('save')).toBeUndefined();
         });
 
         it('dismisses the warning without saving the policy', async () => {
@@ -545,12 +445,12 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
+          expect(wrapper.emitted('save')).toBeUndefined();
 
           await findOverloadWarningModal().vm.$emit('cancel-submit');
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
+          expect(wrapper.emitted('save')).toBeUndefined();
         });
 
         it('dismisses the warning and saves the policy', async () => {
@@ -561,13 +461,14 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
+          expect(wrapper.emitted('save')).toBeUndefined();
 
           await findOverloadWarningModal().vm.$emit('confirm-submit');
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+          expect(wrapper.emitted('save')[0]).toHaveLength(1);
+          expect(wrapper.emitted('save')[0][0]).toMatchObject({ action: undefined });
         });
 
         it('dismisses the warning and deletes the policy', async () => {
@@ -584,12 +485,10 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-          expect(goToPolicyMR).toHaveBeenCalledWith(
-            expect.objectContaining({
-              action: SECURITY_POLICY_ACTIONS.REMOVE,
-            }),
-          );
+          expect(wrapper.emitted('save')[0]).toHaveLength(1);
+          expect(wrapper.emitted('save')[0][0]).toMatchObject({
+            action: SECURITY_POLICY_ACTIONS.REMOVE,
+          });
         });
 
         it('dismisses the warning without deleting the policy and then edits it', async () => {
@@ -603,12 +502,8 @@ enabled: true`;
           await findOverloadWarningModal().vm.$emit('confirm-submit');
           await waitForPromises();
 
-          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
-          expect(goToPolicyMR).toHaveBeenCalledWith(
-            expect.objectContaining({
-              action: SECURITY_POLICY_ACTIONS.APPEND,
-            }),
-          );
+          expect(wrapper.emitted('save')[0]).toHaveLength(1);
+          expect(wrapper.emitted('save')[0][0]).toMatchObject({ action: undefined });
         });
 
         it('also shows warning modal in yaml mode', async () => {
@@ -620,7 +515,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
+          expect(wrapper.emitted('save')).toBeUndefined();
         });
       });
     });
@@ -645,7 +540,7 @@ enabled: true`;
         await waitForPromises();
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
-        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        expect(wrapper.emitted('save')[0]).toHaveLength(1);
       });
     });
   });
