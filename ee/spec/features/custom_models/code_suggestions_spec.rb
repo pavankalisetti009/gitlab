@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models, feature_category: :"self-hosted_models" do
+RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, feature_category: :"self-hosted_models" do
   include_context 'file upload requests helpers'
 
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
@@ -38,17 +38,17 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models, feature_c
     }
   end
 
-  let_it_be(:authorized_user) { create(:user) }
+  let!(:authorized_user) { create(:user) }
 
-  let_it_be(:personal_access_token) do
+  let!(:personal_access_token) do
     create(:personal_access_token, scopes: %w[ai_features], user: authorized_user)
   end
 
-  let_it_be(:self_hosted_model) do
+  let!(:self_hosted_model) do
     create(:ai_self_hosted_model, name: 'codestral', model: :codestral, endpoint: ENV['LITELLM_PROXY_URL'])
   end
 
-  let_it_be(:ai_feature_setting) do
+  let!(:ai_feature_setting) do
     create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :code_completions)
   end
 
