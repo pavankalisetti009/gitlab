@@ -1,5 +1,5 @@
 <script>
-import { GlBadge, GlButton } from '@gitlab/ui';
+import { GlBadge, GlButton, GlIcon } from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
@@ -7,6 +7,7 @@ import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -28,10 +29,11 @@ export default {
     SecurityTrainingPromoWidget,
     GlBadge,
     GlButton,
+    GlIcon,
     DynamicScroller,
     DynamicScrollerItem,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -317,6 +319,14 @@ export default {
     clearModalData() {
       this.modalData = null;
     },
+
+    isAiResolvable(vuln) {
+      return (
+        vuln.ai_resolution_enabled &&
+        this.glFeatures.resolveVulnerabilityInMr &&
+        this.glAbilities.resolveVulnerabilityWithAi
+      );
+    },
   },
   SEVERITY_LEVELS,
   widgetHelpPopover: {
@@ -452,6 +462,14 @@ export default {
                       <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3">{{
                         $options.i18n.dismissed
                       }}</gl-badge>
+                      <gl-badge
+                        v-if="isAiResolvable(vuln)"
+                        variant="info"
+                        class="gl-ml-3"
+                        data-testid="ai-resolvable-badge"
+                      >
+                        <gl-icon :size="12" name="tanuki-ai" />
+                      </gl-badge>
                     </template>
                   </mr-widget-row>
                 </dynamic-scroller-item>
