@@ -95,7 +95,6 @@ describe('Security training promo component', () => {
 
       expect(trackingSpy).toHaveBeenCalledWith(undefined, TRACK_PROMOTION_BANNER_CTA_CLICK_ACTION, {
         label: TRACK_PROMOTION_BANNER_CTA_CLICK_LABEL,
-        property: PROJECT_FULL_PATH,
       });
     });
   });
