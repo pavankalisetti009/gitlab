@@ -3,6 +3,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { VIEW_ADMIN_GEO_SETTINGS_PAGELOAD } from 'ee/geo_settings/constants';
 import { InternalEvents } from '~/tracking';
 import GeoSettingsForm from './geo_settings_form.vue';
@@ -18,6 +19,7 @@ export default {
   components: {
     GlLoadingIcon,
     GeoSettingsForm,
+    PageHeading,
   },
   mixins: [InternalEvents.mixin()],
   computed: {
@@ -37,8 +39,11 @@ export default {
 
 <template>
   <article data-testid="geoSettingsContainer">
-    <h1 class="page-title gl-text-size-h-display">{{ $options.i18n.geoSettingsTitle }}</h1>
-    <p>{{ $options.i18n.geoSettingsSubtitle }}</p>
+    <page-heading :heading="$options.i18n.geoSettingsTitle">
+      <template #description>
+        {{ $options.i18n.geoSettingsSubtitle }}
+      </template>
+    </page-heading>
     <gl-loading-icon v-if="isLoading" size="xl" />
     <geo-settings-form v-else />
   </article>
