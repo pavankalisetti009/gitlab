@@ -1,4 +1,4 @@
-import { GlButton, GlLink, GlCollapse } from '@gitlab/ui';
+import { GlBanner, GlButton, GlLink, GlCollapse } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
@@ -36,6 +36,7 @@ describe('FreeTierPromo component', () => {
       },
       stubs: {
         LocalStorageSync,
+        GlBanner,
       },
     });
     trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
@@ -45,6 +46,7 @@ describe('FreeTierPromo component', () => {
   const findCollapse = () => extendedWrapper(wrapper.findComponent(GlCollapse));
   const findLearnMore = () => findCollapse().findComponent(GlLink);
   const findTryNow = () => findCollapse().findComponent(GlButton);
+  const findBanner = () => wrapper.findComponent(GlBanner);
 
   afterEach(() => {
     unmockTracking();
@@ -129,9 +131,7 @@ describe('FreeTierPromo component', () => {
       });
 
       it('shows the promo image', () => {
-        const promoImage = findCollapse().findByAltText('some promo image');
-
-        expect(promoImage.element.src).toBe('/some-image.svg');
+        expect(findBanner().props('svgPath')).toBe('/some-image.svg');
       });
     });
 
@@ -148,12 +148,24 @@ describe('FreeTierPromo component', () => {
         expect(findCollapse().props('visible')).toBe(false);
       });
 
-      it('updates local storage', () => {
-        expect(localStorage.setItem).toHaveBeenCalledWith(MR_APPROVALS_PROMO_DISMISSED, 'true');
-      });
-
       it('updates button icon', () => {
         expect(findCollapseToggleButton().attributes('icon')).toBe(COLLAPSED_ICON);
+      });
+    });
+
+    describe('when user dismisses banner', () => {
+      beforeEach(() => {
+        findBanner().vm.$emit('close');
+      });
+
+      it('hides toggle, collapsible and banner', () => {
+        expect(findCollapseToggleButton().exists()).toBe(false);
+        expect(wrapper.findComponent(GlCollapse).exists()).toBe(false);
+        expect(findBanner().exists()).toBe(false);
+      });
+
+      it('updates local storage', () => {
+        expect(localStorage.setItem).toHaveBeenCalledWith(MR_APPROVALS_PROMO_DISMISSED, 'true');
       });
     });
   });
@@ -166,30 +178,10 @@ describe('FreeTierPromo component', () => {
       localStorage.setItem.mockClear();
     });
 
-    it('should show collapse container as collapsed', () => {
-      expect(findCollapse().props('visible')).toBe(false);
-    });
-
-    describe('when user clicks collapse toggle', () => {
-      beforeEach(() => {
-        findCollapseToggleButton().vm.$emit('click');
-      });
-
-      it('tracks intent to expand', () => {
-        expectTracking(undefined, trackingEvents.expandPromo);
-      });
-
-      it('expands the collapse component', () => {
-        expect(findCollapse().props('visible')).toBe(true);
-      });
-
-      it('does NOT update local storage', () => {
-        expect(localStorage.setItem).not.toHaveBeenCalled();
-      });
-
-      it('updates button icon', () => {
-        expect(findCollapseToggleButton().attributes('icon')).toBe(EXPANDED_ICON);
-      });
+    it("doesn't render toggle, collapsible and banner", () => {
+      expect(findCollapseToggleButton().exists()).toBe(false);
+      expect(wrapper.findComponent(GlCollapse).exists()).toBe(false);
+      expect(findBanner().exists()).toBe(false);
     });
   });
 });

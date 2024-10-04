@@ -99,7 +99,6 @@ export default {
   >
     <template v-if="canAddApprovalRule" #actions>
       <gl-button
-        :class="{ 'gl-mr-3': targetBranch, 'gl-mr-0': !targetBranch }"
         :disabled="isLoading"
         category="secondary"
         size="small"
