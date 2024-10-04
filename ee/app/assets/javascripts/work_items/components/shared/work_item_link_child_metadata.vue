@@ -12,7 +12,7 @@ import {
   WIDGET_TYPE_START_AND_DUE_DATE,
   WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
-import { formatDate, humanTimeframe } from '~/lib/utils/datetime_utility';
+import { formatDate, humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { getIterationPeriod } from 'ee/iterations/utils';
 
@@ -114,7 +114,7 @@ export default {
       return this.startDate || this.dueDate;
     },
     workItemTimeframe() {
-      return humanTimeframe(this.startDate, this.dueDate);
+      return humanTimeframe(newDate(this.startDate), newDate(this.dueDate));
     },
     weightTooltip() {
       return this.workItemType === WORK_ITEM_TYPE_VALUE_EPIC ? __('Issue weight') : __('Weight');

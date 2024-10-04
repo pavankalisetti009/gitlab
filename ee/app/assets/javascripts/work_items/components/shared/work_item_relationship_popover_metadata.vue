@@ -6,7 +6,7 @@ import {
   WIDGET_TYPE_START_AND_DUE_DATE,
 } from '~/work_items/constants';
 import { findWidget } from '~/issues/list/utils';
-import { humanTimeframe } from '~/lib/utils/datetime_utility';
+import { humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import WorkItemRelationshipPopoverMetadata from '~/work_items/components/shared/work_item_relationship_popover_metadata.vue';
 
@@ -47,7 +47,7 @@ export default {
       return this.workItemStartDate || this.workItemDueDate;
     },
     workItemTimeframe() {
-      return humanTimeframe(this.workItemStartDate, this.workItemDueDate);
+      return humanTimeframe(newDate(this.workItemStartDate), newDate(this.workItemDueDate));
     },
     iterationPeriod() {
       return getIterationPeriod(this.workItemIteration);
