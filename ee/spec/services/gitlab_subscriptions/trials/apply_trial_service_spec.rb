@@ -44,23 +44,52 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
 
     let(:response) { { success: true } }
 
-    context 'when trial is applied successfully' do
-      it 'with expected parameters' do
-        expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-          .with(generate_trial_params)
-          .and_return(response)
+    context 'when trial is applied successfully', :saas do
+      context 'when `duo_enterprise_trials_registration` feature flag is enabled' do
+        let(:trial_user_information) do
+          {
+            namespace_id: namespace.id,
+            add_on_name: 'duo_enterprise'
+          }
+        end
 
-        expect(execute).to be_success
+        context 'when namespace has a free plan' do
+          it 'with expected parameters' do
+            expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
+              .with({
+                uid: user.id,
+                trial_user: trial_user_information.merge(trial_type: :ultimate_with_gitlab_duo_enterprise)
+              }).and_return(response)
+
+            expect(execute).to be_success
+          end
+        end
+
+        context 'when namespace has a premium plan' do
+          let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
+
+          it 'with expected parameters' do
+            expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
+              .with({
+                uid: user.id,
+                trial_user: trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
+              }).and_return(response)
+
+            expect(execute).to be_success
+          end
+        end
       end
 
-      context 'when duo_enterprise_trials_registration feature flag is disabled' do
+      context 'when `duo_enterprise_trials_registration` feature flag is disabled' do
+        let(:trial_user_information) { { namespace_id: namespace.id } }
+
         before do
           stub_feature_flags(duo_enterprise_trials_registration: false)
         end
 
         it 'with expected parameters' do
           expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-            .with({ uid: user.id, trial_user: trial_user_information.without(:with_add_on, :add_on_name) })
+            .with({ uid: user.id, trial_user: trial_user_information.without(:add_on_name, :trial_type) })
             .and_return(response)
 
           expect(execute).to be_success
