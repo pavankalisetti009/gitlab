@@ -174,6 +174,14 @@ module EE
           extras: [:lookahead],
           resolver: ::Resolvers::PathLocksResolver
 
+        field :vulnerability_management_policies,
+          ::Types::Security::VulnerabilityManagementPolicyType.connection_type,
+          calls_gitaly: true,
+          null: true,
+          alpha: { milestone: '17.5' },
+          description: 'Vulnerability Management Policies of the project.',
+          resolver: ::Resolvers::Security::VulnerabilityManagementPolicyResolver
+
         field :pipeline_execution_policies,
           ::Types::SecurityOrchestration::PipelineExecutionPolicyType.connection_type,
           calls_gitaly: true,

@@ -12,20 +12,6 @@ RSpec.shared_examples 'security policies finder' do
   end
 
   describe '#execute' do
-    context 'when execute is not implemented in the subclass' do
-      let(:example_class) do
-        Class.new(Security::SecurityPolicyBaseFinder) do
-          def initialize(actor, project, params)
-            super(actor, project, :new_finder, params)
-          end
-        end
-      end
-
-      it 'raises NotImplementedError' do
-        expect { example_class.new(actor, object, params).execute }.to raise_error NotImplementedError
-      end
-    end
-
     context 'when feature is not licensed' do
       before do
         stub_licensed_features(security_orchestration_policies: false)
