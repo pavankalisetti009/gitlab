@@ -8,7 +8,8 @@ module API
 
     allow_access_with_scope :ai_features
 
-    AVAILABLE_RESOURCES = %w[issue epic group project merge_request commit].freeze
+    AVAILABLE_RESOURCES = %w[issue epic group project merge_request commit build].freeze
+    RESOURCE_TYPE_MAPPING = { 'build' => 'Ci::Build' }.freeze
 
     before do
       authenticate!
@@ -26,7 +27,8 @@ module API
         return current_user unless parameters[:resource_type] && parameters[:resource_id]
         return commit_object(parameters) if parameters[:resource_type] == 'commit'
 
-        object = parameters[:resource_type].camelize.safe_constantize
+        resource_type = RESOURCE_TYPE_MAPPING[parameters[:resource_type]] || parameters[:resource_type]
+        object = resource_type.camelize.safe_constantize
         object.find(parameters[:resource_id])
       end
 

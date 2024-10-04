@@ -278,6 +278,23 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
           end
         end
 
+        context 'with a build' do
+          let_it_be(:ci_build) { create(:ci_build, :failed, :trace_live, project: project) }
+          let!(:resource) { ci_build }
+          let(:params) do
+            { content: content, resource_type: "build", resource_id: resource.id, project_id: resource.project.id }
+          end
+
+          it 'sends resource to the chat' do
+            expect(chat_message).to receive(:save!)
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
         context 'without resource' do
           let(:params) { { content: content } }
           let(:resource) { current_user }
