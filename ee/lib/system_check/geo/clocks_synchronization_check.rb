@@ -51,7 +51,7 @@ module SystemCheck
       end
 
       def help_replication_check
-        construct_help_page_url('administration/geo/replication/troubleshooting', anchor: 'health-check-rake-task')
+        construct_help_page_url('administration/geo/replication/troubleshooting.md', anchor: 'health-check-rake-task')
       end
 
       private

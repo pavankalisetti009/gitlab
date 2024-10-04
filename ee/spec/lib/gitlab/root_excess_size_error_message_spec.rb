@@ -29,7 +29,7 @@ RSpec.describe Gitlab::RootExcessSizeErrorMessage, feature_category: :consumable
             (9 MiB of 10 MiB). If a project reaches 100% of the storage quota (10 MiB)
             the project will be in a read-only state, and you won't be able to push to your repository or add large files.
             To reduce storage usage, reduce git repository and git LFS storage. For more information about storage limits,
-            see our docs: http://localhost/help/user/usage_quotas#project-storage-limit.
+            see our docs: http://localhost/help/user/usage_quotas.md#project-storage-limit.
           MSG
         )
     end

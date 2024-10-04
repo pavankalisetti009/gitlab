@@ -15,7 +15,7 @@ RSpec.describe WebIde::ExtensionsMarketplace, feature_category: :web_ide do
         enabled: false,
         enterprise_group_name: group.full_name,
         enterprise_group_url: ::Gitlab::Routing.url_helpers.group_url(group),
-        help_url: a_string_matching('/help/user/project/web_ide/index#extension-marketplace'),
+        help_url: a_string_matching('/help/user/project/web_ide/index.md#extension-marketplace'),
         reason: :enterprise_group_disabled
       }
     end

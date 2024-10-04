@@ -19,7 +19,8 @@ module API
       end
 
       def deprecation_message
-        docs_page = Rails.application.routes.url_helpers.help_page_url('ee/user/compliance/license_approval_policies')
+        docs_page = Rails.application.routes.url_helpers.help_page_url(
+          'ee/user/compliance/license_approval_policies.md')
 
         'License-Check feature and Managed License API endpoint were removed. ' \
           'Users who wish to continue to enforce approvals based on detected licenses are encouraged ' \
