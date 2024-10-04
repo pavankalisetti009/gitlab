@@ -16113,9 +16113,6 @@ msgstr ""
 msgid "Create New Directory"
 msgstr ""
 
-msgid "Create a GitLab account first, and then connect it to your %{label} account."
-msgstr ""
-
 msgid "Create a Kubernetes cluster"
 msgstr ""
 
@@ -16168,6 +16165,9 @@ msgid "Create a personal access token on your account to pull or push via %{prot
 msgstr ""
 
 msgid "Create a project"
+msgstr ""
+
+msgid "Create an account in %{simple_url} first, and then %{doc_start}connect it to your %{label} account%{doc_end}."
 msgstr ""
 
 msgid "Create an incident. Incidents are created for each alert triggered."
@@ -51903,7 +51903,7 @@ msgstr ""
 msgid "Signing in using your %{label} account has been disabled for security reasons. Please sign in to your GitLab account using another authentication method and reconnect to your %{label} account."
 msgstr ""
 
-msgid "Signing in using your %{label} account without a pre-existing GitLab account is not allowed."
+msgid "Signing in using your %{label} account without a pre-existing account in %{simple_url} is not allowed."
 msgstr ""
 
 msgid "SilentMode|All outbound communications are blocked. %{link_start}Learn more%{link_end}."
