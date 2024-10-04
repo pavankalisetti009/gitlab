@@ -2547,7 +2547,6 @@ Style/InlineDisableAnnotation:
     - 'spec/lib/gitlab/authorized_keys_spec.rb'
     - 'spec/lib/gitlab/avatar_cache_spec.rb'
     - 'spec/lib/gitlab/background_migration/backfill_finding_id_in_vulnerabilities_spec.rb'
-    - 'spec/lib/gitlab/background_migration/backfill_has_merge_request_of_vulnerability_reads_spec.rb'
     - 'spec/lib/gitlab/background_migration/backfill_missing_ci_cd_settings_spec.rb'
     - 'spec/lib/gitlab/background_migration/backfill_project_repositories_spec.rb'
     - 'spec/lib/gitlab/background_migration/backfill_root_storage_statistics_fork_storage_sizes_spec.rb'
