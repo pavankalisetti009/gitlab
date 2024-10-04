@@ -103,7 +103,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'File variable configuration' do
-          subject { presenter.secrets_configuration.dig('DATABASE_PASSWORD') }
+          subject { presenter.secrets_configuration['DATABASE_PASSWORD'] }
 
           it 'contains the file configuration directive' do
             expect(subject.fetch('file')).to be_truthy

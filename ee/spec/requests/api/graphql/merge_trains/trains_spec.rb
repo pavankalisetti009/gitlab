@@ -114,6 +114,8 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
         "The resource that you are attempting to access does not exist " \
           "or you don't have permission to perform this action"
       )
+
+      expect(result).to be_nil
     end
   end
 
@@ -163,6 +165,8 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
             "The resource that you are attempting to access does not exist " \
               "or you don't have permission to perform this action"
           )
+
+          expect(result).to be_nil
         end
       end
     end

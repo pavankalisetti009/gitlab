@@ -199,6 +199,7 @@ describeSkipVue3(skipReason, () => {
         clientSubscriptionId: '123',
         question: '/troubleshoot',
         resourceId: 'command::1',
+        projectId: null,
       });
     });
   });
@@ -241,6 +242,40 @@ describeSkipVue3(skipReason, () => {
         expect(performance.mark).toHaveBeenCalledWith('prompt-sent');
       });
 
+      it('calls the chat mutation with projectId when available', async () => {
+        createComponent({
+          propsData: { userId: MOCK_USER_ID, resourceId: null, projectId: 'project-123' },
+        });
+
+        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+
+        await nextTick();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: MOCK_USER_MESSAGE.content,
+          resourceId: MOCK_USER_ID,
+          projectId: 'project-123',
+        });
+      });
+
+      it('calls the chat mutation without projectId if it is not provided', async () => {
+        createComponent({
+          propsData: { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID, projectId: null },
+        });
+
+        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+
+        await nextTick();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: MOCK_USER_MESSAGE.content,
+          resourceId: MOCK_RESOURCE_ID,
+          projectId: null,
+        });
+      });
+
       it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
         'does not set loading to `true` for "%s" message',
         async (msg) => {
@@ -266,6 +301,7 @@ describeSkipVue3(skipReason, () => {
             resourceId: expectedResourceId,
             question: MOCK_USER_MESSAGE.content,
             clientSubscriptionId: '123',
+            projectId: null,
           });
         });
       });

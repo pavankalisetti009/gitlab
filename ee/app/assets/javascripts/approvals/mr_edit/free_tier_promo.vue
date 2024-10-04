@@ -1,6 +1,7 @@
 <script>
-import { GlButton, GlLink, GlCollapse, GlCard } from '@gitlab/ui';
+import { GlBanner, GlButton, GlLink, GlCollapse } from '@gitlab/ui';
 import Tracking from '~/tracking';
+import { s__ } from '~/locale';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import {
   MR_APPROVALS_PROMO_DISMISSED,
@@ -12,11 +13,11 @@ const trackingMixin = Tracking.mixin({});
 
 export default {
   components: {
+    GlBanner,
     GlButton,
     GlLink,
     LocalStorageSync,
     GlCollapse,
-    GlCard,
   },
   mixins: [trackingMixin],
   inject: ['learnMorePath', 'promoImageAlt', 'promoImagePath', 'tryNowPath'],
@@ -24,20 +25,24 @@ export default {
     return {
       // isReady - used to render components after local storage has synced
       isReady: false,
-      // userManuallyCollapsed - set to true if the collapsible is collapsed
-      userManuallyCollapsed: false,
       // isExpanded - the current collapsible state
       isExpanded: true,
+      // isBannerVisible - is the banner visible
+      isBannerDismissed: false,
     };
   },
   computed: {
     icon() {
       return this.isExpanded ? 'chevron-down' : 'chevron-right';
     },
-  },
-  watch: {
-    userManuallyCollapsed(isCollapsed) {
-      this.isExpanded = !isCollapsed;
+    buttonAttributes() {
+      return {
+        target: '_blank',
+        'aria-label': s__('ApprovalRule|Learn more about merge request approval rules'),
+        'data-track-action': this.$options.trackingEvents.tryNowClick.action,
+        'data-track-label': this.$options.trackingEvents.tryNowClick.label,
+        'data-testid': 'promo-dismiss-btn',
+      };
     },
   },
   mounted() {
@@ -50,8 +55,6 @@ export default {
     toggleCollapse() {
       // If we're expanded already, then the user tried to collapse...
       if (this.isExpanded) {
-        this.userManuallyCollapsed = true;
-
         const { action, ...options } = MR_APPROVALS_PROMO_TRACKING_EVENTS.collapsePromo;
         this.track(action, options);
       } else {
@@ -60,6 +63,10 @@ export default {
       }
 
       this.isExpanded = !this.isExpanded;
+    },
+    hideBanner() {
+      this.isBannerDismissed = true;
+      this.isExpanded = false;
     },
   },
   trackingEvents: MR_APPROVALS_PROMO_TRACKING_EVENTS,
@@ -71,55 +78,53 @@ export default {
 <template>
   <div class="gl-mt-2">
     <local-storage-sync
-      v-model="userManuallyCollapsed"
+      v-model="isBannerDismissed"
       :storage-key="$options.MR_APPROVALS_PROMO_DISMISSED"
     />
     <template v-if="isReady">
-      <p class="gl-mb-0 gl-text-gray-500">
+      <p class="gl-mb-0 gl-text-subtle">
         {{ $options.i18n.summary }}
       </p>
 
-      <gl-button variant="link" :icon="icon" data-testid="collapse-btn" @click="toggleCollapse">
+      <gl-button
+        v-if="!isBannerDismissed"
+        variant="link"
+        :icon="icon"
+        data-testid="collapse-btn"
+        @click="toggleCollapse"
+      >
         {{ $options.i18n.accordionTitle }}
       </gl-button>
 
-      <gl-collapse v-model="isExpanded">
-        <gl-card class="gl-new-card" data-testid="mr-approval-rules">
-          <div class="gl-flex gl-items-start gl-gap-6">
-            <img :src="promoImagePath" :alt="promoImageAlt" class="svg" />
+      <gl-collapse v-if="!isBannerDismissed" v-model="isExpanded">
+        <gl-banner
+          :title="$options.i18n.promoTitle"
+          :svg-path="promoImagePath"
+          :button-text="$options.i18n.tryNow"
+          :button-link="tryNowPath"
+          :button-attributes="buttonAttributes"
+          class="gl-mt-3"
+          data-testid="mr-approval-rules"
+          @close="hideBanner"
+        >
+          <ul class="gl-mb-5 gl-list-inside gl-p-0">
+            <li v-for="(statement, index) in $options.i18n.valueStatements" :key="index">
+              {{ statement }}
+            </li>
+          </ul>
 
-            <div class="gl-grow">
-              <h4 class="gl-mb-3 gl-mt-0 gl-text-base gl-leading-20">
-                {{ $options.i18n.promoTitle }}
-              </h4>
-              <ul class="gl-mb-3 gl-list-inside gl-p-0">
-                <li v-for="(statement, index) in $options.i18n.valueStatements" :key="index">
-                  {{ statement }}
-                </li>
-              </ul>
-              <div class="gl-flex gl-items-center gl-gap-4">
-                <gl-button
-                  category="primary"
-                  variant="confirm"
-                  :href="tryNowPath"
-                  target="_blank"
-                  :aria-label="s__('ApprovalRule|Learn more about merge request approval rules')"
-                  :data-track-action="$options.trackingEvents.tryNowClick.action"
-                  :data-track-label="$options.trackingEvents.tryNowClick.label"
-                  >{{ $options.i18n.tryNow }}</gl-button
-                >
-                <gl-link
-                  :href="learnMorePath"
-                  target="_blank"
-                  :data-track-action="$options.trackingEvents.learnMoreClick.action"
-                  :data-track-label="$options.trackingEvents.learnMoreClick.label"
-                >
-                  {{ $options.i18n.learnMore }}
-                </gl-link>
-              </div>
-            </div>
-          </div>
-        </gl-card>
+          <template #actions>
+            <gl-link
+              :href="learnMorePath"
+              target="_blank"
+              class="gl-ml-3"
+              :data-track-action="$options.trackingEvents.learnMoreClick.action"
+              :data-track-label="$options.trackingEvents.learnMoreClick.label"
+            >
+              {{ $options.i18n.learnMore }}
+            </gl-link>
+          </template>
+        </gl-banner>
       </gl-collapse>
     </template>
   </div>

@@ -71,7 +71,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::External, :saas do
           payload = Gitlab::Json.parse(params[:body])
           expect(payload.dig('namespace', 'plan')).to eq('ultimate')
           expect(payload.dig('namespace', 'trial')).to be true
-          expect(payload.dig('provisioning_group')).be_nil
+          expect(payload['provisioning_group']).be_nil
         end
 
         step.perform!

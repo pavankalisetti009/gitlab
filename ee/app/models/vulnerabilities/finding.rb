@@ -320,11 +320,11 @@ module Vulnerabilities
     end
 
     def description
-      super.presence || metadata.dig('description')
+      super.presence || metadata['description']
     end
 
     def solution
-      super.presence || metadata.dig('solution') || remediations&.first&.dig('summary')
+      super.presence || metadata['solution'] || remediations&.first&.dig('summary')
     end
 
     def location
@@ -332,11 +332,11 @@ module Vulnerabilities
     end
 
     def file
-      location.dig('file')
+      location['file']
     end
 
     def image
-      location.dig('image')
+      location['image']
     end
 
     def links
@@ -348,7 +348,7 @@ module Vulnerabilities
     def remediations
       rems = super.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
 
-      return metadata.dig('remediations') unless rems.present?
+      return metadata['remediations'] unless rems.present?
 
       rems.as_json(only: [:summary], methods: [:diff])
     end
@@ -408,7 +408,7 @@ module Vulnerabilities
     end
 
     def evidence
-      evidence_data = finding_evidence.present? ? finding_evidence.data : metadata.dig('evidence')
+      evidence_data = finding_evidence.present? ? finding_evidence.data : metadata['evidence']
 
       return if evidence_data.nil?
 

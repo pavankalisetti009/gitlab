@@ -8,10 +8,6 @@ import getStateQueryResponse from 'test_fixtures/graphql/merge_requests/get_stat
 import readyToMergeResponse from 'test_fixtures/graphql/merge_requests/states/ready_to_merge.query.graphql.json';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-// Force Jest to transpile and cache
-// eslint-disable-next-line no-unused-vars
-import _GroupedLoadPerformanceReportsApp from 'ee/ci/reports/load_performance_report/grouped_load_performance_reports_app.vue';
-
 import MrWidgetOptions from 'ee/vue_merge_request_widget/mr_widget_options.vue';
 import WidgetContainer from 'ee/vue_merge_request_widget/components/widget/app.vue';
 import MrWidgetApprovals from 'ee_else_ce/vue_merge_request_widget/components/approvals/approvals.vue';

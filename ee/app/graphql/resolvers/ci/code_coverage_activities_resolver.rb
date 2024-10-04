@@ -26,7 +26,7 @@ module Resolvers
         {
           group: group,
           coverage: true,
-          start_date: args.dig(:start_date).to_s,
+          start_date: args[:start_date].to_s,
           end_date: Date.current.to_s,
           group_activity: true
         }

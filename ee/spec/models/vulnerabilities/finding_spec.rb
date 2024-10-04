@@ -1194,43 +1194,43 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
           is_expected.to match a_hash_including(
             supporting_messages: [
               {
-                name: example_evidence.dig('supporting_messages')[0].dig('name'),
+                name: example_evidence['supporting_messages'][0]['name'],
                 request: {
                   headers: [
                     {
-                      name: example_evidence.dig('supporting_messages')[0].dig('request', 'headers')[0].dig('name'),
-                      value: example_evidence.dig('supporting_messages')[0].dig('request', 'headers')[0].dig('value')
+                      name: example_evidence['supporting_messages'][0].dig('request', 'headers')[0]['name'],
+                      value: example_evidence['supporting_messages'][0].dig('request', 'headers')[0]['value']
                     }
                   ],
-                  url: example_evidence.dig('supporting_messages')[0].dig('request', 'url'),
-                  method: example_evidence.dig('supporting_messages')[0].dig('request', 'method'),
-                  body: example_evidence.dig('supporting_messages')[0].dig('request', 'body')
+                  url: example_evidence['supporting_messages'][0].dig('request', 'url'),
+                  method: example_evidence['supporting_messages'][0].dig('request', 'method'),
+                  body: example_evidence['supporting_messages'][0].dig('request', 'body')
                 },
-                response: example_evidence.dig('supporting_messages')[0].dig('response')
+                response: example_evidence['supporting_messages'][0]['response']
               },
               {
-                name: example_evidence.dig('supporting_messages')[1].dig('name'),
+                name: example_evidence['supporting_messages'][1]['name'],
                 request: {
                   headers: [
                     {
-                      name: example_evidence.dig('supporting_messages')[1].dig('request', 'headers')[0].dig('name'),
-                      value: example_evidence.dig('supporting_messages')[1].dig('request', 'headers')[0].dig('value')
+                      name: example_evidence['supporting_messages'][1].dig('request', 'headers')[0]['name'],
+                      value: example_evidence['supporting_messages'][1].dig('request', 'headers')[0]['value']
                     }
                   ],
-                  url: example_evidence.dig('supporting_messages')[1].dig('request', 'url'),
-                  method: example_evidence.dig('supporting_messages')[1].dig('request', 'method'),
-                  body: example_evidence.dig('supporting_messages')[1].dig('request', 'body')
+                  url: example_evidence['supporting_messages'][1].dig('request', 'url'),
+                  method: example_evidence['supporting_messages'][1].dig('request', 'method'),
+                  body: example_evidence['supporting_messages'][1].dig('request', 'body')
                 },
                 response: {
                   headers: [
                     {
-                      name: example_evidence.dig('supporting_messages')[1].dig('response', 'headers')[0].dig('name'),
-                      value: example_evidence.dig('supporting_messages')[1].dig('response', 'headers')[0].dig('value')
+                      name: example_evidence['supporting_messages'][1].dig('response', 'headers')[0]['name'],
+                      value: example_evidence['supporting_messages'][1].dig('response', 'headers')[0]['value']
                     }
                   ],
-                  reason_phrase: example_evidence.dig('supporting_messages')[1].dig('response', 'reason_phrase'),
-                  status_code: example_evidence.dig('supporting_messages')[1].dig('response', 'status_code'),
-                  body: example_evidence.dig('supporting_messages')[1].dig('response', 'body')
+                  reason_phrase: example_evidence['supporting_messages'][1].dig('response', 'reason_phrase'),
+                  status_code: example_evidence['supporting_messages'][1].dig('response', 'status_code'),
+                  body: example_evidence['supporting_messages'][1].dig('response', 'body')
                 }
               }
             ]

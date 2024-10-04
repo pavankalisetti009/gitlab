@@ -242,7 +242,7 @@ RSpec.describe 'getting a requirement list for a project', feature_category: :re
       end
 
       def pagination_results_data(data)
-        data.map { |issue| issue.dig('iid').to_i }
+        data.map { |issue| issue['iid'].to_i }
       end
 
       context 'when sorting by created_at' do

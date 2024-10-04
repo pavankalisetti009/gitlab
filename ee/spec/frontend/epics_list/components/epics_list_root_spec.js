@@ -10,6 +10,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockAuthor, mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
+import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
 
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
@@ -136,6 +137,7 @@ const createComponent = ({
 describe('EpicsListRoot', () => {
   const getIssuableList = () => wrapper.findComponent(IssuableList);
   const findAllIssuableReference = () => wrapper.findAllByTestId('issuable-reference');
+  const findCreateWorkItemModal = () => wrapper.findComponent(CreateWorkItemModal);
 
   describe('methods', () => {
     beforeEach(() => {
@@ -339,6 +341,23 @@ describe('EpicsListRoot', () => {
     });
   });
 
+  it('renders create work item modal when the user has permissions and the feature is enabled', () => {
+    createComponent({
+      provide: {
+        ...mockProvide,
+        glFeatures: {
+          namespaceLevelWorkItems: true,
+        },
+      },
+    });
+
+    expect(findCreateWorkItemModal().exists()).toBe(true);
+    expect(findCreateWorkItemModal().props()).toMatchObject({
+      isGroup: true,
+      workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+    });
+  });
+
   it('refetches the list if a new work item is created', async () => {
     createComponent({
       provide: {
@@ -352,7 +371,7 @@ describe('EpicsListRoot', () => {
 
     expect(requestHandler).toHaveBeenCalledTimes(1);
 
-    wrapper.findComponent(CreateWorkItemModal).vm.$emit('workItemCreated');
+    findCreateWorkItemModal().vm.$emit('workItemCreated');
     await waitForPromises();
 
     expect(requestHandler).toHaveBeenCalledTimes(2);

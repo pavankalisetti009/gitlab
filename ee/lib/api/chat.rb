@@ -76,7 +76,7 @@ module API
               desc: 'Metadata of the additional context.'
           end
         end
-        post do
+        post urgency: :low do # internal use only
           safe_params = declared_params(include_missing: false)
 
           if safe_params[:additional_context].present?
