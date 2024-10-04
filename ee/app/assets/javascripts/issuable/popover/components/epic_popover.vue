@@ -1,6 +1,6 @@
 <script>
 import { GlIcon, GlPopover, GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
-import { humanTimeframe } from '~/lib/utils/datetime/date_format_utility';
+import { humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
 import StatusBadge from '~/issuable/components/status_badge.vue';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { TYPE_EPIC } from '~/issues/constants';
@@ -64,7 +64,7 @@ export default {
       return `${this.namespacePath}&${this.iid}`;
     },
     epicTimeframe() {
-      return humanTimeframe(this.epic.startDate, this.epic.dueDate);
+      return humanTimeframe(newDate(this.epic.startDate), newDate(this.epic.dueDate));
     },
   },
   apollo: {
