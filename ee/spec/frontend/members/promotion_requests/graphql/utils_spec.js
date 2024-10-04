@@ -34,7 +34,7 @@ describe('Utils', () => {
       groupHandler.mockResolvedValue(groupPendingMemberApprovalsQueryMockData);
     });
 
-    const makeAQuery = () => {
+    const sendQuery = () => {
       // eslint-disable-next-line import/no-named-as-default-member
       return graphqlClientModule.graphqlClient.query({
         query: GroupPendingMemberApprovalsQuery,
@@ -47,17 +47,17 @@ describe('Utils', () => {
 
     it('will evict cache for a group', async () => {
       // first request uses the resolver fn
-      await makeAQuery();
+      await sendQuery();
       expect(groupHandler).toHaveBeenCalledTimes(1);
 
       // second request uses the cached result
-      await makeAQuery();
+      await sendQuery();
       expect(groupHandler).toHaveBeenCalledTimes(1);
 
       // after cache eviction we should use the resolver fn again
       const { context, group, project } = groupDefaultProvide;
       evictCache({ context, group, project });
-      await makeAQuery();
+      await sendQuery();
       expect(groupHandler).toHaveBeenCalledTimes(2);
     });
   });
