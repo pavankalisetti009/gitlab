@@ -95,14 +95,14 @@ export const updateNewWorkItemCache = (input, cache) => {
           nodePath: 'color',
         },
         {
-          widgetType: WIDGET_TYPE_DESCRIPTION,
-          newData: description,
-          nodePath: 'description',
-        },
-        {
           widgetType: WIDGET_TYPE_CRM_CONTACTS,
           newData: crmContacts,
           nodePath: 'contacts.nodes',
+        },
+        {
+          widgetType: WIDGET_TYPE_DESCRIPTION,
+          newData: description,
+          nodePath: 'description',
         },
       ];
 

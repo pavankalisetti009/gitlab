@@ -34,6 +34,7 @@ export default {
     'groupIssuesPath',
     'workItemType',
     'fullPath',
+    'isGroup',
   ],
   data() {
     return {
@@ -139,6 +140,7 @@ export default {
           >{{ __('Bulk edit') }}</gl-button
         >
         <create-work-item-modal
+          :is-group="isGroup"
           class="gl-grow"
           :work-item-type-name="workItemTypeName"
           @workItemCreated="incrementUpdateCount"
@@ -150,6 +152,7 @@ export default {
         <template v-if="showNewIssueLink" #new-issue-button>
           <create-work-item-modal
             class="gl-grow"
+            :is-group="isGroup"
             :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
             @workItemCreated="incrementUpdateCount"
           />
@@ -171,6 +174,7 @@ export default {
         <template v-if="showNewIssueLink" #actions>
           <create-work-item-modal
             class="gl-grow"
+            :is-group="isGroup"
             :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
             @workItemCreated="incrementUpdateCount"
           />

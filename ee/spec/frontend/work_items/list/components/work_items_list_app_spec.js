@@ -8,6 +8,7 @@ import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
 import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.graphql';
@@ -58,12 +59,14 @@ describeSkipVue3(skipReason, () => {
     showNewIssueLink = true,
     canBulkEditEpics = true,
     bulkUpdateMutationEnabled = true,
+    isGroup = true,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       provide: {
         hasEpicsFeature,
         showNewIssueLink,
         canBulkEditEpics,
+        isGroup,
         glFeatures: {
           bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
         },
@@ -124,6 +127,16 @@ describeSkipVue3(skipReason, () => {
         });
       },
     );
+
+    it('passes the right props to modal when hasEpicsFeature is true', () => {
+      mountComponent({ hasEpicsFeature: true, showNewIssueLink: true });
+
+      expect(findCreateWorkItemModal().exists()).toBe(true);
+      expect(findCreateWorkItemModal().props()).toMatchObject({
+        isGroup: true,
+        workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+      });
+    });
 
     describe('when "workItemCreated" event is emitted', () => {
       it('increments `eeWorkItemUpdateCount` prop on WorkItemsListApp', async () => {
