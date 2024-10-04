@@ -27,6 +27,7 @@ import {
   findHierarchyWidgets,
   saveToggleToLocalStorage,
   getToggleFromLocalStorage,
+  getItems,
 } from '../../utils';
 import { removeHierarchyChild } from '../../graphql/cache_utils';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
@@ -186,6 +187,12 @@ export default {
     workItemType() {
       return this.workItem?.workItemType?.name || '';
     },
+    displayableChildrenFunction() {
+      return getItems(this.showClosed);
+    },
+    hasAllChildItemsHidden() {
+      return this.displayableChildrenFunction(this.children).length === 0;
+    },
   },
   mounted() {
     this.showLabels = getToggleFromLocalStorage(this.showLabelsLocalStorageKey);
@@ -276,6 +283,7 @@ export default {
     addChildButtonLabel: s__('WorkItem|Add'),
     addChildOptionLabel: s__('WorkItem|Existing task'),
     createChildOptionLabel: s__('WorkItem|New task'),
+    noChildItemsOpen: s__('WorkItem|No child items are currently open.'),
   },
   WIDGET_TYPE_TASK_ICON: WIDGET_ICONS.TASK,
   WORK_ITEM_STATUS_TEXT,
@@ -324,6 +332,7 @@ export default {
         :full-path="fullPath"
         :work-item-type="workItemType"
         :show-labels="showLabels"
+        :show-closed="showClosed"
         :show-view-roadmap-action="false"
         @toggle-show-labels="toggleShowLabels"
         @toggle-show-closed="toggleShowClosed"
@@ -358,7 +367,7 @@ export default {
       <gl-alert v-if="error" variant="danger" @dismiss="error = undefined">
         {{ error }}
       </gl-alert>
-      <div class="!gl-px-3 gl-pb-3 gl-pt-2">
+      <div v-if="!hasAllChildItemsHidden" class="!gl-px-3 gl-pb-3 gl-pt-2">
         <work-item-children-wrapper
           v-if="workItem"
           :children="children"
@@ -368,8 +377,10 @@ export default {
           :work-item-id="issuableGid"
           :work-item-iid="iid"
           :show-labels="showLabels"
+          :show-closed="showClosed"
           :disable-content="disableContent"
           :has-indirect-children="false"
+          :displayable-children-function="displayableChildrenFunction"
           @error="error = $event"
           @show-modal="openChild"
         />
@@ -396,6 +407,14 @@ export default {
         :reported-from-url="reportedUrl"
         @close-modal="toggleReportAbuseModal(false)"
       />
+
+      <div
+        v-if="hasAllChildItemsHidden"
+        class="gl-text-subtle"
+        data-testid="work-item-no-child-items-open"
+      >
+        {{ $options.i18n.noChildItemsOpen }}
+      </div>
     </template>
   </crud-component>
 </template>

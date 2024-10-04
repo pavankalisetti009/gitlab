@@ -62718,7 +62718,13 @@ msgstr ""
 msgid "WorkItem|No child items are currently assigned. Use child items to break down work into smaller parts."
 msgstr ""
 
+msgid "WorkItem|No child items are currently open."
+msgstr ""
+
 msgid "WorkItem|No iteration"
+msgstr ""
+
+msgid "WorkItem|No linked items are currently open."
 msgstr ""
 
 msgid "WorkItem|No matches found"

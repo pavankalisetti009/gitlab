@@ -13,13 +13,13 @@ import {
   findLinkedItemsWidget,
   saveToggleToLocalStorage,
   getToggleFromLocalStorage,
+  isItemDisplayable,
 } from '../../utils';
 import {
   LINKED_CATEGORIES_MAP,
   LINKED_ITEMS_ANCHOR,
   WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
   WORKITEM_RELATIONSHIPS_SHOWCLOSED_LOCALSTORAGEKEY,
-  STATE_CLOSED,
   sprintfWorkItem,
 } from '../../constants';
 
@@ -131,10 +131,13 @@ export default {
       return this.linkedWorkItems.map((item) => item.workItem.id);
     },
     linkedWorkItemsCount() {
-      return this.displayableLinks(this.linkedWorkItems).length;
+      return this.linkedWorkItems.length;
     },
     isEmptyRelatedWorkItems() {
       return !this.error && this.linkedWorkItems.length === 0;
+    },
+    hasAllLinkedItemsHidden() {
+      return this.displayableLinks(this.linkedWorkItems).length === 0;
     },
     countBadgeAriaLabel() {
       const message = sprintf(
@@ -146,6 +149,15 @@ export default {
         { itemCount: this.linkedWorkItemsCount },
       );
       return sprintfWorkItem(message, this.workItemType);
+    },
+    openRelatesToLinks() {
+      return this.displayableLinks(this.linksRelatesTo);
+    },
+    openIsBlockedByLinks() {
+      return this.displayableLinks(this.linksIsBlockedBy);
+    },
+    openBlocksLinks() {
+      return this.displayableLinks(this.linksBlocks);
     },
   },
   mounted() {
@@ -267,10 +279,7 @@ export default {
       }
     },
     displayableLinks(items) {
-      return items.filter((item) => {
-        const { state } = item.workItem;
-        return state !== STATE_CLOSED || (state === STATE_CLOSED && this.showClosed);
-      });
+      return items.filter((item) => isItemDisplayable(item.workItem, this.showClosed));
     },
   },
   i18n: {
@@ -279,6 +288,7 @@ export default {
     emptyStateMessage: s__(
       "WorkItem|Link items together to show that they're related or that one is blocking others.",
     ),
+    noLinkedItemsOpen: s__('WorkItem|No linked items are currently open.'),
     removeLinkedItemErrorMessage: s__(
       'WorkItem|Something went wrong when removing item. Please refresh this page.',
     ),
@@ -356,10 +366,10 @@ export default {
       </gl-alert>
 
       <work-item-relationship-list
-        v-if="displayableLinks(linksBlocks).length"
+        v-if="openBlocksLinks.length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="displayableLinks(linksBlocks)"
+        :linked-items="openBlocksLinks"
         :relationship-type="$options.linkedCategories.BLOCKS"
         :heading="$options.i18n.blockingTitle"
         :can-update="canAdminWorkItemLink"
@@ -376,10 +386,10 @@ export default {
         @updateLinkedItem="updateLinkedItem"
       />
       <work-item-relationship-list
-        v-if="displayableLinks(linksIsBlockedBy).length"
+        v-if="openIsBlockedByLinks.length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="displayableLinks(linksIsBlockedBy)"
+        :linked-items="openIsBlockedByLinks"
         :relationship-type="$options.linkedCategories.IS_BLOCKED_BY"
         :heading="$options.i18n.blockedByTitle"
         :can-update="canAdminWorkItemLink"
@@ -396,10 +406,10 @@ export default {
         @updateLinkedItem="updateLinkedItem"
       />
       <work-item-relationship-list
-        v-if="displayableLinks(linksRelatesTo).length"
+        v-if="openRelatesToLinks.length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="displayableLinks(linksRelatesTo)"
+        :linked-items="openRelatesToLinks"
         :relationship-type="$options.linkedCategories.RELATES_TO"
         :heading="$options.i18n.relatedToTitle"
         :can-update="canAdminWorkItemLink"
@@ -415,6 +425,14 @@ export default {
         @removeLinkedItem="removeLinkedItem"
         @updateLinkedItem="updateLinkedItem"
       />
+
+      <div
+        v-if="hasAllLinkedItemsHidden"
+        class="gl-text-subtle"
+        data-testid="work-item-no-linked-items-open"
+      >
+        {{ $options.i18n.noLinkedItemsOpen }}
+      </div>
     </template>
   </crud-component>
 </template>

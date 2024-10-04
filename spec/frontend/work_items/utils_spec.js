@@ -2,6 +2,8 @@ import {
   NEW_WORK_ITEM_IID,
   WORK_ITEM_TYPE_ENUM_ISSUE,
   WORK_ITEM_TYPE_ENUM_EPIC,
+  STATE_OPEN,
+  STATE_CLOSED,
 } from '~/work_items/constants';
 import {
   autocompleteDataSources,
@@ -14,6 +16,7 @@ import {
   getToggleFromLocalStorage,
   makeDrawerUrlParam,
   makeDrawerItemFullPath,
+  getItems,
 } from '~/work_items/utils';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import { TYPE_EPIC } from '~/issues/constants';
@@ -276,5 +279,27 @@ describe('`makeDrawerUrlParam`', () => {
     expect(result).toEqual(
       btoa(JSON.stringify({ iid: '123', full_path: 'gitlab-org/gitlab', id: 1 })),
     );
+  });
+});
+
+describe('`getItems`', () => {
+  it('returns all children when showClosed flag is on', () => {
+    const children = [
+      { id: 1, state: STATE_OPEN },
+      { id: 2, state: STATE_CLOSED },
+    ];
+    const result = getItems(true)(children);
+    expect(result).toEqual(children);
+  });
+
+  it('returns only open children when showClosed flag is off', () => {
+    const openChildren = [
+      { id: 1, state: STATE_OPEN },
+      { id: 2, state: STATE_OPEN },
+    ];
+    const closedChildren = [{ id: 3, state: STATE_CLOSED }];
+    const children = openChildren.concat(closedChildren);
+    const result = getItems(false)(children);
+    expect(result).toEqual(openChildren);
   });
 });

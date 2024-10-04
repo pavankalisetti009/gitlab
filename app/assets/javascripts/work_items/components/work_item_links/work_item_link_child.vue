@@ -288,6 +288,7 @@ export default {
           :parent-work-item-id="issuableGid"
           :work-item-type="workItemType"
           :show-labels="showLabels"
+          :show-closed="showClosed"
           :work-item-full-path="workItemFullPath"
           :show-weight="shouldShowWeight"
           @click="$emit('click', $event)"

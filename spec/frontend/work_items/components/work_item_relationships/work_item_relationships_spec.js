@@ -92,6 +92,10 @@ describe('WorkItemRelationships', () => {
   const findWorkItemRelationshipForm = () => wrapper.findComponent(WorkItemAddRelationshipForm);
   const findMoreActions = () => wrapper.findComponent(WorkItemMoreActions);
 
+  beforeEach(() => {
+    utils.saveToggleToLocalStorage(WORKITEM_RELATIONSHIPS_SHOWCLOSED_LOCALSTORAGEKEY, true);
+  });
+
   it('calls workItemLinkedItemsQuery query', () => {
     createComponent();
 

@@ -34,6 +34,7 @@ import {
   workItemHierarchyTreeEmptyResponse,
   workItemHierarchyNoUpdatePermissionResponse,
   workItemByIidResponseFactory,
+  workItemHierarchyTreeSingleClosedItemResponse,
   mockWorkItemCommentNote,
 } from '../../mock_data';
 
@@ -377,5 +378,19 @@ describe('WorkItemLinks', () => {
         WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
       );
     });
+  });
+
+  it('displays no child items open message', async () => {
+    await createComponent({
+      fetchHandler: jest.fn().mockResolvedValue(workItemHierarchyTreeSingleClosedItemResponse),
+    });
+
+    expect(wrapper.findByTestId('work-item-no-child-items-open').exists()).toBe(false);
+
+    await findMoreActions().vm.$emit('toggle-show-closed');
+
+    expect(wrapper.findByTestId('work-item-no-child-items-open').text()).toBe(
+      'No child items are currently open.',
+    );
   });
 });

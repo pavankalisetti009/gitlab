@@ -18,13 +18,13 @@ import {
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_HIERARCHY,
   INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION,
-  STATE_CLOSED,
 } from '../../constants';
 import {
   findHierarchyWidgets,
   getDefaultHierarchyChildrenCount,
   saveToggleToLocalStorage,
   getToggleFromLocalStorage,
+  getItems,
 } from '../../utils';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
 import namespaceWorkItemTypesQuery from '../../graphql/namespace_work_item_types.query.graphql';
@@ -262,6 +262,12 @@ export default {
         return acc;
       }, {});
     },
+    displayableChildrenFunction() {
+      return getItems(this.showClosed);
+    },
+    hasAllChildItemsHidden() {
+      return this.displayableChildrenFunction(this.children).length === 0;
+    },
   },
   mounted() {
     this.showLabels = getToggleFromLocalStorage(this.showLabelsLocalStorageKey);
@@ -324,15 +330,9 @@ export default {
         }
       }
     },
-    displayableChildrenFunction() {
-      const { showClosed } = this;
-
-      return (children) => {
-        return children.filter(
-          (item) => item.state !== STATE_CLOSED || (item.state === STATE_CLOSED && showClosed),
-        );
-      };
-    },
+  },
+  i18n: {
+    noChildItemsOpen: s__('WorkItem|No child items are currently open.'),
   },
 };
 </script>
@@ -416,7 +416,7 @@ export default {
       <gl-alert v-if="error" variant="danger" @dismiss="error = undefined">
         {{ error }}
       </gl-alert>
-      <div class="!gl-px-3 gl-pb-3 gl-pt-2">
+      <div v-if="!hasAllChildItemsHidden" class="!gl-px-3 gl-pb-3 gl-pt-2">
         <work-item-children-wrapper
           :children="children"
           :parent="workItem"
@@ -432,7 +432,7 @@ export default {
           :has-indirect-children="hasIndirectChildren"
           :allowed-children-by-type="allowedChildrenByType"
           :dragged-item-type="draggedItemType"
-          :displayable-children-function="displayableChildrenFunction()"
+          :displayable-children-function="displayableChildrenFunction"
           @drag="draggedItemType = $event"
           @drop="draggedItemType = null"
           @error="error = $event"
@@ -446,6 +446,14 @@ export default {
           :fetch-next-page-in-progress="fetchNextPageInProgress"
           @fetch-next-page="fetchNextPage"
         />
+      </div>
+
+      <div
+        v-if="hasAllChildItemsHidden"
+        class="gl-text-subtle"
+        data-testid="work-item-no-child-items-open"
+      >
+        {{ $options.i18n.noChildItemsOpen }}
       </div>
     </template>
   </crud-component>

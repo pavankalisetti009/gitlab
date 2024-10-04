@@ -30,6 +30,7 @@ import {
   WORK_ITEM_TYPE_ROUTE_WORK_ITEM,
   NEW_WORK_ITEM_GID,
   DEFAULT_PAGE_SIZE_CHILD_ITEMS,
+  STATE_CLOSED,
 } from './constants';
 
 export const isAssigneesWidget = (widget) => widget.type === WIDGET_TYPE_ASSIGNEES;
@@ -296,4 +297,14 @@ export const makeDrawerUrlParam = (activeItem, fullPath, issuableType = TYPE_ISS
 export const getNewWorkItemAutoSaveKey = (fullPath, workItemType) => {
   if (!workItemType || !fullPath) return '';
   return `new-${fullPath}-${workItemType.toLowerCase()}-draft`;
+};
+
+export const isItemDisplayable = (item, showClosed) => {
+  return item.state !== STATE_CLOSED || (item.state === STATE_CLOSED && showClosed);
+};
+
+export const getItems = (showClosed) => {
+  return (children) => {
+    return children.filter((item) => isItemDisplayable(item, showClosed));
+  };
 };

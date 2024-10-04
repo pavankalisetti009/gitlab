@@ -35,6 +35,7 @@ import {
   workItemHierarchyPaginatedTreeResponse,
   workItemHierarchyTreeEmptyResponse,
   workItemHierarchyNoUpdatePermissionResponse,
+  workItemHierarchyTreeSingleClosedItemResponse,
   mockRolledUpCountsByType,
 } from '../../mock_data';
 
@@ -99,6 +100,10 @@ describe('WorkItemTree', () => {
       await waitForPromises();
     }
   };
+
+  beforeEach(() => {
+    utils.saveToggleToLocalStorage(WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY, true);
+  });
 
   it('displays Add button', () => {
     createComponent();
@@ -414,5 +419,21 @@ describe('WorkItemTree', () => {
       Objective: ['Key Result', 'Objective'],
       Ticket: ['Task'],
     });
+  });
+
+  it('displays no child items open message', async () => {
+    await createComponent({
+      workItemHierarchyTreeHandler: jest
+        .fn()
+        .mockResolvedValue(workItemHierarchyTreeSingleClosedItemResponse),
+    });
+
+    expect(wrapper.findByTestId('work-item-no-child-items-open').exists()).toBe(false);
+
+    await findMoreActions().vm.$emit('toggle-show-closed');
+
+    expect(wrapper.findByTestId('work-item-no-child-items-open').text()).toBe(
+      'No child items are currently open.',
+    );
   });
 });

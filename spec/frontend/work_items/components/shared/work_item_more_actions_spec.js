@@ -76,7 +76,7 @@ describe('WorkItemMoreActions', () => {
   });
 
   it('renders the show closed toggle', () => {
-    expect(findToggle(1).props('label')).toBe('Show closed');
+    expect(findToggle(1).props('label')).toBe('Show closed items');
   });
 
   it('show labels toggle emits event when clicked on the dropdown item', () => {
