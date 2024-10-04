@@ -500,7 +500,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
 
         context 'with a plan that is ineligible for a trial' do
-          where(plan: ::Plan::PAID_HOSTED_PLANS)
+          where(plan: ::Plan::PAID_HOSTED_PLANS.without(::Plan::PREMIUM))
 
           with_them do
             before do
@@ -508,6 +508,24 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
 
             it { is_expected.to be_nil }
+          end
+        end
+
+        context 'with duo_enterprise_trials disabled' do
+          before do
+            stub_feature_flags(duo_enterprise_trials_registration: false)
+          end
+
+          context 'with a plan that is ineligible for a trial' do
+            where(plan: ::Plan::PAID_HOSTED_PLANS)
+
+            with_them do
+              before do
+                create :gitlab_subscription, plan, namespace: namespace
+              end
+
+              it { is_expected.to be_nil }
+            end
           end
         end
       end
@@ -1241,6 +1259,54 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       it do
         is_expected
           .to eq(subscriptions_trials_enabled && !has_parent && never_had_trial && plan_eligible_for_trial)
+      end
+    end
+  end
+
+  describe '#plan_eligible_for_trial?', :saas do
+    let(:namespace) { create(:namespace_with_plan, plan: plan) }
+
+    subject { namespace.eligible_for_trial? }
+
+    where(:plan, :eligible) do
+      [
+        [:ultimate_plan, false],
+        [:premium_plan, true],
+        [:free_plan, true],
+        [:default_plan, true]
+      ]
+    end
+
+    with_them do
+      it "#{params[:plan]} is #{params[:eligible] && 'not'} eligible for trial" do
+        expect(subject).to eq(eligible)
+      end
+    end
+  end
+
+  context 'When duo_enterprise_trials are disabled' do
+    before do
+      stub_feature_flags(duo_enterprise_trials_registration: false)
+    end
+
+    describe '#plan_eligible_for_trial?', :saas do
+      let(:namespace) { create(:namespace_with_plan, plan: plan) }
+
+      subject { namespace.eligible_for_trial? }
+
+      where(:plan, :eligible) do
+        [
+          [:ultimate_plan, false],
+          [:premium_plan, false],
+          [:free_plan, true],
+          [:default_plan, true]
+        ]
+      end
+
+      with_them do
+        it "#{params[:plan]} is #{params[:eligible] && 'not'} eligible for trial" do
+          expect(subject).to eq(eligible)
+        end
       end
     end
   end
