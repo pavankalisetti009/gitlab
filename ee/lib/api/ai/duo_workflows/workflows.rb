@@ -111,6 +111,9 @@ module API
                   duo_workflow_executor: {
                     executor_binary_url: Gitlab::DuoWorkflow::Executor.executor_binary_url,
                     version: Gitlab::DuoWorkflow::Executor.version
+                  },
+                  workflow_metadata: {
+                    extended_logging: Feature.enabled?(:duo_workflow_extended_logging, current_user)
                   }
                 }
 

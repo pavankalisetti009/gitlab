@@ -263,16 +263,18 @@ message: "could not generate token" })
     end
 
     context 'when success' do
-      it 'returns access payload' do
-        expect(Gitlab::CloudConnector).to receive(:ai_headers).with(user).and_return({ header_key: 'header_value' })
-        expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          expect(service).to receive(:execute).and_return({ status: :success,
+      before do
+        allow(Gitlab::CloudConnector).to receive(:ai_headers).with(user).and_return({ header_key: 'header_value' })
+        allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          allow(service).to receive(:execute).and_return({ status: :success,
 oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
         end
-        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          expect(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
+        allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          allow(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
         end
+      end
 
+      it 'returns access payload' do
         post api(path, user)
 
         expect(response).to have_gitlab_http_status(:created)
@@ -284,14 +286,24 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(json_response['duo_workflow_service']['secure']).to eq(Gitlab::DuoWorkflow::Client.secure?)
         expect(json_response['duo_workflow_executor']['executor_binary_url']).to eq('https://example.com/executor')
         expect(json_response['duo_workflow_executor']['version']).to eq('v1.2.3')
+        expect(json_response['workflow_metadata']['extended_logging']).to eq(true)
+      end
+
+      context 'when duo_workflow_extended_logging is disabled' do
+        before do
+          stub_feature_flags(duo_workflow_extended_logging: false)
+        end
+
+        it 'returns workflow_metadata.extended_logging: false' do
+          post api(path, user)
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['workflow_metadata']['extended_logging']).to eq(false)
+        end
       end
 
       context 'when authenticated with a token that has the ai_workflows scope' do
         it 'succeeds' do
-          expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-            expect(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
-          end
-
           post api(path, oauth_access_token: oauth_token)
 
           expect(response).to have_gitlab_http_status(:created)
