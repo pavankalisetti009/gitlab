@@ -120,7 +120,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
 
         it 'schedules the project to be indexed and does not delete the project' do
           expect(Search::Zoekt).not_to receive(:delete_async)
-          expect(::Search::Zoekt).to receive(:index_in).with(interval, project.id).once
+          expect(Search::Zoekt).to receive(:index_async).with(project.id).once
           transfer_service.execute(new_group)
         end
       end
@@ -130,8 +130,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:project_zoekt_enabled) { false }
 
         it 'does not schedule the project to be deleted and does not index anything' do
-          expect(Search::Zoekt).not_to receive(:delete_in)
-          expect(::Search::Zoekt).not_to receive(:index_in)
+          expect(Search::Zoekt).not_to receive(:delete_async)
+          expect(::Search::Zoekt).not_to receive(:index_async)
           transfer_service.execute(new_group)
         end
       end
@@ -141,8 +141,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:project_zoekt_enabled) { true }
 
         it 'schedules the project to be deleted and index again' do
-          expect(Search::Zoekt).to receive(:delete_in).with(interval, project.id, root_namespace_id: group.id).once
-          expect(::Search::Zoekt).to receive(:index_in).once
+          expect(Search::Zoekt).to receive(:delete_async).with(project.id, root_namespace_id: group.id).once
+          expect(Search::Zoekt).to receive(:index_async).with(project.id).once
           transfer_service.execute(new_group)
         end
       end
@@ -152,8 +152,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:project_zoekt_enabled) { false }
 
         it 'schedules the project to be deleted and does not index anything' do
-          expect(Search::Zoekt).to receive(:delete_in).with(interval, project.id, root_namespace_id: group.id).once
-          expect(::Search::Zoekt).not_to receive(:index_in)
+          expect(Search::Zoekt).to receive(:delete_async).with(project.id, root_namespace_id: group.id).once
+          expect(::Search::Zoekt).not_to receive(:index_async)
           transfer_service.execute(new_group)
         end
       end
@@ -171,7 +171,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         end
 
         it 'does nothing' do
-          expect(::Search::Zoekt).not_to receive(:index_in)
+          expect(::Search::Zoekt).not_to receive(:index_async)
           expect(transfer_service).not_to receive(:process_zoekt_project)
           transfer_service.execute(new_group)
         end
@@ -189,8 +189,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:project_zoekt_enabled) { true }
 
         it 'does nothing' do
-          expect(Search::Zoekt).not_to receive(:delete_in)
-          expect(::Zoekt::IndexerWorker).not_to receive(:perform_in)
+          expect(Search::Zoekt).not_to receive(:delete_async)
           expect(transfer_service).not_to receive(:process_zoekt_project)
           transfer_service.execute(new_group)
         end
@@ -209,8 +208,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:project_zoekt_enabled) { true }
 
         it 'does nothing' do
-          expect(Search::Zoekt).not_to receive(:delete_in)
-          expect(::Zoekt::IndexerWorker).not_to receive(:perform_in)
+          expect(Search::Zoekt).not_to receive(:delete_async)
           expect(transfer_service).not_to receive(:process_zoekt_project)
           transfer_service.execute(new_group)
         end

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe PauseControl::ResumeWorker, feature_category: :global_search do
   subject(:worker) { described_class.new }
 
-  let(:worker_with_pause_control) { Zoekt::IndexerWorker }
+  let(:worker_with_pause_control) { Search::Zoekt::NamespaceIndexerWorker }
 
   describe '#perform' do
     context 'when zoekt workers are paused' do
