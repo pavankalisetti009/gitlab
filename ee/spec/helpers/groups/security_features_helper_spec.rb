@@ -14,7 +14,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
   end
 
   describe '#group_level_security_dashboard_available?' do
-    where(:group_level_compliance_dashboard_enabled, :read_group_compliance_dashboard_permission, :result) do
+    where(:group_level_compliance_dashboard_enabled, :read_compliance_dashboard_permission, :result) do
       false | false | false
       true  | false | false
       false | true  | false
@@ -24,7 +24,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
     with_them do
       before do
         stub_licensed_features(group_level_compliance_dashboard: group_level_compliance_dashboard_enabled)
-        allow(helper).to receive(:can?).with(user, :read_group_compliance_dashboard, group).and_return(read_group_compliance_dashboard_permission)
+        allow(helper).to receive(:can?).with(user, :read_compliance_dashboard, group).and_return(read_compliance_dashboard_permission)
       end
 
       it 'returns the expected result' do

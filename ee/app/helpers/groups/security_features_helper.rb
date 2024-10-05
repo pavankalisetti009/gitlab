@@ -3,7 +3,7 @@
 module Groups::SecurityFeaturesHelper
   def group_level_compliance_dashboard_available?(group)
     group.licensed_feature_available?(:group_level_compliance_dashboard) &&
-      can?(current_user, :read_group_compliance_dashboard, group)
+      can?(current_user, :read_compliance_dashboard, group)
   end
 
   def authorize_compliance_dashboard!

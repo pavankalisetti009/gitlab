@@ -582,15 +582,15 @@ module EE
       rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
         enable :admin_compliance_framework
         enable :admin_compliance_pipeline_configuration
-        enable :read_group_compliance_dashboard
+        enable :read_compliance_dashboard
       end
 
       rule { custom_role_enables_admin_compliance_framework & group_level_compliance_adherence_report_enabled }.policy do
-        enable :read_group_compliance_adherence_report
+        enable :read_compliance_adherence_report
       end
 
       rule { custom_role_enables_admin_compliance_framework & group_level_compliance_violations_report_enabled }.policy do
-        enable :read_group_compliance_violations_report
+        enable :read_compliance_violations_report
       end
 
       rule { custom_role_enables_remove_group & has_parent }.policy do
@@ -661,15 +661,15 @@ module EE
       end
 
       rule { (admin | owner | auditor) & group_level_compliance_dashboard_enabled }.policy do
-        enable :read_group_compliance_dashboard
+        enable :read_compliance_dashboard
       end
 
       rule { (admin | owner | auditor) & group_level_compliance_adherence_report_enabled }.policy do
-        enable :read_group_compliance_adherence_report
+        enable :read_compliance_adherence_report
       end
 
       rule { (admin | owner | auditor) & group_level_compliance_violations_report_enabled }.policy do
-        enable :read_group_compliance_violations_report
+        enable :read_compliance_violations_report
       end
 
       rule { (admin | owner) & group_merge_request_approval_settings_enabled }.policy do

@@ -61,7 +61,7 @@ module ComplianceManagement
       end
 
       def allowed?
-        Ability.allowed?(current_user, :read_group_compliance_dashboard, group)
+        Ability.allowed?(current_user, :read_compliance_violations_report, group)
       end
     end
   end

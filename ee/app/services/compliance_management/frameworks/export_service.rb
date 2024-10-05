@@ -32,7 +32,7 @@ module ComplianceManagement
       end
 
       def allowed?
-        Ability.allowed?(user, :read_group_compliance_dashboard, group)
+        Ability.allowed?(user, :read_compliance_dashboard, group)
       end
 
       def rows

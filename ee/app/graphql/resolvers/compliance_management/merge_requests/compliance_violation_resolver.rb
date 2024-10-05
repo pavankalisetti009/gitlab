@@ -11,7 +11,7 @@ module Resolvers
         type ::Types::ComplianceManagement::MergeRequests::ComplianceViolationType.connection_type, null: true
         description 'Compliance violations reported on a merged merge request.'
 
-        authorize :read_group_compliance_dashboard
+        authorize :read_compliance_violations_report
         authorizes_object!
 
         argument :filters, Types::ComplianceManagement::MergeRequests::ComplianceViolationInputType,
