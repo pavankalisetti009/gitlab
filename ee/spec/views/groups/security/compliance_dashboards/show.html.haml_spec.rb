@@ -17,8 +17,8 @@ RSpec.describe "groups/security/compliance_dashboards/show", type: :view, featur
   before do
     allow(view).to receive(:current_user).and_return(user)
     allow(Ability).to receive(:allowed?).and_call_original
-    allow(Ability).to receive(:allowed?).with(user, :read_group_compliance_adherence_report, group).and_return(true)
-    allow(Ability).to receive(:allowed?).with(user, :read_group_compliance_violations_report, group).and_return(true)
+    allow(Ability).to receive(:allowed?).with(user, :read_compliance_adherence_report, group).and_return(true)
+    allow(Ability).to receive(:allowed?).with(user, :read_compliance_violations_report, group).and_return(true)
 
     assign(:group, group)
   end

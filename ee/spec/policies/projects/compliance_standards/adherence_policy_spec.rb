@@ -15,7 +15,7 @@ RSpec.describe ::Projects::ComplianceStandards::AdherencePolicy, feature_categor
   end
 
   context 'when user does not have owner access to group' do
-    it { is_expected.to be_disallowed(:read_group_compliance_adherence_report) }
+    it { is_expected.to be_disallowed(:read_compliance_adherence_report) }
   end
 
   context 'when user does have access to project' do
@@ -23,6 +23,6 @@ RSpec.describe ::Projects::ComplianceStandards::AdherencePolicy, feature_categor
       group.add_owner(user)
     end
 
-    it { is_expected.to be_allowed(:read_group_compliance_adherence_report) }
+    it { is_expected.to be_allowed(:read_compliance_adherence_report) }
   end
 end

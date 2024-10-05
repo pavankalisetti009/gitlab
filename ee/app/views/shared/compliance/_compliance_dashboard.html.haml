@@ -1,7 +1,7 @@
 - group = local_assigns[:group]
 
-- adherence_report_enabled = can?(current_user, :read_group_compliance_adherence_report, group)
-- violations_report_enabled = can?(current_user, :read_group_compliance_violations_report, group)
+- adherence_report_enabled = can?(current_user, :read_compliance_adherence_report, group)
+- violations_report_enabled = can?(current_user, :read_compliance_violations_report, group)
 
 #js-compliance-report{ data: {
   violations_csv_export_path: violations_report_enabled && group_security_compliance_violation_reports_path(group, format: :csv),

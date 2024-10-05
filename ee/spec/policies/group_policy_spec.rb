@@ -3048,15 +3048,15 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     describe 'group level compliance dashboard' do
-      it_behaves_like 'group level compliance feature', :group_level_compliance_dashboard, :read_group_compliance_dashboard
+      it_behaves_like 'group level compliance feature', :group_level_compliance_dashboard, :read_compliance_dashboard
     end
 
     describe 'group level compliance adherence report' do
-      it_behaves_like 'group level compliance feature', :group_level_compliance_adherence_report, :read_group_compliance_adherence_report
+      it_behaves_like 'group level compliance feature', :group_level_compliance_adherence_report, :read_compliance_adherence_report
     end
 
     describe 'group level compliance violations report' do
-      it_behaves_like 'group level compliance feature', :group_level_compliance_violations_report, :read_group_compliance_violations_report
+      it_behaves_like 'group level compliance feature', :group_level_compliance_violations_report, :read_compliance_violations_report
     end
   end
 
@@ -3757,7 +3757,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'for a member role with admin_compliance_framework true' do
       let(:member_role_abilities) { { admin_compliance_framework: true } }
       let(:allowed_abilities) do
-        [:admin_compliance_framework, :admin_compliance_pipeline_configuration, :read_group_compliance_dashboard]
+        [:admin_compliance_framework, :admin_compliance_pipeline_configuration, :read_compliance_dashboard]
       end
 
       context 'when compliance framework feature is available' do
