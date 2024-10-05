@@ -49,10 +49,9 @@ module EE
         old_namespace_had_zoekt_enabled = ::Namespace.find_by_id(old_root_ancestor_id)&.use_zoekt? if zoekt_enabled
 
         group.all_projects.each_batch(of: PROJECT_QUERY_BATCH_SIZE) do |projects|
-          projects.each.with_index do |project, idx|
+          projects.each do |project|
             if zoekt_enabled && old_root_ancestor_id != project.root_namespace.id
-              process_zoekt_project(old_root_ancestor_id, old_namespace_had_zoekt_enabled,
-                project, idx)
+              process_zoekt_project(old_root_ancestor_id, old_namespace_had_zoekt_enabled, project)
             end
 
             process_elasticsearch_project(project, elasticsearch_limit_indexing_enabled)
@@ -68,14 +67,12 @@ module EE
         ::ProjectSetting.for_projects(updated_project_ids).update_all(legacy_open_source_license_available: false)
       end
 
-      def process_zoekt_project(old_root_ancestor_id, old_namespace_had_zoekt_enabled, project, idx)
+      def process_zoekt_project(old_root_ancestor_id, old_namespace_had_zoekt_enabled, project)
         if old_namespace_had_zoekt_enabled
-          interval_for_delete_worker = idx % ::Search::Zoekt::DeleteProjectWorker::MAX_JOBS_PER_HOUR
-          ::Search::Zoekt.delete_in(interval_for_delete_worker, project.id, root_namespace_id: old_root_ancestor_id)
+          ::Search::Zoekt.delete_async(project.id, root_namespace_id: old_root_ancestor_id)
         end
 
-        interval_for_indexer_worker = idx % ::Zoekt::IndexerWorker::MAX_JOBS_PER_HOUR
-        ::Search::Zoekt.index_in(interval_for_indexer_worker, project.id) if project.use_zoekt?
+        ::Search::Zoekt.index_async(project.id) if project.use_zoekt?
       end
 
       def process_elasticsearch_project(project, elasticsearch_limit_indexing_enabled)
