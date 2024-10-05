@@ -315,8 +315,6 @@ module EE
     def post_create_access_request_hook
       super
 
-      return if ::Feature.disabled?(:group_access_request_webhooks, source)
-
       execute_hooks_for(:request)
     end
 
