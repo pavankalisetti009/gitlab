@@ -87,7 +87,7 @@ export default {
         :selected="selected[$options.NEWLY_DETECTED]"
         :label="$options.i18n.firstFilterLabel"
         :class="{ 'gl-pb-3': allFiltersSelected }"
-        label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0"
+        label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold"
         class="gl-w-full gl-bg-white md:gl-items-center"
         @input="setStatuses($event, $options.NEWLY_DETECTED)"
         @change-group="setStatusFilter"

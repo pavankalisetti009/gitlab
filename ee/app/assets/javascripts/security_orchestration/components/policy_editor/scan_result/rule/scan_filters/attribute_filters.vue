@@ -61,13 +61,9 @@ export default {
       @remove="removeFilter"
     >
       <template #label>
-        <label
-          v-if="idx === 0"
-          v-gl-tooltip
-          class="gl-mb-0 gl-font-normal"
-          :title="$options.i18n.labelTooltip"
-          >{{ $options.i18n.label }}</label
-        >
+        <label v-if="idx === 0" v-gl-tooltip class="gl-mb-0" :title="$options.i18n.labelTooltip">{{
+          $options.i18n.label
+        }}</label>
         <label v-else class="gl-mb-0 gl-w-11 gl-font-normal">{{ $options.i18n.andOperator }}</label>
       </template>
     </attribute-filter>
