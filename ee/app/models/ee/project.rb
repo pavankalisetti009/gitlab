@@ -266,7 +266,7 @@ module EE
       scope :with_repositories_enabled, -> { joins(:project_feature).where(project_features: { repository_access_level: ::ProjectFeature::ENABLED }) }
 
       scope :with_security_reports_stored, -> { where('EXISTS (?)', ::Vulnerabilities::Finding.scoped_project.select(1)) }
-      scope :with_security_scans, -> { where('EXISTS (?)', Security::Scan.scoped_project.select(1)) }
+      scope :with_security_scans, -> { where(id: Security::Scan.projects_with_scans(pluck_primary_key)) }
       scope :with_github_integration_pipeline_events, -> { joins(:github_integration).merge(::Integrations::Github.pipeline_hooks) }
       scope :with_active_prometheus_integration, -> { joins(:prometheus_integration).merge(::Integrations::Prometheus.active) }
       scope :mirrored_with_enabled_pipelines, -> do

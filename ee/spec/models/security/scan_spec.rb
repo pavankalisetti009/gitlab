@@ -275,19 +275,13 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
     it { is_expected.to contain_exactly(scan_1, scan_2) }
   end
 
-  describe '.has_dismissal_feedback' do
+  describe '#projects_with_scans' do
     let(:project_1) { create(:project) }
     let(:project_2) { create(:project) }
-    let(:scan_1) { create(:security_scan, project: project_1) }
-    let(:scan_2) { create(:security_scan, project: project_2) }
-    let(:expected_scans) { [scan_1] }
+    let!(:scan_1) { create(:security_scan, project: project_1) }
+    let(:expected_scans) { [project_1.id] }
 
-    subject { described_class.has_dismissal_feedback }
-
-    before do
-      create(:vulnerability_feedback, :dismissal, project: project_1, category: scan_1.scan_type)
-      create(:vulnerability_feedback, :issue, project: project_2, category: scan_2.scan_type)
-    end
+    subject { described_class.projects_with_scans([project_1.id, project_2.id]) }
 
     it { is_expected.to match_array(expected_scans) }
   end
