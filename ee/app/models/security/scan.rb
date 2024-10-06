@@ -34,21 +34,7 @@ module Security
     scope :by_scan_types, ->(scan_types) { where(scan_type: sanitize_scan_types(scan_types)) }
     scope :by_project, ->(project) { where(project: project) }
     scope :distinct_scan_types, -> { select(:scan_type).distinct.pluck(:scan_type) }
-    scope :scoped_project, -> { where('security_scans.project_id = projects.id') }
     scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
-
-    scope :has_dismissal_feedback, -> do
-      # The `category` enum on `vulnerability_feedback` table starts from 0 but the `scan_type` enum
-      # on `security_scans` from 1. For this reason, we have to decrease the value of `scan_type` by one
-      # to match with category values on `vulnerability_feedback` table.
-      joins(project: :vulnerability_feedback)
-        .where('vulnerability_feedback.category = (security_scans.scan_type - 1)')
-        .merge(Vulnerabilities::Feedback.for_dismissal)
-        .allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478409'
-        )
-    end
-
     scope :latest, -> { where(latest: true) }
     scope :latest_successful, -> { latest.succeeded }
     scope :by_build_ids, ->(build_ids) { where(build_id: build_ids) }
@@ -69,6 +55,10 @@ module Security
 
     def self.pipeline_ids(project, scan_type)
       by_scan_types(scan_type).by_project(project).succeeded.pluck(:pipeline_id)
+    end
+
+    def self.projects_with_scans(project_ids)
+      Security::Scan.where(project_id: project_ids).distinct.pluck(:project_id)
     end
 
     # If the record is created 3 months ago and purged,
