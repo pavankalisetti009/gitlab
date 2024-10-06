@@ -10,9 +10,7 @@ module EE
         super.merge(
           security_configuration_path: project_security_configuration_path(project),
           vulnerability_report_path: project_security_vulnerability_report_index_path(project,
-            tab: :CONTAINER_REGISTRY),
-          container_scanning_for_registry_docs_path:
-            help_page_path('user/application_security/continuous_vulnerability_scanning/index.md')
+            tab: :CONTAINER_REGISTRY)
         )
       end
     end
