@@ -33,9 +33,7 @@ export default {
 <template>
   <section-layout class="gl-w-full" :show-remove-button="false">
     <template #selector>
-      <label class="gl-mb-0 gl-mr-2 gl-font-normal" :title="$options.i18n.label">{{
-        $options.i18n.label
-      }}</label>
+      <label class="gl-mb-0 gl-mr-2" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
       <rule-multi-select
         :value="selected"
         :item-type-name="$options.i18n.severityLevels"

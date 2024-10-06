@@ -33,7 +33,7 @@ export default {
       return `gl-grow gl-w-full gl-flex gl-gap-3 gl-items-center gl-flex-wrap ${this.contentClasses}`;
     },
     labelClass() {
-      return `gl-w-6 !gl-font-normal gl-mb-0 gl-text-lg ${this.labelClasses}`;
+      return `gl-w-6 gl-font-normal gl-mb-0 gl-text-lg ${this.labelClasses}`;
     },
     showLabel() {
       return Boolean(this.ruleLabel);
