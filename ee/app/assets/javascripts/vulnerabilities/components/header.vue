@@ -145,13 +145,6 @@ export default {
       },
     },
   },
-  mounted() {
-    this.adjustHeaderHeight();
-    window.addEventListener('resize', this.adjustHeaderHeight);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.adjustHeaderHeight);
-  },
   apollo: {
     $subscribe: {
       // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -302,19 +295,12 @@ export default {
       this.isProcessingAction = false;
       this.errorAlert = createAlert({ message: error });
     },
-    adjustHeaderHeight() {
-      const headerRef = this.$refs.vulnerabilityHeader;
-      if (headerRef) {
-        const headerHeight = headerRef.offsetHeight;
-        this.$emit('header-height-updated', headerHeight);
-      }
-    },
   },
 };
 </script>
 
 <template>
-  <div ref="vulnerabilityHeader" data-testid="vulnerability-header">
+  <div data-testid="vulnerability-header">
     <resolution-alert
       v-if="showResolutionAlert"
       :vulnerability-id="vulnerability.id"
