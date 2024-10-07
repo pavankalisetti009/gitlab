@@ -44,12 +44,19 @@ module Types
         description: 'Scan Execution Policies of the compliance framework.',
         resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::ScanExecutionPolicyResolver
 
-      field :scan_result_policies,
+      field :scan_result_policies, # TODO: Rename this to merge request approval policies
         ::Types::SecurityOrchestration::ScanResultPolicyType.connection_type,
         calls_gitaly: true,
         null: true,
         description: 'Scan Result Policies of the compliance framework.',
         resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPolicyResolver
+
+      field :pipeline_execution_policies,
+        ::Types::SecurityOrchestration::PipelineExecutionPolicyType.connection_type,
+        calls_gitaly: true,
+        null: true,
+        description: 'Pipeline Execution Policies of the compliance framework.',
+        resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecutionPolicyResolver
 
       def default
         object.id == object.namespace.namespace_settings.default_compliance_framework_id

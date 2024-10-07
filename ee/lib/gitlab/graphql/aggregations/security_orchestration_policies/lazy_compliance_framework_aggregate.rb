@@ -42,6 +42,9 @@ module Gitlab
               scan_execution_policies = construct_scan_execution_policies(
                 filter_policies_by_scope(policies[:scan_execution_policies], framework.id)
               )
+              pipeline_execution_policies = construct_pipeline_execution_policies(
+                filter_policies_by_scope(policies[:pipeline_execution_policies], framework.id)
+              )
 
               @lazy_state[:loaded_objects][framework.id] ||= {}
               @lazy_state[:loaded_objects][framework.id][:scan_result_policies] = Array.wrap(
@@ -49,6 +52,10 @@ module Gitlab
 
               @lazy_state[:loaded_objects][framework.id][:scan_execution_policies] = Array.wrap(
                 @lazy_state.dig(:loaded_objects, framework.id, :scan_execution_policies)) + scan_execution_policies
+
+              @lazy_state[:loaded_objects][framework.id][:pipeline_execution_policies] = Array.wrap(
+                @lazy_state.dig(:loaded_objects, framework.id, :pipeline_execution_policies)) +
+                pipeline_execution_policies
             end
 
             @lazy_state[:pending_frameworks].clear

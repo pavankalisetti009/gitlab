@@ -53,10 +53,15 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       build(:scan_result_policy, name: 'SRP 1', policy_scope: policy_scope)
     end
 
+    let(:pipeline_execution_policy) do
+      build(:pipeline_execution_policy, name: 'PEP 1', policy_scope: policy_scope)
+    end
+
     let(:policy_yaml) do
       build(:orchestration_policy_yaml,
         scan_execution_policy: [scan_execution_policy],
-        scan_result_policy: [scan_result_policy]
+        scan_result_policy: [scan_result_policy],
+        pipeline_execution_policy: [pipeline_execution_policy]
       )
     end
 
@@ -73,7 +78,11 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       let(:fake_state) do
         {
           pending_frameworks: [],
-          loaded_objects: { framework.id => { scan_result_policies: [], scan_execution_policies: [] } }
+          loaded_objects: {
+            framework.id => {
+              scan_result_policies: [], scan_execution_policies: [], pipeline_execution_policy: []
+            }
+          }
         }
       end
 
