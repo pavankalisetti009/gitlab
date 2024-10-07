@@ -43,7 +43,7 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
           issueLinksEndpoint: "/groups/#{@group.full_path}/-/epics/#{epic.iid}/issues",
           issuesWebUrl: "/groups/#{@group.full_path}/-/issues",
           lockVersion: epic.lock_version,
-          markdownDocsPath: '/help/user/markdown',
+          markdownDocsPath: '/help/user/markdown.md',
           markdownPreviewPath: "/groups/#{@group.full_path}/-/preview_markdown?target_id=#{epic.iid}&target_type=Epic",
           projectsEndpoint: "/api/v4/groups/#{@group.id}/projects",
           updateEndpoint: "/groups/#{@group.full_path}/-/epics/#{epic.iid}.json"

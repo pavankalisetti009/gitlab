@@ -12,7 +12,7 @@ module EE
           vulnerability_report_path: project_security_vulnerability_report_index_path(project,
             tab: :CONTAINER_REGISTRY),
           container_scanning_for_registry_docs_path:
-            help_page_path('user/application_security/continuous_vulnerability_scanning/index')
+            help_page_path('user/application_security/continuous_vulnerability_scanning/index.md')
         )
       end
     end

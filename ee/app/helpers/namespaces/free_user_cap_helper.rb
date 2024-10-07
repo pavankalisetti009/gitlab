@@ -23,7 +23,7 @@ module Namespaces
           'includes unlimited users.'
         ),
         tag_pair(
-          link_to('', ::Gitlab::Routing.url_helpers.help_page_path('user/free_user_limit')), :link_start, :link_end
+          link_to('', ::Gitlab::Routing.url_helpers.help_page_path('user/free_user_limit.md')), :link_start, :link_end
         ),
         tag_pair(link_to('', start_trial_url), :trial_start, :trial_end),
         tag_pair(link_to('', upgrade_url), :upgrade_start, :upgrade_end),

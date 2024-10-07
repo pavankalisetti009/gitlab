@@ -5,7 +5,7 @@ module EE
     # Overwritten
     def reviewers_dropdown_options_for_suggested_reviewers
       suggested_reviewers_help_path = help_page_path(
-        'user/project/merge_requests/reviews/index',
+        'user/project/merge_requests/reviews/index.md',
         anchor: 'suggested-reviewers'
       )
 

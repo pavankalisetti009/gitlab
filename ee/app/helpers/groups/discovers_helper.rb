@@ -12,7 +12,7 @@ module Groups
           description: s_("TrialDiscoverPage|Collaborate on high-level ideas that share a common theme. " \
                           "Use epics to group issues that cross milestones and projects."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/group/epics/index"),
+          doc_url: help_page_url("user/group/epics/index.md"),
           video_url: "https://vimeo.com/693759778",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -23,7 +23,7 @@ module Groups
           title: s_("TrialDiscoverPage|Roadmaps"),
           description: s_("TrialDiscoverPage|Visualize your epics and milestones in a timeline."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/group/roadmap/index"),
+          doc_url: help_page_url("user/group/roadmap/index.md"),
           video_url: "https://vimeo.com/670922063",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -35,7 +35,7 @@ module Groups
           description: s_("TrialDiscoverPage|Create a more advanced workflow for issues, merge requests, " \
                           "and epics by using scoped, mutually exclusive labels."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/project/labels", anchor: "scoped-labels"),
+          doc_url: help_page_url("user/project/labels.md", anchor: "scoped-labels"),
           video_url: "https://vimeo.com/670906315",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -47,7 +47,7 @@ module Groups
           description: s_("TrialDiscoverPage|Maintain high quality code by requiring approval " \
                           "from specific users on your merge requests."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/project/merge_requests/approvals/rules"),
+          doc_url: help_page_url("user/project/merge_requests/approvals/rules.md"),
           video_url: "https://vimeo.com/670904904",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -58,7 +58,7 @@ module Groups
           title: s_("TrialDiscoverPage|Burn down charts"),
           description: s_("TrialDiscoverPage|Track your development progress by viewing issues in a burndown chart."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/project/milestones/burndown_and_burnup_charts"),
+          doc_url: help_page_url("user/project/milestones/burndown_and_burnup_charts.md"),
           video_url: "https://vimeo.com/670905639",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -70,7 +70,7 @@ module Groups
           description: s_("TrialDiscoverPage|Target the right approvers for your merge request by assigning " \
                           "owners to specific files."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/project/codeowners/index"),
+          doc_url: help_page_url("user/project/codeowners/index.md"),
           video_url: "https://vimeo.com/670896787",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
@@ -82,7 +82,7 @@ module Groups
           description: s_("TrialDiscoverPage|Find and fix bottlenecks in your code review process by understanding " \
                           "how long open merge requests have been in review."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/analytics/code_review_analytics"),
+          doc_url: help_page_url("user/analytics/code_review_analytics.md"),
           video_url: "https://vimeo.com/670893940",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
@@ -94,7 +94,7 @@ module Groups
           description: s_("TrialDiscoverPage|Let users view what GitLab has to offer without using a " \
                           "subscription seat."),
           plan: s_("TrialDiscoverPage|Ultimate"),
-          doc_url: help_page_url("user/permissions"),
+          doc_url: help_page_url("user/permissions.md"),
           calculator_url: "https://about.gitlab.com/pricing/ultimate/#wu-guest-calculator",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
@@ -106,7 +106,7 @@ module Groups
           description: s_("TrialDiscoverPage|Keep your application secure by checking your libraries for " \
                           "vulnerabilities."),
           plan: s_("TrialDiscoverPage|Ultimate"),
-          doc_url: help_page_url("user/application_security/dependency_scanning/index"),
+          doc_url: help_page_url("user/application_security/dependency_scanning/index.md"),
           video_url: "https://vimeo.com/670886968",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
@@ -118,7 +118,7 @@ module Groups
           description: s_("TrialDiscoverPage|Keep your application secure by checking your deployed environments " \
                           "for vulnerabilities."),
           plan: s_("TrialDiscoverPage|Ultimate"),
-          doc_url: help_page_url("user/application_security/dast/index"),
+          doc_url: help_page_url("user/application_security/dast/index.md"),
           video_url: "https://vimeo.com/670891385",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',

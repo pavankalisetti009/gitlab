@@ -19,12 +19,12 @@ module VulnerabilitiesHelper
       create_mr_url: create_vulnerability_feedback_merge_request_path(vulnerability.finding.project),
       discussions_url: discussions_project_security_vulnerability_path(vulnerability.project, vulnerability),
       notes_url: project_security_vulnerability_notes_path(vulnerability.project, vulnerability),
-      related_issues_help_path: help_page_path('user/application_security/vulnerabilities', anchor: 'linking-a-vulnerability-to-issues'),
+      related_issues_help_path: help_page_path('user/application_security/vulnerabilities.md', anchor: 'linking-a-vulnerability-to-issues'),
       pipeline: vulnerability_pipeline_data(pipeline),
       can_modify_related_issues: current_user.can?(:admin_vulnerability_issue_link, vulnerability),
       can_admin: current_user.can?(:admin_vulnerability, vulnerability.project),
-      issue_tracking_help_path: help_page_path('user/project/settings', anchor: 'sharing-and-permissions'),
-      permissions_help_path: help_page_path('user/permissions', anchor: 'project-members-permissions'),
+      issue_tracking_help_path: help_page_path('user/project/settings.md', anchor: 'sharing-and-permissions'),
+      permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-members-permissions'),
       dismissal_descriptions: dismissal_descriptions
     }
 
