@@ -109,7 +109,7 @@ export default {
         <gl-link
           :href="newCveIdRequestUrl"
           target="_blank"
-          class="btn btn-default btn-block js-cve-id-request-button quarantined-deprecated-btn"
+          class="btn btn-default btn-block js-cve-id-request-button"
           data-testid="request-button"
           >{{ $options.i18n.createRequest }}</gl-link
         >
@@ -131,7 +131,7 @@ export default {
               <gl-link
                 :href="helpHref"
                 target="_blank"
-                class="btn btn-default js-cve-id-request-learn-more-link quarantined-deprecated-btn"
+                class="btn btn-default js-cve-id-request-learn-more-link"
                 >{{ $options.i18n.learnMore }}</gl-link
               >
             </div>
