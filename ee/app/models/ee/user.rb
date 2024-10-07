@@ -267,7 +267,7 @@ module EE
     end
 
     def should_use_security_policy_bot_avatar?
-      security_policy_bot? && ::Feature.enabled?(:security_policy_bot_shared_avatar, projects.first)
+      security_policy_bot?
     end
 
     def security_policy_bot_static_avatar_path(size = nil)
