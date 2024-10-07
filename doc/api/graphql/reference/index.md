@@ -29461,6 +29461,8 @@ Represents vulnerability finding of a security report on the pipeline.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="pipelinesecurityreportfindingairesolutionavailable"></a>`aiResolutionAvailable` | [`Boolean`](#boolean) | Indicates whether the type of finding can be resolved with AI. |
+| <a id="pipelinesecurityreportfindingairesolutionenabled"></a>`aiResolutionEnabled` | [`Boolean`](#boolean) | Indicates whether the specific finding can be resolved with AI. |
 | <a id="pipelinesecurityreportfindingassets"></a>`assets` | [`[AssetType!]`](#assettype) | List of assets associated with the vulnerability. |
 | <a id="pipelinesecurityreportfindingdescription"></a>`description` | [`String`](#string) | Description of the vulnerability finding. |
 | <a id="pipelinesecurityreportfindingdescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
