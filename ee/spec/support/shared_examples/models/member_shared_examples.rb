@@ -24,7 +24,7 @@ RSpec.shared_examples 'member validations' do
 
           expect(member).not_to be_valid
           expect(member.errors.messages[:user]).to eq([
-            "is not linked to a SAML account or has an inactive SCIM identity. For information on how to resolve this error, see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"/help/user/group/saml_sso/troubleshooting_scim\">troubleshooting SCIM documentation</a>."
+            "is not linked to a SAML account or has an inactive SCIM identity. For information on how to resolve this error, see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"/help/user/group/saml_sso/troubleshooting_scim.md\">troubleshooting SCIM documentation</a>."
           ])
         end
 
@@ -53,7 +53,7 @@ RSpec.shared_examples 'member validations' do
             expect(member).not_to be_valid
 
             expect(member.errors.messages[:user]).to eq([
-              "is not linked to a SAML account or has an inactive SCIM identity. For information on how to resolve this error, see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"/help/user/group/saml_sso/troubleshooting_scim\">troubleshooting SCIM documentation</a>."
+              "is not linked to a SAML account or has an inactive SCIM identity. For information on how to resolve this error, see the <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"/help/user/group/saml_sso/troubleshooting_scim.md\">troubleshooting SCIM documentation</a>."
             ])
           end
         end

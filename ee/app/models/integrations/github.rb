@@ -54,7 +54,7 @@ module Integrations
 
       docs_link = ActionController::Base.helpers.link_to(
         _('What is repository mirroring?'),
-        Rails.application.routes.url_helpers.help_page_url('user/project/repository/repository_mirroring')
+        Rails.application.routes.url_helpers.help_page_url('user/project/repository/repository_mirroring.md')
       )
       s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}" % { docs_link: docs_link }).html_safe
     end
@@ -64,7 +64,7 @@ module Integrations
     end
 
     def self.static_context_field_help
-      learn_more_link_url = ::Gitlab::Routing.url_helpers.help_page_path('user/project/integrations/github', anchor: 'static-or-dynamic-status-check-names')
+      learn_more_link_url = ::Gitlab::Routing.url_helpers.help_page_path('user/project/integrations/github.md', anchor: 'static-or-dynamic-status-check-names')
       learn_more_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: learn_more_link_url }
       s_('GithubIntegration|Select this if you want GitHub to mark status checks as "Required". %{learn_more_link_start}Learn more%{learn_more_link_end}.').html_safe % { learn_more_link_start: learn_more_link_start, learn_more_link_end: '</a>'.html_safe }
     end
