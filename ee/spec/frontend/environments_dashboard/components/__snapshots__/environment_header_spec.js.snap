@@ -20,7 +20,7 @@ exports[`Environment Header has a failed pipeline matches the snapshot 1`] = `
     </gl-link-stub>
   </div>
   <review-app-link-stub
-    cssclass="btn btn-default btn-sm quarantined-deprecated-btn"
+    cssclass="btn btn-default btn-sm"
     display="[object Object]"
     link="http://example.com"
     size="medium"
@@ -48,7 +48,7 @@ exports[`Environment Header has errors matches the snapshot 1`] = `
     </gl-link-stub>
   </div>
   <review-app-link-stub
-    cssclass="btn btn-default btn-sm quarantined-deprecated-btn"
+    cssclass="btn btn-default btn-sm"
     display="[object Object]"
     link="http://example.com"
     size="medium"
@@ -76,7 +76,7 @@ exports[`Environment Header renders name and link to app matches the snapshot 1`
     </a>
   </div>
   <a
-    class="btn btn-default btn-md btn-sm gl-button quarantined-deprecated-btn"
+    class="btn btn-default btn-md btn-sm gl-button"
     data-track-action="open_review_app"
     data-track-label="review_app"
     href="http://example.com"
