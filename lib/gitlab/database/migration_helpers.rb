@@ -17,6 +17,7 @@ module Gitlab
       include AsyncIndexes::MigrationHelpers
       include AsyncConstraints::MigrationHelpers
       include WraparoundVacuumHelpers
+      include PartitionHelpers
 
       def define_batchable_model(table_name, connection: self.connection, primary_key: nil)
         super(table_name, connection: connection, primary_key: primary_key)
@@ -1205,20 +1206,6 @@ into similar problems in the future (e.g. when new tables are created).
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
-
-      def partition?(table_name)
-        if view_exists?(:postgres_partitions)
-          Gitlab::Database::PostgresPartition.partition_exists?(table_name)
-        else
-          Gitlab::Database::PostgresPartition.legacy_partition_exists?(table_name)
-        end
-      end
-
-      def table_partitioned?(table_name)
-        Gitlab::Database::PostgresPartitionedTable
-          .find_by_name_in_current_schema(table_name)
-          .present?
-      end
 
       # While it is safe to call `change_column_default` on a column without
       # default it would still require access exclusive lock on the table
