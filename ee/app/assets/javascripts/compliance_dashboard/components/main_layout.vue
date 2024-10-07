@@ -86,6 +86,15 @@ export default {
     isTopLevelGroup() {
       return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
     },
+    hasAtLeastOneExportAvailable() {
+      return (
+        this.projectFrameworksCsvExportPath ||
+        this.mergeCommitsCsvExportPath ||
+        this.violationsCsvExportPath ||
+        this.adherencesCsvExportPath ||
+        this.frameworksCsvExportPath
+      );
+    },
     tabs() {
       return this.availableTabs.map((tabName) => {
         const tabConfig = tabConfigs[tabName];
@@ -130,6 +139,7 @@ export default {
     >
       <template #actions>
         <reports-export
+          v-if="hasAtLeastOneExportAvailable"
           class="gl-mb-3 gl-mr-2"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
