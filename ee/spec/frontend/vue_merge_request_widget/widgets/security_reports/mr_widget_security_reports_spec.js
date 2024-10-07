@@ -275,6 +275,84 @@ describe('MR Widget Security Reports', () => {
       expect(findDismissedBadge().text()).toBe('Dismissed');
     });
 
+    it.each`
+      resolveVulnerabilityWithAi | aiResolutionEnabled | shouldShowAiBadge
+      ${true}                    | ${true}             | ${true}
+      ${false}                   | ${true}             | ${false}
+      ${true}                    | ${false}            | ${false}
+    `(
+      'with the resolveVulnerabilityWithAi ability set to "$resolveVulnerabilityWithAi" and the vulnerability has ai_resolution_enabled set to "$aiResolutionEnabled" it should show the AI-Badge: "$shouldShowAiBadge"',
+      async ({ resolveVulnerabilityWithAi, aiResolutionEnabled, shouldShowAiBadge }) => {
+        await createComponentAndExpandWidget({
+          mockDataFn: () =>
+            mockWithData({
+              findings: {
+                sast: {
+                  added: [
+                    {
+                      uuid: '1',
+                      severity: 'critical',
+                      name: 'Password leak',
+                      state: 'dismissed',
+                      ai_resolution_enabled: aiResolutionEnabled,
+                    },
+                  ],
+                },
+              },
+            }),
+          provide: {
+            glAbilities: {
+              resolveVulnerabilityWithAi,
+            },
+            glFeatures: {
+              resolveVulnerabilityInMr: true,
+            },
+          },
+        });
+
+        expect(wrapper.findByTestId('ai-resolvable-badge').exists()).toBe(shouldShowAiBadge);
+      },
+    );
+
+    it.each`
+      resolveVulnerabilityWithAi | aiResolutionEnabled
+      ${true}                    | ${true}
+      ${false}                   | ${true}
+      ${true}                    | ${false}
+    `(
+      'with the "resolveVulnerabilityInMr" feature flag set to "false" it should never show the AI-Badge',
+      async ({ resolveVulnerabilityWithAi, aiResolutionEnabled }) => {
+        await createComponentAndExpandWidget({
+          mockDataFn: () =>
+            mockWithData({
+              findings: {
+                sast: {
+                  added: [
+                    {
+                      uuid: '1',
+                      severity: 'critical',
+                      name: 'Password leak',
+                      state: 'dismissed',
+                      ai_resolution_enabled: aiResolutionEnabled,
+                    },
+                  ],
+                },
+              },
+            }),
+          provide: {
+            glAbilities: {
+              resolveVulnerabilityWithAi,
+            },
+            glFeatures: {
+              resolveVulnerabilityInMr: false,
+            },
+          },
+        });
+
+        expect(wrapper.findByTestId('ai-resolvable-badge').exists()).toBe(false);
+      },
+    );
+
     it('should mount the widget component', async () => {
       await createComponentWithData();
 
