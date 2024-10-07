@@ -33,7 +33,7 @@ RSpec.describe Namespaces::FreeUserCap::NonOwnerEnforcementAlertComponent, :saas
         render_inline(component)
 
         expect(page).to have_content(title)
-        expect(page).to have_link('read-only', href: help_page_path('user/free_user_limit'))
+        expect(page).to have_link('read-only', href: help_page_path('user/free_user_limit.md'))
 
         expect(page).to have_css(".#{content_class}")
 

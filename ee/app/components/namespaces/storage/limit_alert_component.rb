@@ -179,7 +179,7 @@ module Namespaces
       def alert_message_explanation
         text_args = {
           namespace_name: root_namespace.name,
-          read_only_link_start: link_start_tag(help_page_path('user/read_only_namespaces')),
+          read_only_link_start: link_start_tag(help_page_path('user/read_only_namespaces.md')),
           link_end: "</a>"
         }
 
@@ -206,11 +206,11 @@ module Namespaces
       def alert_message_cta
         text_args = {
           manage_storage_link_start: link_start_tag(
-            help_page_path('user/usage_quotas', anchor: 'manage-your-storage-usage')
+            help_page_path('user/usage_quotas.md', anchor: 'manage-your-storage-usage')
           ),
           group_member_link_start: link_start_tag(group_group_members_path(root_namespace)),
           purchase_more_link_start: link_start_tag(
-            help_page_path('subscriptions/gitlab_com/index', anchor: 'purchase-more-storage-and-transfer')
+            help_page_path('subscriptions/gitlab_com/index.md', anchor: 'purchase-more-storage-and-transfer')
           ),
           link_end: "</a>"
         }

@@ -3,7 +3,7 @@
 module IncidentManagement
   class CreateIncidentSlaExceededLabelService < BaseService
     def self.doc_url
-      Rails.application.routes.url_helpers.help_page_url('operations/incident_management/incidents', anchor: 'service-level-agreement-countdown-timer')
+      Rails.application.routes.url_helpers.help_page_url('operations/incident_management/incidents.md', anchor: 'service-level-agreement-countdown-timer')
     end
 
     LABEL_PROPERTIES = {
