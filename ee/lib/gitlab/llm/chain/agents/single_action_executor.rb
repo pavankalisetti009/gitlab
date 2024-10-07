@@ -110,6 +110,15 @@ module Gitlab
                   error_code: "A1004"
                 )
               end
+            when Gitlab::AiGateway::ForbiddenError
+              Answer.error_answer(
+                error: error,
+                context: context,
+                content: _("I'm sorry, you don't have the GitLab Duo subscription required " \
+                  "to use Duo Chat. Please contact your administrator."),
+                source: "chat_v2",
+                error_code: "M3006"
+              )
             else
               Answer.error_answer(
                 error: error,
