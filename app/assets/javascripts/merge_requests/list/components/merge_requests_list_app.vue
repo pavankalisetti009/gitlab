@@ -111,19 +111,20 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: [
-    'autocompleteAwardEmojisPath',
-    'fullPath',
-    'hasAnyMergeRequests',
-    'hasScopedLabelsFeature',
-    'initialSort',
-    'isPublicVisibilityRestricted',
-    'isSignedIn',
-    'newMergeRequestPath',
-    'releasesEndpoint',
-    'canBulkUpdate',
-    'environmentNamesPath',
-  ],
+  inject: {
+    autocompleteAwardEmojisPat: { default: '' },
+    fullPath: { default: '' },
+    hasAnyMergeRequests: { default: false },
+    hasScopedLabelsFeature: { default: false },
+    initialSort: { default: '' },
+    isPublicVisibilityRestricted: { default: false },
+    isSignedIn: { default: false },
+    newMergeRequestPath: { default: '' },
+    releasesEndpoint: { default: '' },
+    canBulkUpdate: { default: false },
+    environmentNamesPath: { default: '' },
+    mergeTrainsPath: { default: undefined },
+  },
   data() {
     return {
       filterTokens: [],
@@ -659,6 +660,9 @@ export default {
   >
     <template #nav-actions>
       <div class="gl-flex gl-gap-3">
+        <gl-button v-if="mergeTrainsPath" :href="mergeTrainsPath" data-testid="merge-trains">
+          {{ __('Merge trains') }}
+        </gl-button>
         <gl-button
           v-if="canBulkUpdate"
           class="gl-grow"
