@@ -170,7 +170,7 @@ export default {
         id="company_size"
         :value="companySize"
         name="company_size"
-        class="js-track-error"
+        class="js-track-error-gl-select"
         :options="companySizeOptionsWithDefault"
         value-field="id"
         text-field="name"
