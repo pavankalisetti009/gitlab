@@ -59,14 +59,6 @@ module EE
         attributes.merge(member_role_id: args[:member_role_id])
       end
 
-      override :after_commit_tasks
-      def after_commit_tasks
-        super
-
-        convert_invited_user_to_invite_onboarding
-        finish_onboarding_user
-      end
-
       override :commit_member
       def commit_member
         if security_bot_and_member_of_other_project?
@@ -74,24 +66,6 @@ module EE
         else
           super
         end
-      end
-
-      def convert_invited_user_to_invite_onboarding
-        # When a user is in onboarding, but have not finished onboarding and then are invited, we need
-        # to then convert that user to be an invite registration.
-        return unless member.user.present?
-
-        ::Onboarding::StatusConvertToInviteService.new(member.user).execute
-      end
-
-      def finish_onboarding_user
-        return unless finished_welcome_step?
-
-        ::Onboarding::FinishService.new(member.user).execute
-      end
-
-      def finished_welcome_step?
-        member.user&.role?
       end
 
       def security_bot_and_member_of_other_project?

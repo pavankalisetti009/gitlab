@@ -34,6 +34,38 @@ module Search
             )
           end
 
+          def elasticsearch_8_plus_mappings(mappings = {})
+            return mappings unless helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+
+            mappings.merge({
+              embedding_0: {
+                type: 'dense_vector',
+                dims: VERTEX_TEXT_EMBEDDING_DIMENSION,
+                similarity: 'cosine',
+                index: true
+              }
+            })
+          end
+
+          def opensearch_mappings(mappings = {})
+            return mappings unless helper.matching_distribution?(:opensearch)
+
+            mappings.merge({
+              embedding_0: {
+                type: 'knn_vector',
+                dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
+                method: {
+                  name: 'hnsw',
+                  space_type: 'cosinesimil',
+                  parameters: {
+                    ef_construction: OPENSEARCH_EF_CONSTRUCTION,
+                    m: OPENSEARCH_M
+                  }
+                }
+              }
+            })
+          end
+
           private
 
           def base_mappings
@@ -66,38 +98,6 @@ module Search
               work_item_type_id: { type: 'integer' },
               schema_version: { type: 'short' }
             }
-          end
-
-          def elasticsearch_8_plus_mappings(mappings)
-            return mappings unless helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
-
-            mappings.merge({
-              embedding_0: {
-                type: 'dense_vector',
-                dims: VERTEX_TEXT_EMBEDDING_DIMENSION,
-                similarity: 'cosine',
-                index: true
-              }
-            })
-          end
-
-          def opensearch_mappings(mappings)
-            return mappings unless helper.matching_distribution?(:opensearch)
-
-            mappings.merge({
-              embedding_0: {
-                type: 'knn_vector',
-                dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
-                method: {
-                  name: 'hnsw',
-                  space_type: 'cosinesimil',
-                  parameters: {
-                    ef_construction: OPENSEARCH_EF_CONSTRUCTION,
-                    m: OPENSEARCH_M
-                  }
-                }
-              }
-            })
           end
 
           def helper

@@ -136,6 +136,71 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     end
   end
 
+  context 'for onboarding concerns' do
+    let(:onboarding_user) { project_users.first }
+    let(:onboarding_enabled?) { true }
+
+    before do
+      stub_saas_features(onboarding: onboarding_enabled?)
+    end
+
+    context 'when user qualifies for being in onboarding' do
+      it 'converts the user to an invite registration' do
+        onboarding_user.update!(onboarding_in_progress: true, onboarding_status_registration_type: 'free')
+
+        expect do
+          execute_service
+        end.to change { onboarding_user.reset.onboarding_status_registration_type }.from('free').to('invite')
+      end
+
+      context 'when user has finished the welcome step' do
+        before do
+          onboarding_user.update!(onboarding_in_progress: true)
+        end
+
+        it 'finishes onboarding' do
+          expect do
+            execute_service
+          end.to change { onboarding_user.reset.onboarding_in_progress }.from(true).to(false)
+        end
+      end
+
+      context 'when user has not finished the welcome step' do
+        before do
+          onboarding_user.update!(role: nil, onboarding_in_progress: true)
+        end
+
+        it 'does not finish onboarding' do
+          expect do
+            execute_service
+          end.not_to change { onboarding_user.reset.onboarding_in_progress }
+        end
+      end
+    end
+
+    context 'when user does not qualify for onboarding' do
+      let(:onboarding_enabled?) { false }
+
+      it 'does not convert the user to an invite registration' do
+        expect do
+          execute_service
+        end.not_to change { user.reset.onboarding_status_registration_type }
+      end
+
+      context 'when user has finished the welcome step' do
+        before do
+          user.update!(onboarding_in_progress: true)
+        end
+
+        it 'does not finish onboarding' do
+          expect do
+            execute_service
+          end.not_to change { user.reset.onboarding_in_progress }
+        end
+      end
+    end
+  end
+
   context 'when auto assigning a duo pro seat' do
     subject(:execute_service) { described_class.new(user, params).execute }
 

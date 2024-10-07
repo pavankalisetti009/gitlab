@@ -6,7 +6,7 @@ module Groups
       before_action :authorize_read_usage_quotas!
       before_action :verify_usage_quotas_enabled!
 
-      feature_category :duo_chat
+      feature_category :ai_abstraction_layer
 
       include ::Nav::GitlabDuoUsageSettingsPage
 

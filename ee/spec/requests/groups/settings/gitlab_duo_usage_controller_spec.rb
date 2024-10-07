@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, feature_category: :duo_chat do
+RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
 

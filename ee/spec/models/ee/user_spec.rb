@@ -3527,17 +3527,7 @@ RSpec.describe User, feature_category: :system_access do
         project.add_guest(user)
       end
 
-      context 'when feature flag `security_policy_bot_shared_avatar` is enabled' do
-        it { is_expected.to eq(true) }
-      end
-
-      context 'when feature flag `security_policy_bot_shared_avatar` is disabled' do
-        before do
-          stub_feature_flags(security_policy_bot_shared_avatar: false)
-        end
-
-        it { is_expected.to eq(false) }
-      end
+      it { is_expected.to eq(true) }
     end
   end
 

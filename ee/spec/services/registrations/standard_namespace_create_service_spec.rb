@@ -6,7 +6,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
   using RSpec::Parameterized::TableSyntax
 
   describe '#execute' do
-    let_it_be(:user, reload: true) { create(:user) }
+    let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
     let_it_be(:group) { create(:group, owners: user) }
     let_it_be(:organization) { create(:organization) }
     let(:glm_params) { {} }
@@ -93,6 +93,17 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         expect(GitlabSubscriptions::Trials::ApplyTrialWorker).not_to receive(:perform_async)
 
         expect(execute).to be_success
+      end
+
+      context 'with onboarding_status concerns' do
+        before do
+          user.update!(onboarding_status_registration_type: 'trial')
+          stub_saas_features(onboarding: true)
+        end
+
+        it 'does not change the registration_type' do
+          expect { expect(execute).to be_success }.not_to change { user.reload.onboarding_status_registration_type }
+        end
       end
 
       context 'with project template' do
