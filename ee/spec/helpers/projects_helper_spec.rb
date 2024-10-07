@@ -737,9 +737,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         project_path: expose_path(api_v4_projects_path(id: project.id)),
         rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
         allow_multi_rule: project.multiple_approval_rules_available?.to_s,
-        eligible_approvers_docs_path: help_page_path('user/project/merge_requests/approvals/rules', anchor: 'eligible-approvers'),
+        eligible_approvers_docs_path: help_page_path('user/project/merge_requests/approvals/rules.md', anchor: 'eligible-approvers'),
         security_configuration_path: project_security_configuration_path(project),
-        coverage_check_help_page_path: help_page_path('ci/testing/code_coverage', anchor: 'add-a-coverage-check-approval-rule'),
+        coverage_check_help_page_path: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
         group_name: project.root_ancestor.name,
         full_path: project.full_path,
         new_policy_path: expose_path(new_project_security_policy_path(project))

@@ -97,7 +97,7 @@ module BillingPlansHelper
 
   def assign_seats_link
     url = help_page_path(
-      'subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-seats'
+      'subscriptions/subscription-add-ons.md', anchor: 'assign-gitlab-duo-seats'
     )
     link = link_to('', url, target: '_blank', rel: 'noopener noreferrer')
     tag_pair(link, :assign_link_start, :assign_link_end)
