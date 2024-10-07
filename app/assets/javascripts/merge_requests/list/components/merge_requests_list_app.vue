@@ -13,6 +13,7 @@ import { getParameterByName } from '~/lib/utils/url_utility';
 import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
+import IssuableMilestone from '~/vue_shared/issuable/list/components/issuable_milestone.vue';
 import { DEFAULT_PAGE_SIZE, mergeRequestListTabs } from '~/vue_shared/issuable/list/constants';
 import {
   OPERATORS_IS,
@@ -107,6 +108,7 @@ export default {
     MergeRequestMoreActionsDropdown,
     ApprovalCount,
     EmptyState,
+    IssuableMilestone,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -698,6 +700,10 @@ export default {
       >
         <gl-icon name="warning-solid" class="gl-text-gray-900" />
       </gl-link>
+    </template>
+
+    <template #timeframe="{ issuable = {} }">
+      <issuable-milestone v-if="issuable.milestone" :milestone="issuable.milestone" />
     </template>
 
     <template #statistics="{ issuable = {} }">
