@@ -156,7 +156,7 @@ To confirm that open tabs are used as context:
 1. Search for GitLab Workflow in the list, and select the gear icon.
 1. Select **Extension Settings**.
 1. In your **User** settings, under **GitLab › Duo Code Suggestions: Open Tabs Context**,
-   select **Enable Open Tabs Context to improve Code Suggestions by sharing context across open tabs**.
+   select **Use the contents of open tabs as context**.
 
 :::TabTitle JetBrains IDEs
 
