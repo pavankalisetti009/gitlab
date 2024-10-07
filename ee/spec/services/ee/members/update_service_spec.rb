@@ -31,7 +31,8 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
   let(:current_user) { user }
   let(:member) { group_member }
-  let(:params) { { access_level: new_access_level, expires_at: new_expiration } }
+  let(:source) { group }
+  let(:params) { { access_level: new_access_level, expires_at: new_expiration, source: source } }
 
   let(:service) { described_class.new(current_user, params) }
 
@@ -177,6 +178,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'does not log an audit event' do
+        let(:source) { project }
         let(:member) { project_member }
       end
     end
@@ -211,7 +213,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
       let_it_be(:member_role_guest) { create(:member_role, :guest, namespace: group) }
       let_it_be(:member_role_reporter) { create(:member_role, :reporter, namespace: group) }
 
-      let(:params) { { member_role_id: target_member_role&.id } }
+      let(:params) { { member_role_id: target_member_role&.id, source: source } }
 
       before do
         stub_licensed_features(custom_roles: true)
@@ -277,7 +279,9 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
         end
 
         context 'when invalid access_level is provided' do
-          let(:params) { { member_role_id: target_member_role&.id, access_level: GroupMember::DEVELOPER } }
+          let(:params) do
+            { member_role_id: target_member_role&.id, access_level: GroupMember::DEVELOPER, source: source }
+          end
 
           it 'returns error' do
             expect(update_member[:status]).to eq(:error)
@@ -307,7 +311,7 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
       create(:member_role, namespace: root_ancestor, admin_group_member: true)
     end
 
-    let(:params) { { access_level: role } }
+    let(:params) { { access_level: role, source: source } }
 
     shared_examples 'updating members using custom permission' do
       let_it_be(:member, reload: true) do
