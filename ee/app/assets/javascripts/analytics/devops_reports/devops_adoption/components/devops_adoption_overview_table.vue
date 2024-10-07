@@ -160,7 +160,7 @@ export default {
   <div>
     <local-storage-sync v-model="sortBy" :storage-key="$options.sortByStorageKey" />
     <local-storage-sync v-model="sortDesc" :storage-key="$options.sortDescStorageKey" />
-    <h4>{{ tableHeader }}</h4>
+    <h2 class="gl-heading-2">{{ tableHeader }}</h2>
     <gl-table
       :fields="tableHeaderFields"
       :items="formattedData"
