@@ -43,10 +43,12 @@ export default {
   },
   methods: {
     getComponent(prop) {
-      return ['project'].includes(prop) ? GlLink : 'p';
+      return ['file', 'project'].includes(prop) ? GlLink : 'p';
     },
     getHref({ project }, type) {
       switch (type) {
+        case 'file':
+          return this.policy.policyBlobFilePath;
         case 'project':
           return joinPaths(gon.relative_url_root || '/', project.content);
         default:
@@ -77,7 +79,12 @@ export default {
             class="gl-list-none gl-pl-0"
             data-testid="summary-fields"
           >
-            <li v-for="{ type, label, content } in action" :key="content" class="gl-mb-2">
+            <li
+              v-for="{ type, label, content } in action"
+              :key="content"
+              class="gl-mb-2"
+              :data-testid="type"
+            >
               <span>
                 {{ label }}
               </span>

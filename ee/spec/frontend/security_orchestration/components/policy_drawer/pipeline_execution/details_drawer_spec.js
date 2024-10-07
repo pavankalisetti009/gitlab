@@ -12,6 +12,8 @@ describe('PipelineExecutionDrawer', () => {
   const findSummary = () => wrapper.findByTestId('policy-summary');
   const findSummaryHeader = () => wrapper.findByTestId('summary-header');
   const findSummaryFields = () => wrapper.findAllByTestId('summary-fields');
+  const findProjectSummary = () => wrapper.findByTestId('project');
+  const findFileSummary = () => wrapper.findByTestId('file');
   const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
   const findLink = (parent) => parent.findComponent(GlLink);
 
@@ -55,17 +57,28 @@ describe('PipelineExecutionDrawer', () => {
       const text = trimText(findSummaryFields().at(0).text());
       expect(text).toContain('Project : gitlab-policies/js6');
       expect(text).toContain('Reference : main');
-      expect(text).toContain('Path : test_path');
+      expect(text).toContain('Path : pipeline_execution_jobs.yml');
       expect(findSummaryHeader().text()).toBe('Enforce the following pipeline execution policy:');
     });
 
     it('renders the policy summary as a link for the project field', () => {
       createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
 
-      const link = findLink(findSummaryFields().at(0));
+      const link = findLink(findProjectSummary());
       expect(link.exists()).toBe(true);
       expect(link.attributes('href')).toBe('/gitlab-policies/js6');
       expect(link.text()).toBe('gitlab-policies/js6');
+    });
+
+    it('renders the policy summary as a link for the file field', () => {
+      createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
+
+      const link = findLink(findFileSummary());
+      expect(link.exists()).toBe(true);
+      expect(link.attributes('href')).toBe(
+        '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
+      );
+      expect(link.text()).toBe('pipeline_execution_jobs.yml');
     });
   });
 });

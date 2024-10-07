@@ -247,7 +247,7 @@ describe('EditorComponent', () => {
         await findPolicyEditorLayout().vm.$emit('update-yaml', mockPipelineExecutionManifest);
 
         expect(doesFileExist).toHaveBeenCalledWith({
-          filePath: 'test_path',
+          filePath: 'pipeline_execution_jobs.yml',
           fullPath: 'gitlab-policies/js6',
           ref: 'main',
         });
