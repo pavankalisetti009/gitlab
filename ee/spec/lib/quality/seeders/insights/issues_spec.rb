@@ -12,7 +12,7 @@ RSpec.describe Quality::Seeders::Insights::Issues, feature_category: :quality_ma
       described_class.new(project: project).seed(backfill_weeks: 2, average_issues_per_week: 2)
     end
 
-    it 'creates issues with iteration and weight' do
+    it 'creates issues with iteration and weight', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/488613' do
       # The seed creates a random number of issues,
       # so we test if all of them has values present.
       iteration_ids = project.issues.pluck(:sprint_id).compact
