@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlCollapse, GlBadge } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import { s__, __ } from '~/locale';
 
 export default {
@@ -69,12 +70,17 @@ export default {
     required: s__('ComplianceFrameworks|Required'),
     optional: s__('ComplianceFrameworks|Optional'),
   },
+  collapseId: uniqueId('edit-section-'),
 };
 </script>
 <template>
   <div class="gl-mb-1">
     <div
       class="gl-flex gl-cursor-pointer gl-items-center gl-bg-gray-50 gl-p-5"
+      tabindex="-1"
+      role="button"
+      :aria-expanded="isExpanded"
+      :aria-controls="$options.collapseId"
       @click="toggleExpand"
     >
       <div class="gl-grow">
@@ -103,9 +109,15 @@ export default {
         category="tertiary"
         :icon="collapseIconName"
         :aria-label="collapseButtonLabel"
+        :aria-controls="$options.collapseId"
+        :aria-expanded="isExpanded"
       />
     </div>
-    <gl-collapse :visible="isExpanded" class="gl-bg-gray-10 gl-px-5 gl-py-6">
+    <gl-collapse
+      :id="$options.collapseId"
+      :visible="isExpanded"
+      class="gl-bg-gray-10 gl-px-5 gl-py-6"
+    >
       <slot></slot>
     </gl-collapse>
   </div>
