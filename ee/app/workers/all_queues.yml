@@ -1551,6 +1551,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: gitlab_subscriptions_members_record_last_activity
+  :worker_name: GitlabSubscriptions::Members::RecordLastActivityWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: gitlab_subscriptions_refresh_seats
   :worker_name: GitlabSubscriptions::RefreshSeatsWorker
   :feature_category: :seat_cost_management

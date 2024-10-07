@@ -11,6 +11,18 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
   let(:lease_key) { "gitlab_subscriptions:members_activity_event:#{namespace.id}:#{user.id}" }
   let(:instance) { described_class.new(user, namespace) }
 
+  describe '.lease_taken?' do
+    it 'returns true when lease is taken' do
+      expect(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return(true)
+
+      expect(described_class.lease_taken?(namespace.id, user.id)).to eq(true)
+    end
+
+    it 'returns false when lease is not taken' do
+      expect(described_class.lease_taken?(namespace.id, user.id)).to eq(false)
+    end
+  end
+
   describe '#execute' do
     subject(:execute) { instance.execute }
 
@@ -35,7 +47,7 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
       end
 
       context 'with project belonging to a group' do
-        let(:namespace) { build(:project, :in_group) }
+        let(:namespace) { build(:project, namespace: create(:group)) }
 
         it 'returns success' do
           expect do

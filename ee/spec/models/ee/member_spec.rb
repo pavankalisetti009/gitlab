@@ -194,50 +194,6 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#queue_for_approval' do
-    let(:member) { create(:group_member, source: group, user: user) }
-    let(:new_access_level) { ::Gitlab::Access::DEVELOPER }
-    let(:requested_by) { create(:user) }
-    let(:member_namespace) { member.member_namespace }
-
-    context 'when record does not exist' do
-      it 'creates a member approval with the correct attributes' do
-        expect do
-          result = member.queue_for_approval(new_access_level, requested_by)
-          approval = member.member_approvals.last
-
-          expect(result).to eq(approval)
-          expect(approval.member_namespace).to eq(member_namespace)
-          expect(approval.new_access_level).to eq(new_access_level)
-          expect(approval.old_access_level).to eq(member.access_level)
-          expect(approval.requested_by).to eq(requested_by)
-          expect(approval.user_id).to eq(member.user_id)
-          expect(result.member_role_id).to be_nil
-        end.to change(member.member_approvals, :count).by(1)
-      end
-    end
-
-    context 'when record exists' do
-      it 'does not create a new approval' do
-        approval = member.queue_for_approval(new_access_level, requested_by)
-        expect do
-          result = member.queue_for_approval(new_access_level, requested_by)
-          expect(result).to eq(approval)
-        end.not_to change(member.member_approvals, :count)
-      end
-    end
-
-    context 'when ActiveRecord::RecordNotUnique is thrown' do
-      it 'does not create a new approval' do
-        allow(member.member_approvals).to receive(:find_or_create_by).and_raise(ActiveRecord::RecordNotUnique)
-
-        expect do
-          member.queue_for_approval(new_access_level, requested_by)
-        end.not_to change(member.member_approvals, :count)
-      end
-    end
-  end
-
   describe '#is_using_seat', :aggregate_failures do
     context 'when hosted on GL.com', :saas do
       it 'calls users check for using the gitlab_com seat method' do
