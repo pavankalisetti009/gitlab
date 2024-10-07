@@ -180,10 +180,10 @@ module EE
       @project.feature_available?(:merge_pipelines)
     end
 
-    def merge_trains_available?
-      return false unless @project.builds_enabled?
+    def merge_trains_available?(project)
+      return false unless project.builds_enabled?
 
-      @project.feature_available?(:merge_trains)
+      project.feature_available?(:merge_trains)
     end
 
     def size_limit_message(project)

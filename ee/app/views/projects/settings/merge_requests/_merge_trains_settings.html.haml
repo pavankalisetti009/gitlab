@@ -1,4 +1,4 @@
-- return unless merge_trains_available?
+- return unless merge_trains_available?(@project)
 - merge_trains_help_link_url = help_page_path('ci/pipelines/merge_trains.md')
 - merge_trains_help_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: merge_trains_help_link_url }
 
