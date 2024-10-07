@@ -56,6 +56,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
     # we need project for Gitlab::ReferenceExtractor
     let_it_be(:project) { create(:project, group: group) }
 
+    include_context "with duo pro addon"
+
     before do
       stub_const("::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic::MAX_CHARACTERS",
         999999)

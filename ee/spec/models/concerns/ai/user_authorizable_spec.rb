@@ -93,7 +93,19 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
             group_without_experiment_features_enabled.add_guest(user)
           end
 
-          include_context 'with ai features enabled for group'
+          # TODO: Change to use context 'with ai features enabled for group'
+          # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/497781
+          before do
+            allow(Gitlab).to receive(:org_or_com?).and_return(true)
+            stub_ee_application_setting(should_check_namespace_plan: true)
+            allow(group.namespace_settings).to receive(:experiment_settings_allowed?).and_return(true)
+            stub_licensed_features(
+              ai_features: true,
+              glab_ask_git_command: true,
+              generate_description: true
+            )
+            group.namespace_settings.reload.update!(experiment_features_enabled: true)
+          end
 
           shared_examples 'checking available groups' do
             it { is_expected.to be true }
