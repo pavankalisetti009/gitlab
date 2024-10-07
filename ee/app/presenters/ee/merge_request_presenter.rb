@@ -28,7 +28,7 @@ module EE
     end
 
     def merge_immediately_docs_path
-      help_page_path('ci/pipelines/merge_trains', anchor: 'immediately-merge-a-merge-request-with-a-merge-train')
+      help_page_path('ci/pipelines/merge_trains.md', anchor: 'immediately-merge-a-merge-request-with-a-merge-train')
     end
 
     delegator_override :target_project
