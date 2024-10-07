@@ -29,6 +29,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let(:glab_ask_git_command_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let(:generate_commit_message_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
     let(:troubleshoot_job_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
+    let(:summarize_comments_cut_off_date) { Time.zone.parse("2024-10-17 00:00:00 UTC").utc }
 
     let(:anthropic_proxy_bundled_with) do
       {
@@ -165,7 +166,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
             backend],
           glab_ask_git_command: [glab_ask_git_command_cut_off_date, glab_ask_git_command_bundled_with, backend],
           explain_vulnerability: [nil, explain_vulnerability_bundled_with, backend],
-          summarize_comments: [nil, summarize_comments_bundled_with, backend],
+          summarize_comments: [summarize_comments_cut_off_date, summarize_comments_bundled_with, backend],
           observability_all: [nil, observability_all_bundled_with, gob_backend],
           troubleshoot_job: [troubleshoot_job_cut_off_date, troubleshoot_job_bundled_with, backend],
           sast: [nil, sast_bundled_with, sast_backend],
