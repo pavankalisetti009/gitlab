@@ -11,11 +11,17 @@ import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import getComplianceViolationsGroupQuery from '../../graphql/compliance_violations_group.query.graphql';
 import getComplianceViolationsProjectQuery from '../../graphql/compliance_violations_project.query.graphql';
 import { mapViolations } from '../../graphql/mappers';
-import { DEFAULT_PAGINATION_CURSORS, DEFAULT_SORT, GRAPHQL_PAGE_SIZE } from '../../constants';
+import {
+  DEFAULT_PAGINATION_CURSORS,
+  DEFAULT_SORT,
+  GRAPHQL_PAGE_SIZE,
+  GRAPHQL_FIELD_MISSING_ERROR_MESSAGE,
+} from '../../constants';
 import {
   buildDefaultViolationsFilterParams,
   isTopLevelGroup,
   parseViolationsQueryFilter,
+  isGraphqlFieldMissingError,
 } from '../../utils';
 import MergeRequestDrawer from './drawer.vue';
 import ViolationReason from './violations/reason.vue';
@@ -63,6 +69,7 @@ export default {
       defaultFilterParams,
       urlQuery: { ...defaultFilterParams },
       queryError: false,
+      customErrorText: false,
       violations: {
         list: [],
         pageInfo: {},
@@ -109,6 +116,9 @@ export default {
       error(e) {
         Sentry.captureException(e);
         this.queryError = true;
+        this.customErrorText = isGraphqlFieldMissingError(e, 'mergeRequestViolations')
+          ? GRAPHQL_FIELD_MISSING_ERROR_MESSAGE
+          : null;
       },
     },
   },
@@ -247,7 +257,7 @@ export default {
 <template>
   <section>
     <gl-alert v-if="queryError" variant="danger" class="gl-mt-3" :dismissible="false">
-      {{ $options.i18n.queryError }}
+      {{ customErrorText || $options.i18n.queryError }}
     </gl-alert>
     <violation-filter
       :show-project-filter="!projectPath"

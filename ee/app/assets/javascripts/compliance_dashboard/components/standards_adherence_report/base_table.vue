@@ -7,8 +7,8 @@ import getProjectComplianceStandardsGroupAdherence from 'ee/compliance_dashboard
 import getProjectComplianceStandardsProjectAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_project_adherence.query.graphql';
 import FrameworksInfo from '../shared/frameworks_info.vue';
 import Pagination from '../shared/pagination.vue';
-import { GRAPHQL_PAGE_SIZE } from '../../constants';
-import { isTopLevelGroup } from '../../utils';
+import { GRAPHQL_PAGE_SIZE, GRAPHQL_FIELD_MISSING_ERROR_MESSAGE } from '../../constants';
+import { isTopLevelGroup, isGraphqlFieldMissingError } from '../../utils';
 import {
   FAIL_STATUS,
   STANDARDS_ADHERENCE_CHECK_LABELS,
@@ -61,6 +61,7 @@ export default {
   data() {
     return {
       hasStandardsAdherenceFetchError: false,
+      customErrorText: null,
       hasFilterValueError: false,
       drawerId: null,
       drawerAdherence: {},
@@ -94,6 +95,9 @@ export default {
       error(e) {
         Sentry.captureException(e);
         this.hasStandardsAdherenceFetchError = true;
+        this.customErrorText = isGraphqlFieldMissingError(e, 'projectComplianceStandardsAdherence')
+          ? GRAPHQL_FIELD_MISSING_ERROR_MESSAGE
+          : null;
       },
     },
   },
@@ -269,7 +273,7 @@ export default {
       class="gl-mt-3"
       :dismissible="false"
     >
-      {{ $options.standardsAdherenceFetchError }}
+      {{ customErrorText || $options.standardsAdherenceFetchError }}
     </gl-alert>
     <gl-table
       :fields="fields"

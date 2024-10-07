@@ -126,3 +126,11 @@ export function mapStandardsAdherenceQueryToFilters(filters) {
 
   return filterParams;
 }
+
+export const isGraphqlFieldMissingError = (error, field) => {
+  return Boolean(
+    error?.graphQLErrors?.some((e) =>
+      e?.message?.startsWith(`Field '${field}' doesn't exist on type`),
+    ),
+  );
+};
