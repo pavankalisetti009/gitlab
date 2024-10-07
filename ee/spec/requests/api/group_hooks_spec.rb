@@ -54,6 +54,7 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
         deployment_events
         releases_events
         subgroup_events
+        feature_flag_events
         emoji_events
         resource_access_token_events
         member_events

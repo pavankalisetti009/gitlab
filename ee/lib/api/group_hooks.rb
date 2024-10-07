@@ -36,6 +36,7 @@ module API
         optional :pipeline_events, type: Boolean, desc: "Trigger hook on pipeline events"
         optional :wiki_page_events, type: Boolean, desc: "Trigger hook on wiki events"
         optional :deployment_events, type: Boolean, desc: "Trigger hook on deployment events"
+        optional :feature_flag_events, type: Boolean, desc: "Trigger hook on feature flag events"
         optional :releases_events, type: Boolean, desc: "Trigger hook on release events"
         optional :subgroup_events, type: Boolean, desc: "Trigger hook on subgroup events"
         optional :emoji_events, type: Boolean, desc: "Trigger hook on emoji events"

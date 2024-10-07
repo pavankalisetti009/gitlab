@@ -22,6 +22,7 @@
     "releases_events",
     "subgroup_events",
     "emoji_events",
+    "feature_flag_events",
     "member_events",
     "alert_status",
     "disabled_until",
@@ -106,6 +107,9 @@
       "type": "boolean"
     },
     "deployment_events": {
+      "type": "boolean"
+    },
+    "feature_flag_events": {
       "type": "boolean"
     },
     "releases_events": {
