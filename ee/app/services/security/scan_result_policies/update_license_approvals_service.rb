@@ -57,7 +57,7 @@ module Security
         merge_request.reset_required_approvals(violated_rules)
         ApprovalMergeRequestRule.remove_required_approved(unviolated_rules)
 
-        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules)
+        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules.map(&:scan_result_policy_read))
         violations.execute
 
         violated_rules.each do |approval_rule|
