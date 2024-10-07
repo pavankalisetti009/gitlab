@@ -35,7 +35,8 @@ module Ai
           { key: 'WORKFLOW_SERVICE_TOKEN', secret_value: @params[:workflow_service_token] },
           { key: 'REALM', secret_value: Gitlab::CloudConnector.gitlab_realm },
           { key: 'GIT_STRATEGY', secret_value: 'none' },
-          { key: 'GLOBAL_USER_ID', secret_value: Gitlab::GlobalAnonymousId.user_id(@current_user) }
+          { key: 'GLOBAL_USER_ID', secret_value: Gitlab::GlobalAnonymousId.user_id(@current_user) },
+          { key: 'GITLAB_INSTANCE_ID', secret_value: Gitlab::GlobalAnonymousId.instance_id }
         ]
       end
 
@@ -58,7 +59,7 @@ module Ai
               './duo-workflow-executor --base-path ./workspace --goal "$GOAL" \
                 --workflow-id $WORKFLOW_ID --server $DUO_WORKFLOW_SERVICE_SERVER \
                 --duo-workflow-service-token $WORKFLOW_SERVICE_TOKEN \
-                --user-id $GLOBAL_USER_ID --realm $REALM \
+                --user-id $GLOBAL_USER_ID --realm $REALM --instance-id $GITLAB_INSTANCE_ID \
                 --token $GL_TOKEN --base-url $CI_SERVER_URL',
               'echo "Run complete."'
             ]
