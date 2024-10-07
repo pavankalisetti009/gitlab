@@ -36,7 +36,13 @@ export default {
       type: Object,
       required: true,
       validator: (highlights) =>
-        [CRITICAL, HIGH].every((requiredField) => Number.isInteger(highlights[requiredField])),
+        [CRITICAL, HIGH].every((requiredField) => {
+          if (typeof highlights[requiredField] === 'undefined') {
+            return true;
+          }
+
+          return Number.isInteger(highlights[requiredField]);
+        }),
     },
     capped: {
       type: Boolean,
@@ -98,9 +104,13 @@ export default {
 
 <template>
   <div class="gl-text-sm">
-    <strong v-if="showSingleSeverity" :class="$options.cssClass[showSingleSeverity]">{{
-      formattedCounts(highlights[showSingleSeverity])
-    }}</strong>
+    <component
+      :is="component(highlights[showSingleSeverity])"
+      v-if="showSingleSeverity"
+      :class="$options.cssClass[showSingleSeverity]"
+      >{{ formattedCounts(highlights[showSingleSeverity]) }}
+      {{ n__('vulnerability', 'vulnerabilities', highlights[showSingleSeverity]) }}</component
+    >
     <gl-sprintf v-else :message="$options.i18n.highlights">
       <template #critical="{ content }"
         ><component
