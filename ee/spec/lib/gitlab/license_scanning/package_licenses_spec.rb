@@ -242,8 +242,12 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
 
       context 'when load balancing enabled', :db_load_balancing do
         it 'uses the replica' do
-          expect(Gitlab::Database::LoadBalancing::Session.current).to receive(:use_replicas_for_read_queries)
-            .and_call_original
+          expect(Gitlab::Database::LoadBalancing::SessionMap)
+            .to receive(:with_sessions).with([::ApplicationRecord, ::Ci::ApplicationRecord]).and_call_original
+
+          expect_next_instance_of(Gitlab::Database::LoadBalancing::ScopedSessions) do |inst|
+            expect(inst).to receive(:use_replicas_for_read_queries).and_call_original
+          end
 
           fetch
         end
