@@ -57,7 +57,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Search::Zoekt::RepoToIndexEvent,
         Search::Zoekt::TaskFailedEvent,
         Search::Zoekt::LostNodeEvent,
-        Search::Zoekt::IndexOverWatermarkEvent,
+        Search::Zoekt::IndexWatermarkChangedEvent,
         Security::PolicyCreatedEvent,
         Security::PolicyUpdatedEvent,
         Security::PolicyDeletedEvent,

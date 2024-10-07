@@ -410,26 +410,21 @@ module Search
 
       def index_over_watermark_check
         execute_every 10.minutes, cache_key: :index_over_watermark_check do
-          Search::Zoekt::Index.should_have_low_watermark.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::IndexOverWatermarkEvent.new(
-                data: {
-                  index_ids: batch.pluck_primary_key,
-                  watermark: ::Search::Zoekt::Index::STORAGE_LOW_WATERMARK
-                }
+          Search::Zoekt::Index.with_reserved_storage_bytes.each_batch do |batch|
+            {
+              "overprovisioned" => batch.should_have_overprovisioned_watermark,
+              "low_watermark_exceeded" => batch.should_have_low_watermark,
+              "high_watermark_exceeded" => batch.should_have_high_watermark
+            }.each do |watermark_level, indices|
+              Gitlab::EventStore.publish(
+                Search::Zoekt::IndexWatermarkChangedEvent.new(
+                  data: {
+                    index_ids: indices.pluck_primary_key,
+                    watermark_level: watermark_level
+                  }
+                )
               )
-            )
-          end
-
-          Search::Zoekt::Index.should_have_high_watermark.each_batch do |batch|
-            Gitlab::EventStore.publish(
-              Search::Zoekt::IndexOverWatermarkEvent.new(
-                data: {
-                  index_ids: batch.pluck_primary_key,
-                  watermark: ::Search::Zoekt::Index::STORAGE_HIGH_WATERMARK
-                }
-              )
-            )
+            end
           end
         end
       end
