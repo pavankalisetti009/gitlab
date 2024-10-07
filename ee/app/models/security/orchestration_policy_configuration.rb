@@ -132,7 +132,7 @@ module Security
     def compliance_framework_ids_with_policy_index
       return [] if project?
 
-      (scan_result_policies + scan_execution_policy).map.with_index do |policy, index|
+      (scan_result_policies + scan_execution_policy + pipeline_execution_policy).map.with_index do |policy, index|
         framework_ids = policy.dig(:policy_scope, :compliance_frameworks)&.pluck(:id)
         { framework_ids: framework_ids, policy_index: index } if framework_ids
       end.compact
