@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     countryClass() {
-      return this.trackActionForErrors ? 'js-track-error' : '';
+      return this.trackActionForErrors ? 'js-track-error-gl-select' : '';
     },
     countryOptionsWithDefault() {
       return [
