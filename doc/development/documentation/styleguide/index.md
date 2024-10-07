@@ -534,11 +534,11 @@ Instead, write content that is clear enough that emphasis is not needed. GitLab 
 Use lists to present information in a format that is easier to scan.
 
 - Make all items in the list parallel.
-  For example, do not start some bullets with nouns and others with verbs.
-- Do not use a period if the phrase is not a full sentence.
-- Use a period after every sentence. Do not use semicolons or commas.
+  For example, do not start some items with nouns and others with verbs.
+- Do not use a period if the item is not a full sentence.
+- Use a period after every full sentence. Do not use semicolons or commas.
 - Give all items the same punctuation.
-- Start list items with a capital letter.
+- Start all items with a capital letter.
 - Separate the introductory phrase from explanatory text with a colon (`:`). For example:
 
   ```markdown
