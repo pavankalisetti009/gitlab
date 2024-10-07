@@ -22,7 +22,24 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
     }
   end
 
-  let_it_be(:valid_and_invalid_files) { valid_files.merge('dir1/pom.xml' => '') }
+  let(:expected_reports_array) do
+    [
+      {
+        'project_id' => project.id,
+        'lang' => 'ruby',
+        'payload' => a_hash_including(
+          'file_paths' => ['Gemfile.lock'],
+          'libs' => [{ 'name' => 'bcrypt (3.1.20)' }])
+      },
+      {
+        'project_id' => project.id,
+        'lang' => 'go',
+        'payload' => a_hash_including(
+          'file_paths' => ['dir1/dir2/go.mod'],
+          'libs' => contain_exactly({ 'name' => 'abc.org/mylib (1.3.0)' }, { 'name' => 'golang.org/x/mod (0.5.0)' }))
+      }
+    ]
+  end
 
   subject(:execute) { described_class.new(project).execute }
 
@@ -43,29 +60,23 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
       end
     end
 
-    shared_examples 'saves X-Ray reports' do
-      let(:expected_reports_array) do
-        [
-          {
-            'project_id' => project.id,
-            'lang' => 'ruby',
-            'payload' => a_hash_including(
-              'libs' => [{ 'name' => 'bcrypt (3.1.20)' }]
-            )
-          },
-          {
-            'project_id' => project.id,
-            'lang' => 'go',
-            'payload' => a_hash_including(
-              'libs' => [{ 'name' => 'abc.org/mylib (1.3.0)' }, { 'name' => 'golang.org/x/mod (0.5.0)' }]
-            )
-          }
-        ]
-      end
+    context 'when the repository contains only valid dependency config files' do
+      let_it_be(:project) { create(:project, :custom_repo, files: valid_files) }
 
       it 'saves an X-Ray report for each valid config file' do
         expect { execute }.to change { report_count }.by(2)
         expect(reports_array).to contain_exactly(*expected_reports_array)
+      end
+
+      it 'returns a success response' do
+        expect(execute).to be_success
+        expect(execute.message).to eq('Found 2 dependency config files')
+        expect(execute.payload).to match({
+          success_messages: contain_exactly(
+            'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
+            'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)'),
+          error_messages: []
+        })
       end
 
       context 'when there is an existing X-Ray report for a language' do
@@ -75,32 +86,60 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
           expect(reports_array).to contain_exactly({
             'project_id' => project.id,
             'lang' => 'ruby',
-            'payload' => a_hash_including(
-              'libs' => [{ 'name' => 'test-lib' }]
-            )
+            'payload' => a_hash_including('libs' => [{ 'name' => 'test-lib' }])
           })
 
           expect { execute }.to change { report_count }.by(1)
           expect(reports_array).to contain_exactly(*expected_reports_array)
         end
       end
-    end
 
-    context 'when the repository contains only valid dependency config files' do
-      let_it_be(:project) { create(:project, :custom_repo, files: valid_files) }
+      context 'when there are multiple config file objects for the same language' do
+        let_it_be(:project) do
+          create(:project, :custom_repo, files:
+            valid_files.merge({
+              'requirements.txt' =>
+                <<~CONTENT,
+                  requests>=2.0,<3.0
+                  numpy==1.26.4
+                CONTENT
+              'dir1/dev-requirements.txt' =>
+                <<~CONTENT
+                  python_dateutil>=2.5.3
+                  fastapi-health!=0.3.0
+                CONTENT
+            }))
+        end
 
-      it_behaves_like 'saves X-Ray reports'
+        it 'merges the payloads and saves only one X-Ray report for each language' do
+          expect { execute }.to change { report_count }.by(3)
+          expect(reports_array).to contain_exactly(
+            *expected_reports_array,
+            {
+              'project_id' => project.id,
+              'lang' => 'python',
+              'payload' => a_hash_including(
+                'file_paths' => contain_exactly('requirements.txt', 'dir1/dev-requirements.txt'),
+                'libs' => contain_exactly(
+                  { 'name' => 'requests (>=2.0,<3.0)' },
+                  { 'name' => 'numpy (==1.26.4)' },
+                  { 'name' => 'python_dateutil (>=2.5.3)' },
+                  { 'name' => 'fastapi-health (!=0.3.0)' }))
+            })
+        end
 
-      it 'returns a success response' do
-        expect(execute).to be_success
-        expect(execute.message).to eq('Found 2 dependency config files')
-        expect(execute.payload).to match({
-          success_messages: match_array([
-            'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
-            'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)'
-          ]),
-          error_messages: []
-        })
+        it 'returns a success response' do
+          expect(execute).to be_success
+          expect(execute.message).to eq('Found 4 dependency config files')
+          expect(execute.payload).to match({
+            success_messages: contain_exactly(
+              'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
+              'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)',
+              'Found 2 dependencies in `requirements.txt` (PythonPip)',
+              'Found 2 dependencies in `dir1/dev-requirements.txt` (PythonPip)'),
+            error_messages: []
+          })
+        end
       end
     end
 
@@ -124,21 +163,21 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
     end
 
     context 'when the repository contains both valid and invalid dependency config files' do
-      let_it_be(:project) { create(:project, :custom_repo, files: valid_and_invalid_files) }
+      let_it_be(:project) { create(:project, :custom_repo, files: valid_files.merge('dir1/pom.xml' => '')) }
 
-      it_behaves_like 'saves X-Ray reports'
+      it 'saves an X-Ray report for each valid config file' do
+        expect { execute }.to change { report_count }.by(2)
+        expect(reports_array).to contain_exactly(*expected_reports_array)
+      end
 
       it 'returns an error response' do
         expect(execute).to be_error
         expect(execute.message).to eq('Found 3 dependency config files, 1 had errors')
         expect(execute.payload).to match({
-          success_messages: match_array([
+          success_messages: contain_exactly(
             'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
-            'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)'
-          ]),
-          error_messages: [
-            'Error(s) while parsing file `dir1/pom.xml`: file empty (JavaMaven)'
-          ]
+            'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)'),
+          error_messages: ['Error(s) while parsing file `dir1/pom.xml`: file empty (JavaMaven)']
         })
       end
     end

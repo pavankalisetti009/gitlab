@@ -50,18 +50,29 @@ module Ai
       end
 
       def save_xray_reports(config_files)
-        reports_array = config_files.map do |config_file|
-          payload = config_file.payload
+        config_files_by_lang = config_files.group_by { |cf| cf.class.lang }
+        # TODO: `file_checksum` to be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
+        file_checksum = config_files.first.payload[:checksum]
 
+        reports_array = config_files_by_lang.map do |(lang, config_files)|
           {
             project_id: project.id,
-            payload: payload,
-            lang: config_file.class.lang,
-            file_checksum: payload[:checksum]
+            payload: merge_payloads(config_files),
+            lang: lang,
+            file_checksum: file_checksum
           }
         end
 
         Projects::XrayReport.upsert_all(reports_array, unique_by: [:project_id, :lang])
+      end
+
+      # TODO: We're not concerned with the value of `fileName` nor `checksum` because they are
+      # not utilized and will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
+      def merge_payloads(config_files)
+        config_files.each_with_object({ file_paths: [], libs: [] }) do |config_file, merged|
+          merged[:libs].concat(config_file.payload[:libs])
+          merged[:file_paths] << config_file.payload[:fileName]
+        end
       end
 
       def build_response(success_messages, error_messages)
