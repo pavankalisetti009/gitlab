@@ -62151,6 +62151,9 @@ msgstr ""
 msgid "WorkItem|Child items"
 msgstr ""
 
+msgid "WorkItem|Child items of a confidential parent must be confidential. Turn off confidentiality on the parent item first."
+msgstr ""
+
 msgid "WorkItem|Child removal reverted"
 msgstr ""
 
