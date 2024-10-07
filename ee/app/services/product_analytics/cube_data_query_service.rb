@@ -32,7 +32,7 @@ module ProductAnalytics
 
     def query_data
       options = {
-        allow_local_requests: true,
+        allow_local_requests: false,
         headers: cube_security_headers
       }
 

@@ -23,7 +23,7 @@ module ProductAnalytics
             project_ids: project_ids.map { |id| "gitlab_project_#{id}" },
             funnels: funnels
           }.to_json,
-          allow_local_requests: true
+          allow_local_requests: false
         )
       end
     end

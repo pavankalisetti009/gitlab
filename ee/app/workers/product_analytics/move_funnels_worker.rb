@@ -20,7 +20,7 @@ module ProductAnalytics
         "#{ ::ProductAnalytics::Settings.for_project(@project)
                                         .product_analytics_configurator_connection_string }/funnel-schemas",
         body: build_payload.to_json,
-        allow_local_requests: true
+        allow_local_requests: false
       )
     end
 

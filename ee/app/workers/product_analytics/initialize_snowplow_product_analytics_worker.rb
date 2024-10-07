@@ -25,7 +25,7 @@ module ProductAnalytics
       response = Gitlab::HTTP.post(
         URI.join(::ProductAnalytics::Settings.for_project(@project).product_analytics_configurator_connection_string,
           "setup-project/gitlab_project_#{project_id}"),
-        allow_local_requests: true,
+        allow_local_requests: false,
         timeout: 10
       )
 
