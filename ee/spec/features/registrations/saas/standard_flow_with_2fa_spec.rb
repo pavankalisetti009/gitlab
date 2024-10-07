@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'SaaS registration from an invite', :with_current_organization, :js, :saas_registration, feature_category: :onboarding do
   context 'when user has not completed welcome step before being added to group', :sidekiq_inline do
     it 'registers the user, completes 2fa and sends them to the profile account page' do
-      group = create(:group, name: 'Test Group', require_two_factor_authentication: true)
+      group = create_group
       password = User.random_password
 
       regular_sign_up(password: password)
@@ -33,7 +33,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
     context 'when user does not refresh the welcome page after being added to the group' do
       it 'registers the user, completes 2fa and sends them to the profile account page' do
-        group = create(:group, name: 'Test Group', require_two_factor_authentication: true)
+        group = create_group
         password = User.random_password
 
         regular_sign_up(password: password)
@@ -57,7 +57,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
   context 'when user is past the welcome step before being added to group' do
     it 'registers the user, completes 2fa and sends them to the user account page' do
-      group = create(:group, name: 'Test Group', require_two_factor_authentication: true)
+      group = create_group
       password = User.random_password
 
       regular_sign_up(password: password)
@@ -80,6 +80,10 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
       expect_to_be_on_profile_account_page
       ensure_onboarding_is_finished
     end
+  end
+
+  def create_group
+    create(:group, name: 'Test Group', require_two_factor_authentication: true, owners: [create(:user)])
   end
 
   def expect_to_see_welcome_form
@@ -125,7 +129,16 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   end
 
   def add_user_to_2fa_enforced_group(group)
-    group.add_developer(user)
+    # Simulate adding a user through UI/API. The app only goes through the service below or the InviteCreateService.
+    # This is cheaper than simulating full API posting which isn't necessary here to simulate our case.
+    ::Members::CreateService
+      .new(
+        group.owners.first,
+        user_id: user.id,
+        access_level: Gitlab::Access::DEVELOPER,
+        source: group,
+        invite_source: 'test'
+      ).execute
   end
 
   def fill_in_2fa_setup_form(password)

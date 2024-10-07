@@ -138,6 +138,34 @@ module EE
         append_added_member_ids_with_users(member: member)
         log_audit_event(member: member)
         auto_assign_duo_pro_seat(member: member)
+        convert_invited_user_to_invite_onboarding(member: member)
+        finish_onboarding_user(member: member)
+      end
+
+      def convert_invited_user_to_invite_onboarding(member:)
+        # When a user is in onboarding, but have not finished onboarding and then are invited, we need
+        # to then convert that user to be an invite registration.
+        # By placing this logic here instead of the member creator classes, we avoid system actions like
+        # adding user as the owner in Groups::CreateService that occurs during user registration and would
+        # incorrectly change the registration_type to an invite.
+        # All application UI or API cases should travel through this code on user invites.
+        return unless member.user.present?
+
+        ::Onboarding::StatusConvertToInviteService.new(member.user).execute
+      end
+
+      def finish_onboarding_user(member:)
+        # We perform this at the invite level since it is a more targeted way to finish onboarding.
+        # This should always be coupled with convert_invited_user_to_invite_onboarding as
+        # we have to still be in onboarding in order for convert_invited_user_to_invite_onboarding
+        # to work properly.
+        return unless finished_welcome_step?(member: member)
+
+        ::Onboarding::FinishService.new(member.user).execute
+      end
+
+      def finished_welcome_step?(member:)
+        member.user&.role?
       end
 
       def append_added_member_ids_with_users(member:)
