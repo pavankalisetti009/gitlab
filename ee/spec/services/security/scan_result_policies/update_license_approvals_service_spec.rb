@@ -31,10 +31,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
   let_it_be(:preexisting_states) { false }
 
+  let(:scan_result_policy_read) do
+    create(:scan_result_policy_read, project: project, license_states: ['newly_detected'])
+  end
+
   let!(:license_finding_rule) do
     create(:report_approver_rule, :license_scanning,
       merge_request: merge_request,
-      scan_result_policy_read: create(:scan_result_policy_read, project: project, license_states: ['newly_detected']),
+      scan_result_policy_read: scan_result_policy_read,
       approvals_required: 1
     )
   end
@@ -96,7 +100,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
   end
 
-  context 'for prexisting states' do
+  context 'for preexisting states' do
     let_it_be(:preexisting_states) { true }
     let_it_be(:pipeline) { nil }
 
@@ -142,6 +146,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
       it_behaves_like 'does not require approvals'
       it_behaves_like 'triggers policy bot comment', :license_scanning, false
+      it_behaves_like 'merge request without scan result violations'
 
       it 'does not call logger' do
         expect(Gitlab::AppJsonLogger).not_to receive(:info)

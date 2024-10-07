@@ -143,7 +143,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
         it_behaves_like 'sets approvals_required to 0'
         it_behaves_like 'triggers policy bot comment', :scan_finding, false
         it_behaves_like 'does not log violations'
-        it_behaves_like 'merge request without scan result violations', previous_violation: false
+        it_behaves_like 'merge request without scan result violations'
 
         context 'when there are other scan_finding violations' do
           let_it_be_with_reload(:scan_result_policy_read_other_scan_finding) do
