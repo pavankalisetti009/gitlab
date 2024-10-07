@@ -14,6 +14,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { EXCLUSION_TYPE_MAP } from '../constants';
 import updateMutation from '../graphql/project_security_exclusion_update.mutation.graphql';
 import DeleteModal from './exclusion_delete_modal.vue';
+import ExperimentHeader from './experiment_header.vue';
 
 const i18nStrings = {
   status: s__('SecurityExclusions|Status'),
@@ -41,6 +42,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     DeleteModal,
+    ExperimentHeader,
   },
   props: {
     exclusions: {
@@ -140,6 +142,7 @@ export default {
 
 <template>
   <div>
+    <experiment-header />
     <div class="gl-mb-3 gl-flex gl-items-baseline gl-justify-between">
       <p>
         {{ $options.i18n.headingText }}

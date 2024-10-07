@@ -8909,6 +8909,29 @@ Input type: `SecurityFindingCreateMergeRequestInput`
 | <a id="mutationsecurityfindingcreatemergerequesterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationsecurityfindingcreatemergerequestmergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge Request created after mutation. |
 
+### `Mutation.securityFindingCreateVulnerability`
+
+DETAILS:
+**Introduced** in GitLab 17.5.
+**Status**: Experiment.
+
+Input type: `SecurityFindingCreateVulnerabilityInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityfindingcreatevulnerabilityclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityfindingcreatevulnerabilityuuid"></a>`uuid` | [`String!`](#string) | UUID of the security finding to be used to create a vulnerability. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityfindingcreatevulnerabilityclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityfindingcreatevulnerabilityerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationsecurityfindingcreatevulnerabilityvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Vulnerability created after mutation. |
+
 ### `Mutation.securityFindingDismiss`
 
 Input type: `SecurityFindingDismissInput`
