@@ -26,17 +26,11 @@ module Projects
         return error("The mirror user is not allowed to push code to all branches on this project.")
       end
 
-      checksum_before = project.repository.checksum
-
-      update_tags do
-        project.fetch_mirror(forced: true, check_tags_changed: true)
+      fetch_result = update_tags do
+        project.fetch_mirror(forced: true, check_tags_changed: true, check_repo_changed: true)
       end
 
-      update_branches
-
-      # Updating LFS objects is expensive since it requires scanning for blobs with pointers.
-      # Let's skip this if the repository hasn't changed.
-      update_lfs_objects if update_lfs_objects?(checksum_before)
+      update_lfs_objects_and_branches(fetch_result)
 
       # Running git fetch in the repository creates loose objects in the same
       # way running git push *to* the repository does, so ensure we run regular
@@ -48,11 +42,36 @@ module Projects
       error(e.message)
     end
 
-    private
+    def update_lfs_objects_and_branches(fetch_result)
+      if ::Feature.enabled?(:lfs_sync_before_branch_updates, project) && fetch_result.try(:repo_changed)
+        # If project.fetch_mirror() indicates the 'repo changed', let's sync LFS
+        # objects _before_ we call #update_branches() so there's no race
+        # condition where branches have been updated but LFS objects are still
+        # being fetched and stored.
+        #
+        # We also need to check `Gitaly::FetchRemoteResponse` to ensure it knows
+        # about the `repo_changed` field, as the necessary Gitaly work may not
+        # be merged yet.
+        #
+        update_lfs_objects
+      end
 
-    def update_lfs_objects?(checksum)
-      project.lfs_enabled? && project.repository.checksum != checksum
+      # Update git branches from project.fetch_mirror()'s work
+      update_branches
+
+      if !::Feature.enabled?(:lfs_sync_before_branch_updates, project) || !fetch_result.respond_to?(:repo_changed)
+        # We also need to check `Gitaly::FetchRemoteResponse` to ensure it knows
+        # about the `repo_changed` field, as the necessary Gitaly work may not
+        # be merged yet. In the event `Gitaly::FetchRemoteResponse` doesn't
+        # know about the `repo_changed` field, we call update_lfs_objects() here
+        # only after update_branches() has been called, which was the prior logic
+        # order.
+        #
+        update_lfs_objects
+      end
     end
+
+    private
 
     def import_url_invalid?
       project.import_url && Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
@@ -162,6 +181,8 @@ module Projects
     end
 
     def update_lfs_objects
+      return unless project.lfs_enabled?
+
       result = Projects::LfsPointers::LfsImportService.new(project).execute
 
       if result[:status] == :error
