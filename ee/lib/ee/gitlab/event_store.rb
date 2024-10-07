@@ -70,7 +70,7 @@ module EE
             to: ::Members::MembershipModifiedByAdminEvent,
             if: ->(_) {
               ::Gitlab::CurrentSettings.enable_member_promotion_management? &&
-                ::Feature.enabled?(:member_promotion_management, :instance, type: :wip)
+                ::Feature.enabled?(:member_promotion_management, :instance, type: :beta)
             }
 
           register_threat_insights_subscribers(store)
