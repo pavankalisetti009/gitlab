@@ -47,7 +47,7 @@ module Namespaces
       end
 
       def free_user_limit_url
-        help_page_path('user/free_user_limit')
+        help_page_path('user/free_user_limit.md')
       end
     end
   end

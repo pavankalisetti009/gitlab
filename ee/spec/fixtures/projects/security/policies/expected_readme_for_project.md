@@ -31,11 +31,11 @@ scan_execution_policy:
     site_profile: Site Profile D
 ```
 
-You can read more about the format and policies schema in the [documentation](http://localhost/help/user/application_security/policies/scan_execution_policies#scan-execution-policy-schema).
+You can read more about the format and policies schema in the [documentation](http://localhost/help/user/application_security/policies/scan_execution_policies.md#scan-execution-policy-schema).
 
 ## Default branch protection settings
 
 This project is preconfigured with the default branch set as a protected branch, and only maintainers/owners of
 [Target Project](http://localhost/target-group/target-project) have permission to merge into that branch. This overrides any default branch protection both at the
-[group level](http://localhost/help/user/group/manage#change-the-default-branch-protection-of-a-group) and at the
-[instance level](http://localhost/help/user/project/repository/branches/default#instance-level-default-branch-protection).
+[group level](http://localhost/help/user/group/manage.md#change-the-default-branch-protection-of-a-group) and at the
+[instance level](http://localhost/help/user/project/repository/branches/default.md#instance-level-default-branch-protection).

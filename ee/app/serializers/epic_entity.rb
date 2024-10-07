@@ -56,6 +56,6 @@ class EpicEntity < IssuableEntity
   end
 
   expose :confidential_epics_docs_path, if: ->(epic) { epic.confidential? } do |epic|
-    help_page_path('user/group/epics/manage_epics', anchor: 'make-an-epic-confidential')
+    help_page_path('user/group/epics/manage_epics.md', anchor: 'make-an-epic-confidential')
   end
 end

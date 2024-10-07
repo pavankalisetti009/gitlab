@@ -34,7 +34,7 @@ RSpec.describe Namespaces::FreeUserCap::EnforcementAlertComponent, :saas, :aggre
 
         expect(page).to have_content(title)
         expect(page).to have_css('.gl-alert-actions')
-        expect(page).to have_link('read-only', href: help_page_path('user/free_user_limit'))
+        expect(page).to have_link('read-only', href: help_page_path('user/free_user_limit.md'))
         expect(page).to have_link('Manage members', href: group_usage_quotas_path(namespace))
 
         expect(page).to have_link(
