@@ -14,7 +14,8 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       setup_for_company_help_text: '_help_text_',
       show_joining_project?: show_joining_project?,
       show_opt_in_to_email?: show_opt_in_to_email?,
-      welcome_submit_button_text: '_button_text_'
+      welcome_submit_button_text: '_button_text_',
+      tracking_label: 'free_registration'
     )
   end
 

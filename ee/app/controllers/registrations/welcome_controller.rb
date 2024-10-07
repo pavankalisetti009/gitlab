@@ -34,7 +34,7 @@ module Registrations
 
         redirect_to update_success_path
       else
-        track_event('failed_submitting_form')
+        track_event("track_#{onboarding_status.tracking_label}_error", label: 'failed_submitting_form')
 
         render :show
       end
