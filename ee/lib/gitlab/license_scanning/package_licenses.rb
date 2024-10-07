@@ -62,7 +62,9 @@ module Gitlab
       attr_reader :components, :component_data, :all_records, :project
 
       def use_replica_if_available(&block)
-        ::Gitlab::Database::LoadBalancing::Session.current.use_replicas_for_read_queries(&block)
+        ::Gitlab::Database::LoadBalancing::SessionMap
+          .with_sessions([::ApplicationRecord, ::Ci::ApplicationRecord])
+          .use_replicas_for_read_queries(&block)
       end
 
       # set the default license of all components to an unknown license.
