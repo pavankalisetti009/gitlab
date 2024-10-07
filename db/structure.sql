@@ -9759,7 +9759,10 @@ CREATE TABLE container_repositories (
     expiration_policy_completed_at timestamp with time zone,
     last_cleanup_deleted_tags_count integer,
     delete_started_at timestamp with time zone,
-    status_updated_at timestamp with time zone
+    status_updated_at timestamp with time zone,
+    failed_deletion_count integer DEFAULT 0 NOT NULL,
+    next_delete_attempt_at timestamp with time zone,
+    CONSTRAINT check_container_repositories_non_negative_failed_deletion_count CHECK ((failed_deletion_count >= 0))
 );
 
 CREATE SEQUENCE container_repositories_id_seq
@@ -28544,6 +28547,8 @@ CREATE INDEX index_composer_cache_files_where_namespace_id_is_null ON packages_c
 CREATE INDEX index_container_expiration_policies_on_next_run_at_and_enabled ON container_expiration_policies USING btree (next_run_at, enabled);
 
 CREATE INDEX index_container_registry_data_repair_details_on_status ON container_registry_data_repair_details USING btree (status);
+
+CREATE INDEX index_container_repositories_on_next_delete_attempt_at ON container_repositories USING btree (next_delete_attempt_at) WHERE (status = 0);
 
 CREATE INDEX index_container_repositories_on_project_id_and_id ON container_repositories USING btree (project_id, id);
 
