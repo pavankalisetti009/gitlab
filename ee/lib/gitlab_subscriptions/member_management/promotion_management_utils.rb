@@ -30,7 +30,7 @@ module GitlabSubscriptions
       private
 
       def promotion_management_feature_enabled?
-        ::Feature.enabled?(:member_promotion_management, type: :wip)
+        ::Feature.enabled?(:member_promotion_management, type: :beta)
       end
 
       def promotion_management_active?

@@ -141,6 +141,16 @@ module Types
       extras: [:lookahead],
       description: 'Comment for the state of the security report finding.'
 
+    field :ai_resolution_available, GraphQL::Types::Boolean,
+      null: true,
+      description: 'Indicates whether the type of finding can be resolved with AI.',
+      method: :ai_resolution_available?
+
+    field :ai_resolution_enabled, GraphQL::Types::Boolean,
+      null: true,
+      description: 'Indicates whether the specific finding can be resolved with AI.',
+      method: :ai_resolution_enabled?
+
     markdown_field :description_html, null: true
 
     markdown_field :solution_html, null: true

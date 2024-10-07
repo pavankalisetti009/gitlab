@@ -5,5 +5,5 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/141965
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/439113
 milestone: '16.9'
 group: group::utilization
-type: wip
-default_enabled: false
+type: beta
+default_enabled: true

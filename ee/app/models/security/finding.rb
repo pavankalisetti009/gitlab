@@ -243,5 +243,18 @@ module Security
     def finding_details
       finding_data['details']
     end
+
+    def cwe_value
+      identifiers.find(&:cwe?)&.name
+    end
+
+    def ai_resolution_available?
+      ::Vulnerabilities::Finding::AI_ALLOWED_REPORT_TYPES.include?(report_type)
+    end
+
+    def ai_resolution_enabled?
+      ai_resolution_available? &&
+        ::Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
+    end
   end
 end

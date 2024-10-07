@@ -52,7 +52,9 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
       state_comment
       description_html
       solution_html
-      user_permissions]
+      user_permissions
+      ai_resolution_available
+      ai_resolution_enabled]
   end
 
   let(:sast_query) do
