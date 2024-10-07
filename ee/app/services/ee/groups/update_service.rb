@@ -133,7 +133,10 @@ module EE
 
         comma_separated_domains = params.delete(:allowed_email_domains_list)
 
-        AllowedEmailDomains::UpdateService.new(current_user, group, comma_separated_domains).execute
+        # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Reason: We need this instance to log audit event post save
+        @allowed_email_domains_update_service = AllowedEmailDomains::UpdateService.new(current_user, group, comma_separated_domains)
+        @allowed_email_domains_update_service.execute
+        # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
       override :allowed_settings_params
@@ -143,6 +146,7 @@ module EE
 
       def log_audit_events
         @ip_restriction_update_service&.log_audit_event # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @allowed_email_domains_update_service&.log_audit_event(group.allowed_email_domains.map(&:domain)) # rubocop:disable Gitlab/ModuleWithInstanceVariables
 
         Audit::GroupChangesAuditor.new(current_user, group).execute
       end

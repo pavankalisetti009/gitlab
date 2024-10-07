@@ -30,6 +30,23 @@ module EE
         build_new_allowed_emails_domains_records
       end
 
+      def log_audit_event(updated_domain_list)
+        return unless existing_domains && updated_domain_list
+
+        return if updated_domain_list.sort == existing_domains.sort
+
+        message = "Allowed email domain names updated from '#{existing_domains.join(',')}' to '#{updated_domain_list.join(',')}'"
+
+        ::Gitlab::Audit::Auditor.audit({
+          name: "allowed_email_domain_updated",
+          author: current_user,
+          scope: group,
+          target: group,
+          target_details: group.path,
+          message: _(message)
+        })
+      end
+
       private
 
       attr_reader :current_user, :group, :current_domains
