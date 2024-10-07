@@ -32,9 +32,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
           allow(group).to receive(:save).and_return(false)
         end
 
-        def operation
-          update_group(group, user, visibility_level: Gitlab::VisibilityLevel::PRIVATE)
-        end
+        let(:operation_params) { { visibility_level: Gitlab::VisibilityLevel::PRIVATE } }
 
         let(:attributes) do
           audit_event_params.tap do |param|
@@ -61,9 +59,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
             allow(group).to receive(:save).and_return(false)
           end
 
-          def operation
-            update_group(group, user, ip_restriction_ranges: '192.168.0.0/24,10.0.0.0/8')
-          end
+          let(:operation_params) { { ip_restriction_ranges: '192.168.0.0/24,10.0.0.0/8' } }
 
           let(:attributes) do
             audit_event_params.tap do |param|
@@ -75,6 +71,35 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
           end
         end
       end
+    end
+
+    describe 'allowed email domain' do
+      context 'when allowed email domains were changed' do
+        before do
+          group.add_owner(user)
+        end
+
+        include_examples 'audit event logging' do
+          let(:fail_condition!) do
+            allow(group).to receive(:save).and_return(false)
+          end
+
+          let(:operation_params) { { allowed_email_domains_list: 'abcd.com,test.com' } }
+
+          let(:attributes) do
+            audit_event_params.tap do |param|
+              param[:details].merge!(
+                event_name: 'allowed_email_domain_updated',
+                custom_message: "Allowed email domain names updated from '' to 'abcd.com,test.com'"
+              )
+            end
+          end
+        end
+      end
+    end
+
+    def operation(update_params = operation_params)
+      update_group(group, user, **update_params)
     end
   end
 
