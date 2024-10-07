@@ -5,6 +5,12 @@ module GitlabSubscriptions
     class ActivityService
       include ExclusiveLeaseGuard
 
+      LEASE_KEY_FORMAT = "gitlab_subscriptions:members_activity_event:%s:%s"
+
+      def self.lease_taken?(namespace_id, user_id)
+        Gitlab::ExclusiveLease.get_uuid(format(LEASE_KEY_FORMAT, namespace_id, user_id))
+      end
+
       def initialize(user, namespace)
         @user = user
         @namespace = namespace&.root_ancestor
@@ -41,7 +47,7 @@ module GitlabSubscriptions
       end
 
       def lease_key
-        "gitlab_subscriptions:members_activity_event:#{namespace.id}:#{user.id}"
+        format(LEASE_KEY_FORMAT, namespace.id, user.id)
       end
 
       def seat_assignment

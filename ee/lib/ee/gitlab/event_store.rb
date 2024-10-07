@@ -81,6 +81,8 @@ module EE
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
           subscribe_to_zoekt_events(store)
+
+          subscribe_to_users_activity_events(store)
         end
 
         def register_security_policy_subscribers(store)
@@ -183,6 +185,19 @@ module EE
 
           store.subscribe ::Search::Zoekt::LostNodeEventWorker,
             to: ::Search::Zoekt::LostNodeEvent
+        end
+
+        def subscribe_to_users_activity_events(store)
+          store.subscribe ::GitlabSubscriptions::Members::RecordLastActivityWorker,
+            to: ::Users::ActivityEvent,
+            if: ->(event) {
+              namespace_id = event.data[:namespace_id]
+              actor = ::Namespace.actor_from_id(namespace_id)
+              ::Feature.enabled?(:track_member_activity, actor) &&
+                !GitlabSubscriptions::Members::ActivityService.lease_taken?(
+                  namespace_id, event.data[:user_id]
+                )
+            }
         end
       end
     end
