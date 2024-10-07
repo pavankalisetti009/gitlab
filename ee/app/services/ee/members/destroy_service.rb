@@ -151,7 +151,7 @@ module EE
         namespace = member.source.root_ancestor
 
         member.run_after_commit_or_now do
-          ::Groups::ResetSeatCalloutsWorker.perform_async(namespace)
+          ::Groups::ResetSeatCalloutsWorker.perform_async(namespace.id)
         end
       end
     end
