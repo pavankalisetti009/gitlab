@@ -7,10 +7,21 @@ RSpec.describe GitlabSubscriptions::SubscriptionHelper, feature_category: :seat_
     context 'when GitLab.com' do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
+        stub_feature_flags(allow_self_hosted_features_for_com: true)
       end
 
-      it 'returns true' do
-        expect(helper.gitlab_com_subscription?).to be_truthy
+      it 'returns false' do
+        expect(helper.gitlab_com_subscription?).to be_falsy
+      end
+
+      context 'when allow_self_hosted_features_for_com is disabled' do
+        before do
+          stub_feature_flags(allow_self_hosted_features_for_com: false)
+        end
+
+        it 'returns true' do
+          expect(helper.gitlab_com_subscription?).to be_truthy
+        end
       end
     end
 

@@ -121,7 +121,8 @@ module EE
       end
 
       condition(:user_allowed_to_manage_ai_settings) do
-        next false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        next false if ::Feature.disabled?(:allow_self_hosted_features_for_com) &&
+          ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         ::License.current&.paid? # Replace with license :ai_self_hosted_model for GA
       end

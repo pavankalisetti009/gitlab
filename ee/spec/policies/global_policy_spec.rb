@@ -883,9 +883,18 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       context 'when instance is in SASS mode', :enable_admin_mode do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
+          stub_feature_flags(allow_self_hosted_features_for_com: true)
         end
 
-        it { is_expected.to be_disallowed(:manage_ai_settings) }
+        it { is_expected.to be_allowed(:manage_ai_settings) }
+
+        context 'when allow_self_hosted_features_for_com is disabled' do
+          before do
+            stub_feature_flags(allow_self_hosted_features_for_com: false)
+          end
+
+          it { is_expected.to be_disallowed(:manage_ai_settings) }
+        end
       end
     end
 
