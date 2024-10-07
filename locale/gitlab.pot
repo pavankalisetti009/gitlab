@@ -11234,6 +11234,9 @@ msgstr ""
 msgid "Checking group path availability..."
 msgstr ""
 
+msgid "Checking if merge request can be merged..."
+msgstr ""
+
 msgid "Checking username availability..."
 msgstr ""
 
