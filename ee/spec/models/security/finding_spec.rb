@@ -555,4 +555,34 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
       end
     end
   end
+
+  describe '#ai_resolution_available?' do
+    it 'returns true if the finding is a SAST finding' do
+      expect(finding_1.ai_resolution_available?).to be true
+    end
+
+    it 'returns false if the finding is not a SAST finding' do
+      expect(finding_2.ai_resolution_available?).to be false
+    end
+  end
+
+  describe '#ai_resolution_enabled?' do
+    using RSpec::Parameterized::TableSyntax
+    let(:finding) { build(:security_finding, :with_finding_data) }
+
+    where(:finding_report_type, :cwe, :enabled_value) do
+      'sast' | 'CWE-1'  | false
+      'sast' | 'CWE-23' | true
+      'dast' | 'CWE-1'  | false
+      'dast' | 'CWE-23' | false
+    end
+
+    with_them do
+      it 'returns the expected value for enabled' do
+        finding.scan.scan_type = finding_report_type
+        finding.finding_data["identifiers"] << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
+        expect(finding.ai_resolution_enabled?).to be enabled_value
+      end
+    end
+  end
 end
