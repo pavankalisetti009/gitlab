@@ -15,7 +15,7 @@ RSpec.describe EpicsHelper, type: :helper do
         labels_fetch_path: "/groups/#{group.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true",
         labels_manage_path: "/groups/#{group.full_path}/-/labels",
         markdown_preview_path: "/groups/#{group.full_path}/-/preview_markdown",
-        markdown_docs_path: help_page_path('user/markdown')
+        markdown_docs_path: help_page_path('user/markdown.md')
       }
 
       expect(helper.epic_new_app_data(group)).to match(hash_including(expected_data))

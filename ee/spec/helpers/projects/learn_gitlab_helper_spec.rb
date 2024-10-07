@@ -94,9 +94,9 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
         user_added: a_hash_including(url: %r{#\z}),
         merge_request_created: a_hash_including(url: %r{/#{project.path}/-/merge_requests\z}),
         code_added: a_hash_including(url: %r{/-/ide/project/#{project.full_path}/edit\z}),
-        code_owners_enabled: a_hash_including(url: %r{/user/project/codeowners/index#set-up-code-owners\z}),
+        code_owners_enabled: a_hash_including(url: %r{/user/project/codeowners/index.md#set-up-code-owners\z}),
         required_mr_approvals_enabled: a_hash_including(
-          url: %r{/ci/testing/code_coverage#add-a-coverage-check-approval-rule\z}
+          url: %r{/ci/testing/code_coverage.md#add-a-coverage-check-approval-rule\z}
         ),
         license_scanning_run: a_hash_including(
           url: help_page_path(described_class::LICENSE_SCANNING_RUN_PATH)
@@ -154,11 +154,11 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }
@@ -181,11 +181,11 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }
@@ -201,11 +201,11 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }

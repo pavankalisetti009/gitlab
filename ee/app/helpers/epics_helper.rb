@@ -16,7 +16,7 @@ module EpicsHelper
       labels_fetch_path: group_labels_path(group, format: :json, only_group_labels: true, include_ancestor_groups: true),
       labels_manage_path: group_labels_path(group),
       markdown_preview_path: preview_markdown_path(group),
-      markdown_docs_path: help_page_path('user/markdown')
+      markdown_docs_path: help_page_path('user/markdown.md')
     }
   end
 
