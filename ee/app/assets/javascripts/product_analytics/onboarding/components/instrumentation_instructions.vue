@@ -62,7 +62,7 @@ export default {
       `ProductAnalytics|For more information, see the %{linkStart}docs%{linkEnd}.`,
     ),
   },
-  BROWSER_SDK_DOCS_URL: helpPagePath('user/product_analytics/instrumentation/browser_sdk', {
+  BROWSER_SDK_DOCS_URL: helpPagePath('operations/product_analytics/instrumentation/browser_sdk', {
     anchor: 'browser-sdk-initialization-options',
   }),
   INSTALL_NPM_PACKAGE,

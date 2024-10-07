@@ -30,7 +30,7 @@ describe('ProductAnalyticsUsageQuotaApp', () => {
       expect(findEmptyState().props()).toMatchObject({
         description:
           "Track your product's performance, and optimize your product and development processes.",
-        primaryButtonLink: '/help/user/product_analytics/index#enable-product-analytics',
+        primaryButtonLink: '/help/operations/product_analytics/index#enable-product-analytics',
         primaryButtonText: 'Learn how to enable product analytics',
         svgPath: '/empty-state.svg',
         title: 'Get started with product analytics',
@@ -59,7 +59,7 @@ describe('ProductAnalyticsUsageQuotaApp', () => {
         expect(findEmptyState().props()).toMatchObject({
           description:
             'This group has no projects with product analytics onboarded in the current period.',
-          primaryButtonLink: '/help/user/product_analytics/index#onboard-a-gitlab-project',
+          primaryButtonLink: '/help/operations/product_analytics/index#onboard-a-gitlab-project',
           primaryButtonText: 'Learn how to onboard projects',
           svgPath: '/empty-state.svg',
           title: 'No projects found',

@@ -33,10 +33,10 @@ export default {
       this.showEmptyState = true;
     },
   },
-  ONBOARD_PROJECTS_URL: helpPagePath('/user/product_analytics/index', {
+  ONBOARD_PROJECTS_URL: helpPagePath('/operations/product_analytics/index', {
     anchor: 'onboard-a-gitlab-project',
   }),
-  ENABLE_PRODUCT_ANALYTICS_URL: helpPagePath('/user/product_analytics/index', {
+  ENABLE_PRODUCT_ANALYTICS_URL: helpPagePath('/operations/product_analytics/index', {
     anchor: 'enable-product-analytics',
   }),
 };
