@@ -4,6 +4,7 @@ import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/querie
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { createAlert } from '~/alert';
 import { getParameterByName } from '~/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   exceedsActionLimit,
   extractSourceParameter,
@@ -16,9 +17,14 @@ import projectScanResultPoliciesQuery from '../../graphql/queries/project_scan_r
 import groupScanResultPoliciesQuery from '../../graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
+import projectVulnerabilityManagementPoliciesQuery from '../../graphql/queries/project_vulnerability_management_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
-import { DEPRECATED_CUSTOM_SCAN_PROPERTY, POLICY_TYPE_FILTER_OPTIONS } from './constants';
+import {
+  DEPRECATED_CUSTOM_SCAN_PROPERTY,
+  POLICY_TYPE_FILTER_OPTIONS,
+  VULNERABILITY_MANAGEMENT_FILTER_OPTION,
+} from './constants';
 
 const NAMESPACE_QUERY_DICT = {
   scanExecution: {
@@ -32,6 +38,9 @@ const NAMESPACE_QUERY_DICT = {
   pipelineExecution: {
     [NAMESPACE_TYPES.PROJECT]: projectPipelineExecutionPoliciesQuery,
     [NAMESPACE_TYPES.GROUP]: groupPipelineExecutionPoliciesQuery,
+  },
+  vulnerabilityManagement: {
+    [NAMESPACE_TYPES.PROJECT]: projectVulnerabilityManagementPoliciesQuery,
   },
 };
 
@@ -50,6 +59,7 @@ export default {
     ListHeader,
     ListComponent,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'assignedPolicyProject',
     'namespacePath',
@@ -141,6 +151,24 @@ export default {
       },
       error: createPolicyFetchError,
     },
+    vulnerabilityManagementPolicies: {
+      query() {
+        return NAMESPACE_QUERY_DICT.vulnerabilityManagement[this.namespaceType];
+      },
+      variables() {
+        return {
+          fullPath: this.namespacePath,
+          relationship: this.selectedPolicySource,
+        };
+      },
+      update(data) {
+        return data?.namespace?.vulnerabilityManagementPolicies?.nodes ?? [];
+      },
+      error: createPolicyFetchError,
+      skip() {
+        return !this.vulnerabilityManagementPolicyEnabled;
+      },
+    },
   },
   data() {
     const selectedPolicySource = extractSourceParameter(getParameterByName('source'));
@@ -158,6 +186,7 @@ export default {
       pipelineExecutionPolicies: [],
       scanExecutionPolicies: [],
       scanResultPolicies: [],
+      vulnerabilityManagementPolicies: [],
     };
   },
   computed: {
@@ -166,14 +195,26 @@ export default {
         [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: this.scanExecutionPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: this.scanResultPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: this.pipelineExecutionPolicies,
+        ...(this.vulnerabilityManagementPolicyEnabled
+          ? {
+              [VULNERABILITY_MANAGEMENT_FILTER_OPTION.VULNERABILITY_MANAGEMENT.value]:
+                this.vulnerabilityManagementPolicies,
+            }
+          : {}),
       };
     },
     isLoadingPolicies() {
       return (
         this.$apollo.queries.scanExecutionPolicies.loading ||
         this.$apollo.queries.scanResultPolicies.loading ||
-        this.$apollo.queries.pipelineExecutionPolicies.loading
+        this.$apollo.queries.vulnerabilityManagementPolicies.loading ||
+        (this.vulnerabilityManagementPolicyEnabled
+          ? this.$apollo.queries.vulnerabilityManagementPolicies.loading
+          : false)
       );
+    },
+    vulnerabilityManagementPolicyEnabled() {
+      return this.glFeatures.vulnerabilityManagementPolicyType;
     },
   },
   methods: {

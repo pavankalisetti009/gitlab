@@ -1,5 +1,8 @@
 import { s__ } from '~/locale';
-import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
+import {
+  PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
+  VULNERABILITY_MANAGEMENT_POLICY_TYPE_HEADER,
+} from 'ee/security_orchestration/components/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const POLICY_SOURCE_OPTIONS = {
@@ -33,6 +36,13 @@ export const POLICY_TYPE_FILTER_OPTIONS = {
   PIPELINE_EXECUTION: {
     value: 'PIPELINE_EXECUTION',
     text: PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
+  },
+};
+
+export const VULNERABILITY_MANAGEMENT_FILTER_OPTION = {
+  VULNERABILITY_MANAGEMENT: {
+    value: 'VULNERABILITY_MANAGEMENT',
+    text: VULNERABILITY_MANAGEMENT_POLICY_TYPE_HEADER,
   },
 };
 
