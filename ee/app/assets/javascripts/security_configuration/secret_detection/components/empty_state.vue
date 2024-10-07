@@ -3,6 +3,7 @@ import { GlEmptyState, GlSprintf, GlLink, GlButton } from '@gitlab/ui';
 import emptyStateSvgPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-secure-md.svg?url';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import ExperimentHeader from './experiment_header.vue';
 
 export default {
   components: {
@@ -10,6 +11,7 @@ export default {
     GlSprintf,
     GlLink,
     GlButton,
+    ExperimentHeader,
   },
   methods: {
     handlePrimaryButtonAction() {
@@ -29,21 +31,24 @@ export default {
 </script>
 
 <template>
-  <gl-empty-state :title="$options.i18n.emptyStateTitle" :svg-path="$options.emptyStateSvgPath">
-    <template #description>
-      <span class="gl-text-lg gl-leading-24">
-        <gl-sprintf :message="$options.i18n.emptyStateDescription">
-          <template #link="{ content }">
-            <gl-link :href="$options.learnMoreLink">{{ content }}</gl-link>
-          </template>
-        </gl-sprintf>
-      </span>
-    </template>
+  <div>
+    <experiment-header />
+    <gl-empty-state :title="$options.i18n.emptyStateTitle" :svg-path="$options.emptyStateSvgPath">
+      <template #description>
+        <span class="gl-text-lg gl-leading-24">
+          <gl-sprintf :message="$options.i18n.emptyStateDescription">
+            <template #link="{ content }">
+              <gl-link :href="$options.learnMoreLink">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </span>
+      </template>
 
-    <template #actions>
-      <gl-button variant="confirm" class="gl-mt-3" @click="handlePrimaryButtonAction">
-        {{ $options.i18n.primaryButtonText }}
-      </gl-button>
-    </template>
-  </gl-empty-state>
+      <template #actions>
+        <gl-button variant="confirm" class="gl-mt-3" @click="handlePrimaryButtonAction">
+          {{ $options.i18n.primaryButtonText }}
+        </gl-button>
+      </template>
+    </gl-empty-state>
+  </div>
 </template>
