@@ -182,7 +182,13 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
           stub_ee_application_setting(personal_access_tokens_disabled?: true)
         end
 
-        it { is_expected.to eq(false) }
+        it 'allows the admin to impersonate the user' do
+          expect(helper.impersonation_enabled?).to eq(true)
+        end
+
+        it 'disables impersonation_tokens' do
+          expect(helper.impersonation_tokens_enabled?).to eq(false)
+        end
       end
     end
 
