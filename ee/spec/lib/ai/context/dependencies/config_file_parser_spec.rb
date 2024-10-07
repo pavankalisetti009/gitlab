@@ -59,7 +59,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
             error_message: nil,
             payload: a_hash_including(
               fileName: 'dir1/dir2/go.mod',
-              libs: [{ name: 'abc.org/mylib (1.3.0)' }, { name: 'golang.org/x/mod (0.5.0)' }])
+              libs: contain_exactly({ name: 'abc.org/mylib (1.3.0)' }, { name: 'golang.org/x/mod (0.5.0)' }))
           }
         )
       end
@@ -85,7 +85,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
               error_message: nil,
               payload: a_hash_including(
                 fileName: 'dir1/dir2/conanfile.txt',
-                libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+                libs: contain_exactly({ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }))
             },
             {
               lang: 'cpp',
@@ -93,7 +93,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
               error_message: nil,
               payload: a_hash_including(
                 fileName: 'dir1/dir2/conanfile.txt',
-                libs: [{ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }])
+                libs: contain_exactly({ name: 'libiconv (1.17)' }, { name: 'poco (>1.0,<1.9)' }))
             }
           )
         end
@@ -133,7 +133,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
               error_message: nil,
               payload: a_hash_including(
                 fileName: 'dir1/dir2/build.gradle',
-                libs: [{ name: 'groovy (3.+)' }, { name: 'asm (9.6)' }])
+                libs: contain_exactly({ name: 'groovy (3.+)' }, { name: 'asm (9.6)' }))
             }
           )
         end
@@ -187,7 +187,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
                 error_message: nil,
                 payload: a_hash_including(
                   fileName: 'requirements.txt',
-                  libs: [{ name: 'requests (>=2.0,<3.0)' }, { name: 'numpy (==1.26.4)' }])
+                  libs: contain_exactly({ name: 'requests (>=2.0,<3.0)' }, { name: 'numpy (==1.26.4)' }))
               },
               {
                 lang: 'python',
@@ -195,7 +195,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
                 error_message: nil,
                 payload: a_hash_including(
                   fileName: 'dir1/dir2/dev-requirements.txt',
-                  libs: [{ name: 'python_dateutil (>=2.5.3)' }, { name: 'fastapi-health (!=0.3.0)' }])
+                  libs: contain_exactly({ name: 'python_dateutil (>=2.5.3)' }, { name: 'fastapi-health (!=0.3.0)' }))
               }
             )
           end
