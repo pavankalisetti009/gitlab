@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe 'Root cause analysis job page', :saas, :js, feature_category: :continuous_integration do
   let(:user) { create(:user) }
-  let(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
-  let(:project) { create(:project, :repository, namespace: namespace) }
+  let(:group) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+  let(:project) { create(:project, :repository, namespace: group) }
   let(:passed_job) { create(:ci_build, :success, :trace_live, project: project) }
   let(:failed_job) { create(:ci_build, :failed, :trace_live, project: project) }
 
@@ -17,9 +17,7 @@ RSpec.describe 'Root cause analysis job page', :saas, :js, feature_category: :co
   end
 
   context 'with duo enterprise license' do
-    before do
-      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
-    end
+    include_context 'with duo enterprise addon'
 
     context 'with failed jobs' do
       before do
