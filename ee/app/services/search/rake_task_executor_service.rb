@@ -180,7 +180,7 @@ module Search
       end
 
       sizing_url = Rails.application.routes.url_helpers
-        .help_page_url('integration/advanced_search/elasticsearch', anchor: 'number-of-elasticsearch-shards')
+        .help_page_url('integration/advanced_search/elasticsearch.md', anchor: 'number-of-elasticsearch-shards')
       logger.info('Using approximate counts to estimate shard counts for data indexed from database. ' \
         "This does not include repository data. For single-node cluster recommendations, see #{sizing_url}.\n" \
         'The approximate document counts, recommended shard size, and replica size for each index are:')

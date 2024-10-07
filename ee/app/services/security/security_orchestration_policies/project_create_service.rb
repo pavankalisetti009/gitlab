@@ -98,16 +98,16 @@ module Security
       end
 
       def scan_execution_policies_docs_link
-        url_helpers.help_page_url('user/application_security/policies/scan_execution_policies',
+        url_helpers.help_page_url('user/application_security/policies/scan_execution_policies.md',
           anchor: 'scan-execution-policy-schema')
       end
 
       def group_level_branch_protection_docs_link
-        url_helpers.help_page_url('user/group/manage', anchor: 'change-the-default-branch-protection-of-a-group')
+        url_helpers.help_page_url('user/group/manage.md', anchor: 'change-the-default-branch-protection-of-a-group')
       end
 
       def instance_level_branch_protection_docs_link
-        url_helpers.help_page_url('user/project/repository/branches/default',
+        url_helpers.help_page_url('user/project/repository/branches/default.md',
           anchor: 'instance-level-default-branch-protection')
       end
 
