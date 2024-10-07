@@ -67,7 +67,7 @@ describe('ProductAnalyticsGroupUsage', () => {
     createComponent();
 
     expect(findUsageQuotaLearnMoreLink().attributes('href')).toBe(
-      '/help/user/product_analytics/index#view-product-analytics-usage-quota',
+      '/help/operations/product_analytics/index#view-product-analytics-usage-quota',
     );
   });
 
@@ -78,7 +78,7 @@ describe('ProductAnalyticsGroupUsage', () => {
       'If GitLab manages your cluster, then GitLab retains your analytics data for 1 year.',
     );
     expect(findDataRetentionLearnMoreLink().attributes('href')).toBe(
-      '/help/user/product_analytics/index#product-analytics-provider',
+      '/help/operations/product_analytics/index#product-analytics-provider',
     );
   });
 
