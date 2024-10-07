@@ -121,9 +121,16 @@ module Resolvers
     end
 
     def resolve_with_duo_filtering_enabled?
-      return false if vulnerable.is_a?(::InstanceSecurityDashboard)
+      actor = case vulnerable
+              when ::InstanceSecurityDashboard
+                current_user
+              when Project
+                vulnerable.group
+              else
+                vulnerable
+              end
 
-      Feature.enabled?(:vulnerability_report_vr_filter, vulnerable)
+      Feature.enabled?(:vulnerability_report_vr_filter, actor)
     end
 
     def after_severity
