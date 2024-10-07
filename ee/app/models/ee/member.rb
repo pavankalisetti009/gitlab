@@ -155,7 +155,8 @@ module EE
 
     def sso_enforcement
       unless ::Gitlab::Auth::GroupSaml::MembershipEnforcer.new(group).can_add_user?(user)
-        troubleshoot_link_url = ::Gitlab::Routing.url_helpers.help_page_path('user/group/saml_sso/troubleshooting_scim')
+        troubleshoot_link_url = ::Gitlab::Routing.url_helpers.help_page_path(
+          'user/group/saml_sso/troubleshooting_scim.md')
         troubleshoot_link = ActionController::Base.helpers.link_to('', troubleshoot_link_url, target: '_blank',
           rel: 'noopener noreferrer')
         msg = safe_format(
