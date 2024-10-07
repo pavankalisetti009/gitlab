@@ -1,0 +1,9 @@
+---
+name: lfs_sync_before_branch_updates
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/15147
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165899
+rollout_issue_url:
+milestone: '17.5'
+group: group::source code
+type: gitlab_com_derisk
+default_enabled: false
