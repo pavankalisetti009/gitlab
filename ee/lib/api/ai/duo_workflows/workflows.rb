@@ -18,6 +18,10 @@ module API
             ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
           end
 
+          def find_event!(workflow, id)
+            workflow.events.find(id)
+          end
+
           def authorize_run_workflows!(project)
             return if can?(current_user, :duo_workflow, project)
 
@@ -205,6 +209,53 @@ module API
                 workflow = find_workflow!(params[:id])
                 checkpoints = workflow.checkpoints.order(thread_ts: :desc) # rubocop:disable CodeReuse/ActiveRecord -- adding scope for order is no clearer
                 present paginate(checkpoints), with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
+              end
+
+              params do
+                requires :id, type: Integer, desc: 'The ID of the workflow'
+                requires :event_type, type: String, values: %w[response message pause stop resume],
+                  desc: 'The type of event'
+                requires :message, type: String, desc: "Message from the human"
+              end
+              post '/:id/events' do
+                workflow = find_workflow!(params[:id])
+                event_params = declared_params(include_missing: false).except(:id)
+                service = ::Ai::DuoWorkflows::CreateEventService.new(
+                  project: workflow.project,
+                  workflow: workflow,
+                  params: event_params.merge(event_status: :queued)
+                )
+                result = service.execute
+
+                bad_request!(result[:message]) if result[:status] == :error
+
+                present result[:event], with: ::API::Entities::Ai::DuoWorkflows::Event
+              end
+
+              get '/:id/events' do
+                workflow = find_workflow!(params[:id])
+                events = workflow.events.queued
+                present paginate(events), with: ::API::Entities::Ai::DuoWorkflows::Event
+              end
+
+              params do
+                requires :id, type: Integer, desc: 'The ID of the workflow'
+                requires :event_id, type: Integer, desc: 'The ID of the event'
+                requires :event_status, type: String, values: %w[queued delivered], desc: 'The status of the event'
+              end
+              put '/:id/events/:event_id' do
+                workflow = find_workflow!(params[:id])
+                event = find_event!(workflow, params[:event_id])
+                event_params = declared_params(include_missing: false).except(:id, :event_id)
+                service = ::Ai::DuoWorkflows::UpdateEventService.new(
+                  event: event,
+                  params: event_params
+                )
+                result = service.execute
+
+                bad_request!(result[:message]) if result[:status] == :error
+
+                present result[:event], with: ::API::Entities::Ai::DuoWorkflows::Event
               end
 
               desc 'Starts Duo Workflow execution in ci pipeline' do

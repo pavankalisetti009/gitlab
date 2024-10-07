@@ -2013,11 +2013,12 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         let(:policy_yaml) do
           build(:orchestration_policy_yaml,
             scan_execution_policy: [build(:scan_execution_policy, policy_scope: { compliance_frameworks: [{ id: 2 }, { id: 3 }] })],
-            scan_result_policy: [build(:scan_result_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 2 }] })]
+            scan_result_policy: [build(:scan_result_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 2 }] })],
+            pipeline_execution_policy: [build(:pipeline_execution_policy, policy_scope: { compliance_frameworks: [{ id: 1 }, { id: 3 }] })]
           )
         end
 
-        it { is_expected.to match_array([{ framework_ids: [1, 2], policy_index: 0 }, { framework_ids: [2, 3], policy_index: 1 }]) }
+        it { is_expected.to match_array([{ framework_ids: [1, 2], policy_index: 0 }, { framework_ids: [2, 3], policy_index: 1 }, { framework_ids: [1, 3], policy_index: 2 }]) }
       end
     end
   end
