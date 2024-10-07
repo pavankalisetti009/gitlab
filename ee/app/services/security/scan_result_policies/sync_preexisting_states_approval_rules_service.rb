@@ -47,7 +47,7 @@ module Security
         ApprovalMergeRequestRule.remove_required_approved(unviolated_rules) if unviolated_rules.any?
 
         log_violated_rules(violated_rules)
-        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules)
+        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules.map(&:scan_result_policy_read))
         violations.execute
       end
 
