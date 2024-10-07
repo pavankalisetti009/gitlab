@@ -110,7 +110,7 @@ export default {
       },
     },
   },
-  docsPath: helpPagePath('user/product_analytics/index', {
+  docsPath: helpPagePath('operations/product_analytics/index', {
     anchor: 'onboard-a-gitlab-project',
   }),
 };
