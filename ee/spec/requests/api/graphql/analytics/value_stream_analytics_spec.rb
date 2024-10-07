@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe '(Project|Group).value_stream_analytics', feature_category: :value_stream_management do
+RSpec.describe '(Project|Group).value_stream_analytics', :freeze_time, feature_category: :value_stream_management do
   include GraphqlHelpers
 
   let_it_be_with_refind(:current_user) { create(:user) }
