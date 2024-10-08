@@ -100,13 +100,13 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       create_list(:zoekt_repository, 5, zoekt_index: zoekt_index, size_bytes: 100.megabytes)
     end
 
-    describe '#for_node' do
+    describe '.for_node' do
       subject { described_class.for_node(node_2) }
 
       it { is_expected.to contain_exactly(zoekt_index_2) }
     end
 
-    describe '#for_root_namespace_id' do
+    describe '.for_root_namespace_id' do
       subject { described_class.for_root_namespace_id(namespace_2) }
 
       it { is_expected.to contain_exactly(zoekt_index_2) }
@@ -120,7 +120,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '#for_root_namespace_id_with_search_enabled' do
+    describe '.for_root_namespace_id_with_search_enabled' do
       it 'correctly filters on the search field' do
         expect(described_class.for_root_namespace_id_with_search_enabled(namespace_2))
           .to contain_exactly(zoekt_index_2)
@@ -132,7 +132,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '#with_all_repositories_ready' do
+    describe '.with_all_repositories_ready' do
       let_it_be(:idx) { create(:zoekt_index) } # It has some pending zoekt_repositories
       let_it_be(:idx2) { create(:zoekt_index) } # It has all ready zoekt_repositories
       let_it_be(:idx3) { create(:zoekt_index) } # It does not have zoekt_repositories
@@ -151,7 +151,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '#searchable' do
+    describe '.searchable' do
       let_it_be(:zoekt_index_ready) do
         create(:zoekt_index, node: zoekt_node, zoekt_enabled_namespace: zoekt_enabled_namespace_2, state: :ready)
       end
@@ -161,7 +161,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '#preload_zoekt_enabled_namespace_and_namespace' do
+    describe '.preload_zoekt_enabled_namespace_and_namespace' do
       it 'preloads the project and avoids N+1 queries' do
         index = described_class.preload_zoekt_enabled_namespace_and_namespace.first
         recorder = ActiveRecord::QueryRecorder.new { index.zoekt_enabled_namespace.namespace }
@@ -169,7 +169,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '#preload_node' do
+    describe '.preload_node' do
       it 'preloads the node and avoids N+1 queries' do
         index = described_class.preload_node.first
         recorder = ActiveRecord::QueryRecorder.new { index.node }
