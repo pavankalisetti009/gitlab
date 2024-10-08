@@ -95,7 +95,7 @@ RSpec.describe Auth::SamlGroupSyncWorker, feature_category: :system_access do
       manage_group_ids = [top_level_group1.id, group1_subgroup.id] if manage_group_ids.nil?
 
       expect(Groups::SyncService).to receive(:new).with(
-        top_level_group, user, group_links: group_links, manage_group_ids: manage_group_ids
+        top_level_group, user, group_links: group_links, manage_group_ids: match_array(manage_group_ids)
       ).and_call_original
     end
 
