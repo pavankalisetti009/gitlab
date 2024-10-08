@@ -35082,9 +35082,6 @@ msgstr ""
 msgid "MlModelRegistry|Using the MLflow client"
 msgstr ""
 
-msgid "MlModelRegistry|Version candidates"
-msgstr ""
-
 msgid "MlModelRegistry|Version description"
 msgstr ""
 
