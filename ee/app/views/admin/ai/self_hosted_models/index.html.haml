@@ -2,7 +2,7 @@
 - add_page_specific_style 'page_bundles/labels'
 
 - if Feature.enabled?(:custom_models_vue_app, current_user)
-  #js-self-hosted-models{ data: { base_path: admin_ai_self_hosted_models_path, new_self_hosted_model_path: new_admin_ai_self_hosted_model_path } }
+  #js-self-hosted-models{ data: { base_path: admin_ai_self_hosted_models_path, new_self_hosted_model_path: new_admin_ai_self_hosted_model_path, ai_feature_settings_path: admin_ai_feature_settings_path } }
 - else
   - if @self_hosted_models.present?
     = render ::Layouts::CrudComponent.new(s_('AdminSelfHostedModels|Self-hosted models'),

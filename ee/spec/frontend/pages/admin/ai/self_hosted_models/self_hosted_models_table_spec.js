@@ -17,6 +17,9 @@ describe('SelfHostedModelsTable', () => {
           basePath,
           ...props,
         },
+        provide: {
+          aiFeatureSettingsPath: 'path/to/ai/feature/settings',
+        },
       }),
     );
   };
