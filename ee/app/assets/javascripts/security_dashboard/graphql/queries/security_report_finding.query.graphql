@@ -9,6 +9,7 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
       id
       securityReportFinding(uuid: $findingUuid) {
         uuid
+        aiResolutionEnabled
         title
         description
         descriptionHtml
@@ -157,7 +158,6 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
         stateComment
         vulnerability {
           id
-          aiResolutionEnabled
           externalIssueLinks {
             nodes {
               id
