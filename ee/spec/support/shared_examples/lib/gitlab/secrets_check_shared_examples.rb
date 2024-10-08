@@ -88,7 +88,8 @@ RSpec.shared_examples 'scan passed' do
       expect(instance).to receive(:secrets_scan)
         .with(
           [new_blob],
-          timeout: kind_of(Float)
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
         )
         .once
         .and_return(passed_scan_response)
@@ -205,7 +206,8 @@ RSpec.shared_examples 'scan detected secrets' do
       expect(instance).to receive(:secrets_scan)
         .with(
           [new_blob],
-          timeout: kind_of(Float)
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
         )
         .once
         .and_return(successful_scan_response)
@@ -375,7 +377,8 @@ RSpec.shared_examples 'scan detected secrets' do
         expect(instance).to receive(:secrets_scan)
           .with(
             [new_blob],
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once
           .and_return(successful_with_multiple_findings_scan_response)
@@ -404,7 +407,7 @@ RSpec.shared_examples 'scan detected secrets' do
       create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB") # gitleaks:allow
     end
 
-    let_it_be(:another_new_commit) do
+    let_it_be(:commit_with_same_blob) do
       create_commit(
         { '.env' => "SECRET=glpat-JUST20LETTERSANDNUMB" }, # gitleaks:allow
         'Same commit different message'
@@ -432,22 +435,25 @@ RSpec.shared_examples 'scan detected secrets' do
           name: '.env',
           path: '.env',
           flat_path: '.env',
-          commit_id: another_new_commit
+          commit_id: commit_with_same_blob
         )
       ]
     end
 
     let(:changes) do
       [
-        { oldrev: initial_commit, newrev: another_new_commit, ref: 'refs/heads/master' }
+        { oldrev: initial_commit, newrev: commit_with_same_blob, ref: 'refs/heads/master' }
       ]
     end
 
     let(:commits) do
-      [
-        Gitlab::Git::Commit.find(repository, new_commit),
-        Gitlab::Git::Commit.find(repository, another_new_commit)
-      ]
+      Commit.decorate(
+        [
+          Gitlab::Git::Commit.find(repository, new_commit),
+          Gitlab::Git::Commit.find(repository, commit_with_same_blob)
+        ],
+        project
+      )
     end
 
     let(:successful_with_same_blob_in_multiple_commits_scan_response) do
@@ -474,7 +480,7 @@ RSpec.shared_examples 'scan detected secrets' do
 
     before do
       allow(repository).to receive(:new_commits)
-        .with([another_new_commit])
+        .with([commit_with_same_blob])
         .and_return(commits)
     end
 
@@ -483,7 +489,8 @@ RSpec.shared_examples 'scan detected secrets' do
         expect(instance).to receive(:secrets_scan)
           .with(
             [new_blob],
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once
           .and_return(successful_with_same_blob_in_multiple_commits_scan_response)
@@ -497,7 +504,7 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_call_original
 
       expect(::Gitlab::Git::Tree).to receive(:tree_entries)
-        .with(**expected_tree_args.merge(sha: another_new_commit))
+        .with(**expected_tree_args.merge(sha: commit_with_same_blob))
         .once
         .and_return([tree_entries, gitaly_pagination_cursor])
         .and_call_original
@@ -555,7 +562,8 @@ RSpec.shared_examples 'scan detected secrets' do
         expect(instance).to receive(:secrets_scan)
           .with(
             [new_blob],
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once
           .and_return(successful_with_multiple_findings_on_same_line_scan_response)
@@ -616,7 +624,8 @@ RSpec.shared_examples 'scan detected secrets' do
         expect(instance).to receive(:secrets_scan)
           .with(
             array_including(new_blob, new_blob2),
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once.and_call_original do |*args|
             expect(instance.secrets_scan(*args)).to eq(successful_with_multiple_files_findings_scan_response)
@@ -652,7 +661,8 @@ RSpec.shared_examples 'scan detected secrets' do
         allow(instance).to receive(:secrets_scan)
           .with(
             [new_blob],
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once
           .and_return(successful_scan_response)
@@ -746,7 +756,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         expect(instance).to receive(:secrets_scan)
           .with(
             array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .and_return(successful_scan_with_errors_response)
       end
@@ -776,7 +787,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         expect(instance).to receive(:secrets_scan)
           .with(
             array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .and_return(successful_scan_with_errors_response)
       end
@@ -808,7 +820,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         expect(instance).to receive(:secrets_scan)
           .with(
             array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .and_return(successful_scan_with_errors_response)
       end
@@ -826,7 +839,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       expect(instance).to receive(:secrets_scan)
         .with(
           array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-          timeout: kind_of(Float)
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
         )
         .once
         .and_return(successful_scan_with_errors_response)
@@ -863,7 +877,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       expect(instance).to receive(:secrets_scan)
         .with(
           array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-          timeout: kind_of(Float)
+          timeout: kind_of(Float),
+          exclusions: kind_of(Hash)
         )
         .once
         .and_return(successful_scan_with_errors_response)
@@ -949,7 +964,8 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         expect(instance).to receive(:secrets_scan)
           .with(
             array_including(new_blob, timed_out_blob, failed_to_scan_blob),
-            timeout: kind_of(Float)
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
           .once
           .and_return(successful_scan_with_multiple_findings_and_errors_response)
@@ -1177,5 +1193,260 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
     let(:label) { "push option" }
     let(:category) { described_class.name }
     subject { super().validate! }
+  end
+end
+
+RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
+  include_context 'secrets check context'
+
+  context 'when exclusion is based on matching a file path' do
+    context 'with exactly maximum numer of path exclusions allowed' do
+      let_it_be(:commit_with_excluded_file_paths) do
+        create_commit(
+          'file-exclusion-1.rb' => 'KEY=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
+          'file-exclusion-2-skipped.rb' => 'TOKEN=glpat-JUST20LETTERSANDNUMB' # gitleaks:allow
+        )
+      end
+
+      let(:changes) do
+        [
+          { oldrev: initial_commit, newrev: commit_with_excluded_file_paths, ref: 'refs/heads/master' }
+        ]
+      end
+
+      before do
+        stub_const('::Security::ProjectSecurityExclusion::MAX_PATH_EXCLUSIONS_PER_PROJECT', 1)
+
+        create(:project_security_exclusion, :active, :with_path, project: project, value: "file-exclusion-1.rb")
+      end
+
+      it 'excludes secrets matching file paths up to the maximum allowed' do
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:found_secrets])
+
+        expect { secrets_check.validate! }.to raise_error do |error|
+          expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+          expect(error.message).to include(
+            log_messages[:found_secrets],
+            finding_message(
+              commit_with_excluded_file_paths,
+              'file-exclusion-2-skipped.rb',
+              1,
+              'GitLab Personal Access Token'
+            ),
+            log_messages[:found_secrets_post_message],
+            found_secrets_docs_link
+          )
+        end
+      end
+    end
+
+    context 'with less than or equal to the path exclusions limit' do
+      let_it_be(:commit_with_excluded_file_paths) do
+        create_commit(
+          # We support specifying a certain file path, e.g. `file-exclusion-1.txt`.
+          'file-exclusion-1.txt' => 'SECRET=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
+
+          # We also support simple globbing, e.g. `spec/**/*.rb`, so we try to ensure as many as possible are matched.
+          'spec/file-exclusion-2.rb' => 'KEY=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
+          'spec/fixtures/file-exclusion-3.rb' => 'PASS=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
+          'spec/fixtures/reports/file-exclusion-4.rb' => 'KEY=glpat-JUST20LETTERSANDNUMB' # gitleaks:allow
+        )
+      end
+
+      let_it_be(:commit_with_not_excluded_file_path) do
+        create_commit('file-exclusion-4.txt' => 'TOKEN=glrt-JUST20LETTERSANDNUMB') # gitleaks:allow
+      end
+
+      let(:changes) do
+        [
+          { oldrev: initial_commit, newrev: commit_with_excluded_file_paths, ref: 'refs/heads/master' },
+          { oldrev: initial_commit, newrev: commit_with_not_excluded_file_path, ref: 'refs/heads/master' }
+        ]
+      end
+
+      before do
+        create(
+          :project_security_exclusion,
+          :active,
+          :with_path,
+          project: project,
+          value: 'file-exclusion-1.txt'
+        )
+
+        create(
+          :project_security_exclusion,
+          :active,
+          :with_path,
+          project: project,
+          value: 'spec/**/*.rb'
+        )
+      end
+
+      it 'excludes secrets matching file paths from findings' do
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:found_secrets])
+
+        expect { secrets_check.validate! }.to raise_error do |error|
+          expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+          expect(error.message).to include(
+            log_messages[:found_secrets],
+            finding_message(
+              commit_with_not_excluded_file_path,
+              'file-exclusion-4.txt',
+              1,
+              'GitLab Runner Authentication Token'
+            ),
+            log_messages[:found_secrets_post_message],
+            found_secrets_docs_link
+          )
+        end
+      end
+    end
+  end
+
+  context 'when exclusion is based on matching a rule from default ruleset' do
+    let_it_be(:commit_with_excluded_rule) do
+      create_commit('rule-exclusion-1.txt' => 'SECRET=glpat-JUST20LETTERSANDNUMB') # gitleaks:allow
+    end
+
+    let_it_be(:commit_with_not_excluded_rule) do
+      create_commit('rule-exclusion-2.txt' => 'TOKEN=glrt-JUST20LETTERSANDNUMB') # gitleaks:allow
+    end
+
+    let(:changes) do
+      [
+        { oldrev: initial_commit, newrev: commit_with_excluded_rule, ref: 'refs/heads/master' },
+        { oldrev: initial_commit, newrev: commit_with_not_excluded_rule, ref: 'refs/heads/master' }
+      ]
+    end
+
+    before do
+      create(:project_security_exclusion, :active, :with_rule, project: project)
+    end
+
+    it 'excludes secrets matching rule from findings' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to raise_error do |error|
+        expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+        expect(error.message).to include(
+          log_messages[:found_secrets],
+          finding_message(
+            commit_with_not_excluded_rule,
+            'rule-exclusion-2.txt',
+            1,
+            'GitLab Runner Authentication Token'
+          ),
+          log_messages[:found_secrets_post_message],
+          found_secrets_docs_link
+        )
+      end
+    end
+  end
+
+  context 'when exclusion is based on matching a raw value or string' do
+    let_it_be(:commit_with_excluded_value) do
+      create_commit('raw-value-exclusion-1.txt' => 'SECRET=glpat-01234567890123456789') # gitleaks:allow
+    end
+
+    let_it_be(:commit_with_not_excluded_value) do
+      create_commit('raw-value-exclusion-2.txt' => 'TOKEN=glpat-JUST20LETTERSANDNUMB') # gitleaks:allow
+    end
+
+    let(:changes) do
+      [
+        { oldrev: initial_commit, newrev: commit_with_excluded_value, ref: 'refs/heads/master' },
+        { oldrev: initial_commit, newrev: commit_with_not_excluded_value, ref: 'refs/heads/master' }
+      ]
+    end
+
+    before do
+      create(
+        :project_security_exclusion,
+        :active,
+        :with_raw_value,
+        project: project,
+        value: 'glpat-01234567890123456789' # gitleaks:allow
+      )
+    end
+
+    it 'excludes secrets matching raw value from findings' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to raise_error do |error|
+        expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+        expect(error.message).to include(
+          log_messages[:found_secrets],
+          finding_message(
+            commit_with_not_excluded_value,
+            'raw-value-exclusion-2.txt',
+            1,
+            'GitLab Personal Access Token'
+          ),
+          log_messages[:found_secrets_post_message],
+          found_secrets_docs_link
+        )
+      end
+    end
+  end
+end
+
+# TODO: remove this shared example when `secret_detection_project_level_exclusions` feature flag is removed.
+RSpec.shared_examples 'scan does not discard excluded secrets' do
+  include_context 'secrets check context'
+
+  context 'with any type of exclusion' do
+    let_it_be(:commit_with_excluded_rule) do
+      create_commit('ff-disabled-exclusion-1.txt' => 'SECRET=glpat-JUST20LETTERSANDNUMB') # gitleaks:allow
+    end
+
+    let_it_be(:commit_with_not_excluded_rule) do
+      create_commit('ff-disabled-exclusion-2.txt' => 'TOKEN=glrt-JUST20LETTERSANDNUMB') # gitleaks:allow
+    end
+
+    let(:changes) do
+      [
+        { oldrev: initial_commit, newrev: commit_with_excluded_rule, ref: 'refs/heads/master' },
+        { oldrev: initial_commit, newrev: commit_with_not_excluded_rule, ref: 'refs/heads/master' }
+      ]
+    end
+
+    before do
+      create(:project_security_exclusion, :active, :with_rule, project: project)
+    end
+
+    it 'does not exclude secrets matching the rule from findings' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to raise_error do |error|
+        expect(error).to be_a(::Gitlab::GitAccess::ForbiddenError)
+        expect(error.message).to include(
+          log_messages[:found_secrets],
+          finding_message(
+            commit_with_excluded_rule,
+            'ff-disabled-exclusion-1.txt',
+            1,
+            'GitLab Personal Access Token'
+          ),
+          finding_message(
+            commit_with_not_excluded_rule,
+            'ff-disabled-exclusion-2.txt',
+            1,
+            'GitLab Runner Authentication Token'
+          ),
+          log_messages[:found_secrets_post_message],
+          found_secrets_docs_link
+        )
+      end
+    end
   end
 end

@@ -80,6 +80,16 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
                 it_behaves_like 'scan skipped due to invalid status'
                 it_behaves_like 'scan skipped when a commit has special bypass flag'
                 it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
+                it_behaves_like 'scan discarded secrets because they match exclusions'
+
+                # TODO: remove this context when `secret_detection_project_level_exclusions` FF is removed.
+                context 'when exclusions feature flag is disabled' do
+                  before do
+                    stub_feature_flags(secret_detection_project_level_exclusions: false)
+                  end
+
+                  it_behaves_like 'scan does not discard excluded secrets'
+                end
               end
             end
 
@@ -97,6 +107,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               it_behaves_like 'scan skipped due to invalid status'
               it_behaves_like 'scan skipped when a commit has special bypass flag'
               it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
+              it_behaves_like 'scan discarded secrets because they match exclusions'
 
               context 'when the protocol is web' do
                 subject(:secrets_check) { described_class.new(changes_access_web) }
@@ -110,6 +121,16 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
                 it_behaves_like 'scan skipped due to invalid status'
                 it_behaves_like 'scan skipped when a commit has special bypass flag'
                 it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
+                it_behaves_like 'scan discarded secrets because they match exclusions'
+              end
+
+              # TODO: remove this context when `secret_detection_project_level_exclusions` FF is removed.
+              context 'when exclusions feature flag is disabled' do
+                before do
+                  stub_feature_flags(secret_detection_project_level_exclusions: false)
+                end
+
+                it_behaves_like 'scan does not discard excluded secrets'
               end
             end
           end

@@ -522,10 +522,13 @@ RSpec.shared_examples 'diff scan detected secrets' do
     end
 
     let(:commits) do
-      [
-        Gitlab::Git::Commit.find(repository, new_commit),
-        Gitlab::Git::Commit.find(repository, another_new_commit)
-      ]
+      Commit.decorate(
+        [
+          Gitlab::Git::Commit.find(repository, new_commit),
+          Gitlab::Git::Commit.find(repository, another_new_commit)
+        ],
+        project
+      )
     end
 
     let(:successful_with_same_blob_in_multiple_commits_scan_response) do
@@ -704,10 +707,13 @@ RSpec.shared_examples 'diff scan detected secrets' do
     let(:another_blob_reference) { 'e10edae379797ad5649a65ad364f6c940ee5bbc3' }
 
     let(:commits) do
-      [
-        Gitlab::Git::Commit.find(repository, new_commit),
-        Gitlab::Git::Commit.find(repository, another_new_commit)
-      ]
+      Commit.decorate(
+        [
+          Gitlab::Git::Commit.find(repository, new_commit),
+          Gitlab::Git::Commit.find(repository, another_new_commit)
+        ],
+        project
+      )
     end
 
     let(:another_diff_blob) do
