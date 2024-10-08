@@ -140,6 +140,15 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetDevelopment {
     type
     willAutoCloseByMergeRequest
+    featureFlags {
+      nodes {
+        id
+        active
+        name
+        path
+        reference
+      }
+    }
     closingMergeRequests {
       nodes {
         fromMrDescription
