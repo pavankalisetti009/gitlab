@@ -12,7 +12,7 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
   end
 
   describe '#base_url' do
-    it 'returns correct URL' do
+    it 'returns correct URL', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484679' do
       expect(klass.new.base_url).to eql('https://cloud.gitlab.com/ai')
     end
 
