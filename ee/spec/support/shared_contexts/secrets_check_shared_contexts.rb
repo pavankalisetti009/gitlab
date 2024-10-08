@@ -47,9 +47,12 @@ RSpec.shared_context 'secrets check context' do
   end
 
   let_it_be(:commits) do
-    [
-      Gitlab::Git::Commit.find(repository, new_commit)
-    ]
+    Commit.decorate(
+      [
+        Gitlab::Git::Commit.find(repository, new_commit)
+      ],
+      project
+    )
   end
 
   let(:expected_tree_args) do
@@ -216,7 +219,7 @@ RSpec.shared_context 'secret detection error and log messages context' do
     message = finding_message_header
     message += finding_message_path
     message += finding_message_occurrence_line
-    message += another_finding_message_header
+    message += format(log_messages[:finding_message_occurrence_header], { sha: commit_with_same_blob })
     message += finding_message_path
     message += finding_message_occurrence_line
     message
@@ -314,16 +317,6 @@ RSpec.shared_context 'quarantine directory exists' do
   end
 end
 
-RSpec.shared_context 'with gitaly commit client' do
-  let(:gitaly_commit_client) { instance_double(Gitlab::GitalyClient::CommitService) }
-
-  before do
-    # We mock the gitaly commit client to have it return tree entries.
-    allow(repository).to receive(:gitaly_commit_client).and_return(gitaly_commit_client)
-    allow(gitaly_commit_client).to receive(:tree_entries).and_return([tree_entries, gitaly_pagination_cursor])
-  end
-end
-
 def create_commit(blobs, message = 'Add a file')
   commit = repository.commit_files(
     user,
@@ -343,4 +336,17 @@ def create_commit(blobs, message = 'Add a file')
   repository.delete_branch('a-new-branch')
 
   commit
+end
+
+def finding_message(sha, path, line_number, description)
+  message = format(log_messages[:finding_message_occurrence_header], { sha: sha })
+  message += format(log_messages[:finding_message_occurrence_path], { path: path })
+  message += format(
+    log_messages[:finding_message_occurrence_line],
+    {
+      line_number: line_number,
+      description: description
+    }
+  )
+  message
 end
