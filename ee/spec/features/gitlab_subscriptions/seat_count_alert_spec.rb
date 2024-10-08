@@ -87,8 +87,7 @@ RSpec.describe 'approaching seat count threshold alert', :saas, :js, feature_cat
       expect_alert_to_be_hidden
     end
 
-    it 'shows the dismissible alert on the project page',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/456091' do
+    it 'shows the dismissible alert on the project page' do
       visit project_path(project)
 
       expect(page).to have_content("#{group.name} is approaching the limit of available seats")
