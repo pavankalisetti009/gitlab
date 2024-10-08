@@ -14,5 +14,13 @@ fragment WorkItemTypeFragment on WorkItemType {
       editable
       rollUp
     }
+    ... on WorkItemWidgetDefinitionHierarchy {
+      allowedChildTypes {
+        nodes {
+          id
+          name
+        }
+      }
+    }
   }
 }
