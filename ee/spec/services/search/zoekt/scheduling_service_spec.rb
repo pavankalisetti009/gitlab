@@ -278,8 +278,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let(:task) { :node_assignment }
 
     let_it_be(:namespace) { create(:group) }
-    let_it_be(:namespace_statistics) { create(:namespace_root_storage_statistics, repository_size: 1000) }
-    let_it_be(:namespace_with_statistics) { create(:group, root_storage_statistics: namespace_statistics) }
+    let_it_be_with_reload(:namespace_statistics) { create(:namespace_root_storage_statistics, repository_size: 1000) }
+    let_it_be_with_reload(:namespace_with_statistics) do
+      create(:group, :with_hierarchy, root_storage_statistics: namespace_statistics, children: 1, depth: 3)
+    end
 
     context 'when feature flag is disabled' do
       before do
@@ -390,7 +392,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           end
         end
 
-        it 'creates a record of Search::Zoekt::Index for the namespace which has statistics' do
+        it 'creates a record of Search::Zoekt::Index with state pending for the namespace which has statistics' do
           expect(zkt_enabled_namespace.indices).to be_empty
           expect(zkt_enabled_namespace2.indices).to be_empty
           expect(Search::Zoekt::Node).to receive(:online).and_call_original
@@ -405,6 +407,29 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           expect(index.namespace_id).to eq zkt_enabled_namespace2.root_namespace_id
           expect(index.reserved_storage_bytes).not_to be_nil
           expect(index).to be_pending
+        end
+
+        context 'when storage_size for a namespace is 0' do
+          before do
+            namespace_statistics.update_column(:repository_size, 0)
+          end
+
+          it 'creates a record of Search::Zoekt::Index with state ready for the namespace which has statistics' do
+            expect(zkt_enabled_namespace.indices).to be_empty
+            expect(zkt_enabled_namespace2.indices).to be_empty
+            expect(Search::Zoekt::Node).to receive(:online).and_call_original
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => "RootStorageStatistics isn't available",
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
+            )
+            expect { execute_task }.to change { Search::Zoekt::Index.count }.by(1)
+            expect(zkt_enabled_namespace.indices).to be_empty
+            index = zkt_enabled_namespace2.indices.last
+            expect(index).not_to be_nil
+            expect(index.namespace_id).to eq zkt_enabled_namespace2.root_namespace_id
+            expect(index.reserved_storage_bytes).not_to be_nil
+            expect(index).to be_ready
+          end
         end
 
         context 'when feature flag zoekt_initial_indexing_task is disabled' do
@@ -449,10 +474,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#mark_indices_as_ready' do
     let(:logger) { instance_double(::Search::Zoekt::Logger) }
     let(:task) { :mark_indices_as_ready }
-    let_it_be(:idx) { create(:zoekt_index, state: :initializing) } # It has some pending zoekt_repositories
-    let_it_be(:idx2) { create(:zoekt_index, state: :initializing) } # It has all ready zoekt_repositories
-    let_it_be(:idx3) { create(:zoekt_index, state: :initializing) } # It does not have zoekt_repositories
-    let_it_be(:idx4) { create(:zoekt_index) } # It has all ready zoekt_repositories but zoekt_index is pending
+    let_it_be(:idx) { create(:zoekt_index, state: :initializing) }
+    let_it_be(:idx2) { create(:zoekt_index, state: :initializing) }
+    let_it_be(:idx3) { create(:zoekt_index, state: :initializing) }
+    let_it_be(:idx4) { create(:zoekt_index) }
     let_it_be(:idx_project) { create(:project, namespace_id: idx.namespace_id) }
     let_it_be(:idx_project2) { create(:project, namespace_id: idx.namespace_id) }
     let_it_be(:idx2_project2) { create(:project, namespace_id: idx2.namespace_id) }
@@ -460,34 +485,22 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     before do
       allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :pending)
+      idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project2, state: :ready)
+      idx2.zoekt_repositories.create!(zoekt_index: idx2, project: idx2_project2, state: :ready)
+      idx4.zoekt_repositories.create!(zoekt_index: idx4, project: idx4_project, state: :ready)
     end
 
-    context 'when indices can not be moved to ready' do
-      it 'does not change any state' do
-        initial_indices_state = [idx, idx2, idx3, idx4].map { |i| i.reload.state }
-        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 0,
-                                                'message' => 'Set indices ready' }
-        )
-        execute_task
-        expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(initial_indices_state)
-      end
-    end
-
-    context 'when indices can be moved to ready' do
-      before do
-        idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project, state: :pending)
-        idx.zoekt_repositories.create!(zoekt_index: idx, project: idx_project2, state: :ready)
-        idx2.zoekt_repositories.create!(zoekt_index: idx2, project: idx2_project2, state: :ready)
-        idx4.zoekt_repositories.create!(zoekt_index: idx4, project: idx4_project, state: :ready)
-      end
-
-      it 'moves to ready only those initializing indices that have all ready zoekt_repositories' do
-        expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 1,
-                                                'message' => 'Set indices ready' }
-        )
-        execute_task
-        expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(%w[initializing ready initializing pending])
-      end
+    # idx has some pending zoekt_repositories
+    # idx2 has all ready zoekt_repositories
+    # idx3 does not have zoekt_repositories
+    # idx4 all ready zoekt_repositories but zoekt_index is pending
+    it 'moves only initializing indices that have all ready zoekt_repositories to ready' do
+      expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'task' => task, 'count' => 1,
+                                              'message' => 'Set indices ready' }
+      )
+      execute_task
+      expect([idx, idx2, idx3, idx4].map { |i| i.reload.state }).to eq(%w[initializing ready initializing pending])
     end
   end
 

@@ -252,7 +252,7 @@ module Search
                 replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace),
                 reserved_storage_bytes: space_required
               )
-              zoekt_index.state = :ready if Feature.disabled?(:zoekt_initial_indexing_task)
+              zoekt_index.state = :ready if Feature.disabled?(:zoekt_initial_indexing_task) || space_required == 0
               zoekt_indices << zoekt_index
               node.used_bytes += space_required
             else
@@ -273,6 +273,7 @@ module Search
         end
       end
 
+      # indices that don't have zoekt_repositories are already in `ready` state
       def mark_indices_as_ready
         execute_every 10.minutes, cache_key: :mark_indices_as_ready do
           initializing_indices = Search::Zoekt::Index.initializing
