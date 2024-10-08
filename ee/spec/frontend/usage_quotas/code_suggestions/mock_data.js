@@ -383,3 +383,37 @@ export const MOCK_SYSTEM_EXCHANGE_PROBES = {
     },
   ],
 };
+
+export const MOCK_AI_GATEWAY_PROBES = {
+  success: [
+    {
+      name: 'ai_gateway_url_presence_probe',
+      success: true,
+      message: 'Environment variable AI_GATEWAY_URL is set to http://aigw.example.com.',
+    },
+  ],
+  error: [
+    {
+      name: 'ai_gateway_url_presence_probe',
+      success: false,
+      message: 'Environment variable AI_GATEWAY_URL is not set',
+    },
+  ],
+};
+
+export const MOCK_CODE_SUGGESTIONS_PROBES = {
+  success: [
+    {
+      name: 'code_suggestions_license_probe',
+      success: true,
+      message: 'License includes access to Code Suggestions.',
+    },
+  ],
+  error: [
+    {
+      name: 'code_suggestions_license_probe',
+      success: false,
+      message: 'License does not provide access to Code Suggestions.',
+    },
+  ],
+};

@@ -12,6 +12,13 @@ export const DUO_ENTERPRISE_TITLE = s__('CodeSuggestions|GitLab Duo Enterprise')
 
 export const DUO_HEALTH_CHECK_CATEGORIES = [
   {
+    values: ['ai_gateway_url_presence_probe'],
+    title: __('AI Gateway'),
+    description: s__(
+      'CodeSuggestions|The AI gateway URL must be set up as an environment variable.',
+    ),
+  },
+  {
     values: ['host_probe'],
     title: __('Network'),
     description: s__(
@@ -24,6 +31,11 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
     description: s__(
       'CodeSuggestions|The active subscription must sync with customers.gitlab.com every 72 hours.',
     ),
+  },
+  {
+    values: ['code_suggestions_license_probe'],
+    title: __('Code Suggestions'),
+    description: s__('CodeSuggestions|The Code Suggestions feature is available.'),
   },
   {
     values: ['end_to_end_probe'],
