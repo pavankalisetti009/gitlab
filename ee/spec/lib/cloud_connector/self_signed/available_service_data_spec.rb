@@ -26,6 +26,14 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         stub_feature_flags(cloud_connector_cut_off_date_expired: true)
       end
 
+      context 'when feature name is in IGNORE_LIST' do
+        before do
+          stub_const("#{described_class.name}::IGNORE_CUT_OFF_DATE_EXPIRED_LIST", %i[duo_chat])
+        end
+
+        it { is_expected.to be true }
+      end
+
       it { is_expected.to be false }
     end
   end

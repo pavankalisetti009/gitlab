@@ -4310,16 +4310,16 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     context 'when feature is enabled' do
-      where(:service_name_is_sast, :current_user, :allowed) do
+      where(:free_access, :current_user, :allowed) do
         true  | ref(:owner)      | true
         true  | ref(:maintainer) | true
         true  | ref(:developer)  | true
         true  | ref(:guest)      | false
         true  | ref(:reporter)   | false
         true  | ref(:non_member) | false
-        false | ref(:owner) | false
+        false | ref(:owner)      | false
         false | ref(:maintainer) | false
-        false | ref(:developer) | false
+        false | ref(:developer)  | false
         false | ref(:guest)      | false
         false | ref(:reporter)   | false
         false | ref(:non_member) | false
@@ -4328,9 +4328,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       with_them do
         before do
           stub_licensed_features(security_scans_api: true)
-          name = service_name_is_sast ? :sast : :missing_service
           allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:sast).and_return(
-            instance_double(CloudConnector::BaseAvailableServiceData, name: name))
+            instance_double(CloudConnector::BaseAvailableServiceData, free_access?: free_access))
         end
 
         it { is_expected.to(allowed ? be_allowed(:access_security_scans_api) : be_disallowed(:access_security_scans_api)) }
