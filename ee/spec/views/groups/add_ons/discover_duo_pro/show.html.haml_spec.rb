@@ -11,7 +11,9 @@ RSpec.describe 'groups/add_ons/discover_duo_pro/show', :aggregate_failures, feat
 
   subject { render && rendered }
 
-  it { is_expected.to have_link(_('Buy now'), href: group_settings_gitlab_duo_usage_index_path(group), count: 2) }
+  it do
+    is_expected.to have_link(_('Buy now'), href: group_settings_gitlab_duo_seat_utilization_index_path(group), count: 2)
+  end
 
   context 'when rendering the hero section' do
     it { is_expected.to include(s_('DuoProDiscover|Ship software faster')) }

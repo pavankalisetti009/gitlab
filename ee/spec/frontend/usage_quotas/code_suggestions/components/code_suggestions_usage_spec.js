@@ -259,13 +259,13 @@ describe('GitLab Duo Usage', () => {
         });
 
         it('renders code suggestions title and pro tier badge', () => {
-          expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+          expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
           expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
         });
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf('Manage seat assignments for %{addOnName}.', {
+            sprintf('Manage seat assignments for %{addOnName} within your group.', {
               addOnName: CODE_SUGGESTIONS_TITLE,
             }),
           );
@@ -364,7 +364,7 @@ describe('GitLab Duo Usage', () => {
       });
 
       it('renders code suggestions title and pro tier badge', () => {
-        expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+        expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
         expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 
@@ -388,7 +388,7 @@ describe('GitLab Duo Usage', () => {
         });
 
         it('renders code suggestions title and enterprise tier badge', () => {
-          expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+          expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
           expect(findCodeSuggestionsTitleTierBadge().text()).toBe('enterprise');
         });
 
@@ -501,7 +501,7 @@ describe('GitLab Duo Usage', () => {
       });
 
       it('renders code suggestions title and pro tier badge', () => {
-        expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+        expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
         expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 

@@ -13433,7 +13433,7 @@ msgstr ""
 msgid "CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems."
 msgstr ""
 
-msgid "CodeSuggestions|Manage seat assignments for %{addOnName}."
+msgid "CodeSuggestions|Manage seat assignments for %{addOnName} within your group."
 msgstr ""
 
 msgid "CodeSuggestions|No health problems detected"
@@ -58979,6 +58979,9 @@ msgid "UsageQuota|Recalculate repository usage"
 msgstr ""
 
 msgid "UsageQuota|Registry"
+msgstr ""
+
+msgid "UsageQuota|Seat utilization"
 msgstr ""
 
 msgid "UsageQuota|Shared bits of code and text."

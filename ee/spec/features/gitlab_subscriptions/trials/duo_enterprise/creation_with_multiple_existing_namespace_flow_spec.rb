@@ -39,7 +39,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple 
 
       submit_duo_enterprise_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
 
     context 'when new trial is selected from within an existing namespace' do
@@ -58,7 +58,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple 
 
         submit_duo_enterprise_trial_selection_form
 
-        expect_to_be_on_gitlab_duo_usage_quotas_page
+        expect_to_be_on_gitlab_duo_seat_utilization_page
       end
     end
   end
@@ -86,7 +86,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple 
 
       submit_duo_enterprise_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -115,7 +115,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple 
 
       submit_duo_enterprise_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 end

@@ -1,7 +1,7 @@
 <script>
 import { GlBadge, GlAlert, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { __, s__, sprintf } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
@@ -62,7 +62,7 @@ export default {
     subscriptionHistoryFailedTitle,
     subscriptionHistoryFailedMessage,
     subscriptionActivationFutureDatedNotificationTitle,
-    codeSuggestionTitle: __('GitLab Duo'),
+    codeSuggestionTitle: s__('UsageQuota|Seat utilization'),
     subscriptionActivationNotificationText: s__(
       'CodeSuggestions|Your subscription was successfully activated.',
     ),
@@ -114,9 +114,12 @@ export default {
       return !this.isLoading && (this.hasCodeSuggestions || this.addOnPurchaseFetchError);
     },
     saasSubtitle() {
-      return sprintf(s__('CodeSuggestions|Manage seat assignments for %{addOnName}.'), {
-        addOnName: this.codeSuggestionsFriendlyName,
-      });
+      return sprintf(
+        s__('CodeSuggestions|Manage seat assignments for %{addOnName} within your group.'),
+        {
+          addOnName: this.codeSuggestionsFriendlyName,
+        },
+      );
     },
     selfManagedSubtitle() {
       return sprintf(
