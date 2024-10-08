@@ -118,8 +118,8 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
   context 'with onboarding progress' do
     context 'when member creation is successful' do
-      it 'schedules an onboarding progress update' do
-        expect(Onboarding::ProgressTrackingWorker).to receive(:perform_async).with(project.namespace_id, 'user_added')
+      it 'invokes an async onboarding progress update' do
+        expect(Onboarding::ProgressService).to receive(:async).with(project.namespace_id, 'user_added')
 
         execute_service
       end
@@ -128,8 +128,8 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     context 'when member creation fails' do
       let(:invites) { '' }
 
-      it 'does not schedule an onboarding progress update' do
-        expect(Onboarding::ProgressTrackingWorker).not_to receive(:perform_async)
+      it 'does not invoke an async onboarding progress update' do
+        expect(Onboarding::ProgressService).not_to receive(:async)
 
         execute_service
       end

@@ -3,9 +3,40 @@
 require 'spec_helper'
 
 RSpec.describe Onboarding::ProgressService, feature_category: :onboarding do
+  let(:action) { :merge_request_created }
+
+  describe '.async' do
+    let(:namespace_id) { non_existing_record_id }
+    let(:namespace) { build(:namespace, id: namespace_id) }
+    let(:onboarding_enabled?) { true }
+
+    before do
+      stub_saas_features(onboarding: onboarding_enabled?)
+    end
+
+    subject(:async) { described_class.async(namespace.id, action) }
+
+    context 'when the SaaS feature onboarding is available' do
+      it 'schedules a worker ensuring the action is converted to a string for general async param guidelines' do
+        expect(::Onboarding::ProgressTrackingWorker).to receive(:perform_async).with(namespace_id, action.to_s)
+
+        async
+      end
+    end
+
+    context 'when the SaaS feature onboarding is not available' do
+      let(:onboarding_enabled?) { false }
+
+      it 'does not schedule a worker' do
+        expect(::Onboarding::ProgressTrackingWorker).not_to receive(:perform_async)
+
+        async
+      end
+    end
+  end
+
   describe '#execute' do
     let(:namespace) { create(:namespace) }
-    let(:action) { :merge_request_created }
 
     subject(:execute_service) { described_class.new(namespace).execute(action: action) }
 

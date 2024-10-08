@@ -52,7 +52,7 @@ module QA
     end
 
     context 'Remove cloud subscription' do
-      it 'successfully removes a cloud activation and shows flash notice',
+      it 'successfully removes a cloud activation and shows flash notice', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/364831' do
         EE::Page::Admin::Subscription.perform do |subscription|
           subscription.remove_license_file

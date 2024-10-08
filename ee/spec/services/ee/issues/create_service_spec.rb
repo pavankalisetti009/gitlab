@@ -37,9 +37,8 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       end
 
       context 'when issue creation is successful' do
-        it 'schedules an onboarding progress update' do
-          expect(Onboarding::ProgressTrackingWorker)
-            .to receive(:perform_async).with(project.project_namespace_id, 'issue_created')
+        it 'invokes an async onboarding progress update' do
+          expect(Onboarding::ProgressService).to receive(:async).with(project.project_namespace_id, 'issue_created')
 
           created_issue
         end
@@ -48,8 +47,8 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       context 'when issue creation fails' do
         let(:additional_params) { { title: '' } }
 
-        it 'does not schedule an onboarding progress update' do
-          expect(Onboarding::ProgressTrackingWorker).not_to receive(:perform_async)
+        it 'does not invoke an async onboarding progress update' do
+          expect(Onboarding::ProgressService).not_to receive(:async)
 
           created_issue
         end
