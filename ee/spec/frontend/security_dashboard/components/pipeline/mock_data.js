@@ -467,6 +467,7 @@ export const vulnerabilityDetails = {
 
 export const pipelineSecurityReportFinding = {
   uuid: '1',
+  aiResolutionEnabled: true,
   title: 'Vulnerability title',
   state: 'CONFIRMED',
   description: 'description',
@@ -580,7 +581,6 @@ export const pipelineSecurityReportFinding = {
   stateComment: null,
   vulnerability: {
     id: '1',
-    aiResolutionEnabled: true,
     externalIssueLinks: {
       nodes: [],
     },

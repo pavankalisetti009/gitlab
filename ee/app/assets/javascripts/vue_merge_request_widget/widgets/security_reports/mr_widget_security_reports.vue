@@ -383,6 +383,7 @@ export default {
         :pipeline-iid="pipelineIid"
         :project-full-path="mr.targetProjectFullPath"
         :show-ai-resolution="glFeatures.resolveVulnerabilityInMr"
+        :merge-request-id="mr.id"
         data-testid="vulnerability-finding-modal"
         @hidden="clearModalData"
         @dismissed="updateFindingState('dismissed')"
