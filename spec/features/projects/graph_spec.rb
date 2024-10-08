@@ -88,16 +88,16 @@ RSpec.describe 'Project Graph', :js, feature_category: :source_code_management d
   end
 
   context 'when CI enabled' do
+    subject(:visit_path) { visit ci_project_graph_path(project, 'master') }
+
     before do
       project.enable_ci
     end
 
     context 'with ci_improved_project_pipeline_analytics feature flag on' do
-      before do
-        visit ci_project_graph_path(project, 'master')
-      end
-
       it 'renders Pipeline graphs' do
+        visit_path
+
         expect(page).to have_content 'CI/CD Analytics'
         expect(page).to have_content 'Pipelines'
       end
@@ -106,11 +106,11 @@ RSpec.describe 'Project Graph', :js, feature_category: :source_code_management d
     context 'with ci_improved_project_pipeline_analytics feature flag off' do
       before do
         stub_feature_flags(ci_improved_project_pipeline_analytics: false)
-
-        visit ci_project_graph_path(project, 'master')
       end
 
       it 'renders CI graphs' do
+        visit_path
+
         expect(page).to have_content 'CI/CD Analytics'
         expect(page).to have_content 'Last week'
         expect(page).to have_content 'Last month'
