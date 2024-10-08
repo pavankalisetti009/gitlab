@@ -53,8 +53,11 @@ export default {
   <div>
     <runner-list-header>
       <template #title>{{ s__('Runners|Fleet dashboard') }}</template>
+      <template #description>{{
+        s__('Runners|Use the dashboard to view performance statistics of your runner fleet.')
+      }}</template>
       <template #actions>
-        <gl-button variant="link" :href="adminRunnersPath">{{
+        <gl-button variant="link" :href="adminRunnersPath" class="gl-mr-2">{{
           s__('Runners|View runners list')
         }}</gl-button>
         <gl-button variant="confirm" :href="newRunnerPath">
@@ -62,10 +65,6 @@ export default {
         </gl-button>
       </template>
     </runner-list-header>
-
-    <p>
-      {{ s__('Runners|Use the dashboard to view performance statistics of your runner fleet.') }}
-    </p>
 
     <div class="gl-justify-between gl-gap-x-4 sm:gl-flex">
       <div class="gl-w-full gl-justify-between gl-gap-x-4 sm:gl-flex">

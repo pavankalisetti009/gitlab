@@ -34,7 +34,7 @@ RSpec.describe Auth::ProvisionedUsersFinder do
       context 'when provisioning_group param is passed' do
         let(:params) { { provisioning_group: group } }
 
-        it 'returns provisioned_user' do
+        it 'returns provisioned_user', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484417' do
           users = finder
           expect(users).to eq([blocked_provisioned_user, provisioned_user])
         end
