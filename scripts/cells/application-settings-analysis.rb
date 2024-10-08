@@ -4,7 +4,7 @@
 require 'fileutils'
 require 'yaml'
 
-class ApplicationSettingAnalysis
+class ApplicationSettingsAnalysis
   AUTOMATIC_FIELDS = %i[
     column
     db_type
@@ -25,11 +25,12 @@ class ApplicationSettingAnalysis
   class ApplicationSetting < ApplicationSettingPrototype
     # Computed from Teleport Rails console with:
     # ```shell
-    # $ as = ApplicationSetting.first
+    # $ as = Gitlab::CurrentSettings.current_application_settings
     # $ as_defaults = ApplicationSetting.defaults
     # $ new_as = ApplicationSetting.new
-    # $ as.attributes.to_h.each { |k, v| puts "#{k} different than defaults" \
-    # if (as_defaults.key?(k) && as_defaults[k] != v) || (new_as[k] != v) }; nil
+    # $ diff_than_def = as.attributes.to_h.select { |k, v| (as_defaults[k] || new_as[k]) != v }; nil
+    # $ diff_than_def_valid_columns = diff_than_default.keys.reject { |k| k.match?(%r{^(encrypted_\w+_iv|\w+_html)$}) }
+    # $ diff_than_def_valid_columns.sort.each { |d| puts d }; nil
     # ```
     #
     # rubocop:disable Naming/InclusiveLanguage -- This is the actual column name
@@ -69,9 +70,11 @@ class ApplicationSettingAnalysis
       deactivation_email_additional_text
       default_artifacts_expire_in
       default_branch_name
+      default_branch_protection_defaults
       default_ci_config_path
       default_group_visibility
       default_projects_limit
+      delete_unconfirmed_users
       diff_max_files
       diff_max_lines
       domain_denylist
@@ -274,13 +277,17 @@ class ApplicationSettingAnalysis
     def merge!(other)
       other.to_h.each do |k, v|
         next if v.nil?
-        next if ApplicationSettingAnalysis::AUTOMATIC_FIELDS.include?(k.to_sym)
+        next if AUTOMATIC_FIELDS.include?(k.to_sym)
 
         self[k] = v
       end
     end
 
-    def attr_config_file
+    def definition_file_exist?
+      File.exist?(definition_file_path)
+    end
+
+    def definition_file_path
       File.expand_path("../../config/application_setting_columns/#{attr}.yml", __dir__)
     end
   end
@@ -346,12 +353,21 @@ class ApplicationSettingAnalysis
     "## Statistics\n"
   ].freeze
 
+  def self.definition_files
+    @definition_files ||= Dir.glob(File.expand_path("../../config/application_setting_columns/*.yml", __dir__))
+  end
+
+  def initialize(stdout: $stdout)
+    @stdout = stdout
+  end
+
   def execute
     db_structure_attrs = attributes_from_codebase.map(&:attr)
 
     virtual_api_settings = attributes_from_doc_api_settings.reject { |api| db_structure_attrs.include?(api.attr) }
     virtual_api_settings.each do |virtual_api_setting|
-      puts "API setting #{virtual_api_setting.attr} doesn't actually exist as a DB column in `application_settings`!"
+      stdout.puts "API setting `#{virtual_api_setting.attr}` doesn't actually exist as a DB " \
+        "column in `application_settings`!"
     end
 
     write_final_attributes!
@@ -387,7 +403,7 @@ class ApplicationSettingAnalysis
 
   private
 
-  attr_reader :application_setting_attrs
+  attr_reader :stdout, :application_setting_attrs
 
   def attributes_from_doc_api_settings
     @attributes_from_doc_api_settings ||= begin
@@ -427,7 +443,7 @@ class ApplicationSettingAnalysis
 
   def final_attributes
     @final_attributes ||= attributes_from_codebase.map do |as|
-      as.merge!(YAML.safe_load_file(as.attr_config_file)) if File.exist?(as.attr_config_file)
+      as.merge!(YAML.safe_load_file(as.definition_file_path)) if as.definition_file_exist?
 
       as
     end.sort_by(&:attr)
@@ -436,7 +452,7 @@ class ApplicationSettingAnalysis
   def write_final_attributes!
     final_attributes.each do |final_attribute|
       File.write(
-        final_attribute.attr_config_file,
+        final_attribute.definition_file_path,
         Hash[final_attribute.to_h.sort].transform_keys(&:to_s).to_yaml
       )
     end
@@ -445,11 +461,11 @@ class ApplicationSettingAnalysis
   def clean_deleted_attributes!
     valid_attribute_names = attributes_from_codebase.map(&:attr)
 
-    Dir.glob(File.expand_path("../../config/application_setting_columns/*.yml", __dir__)).each do |path|
+    self.class.definition_files.each do |path|
       attribute_name = File.basename(path, '.yml')
       next if valid_attribute_names.include?(attribute_name)
 
-      puts "Deleting #{path} since the #{attribute_name} attribute doesn't exist anymore."
+      logger.puts "Deleting #{path} since the #{attribute_name} attribute doesn't exist anymore."
       File.unlink(path)
     end
   end
@@ -500,4 +516,4 @@ class ApplicationSettingAnalysis
   end
 end
 
-ApplicationSettingAnalysis.new.execute
+ApplicationSettingsAnalysis.new.execute if $PROGRAM_NAME == __FILE__

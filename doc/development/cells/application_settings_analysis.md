@@ -10,8 +10,8 @@ info: Analysis of Application Settings for Cells 1.0.
 - Number of attributes: 498
 - Number of encrypted attributes: 43 (9.0%)
 - Number of attributes documented: 308 (62.0%)
-- Number of attributes on GitLab.com different from the defaults: 216 (43.0%)
-- Number of attributes with `clusterwide` set: 497 (100.0%)
+- Number of attributes on GitLab.com different from the defaults: 218 (44.0%)
+- Number of attributes with `clusterwide` set: 498 (100.0%)
 - Number of attributes with `clusterwide: true` set: 120 (24.0%)
 
 ## Individual columns
@@ -101,7 +101,7 @@ info: Analysis of Application Settings for Cells 1.0.
 | `default_artifacts_expire_in` | `false` | `character` | `string` | `true` | `'0'::character` | `true` | `true`| `true` |
 | `default_branch_name` | `false` | `text` | `string` | `false` | `null` | `true` | `false`| `true` |
 | `default_branch_protection` | `false` | `integer` | `integer` | `false` | `2` | `false` | `false`| `true` |
-| `default_branch_protection_defaults` | `false` | `jsonb` | `hash` | `true` | `'{}'::jsonb` | `false` | `false`| `true` |
+| `default_branch_protection_defaults` | `false` | `jsonb` | `hash` | `true` | `'{}'::jsonb` | `true` | `false`| `true` |
 | `default_ci_config_path` | `false` | `character` | `string` | `false` | `null` | `true` | `false`| `true` |
 | `default_group_visibility` | `false` | `integer` | `string` | `false` | `null` | `true` | `false`| `true` |
 | `default_preferred_language` | `false` | `text` | `string` | `true` | `'en'::text` | `false` | `false`| `true` |
@@ -112,7 +112,7 @@ info: Analysis of Application Settings for Cells 1.0.
 | `default_snippet_visibility` | `false` | `integer` | `string` | `true` | `0` | `false` | `false`| `true` |
 | `default_syntax_highlighting_theme` | `false` | `integer` | `integer` | `true` | `1` | `false` | `false`| `true` |
 | `delete_inactive_projects` | `false` | `boolean` | `` | `true` | `false` | `false` | `false`| `false` |
-| `delete_unconfirmed_users` | `false` | `boolean` | `boolean` | `true` | `false` | `false` | `false`| `true` |
+| `delete_unconfirmed_users` | `false` | `boolean` | `boolean` | `true` | `false` | `true` | `false`| `true` |
 | `deletion_adjourned_period` | `false` | `integer` | `integer` | `true` | `7` | `false` | `false`| `true` |
 | `deny_all_requests_except_allowed` | `false` | `boolean` | `` | `true` | `false` | `false` | `false`| `false` |
 | `dependency_proxy_ttl_group_policy_worker_capacity` | `false` | `smallint` | `` | `true` | `2` | `false` | `false`| `false` |
@@ -243,7 +243,7 @@ info: Analysis of Application Settings for Cells 1.0.
 | `inactive_projects_delete_after_months` | `false` | `integer` | `` | `true` | `2` | `false` | `false`| `false` |
 | `inactive_projects_min_size_mb` | `false` | `integer` | `` | `true` | `0` | `false` | `false`| `false` |
 | `inactive_projects_send_warning_email_after_months` | `false` | `integer` | `` | `true` | `1` | `false` | `false`| `false` |
-| `include_optional_metrics_in_service_ping` | `false` | `boolean` | `boolean` | `true` | `true` | `false` | `???`| `true` |
+| `include_optional_metrics_in_service_ping` | `false` | `boolean` | `boolean` | `true` | `true` | `false` | `false`| `true` |
 | `instance_level_ai_beta_features_enabled` | `false` | `boolean` | `` | `true` | `false` | `false` | `false`| `false` |
 | `invisible_captcha_enabled` | `false` | `boolean` | `boolean` | `true` | `false` | `true` | `true`| `true` |
 | `invitation_flow_enforcement` | `false` | `boolean` | `` | `true` | `false` | `false` | `false`| `false` |
