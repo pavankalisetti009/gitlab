@@ -6,7 +6,7 @@ module EE
     include ::Gitlab::Utils::StrongMemoize
     include ::GitlabSubscriptions::CodeSuggestionsHelper
     include ::Subscriptions::HandRaiseLeadsHelper
-    include ::Nav::GitlabDuoUsageSettingsPage
+    include ::Nav::GitlabDuoSettingsPage
 
     def size_limit_message_for_group(group)
       repository_size_limit_link = link_to _('Learn more'), help_page_path('administration/settings/account_and_limit_settings.html', anchor: 'repository-size-limit')
@@ -158,7 +158,7 @@ module EE
       when :seats
         License.feature_available?(:seat_usage_quotas)
       when :code_suggestions
-        show_gitlab_duo_usage_app?(group)
+        show_gitlab_duo_settings_app?(group)
       when :pipelines
         Ability.allowed?(current_user, :admin_ci_minutes, group) &&
           License.feature_available?(:pipelines_usage_quotas)

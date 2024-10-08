@@ -592,14 +592,14 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
 
     context 'when on code suggestions tab' do
-      where(:show_gitlab_duo_usage_app?, :result) do
+      where(:show_gitlab_duo_settings_app?, :result) do
         true | true
         false | false
       end
 
       with_them do
         before do
-          allow(helper).to receive(:show_gitlab_duo_usage_app?).and_return(show_gitlab_duo_usage_app?)
+          allow(helper).to receive(:show_gitlab_duo_settings_app?).and_return(show_gitlab_duo_settings_app?)
         end
 
         it { expect(helper.show_usage_quotas_tab?(group, :code_suggestions)).to eq(result) }

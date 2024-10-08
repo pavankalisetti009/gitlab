@@ -219,7 +219,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       end
 
       describe 'GitLab Duo menu' do
-        let(:item_id) { :gitlab_duo_usage }
+        let(:item_id) { :gitlab_duo_settings }
 
         before do
           stub_saas_features(gitlab_com_subscriptions: true)

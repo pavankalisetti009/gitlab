@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, feature_category: :ai_abstraction_layer do
+RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :request, feature_category: :ai_abstraction_layer do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
 
-  subject(:get_index) { get group_settings_gitlab_duo_usage_index_path(group) }
+  subject(:get_index) { get group_settings_gitlab_duo_seat_utilization_index_path(group) }
 
   before do
     stub_licensed_features(code_suggestions: true)
@@ -20,7 +20,7 @@ RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, featu
       group.add_owner(user)
     end
 
-    context "when show_gitlab_duo_usage_app? returns false" do
+    context "when show_gitlab_duo_settings_app? returns false" do
       before do
         stub_saas_features(gitlab_com_subscriptions: false)
       end
@@ -32,7 +32,7 @@ RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, featu
       end
     end
 
-    context "when show_gitlab_duo_usage_app? returns true" do
+    context "when show_gitlab_duo_settings_app? returns true" do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -54,7 +54,7 @@ RSpec.describe Groups::Settings::GitlabDuoUsageController, type: :request, featu
       end
 
       it "renders 404" do
-        get group_settings_gitlab_duo_usage_index_path(subgroup)
+        get group_settings_gitlab_duo_seat_utilization_index_path(subgroup)
 
         expect(response).to have_gitlab_http_status(:not_found)
       end

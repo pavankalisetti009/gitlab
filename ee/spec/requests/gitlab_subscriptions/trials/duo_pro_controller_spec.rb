@@ -166,7 +166,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           expect_create_success(group_for_trial)
         end
 
-        it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
+        it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
 
         it 'shows valid flash message', :freeze_time do
           post_create
@@ -184,7 +184,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
             stub_feature_flags(duo_enterprise_trials: false)
           end
 
-          it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
         end
       end
 

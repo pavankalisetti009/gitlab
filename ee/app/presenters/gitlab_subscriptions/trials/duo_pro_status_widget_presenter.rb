@@ -39,7 +39,7 @@ module GitlabSubscriptions
           learn_about_button_url: group_add_ons_discover_duo_pro_path(namespace),
           days_remaining: trial_status.days_remaining,
           trial_end_date: trial_status.ends_on,
-          purchase_now_url: group_settings_gitlab_duo_usage_index_path(namespace)
+          purchase_now_url: group_settings_gitlab_duo_seat_utilization_index_path(namespace)
         }
       end
 
