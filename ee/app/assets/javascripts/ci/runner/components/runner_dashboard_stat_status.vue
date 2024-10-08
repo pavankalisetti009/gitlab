@@ -1,5 +1,4 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
 import {
   INSTANCE_TYPE,
   GROUP_TYPE,
@@ -13,7 +12,6 @@ import RunnerDashboardStat from './runner_dashboard_stat.vue';
 export default {
   name: 'RunnerDashboardStatStatus',
   components: {
-    GlIcon,
     RunnerDashboardStat,
   },
   props: {
@@ -59,10 +57,11 @@ export default {
 </script>
 
 <template>
-  <runner-dashboard-stat :scope="scope" :variables="{ ...variables, status }">
-    <template #title>
-      <gl-icon v-if="icon" :class="icon.class" :size="12" :name="icon.name" />
-      {{ title }}
-    </template>
-  </runner-dashboard-stat>
+  <runner-dashboard-stat
+    :scope="scope"
+    :variables="{ ...variables, status }"
+    :title="title"
+    :icon="icon.name"
+    :icon-class="icon.class"
+  />
 </template>
