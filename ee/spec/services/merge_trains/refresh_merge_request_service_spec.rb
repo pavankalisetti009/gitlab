@@ -127,7 +127,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
         it_behaves_like 'drops the merge request from the merge train' do
           let(:expected_reason) do
             'the merge request is marked as draft. ' \
-              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains.md#merge-request-dropped-from-the-merge-train).'
           end
         end
       end
@@ -140,7 +140,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
         it_behaves_like 'drops the merge request from the merge train' do
           let(:expected_reason) do
             'the merge request is closed. ' \
-              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains.md#merge-request-dropped-from-the-merge-train).'
           end
         end
       end
@@ -153,7 +153,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
         it_behaves_like 'drops the merge request from the merge train' do
           let(:expected_reason) do
             'the merge request is broken. ' \
-              '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+              '[Learn more](http://localhost/help/ci/pipelines/merge_trains.md#merge-request-dropped-from-the-merge-train).'
           end
         end
       end
@@ -169,7 +169,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       it_behaves_like 'drops the merge request from the merge train' do
         let(:expected_reason) do
           'the pipeline did not succeed. ' \
-            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+            '[Learn more](http://localhost/help/ci/pipelines/merge_trains.md#merge-request-dropped-from-the-merge-train).'
         end
       end
     end
@@ -194,7 +194,7 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       it_behaves_like 'drops the merge request from the merge train' do
         let(:expected_reason) do
           'the previous ref does not exist. ' \
-            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+            '[Learn more](http://localhost/help/ci/pipelines/merge_trains.md#merge-request-dropped-from-the-merge-train).'
         end
       end
     end
