@@ -101,7 +101,8 @@ module EE
 
       condition(:security_scans_api_enabled, scope: :subject) do
         # We check the service name to determine if the backend is globally available
-        security_scans_service.name == :sast &&
+        # We use free_access? to check that the backend is globally availabile
+        security_scans_service.free_access? &&
           @subject.licensed_feature_available?(:security_scans_api)
       end
 
