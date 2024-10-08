@@ -1,4 +1,4 @@
-import { parsePikadayDate, toISODateFormat } from '~/lib/utils/datetime_utility';
+import { newDate, toISODateFormat } from '~/lib/utils/datetime_utility';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   AVAILABLE_TOKEN_TYPES,
@@ -27,8 +27,8 @@ export const parseAuditEventSearchQuery = ({
   ...restOfParams
 }) => ({
   ...restOfParams,
-  created_after: createdAfter ? parsePikadayDate(createdAfter) : null,
-  created_before: createdBefore ? parsePikadayDate(createdBefore) : null,
+  created_after: createdAfter ? newDate(createdAfter) : null,
+  created_before: createdBefore ? newDate(createdBefore) : null,
   entity_type: getTypeFromEntityType(entityType),
   entity_username: displayUsername(entityUsername),
   author_username: displayUsername(authorUsername),

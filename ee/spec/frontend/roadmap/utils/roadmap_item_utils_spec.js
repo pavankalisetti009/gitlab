@@ -2,7 +2,7 @@ import { PRESET_TYPES } from 'ee/roadmap/constants';
 import * as roadmapItemUtils from 'ee/roadmap/utils/roadmap_item_utils';
 
 import { dateFromString } from 'helpers/datetime_helpers';
-import { parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { newDate } from '~/lib/utils/datetime_utility';
 import { rawEpics, mockQuarterly, mockMonthly, mockWeekly } from '../mock_data';
 
 describe('processRoadmapItemDates', () => {
@@ -92,8 +92,8 @@ describe('formatRoadmapItemDetails', () => {
       timeframeEndDate,
     );
 
-    const startDate = parsePikadayDate(mockRawEpic.start_date);
-    const endDate = parsePikadayDate(mockRawEpic.end_date);
+    const startDate = newDate(mockRawEpic.start_date);
+    const endDate = newDate(mockRawEpic.end_date);
 
     expect(epic.startDate.getTime()).toBe(startDate.getTime());
     expect(epic.originalStartDate.getTime()).toBe(startDate.getTime());

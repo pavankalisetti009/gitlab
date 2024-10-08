@@ -7,6 +7,7 @@ import SidebarAncestorsWidget from 'ee_component/sidebar/components/ancestors_tr
 import { TYPENAME_EPIC } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_EPIC, WORKSPACE_GROUP } from '~/issues/constants';
+import { newDate } from '~/lib/utils/datetime_utility';
 import notesEventHub from '~/notes/event_hub';
 import SubscriptionsWidget from '~/sidebar/components/subscriptions/sidebar_subscriptions_widget.vue';
 import SidebarConfidentialityWidget from '~/sidebar/components/confidential/sidebar_confidentiality_widget.vue';
@@ -17,7 +18,6 @@ import sidebarEventHub from '~/sidebar/event_hub';
 import LabelsSelectWidget from '~/sidebar/components/labels/labels_select_widget/labels_select_root.vue';
 import ColorSelectDropdown from '~/vue_shared/components/color_select_dropdown/color_select_root.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { parsePikadayDate } from '~/lib/utils/datetime_utility';
 
 import epicUtils from '../utils/epic_utils';
 import SidebarHeader from './sidebar_items/sidebar_header.vue';
@@ -89,10 +89,10 @@ export default {
       }
     },
     updateMinDate(value) {
-      this.minDate = value ? parsePikadayDate(value) : null;
+      this.minDate = value ? newDate(value) : null;
     },
     updateMaxDate(value) {
-      this.maxDate = value ? parsePikadayDate(value) : null;
+      this.maxDate = value ? newDate(value) : null;
     },
   },
 };

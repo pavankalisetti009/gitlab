@@ -10,7 +10,7 @@ import SidebarAncestorsWidget from 'ee_component/sidebar/components/ancestors_tr
 import LabelsSelectWidget from '~/sidebar/components/labels/labels_select_widget/labels_select_root.vue';
 import SidebarParticipantsWidget from '~/sidebar/components/participants/sidebar_participants_widget.vue';
 import SidebarTodoWidget from '~/sidebar/components/todo_toggle/sidebar_todo_widget.vue';
-import { parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { newDate } from '~/lib/utils/datetime_utility';
 
 import { mockEpicMeta, mockEpicData } from '../mock_data';
 
@@ -166,13 +166,13 @@ describe('EpicSidebarComponent', () => {
     it('sets min date when start date is selected', async () => {
       await findStartDateEl().vm.$emit('startDateUpdated', mockDate);
 
-      expect(findDueDateEl().props('minDate')).toStrictEqual(parsePikadayDate(mockDate));
+      expect(findDueDateEl().props('minDate')).toStrictEqual(newDate(mockDate));
     });
 
     it('sets max date when due date is selected', async () => {
       await findDueDateEl().vm.$emit('dueDateUpdated', mockDate);
 
-      expect(findStartDateEl().props('maxDate')).toStrictEqual(parsePikadayDate(mockDate));
+      expect(findStartDateEl().props('maxDate')).toStrictEqual(newDate(mockDate));
     });
   });
 });

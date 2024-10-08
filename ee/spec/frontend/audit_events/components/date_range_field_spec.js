@@ -5,17 +5,13 @@ import { nextTick } from 'vue';
 import DateRangeButtons from 'ee/audit_events/components/date_range_buttons.vue';
 import DateRangeField from 'ee/audit_events/components/date_range_field.vue';
 import { CURRENT_DATE, MAX_DATE_RANGE } from 'ee/audit_events/constants';
-import {
-  dateAtFirstDayOfMonth,
-  getDateInPast,
-  parsePikadayDate,
-} from '~/lib/utils/datetime_utility';
+import { dateAtFirstDayOfMonth, getDateInPast, newDate } from '~/lib/utils/datetime_utility';
 
 describe('DateRangeField component', () => {
   let wrapper;
 
-  const startDate = parsePikadayDate('2020-03-13');
-  const endDate = parsePikadayDate('2020-03-14');
+  const startDate = newDate('2020-03-13');
+  const endDate = newDate('2020-03-14');
 
   const findDatePicker = () => wrapper.findComponent(GlDaterangePicker);
   const findDateRangeButtons = () => wrapper.findComponent(DateRangeButtons);
