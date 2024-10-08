@@ -34029,6 +34029,9 @@ msgstr ""
 msgid "MergeChecks|View locked files"
 msgstr ""
 
+msgid "MergeChecks|View policies"
+msgstr ""
+
 msgid "MergeConflict|Commit to source branch"
 msgstr ""
 
