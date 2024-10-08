@@ -9,15 +9,18 @@ query getSelfManagedAddOnEligibleUsers(
   $last: Int
   $after: String
   $before: String
+  $filterByAssignedSeat: String
 ) {
   selfManagedAddOnEligibleUsers(
     addOnType: $addOnType
+    addOnPurchaseIds: $addOnPurchaseIds
     search: $search
     sort: $sort
     first: $first
     last: $last
     after: $after
     before: $before
+    filterByAssignedSeat: $filterByAssignedSeat
   ) {
     nodes {
       id

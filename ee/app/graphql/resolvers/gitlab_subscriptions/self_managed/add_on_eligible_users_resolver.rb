@@ -24,12 +24,29 @@ module Resolvers
           required: true,
           description: 'Type of add on to filter the eligible users by.'
 
-        def resolve(add_on_type:, search: nil, sort: nil)
+        argument :add_on_purchase_ids,
+          type: [::Types::GlobalIDType[::GitlabSubscriptions::AddOnPurchase]],
+          required: true,
+          description: 'Global IDs of the add on purchases to find assignments for.',
+          prepare: ->(global_ids, _ctx) do
+            GitlabSchema.parse_gids(global_ids, expected_type: ::GitlabSubscriptions::AddOnPurchase).map(&:model_id)
+          end
+
+        argument :filter_by_assigned_seat,
+          type: GraphQL::Types::String,
+          required: false,
+          description: 'Filter users list by assigned seat.'
+
+        def resolve(add_on_type:, add_on_purchase_ids:, search: nil, sort: nil, filter_by_assigned_seat: nil)
           authorize!
 
           users = ::GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(
             add_on_type: add_on_type,
-            search_term: search,
+            add_on_purchase_id: add_on_purchase_ids.first,
+            filter_options: {
+              search_term: search,
+              filter_by_assigned_seat: Gitlab::Utils.to_boolean(filter_by_assigned_seat)
+            },
             sort: sort
           ).execute
 
