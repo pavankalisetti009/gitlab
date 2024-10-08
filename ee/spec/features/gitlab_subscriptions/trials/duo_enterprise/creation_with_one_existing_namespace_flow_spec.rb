@@ -30,7 +30,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
 
       submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -51,7 +51,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       # success
       submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -76,7 +76,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
 
       submit_duo_enterprise_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_usage_quotas_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 

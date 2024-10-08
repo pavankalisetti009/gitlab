@@ -80,8 +80,8 @@ module Features
       end
     end
 
-    def expect_to_be_on_gitlab_duo_usage_quotas_page(path: 'gitlab', name: 'gitlab')
-      expect(page).to have_current_path("/groups/#{path}/-/settings/gitlab_duo_usage")
+    def expect_to_be_on_gitlab_duo_seat_utilization_page(path: 'gitlab', name: 'gitlab')
+      expect(page).to have_current_path("/groups/#{path}/-/settings/gitlab_duo/seat_utilization")
       within_testid('super-sidebar') do
         expect(page).to have_link(name)
       end

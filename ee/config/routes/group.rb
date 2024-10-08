@@ -21,7 +21,11 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       resource :merge_requests, only: [:update]
       resources :roles_and_permissions, only: [:index, :new, :edit, :show]
       resource :analytics, only: [:show, :update]
-      resources :gitlab_duo_usage, only: [:index]
+      namespace :gitlab_duo do
+        resources :seat_utilization, only: [:index]
+      end
+
+      get '/gitlab_duo_usage', to: redirect('groups/%{group_id}/-/settings/gitlab_duo/seat_utilization')
 
       scope module: 'remote_development' do
         get 'workspaces', action: :show, controller: 'workspaces'

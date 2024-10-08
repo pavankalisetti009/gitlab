@@ -2,17 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
+RSpec.describe Nav::GitlabDuoSettingsPage, feature_category: :duo_chat do
   using RSpec::Parameterized::TableSyntax
 
-  include ::Nav::GitlabDuoUsageSettingsPage
+  include ::Nav::GitlabDuoSettingsPage
 
   let(:owner) { build_stubbed(:user, group_view: :security_dashboard) }
   let(:current_user) { owner }
   let(:group) { create(:group, :private) }
 
-  describe '#show_gitlab_duo_usage_menu_item?' do
-    where(:is_usage_quotas_enabled, :should_show_gitlab_duo_usage_app, :result) do
+  describe '#show_gitlab_duo_settings_menu_item?' do
+    where(:is_usage_quotas_enabled, :should_show_gitlab_duo_settings_app, :result) do
       true  | true  | true
       true  | false | false
       false | true  | false
@@ -21,7 +21,7 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
 
     with_them do
       before do
-        if should_show_gitlab_duo_usage_app
+        if should_show_gitlab_duo_settings_app
           stub_saas_features(gitlab_com_subscriptions: true)
           stub_licensed_features(code_suggestions: true)
           add_on = create(:gitlab_subscription_add_on)
@@ -31,11 +31,11 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
         allow(group).to receive(:usage_quotas_enabled?) { is_usage_quotas_enabled }
       end
 
-      it { expect(show_gitlab_duo_usage_menu_item?(group)).to be(result) }
+      it { expect(show_gitlab_duo_settings_menu_item?(group)).to be(result) }
     end
   end
 
-  describe '#show_gitlab_duo_usage_app?' do
+  describe '#show_gitlab_duo_settings_app?' do
     context 'on saas' do
       let(:another_group) { build(:group) }
 
@@ -56,14 +56,14 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
       end
 
       with_them do
-        it { expect(show_gitlab_duo_usage_app?(group)).to eq(result) }
+        it { expect(show_gitlab_duo_settings_app?(group)).to eq(result) }
 
         context 'when feature not available' do
           before do
             stub_licensed_features(code_suggestions: false)
           end
 
-          it { expect(show_gitlab_duo_usage_app?(group)).to be_falsy }
+          it { expect(show_gitlab_duo_settings_app?(group)).to be_falsy }
         end
       end
     end
@@ -74,7 +74,7 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      it { expect(show_gitlab_duo_usage_app?(group)).to be_falsy }
+      it { expect(show_gitlab_duo_settings_app?(group)).to be_falsy }
     end
   end
 end

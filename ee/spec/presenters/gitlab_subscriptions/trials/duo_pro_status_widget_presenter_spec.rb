@@ -41,7 +41,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
           days_remaining: trial_duration,
           trial_end_date: trial_duration.days.from_now.to_date,
           purchase_now_url:
-            ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_usage_index_path(group),
+            ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_seat_utilization_index_path(group),
           learn_about_button_url:
             ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group)
         }

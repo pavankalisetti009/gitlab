@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 module Nav
-  module GitlabDuoUsageSettingsPage
+  module GitlabDuoSettingsPage
     include ::GitlabSubscriptions::SubscriptionHelper
     include ::GitlabSubscriptions::CodeSuggestionsHelper
 
-    def show_gitlab_duo_usage_menu_item?(group)
+    def show_gitlab_duo_settings_menu_item?(group)
       group.usage_quotas_enabled? &&
-        show_gitlab_duo_usage_app?(group)
+        show_gitlab_duo_settings_app?(group)
     end
 
-    def show_gitlab_duo_usage_app?(group)
+    def show_gitlab_duo_settings_app?(group)
       # Guard this feature for EE users only https://docs.gitlab.com/ee/development/ee_features.html#guard-your-ee-feature
       # This is to prevent it showing up in CE and free EE
       License.feature_available?(:code_suggestions) &&
