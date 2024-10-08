@@ -276,6 +276,13 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     it_behaves_like 'settings for licensed features'
   end
 
+  context 'pre_receive_secret_detection_enabled' do
+    let(:settings) { { pre_receive_secret_detection_enabled: true } }
+    let(:feature) { :pre_receive_secret_detection }
+
+    it_behaves_like 'settings for licensed features'
+  end
+
   context 'custom email footer' do
     let(:settings) { { email_additional_text: 'this is a scary legal footer' } }
     let(:feature) { :email_additional_text }

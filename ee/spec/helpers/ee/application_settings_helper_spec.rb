@@ -58,6 +58,14 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
   end
 
+  describe '.possible_licensed_attributes' do
+    it 'contains pre_receive_secret_detection_enabled' do
+      expect(described_class.possible_licensed_attributes).to include(
+        :pre_receive_secret_detection_enabled
+      )
+    end
+  end
+
   describe '.registration_features_can_be_prompted?' do
     subject { helper.registration_features_can_be_prompted? }
 
