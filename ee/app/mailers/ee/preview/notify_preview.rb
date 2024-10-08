@@ -84,10 +84,6 @@ module EE
           ::Notify.confirmation_instructions_email(user.email, token: '123456').message
         end
 
-        def abandoned_trial_notification
-          ::Notify.abandoned_trial_notification(user.id).message
-        end
-
         def no_more_seats
           ::Notify.no_more_seats(user.id, member.user_id, project, ['Patrick Jane', 'Thomas McAllister']).message
         end
