@@ -14,6 +14,13 @@ export const mockSelfHostedModelsList = [
     endpoint: 'https://mock-endpoint-1.com',
     identifier: 'provider/some-model-1',
     hasApiToken: true,
+    featureSettings: {
+      nodes: [
+        {
+          feature: 'code_suggestions',
+        },
+      ],
+    },
   },
   {
     id: 'gid://gitlab/Ai::SelfHostedModel/2',
@@ -22,6 +29,9 @@ export const mockSelfHostedModelsList = [
     endpoint: 'https://mock-endpoint-2.com',
     identifier: '',
     hasApiToken: true,
+    featureSettings: {
+      nodes: [],
+    },
   },
 ];
 
