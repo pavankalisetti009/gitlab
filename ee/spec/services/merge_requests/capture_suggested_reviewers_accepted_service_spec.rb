@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_category: :code_review_workflow do
-  let_it_be(:merge_request) { create(:merge_request) }
-  let_it_be(:project) { merge_request.project }
-  let_it_be(:user) { merge_request.author }
+  let(:merge_request) { create(:merge_request, source_project: project, target_project: project, author: user) }
+  let_it_be(:project) { create(:project) }
+  let_it_be(:user) { create(:user) }
 
   subject(:service) { described_class.new(project: project, current_user: user) }
 
