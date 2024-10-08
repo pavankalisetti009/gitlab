@@ -14,7 +14,7 @@ const defaultData = {
 
 export default {
   component: DoraPerformersScoreChart,
-  title: 'ee/analytics/dashboards/dora_performers_score_chart',
+  title: 'ee/analytics/dashboards/dora_performers_score/components/dora_performers_score_chart',
 };
 
 const createStory = ({ mockApollo, requestHandler = doraPerformanceScoreCountsSuccess } = {}) => {
