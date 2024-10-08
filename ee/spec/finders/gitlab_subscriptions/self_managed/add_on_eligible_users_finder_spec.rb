@@ -49,7 +49,10 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
       let(:non_matching_user) { create(:user, name: 'Non') }
 
       it 'filters users by search term if provided' do
-        finder = described_class.new(add_on_type: :code_suggestions, search_term: 'Matching')
+        finder = described_class.new(
+          add_on_type: :code_suggestions,
+          filter_options: { search_term: 'Matching' }
+        )
 
         expect(finder.execute).to include(matching_user)
         expect(finder.execute).not_to include(non_matching_user)
@@ -91,6 +94,60 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
 
         it 'filters the eligible users by sort term' do
           expect(finder.execute).to eq([user1, user2, user3])
+        end
+      end
+    end
+
+    context 'when supplied a filter option' do
+      let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, :gitlab_duo_pro) }
+      let(:assigned_user) { create(:user, name: 'Assigned User') }
+      let(:non_assigned_user) { create(:user, name: 'Non Assigned User') }
+
+      before do
+        add_on_purchase.assigned_users.create!(user: assigned_user)
+      end
+
+      context 'when filter_by_assigned_seat is true' do
+        let(:filter_options) { { filter_by_assigned_seat: true } }
+
+        it 'filters users by assigned seats' do
+          finder = described_class.new(
+            add_on_purchase_id: add_on_purchase.id,
+            add_on_type: :code_suggestions,
+            filter_options: filter_options
+          )
+
+          expect(finder.execute).to include(assigned_user)
+          expect(finder.execute).not_to include(non_assigned_user)
+        end
+      end
+
+      context 'when filter_by_assigned_seat is false' do
+        let(:filter_options) { { filter_by_assigned_seat: false } }
+
+        it 'filters users by not assigned seats' do
+          finder = described_class.new(
+            add_on_purchase_id: add_on_purchase.id,
+            add_on_type: :code_suggestions,
+            filter_options: filter_options
+          )
+
+          expect(finder.execute).to include(non_assigned_user)
+          expect(finder.execute).not_to include(assigned_user)
+        end
+      end
+
+      context 'when filter_by_assigned_seat is nil' do
+        let(:filter_options) { { filter_by_assigned_seat: nil } }
+
+        it 'returns all eligible users without filtering' do
+          finder = described_class.new(
+            add_on_purchase_id: add_on_purchase.id,
+            add_on_type: :code_suggestions,
+            filter_options: filter_options
+          )
+
+          expect(finder.execute).to include(non_assigned_user, assigned_user)
         end
       end
     end

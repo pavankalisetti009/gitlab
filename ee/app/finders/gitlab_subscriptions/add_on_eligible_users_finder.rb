@@ -4,11 +4,12 @@ module GitlabSubscriptions
   class AddOnEligibleUsersFinder
     include Gitlab::Utils::StrongMemoize
 
-    def initialize(group, add_on_type:, search_term: nil, sort: nil)
+    def initialize(group, add_on_type:, add_on_purchase_id: nil, filter_options: {}, sort: nil)
       @group = group
       @add_on_type = add_on_type
-      @search_term = search_term
       @sort = sort
+      @add_on_purchase_id = add_on_purchase_id
+      @filter_options = filter_options
     end
 
     def execute
@@ -24,12 +25,14 @@ module GitlabSubscriptions
                 .id_in(members.select(:user_id))
                 .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/426357")
 
-      search_term ? users.search(search_term) : users.sort_by_attribute(sort)
+      users = filter_assigned_users(users) if valid_filter_criteria?
+
+      filter_options[:search_term] ? users.search(filter_options[:search_term]) : users.sort_by_attribute(sort)
     end
 
     private
 
-    attr_reader :group, :add_on_type, :search_term, :sort
+    attr_reader :group, :add_on_type, :add_on_purchase_id, :filter_options, :sort
 
     def member_relations
       [
@@ -117,6 +120,22 @@ module GitlabSubscriptions
 
     def namespace_ban_user_ids
       ::Namespaces::NamespaceBan.from(namespace_ban_cte.table).select(:user_id) # rubocop:disable CodeReuse/ActiveRecord
+    end
+
+    def valid_filter_criteria?
+      return false unless add_on_purchase_id.present?
+
+      [true, false].include? filter_options[:filter_by_assigned_seat]
+    end
+
+    def filter_assigned_users(collection)
+      assignments = GitlabSubscriptions::UserAddOnAssignment.for_active_add_on_purchase_ids(add_on_purchase_id)
+
+      if filter_options[:filter_by_assigned_seat]
+        collection.id_in(assignments.select(:user_id))
+      else
+        collection.id_not_in(assignments.select(:user_id))
+      end
     end
   end
 end

@@ -23,10 +23,12 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
     ])
   end
 
+  let(:add_on_params) { { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids } }
+
   let(:query) do
     graphql_query_for(
       :selfManagedAddOnEligibleUsers,
-      { addOnType: :CODE_SUGGESTIONS },
+      add_on_params,
       query_fields
     )
   end
@@ -95,7 +97,7 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
       let(:query) do
         graphql_query_for(
           :selfManagedAddOnEligibleUsers,
-          { addOnType: :CODE_SUGGESTIONS, search: 'Group User' },
+          { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids, search: 'Group User' },
           query_fields
         )
       end
@@ -119,7 +121,7 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
       it 'returns empty records if search term does not match any users' do
         query_without_results = graphql_query_for(
           :selfManagedAddOnEligibleUsers,
-          { addOnType: :CODE_SUGGESTIONS, search: 'Nonexistent User' },
+          { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids, search: 'Nonexistent User' },
           query_fields
         )
 
@@ -134,7 +136,8 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
         let(:first_page_query) do
           graphql_query_for(
             :selfManagedAddOnEligibleUsers,
-            { addOnType: :CODE_SUGGESTIONS, search: 'Group User', first: 1 },
+            { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids, search: 'Group User',
+              first: 1 },
             "pageInfo { endCursor } #{query_fields}"
           )
         end
@@ -142,7 +145,8 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
         let(:second_page_query) do
           graphql_query_for(
             :selfManagedAddOnEligibleUsers,
-            { addOnType: :CODE_SUGGESTIONS, search: 'Group User', after: end_cursor, first: 1 },
+            { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids, search: 'Group User',
+              after: end_cursor, first: 1 },
             query_fields
           )
         end
@@ -219,6 +223,36 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
 
         expect { post_graphql(query, current_user: current_user) }.to issue_same_number_of_queries_as(control)
         expect(graphql_data_at(:self_managed_add_on_eligible_users, :nodes, :add_on_assignments, :nodes).count).to eq(4)
+      end
+    end
+
+    context 'when there are filter options' do
+      let(:query) do
+        graphql_query_for(
+          :selfManagedAddOnEligibleUsers,
+          { addOnType: :CODE_SUGGESTIONS, addOnPurchaseIds: query_add_on_purchase_ids, filterByAssignedSeat: 'true' },
+          query_fields
+        )
+      end
+
+      it 'returns the add on eligible users and their assignments, filtered by assigned seat' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data_at(:self_managed_add_on_eligible_users, :nodes))
+          .to match_array([
+            {
+              'id' => global_id_of(active_user).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            },
+            {
+              'id' => global_id_of(guest_user).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            },
+            {
+              'id' => global_id_of(current_user).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            }
+          ])
       end
     end
   end
