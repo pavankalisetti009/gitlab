@@ -58,7 +58,7 @@ module EE
 
         issue.run_after_commit do
           # issue.namespace_id can point to either a project through project namespace or a group.
-          ::Onboarding::ProgressTrackingWorker.perform_async(issue.namespace_id, 'issue_created')
+          ::Onboarding::ProgressService.async(issue.namespace_id, 'issue_created')
         end
       end
     end
