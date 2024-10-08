@@ -13,7 +13,7 @@ module EE
           escalation_rules_cleanup(delete_user)
         end
 
-        log_audit_event(user) if audit_required?
+        log_audit_event(user, options)
 
         result
       end
@@ -56,19 +56,21 @@ module EE
         mirror_owners.first
       end
 
-      def log_audit_event(user)
-        ::Gitlab::Audit::Auditor.audit({
-          name: "user_destroyed",
-          author: current_user,
+      def log_audit_event(user, options)
+        audit_context = {
+          name: 'user_destroyed',
+          author: current_user || ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)'),
           scope: user,
           target: user,
           target_details: user.full_path,
           message: "User #{user.username} scheduled for deletion"
-        })
-      end
+        }
 
-      def audit_required?
-        current_user.present?
+        audit_context[:message] += ". Reason: #{options[:reason_for_deletion]}" if options[:reason_for_deletion]
+
+        audit_context[:scope] = options[:project_bot_resource] if user.project_bot? && options[:project_bot_resource]
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

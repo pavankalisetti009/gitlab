@@ -34,6 +34,11 @@
     window.gl.mrWidgetData.commit_path_template = '#{commit_path_template(@project)}';
     window.gl.mrWidgetData.merge_trains_path = '#{namespace_project_merge_trains_path}';
 
+- if can?(current_user, :read_security_orchestration_policies, @project)
+  = javascript_tag do
+    :plain
+      window.gl.mrWidgetData.security_policies_path = '#{project_security_policies_path(@project)}';
+
 - if @project.licensed_feature_available?(:file_locks)
   = javascript_tag do
     :plain
