@@ -10889,6 +10889,9 @@ msgstr ""
 msgid "Cannot delete the default organization"
 msgstr ""
 
+msgid "Cannot have more than %{maximum_path_exclusions} path exclusions for secret push protection per project"
+msgstr ""
+
 msgid "Cannot have multiple Jira imports running at the same time"
 msgstr ""
 

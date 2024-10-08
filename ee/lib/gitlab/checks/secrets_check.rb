@@ -39,6 +39,9 @@ module Gitlab
       DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/index.html'
       DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
 
+      # Maximum depth any path exclusion can have.
+      MAX_PATH_EXCLUSIONS_DEPTH = 20
+
       def validate!
         # Return early and do not perform the check:
         #   1. unless license is ultimate
@@ -72,8 +75,8 @@ module Gitlab
             payloads = get_diffs
             # Pass payloads to gem for scanning.
             response = ::Gitlab::SecretDetection::ScanDiffs
-              .new(logger: secret_detection_logger)
-              .secrets_scan(payloads, timeout: logger.time_left)
+            .new(logger: secret_detection_logger)
+            .secrets_scan(payloads, timeout: logger.time_left)
           else
             payloads = ::Gitlab::Checks::ChangedBlobs.new(
               project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
@@ -81,13 +84,23 @@ module Gitlab
 
             # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
             payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
+
+            # Only load exclusions if the feature flag is enabled.
+            exclusions = if Feature.enabled?(:secret_detection_project_level_exclusions, project)
+                           active_exclusions
+                         else
+                           {}
+                         end
+
             # Pass payloads to gem for scanning.
             response = ::Gitlab::SecretDetection::Scan
               .new(logger: secret_detection_logger)
-              .secrets_scan(payloads, timeout: logger.time_left)
+              .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
           end
-          # Handle the response depending on the status returned
+
+          # Handle the response depending on the status returned.
           format_response(response)
+
         # TODO: Perhaps have a separate message for each and better logging?
         rescue ::Gitlab::SecretDetection::Scan::RulesetParseError,
           ::Gitlab::SecretDetection::Scan::RulesetCompilationError,
@@ -99,13 +112,8 @@ module Gitlab
 
       private
 
-      def http_or_ssh_protocol?
-        %w[http ssh].include?(changes_access.protocol)
-      end
-
-      def use_diff_scan?
-        Feature.enabled?(:spp_scan_diffs, project) && http_or_ssh_protocol?
-      end
+      ##############################
+      # Project Eligibility Checks
 
       def run_pre_receive_secret_detection?
         Gitlab::CurrentSettings.current_application_settings.pre_receive_secret_detection_enabled &&
@@ -122,6 +130,17 @@ module Gitlab
           project.security_setting&.pre_receive_secret_detection_enabled
       end
 
+      ###############
+      # Scan Checks
+
+      def http_or_ssh_protocol?
+        %w[http ssh].include?(changes_access.protocol)
+      end
+
+      def use_diff_scan?
+        Feature.enabled?(:spp_scan_diffs, project) && http_or_ssh_protocol?
+      end
+
       def includes_full_revision_history?
         Gitlab::Git.blank_ref?(changes_access.changes.first[:newrev])
       end
@@ -133,6 +152,9 @@ module Gitlab
       def skip_secret_detection_push_option?
         changes_access.push_options&.get(:secret_push_protection, :skip_all)
       end
+
+      ############################
+      # Audits and Event Logging
 
       def secret_detection_logger
         @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
@@ -165,6 +187,21 @@ module Gitlab
         )
       end
 
+      def track_secret_found(secret_type)
+        track_internal_event(
+          'detect_secret_type_on_push',
+          user: changes_access.user_access.user,
+          project: changes_access.project,
+          namespace: changes_access.project.namespace,
+          additional_properties: {
+            label: secret_type
+          }
+        )
+      end
+
+      #######################
+      # Load Payloads
+
       def get_diffs
         diffs = []
         # Get new commits
@@ -194,6 +231,21 @@ module Gitlab
         diffs
       end
 
+      #######################
+      # Format Scan Results
+
+      def commits
+        @commit ||= changes_access.commits.map(&:valid_full_sha)
+      end
+
+      def revisions
+        @revisions ||= changes_access
+                        .changes
+                        .pluck(:newrev) # rubocop:disable CodeReuse/ActiveRecord -- Array#pluck
+                        .reject { |revision| ::Gitlab::Git.blank_ref?(revision) }
+                        .compact
+      end
+
       def format_response(response)
         # Try to retrieve file path and commit sha for the diffs found.
         if [
@@ -201,6 +253,10 @@ module Gitlab
           ::Gitlab::SecretDetection::Status::FOUND_WITH_ERRORS
         ].include?(response.status)
           results = transform_findings(response)
+
+          # If there is no findings in `response.results`, that means all findings
+          # were excluded in `transform_findings`, so we set status to no secrets found.
+          response.status = ::Gitlab::SecretDetection::Status::NOT_FOUND if response.results.empty?
         end
 
         case response.status
@@ -234,14 +290,6 @@ module Gitlab
           # know how to handle that, so nothing happens and we skip the check.
           secret_detection_logger.error(message: ERROR_MESSAGES[:invalid_scan_status_code_error])
         end
-      end
-
-      def revisions
-        @revisions ||= changes_access
-                        .changes
-                        .pluck(:newrev) # rubocop:disable CodeReuse/ActiveRecord -- Array#pluck
-                        .reject { |revision| ::Gitlab::Git.blank_ref?(revision) }
-                        .compact
       end
 
       def build_secrets_found_message(results, with_errors: false)
@@ -313,18 +361,7 @@ module Gitlab
         format(LOG_MESSAGES[:finding_message], finding.to_h)
       end
 
-      def track_secret_found(secret_type)
-        track_internal_event(
-          'detect_secret_type_on_push',
-          user: changes_access.user_access.user,
-          project: changes_access.project,
-          namespace: changes_access.project.namespace,
-          additional_properties: {
-            label: secret_type
-          }
-        )
-      end
-
+      # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods.
       def transform_findings(response)
         # Let's group the findings by the blob id.
         findings_by_blobs = response.results.group_by(&:blob_id)
@@ -334,8 +371,6 @@ module Gitlab
 
         # Let's create a set to store ids of blobs found in tree entries.
         blobs_found_with_tree_entries = Set.new
-
-        commits = changes_access.commits.map { |commit| commit.id.match(/[a-f0-9]{40}([a-f0-9]{24})?/).to_s }
 
         # Scanning had found secrets, let's try to look up their file path and commit id. This can be done
         # by using `GetTreeEntries()` RPC, and cross examining blobs with ones where secrets where found.
@@ -366,6 +401,19 @@ module Gitlab
             # Skip if the blob doesn't have any findings.
             next unless findings_by_blobs[entry.id].present?
 
+            # Skip a tree entry if it's excluded from scanning by the user based on its file
+            # path. We unfortunately have to do this after scanning is done because we only get
+            # file paths when calling `GetTreeEntries()` RPC and not earlier. When diff scanning
+            # is available, we will likely be able move this check to the gem/secret detection service
+            # since paths will be available pre-scanning.
+            if entry_matches_excluded_path?(entry.path)
+              response.results.delete_if { |finding| finding.blob_id == entry.id }
+
+              findings_by_blobs.delete(entry.id)
+
+              next
+            end
+
             new_entry = findings_by_blobs[entry.id].each_with_object({}) do |finding, hash|
               hash[entry.commit_id] ||= {}
               hash[entry.commit_id][entry.path] ||= []
@@ -390,6 +438,34 @@ module Gitlab
           commits: findings_by_commits,
           blobs: findings_by_blobs
         }
+      end
+      # rubocop:enable Metrics/CyclomaticComplexity
+
+      ##############
+      # Exclusions
+
+      def active_exclusions
+        @active_exclusions ||= project
+          .security_exclusions
+          .by_scanner(:secret_push_protection)
+          .active
+          .select(:type, :value)
+          .group_by { |exclusion| exclusion.type.to_sym }
+      end
+
+      def entry_matches_excluded_path?(path)
+        # Skip checking if tree entry match excluded paths when feature flag is disabled.
+        return false unless ::Feature.enabled?(:secret_detection_project_level_exclusions, project)
+
+        # Skip paths that are too deep.
+        return false if path.count('/') > MAX_PATH_EXCLUSIONS_DEPTH
+
+        # Skip any path exclusions past the maximum path exclusions count (i.e. 50 path exclusions).
+        active_exclusions[:path]
+          &.first(::Security::ProjectSecurityExclusion::MAX_PATH_EXCLUSIONS_PER_PROJECT)
+          &.any? do |exclusion|
+          File.fnmatch?(exclusion.value, path, File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME)
+        end
       end
     end
   end

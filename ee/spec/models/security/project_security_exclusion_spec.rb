@@ -14,6 +14,64 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
     it { is_expected.to validate_presence_of(:value) }
     it { is_expected.to validate_length_of(:value).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(255) }
+
+    describe '#validate_push_protection_path_exclusions_limit' do
+      let_it_be(:project) { create(:project) }
+
+      context 'when exclusion is created or updated for the secret push protection scanner' do
+        context 'with `path` type' do
+          context 'when maximum number of path exclusions already exist' do
+            let_it_be(:rule_exclusion) { create(:project_security_exclusion, :with_rule, project: project) }
+
+            before do
+              create_list(:project_security_exclusion, 10, :with_path, project: project)
+            end
+
+            it 'does not allow adding more exclusions' do
+              exclusion = build(:project_security_exclusion, :with_path, project: project)
+
+              expect(exclusion.save).to be_falsey
+              expect(exclusion.errors.full_messages).to eq(
+                ["Cannot have more than 10 path exclusions for secret push protection per project"]
+              )
+            end
+
+            it 'does not allow updating an exclusion of another type to `path` type' do
+              rule_exclusion.type = :path
+
+              expect(rule_exclusion.save).to be_falsey
+              expect(rule_exclusion.errors.full_messages).to eq(
+                ["Cannot have more than 10 path exclusions for secret push protection per project"]
+              )
+            end
+          end
+
+          context 'when less than maximum number of path exclusions exist' do
+            before do
+              create_list(:project_security_exclusion, 9, :with_path, project: project)
+            end
+
+            it 'creates the 10th path exclusion' do
+              exclusion = build(:project_security_exclusion, :with_path, project: project)
+
+              expect(exclusion.save).to be_truthy
+            end
+          end
+        end
+
+        context 'when exclusion created or updated is not of `path` type' do
+          before do
+            create_list(:project_security_exclusion, 10, :with_rule, project: project)
+          end
+
+          it 'allows adding more exclusions' do
+            exclusion = build(:project_security_exclusion, :with_rule, project: project)
+
+            expect(exclusion.save).to be_truthy
+          end
+        end
+      end
+    end
   end
 
   describe 'enums' do
@@ -43,6 +101,12 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
     describe '.by_status' do
       it 'returns the correct records' do
         expect(described_class.by_status(true)).to match_array([exclusion_1, exclusion_3])
+      end
+    end
+
+    describe '.active' do
+      it 'returns the correct records' do
+        expect(described_class.active).to match_array([exclusion_1, exclusion_3])
       end
     end
   end
