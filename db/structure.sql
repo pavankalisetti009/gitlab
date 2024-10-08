@@ -2361,6 +2361,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_da5fd3d6d75c() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "packages_packages"
+  WHERE "packages_packages"."id" = NEW."package_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_dadd660afe2c() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -15098,7 +15114,8 @@ CREATE TABLE packages_composer_metadata (
     package_id bigint NOT NULL,
     target_sha bytea NOT NULL,
     composer_json jsonb DEFAULT '{}'::jsonb NOT NULL,
-    version_cache_sha bytea
+    version_cache_sha bytea,
+    project_id bigint
 );
 
 CREATE TABLE packages_conan_file_metadata (
@@ -30110,6 +30127,8 @@ CREATE UNIQUE INDEX index_packages_composer_cache_namespace_and_sha ON packages_
 
 CREATE UNIQUE INDEX index_packages_composer_metadata_on_package_id_and_target_sha ON packages_composer_metadata USING btree (package_id, target_sha);
 
+CREATE INDEX index_packages_composer_metadata_on_project_id ON packages_composer_metadata USING btree (project_id);
+
 CREATE UNIQUE INDEX index_packages_conan_file_metadata_on_package_file_id ON packages_conan_file_metadata USING btree (package_file_id);
 
 CREATE UNIQUE INDEX index_packages_conan_metadata_on_package_id_username_channel ON packages_conan_metadata USING btree (package_id, package_username, package_channel);
@@ -33800,6 +33819,8 @@ CREATE TRIGGER trigger_d4487a75bd44 BEFORE INSERT OR UPDATE ON terraform_state_v
 
 CREATE TRIGGER trigger_d5c895007948 BEFORE INSERT OR UPDATE ON protected_environment_approval_rules FOR EACH ROW EXECUTE FUNCTION trigger_d5c895007948();
 
+CREATE TRIGGER trigger_da5fd3d6d75c BEFORE INSERT OR UPDATE ON packages_composer_metadata FOR EACH ROW EXECUTE FUNCTION trigger_da5fd3d6d75c();
+
 CREATE TRIGGER trigger_dadd660afe2c BEFORE INSERT OR UPDATE ON packages_debian_group_distribution_keys FOR EACH ROW EXECUTE FUNCTION trigger_dadd660afe2c();
 
 CREATE TRIGGER trigger_dbdd61a66a91 BEFORE INSERT OR UPDATE ON agent_activity_events FOR EACH ROW EXECUTE FUNCTION trigger_dbdd61a66a91();
@@ -35282,6 +35303,9 @@ ALTER TABLE ONLY user_preferences
 
 ALTER TABLE ONLY packages_debian_group_components
     ADD CONSTRAINT fk_e63e8ee3b1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_composer_metadata
+    ADD CONSTRAINT fk_e65180da68 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY approval_project_rules_protected_branches
     ADD CONSTRAINT fk_e6ee913fc2 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
