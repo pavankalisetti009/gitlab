@@ -24,6 +24,7 @@ module CodeSuggestions
                   content_below_cursor: suffix,
                   language_identifier: language.name,
                   prompt_id: PROMPT_ID,
+                  stream: params.fetch(:stream, false),
                   prompt_enhancer: code_generation_enhancer
                 }
               }

@@ -174,6 +174,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               "content_below_cursor" => "",
               "language_identifier" => "Python",
               "prompt_id" => "code_suggestions/generations",
+              "stream" => false,
               "prompt_enhancer" => {
                 "examples_array" => [
                   {

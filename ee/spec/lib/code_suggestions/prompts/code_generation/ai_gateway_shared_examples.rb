@@ -628,6 +628,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
   let(:comment) { 'My comment instructions' }
   let(:instruction) { instance_double(CodeSuggestions::Instruction, instruction: comment, trigger_type: 'comment') }
   let(:examples) { [{ example: 'func hello() {', response: 'func hello() {<new_code>fmt.Println("hello")' }] }
+  let(:stream) { true }
 
   let(:context) do
     [
@@ -664,7 +665,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       project: project,
       instruction: instruction,
       current_file: current_file_params,
-      context: context
+      context: context,
+      stream: stream
     }
   end
 
@@ -686,6 +688,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_trimmed_suffix) { content_below_cursor }
       let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)'] }
       let(:expected_user_instruction) { comment }
+      let(:expected_stream) { true }
 
       let(:expected_related_files) do
         [
@@ -751,6 +754,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:instruction) { nil }
       let(:context) { nil }
       let(:current_file_params) { nil }
+      let(:stream) { false }
 
       let(:expected_file_name) { '' }
       let(:expected_content_above_cursor) { nil }
@@ -763,6 +767,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_user_instruction) { 'Generate the best possible code based on instructions.' }
       let(:expected_related_files) { [] }
       let(:expected_related_snippets) { [] }
+      let(:expected_stream) { false }
 
       it 'returns expected request params' do
         expect(subject.request_params).to eq(expected_request_params)
