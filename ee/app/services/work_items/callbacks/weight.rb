@@ -3,7 +3,7 @@
 module WorkItems
   module Callbacks
     class Weight < Base
-      def before_update
+      def after_initialize
         params[:weight] = nil if excluded_in_new_type?
 
         return unless params.present? && params.key?(:weight)
