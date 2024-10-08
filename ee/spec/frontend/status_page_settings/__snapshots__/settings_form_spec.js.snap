@@ -6,8 +6,26 @@ exports[`Status Page settings form default state should match the default snapsh
   id="reference-0"
 >
   <div
-    class="gl-flex gl-items-start gl-justify-between"
+    class="gl-flex gl-gap-x-3 gl-items-start gl-justify-between"
   >
+    <div
+      class="-gl-mr-3 gl-px-2 gl-py-0 gl-shrink-0 sm:gl-mr-0 sm:gl-p-2"
+    >
+      <gl-button-stub
+        aria-controls="reference-0"
+        aria-expanded="false"
+        aria-label="Expand Status page"
+        buttontextclasses="gl-sr-only"
+        category="tertiary"
+        class="!gl-pl-2 !gl-pr-0 gl-shrink-0 settings-toggle"
+        data-testid="settings-block-toggle"
+        icon="chevron-lg-right"
+        size="small"
+        variant="default"
+      >
+        Expand
+      </gl-button-stub>
+    </div>
     <div
       class="gl-grow"
     >
@@ -15,12 +33,11 @@ exports[`Status Page settings form default state should match the default snapsh
         aria-controls="reference-0"
         aria-expanded="false"
         class="!gl-mb-2 gl-cursor-pointer gl-heading-2"
+        data-testid="settings-block-title"
         role="button"
         tabindex="-1"
       >
-        <span>
-          Status page
-        </span>
+        Status page
       </h2>
       <p
         class="gl-m-0 gl-text-subtle"
@@ -30,42 +47,13 @@ exports[`Status Page settings form default state should match the default snapsh
         </span>
       </p>
     </div>
-    <div
-      class="gl-px-2 gl-shrink-0"
-    >
-      <gl-button-stub
-        aria-controls="reference-0"
-        aria-expanded="false"
-        buttontextclasses=""
-        category="primary"
-        class="gl-min-w-12 gl-shrink-0"
-        data-testid="settings-block-toggle"
-        icon=""
-        size="medium"
-        variant="default"
-      >
-        <span
-          aria-hidden="true"
-        >
-          Expand
-        </span>
-        <span
-          class="gl-sr-only"
-        >
-          Expand
-          <span>
-            Status page
-          </span>
-        </span>
-      </gl-button-stub>
-    </div>
   </div>
   <gl-collapse-stub
     data-testid="settings-block-content"
     id="reference-1"
   >
     <div
-      class="gl-pt-5"
+      class="gl-pl-7 gl-pt-5 sm:gl-pl-8"
     >
       <p>
         <gl-sprintf-stub
