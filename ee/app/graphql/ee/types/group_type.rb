@@ -197,6 +197,12 @@ module EE
           extras: [:lookahead],
           alpha: { milestone: '16.11' }
 
+        field :ai_usage_data,
+          ::Types::Analytics::AiUsage::AiUsageDataType,
+          description: 'AI-related data.',
+          resolver_method: :object,
+          alpha: { milestone: '17.5' }
+
         field :project_compliance_standards_adherence,
           ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
           null: true,
