@@ -7,4 +7,4 @@ feature_category: user_management
 milestone: '15.11'
 saved_to_database: true
 streamed: false
-scope: [User]
+scope: [User, Group, Project]

@@ -7,21 +7,21 @@ RSpec.describe Users::DestroyService, feature_category: :user_management do
 
   subject(:service) { described_class.new(current_user) }
 
-  shared_examples 'auditable' do
+  shared_examples 'auditable' do |audit_name:|
     before do
       stub_licensed_features(extended_audit_events: true)
     end
 
-    it 'creates audit event record' do
+    it "creates #{audit_name} audit event record", :aggregate_failures do
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including({
-        name: "user_destroyed"
+        name: audit_name
       })).and_call_original
 
       expect { operation }.to change { AuditEvent.count }.by(1)
 
       audit_event = ::AuditEvent.last
-      details = audit_attributes.delete(:details) || {}
-      audit_attributes.each do |method, value|
+      details = expected_audit_attributes.delete(:details) || {}
+      expected_audit_attributes.each do |method, value|
         expect(audit_event.public_send(method)).to eq(value)
       end
       expect(audit_event.details).to include(details)
@@ -40,19 +40,113 @@ RSpec.describe Users::DestroyService, feature_category: :user_management do
     end
 
     context 'when admin mode is enabled', :enable_admin_mode do
+      context 'for audit event' do
+        it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+          let(:author) { current_user }
+
+          let(:expected_audit_attributes) do
+            {
+              author_id: author.id,
+              entity: user,
+              details: {
+                author_class: author.class.to_s,
+                author_name: author.name,
+                custom_message: "User #{user.username} scheduled for deletion",
+                target_details: user.full_path,
+                target_id: user.id,
+                target_type: user.class.to_s
+              }
+            }
+          end
+        end
+
+        context 'when current_user is nil' do
+          let_it_be(:current_user) { nil }
+
+          subject(:operation) { service.execute(user, { skip_authorization: true }) }
+
+          it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+            let(:author) { ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)') }
+
+            let(:expected_audit_attributes) do
+              {
+                author_id: author.id,
+                details: {
+                  author_class: author.class.to_s,
+                  author_name: author.name
+                }
+              }
+            end
+          end
+        end
+
+        context 'when reason_for_deletion is provided' do
+          let(:reason_for_deletion) { 'Reason for deletion!' }
+
+          subject(:operation) { service.execute(user, { reason_for_deletion: reason_for_deletion }) }
+
+          it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+            let(:expected_audit_attributes) do
+              {
+                details: {
+                  custom_message: "User #{user.username} scheduled for deletion. Reason: #{reason_for_deletion}"
+                }
+              }
+            end
+          end
+        end
+
+        context 'when user is a project_bot' do
+          let(:user) { create(:user, :project_bot) }
+
+          context 'when project_bot belongs to resource' do
+            let!(:resource) { create(:group, maintainers: user) }
+
+            it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+              let(:author) { current_user }
+
+              let(:expected_audit_attributes) do
+                {
+                  author_id: author.id,
+                  entity: resource,
+                  details: {
+                    author_class: author.class.to_s,
+                    author_name: author.name,
+                    custom_message: "User #{user.username} scheduled for deletion",
+                    target_details: user.full_path,
+                    target_id: user.id,
+                    target_type: user.class.to_s
+                  }
+                }
+              end
+            end
+          end
+
+          context 'when project_bot is orphaned record' do
+            it_behaves_like 'auditable', audit_name: 'user_destroyed' do
+              let(:author) { current_user }
+
+              let(:expected_audit_attributes) do
+                {
+                  author_id: author.id,
+                  entity: user,
+                  details: {
+                    author_class: author.class.to_s,
+                    author_name: author.name,
+                    custom_message: "User #{user.username} scheduled for deletion",
+                    target_details: user.full_path,
+                    target_id: user.id,
+                    target_type: user.class.to_s
+                  }
+                }
+              end
+            end
+          end
+        end
+      end
+
       context 'when project is a mirror' do
         let(:project) { create(:project, :mirror, mirror_user_id: user.id) }
-        let(:audit_attributes) do
-          {
-            author: current_user,
-            entity: user,
-            target_id: user.id,
-            target_details: user.full_path,
-            details: {
-              custom_message: "User #{user.full_path} scheduled for deletion"
-            }
-          }
-        end
 
         it 'disables mirror and does not assign a new mirror_user' do
           expect(::Gitlab::ErrorTracking).to receive(:track_exception)
@@ -66,8 +160,6 @@ RSpec.describe Users::DestroyService, feature_category: :user_management do
           expect { operation }.to change { project.reload.mirror_user }.from(user).to(nil)
             .and change { project.reload.mirror }.from(true).to(false)
         end
-
-        it_behaves_like 'auditable'
       end
 
       context 'when user has oncall rotations' do
