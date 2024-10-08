@@ -25,6 +25,8 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
     ])
   end
 
+  let(:add_on_params) { { add_on_type: :CODE_SUGGESTIONS, add_on_purchase_ids: query_add_on_purchase_ids } }
+
   before do
     stub_saas_features(gitlab_com_subscriptions: true)
   end
@@ -33,7 +35,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
     let(:query) do
       graphql_query_for(
         :namespace, { full_path: add_on_purchase.namespace.full_path },
-        query_graphql_field(:addOnEligibleUsers, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+        query_graphql_field(:addOnEligibleUsers, add_on_params, query_fields)
       )
     end
 
@@ -56,7 +58,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
     let(:query) do
       graphql_query_for(
         :namespace, { full_path: subgroup.full_path },
-        query_graphql_field(:addOnEligibleUsers, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+        query_graphql_field(:addOnEligibleUsers, add_on_params, query_fields)
       )
     end
 
@@ -92,7 +94,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
           :namespace, { full_path: add_on_purchase.namespace.full_path },
           query_graphql_field(
             :addOnEligibleUsers,
-            { add_on_type: :CODE_SUGGESTIONS, search: 'Group User' },
+            { add_on_type: :CODE_SUGGESTIONS, search: 'Group User', add_on_purchase_ids: query_add_on_purchase_ids },
             query_fields
           )
         )
@@ -122,7 +124,8 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
             :namespace, { full_path: add_on_purchase.namespace.full_path },
             query_graphql_field(
               :addOnEligibleUsers,
-              { add_on_type: :CODE_SUGGESTIONS, search: 'Group User', first: 1 },
+              { add_on_type: :CODE_SUGGESTIONS, add_on_purchase_ids: query_add_on_purchase_ids, search: 'Group User',
+                first: 1 },
               "pageInfo { endCursor } #{query_fields}"
             )
           )
@@ -133,7 +136,8 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
             :namespace, { full_path: add_on_purchase.namespace.full_path },
             query_graphql_field(
               :addOnEligibleUsers,
-              { add_on_type: :CODE_SUGGESTIONS, search: 'Group User', after: end_cursor, first: 1 },
+              { add_on_type: :CODE_SUGGESTIONS, add_on_purchase_ids: query_add_on_purchase_ids, search: 'Group User',
+                after: end_cursor, first: 1 },
               query_fields
             )
           )
@@ -169,7 +173,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
       let(:query) do
         graphql_query_for(
           :namespace, { full_path: add_on_purchase.namespace.full_path },
-          query_graphql_field(:addOnEligibleUsers, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+          query_graphql_field(:addOnEligibleUsers, add_on_params, query_fields)
         )
       end
 
@@ -204,7 +208,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
       let(:query) do
         graphql_query_for(
           :namespace, { full_path: add_on_purchase.namespace.full_path },
-          query_graphql_field(:addOnEligibleUsers, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+          query_graphql_field(:addOnEligibleUsers, add_on_params, query_fields)
         )
       end
 
@@ -245,7 +249,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
       let(:query) do
         graphql_query_for(
           :namespace, { full_path: add_on_purchase.namespace.full_path },
-          query_graphql_field(:add_on_eligible_users, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+          query_graphql_field(:add_on_eligible_users, add_on_params, query_fields)
         )
       end
 
@@ -279,7 +283,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
       let(:query) do
         graphql_query_for(
           :namespace, { full_path: add_on_purchase.namespace.full_path },
-          query_graphql_field(:add_on_eligible_users, { add_on_type: :CODE_SUGGESTIONS }, query_fields)
+          query_graphql_field(:add_on_eligible_users, add_on_params, query_fields)
         )
       end
 
@@ -301,6 +305,42 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
 
         expect { post_graphql(query, current_user: current_user) }.to issue_same_number_of_queries_as(control)
         expect(graphql_data_at(:namespace, :add_on_eligible_users, :nodes, :add_on_assignments, :nodes).count).to eq(4)
+      end
+    end
+
+    context 'when there are filter args' do
+      let(:ineligible_user) { create(:user, name: 'Ineligible User') }
+
+      let(:query) do
+        graphql_query_for(
+          :namespace, { full_path: add_on_purchase.namespace.full_path },
+          query_graphql_field(
+            :addOnEligibleUsers,
+            { add_on_type: :CODE_SUGGESTIONS, add_on_purchase_ids: query_add_on_purchase_ids,
+              filterByAssignedSeat: 'true' },
+            query_fields
+          )
+        )
+      end
+
+      it 'returns the add on eligible users and their assignments, filtered by assigned seat' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data_at(:namespace, :add_on_eligible_users, :nodes))
+          .to eq([
+            {
+              'id' => global_id_of(developer).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            },
+            {
+              'id' => global_id_of(guest).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            },
+            {
+              'id' => global_id_of(current_user).to_s,
+              'addOnAssignments' => { 'nodes' => [expected_add_on_purchase_data(add_on_purchase)] }
+            }
+          ])
       end
     end
   end

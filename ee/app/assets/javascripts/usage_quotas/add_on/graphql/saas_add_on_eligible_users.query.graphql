@@ -10,17 +10,20 @@ query getAddOnEligibleUsers(
   $last: Int
   $after: String
   $before: String
+  $filterByAssignedSeat: String
 ) {
   namespace(fullPath: $fullPath) {
     id
     addOnEligibleUsers(
       addOnType: $addOnType
+      addOnPurchaseIds: $addOnPurchaseIds
       sort: $sort
       search: $search
       first: $first
       last: $last
       after: $after
       before: $before
+      filterByAssignedSeat: $filterByAssignedSeat
     ) {
       nodes {
         id

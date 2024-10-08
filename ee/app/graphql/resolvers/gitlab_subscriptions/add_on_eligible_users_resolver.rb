@@ -21,19 +21,36 @@ module Resolvers
         required: true,
         description: 'Type of add on to filter the eligible users by.'
 
+      argument :add_on_purchase_ids,
+        type: [::Types::GlobalIDType[::GitlabSubscriptions::AddOnPurchase]],
+        required: true,
+        description: 'Global IDs of the add on purchases to find assignments for.',
+        prepare: ->(global_ids, _ctx) do
+          GitlabSchema.parse_gids(global_ids, expected_type: ::GitlabSubscriptions::AddOnPurchase).map(&:model_id)
+        end
+
+      argument :filter_by_assigned_seat,
+        type: GraphQL::Types::String,
+        required: false,
+        description: 'Filter users list by assigned seat.'
+
       type ::Types::GitlabSubscriptions::AddOnUserType.connection_type,
         null: true
 
       alias_method :namespace, :object
 
-      def resolve(add_on_type:, search: nil, sort: nil)
+      def resolve(add_on_type:, add_on_purchase_ids:, search: nil, sort: nil, filter_by_assigned_seat: nil)
         authorize!(namespace)
 
         users = ::GitlabSubscriptions::AddOnEligibleUsersFinder.new(
           namespace,
           add_on_type: add_on_type,
-          search_term: search,
-          sort: sort
+          filter_options: {
+            search_term: search,
+            filter_by_assigned_seat: Gitlab::Utils.to_boolean(filter_by_assigned_seat)
+          },
+          sort: sort,
+          add_on_purchase_id: add_on_purchase_ids.first
         ).execute
 
         offset_pagination(users)
