@@ -1,0 +1,248 @@
+import { GlButton } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { createMockSubscription } from 'mock-apollo-client';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
+import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
+import securityFindingCreateVulnerability from 'ee/vulnerabilities/graphql/security_finding_create_vulnerability.mutation.graphql';
+import ResolveWithAiButton from 'ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue';
+import {
+  MUTATION_AI_ACTION_DEFAULT_RESPONSE,
+  getAiSubscriptionResponse,
+} from 'ee_jest/vulnerabilities/mock_data';
+import { visitUrl } from '~/lib/utils/url_utility';
+
+Vue.use(VueApollo);
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn(),
+}));
+
+describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue', () => {
+  let wrapper;
+
+  const createWrapper = ({ apolloProvider, propsData } = {}) => {
+    wrapper = shallowMountExtended(ResolveWithAiButton, {
+      apolloProvider,
+      propsData: {
+        mergeRequestId: '1',
+        findingUuid: '1',
+        vulnerabilityId: '1',
+        ...propsData,
+      },
+    });
+  };
+
+  const findButton = () => wrapper.findComponent(GlButton);
+  const clickButton = () => findButton().vm.$emit('click');
+
+  beforeEach(createWrapper);
+
+  describe('initial render', () => {
+    it('renders a "Resolve with AI" confirm button with an tanuki-ai icon and a title that describes the feature', () => {
+      createWrapper();
+
+      expect(findButton().text()).toBe('Resolve with AI');
+      expect(findButton().props()).toMatchObject({
+        icon: 'tanuki-ai',
+        variant: 'confirm',
+      });
+      expect(findButton().attributes('title')).toBe(
+        'Use GitLab Duo to generate a comment with a suggested solution.',
+      );
+    });
+
+    it('does not have a loading state by default', () => {
+      createWrapper();
+
+      expect(findButton().props('loading')).toBe(false);
+    });
+  });
+
+  describe('when the button is clicked', () => {
+    let mockSubscription;
+    let subscriptionSpy;
+
+    const sendSubscriptionMessage = (aiCompletionResponse = null) =>
+      mockSubscription.next({ data: { aiCompletionResponse } });
+
+    const createWrapperWithApollo = ({ responseHandlers = {}, ...wrapperOptions } = {}) => {
+      mockSubscription = createMockSubscription();
+      subscriptionSpy = jest.fn().mockReturnValue(mockSubscription);
+
+      const apolloProvider = createMockApollo([
+        [
+          aiResolveVulnerability,
+          responseHandlers.aiResolveVulnerability || MUTATION_AI_ACTION_DEFAULT_RESPONSE,
+        ],
+        [
+          securityFindingCreateVulnerability,
+          responseHandlers.securityFindingCreateVulnerability || jest.fn().mockResolvedValue({}),
+        ],
+      ]);
+      apolloProvider.defaultClient.setRequestHandler(aiResponseSubscription, subscriptionSpy);
+
+      createWrapper({ apolloProvider, ...wrapperOptions });
+    };
+
+    beforeEach(() => {
+      // this is needed because the component uses it for the subscription's current user variable
+      gon.current_user_id = 1;
+    });
+
+    it('shows a loading state', async () => {
+      createWrapperWithApollo();
+
+      clickButton();
+
+      await nextTick();
+
+      expect(findButton().props('loading')).toBe(true);
+    });
+
+    describe('vulnerability finding', () => {
+      it('does not create a vulnerability finding for the finding when the given finding has a vulnerability ID', () => {
+        const findingCreationSpy = jest.fn().mockResolvedValue({});
+        createWrapperWithApollo({
+          responseHandlers: { securityFindingCreateVulnerability: findingCreationSpy },
+        });
+
+        clickButton();
+
+        expect(findingCreationSpy).not.toHaveBeenCalled();
+      });
+
+      it('creates a vulnerability finding for the finding when the given finding does not have a vulnerability ID', () => {
+        const findingCreationSpy = jest.fn().mockResolvedValue({
+          data: {
+            securityFindingCreateVulnerability: {
+              vulnerability: {
+                id: '1',
+              },
+            },
+          },
+        });
+
+        createWrapperWithApollo({
+          responseHandlers: {
+            securityFindingCreateVulnerability: findingCreationSpy,
+          },
+          propsData: { vulnerabilityId: undefined },
+        });
+
+        expect(findingCreationSpy).not.toHaveBeenCalled();
+
+        clickButton();
+
+        expect(findingCreationSpy).toHaveBeenCalledWith({
+          uuid: '1',
+        });
+      });
+
+      describe('error handling', () => {
+        it('emits an error when the "securityFindingCreateVulnerability" errors', async () => {
+          const findingCreationSpy = jest.fn().mockRejectedValue(new Error('creation error'));
+
+          createWrapperWithApollo({
+            responseHandlers: {
+              securityFindingCreateVulnerability: findingCreationSpy,
+            },
+            propsData: { vulnerabilityId: undefined },
+          });
+
+          expect(wrapper.emitted('error')).toBeUndefined();
+
+          clickButton();
+
+          await waitForPromises();
+
+          expect(findingCreationSpy).toHaveBeenCalledWith({ uuid: '1' });
+          expect(wrapper.emitted('error')).toHaveLength(1);
+          expect(wrapper.emitted('error')[0][0]).toEqual(new Error('creation error'));
+        });
+      });
+    });
+
+    describe('resolve with AI', () => {
+      it('starts the "aiResponse" subscription', () => {
+        createWrapperWithApollo();
+
+        expect(subscriptionSpy).not.toHaveBeenCalled();
+
+        clickButton();
+
+        expect(subscriptionSpy).toHaveBeenCalled();
+      });
+
+      it('calls the "aiResolveVulnerability" mutation when the subscription is ready', async () => {
+        createWrapperWithApollo();
+
+        clickButton();
+
+        expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).not.toHaveBeenCalled();
+
+        sendSubscriptionMessage();
+        await waitForPromises();
+
+        expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
+      });
+
+      it('redirects to the given URL when the subscription response returns the correct content', async () => {
+        createWrapperWithApollo();
+
+        clickButton();
+
+        expect(visitUrl).not.toHaveBeenCalled();
+
+        const url = 'http://gitlab.com/project/merge_requests/1#comment-1';
+        sendSubscriptionMessage(getAiSubscriptionResponse(url));
+        await waitForPromises();
+
+        expect(visitUrl).toHaveBeenCalledWith(url);
+      });
+
+      describe('error handling', () => {
+        it('emits an error when the subscription errors', async () => {
+          createWrapperWithApollo();
+
+          clickButton();
+
+          expect(wrapper.emitted('error')).toBeUndefined();
+
+          const errors = ['subscription error'];
+          sendSubscriptionMessage({
+            ...getAiSubscriptionResponse(null),
+            errors,
+          });
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toHaveLength(1);
+          expect(wrapper.emitted('error')[0]).toEqual(errors);
+        });
+
+        it('emits an error when the "aiResolveVulnerability" mutation errors', async () => {
+          const aiResolveVulnerabilitySpy = jest
+            .fn()
+            .mockRejectedValue(new Error('mutation error'));
+
+          createWrapperWithApollo({
+            responseHandlers: { aiResolveVulnerability: aiResolveVulnerabilitySpy },
+          });
+
+          expect(wrapper.emitted('error')).toBeUndefined();
+
+          clickButton();
+          sendSubscriptionMessage(null);
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toHaveLength(1);
+          expect(wrapper.emitted('error')[0]).toEqual(['mutation error']);
+        });
+      });
+    });
+  });
+});

@@ -2331,6 +2331,9 @@ msgstr ""
 msgid "AI|To help improve the quality of the content, send your feedback to GitLab team members."
 msgstr ""
 
+msgid "AI|Use GitLab Duo to generate a comment with a suggested solution."
+msgstr ""
+
 msgid "AI|Use GitLab Duo to generate a merge request with a suggested solution."
 msgstr ""
 
