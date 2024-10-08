@@ -25,12 +25,14 @@ describe('SelfHostedModelsApp', () => {
     const mockApollo = createMockApollo([...apolloHandlers]);
     const basePath = '/admin/ai/self_hosted_models';
     const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
+    const aiFeatureSettingsPath = '/admin/ai/feature_settings';
 
     wrapper = shallowMount(SelfHostedModelsApp, {
       apolloProvider: mockApollo,
       propsData: {
         basePath,
         newSelfHostedModelPath,
+        aiFeatureSettingsPath,
       },
     });
   };

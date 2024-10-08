@@ -45,6 +45,10 @@ describe('EpicBoardContentSidebar', () => {
 
     wrapper = shallowMountExtended(EpicBoardContentSidebar, {
       apolloProvider: mockApollo,
+      propsData: {
+        backlogListId: 'gid://gitlab/List/1',
+        closedListId: 'gid://gitlab/List/2',
+      },
       provide: {
         canUpdate: true,
         rootPath: '/',
@@ -129,6 +133,14 @@ describe('EpicBoardContentSidebar', () => {
     });
 
     expect(wrapper.findComponent(SidebarAncestorsWidget).exists()).toBe(true);
+  });
+
+  it('does not render dates widgets when work item epic FF is on', () => {
+    createComponent({
+      glFeatures: { workItemEpics: true },
+    });
+
+    expect(wrapper.findAllComponents(SidebarDateWidget)).toHaveLength(0);
   });
 
   describe('when we emit close', () => {

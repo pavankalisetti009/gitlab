@@ -81,6 +81,9 @@ export default {
     apolloClient() {
       return this.$apollo.provider.defaultClient;
     },
+    showDatesWidgets() {
+      return !this.glFeatures.workItemEpics;
+    },
   },
   methods: {
     async handleClose() {
@@ -174,6 +177,7 @@ export default {
       <template #default>
         <board-sidebar-title :active-item="activeBoardCard" data-testid="sidebar-title" />
         <sidebar-date-widget
+          v-if="showDatesWidgets"
           :iid="activeBoardCard.iid"
           :full-path="fullPath"
           date-type="startDate"
@@ -181,6 +185,7 @@ export default {
           :can-inherit="true"
         />
         <sidebar-date-widget
+          v-if="showDatesWidgets"
           :iid="activeBoardCard.iid"
           :full-path="fullPath"
           date-type="dueDate"

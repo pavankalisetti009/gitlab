@@ -27,7 +27,7 @@ RSpec.shared_examples 'scan passed' do
     it 'lists all blobs of a repository' do
       expect(repository).to receive(:list_all_blobs)
         .with(
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           dynamic_timeout: kind_of(Float),
           ignore_alternate_object_directories: true
         )
@@ -67,7 +67,7 @@ RSpec.shared_examples 'scan passed' do
       expect(repository).to receive(:list_blobs)
         .with(
           ['--not', '--all', '--not'] + changes.pluck(:newrev),
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           with_paths: false,
           dynamic_timeout: kind_of(Float)
         )
@@ -144,7 +144,7 @@ RSpec.shared_examples 'scan detected secrets' do
     it 'lists all blobs of a repository' do
       expect(repository).to receive(:list_all_blobs)
         .with(
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           dynamic_timeout: kind_of(Float),
           ignore_alternate_object_directories: true
         )
@@ -184,7 +184,7 @@ RSpec.shared_examples 'scan detected secrets' do
       expect(repository).to receive(:list_blobs)
         .with(
           ['--not', '--all', '--not'] + changes.pluck(:newrev),
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           with_paths: false,
           dynamic_timeout: kind_of(Float)
         )
@@ -404,7 +404,7 @@ RSpec.shared_examples 'scan detected secrets' do
       create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB") # gitleaks:allow
     end
 
-    let_it_be(:commit_with_same_blob) do
+    let_it_be(:another_new_commit) do
       create_commit(
         { '.env' => "SECRET=glpat-JUST20LETTERSANDNUMB" }, # gitleaks:allow
         'Same commit different message'
@@ -432,21 +432,21 @@ RSpec.shared_examples 'scan detected secrets' do
           name: '.env',
           path: '.env',
           flat_path: '.env',
-          commit_id: commit_with_same_blob
+          commit_id: another_new_commit
         )
       ]
     end
 
     let(:changes) do
       [
-        { oldrev: initial_commit, newrev: commit_with_same_blob, ref: 'refs/heads/master' }
+        { oldrev: initial_commit, newrev: another_new_commit, ref: 'refs/heads/master' }
       ]
     end
 
     let(:commits) do
       [
         Gitlab::Git::Commit.find(repository, new_commit),
-        Gitlab::Git::Commit.find(repository, commit_with_same_blob)
+        Gitlab::Git::Commit.find(repository, another_new_commit)
       ]
     end
 
@@ -474,7 +474,7 @@ RSpec.shared_examples 'scan detected secrets' do
 
     before do
       allow(repository).to receive(:new_commits)
-        .with([commit_with_same_blob])
+        .with([another_new_commit])
         .and_return(commits)
     end
 
@@ -497,7 +497,7 @@ RSpec.shared_examples 'scan detected secrets' do
         .and_call_original
 
       expect(::Gitlab::Git::Tree).to receive(:tree_entries)
-        .with(**expected_tree_args.merge(sha: commit_with_same_blob))
+        .with(**expected_tree_args.merge(sha: another_new_commit))
         .once
         .and_return([tree_entries, gitaly_pagination_cursor])
         .and_call_original
@@ -684,7 +684,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         ),
         Gitlab::SecretDetection::Finding.new(
           timed_out_blob_reference,
-          Gitlab::SecretDetection::Status::BLOB_TIMEOUT
+          Gitlab::SecretDetection::Status::PAYLOAD_TIMEOUT
         ),
         Gitlab::SecretDetection::Finding.new(
           failed_to_scan_blob_reference,
@@ -732,7 +732,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
     it 'lists all blobs of a repository' do
       expect(repository).to receive(:list_all_blobs)
         .with(
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           dynamic_timeout: kind_of(Float),
           ignore_alternate_object_directories: true
         )
@@ -794,7 +794,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       expect(repository).to receive(:list_blobs)
         .with(
           ['--not', '--all', '--not'] + changes.pluck(:newrev),
-          bytes_limit: Gitlab::Checks::SecretsCheck::BLOB_BYTES_LIMIT + 1,
+          bytes_limit: Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
           with_paths: false,
           dynamic_timeout: kind_of(Float)
         )
@@ -934,7 +934,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
           ),
           Gitlab::SecretDetection::Finding.new(
             timed_out_blob_reference,
-            Gitlab::SecretDetection::Status::BLOB_TIMEOUT
+            Gitlab::SecretDetection::Status::PAYLOAD_TIMEOUT
           ),
           Gitlab::SecretDetection::Finding.new(
             failed_to_scan_blob_reference,
@@ -1135,6 +1135,8 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
       push_options: Gitlab::PushOptions.new(["secret_push_protection.skip_all"])
     )
   end
+
+  subject(:secrets_check) { described_class.new(changes_access) }
 
   let_it_be(:new_commit) do
     create_commit(
