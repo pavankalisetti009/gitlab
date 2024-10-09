@@ -11,10 +11,14 @@ module GitlabSubscriptions
 
       def execute_trial_request
         if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
-          trial_user_information.merge!(with_add_on: true, add_on_name: 'duo_enterprise')
+          trial_user_information.merge!(add_on_name: 'duo_enterprise', trial_type: trial_type)
         end
 
         client.generate_trial(uid: uid, trial_user: trial_user_information)
+      end
+
+      def trial_type
+        namespace.free_plan? ? :ultimate_with_gitlab_duo_enterprise : :ultimate_on_premium_with_gitlab_duo_enterprise
       end
 
       def after_success_hook
