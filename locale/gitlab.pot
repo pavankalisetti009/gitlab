@@ -50558,9 +50558,6 @@ msgstr ""
 msgid "SecurityReports|Security dashboard"
 msgstr ""
 
-msgid "SecurityReports|Security reports can only be accessed by authorized users."
-msgstr ""
-
 msgid "SecurityReports|Security scans have run"
 msgstr ""
 
@@ -50690,12 +50687,6 @@ msgid "SecurityReports|Vulnerability report"
 msgstr ""
 
 msgid "SecurityReports|Warning parsing security reports"
-msgstr ""
-
-msgid "SecurityReports|You do not have sufficient permissions to access this report"
-msgstr ""
-
-msgid "SecurityReports|You must sign in as an authorized user to see this report"
 msgstr ""
 
 msgid "SecurityReports|scanned resources"
