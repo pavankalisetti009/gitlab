@@ -21,4 +21,15 @@ class InstanceSecurityDashboardPolicy < BasePolicy
     enable :read_cluster # Deprecated as certificate-based cluster integration (`Clusters::Cluster`).
     enable :read_cluster_agent
   end
+
+  condition(:resolve_vulnerability_allowed) do
+    ::Gitlab::Llm::FeatureAuthorizer.new(
+      container: subject,
+      feature_name: :resolve_vulnerability
+    ).allowed?
+  end
+
+  rule { can?(:read_security_resource) & resolve_vulnerability_allowed }.policy do
+    enable :resolve_vulnerability_with_ai
+  end
 end

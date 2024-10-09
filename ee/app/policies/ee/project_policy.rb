@@ -25,6 +25,12 @@ module EE
 
       condition(:compliance_framework_available) { @subject.feature_available?(:compliance_framework, @user) }
 
+      with_scope :subject
+      condition(:project_level_compliance_dashboard_enabled) { @subject.feature_available?(:project_level_compliance_dashboard) }
+
+      with_scope :subject
+      condition(:project_level_compliance_violations_report_enabled) { @subject.feature_available?(:project_level_compliance_violations_report) }
+
       with_scope :global
       condition(:is_development) { Rails.env.development? }
 
@@ -734,6 +740,14 @@ module EE
 
       rule { compliance_framework_available & can?(:owner_access) }.enable :admin_compliance_framework
 
+      rule { (admin | owner | auditor) & project_level_compliance_dashboard_enabled }.policy do
+        enable :read_compliance_dashboard
+      end
+
+      rule { (admin | owner | auditor) & project_level_compliance_violations_report_enabled }.policy do
+        enable :read_compliance_violations_report
+      end
+
       rule { status_page_available & can?(:owner_access) }.enable :mark_issue_for_publication
       rule { status_page_available & can?(:developer_access) }.enable :publish_status_page
 
@@ -794,7 +808,12 @@ module EE
       end
 
       rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
+        enable :read_compliance_dashboard
         enable :admin_compliance_framework
+      end
+
+      rule { custom_role_enables_admin_compliance_framework & project_level_compliance_violations_report_enabled }.policy do
+        enable :read_compliance_violations_report
       end
 
       rule { custom_role_enables_manage_deploy_tokens }.policy do

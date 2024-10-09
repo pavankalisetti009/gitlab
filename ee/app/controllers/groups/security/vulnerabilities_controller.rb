@@ -14,6 +14,10 @@ module Groups
       before_action do
         push_frontend_feature_flag(:vulnerability_report_owasp_2021, @group)
         push_frontend_feature_flag(:owasp_top_10_null_filtering, @group)
+        push_frontend_feature_flag(:vulnerability_report_vr_badge, @group, type: :wip)
+        push_frontend_feature_flag(:vulnerability_report_vr_filter, @group, type: :wip)
+
+        push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
       end
 
       def index

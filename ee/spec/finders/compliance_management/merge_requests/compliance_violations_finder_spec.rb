@@ -33,88 +33,114 @@ RSpec.describe ComplianceManagement::MergeRequests::ComplianceViolationsFinder, 
   let(:params) { {} }
 
   before do
-    stub_licensed_features(group_level_compliance_dashboard: true, group_level_compliance_violations_report: true)
+    stub_licensed_features(group_level_compliance_violations_report: true, project_level_compliance_violations_report: true)
     merge_request.metrics.update!(merged_at: 3.days.ago)
     merge_request2.metrics.update!(merged_at: 1.day.ago)
   end
 
-  subject(:finder) { described_class.new(current_user: current_user, group: group, params: params) }
-
   describe '#execute' do
-    subject { finder.execute }
+    subject { described_class.new(current_user: current_user, project_or_group: obj, params: params).execute }
 
-    context 'when the user is unauthorized' do
-      it 'returns nil' do
-        expect(subject).to be_nil
-      end
-    end
-
-    context 'when the user is authorized' do
-      before do
-        group.add_owner(current_user)
-      end
-
-      context 'without any filters or sorting' do
-        it 'finds all the compliance violations' do
-          expect(subject).to contain_exactly(compliance_violation, compliance_violation2)
+    shared_examples_for 'compliance violations finder' do
+      context 'when the user is unauthorized' do
+        it 'returns nil' do
+          expect(subject).to be_nil
         end
       end
 
-      context 'filtering the results' do
-        context 'when given an array of project IDs' do
-          let(:params) { { project_ids: [project.id] } }
+      context 'when the user is authorized' do
+        before do
+          obj.add_owner(current_user)
+        end
 
-          it 'finds the filtered compliance violations' do
-            expect(subject).to contain_exactly(compliance_violation)
+        context 'without any filters or sorting' do
+          it 'finds all the compliance violations' do
+            expect(subject).to match_array(filter_results.call([compliance_violation, compliance_violation2]))
           end
         end
 
-        context 'when given merged at dates' do
-          where(:merged_params, :result) do
-            { merged_before: 2.days.ago } | lazy { compliance_violation }
-            { merged_after: 2.days.ago } | lazy { compliance_violation2 }
-            { merged_before: Date.current, merged_after: 2.days.ago } | lazy { compliance_violation2 }
-          end
-
-          with_them do
-            let(:params) { merged_params }
+        context 'filtering the results' do
+          context 'when given an array of project IDs' do
+            let(:params) { { project_ids: [project.id] } }
 
             it 'finds the filtered compliance violations' do
-              expect(subject).to contain_exactly(result)
+              expect(subject).to match_array(filter_results.call([compliance_violation]))
+            end
+          end
+
+          context 'when given merged at dates' do
+            where(:merged_params, :result) do
+              { merged_before: 2.days.ago } | lazy { compliance_violation }
+              { merged_after: 2.days.ago } | lazy { compliance_violation2 }
+              { merged_before: Date.current, merged_after: 2.days.ago } | lazy { compliance_violation2 }
+            end
+
+            with_them do
+              let(:params) { merged_params }
+
+              it 'finds the filtered compliance violations' do
+                expect(subject).to match_array(filter_results.call([result]))
+              end
+            end
+          end
+
+          context 'when given a target branch' do
+            let(:params) { { target_branch: merge_request.target_branch } }
+
+            it 'finds the filtered compliance violations' do
+              expect(subject).to match_array(filter_results.call([compliance_violation]))
             end
           end
         end
 
-        context 'when given a target branch' do
-          let(:params) { { target_branch: merge_request.target_branch } }
+        context 'sorting the results' do
+          where(:direction, :result) do
+            'SEVERITY_LEVEL_ASC' | lazy { [compliance_violation, compliance_violation2] }
+            'SEVERITY_LEVEL_DESC' | lazy { [compliance_violation2, compliance_violation] }
+            'VIOLATION_REASON_ASC' | lazy { [compliance_violation, compliance_violation2] }
+            'VIOLATION_REASON_DESC' | lazy { [compliance_violation2, compliance_violation] }
+            'MERGE_REQUEST_TITLE_ASC' | lazy { [compliance_violation, compliance_violation2] }
+            'MERGE_REQUEST_TITLE_DESC' | lazy { [compliance_violation2, compliance_violation] }
+            'MERGED_AT_ASC' | lazy { [compliance_violation, compliance_violation2] }
+            'MERGED_AT_DESC' | lazy { [compliance_violation2, compliance_violation] }
+            'UNKNOWN_SORT' | lazy { [compliance_violation, compliance_violation2] }
+          end
 
-          it 'finds the filtered compliance violations' do
-            expect(subject).to contain_exactly(compliance_violation)
+          with_them do
+            let(:params) { { sort: direction } }
+
+            it 'finds the filtered compliance violations' do
+              expect(subject).to match_array(filter_results.call(result))
+            end
           end
         end
       end
+    end
 
-      context 'sorting the results' do
-        where(:direction, :result) do
-          'SEVERITY_LEVEL_ASC' | lazy { [compliance_violation, compliance_violation2] }
-          'SEVERITY_LEVEL_DESC' | lazy { [compliance_violation2, compliance_violation] }
-          'VIOLATION_REASON_ASC' | lazy { [compliance_violation, compliance_violation2] }
-          'VIOLATION_REASON_DESC' | lazy { [compliance_violation2, compliance_violation] }
-          'MERGE_REQUEST_TITLE_ASC' | lazy { [compliance_violation, compliance_violation2] }
-          'MERGE_REQUEST_TITLE_DESC' | lazy { [compliance_violation2, compliance_violation] }
-          'MERGED_AT_ASC' | lazy { [compliance_violation, compliance_violation2] }
-          'MERGED_AT_DESC' | lazy { [compliance_violation2, compliance_violation] }
-          'UNKNOWN_SORT' | lazy { [compliance_violation, compliance_violation2] }
+    context 'when invoked with a group' do
+      let(:obj) { group }
+      let(:filter_results) { ->(violations) { violations } }
+
+      it_behaves_like 'compliance violations finder'
+
+      context 'when user is authorized when filtering and given an array of project IDs' do
+        before do
+          obj.add_owner(current_user)
         end
 
-        with_them do
-          let(:params) { { sort: direction } }
+        let(:params) { { project_ids: [project.id] } }
 
-          it 'finds the filtered compliance violations' do
-            expect(subject).to match_array(result)
-          end
+        it 'finds the filtered compliance violations' do
+          expect(subject).to match_array(filter_results.call([compliance_violation]))
         end
       end
+    end
+
+    context 'when invoked with a project' do
+      let(:obj) { project }
+      let(:filter_results) { ->(violations) { violations.filter { |v| v.target_project_id == project.id } } }
+
+      it_behaves_like 'compliance violations finder'
     end
   end
 end

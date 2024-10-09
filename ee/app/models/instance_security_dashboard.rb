@@ -2,8 +2,10 @@
 
 class InstanceSecurityDashboard
   extend ActiveModel::Naming
+  include Gitlab::Utils::StrongMemoize
 
   delegate :full_path, to: :user
+  delegate :root_ancestor, to: :duo_enabled_project, allow_nil: true
 
   attr_reader :user
 
@@ -11,6 +13,11 @@ class InstanceSecurityDashboard
     @project_ids = project_ids
     @user = user
   end
+
+  def duo_features_enabled
+    duo_enabled_project.present?
+  end
+  alias_method :duo_features_enabled?, :duo_features_enabled
 
   def project_ids_with_security_reports
     users_projects_with_security_reports.pluck(:project_id)
@@ -63,6 +70,15 @@ class InstanceSecurityDashboard
   private
 
   attr_reader :project_ids
+
+  def duo_enabled_project
+    projects
+      .includes(:project_setting)
+      .joins(:project_setting)
+      .merge(ProjectSetting.duo_features_set(true))
+      .first
+  end
+  strong_memoize_attr :duo_enabled_project
 
   def users_projects_with_security_reports
     return visible_users_security_dashboard_projects if project_ids.empty?

@@ -29,6 +29,33 @@ RSpec.describe Security::VulnerabilitiesController, feature_category: :vulnerabi
         it_behaves_like 'tracks govern usage event', 'users_visiting_security_vulnerabilities' do
           let(:request) { subject }
         end
+
+        shared_examples 'resolveVulnerabilityWithAi ability' do |allowed|
+          let(:request) { subject }
+
+          before do
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow_next_instance_of(InstanceSecurityDashboard) do |dashboard|
+              allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai,
+                dashboard).and_return(allowed)
+            end
+            request
+          end
+
+          render_views
+
+          it "sets the frontend ability to #{allowed}" do
+            expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: allowed)
+          end
+        end
+
+        context "when resolveVulnerabilityWithAi ability is allowed" do
+          it_behaves_like 'resolveVulnerabilityWithAi ability', true
+        end
+
+        context "when resolveVulnerabilityWithAi ability is not allowed" do
+          it_behaves_like 'resolveVulnerabilityWithAi ability', false
+        end
       end
 
       context 'is disabled' do
