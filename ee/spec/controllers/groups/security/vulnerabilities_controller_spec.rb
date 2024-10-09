@@ -48,5 +48,29 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
         let(:request) { subject }
       end
     end
+
+    shared_examples 'resolveVulnerabilityWithAi ability' do |allowed|
+      let(:request) { subject }
+
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, group).and_return(allowed)
+        request
+      end
+
+      render_views
+
+      it "sets the frontend ability to #{allowed}" do
+        expect(response.body).to have_pushed_frontend_ability(resolveVulnerabilityWithAi: allowed)
+      end
+    end
+
+    context "when resolveVulnerabilityWithAi ability is allowed" do
+      it_behaves_like 'resolveVulnerabilityWithAi ability', true
+    end
+
+    context "when resolveVulnerabilityWithAi ability is not allowed" do
+      it_behaves_like 'resolveVulnerabilityWithAi ability', false
+    end
   end
 end

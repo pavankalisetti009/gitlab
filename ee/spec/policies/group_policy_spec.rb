@@ -1651,6 +1651,49 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'resolve_vulnerability_with_ai' do
+    before do
+      stub_licensed_features(
+        security_dashboard: true,
+        ai_features: true
+      )
+    end
+
+    context 'when user cannot :read_security_resource' do
+      let(:current_user) { guest }
+
+      where(:duo_features_enabled, :cs_matcher) do
+        true  | be_disallowed(:resolve_vulnerability_with_ai)
+        false | be_disallowed(:resolve_vulnerability_with_ai)
+      end
+
+      with_them do
+        before do
+          group.namespace_settings.update!(duo_features_enabled: duo_features_enabled)
+        end
+
+        it { is_expected.to cs_matcher }
+      end
+    end
+
+    context 'when user can?(:read_security_resource)' do
+      let(:current_user) { developer }
+
+      where(:duo_features_enabled, :cs_matcher) do
+        true  | be_allowed(:resolve_vulnerability_with_ai)
+        false | be_disallowed(:resolve_vulnerability_with_ai)
+      end
+
+      with_them do
+        before do
+          group.namespace_settings.update!(duo_features_enabled: duo_features_enabled)
+        end
+
+        it { is_expected.to cs_matcher }
+      end
+    end
+  end
+
   describe 'admin_vulnerability' do
     before do
       stub_licensed_features(security_dashboard: true)
