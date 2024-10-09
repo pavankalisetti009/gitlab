@@ -6,6 +6,9 @@ module RemoteDevelopment
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
+    include IgnorableColumns
+
+    ignore_column :dns_zone, remove_with: '17.5', remove_after: '2024-10-11'
 
     ignore_column :config_version, remove_with: '17.6', remove_after: '2024-10-18'
 
@@ -39,10 +42,6 @@ module RemoteDevelopment
     end
     validate :validate_agent_config_enabled, if: ->(workspace) do
       workspace.new_record? && workspaces_agent_config
-    end
-
-    validate :validate_dns_zone_matches_workspaces_agent_config_dns_zone, if: ->(workspace) do
-      workspace.desired_state != TERMINATED && workspaces_agent_config
     end
 
     validate :enforce_permanent_termination
@@ -150,7 +149,7 @@ module RemoteDevelopment
     end
 
     def url
-      URI::HTTPS.build(host: "#{url_prefix}.#{dns_zone}", query: url_query_string).to_s
+      URI::HTTPS.build(host: "#{url_prefix}.#{workspaces_agent_config.dns_zone}", query: url_query_string).to_s
     end
 
     def devfile_web_url
@@ -202,15 +201,6 @@ module RemoteDevelopment
       return true if agent.workspaces_agent_config.present?
 
       errors.add(:agent, _("must have an associated workspaces agent config"))
-      false
-    end
-
-    def validate_dns_zone_matches_workspaces_agent_config_dns_zone
-      return if workspaces_agent_config.dns_zone == dns_zone
-
-      user_friendly_class_name = workspaces_agent_config.class.name.demodulize.underscore.humanize.downcase
-      msg = 'for Workspace must match the dns_zone of the associated %{class_name}'
-      errors.add(:dns_zone, format(_(msg), { class_name: user_friendly_class_name }))
       false
     end
 

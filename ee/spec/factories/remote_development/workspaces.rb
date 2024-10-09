@@ -59,7 +59,6 @@ FactoryBot.define do
       user = workspace.user
       workspace.project.add_developer(user)
       workspace.agent.project.add_developer(user)
-      workspace.dns_zone ||= workspace.agent.workspaces_agent_config&.dns_zone || 'example.com'
       workspace.url_prefix ||= "60001-#{workspace.name}"
       workspace.url_query_string ||= "folder=dir%2Ffile"
     end
@@ -80,7 +79,7 @@ FactoryBot.define do
         unless evaluator.without_workspace_variables
           workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables.variables(
             name: workspace.name,
-            dns_zone: workspace.dns_zone,
+            dns_zone: workspace.workspaces_agent_config.dns_zone,
             personal_access_token_value: workspace.personal_access_token.token,
             user_name: workspace.user.name,
             user_email: workspace.user.email,

@@ -16,10 +16,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-    let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
-    let(:max_resources_per_workspace) { agent.workspaces_agent_config.max_resources_per_workspace }
+    let(:egress_ip_rules) { workspace.workspaces_agent_config.network_policy_egress }
+    let(:max_resources_per_workspace) { workspace.workspaces_agent_config.max_resources_per_workspace }
     let(:default_resources_per_workspace_container) do
-      agent.workspaces_agent_config.default_resources_per_workspace_container
+      workspace.workspaces_agent_config.default_resources_per_workspace_container
     end
 
     let(:allow_privilege_escalation) { agent.remote_development_agent_config.allow_privilege_escalation }

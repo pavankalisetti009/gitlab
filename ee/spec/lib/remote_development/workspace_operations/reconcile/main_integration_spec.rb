@@ -26,8 +26,32 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     end
   end
 
+  shared_examples 'versioned workspaces_agent_configs behavior' do
+    let(:new_dns_zone) { 'new.dns.zone.me' }
+
+    before do
+      workspaces_agent_config.update!(dns_zone: new_dns_zone)
+    end
+
+    it 'uses versioned config values' do
+      config_to_apply =
+        YAML.load_stream(response.dig(:payload, :workspace_rails_infos, 0, :config_to_apply))
+
+      service = config_to_apply.find { |config| config["kind"] == "Service" }
+      host_template_annotation = service.dig("metadata", "annotations", "workspaces.gitlab.com/host-template")
+
+      expect(host_template_annotation).to include(dns_zone)
+      expect(host_template_annotation).not_to include(new_dns_zone)
+    end
+  end
+
+  let_it_be(:dns_zone) { 'workspaces.localdev.me' }
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
+  let_it_be(:agent, refind: true) { create(:cluster_agent) }
+  let_it_be(:workspaces_agent_config, refind: true) do
+    create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent)
+  end
+
   let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
   let(:max_resources_per_workspace) { agent.workspaces_agent_config.max_resources_per_workspace }
   let(:default_resources_per_workspace_container) do
@@ -58,6 +82,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   before do
     allow(logger).to receive(:debug)
+    agent.reload
   end
 
   context 'when update_type is full' do
@@ -68,19 +93,26 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       expect(response.fetch(:payload).keys).to contain_exactly(:settings, :workspace_rails_infos)
     end
 
-    it 'updates workspace record and returns proper response_payload' do
-      create(:workspace, agent: agent, user: user, force_include_all_resources: false)
-      expect(response[:message]).to be_nil
-      workspace_rails_infos = response.fetch(:payload).fetch(:workspace_rails_infos)
-      expect(workspace_rails_infos.length).to eq(1)
-      workspace_rails_info = workspace_rails_infos.first
-
-      # NOTE: We don't care about any specific expectations, just that the existing workspace
-      #       still has a config returned in the rails_info response even though it was not sent by the agent.
-      expect(workspace_rails_info[:config_to_apply]).not_to be_nil
-    end
-
     it_behaves_like 'includes settings in payload'
+
+    context 'when new unprovisioned workspace exists in database"' do
+      before do
+        create(:workspace, agent: agent, user: user, force_include_all_resources: false)
+      end
+
+      it 'updates workspace record and returns proper response_payload' do
+        expect(response[:message]).to be_nil
+        workspace_rails_infos = response.fetch(:payload).fetch(:workspace_rails_infos)
+        expect(workspace_rails_infos.length).to eq(1)
+        workspace_rails_info = workspace_rails_infos.first
+
+        # NOTE: We don't care about any specific expectations, just that the existing workspace
+        #       still has a config returned in the rails_info response even though it was not sent by the agent.
+        expect(workspace_rails_info[:config_to_apply]).not_to be_nil
+      end
+
+      it_behaves_like 'versioned workspaces_agent_configs behavior'
+    end
   end
 
   context 'when update_type is partial' do
@@ -592,6 +624,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       end
 
       it_behaves_like 'includes settings in payload'
+      it_behaves_like 'versioned workspaces_agent_configs behavior'
     end
   end
 end

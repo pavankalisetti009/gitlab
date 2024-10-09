@@ -91,7 +91,6 @@ module RemoteDevelopment
           uri = URI::HTTPS.build(host: host, query: query)
 
           workspace.url_prefix = uri.hostname.gsub(".#{agent_dns_zone}", '')
-          workspace.dns_zone = agent_dns_zone
           workspace.url_query_string = uri.query
         end
         private_class_method :set_workspace_url
