@@ -1837,6 +1837,62 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     it_behaves_like 'prevents CI cancellation ability'
   end
 
+  describe 'project level compliance features' do
+    shared_examples 'project level compliance feature' do |feature, permission|
+      context 'when enabled' do
+        before do
+          stub_licensed_features({ feature => true })
+        end
+
+        context 'when user is eligible for access' do
+          where(role: %w[owner auditor])
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to be_allowed(permission) }
+          end
+        end
+
+        context 'allows admin', :enable_admin_mode do
+          let(:current_user) { admin }
+
+          it { is_expected.to be_allowed(permission) }
+        end
+      end
+
+      context 'when disabled' do
+        before do
+          stub_licensed_features({ feature => false })
+        end
+
+        context 'when user is eligible for access' do
+          where(role: %w[owner auditor])
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to be_disallowed(permission) }
+          end
+        end
+
+        context 'disallows admin', :enable_admin_mode do
+          let(:current_user) { admin }
+
+          it { is_expected.to be_disallowed(permission) }
+        end
+      end
+    end
+
+    describe 'project level compliance dashboard' do
+      it_behaves_like 'project level compliance feature', :project_level_compliance_dashboard, :read_compliance_dashboard
+    end
+
+    describe 'group level compliance violations report' do
+      it_behaves_like 'project level compliance feature', :project_level_compliance_violations_report, :read_compliance_violations_report
+    end
+  end
+
   describe ':compliance_framework_available' do
     let(:policy) { :admin_compliance_framework }
 
