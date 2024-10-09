@@ -113,7 +113,7 @@ RSpec.describe 'Project', feature_category: :source_code_management do
         expect(page).to have_css('.custom-project-templates .gl-pagination')
         expect(page).not_to have_css(last_project)
 
-        find('.js-next-button a').click
+        find_by_testid('kaminari-pagination-next').click
 
         wait_for_requests
 
