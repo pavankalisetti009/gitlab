@@ -37,16 +37,6 @@ class TrialRegistrationsController < RegistrationsController
     redirect_to new_trial_path(request.query_parameters)
   end
 
-  override :after_sign_up_path
-  def after_sign_up_path
-    ::Gitlab::Utils.add_url_parameters(super, { trial: true })
-  end
-
-  override :onboarding_first_step_path
-  def onboarding_first_step_path
-    ::Gitlab::Utils.add_url_parameters(super, { trial: true })
-  end
-
   override :onboarding_status_params
   def onboarding_status_params
     super.merge(trial: true)
@@ -54,7 +44,7 @@ class TrialRegistrationsController < RegistrationsController
 
   override :sign_up_params_attributes
   def sign_up_params_attributes
-    [:first_name, :last_name, :username, :email, :password]
+    [:first_name, :last_name, :username, :email, :password, :onboarding_status_email_opt_in]
   end
 
   override :resource

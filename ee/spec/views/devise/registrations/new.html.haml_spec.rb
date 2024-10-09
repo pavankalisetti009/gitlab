@@ -7,10 +7,13 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
   let(:arkose_labs_api_key) { "api-key" }
   let(:arkose_labs_domain) { "domain" }
   let(:resource) { Users::RegistrationsBuildService.new(nil, {}).execute }
+  let(:params) { controller.params }
+  let(:onboarding_status) { ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, {}, resource) }
 
   subject { render && rendered }
 
   before do
+    allow(view).to receive(:onboarding_status).and_return(onboarding_status)
     allow(view).to receive(:resource).and_return(resource)
     allow(view).to receive(:resource_name).and_return(:user)
 
@@ -43,7 +46,6 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
   end
 
   context 'for omniauth provider buttons' do
-    # add action path for non omniauth too
     before do
       allow(view).to receive(:providers).and_return([:github, :google_oauth2])
     end
@@ -52,11 +54,13 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
     it { is_expected.to have_css('form[action="/users/auth/google_oauth2"]') }
 
     context 'when saas onboarding feature is available' do
+      let(:params) do
+        controller.params.merge(glm_content: '_glm_content_', glm_source: '_glm_source_')
+      end
+
       let(:action_params) { 'glm_content=_glm_content_&glm_source=_glm_source_' }
 
       before do
-        controller.params[:glm_content] = '_glm_content_'
-        controller.params[:glm_source] = '_glm_source_'
         stub_saas_features(onboarding: true)
       end
 

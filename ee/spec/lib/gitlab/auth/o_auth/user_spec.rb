@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::OAuth::User do
+RSpec.describe Gitlab::Auth::OAuth::User, feature_category: :system_access do
   include LdapHelpers
 
   describe 'login through kerberos with linkable LDAP user' do
@@ -107,24 +107,68 @@ RSpec.describe Gitlab::Auth::OAuth::User do
     end
   end
 
-  describe '#build_new_user', feature_category: :insider_threat do
-    subject(:oauth_user) { described_class.new(OmniAuth::AuthHash.new(info: {})) }
+  describe '#build_new_user' do
+    let(:extra_params) { {} }
 
-    context 'when identity verification is not enabled' do
-      it 'confirms the user' do
-        expect(oauth_user.gl_user).to be_confirmed
-      end
-    end
+    subject(:oauth_user) { described_class.new(OmniAuth::AuthHash.new(info: {}), extra_params) }
 
-    context 'when identity verification is enabled' do
-      before do
-        allow_next_instance_of(User) do |user|
-          allow(user).to receive(:signup_identity_verification_enabled?).and_return(true)
+    context 'for identity verification concerns', feature_category: :insider_threat do
+      context 'when identity verification is not enabled' do
+        it 'confirms the user' do
+          expect(oauth_user.gl_user).to be_confirmed
         end
       end
 
-      it 'does not confirm the user' do
-        expect(oauth_user.gl_user).not_to be_confirmed
+      context 'when identity verification is enabled' do
+        before do
+          allow_next_instance_of(User) do |user|
+            allow(user).to receive(:signup_identity_verification_enabled?).and_return(true)
+          end
+        end
+
+        it 'does not confirm the user' do
+          expect(oauth_user.gl_user).not_to be_confirmed
+        end
+      end
+    end
+
+    context 'for onboarding concerns', feature_category: :onboarding do
+      let(:extra_params) { { onboarding_status_email_opt_in: true } }
+
+      context 'when the saas feature onboarding is not available' do
+        it 'does not set the onboarding status email opt in' do
+          expect(oauth_user.gl_user.onboarding_status_email_opt_in).to be_nil
+        end
+      end
+
+      context 'when the saas feature onboarding is available' do
+        before do
+          stub_saas_features(onboarding: true)
+        end
+
+        context 'when onboarding_status_email_opt_in is provided as boolean' do
+          context 'when it is passed as true' do
+            it 'sets to true' do
+              expect(oauth_user.gl_user.onboarding_status_email_opt_in).to be(true)
+            end
+          end
+
+          context 'when it is passed as false' do
+            let(:extra_params) { { onboarding_status_email_opt_in: false } }
+
+            it 'sets to false' do
+              expect(oauth_user.gl_user.onboarding_status_email_opt_in).to be(false)
+            end
+          end
+        end
+
+        context 'when onboarding_status_email_opt_in is not a ruby boolean' do
+          let(:extra_params) { { onboarding_status_email_opt_in: 'true' } }
+
+          it 'does not set the onboarding_status_email_opt_in' do
+            expect(oauth_user.gl_user.onboarding_status_email_opt_in).to be_nil
+          end
+        end
       end
     end
   end

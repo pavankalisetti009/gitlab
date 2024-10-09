@@ -44,7 +44,7 @@
           .gl-flex.gl-gap-3.gl-justify-center
             - popular_enabled_button_based_providers.each do |provider|
               = render 'devise/shared/omniauth_provider_button',
-                href: omniauth_authorize_path(:user, provider, ::Onboarding::Status.registration_path_params(params: params, extra_params: { trial: true })),
+                href: omniauth_authorize_path(:user, provider, onboarding_status.trial_registration_omniauth_params),
                 provider: provider,
                 classes: 'js-track-omni-auth',
                 data: { provider: provider, track_action: "#{provider}_sso", track_label: preregistration_tracking_label }

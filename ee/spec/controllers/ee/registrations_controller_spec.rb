@@ -116,11 +116,10 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
   end
 
   describe '#create', :clean_gitlab_redis_rate_limiting do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:base_user_params) { build_stubbed(:user).slice(:first_name, :last_name, :username, :password) }
     let_it_be(:new_user_email) { 'new@user.com' }
-    let_it_be(:user_params) { { user: base_user_params.merge(email: new_user_email) } }
+    let(:base_user_params) { build_stubbed(:user).slice(:first_name, :last_name, :username, :password) }
+    let(:extra_params) { {} }
+    let(:user_params) { { user: base_user_params.merge(email: new_user_email).merge(extra_params) } }
     let(:params) { {} }
     let(:session) { {} }
 
@@ -194,14 +193,19 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
     end
 
     context 'for onboarding concerns' do
+      let(:extra_params) { { onboarding_status_email_opt_in: 'true' } }
       let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
+      let(:registration_params) { { **glm_params, bogus: 'bogus' } }
       let(:redirect_params) { glm_params }
+      let(:params) { registration_params }
 
       before do
         stub_application_setting(require_admin_approval_after_user_signup: false)
       end
 
-      it_behaves_like EE::Onboarding::Redirectable, 'free'
+      context 'with free' do
+        it_behaves_like EE::Onboarding::Redirectable, 'free'
+      end
 
       context 'with invited by email' do
         before_all do
@@ -241,6 +245,8 @@ RSpec.describe RegistrationsController, :with_current_organization, feature_cate
     end
 
     context 'when identity verification is enabled', :saas do
+      using RSpec::Parameterized::TableSyntax
+
       let_it_be(:free_group) { create(:group) }
       let_it_be(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:ultimate_trial_group) { create(:group_with_plan, plan: :ultimate_trial_plan) }

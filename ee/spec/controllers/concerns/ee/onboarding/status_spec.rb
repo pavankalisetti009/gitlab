@@ -36,7 +36,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
   describe '.registration_path_params' do
     let(:params) { ActionController::Parameters.new(glm_source: 'source', glm_content: 'content', extra: 'param') }
-    let(:extra_params) { { another_extra: 'param' } }
     let(:onboarding_enabled) { true }
 
     before do
@@ -49,26 +48,54 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       let(:expected_params) { { glm_source: 'source', glm_content: 'content' } }
 
       it { is_expected.to eq(expected_params.stringify_keys) }
-
-      context 'when extra params are passed' do
-        let(:combined_params) { expected_params.merge(extra_params).stringify_keys }
-
-        subject { described_class.registration_path_params(params: params, extra_params: extra_params) }
-
-        it { is_expected.to eq(combined_params) }
-      end
     end
 
     context 'when onboarding is disabled' do
       let(:onboarding_enabled) { false }
 
       it { is_expected.to eq({}) }
+    end
+  end
 
-      context 'when extra params are passed' do
-        subject { described_class.registration_path_params(params: params, extra_params: extra_params) }
+  describe '#registration_omniauth_params' do
+    let(:params) { { glm_source: 'source', glm_content: 'content', extra: 'param' } }
+    let(:onboarding_enabled) { true }
 
-        it { is_expected.to eq({}) }
-      end
+    before do
+      stub_saas_features(onboarding: onboarding_enabled)
+    end
+
+    subject { described_class.new(params, {}, nil).registration_omniauth_params }
+
+    context 'when onboarding is enabled' do
+      it { is_expected.to eq({ glm_source: 'source', glm_content: 'content' }) }
+    end
+
+    context 'when onboarding is disabled' do
+      let(:onboarding_enabled) { false }
+
+      it { is_expected.to eq({}) }
+    end
+  end
+
+  describe '#trial_registration_omniauth_params' do
+    let(:params) { { glm_source: 'source', glm_content: 'content', extra: 'param' } }
+    let(:onboarding_enabled) { true }
+
+    before do
+      stub_saas_features(onboarding: onboarding_enabled)
+    end
+
+    subject { described_class.new(params, {}, nil).trial_registration_omniauth_params }
+
+    context 'when onboarding is enabled' do
+      it { is_expected.to eq({ glm_source: 'source', glm_content: 'content', trial: true }) }
+    end
+
+    context 'when onboarding is disabled' do
+      let(:onboarding_enabled) { false }
+
+      it { is_expected.to eq({ trial: true }) }
     end
   end
 

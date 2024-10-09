@@ -19,7 +19,13 @@ module EE
 
       override :signup_params
       def signup_params
-        super + [:provisioned_by_group_id]
+        base_params = super + [:provisioned_by_group_id]
+
+        return base_params unless ::Onboarding.enabled?
+
+        # TrialRegistrationsController and OmniAuthCallbacksController both pass an onboarding_status_email_opt_in
+        # param so we need to be sure to allow it here.
+        base_params + [:onboarding_status_email_opt_in]
       end
 
       def group

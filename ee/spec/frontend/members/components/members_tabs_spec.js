@@ -81,7 +81,7 @@ describe('MembersTabs', () => {
       const tabs = findTabs();
 
       expect(tabs[0].text()).toBe('Members  10');
-      expect(tabs[1].text()).toBe('Promotions  10');
+      expect(tabs[1].text()).toBe('Role promotions  10');
       expect(tabs[2].text()).toBe('Banned  10');
       expect(findActiveTab().text()).toContain('Members');
     });
@@ -119,7 +119,7 @@ describe('MembersTabs', () => {
     it('shows the export button when the active tab is not the pending promotion tab', async () => {
       await createComponent({ provide: { canExportMembers: true, exportCsvPath: 'foo' } });
       // ensuring the active tab is NOT the pending promotion tab
-      expect(findActiveTab().text()).not.toContain('Promotions');
+      expect(findActiveTab().text()).not.toContain('Role promotions');
       expect(findExportButton().exists()).toBe(true);
     });
 
@@ -129,7 +129,7 @@ describe('MembersTabs', () => {
       await createComponent({ provide: { canExportMembers: true, exportCsvPath: 'foo' } });
       await nextTick();
       // ensure the current tab is the pending promotion tab
-      expect(findActiveTab().text()).toContain('Promotions');
+      expect(findActiveTab().text()).toContain('Role promotions');
 
       // ensure the export button is not shown
       expect(findExportButton().exists()).toBe(false);
