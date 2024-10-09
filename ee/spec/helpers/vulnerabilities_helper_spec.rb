@@ -314,6 +314,10 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
             * Severity: critical
 
+            h3. Identifiers:
+
+            * find_sec_bugs_type-PREDICTABLE_RANDOM
+            * [CWE-259|https://cwe.mitre.org/data/definitions/259.html]
 
             h3. Links:
 
