@@ -5,7 +5,6 @@ require 'spec_helper'
 # rubocop:disable RSpec/ MultipleMemoizedHelpers -- this is a complex model, it requires many helpers for thorough testing
 RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
-  let(:workspace_dns_zone) { agent_config.dns_zone }
   let(:agent_max_hours_before_termination_limit) { 8760 }
   let(:workspaces_agent_config_enabled) { true }
   let(:workspaces_per_user_quota) { 10 }
@@ -39,7 +38,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   subject(:workspace) do
     agent_config # ensure agent_config is created and associated with agent, because it is a let and lazily initialized
     build(
-      :workspace, user: user, agent: agent, project: project, dns_zone: workspace_dns_zone,
+      :workspace, user: user, agent: agent, project: project,
       personal_access_token: personal_access_token, desired_state: desired_state,
       responded_to_agent_at: workspace_timestamps[:responded_to_agent_at],
       desired_state_updated_at: workspace_timestamps[:desired_state_updated_at],
@@ -77,10 +76,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
         expect(workspace.project).to eq(project)
         expect(workspace.agent).to eq(agent)
         expect(workspace.personal_access_token).to eq(personal_access_token)
-        expect(workspace.workspaces_agent_config).to eq(agent.workspaces_agent_config)
         expect(agent.workspaces_agent_config.workspaces.first).to eq(workspace)
         expect(workspace.url_prefix).to eq("60001-#{workspace.name}")
-        expect(workspace.dns_zone).to eq(agent.workspaces_agent_config.dns_zone)
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
       end
@@ -94,7 +91,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
 
   describe '#url' do
     it 'returns calculated url' do
-      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent.workspaces_agent_config.dns_zone}?folder=dir%2Ffile")
+      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent_dns_zone}?folder=dir%2Ffile")
     end
   end
 
@@ -398,36 +395,6 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
           workspace.save(validate: false) # rubocop:disable Rails/SaveBang -- intentional to test validation
           workspace.valid?
           expect(workspace.errors[:max_hours_before_termination]).to be_blank
-        end
-      end
-    end
-
-    context 'on dns_zone' do
-      context 'when dns_zone matches config dns_zone' do
-        it 'validates presence of agent.workspaces_agent_config' do
-          expect(workspace).to be_valid
-        end
-      end
-
-      context 'when dns_zone does not match config dns_zone' do
-        let(:workspace_dns_zone) { 'different_dns_zone.me' }
-
-        context "when workspace is in desired_state Terminated" do
-          let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
-
-          it 'does not validate dns_zone matches agent.workspaces_agent_config.dns_zone' do
-            expect(workspace).to be_valid
-          end
-        end
-
-        context "when workspace is not in desired_state terminated" do
-          let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-
-          it 'validates dns_zone matches agent.workspaces_agent_config.dns_zone' do
-            expect(workspace).not_to be_valid
-            expect(workspace.errors[:dns_zone])
-              .to include("for Workspace must match the dns_zone of the associated workspaces agent config")
-          end
         end
       end
     end

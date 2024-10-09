@@ -110,50 +110,5 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
         })
       end
     end
-
-    context "when the agent has associated workspaces" do
-      let_it_be(:workspace_1) { create(:workspace, agent: agent, force_include_all_resources: false) }
-      let_it_be(:workspace_2) { create(:workspace, agent: agent, force_include_all_resources: false) }
-
-      it 'sets force_include_all_resources to true on all associated workspaces' do
-        # sanity check fixture state
-        expect(agent.reload.workspaces.all? { |workspace| workspace.force_include_all_resources == false }).to be true
-
-        response
-
-        expect(agent.reload.workspaces.all? { |workspace| workspace.force_include_all_resources == true }).to be true
-      end
-
-      context 'when config passed contains a dns_zone update' do
-        it 'sets dns_zone on all associated workspaces' do
-          response
-
-          expect(agent.reload.workspaces.all? { |workspace| workspace.dns_zone == dns_zone }).to be true
-        end
-      end
-
-      context 'when associated workspaces cannot be updated' do
-        before do
-          # rubocop:disable RSpec/AnyInstanceOf -- allow_next_instance_of does not work here
-          allow_any_instance_of(RemoteDevelopment::WorkspacesAgentConfig)
-            .to receive_message_chain(:workspaces, :desired_state_not_terminated, :touch_all)
-          allow_any_instance_of(RemoteDevelopment::WorkspacesAgentConfig)
-            .to receive_message_chain(:workspaces, :desired_state_not_terminated, :update_all)
-              .and_raise(ActiveRecord::ActiveRecordError, "SOME ERROR")
-          # rubocop:enable RSpec/AnyInstanceOf -- allow_next_instance_of does not work here
-        end
-
-        it 'does not update the workspace records and returns error' do
-          expect(response).to eq({
-            status: :error,
-            message: "Agent config update failed: Error updating associated workspaces with update_all: SOME ERROR",
-            reason: :bad_request
-          })
-
-          expect(agent.reload.workspaces.all? { |workspace| workspace.force_include_all_resources == false }).to be true
-          expect(agent.reload.workspaces.all? { |workspace| workspace.dns_zone != dns_zone }).to be true
-        end
-      end
-    end
   end
 end

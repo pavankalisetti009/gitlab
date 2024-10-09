@@ -21,6 +21,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:expected_processed_devfile) { YAML.safe_load(example_processed_devfile).to_h }
   let(:editor) { 'webide' }
   let(:workspace_root) { '/projects' }
+  let(:dns_zone) { 'dns.zone.me' }
   let(:variables) do
     [
       { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
@@ -34,8 +35,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:agent) do
-    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, project: project, created_by_user: user)
   end
+
+  let!(:workspaces_agent_config) { create(:workspaces_agent_config, agent: agent, dns_zone: dns_zone) }
 
   let(:params) do
     {
@@ -89,6 +92,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when devfile is valid' do
+      let(:expected_workspaces_agent_config_version) { 1 }
+
       before do
         allow(SecureRandom).to receive(:alphanumeric) { random_string }
       end
@@ -112,8 +117,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.editor).to eq('webide')
+        expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
-          host: "60001-#{workspace.name}.#{workspace.agent.workspaces_agent_config.dns_zone}",
+          host: "60001-#{workspace.name}.#{dns_zone}",
           query: {
             folder: "#{workspace_root}/#{project.path}"
           }.to_query
@@ -132,6 +138,19 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL[variable[:type]]
             ).first&.value
           ).to eq(variable[:value])
+        end
+      end
+
+      context 'with versioned workspaces_agent_configs behavior' do
+        before do
+          agent.workspaces_agent_config.touch
+        end
+
+        let(:expected_workspaces_agent_config_version) { 2 }
+
+        it 'creates a new workspace with latest workspaces_agent_config version' do
+          workspace = response.fetch(:payload).fetch(:workspace)
+          expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         end
       end
     end
@@ -173,6 +192,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when agent has no associated config' do
+      let(:workspaces_agent_config) { nil }
       let(:agent) { create(:cluster_agent, name: "007") }
 
       it 'does not create the workspace and returns error' do

@@ -16,7 +16,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-    let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
+    let(:egress_ip_rules) { workspace.workspaces_agent_config.network_policy_egress }
 
     let(:workspace) do
       create(

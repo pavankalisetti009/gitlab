@@ -22,40 +22,9 @@ module RemoteDevelopment
           config_from_agent_config_file: config_from_agent_config_file
         )
 
-        model_errors = nil
-        workspaces_update_all_error = nil
-
-        ApplicationRecord.transaction do
-          # First, create or update the workspaces_agent_config record
-
-          unless workspaces_agent_config.save
-            model_errors = workspaces_agent_config.errors
-            raise ActiveRecord::Rollback
-          end
-
-          # Then, update the associated workspaces even if there were no material changes to the agent config
-
-          workspaces_update_fields = { force_include_all_resources: true }
-
-          # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-          if workspaces_agent_config.dns_zone_previously_was
-            workspaces_update_fields[:dns_zone] = workspaces_agent_config.dns_zone
-          end
-
-          begin
-            workspaces_agent_config.workspaces.desired_state_not_terminated.touch_all
-            workspaces_agent_config.workspaces.desired_state_not_terminated.update_all(workspaces_update_fields)
-          rescue ActiveRecord::ActiveRecordError => e
-            workspaces_update_all_error = "Error updating associated workspaces with update_all: #{e.message}"
-            raise ActiveRecord::Rollback
-          end
-        end
+        model_errors = workspaces_agent_config.errors unless workspaces_agent_config.save
 
         return Gitlab::Fp::Result.err(AgentConfigUpdateFailed.new({ errors: model_errors })) if model_errors.present?
-
-        if workspaces_update_all_error
-          return Gitlab::Fp::Result.err(AgentConfigUpdateFailed.new({ details: workspaces_update_all_error }))
-        end
 
         Gitlab::Fp::Result.ok(
           AgentConfigUpdateSuccessful.new({ workspaces_agent_config: workspaces_agent_config })

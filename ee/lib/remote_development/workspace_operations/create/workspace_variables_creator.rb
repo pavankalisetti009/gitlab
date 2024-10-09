@@ -24,7 +24,7 @@ module RemoteDevelopment
           variables = user_provided_variables
           workspace_variables = WorkspaceVariables.variables(
             name: workspace.name,
-            dns_zone: workspace.dns_zone,
+            dns_zone: workspace.workspaces_agent_config.dns_zone,
             personal_access_token_value: personal_access_token.token,
             user_name: user.name,
             user_email: user.email,

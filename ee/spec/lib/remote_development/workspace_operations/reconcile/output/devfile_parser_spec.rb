@@ -18,14 +18,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       deployment_resource_version: "1",
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
-      dns_zone: dns_zone,
       processed_devfile: example_processed_devfile,
       user: user,
       agent: agent
     )
   end
 
-  let(:domain_template) { "{{.port}}-#{workspace.name}.#{workspace.dns_zone}" }
+  let(:domain_template) { "{{.port}}-#{workspace.name}.#{dns_zone}" }
   let(:environment_secret_name) { "#{workspace.name}-env-var" }
   let(:file_secret_name) { "#{workspace.name}-file" }
   let(:egress_ip_rules)  do

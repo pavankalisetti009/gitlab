@@ -18,7 +18,10 @@ module RemoteDevelopment
             env_secret_names = [env_secret_name]
             file_secret_names = [file_secret_name]
             replicas = get_workspace_replicas(desired_state: workspace.desired_state)
-            domain_template = get_domain_template_annotation(name: workspace.name, dns_zone: workspace.dns_zone)
+            domain_template = get_domain_template_annotation(
+              name: workspace.name,
+              dns_zone: workspace.workspaces_agent_config.dns_zone
+            )
             inventory_name = "#{workspace.name}-workspace-inventory"
             labels, annotations = get_labels_and_annotations(
               agent_id: workspace.agent.id,
@@ -88,7 +91,10 @@ module RemoteDevelopment
           # @return [Array<(Hash)>]
           def self.get_k8s_resources_for_secrets(workspace:, env_secret_name:, file_secret_name:)
             inventory_name = "#{workspace.name}-secrets-inventory"
-            domain_template = get_domain_template_annotation(name: workspace.name, dns_zone: workspace.dns_zone)
+            domain_template = get_domain_template_annotation(
+              name: workspace.name,
+              dns_zone: workspace.workspaces_agent_config.dns_zone
+            )
             labels, annotations = get_labels_and_annotations(
               agent_id: workspace.agent.id,
               domain_template: domain_template,
