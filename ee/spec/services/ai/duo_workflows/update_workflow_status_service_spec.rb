@@ -28,9 +28,9 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       end
     end
 
-    context "when the ai_workflows feature license is not available" do
+    context "when duo workflow is not available" do
       before do
-        stub_licensed_features(ai_workflows: false)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
       end
 
       it "returns not found", :aggregate_failures do
@@ -43,9 +43,9 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       end
     end
 
-    context "when ai_workflows feature license is available" do
+    context "when duo workflow is available" do
       before do
-        stub_licensed_features(ai_workflows: true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       end
 
       it "can finish a workflow", :aggregate_failures do

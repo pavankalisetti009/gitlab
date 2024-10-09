@@ -46,7 +46,14 @@ module Gitlab
         end
 
         def license_feature_name(feature)
-          feature == :chat ? :ai_chat : :ai_features
+          case feature
+          when :chat
+            :ai_chat
+          when :duo_workflow
+            :ai_workflows
+          else
+            :ai_features
+          end
         end
 
         def instance_allows_experiment_and_beta_features

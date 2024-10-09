@@ -29,9 +29,9 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
 
   subject(:returned_workflows) { graphql_data.dig('duoWorkflowWorkflows', 'nodes') }
 
-  context 'when the ai_workflows feature license is not available' do
+  context 'when duo workflow is not available' do
     before do
-      stub_licensed_features(ai_workflows: false)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
     end
 
     it 'returns an empty array' do
@@ -41,9 +41,9 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
     end
   end
 
-  context 'when ai_workflows feature license is available' do
+  context 'when duo workflow is available' do
     before do
-      stub_licensed_features(ai_workflows: true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     end
 
     context 'when user is not logged in' do

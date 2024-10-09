@@ -22,18 +22,18 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
       it { is_expected.to be_disallowed(:update_duo_workflow) }
     end
 
-    context "when the feature license is not available" do
+    context "when duo workflow is not available" do
       before do
-        stub_licensed_features(ai_workflows: false)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
       end
 
       it { is_expected.to be_disallowed(:read_duo_workflow) }
       it { is_expected.to be_disallowed(:update_duo_workflow) }
     end
 
-    context "when feature license is available" do
+    context "when duo workflow is available" do
       before do
-        stub_licensed_features(ai_workflows: true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       end
 
       context "when user is guest" do

@@ -140,6 +140,15 @@ module Gitlab
             maturity: :ga,
             self_managed: true,
             internal: true
+          },
+          duo_workflow: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_workflow,
+            execute_method: nil,
+            maturity: :experimental,
+            self_managed: true,
+            internal: true
           }
 
         }.freeze
