@@ -6,7 +6,7 @@ module Security
 
     # Maximum number of path-based exclusions per project. This is an arbitrary limit aimed to
     # prevent single project from having a huge number of path exclusions causing performance issues,
-    # and also to discourage users from using exclusions in favor of actually deleting removing secrets.
+    # and also to discourage users from using exclusions in favor of actually removing secrets.
     #
     # See discussion: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166511#note_2138495926.
     MAX_PATH_EXCLUSIONS_PER_PROJECT = 10

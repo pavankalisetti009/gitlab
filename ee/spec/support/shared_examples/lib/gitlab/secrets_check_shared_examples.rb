@@ -527,7 +527,7 @@ RSpec.shared_examples 'scan detected secrets' do
 
   context 'when a blob has multiple secrets on the same line' do
     let_it_be(:new_commit) do
-      create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB;TOKEN=GR1348941JUST20LETTERSANDNUMB") # gitleaks:allow)
+      create_commit('.env' => "SECRET=glpat-JUST20LETTERSANDNUMB;TOKEN=GR1348941JUST20LETTERSANDNUMB") # gitleaks:allow
     end
 
     let(:new_blob_reference) { '13a31e7c93bbe8781f341e24e8ef26ef717d0da2' }

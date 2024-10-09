@@ -54,7 +54,7 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
             it 'creates the 10th path exclusion' do
               exclusion = build(:project_security_exclusion, :with_path, project: project)
 
-              expect(exclusion.save).to be_truthy
+              expect { exclusion.save! }.to change { ::Security::ProjectSecurityExclusion.count }.by(1)
             end
           end
         end
@@ -67,7 +67,7 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
           it 'allows adding more exclusions' do
             exclusion = build(:project_security_exclusion, :with_rule, project: project)
 
-            expect(exclusion.save).to be_truthy
+            expect { exclusion.save! }.to change { ::Security::ProjectSecurityExclusion.count }.by(1)
           end
         end
       end
