@@ -28,7 +28,7 @@ module QA
         # Set up smocker as a mock streaming event destination
         @mock_service = QA::Support::AuditEventStreamingService.new
         @stream_destination = StreamDestination.fabricate_via_api! do |resource|
-          resource.destination_url = @mock_service.url('logs')
+          resource.destination_url = @mock_service.destination_url
         end
         @stream_destination.add_headers(@headers)
         @stream_destination.add_filters(@event_types)
