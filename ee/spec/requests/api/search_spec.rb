@@ -3,11 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: :keep, feature_category: :global_search do
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:namespace) { create_default(:namespace).freeze }
-
+  let_it_be(:label) { create(:label) }
   let(:project) { create(:project, :public, :repository, :wiki_repo, name: 'awesome project', group: group) }
+  let(:milestone) { create(:milestone, project: project) }
 
   shared_examples 'response is correct' do |schema:, size: 1|
     it 'responds correctly' do
@@ -78,9 +79,10 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
   end
 
   shared_examples 'elasticsearch enabled' do |level:|
-    context 'for merge_requests scope', :sidekiq_inline do
+    context 'for merge_requests scope' do
       before do
-        create_list(:merge_request, 3, :unique_branches, source_project: project, author: create(:user), milestone: create(:milestone, project: project), labels: [create(:label)])
+        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user,
+          milestone: milestone, labels: [label])
         ensure_elasticsearch_index!
       end
 
@@ -88,11 +90,16 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       it_behaves_like 'orderable by created_at', scope: 'merge_requests'
 
       it 'avoids N+1 queries' do
-        control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'merge_requests', search: '*' } }
-        create_list(:merge_request, 3, :unique_branches, source_project: project, author: create(:user), milestone: create(:milestone, project: project), labels: [create(:label)])
+        control = ActiveRecord::QueryRecorder.new do
+          get api(endpoint, user), params: { scope: 'merge_requests', search: '*' }
+        end
+        create_list(:merge_request, 3, :unique_branches, source_project: project, author: user,
+          milestone: milestone, labels: [label])
         ensure_elasticsearch_index!
 
-        expect { get api(endpoint, user), params: { scope: 'merge_requests', search: '*' } }.not_to exceed_query_limit(control)
+        expect do
+          get api(endpoint, user), params: { scope: 'merge_requests', search: '*' }
+        end.not_to exceed_query_limit(control)
       end
     end
 
@@ -131,20 +138,25 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'pagination', scope: 'commits'
 
         it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'commits', search: 'folder' } }
+          control = ActiveRecord::QueryRecorder.new do
+            get api(endpoint, user), params: { scope: 'commits', search: 'folder' }
+          end
 
           project_2 = create(:project, :public, :repository, :wiki_repo, group: group, name: 'awesome project 2')
           project_2.repository.index_commits_and_blobs
           3.times do |i|
-            commit_sha = project.repository.create_file(user, i.to_s, "folder #{i}", message: "committing folder #{i}", branch_name: 'master')
+            commit_sha = project.repository.create_file(user, i.to_s, "folder #{i}", message: "committing folder #{i}",
+              branch_name: 'master')
             project.repository.commit(commit_sha)
           end
-          project.repository.index_commits_and_blobs
 
+          project.repository.index_commits_and_blobs
           ensure_elasticsearch_index!
 
           # N+1 queries still exist (ci_pipelines)
-          expect { get api(endpoint, user), params: { scope: 'commits', search: 'folder' } }.not_to exceed_query_limit(control).with_threshold(6)
+          expect do
+            get api(endpoint, user), params: { scope: 'commits', search: 'folder' }
+          end.not_to exceed_query_limit(control).with_threshold(6)
           # support global, group, and project search results expected counts
           expected_count = level == :project ? 5 : 7
           expect(json_response.count).to be expected_count
@@ -161,19 +173,24 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'pagination', scope: 'blobs'
 
         it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' } }
+          control = ActiveRecord::QueryRecorder.new do
+            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
+          end
 
           project_2 = create(:project, :public, :repository, :wiki_repo, group: group, name: 'awesome project 2')
           project_2.repository.index_commits_and_blobs
           3.times do |i|
-            commit_sha = project.repository.create_file(user, i.to_s, "Issue team #{i}", message: i.to_s, branch_name: 'master')
+            commit_sha = project.repository.create_file(user, i.to_s, "Issue team #{i}", message: i.to_s,
+              branch_name: 'master')
             project.repository.commit(commit_sha)
           end
 
           project.repository.index_commits_and_blobs
           ensure_elasticsearch_index!
 
-          expect { get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' } }.not_to exceed_query_limit(control)
+          expect do
+            get api(endpoint, user), params: { scope: 'blobs', search: 'Issue team' }
+          end.not_to exceed_query_limit(control)
           # support global, group, and project search results expected counts
           expected_count = level == :project ? 6 : 9
           expect(json_response.count).to be expected_count
@@ -181,16 +198,17 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
         context 'with filters' do
           def results_filenames
-            json_response.map { |h| h['filename'] }.compact
+            json_response.filter_map { |h| h['filename'] }
           end
 
           def results_paths
-            json_response.map { |h| h['path'] }.compact
+            json_response.filter_map { |h| h['path'] }
           end
 
           context 'with an including filter' do
             it 'by filename' do
-              get api("/projects/#{project.id}/search", user), params: { scope: 'blobs', search: 'mon* filename:PROCESS.md' }
+              get api("/projects/#{project.id}/search", user),
+                params: { scope: 'blobs', search: 'mon* filename:PROCESS.md' }
 
               expect(response).to have_gitlab_http_status(:ok)
               expect(json_response.size).to eq(1)
@@ -244,7 +262,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       end
     end
 
-    context 'for issues scope', :sidekiq_inline do
+    context 'for issues scope' do
       [:work_item, :issue].each do |document_type|
         context "when we have document_type as #{document_type}" do
           before do
@@ -254,7 +272,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           end
 
           it 'avoids N+1 queries', :use_sql_query_cache do
-            control = ActiveRecord::QueryRecorder.new(skip_cached: false) { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
+            control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+              get api(endpoint, user), params: { scope: 'issues', search: '*' }
+            end
 
             create_list(:issue, 2, project: project)
             create_list(:issue, 2, project: create(:project, group: group))
@@ -262,7 +282,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
 
             ensure_elasticsearch_index!
 
-            expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
+            expect do
+              get api(endpoint, user), params: { scope: 'issues', search: '*' }
+            end.not_to exceed_query_limit(control)
           end
 
           it_behaves_like 'pagination', scope: 'issues'
@@ -272,7 +294,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
 
     unless level == :project
-      context 'for projects scope', :sidekiq_inline do
+      context 'for projects scope' do
         before do
           project
           create(:project, :public, name: 'second project', group: group)
@@ -283,19 +305,23 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         it_behaves_like 'pagination', scope: 'projects'
 
         it 'avoids N+1 queries', :use_sql_query_cache do
-          control = ActiveRecord::QueryRecorder.new(skip_cached: false) { get api(endpoint, user), params: { scope: 'projects', search: '*' } }
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            get api(endpoint, user), params: { scope: 'projects', search: '*' }
+          end
           create_list(:project, 3, :public, group: group)
           create_list(:project, 4, :public)
 
           ensure_elasticsearch_index!
 
           # Some N+1 queries still exist
-          expect { get api(endpoint, user), params: { scope: 'projects', search: '*' } }.not_to exceed_query_limit(control).with_threshold(4)
+          expect do
+            get api(endpoint, user), params: { scope: 'projects', search: '*' }
+          end.not_to exceed_query_limit(control).with_threshold(4)
         end
       end
     end
 
-    context 'for milestones scope', :sidekiq_inline do
+    context 'for milestones scope' do
       before do
         create_list(:milestone, 2, project: project)
 
@@ -305,22 +331,25 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       it_behaves_like 'pagination', scope: 'milestones'
 
       it 'avoids N+1 queries' do
-        control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'milestones', search: '*' } }
+        control = ActiveRecord::QueryRecorder.new do
+          get api(endpoint, user), params: { scope: 'milestones', search: '*' }
+        end
         create_list(:milestone, 3, project: project)
         create_list(:milestone, 2, project: create(:project, :public))
 
         ensure_elasticsearch_index!
 
-        expect { get api(endpoint, user), params: { scope: 'milestones', search: '*' } }.not_to exceed_query_limit(control)
+        expect do
+          get api(endpoint, user), params: { scope: 'milestones', search: '*' }
+        end.not_to exceed_query_limit(control)
       end
     end
 
-    context 'for users scope', :sidekiq_inline do
+    context 'for users scope' do
       before do
         create_list(:user, 2).each_with_index do |user, index|
           user.update!(name: "foo_#{index}")
           project.add_developer(user)
-          group.add_developer(user)
         end
         ensure_elasticsearch_index!
       end
@@ -331,7 +360,6 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'users', search: '*' } }
         create_list(:user, 2).each do |user|
           project.add_developer(user)
-          group.add_developer(user)
         end
 
         ensure_elasticsearch_index!
@@ -340,7 +368,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       end
     end
 
-    context 'for notes scope', :sidekiq_inline do
+    context 'for notes scope' do
       before do
         create(:note_on_merge_request, project: project, note: 'awesome note')
         mr = create(:merge_request, source_project: project, target_branch: 'another_branch')
@@ -353,7 +381,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
 
     if level == :global
-      context 'for snippet_titles scope', :sidekiq_inline do
+      context 'for snippet_titles scope' do
         before do
           create_list(:snippet, 2, :public, title: 'Some code', content: 'Check it out')
 
@@ -403,7 +431,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           end
         end
 
-        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461421' do
+        context 'when elasticsearch_limit_indexing off', :elastic_delete_by_query,
+          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461421' do
           before do
             stub_ee_application_setting(elasticsearch_limit_indexing: false)
           end
@@ -427,7 +456,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     context 'with search_type param' do
       using RSpec::Parameterized::TableSyntax
 
-      subject(:search) { get api(endpoint, user), params: { scope: 'issues', search: 'john doe', search_type: search_type } }
+      subject(:search) do
+        get api(endpoint, user), params: { scope: 'issues', search: 'john doe', search_type: search_type }
+      end
 
       where(:search_type, :scope, :use_elastic, :use_zoekt, :error_expected) do
         'basic' | 'blobs' | false | false | false
@@ -613,7 +644,9 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           end
 
           it 'by ref' do
-            get api(endpoint, user), params: { scope: 'blobs', search: 'This file is used in tests for ci_environments_status', ref: 'pages-deploy' }
+            get api(endpoint, user),
+              params: { scope: 'blobs', search: 'This file is used in tests for ci_environments_status',
+                        ref: 'pages-deploy' }
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response.size).to eq(1)
