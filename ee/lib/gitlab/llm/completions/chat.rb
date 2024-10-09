@@ -17,6 +17,7 @@ module Gitlab
         ].freeze
 
         COMMAND_TOOLS = TOOLS + [
+          ::Gitlab::Llm::Chain::Tools::Help,
           ::Gitlab::Llm::Chain::Tools::ExplainCode,
           ::Gitlab::Llm::Chain::Tools::WriteTests,
           ::Gitlab::Llm::Chain::Tools::RefactorCode,

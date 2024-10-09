@@ -6,6 +6,9 @@ module Gitlab
       class Base
         include ::Gitlab::Llm::Concerns::Logger
 
+        # @param [Gitlab::Llm::AiMessage] prompt_message - user question
+        # @param [NilClass] ai_prompt_class
+        # @param [Hash] options - additional context
         def initialize(prompt_message, ai_prompt_class, options = {})
           @prompt_message = prompt_message
           @ai_prompt_class = ai_prompt_class

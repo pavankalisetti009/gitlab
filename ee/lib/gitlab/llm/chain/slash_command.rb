@@ -7,6 +7,9 @@ module Gitlab
         VS_CODE_EXTENSION = 'vs_code_extension'
         WEB = 'web'
 
+        # @param [Gitlab::Llm::AiMessage] message
+        # @param [Gitlab::Llm::Chain::GitlabContext] context
+        # @param [Array] tools
         def self.for(message:, context:, tools: [])
           command, user_input = message.slash_command_and_input
           return unless command
