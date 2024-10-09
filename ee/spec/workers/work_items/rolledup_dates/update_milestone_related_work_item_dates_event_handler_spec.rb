@@ -79,7 +79,7 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
 
   describe ".handle_event" do
     it "calls the service with the associated work_items" do
-      expect_next_instance_of(service_class, milestone_work_items) do |service|
+      expect_next_instance_of(service_class, match_array(milestone_work_items)) do |service|
         expect(service).to receive(:execute)
       end
 
