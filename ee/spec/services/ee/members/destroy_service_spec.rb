@@ -124,12 +124,6 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
             expect(project_1_participant.reload.is_removed).to eq(true)
             expect(project_2_participant.reload.is_removed).to eq(true)
           end
-
-          it 'calls the reset callout service for the namespace' do
-            expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
-
-            destroy_service.execute(member)
-          end
         end
 
         context 'when project member is removed' do
@@ -142,12 +136,6 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
 
             expect(project_1_participant.reload.is_removed).to eq(true)
             expect(project_2_participant.reload.is_removed).to eq(false)
-          end
-
-          it 'calls the reset callout service for the namespace' do
-            expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
-
-            destroy_service.execute(project_member)
           end
         end
       end
@@ -337,6 +325,16 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
         it 'removes the service account member' do
           expect { subject }.to change { member.source.members_and_requesters.count }.by(-1)
         end
+      end
+    end
+
+    context 'with block seat overages' do
+      it 'resets the all seats used banner callout', :sidekiq_inline do
+        Users::GroupCallout.create!(group: group, user_id: current_user.id, feature_name: ::EE::Users::GroupCalloutsHelper::ALL_SEATS_USED_ALERT)
+
+        destroy_service.execute(member)
+
+        expect(::Users::GroupCallout.count).to eq(0)
       end
     end
   end
