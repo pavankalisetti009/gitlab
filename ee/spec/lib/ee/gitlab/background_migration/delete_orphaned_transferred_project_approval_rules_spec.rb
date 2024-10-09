@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::DeleteOrphanedTransferredProjectApprovalRules, schema: 20230724164745, feature_category: :security_policy_management do # rubocop:disable Layout/LineLength
+RSpec.describe Gitlab::BackgroundMigration::DeleteOrphanedTransferredProjectApprovalRules, schema: 20230728020644, feature_category: :security_policy_management do # rubocop:disable Layout/LineLength
   describe '#perform' do
     let(:batch_table) { :approval_project_rules }
     let(:batch_column) { :id }
