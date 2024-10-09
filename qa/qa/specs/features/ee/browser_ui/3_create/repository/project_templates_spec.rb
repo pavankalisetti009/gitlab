@@ -3,6 +3,21 @@
 module QA
   RSpec.describe 'Create' do
     describe 'Project templates', product_group: :source_code do
+      let!(:group) { create(:group) }
+
+      let(:sandbox) { group.sandbox }
+      let(:template_container_group_name) { "instance-template-container-group-#{SecureRandom.hex(8)}" }
+      let(:template_container_group) do
+        create(
+          :group,
+          path: template_container_group_name,
+          description: 'Instance template container group',
+          sandbox: sandbox
+        )
+      end
+
+      let(:template_project) { create(:project, name: 'template-project-1', group: template_container_group) }
+
       let(:files) do
         [
           {
@@ -15,14 +30,6 @@ module QA
           }
         ]
       end
-
-      let(:template_container_group_name) { "instance-template-container-group-#{SecureRandom.hex(8)}" }
-
-      let(:template_container_group) do
-        create(:group, path: template_container_group_name, description: 'Instance template container group')
-      end
-
-      let(:template_project) { create(:project, name: 'template-project-1', group: template_container_group) }
 
       before do
         Resource::Repository::ProjectPush.fabricate! do |push|
@@ -41,7 +48,7 @@ module QA
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347932' do
           built_in = 'Ruby on Rails'
 
-          create(:group).visit!
+          group.visit!
           Page::Group::Show.perform(&:go_to_new_project)
 
           QA::Flow::Project.go_to_create_project_from_template
@@ -52,7 +59,7 @@ module QA
 
           create_project_using_template(
             project_name: 'Project using built-in project template',
-            namespace: Runtime::Namespace.name(reset_cache: false),
+            namespace: group.name,
             template_name: built_in
           )
 
@@ -86,7 +93,7 @@ module QA
             end
           end
 
-          create(:group).visit!
+          group.visit!
 
           Page::Group::Show.perform(&:go_to_new_project)
 
@@ -115,7 +122,7 @@ module QA
 
           create_project_using_template(
             project_name: 'Project using instance level project template',
-            namespace: Runtime::Namespace.path,
+            namespace: group.full_path,
             template_name: template_project.name
           )
 
@@ -134,7 +141,7 @@ module QA
           Flow::Login.sign_in
 
           Page::Main::Menu.perform(&:go_to_groups)
-          Page::Dashboard::Groups.perform { |groups| groups.click_group(Runtime::Namespace.sandbox_name) }
+          Page::Dashboard::Groups.perform { |groups| groups.click_group(sandbox.name) }
 
           Page::Group::Menu.perform(&:go_to_general_settings)
 
@@ -148,7 +155,6 @@ module QA
             end
           end
 
-          group = create(:group)
           group.visit!
 
           Page::Group::Show.perform(&:go_to_new_project)
@@ -172,7 +178,7 @@ module QA
 
           create_project_using_template(
             project_name: 'Project using group level project template',
-            namespace: Runtime::Namespace.sandbox_name,
+            namespace: sandbox.name,
             template_name: template_project.name
           )
 
