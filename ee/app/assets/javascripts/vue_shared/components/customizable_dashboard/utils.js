@@ -5,7 +5,7 @@ import { TYPENAME_ANALYTICS_DASHBOARD_PANEL } from 'ee/analytics/analytics_dashb
 import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import { queryToObject } from '~/lib/utils/url_utility';
-import { formatDate, parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { formatDate, newDate } from '~/lib/utils/datetime_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import {
   convertObjectPropsToCamelCase,
@@ -52,8 +52,8 @@ export const buildDefaultDashboardFilters = (queryString) => {
     // Override default filter with user defined option
     ...(optionKey && dateRangeOptionToFilter(getDateRangeOption(optionKey))),
     // Override date range when selected option is custom date range
-    ...(customDateRange && { startDate: parsePikadayDate(startDate) }),
-    ...(customDateRange && { endDate: parsePikadayDate(endDate) }),
+    ...(customDateRange && { startDate: newDate(startDate) }),
+    ...(customDateRange && { endDate: newDate(endDate) }),
     filterAnonUsers: parseBoolean(filterAnonUsers),
   };
 };

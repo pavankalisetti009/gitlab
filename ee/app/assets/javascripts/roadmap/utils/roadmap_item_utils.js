@@ -1,5 +1,5 @@
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { cloneDate, parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { cloneDate, newDate } from '~/lib/utils/datetime_utility';
 
 import { PRESET_TYPES, DAYS_IN_WEEK } from '../constants';
 
@@ -78,7 +78,7 @@ export const formatRoadmapItemDetails = (rawRoadmapItem, timeframeStartDate, tim
 
   if (rawStartDate) {
     // If startDate is present
-    const startDate = parsePikadayDate(rawStartDate);
+    const startDate = newDate(rawStartDate);
     roadmapItem.startDate = startDate;
     roadmapItem.originalStartDate = startDate;
   } else {
@@ -88,7 +88,7 @@ export const formatRoadmapItemDetails = (rawRoadmapItem, timeframeStartDate, tim
 
   if (rawEndDate) {
     // If endDate is present
-    const endDate = parsePikadayDate(rawEndDate);
+    const endDate = newDate(rawEndDate);
     roadmapItem.endDate = endDate;
     roadmapItem.originalEndDate = endDate;
   } else {

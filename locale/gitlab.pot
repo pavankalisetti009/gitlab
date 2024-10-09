@@ -23125,6 +23125,9 @@ msgstr ""
 msgid "Feature disabled"
 msgstr ""
 
+msgid "Feature flag"
+msgstr ""
+
 msgid "Feature flag status"
 msgstr ""
 
