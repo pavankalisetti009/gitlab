@@ -3,7 +3,7 @@
 module Security
   module Ingestion
     class IngestCvsSliceService < IngestSliceBaseService
-      TASKS = %i[
+      SEC_DB_TASKS = %i[
         IngestCvsSecurityScanners
         IngestIdentifiers
         IngestFindings
@@ -16,9 +16,12 @@ module Security
         IngestFindingEvidence
         IngestVulnerabilityFlags
         IngestVulnerabilityReads
-        MarkCvsProjectsAsVulnerable
         IngestVulnerabilityStatistics
         HooksExecution
+      ].freeze
+
+      MAIN_DB_TASKS = %i[
+        MarkCvsProjectsAsVulnerable
       ].freeze
 
       def self.execute(finding_maps)
