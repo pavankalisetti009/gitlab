@@ -209,6 +209,13 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for licensed features'
     end
 
+    context 'updating allow_top_level_group_owners_to_create_service_accounts setting' do
+      let(:settings) { { allow_top_level_group_owners_to_create_service_accounts: false } }
+      let(:feature) { :service_accounts }
+
+      it_behaves_like 'settings for licensed features'
+    end
+
     context 'updating `git_two_factor_session_expiry` setting' do
       before do
         stub_feature_flags(two_factor_for_cli: true)

@@ -144,6 +144,7 @@ module EE
           globally_allowed_ips
           service_access_tokens_expiration_enforced
           disabled_direct_code_suggestions
+          allow_top_level_group_owners_to_create_service_accounts
         ]
     end
 

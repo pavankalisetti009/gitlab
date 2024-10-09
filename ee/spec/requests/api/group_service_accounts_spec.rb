@@ -121,204 +121,199 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
+  RSpec.shared_examples "service account user creation" do
+    context 'when the group exists' do
+      let(:group_id) { group.id }
+
+      it "creates user with service_account user type" do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response.keys).to match_array(%w[id name username])
+
+        user = User.find(json_response['id'])
+
+        expect(user.username).to start_with("service_account_group_#{group_id}")
+        expect(user.namespace.organization).to eq(organization)
+        expect(user.user_type).to eq('service_account')
+      end
+
+      context 'when params are provided' do
+        let_it_be(:params) do
+          {
+            name: 'John Doe',
+            username: 'test'
+          }
+        end
+
+        it "creates user with provided details" do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['username']).to eq(params[:username])
+          expect(json_response['name']).to eq(params[:name])
+          expect(json_response.keys).to match_array(%w[id name username])
+        end
+
+        context 'when user with the username already exists' do
+          before do
+            post api("/groups/#{group_id}/service_accounts", user), params: params
+          end
+
+          it 'returns error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Username has already been taken')
+          end
+        end
+
+        context 'when the group does not exist' do
+          let(:group_id) { non_existing_record_id }
+
+          it "returns error" do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+      end
+
+      it "returns bad request when service returns bad request" do
+        allow_next_instance_of(::Namespaces::ServiceAccounts::CreateService) do |service|
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: message, reason: :bad_request)
+          )
+        end
+
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+      end
+
+      context 'for subgroup' do
+        let(:group_id) { subgroup.id }
+
+        it 'returns error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to include(
+            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+          )
+        end
+      end
+    end
+
+    context 'when the group does not exist' do
+      let(:group_id) { non_existing_record_id }
+
+      it "returns error" do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe "POST /groups/:id/service_accounts" do
     subject(:perform_request) { post api("/groups/#{group_id}/service_accounts", user), params: params }
 
     let_it_be(:params) { {} }
 
-    context 'when Self-managed' do
-      before do
-        stub_licensed_features(service_accounts: true)
-        allow(License).to receive(:current).and_return(license)
-      end
-
-      context 'when the feature is licensed' do
-        let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-
-        context 'when current user is an admin', :enable_admin_mode do
-          let_it_be(:user) { create(:admin) }
-
-          context 'when the group exists' do
-            let(:group_id) { group.id }
-
-            it "creates user with service_account user type" do
-              perform_request
-
-              expect(response).to have_gitlab_http_status(:created)
-              expect(json_response.keys).to match_array(%w[id name username])
-
-              user = User.find(json_response['id'])
-
-              expect(user.username).to start_with("service_account_group_#{group_id}")
-              expect(user.namespace.organization).to eq(organization)
-              expect(user.user_type).to eq('service_account')
-            end
-
-            context 'for subgroup' do
-              let(:group_id) { subgroup.id }
-
-              it 'returns error' do
-                perform_request
-
-                expect(response).to have_gitlab_http_status(:bad_request)
-                expect(json_response['message']).to include(
-                  s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
-                )
-              end
-            end
-          end
-
-          context 'when the group does not exist' do
-            let(:group_id) { non_existing_record_id }
-
-            it "returns error" do
-              perform_request
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
-        end
-      end
+    before do
+      stub_licensed_features(service_accounts: true)
+      allow(License).to receive(:current).and_return(license)
     end
 
-    context 'when on GitLab.com', :saas do
-      before do
-        stub_licensed_features(service_accounts: true)
-        create(:gitlab_subscription, namespace: group, hosted_plan: hosted_plan)
-        stub_application_setting(check_namespace_plan: true)
+    context 'when the feature is licensed' do
+      let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+
+      context 'when current user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+
+        it_behaves_like "service account user creation"
       end
 
-      context 'when the feature is licensed' do
+      context 'when current user is an owner and feature is activated and allow top level setting activated' do
+        let_it_be(:user) { create(:user) }
+
+        before do
+          group.add_owner(user)
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+        end
+
+        it_behaves_like "service account user creation"
+      end
+
+      context 'when current user is an owner and feature is deactivated in GitLab.com', :saas do
+        let_it_be(:user) { create(:user) }
         let(:hosted_plan) { create(:ultimate_plan) }
 
-        context 'when current user is an owner' do
-          before do
-            group.add_owner(user)
-          end
-
-          context 'when the group exists' do
-            let(:group_id) { group.id }
-
-            it "creates user with service_account user type" do
-              perform_request
-
-              expect(response).to have_gitlab_http_status(:created)
-              expect(json_response.keys).to match_array(%w[id name username])
-
-              user = User.find(json_response['id'])
-
-              expect(user.username).to start_with("service_account_group_#{group_id}")
-              expect(user.namespace.organization).to eq(organization)
-              expect(user.user_type).to eq('service_account')
-            end
-
-            context 'when params are provided' do
-              let_it_be(:params) do
-                {
-                  name: 'John Doe',
-                  username: 'test'
-                }
-              end
-
-              it "creates user with provided details" do
-                perform_request
-
-                expect(response).to have_gitlab_http_status(:created)
-                expect(json_response['username']).to eq(params[:username])
-                expect(json_response['name']).to eq(params[:name])
-                expect(json_response.keys).to match_array(%w[id name username])
-              end
-
-              context 'when user with the username already exists' do
-                before do
-                  post api("/groups/#{group_id}/service_accounts", user), params: params
-                end
-
-                it 'returns error' do
-                  perform_request
-
-                  expect(response).to have_gitlab_http_status(:bad_request)
-                  expect(json_response['message']).to include('Username has already been taken')
-                end
-              end
-            end
-
-            it "returns bad request when service returns bad request" do
-              allow_next_instance_of(::Namespaces::ServiceAccounts::CreateService) do |service|
-                allow(service).to receive(:execute).and_return(
-                  ServiceResponse.error(message: message, reason: :bad_request)
-                )
-              end
-
-              perform_request
-
-              expect(response).to have_gitlab_http_status(:bad_request)
-            end
-
-            context 'for subgroup' do
-              let(:group_id) { subgroup.id }
-
-              it 'returns error' do
-                perform_request
-
-                expect(response).to have_gitlab_http_status(:bad_request)
-                expect(json_response['message']).to include(
-                  s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
-                )
-              end
-            end
-          end
-
-          context 'when the group does not exist' do
-            let(:group_id) { non_existing_record_id }
-
-            it "returns error" do
-              perform_request
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
+        before do
+          group.add_owner(user)
+          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+          create(:gitlab_subscription, namespace: group, hosted_plan: hosted_plan)
+          stub_application_setting(check_namespace_plan: true)
         end
 
-        context 'when user is not an owner' do
-          let(:group_id) { group.id }
-
-          before do
-            group.add_maintainer(user)
-          end
-
-          it "returns error" do
-            perform_request
-
-            expect(response).to have_gitlab_http_status(:forbidden)
-          end
-        end
-
-        context 'without authentication' do
-          let(:group_id) { group.id }
-
-          it "returns error" do
-            post api("/groups/#{group_id}/service_accounts")
-
-            expect(response).to have_gitlab_http_status(:unauthorized)
-          end
-        end
+        it_behaves_like "service account user creation"
       end
 
-      context 'when the feature is not licensed' do
-        let(:hosted_plan) { create(:free_plan) }
-
+      context 'when current user is an owner and feature is deactivated and allow top level setting activated' do
+        let_it_be(:user) { create(:user) }
         let(:group_id) { group.id }
 
         before do
           group.add_owner(user)
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
         end
 
-        it "returns error" do
+        it 'returns error' do
           perform_request
 
-          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to include(
+            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+          )
         end
+      end
+
+      context 'when current user is an owner and allow top level setting deactivated' do
+        let_it_be(:user) { create(:user) }
+        let(:group_id) { group.id }
+
+        before do
+          group.add_owner(user)
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+        end
+
+        it 'returns error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to include(
+            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+          )
+        end
+      end
+    end
+
+    context 'when the feature is not licensed' do
+      let(:license) { nil }
+      let(:group_id) { group.id }
+
+      before do
+        stub_licensed_features(service_accounts: false)
+        group.add_owner(user)
+      end
+
+      it "returns error" do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
   end
@@ -452,62 +447,70 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
     it_behaves_like 'DELETE request permissions for admin mode'
 
-    context 'when self-managed' do
-      it_behaves_like "service account user deletion"
+    it_behaves_like "service account user deletion"
 
-      it "is not available for non admin users" do
-        perform_enqueued_jobs { delete api(path, user) }
+    it "is not available for group owners when allow top level group owners feature is disabled on Self Managed",
+      :sidekiq_inline do
+      group.add_owner(user)
 
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-
-      context 'when feature is not licensed' do
-        let(:group_id) { group.id }
-
-        before do
-          stub_licensed_features(service_accounts: false)
-          group.add_owner(user)
-        end
-
-        it 'returns error' do
-          perform_enqueued_jobs { delete api(path, service_account_user) }
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
-      end
+      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+      perform_enqueued_jobs { delete api(path, user) }
+      expect(response).to have_gitlab_http_status(:no_content)
+      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).not_to exist
     end
 
-    context 'when .com', :saas do
-      it_behaves_like "service account user deletion"
+    it "is not available for group owners when allow top level group owners feature is disabled", :sidekiq_inline do
+      group.add_owner(user)
 
-      it "is available for group owners", :sidekiq_inline do
+      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+      perform_enqueued_jobs { delete api(path, user) }
+      expect(response).to have_gitlab_http_status(:no_content)
+      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).not_to exist
+    end
+
+    it "is available for group owners when allow top level group owners feature is disabled on GitLab.com",
+      :sidekiq_inline, :saas do
+      group.add_owner(user)
+
+      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+      perform_enqueued_jobs { delete api(path, user) }
+      expect(response).to have_gitlab_http_status(:no_content)
+      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
+    end
+
+    it "is available for group owners when allow top level group owners application setting is enabled",
+      :sidekiq_inline, :saas do
+      group.add_owner(user)
+
+      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+      perform_enqueued_jobs { delete api(path, user) }
+      expect(response).to have_gitlab_http_status(:no_content)
+      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
+    end
+
+    it "is not available to non group owners" do
+      group.add_maintainer(user)
+      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+
+      perform_enqueued_jobs { delete api(path, user) }
+      expect(response).to have_gitlab_http_status(:forbidden)
+    end
+
+    context 'when feature is not licensed' do
+      let(:group_id) { group.id }
+
+      before do
+        stub_licensed_features(service_accounts: false)
         group.add_owner(user)
-
-        perform_enqueued_jobs { delete api(path, user) }
-        expect(response).to have_gitlab_http_status(:no_content)
-        expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
       end
 
-      it "is not available to non group owners" do
-        group.add_maintainer(user)
+      it 'returns error' do
+        perform_enqueued_jobs { delete api(path, service_account_user) }
 
-        perform_enqueued_jobs { delete api(path, user) }
         expect(response).to have_gitlab_http_status(:forbidden)
-      end
-
-      context 'when feature is not licensed' do
-        let(:group_id) { group.id }
-
-        before do
-          stub_licensed_features(service_accounts: false)
-          group.add_owner(user)
-        end
-
-        it 'returns error' do
-          perform_enqueued_jobs { delete api(path, service_account_user) }
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
       end
     end
   end
@@ -526,6 +529,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
     context 'when the feature is licensed' do
       let(:group_id) { group.id }
+      let(:hosted_plan) { create(:ultimate_plan) }
 
       before do
         stub_licensed_features(service_accounts: true)

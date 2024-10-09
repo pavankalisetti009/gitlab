@@ -3180,9 +3180,22 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe 'admin_service_accounts' do
-    context 'when self-managed' do
-      context 'when the feature is not enabled' do
-        let(:current_user) { owner }
+    context 'when the feature is not enabled' do
+      let(:current_user) { owner }
+
+      it { is_expected.to be_disallowed(:admin_service_accounts) }
+      it { is_expected.to be_disallowed(:admin_service_account_member) }
+      it { is_expected.to be_disallowed(:create_service_account) }
+      it { is_expected.to be_disallowed(:delete_service_account) }
+    end
+
+    context 'when feature is enabled' do
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when the user is a maintainer' do
+        let(:current_user) { maintainer }
 
         it { is_expected.to be_disallowed(:admin_service_accounts) }
         it { is_expected.to be_disallowed(:admin_service_account_member) }
@@ -3190,59 +3203,77 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to be_disallowed(:delete_service_account) }
       end
 
-      context 'when feature is enabled' do
-        before do
-          stub_licensed_features(service_accounts: true)
-        end
+      context 'when the user is an owner' do
+        let(:current_user) { owner }
 
-        context 'when the user is a maintainer' do
-          let(:current_user) { maintainer }
-
-          it { is_expected.to be_disallowed(:admin_service_accounts) }
-          it { is_expected.to be_disallowed(:admin_service_account_member) }
-          it { is_expected.to be_disallowed(:create_service_account) }
-          it { is_expected.to be_disallowed(:delete_service_account) }
-        end
-
-        context 'when the user is an owner' do
-          let(:current_user) { owner }
+        context 'when allow_top_level_group_owners_to_create_service_accounts is disabled' do
+          before do
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+          end
 
           it { is_expected.to be_allowed(:admin_service_accounts) }
           it { is_expected.to be_allowed(:admin_service_account_member) }
           it { is_expected.to be_disallowed(:create_service_account) }
           it { is_expected.to be_disallowed(:delete_service_account) }
 
-          context 'when a trial is active' do
+          context 'when saas', :saas do
+            it { is_expected.to be_allowed(:admin_service_accounts) }
+            it { is_expected.to be_allowed(:admin_service_account_member) }
+            it { is_expected.to be_allowed(:create_service_account) }
+            it { is_expected.to be_allowed(:delete_service_account) }
+          end
+        end
+
+        context 'when allow_top_level_group_owners_to_create_service_accounts FF is enabled' do
+          before do
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+          end
+
+          context 'when application setting is disabled' do
             before do
-              allow(group).to receive_messages(gitlab_subscription: nil)
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
             end
 
             it { is_expected.to be_allowed(:admin_service_accounts) }
             it { is_expected.to be_allowed(:admin_service_account_member) }
             it { is_expected.to be_disallowed(:create_service_account) }
             it { is_expected.to be_disallowed(:delete_service_account) }
+
+            context 'when saas', :saas do
+              it { is_expected.to be_allowed(:admin_service_accounts) }
+              it { is_expected.to be_allowed(:admin_service_account_member) }
+              it { is_expected.to be_disallowed(:create_service_account) }
+              it { is_expected.to be_disallowed(:delete_service_account) }
+            end
           end
 
-          context 'for subgroup' do
-            let_it_be(:subgroup) { create(:group, :private, parent: group) }
+          context 'when application setting is enabled ' do
+            before do
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+            end
 
-            subject { described_class.new(current_user, subgroup) }
-
-            it { is_expected.to be_allowed(:admin_service_accounts) }
-            it { is_expected.to be_allowed(:admin_service_account_member) }
-            it { is_expected.to be_disallowed(:create_service_account) }
-            it { is_expected.to be_disallowed(:delete_service_account) }
-          end
-        end
-
-        context 'when the user is an instance admin' do
-          let(:current_user) { admin }
-
-          context 'when admin mode is enabled', :enable_admin_mode do
             it { is_expected.to be_allowed(:admin_service_accounts) }
             it { is_expected.to be_allowed(:admin_service_account_member) }
             it { is_expected.to be_allowed(:create_service_account) }
             it { is_expected.to be_allowed(:delete_service_account) }
+
+            context 'when saas', :saas do
+              it { is_expected.to be_allowed(:admin_service_accounts) }
+              it { is_expected.to be_allowed(:admin_service_account_member) }
+              it { is_expected.to be_allowed(:create_service_account) }
+              it { is_expected.to be_allowed(:delete_service_account) }
+
+              context 'when trial is active' do
+                before do
+                  allow(group).to receive_messages(trial_active?: true)
+                end
+
+                it { is_expected.to be_disallowed(:admin_service_accounts) }
+                it { is_expected.to be_disallowed(:admin_service_account_member) }
+                it { is_expected.to be_disallowed(:create_service_account) }
+                it { is_expected.to be_disallowed(:delete_service_account) }
+              end
+            end
 
             context 'when a trial is active' do
               before do
@@ -3266,8 +3297,23 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
               it { is_expected.to be_disallowed(:delete_service_account) }
             end
           end
+        end
 
-          context 'when admin mode is not enabled' do
+        context 'for subgroup' do
+          let_it_be(:subgroup) { create(:group, :private, parent: group) }
+
+          subject { described_class.new(current_user, subgroup) }
+
+          it { is_expected.to be_allowed(:admin_service_accounts) }
+          it { is_expected.to be_allowed(:admin_service_account_member) }
+          it { is_expected.to be_disallowed(:create_service_account) }
+          it { is_expected.to be_disallowed(:delete_service_account) }
+
+          context 'when a trial is active in GitLab.com', :saas do
+            before do
+              allow(subgroup.root_ancestor).to receive_messages(trial_active?: true)
+            end
+
             it { is_expected.to be_disallowed(:admin_service_accounts) }
             it { is_expected.to be_disallowed(:admin_service_account_member) }
             it { is_expected.to be_disallowed(:create_service_account) }
@@ -3275,35 +3321,11 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
         end
       end
-    end
 
-    context 'when on GitLab.com', :saas do
-      context 'when the feature is not enabled' do
-        let(:current_user) { owner }
+      context 'when the user is an instance admin' do
+        let(:current_user) { admin }
 
-        it { is_expected.to be_disallowed(:admin_service_accounts) }
-        it { is_expected.to be_disallowed(:admin_service_account_member) }
-        it { is_expected.to be_disallowed(:create_service_account) }
-        it { is_expected.to be_disallowed(:delete_service_account) }
-      end
-
-      context 'when feature is enabled' do
-        before do
-          stub_licensed_features(service_accounts: true)
-        end
-
-        context 'when the user is a maintainer' do
-          let(:current_user) { maintainer }
-
-          it { is_expected.to be_disallowed(:admin_service_accounts) }
-          it { is_expected.to be_disallowed(:admin_service_account_member) }
-          it { is_expected.to be_disallowed(:create_service_account) }
-          it { is_expected.to be_disallowed(:delete_service_account) }
-        end
-
-        context 'when the user is an owner' do
-          let(:current_user) { owner }
-
+        context 'when admin mode is enabled', :enable_admin_mode do
           it { is_expected.to be_allowed(:admin_service_accounts) }
           it { is_expected.to be_allowed(:admin_service_account_member) }
           it { is_expected.to be_allowed(:create_service_account) }
@@ -3311,13 +3333,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
           context 'when a trial is active' do
             before do
-              allow(group).to receive_messages(trial_active?: true)
+              allow(group).to receive_messages(gitlab_subscription: nil)
             end
 
-            it { is_expected.to be_disallowed(:admin_service_accounts) }
-            it { is_expected.to be_disallowed(:admin_service_account_member) }
-            it { is_expected.to be_disallowed(:create_service_account) }
-            it { is_expected.to be_disallowed(:delete_service_account) }
+            it { is_expected.to be_allowed(:admin_service_accounts) }
+            it { is_expected.to be_allowed(:admin_service_account_member) }
+            it { is_expected.to be_allowed(:create_service_account) }
+            it { is_expected.to be_allowed(:delete_service_account) }
           end
 
           context 'for subgroup' do
@@ -3329,69 +3351,14 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             it { is_expected.to be_allowed(:admin_service_account_member) }
             it { is_expected.to be_disallowed(:create_service_account) }
             it { is_expected.to be_disallowed(:delete_service_account) }
-
-            context 'when a trial is active' do
-              before do
-                allow(subgroup.root_ancestor).to receive_messages(trial_active?: true)
-              end
-
-              it { is_expected.to be_disallowed(:admin_service_accounts) }
-              it { is_expected.to be_disallowed(:admin_service_account_member) }
-              it { is_expected.to be_disallowed(:create_service_account) }
-              it { is_expected.to be_disallowed(:delete_service_account) }
-            end
           end
         end
 
-        context 'when the user is an instance admin' do
-          let(:current_user) { admin }
-
-          context 'when admin mode is enabled', :enable_admin_mode do
-            it { is_expected.to be_allowed(:admin_service_accounts) }
-            it { is_expected.to be_allowed(:admin_service_account_member) }
-            it { is_expected.to be_allowed(:create_service_account) }
-            it { is_expected.to be_allowed(:delete_service_account) }
-
-            context 'when a trial is active' do
-              before do
-                allow(group).to receive_messages(trial_active?: true)
-              end
-
-              it { is_expected.to be_disallowed(:admin_service_accounts) }
-              it { is_expected.to be_disallowed(:admin_service_account_member) }
-              it { is_expected.to be_disallowed(:create_service_account) }
-              it { is_expected.to be_disallowed(:delete_service_account) }
-            end
-
-            context 'for subgroup' do
-              let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
-              subject { described_class.new(current_user, subgroup) }
-
-              it { is_expected.to be_allowed(:admin_service_accounts) }
-              it { is_expected.to be_allowed(:admin_service_account_member) }
-              it { is_expected.to be_disallowed(:create_service_account) }
-              it { is_expected.to be_disallowed(:delete_service_account) }
-
-              context 'when a trial is active' do
-                before do
-                  allow(subgroup.root_ancestor).to receive_messages(trial_active?: true)
-                end
-
-                it { is_expected.to be_disallowed(:admin_service_accounts) }
-                it { is_expected.to be_disallowed(:admin_service_account_member) }
-                it { is_expected.to be_disallowed(:create_service_account) }
-                it { is_expected.to be_disallowed(:delete_service_account) }
-              end
-            end
-          end
-
-          context 'when admin mode is not enabled' do
-            it { is_expected.to be_disallowed(:admin_service_accounts) }
-            it { is_expected.to be_disallowed(:admin_service_account_member) }
-            it { is_expected.to be_disallowed(:create_service_account) }
-            it { is_expected.to be_disallowed(:delete_service_account) }
-          end
+        context 'when admin mode is not enabled' do
+          it { is_expected.to be_disallowed(:admin_service_accounts) }
+          it { is_expected.to be_disallowed(:admin_service_account_member) }
+          it { is_expected.to be_disallowed(:create_service_account) }
+          it { is_expected.to be_disallowed(:delete_service_account) }
         end
       end
     end

@@ -129,119 +129,64 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
       context 'when group owner' do
         let_it_be(:current_user) { create(:user, owner_of: group) }
 
-        it_behaves_like 'service account creation failure'
-      end
-    end
-  end
-
-  context 'when saas', :saas do
-    before do
-      stub_licensed_features(service_accounts: true)
-      create(:gitlab_subscription, namespace: group, hosted_plan: hosted_plan)
-      stub_application_setting(check_namespace_plan: true)
-    end
-
-    shared_examples 'creates service accounts as per subscription' do
-      context 'when subscription is of free plan' do
-        let(:hosted_plan) { create(:free_plan) }
-
-        it_behaves_like 'service account creation failure'
-      end
-
-      context 'when subscription is ultimate tier' do
-        let(:hosted_plan) { create(:ultimate_plan) }
-
-        it_behaves_like 'service account creation success' do
-          let(:username_prefix) { "service_account_group_#{group.id}" }
-        end
-
-        it 'sets provisioned by group' do
-          result = service.execute
-          expect(result.payload.provisioned_by_group_id).to eq(group.id)
-        end
-
-        context 'when the group is invalid' do
-          let(:namespace_id) { non_existing_record_id }
+        context 'when allow_top_level_group_owners_to_create_service_accounts FF is disabled' do
+          before do
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+          end
 
           it_behaves_like 'service account creation failure'
+
+          context 'when saas', :saas do
+            it_behaves_like 'service account creation success' do
+              let(:username_prefix) { "service_account_group_#{group.id}" }
+            end
+          end
         end
 
-        context 'when the group is subgroup' do
-          let(:namespace_id) { subgroup.id }
-
-          it_behaves_like 'service account creation failure'
-        end
-      end
-
-      context 'when subscription is of premium tier' do
-        let_it_be(:hosted_plan) { create(:premium_plan) }
-        let_it_be(:service_account1) { create(:user, :service_account, provisioned_by_group_id: group.id) }
-        let_it_be(:service_account2) { create(:user, :service_account, provisioned_by_group_id: group.id) }
-
-        context 'when premium seats are not available' do
+        context 'when allow_top_level_group_owners_to_create_service_accounts FF is enabled' do
           before do
-            group.gitlab_subscription.update!(seats: 1)
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
           end
 
-          it 'raises error' do
-            result = service.execute
-
-            expect(result.status).to eq(:error)
-            expect(result.message).to include(
-              s_('ServiceAccount|No more seats are available to create Service Account User')
-            )
-          end
-        end
-
-        context 'when premium seats are available' do
-          before do
-            group.gitlab_subscription.update!(seats: 4)
-          end
-
-          it_behaves_like 'service account creation success' do
-            let(:username_prefix) { "service_account_group_#{group.id}" }
-          end
-
-          it 'sets provisioned by group' do
-            result = service.execute
-
-            expect(result.payload.provisioned_by_group_id).to eq(group.id)
-          end
-
-          context 'when the group is invalid' do
-            let(:namespace_id) { non_existing_record_id }
+          context 'when application setting is disabled' do
+            before do
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+            end
 
             it_behaves_like 'service account creation failure'
+
+            context 'when saas', :saas do
+              it_behaves_like 'service account creation failure'
+            end
           end
 
-          context 'when the group is subgroup' do
-            let(:namespace_id) { subgroup.id }
+          context 'when application setting is enabled' do
+            before do
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+            end
 
-            it_behaves_like 'service account creation failure'
+            it_behaves_like 'service account creation success' do
+              let(:username_prefix) { "service_account_group_#{group.id}" }
+            end
+
+            context 'when saas', :saas do
+              it_behaves_like 'service account creation success' do
+                let(:username_prefix) { "service_account_group_#{group.id}" }
+              end
+            end
+
+            # setting is only applicable for top level group
+            context 'when the group is subgroup' do
+              let(:namespace_id) { subgroup.id }
+
+              it_behaves_like 'service account creation failure'
+
+              context 'when saas', :saas do
+                it_behaves_like 'service account creation failure'
+              end
+            end
           end
         end
-      end
-    end
-
-    context 'when current user is an admin', :enable_admin_mode do
-      let_it_be(:current_user) { create(:admin) }
-
-      it_behaves_like "creates service accounts as per subscription"
-    end
-
-    context 'when current user is not an admin' do
-      let(:hosted_plan) { create(:ultimate_plan) }
-
-      context 'when not a group owner' do
-        let_it_be(:current_user) { create(:user, maintainer_of: group) }
-
-        it_behaves_like 'service account creation failure'
-      end
-
-      context 'when group owner' do
-        let_it_be(:current_user) { create(:user, owner_of: group) }
-
-        it_behaves_like "creates service accounts as per subscription"
       end
     end
   end
