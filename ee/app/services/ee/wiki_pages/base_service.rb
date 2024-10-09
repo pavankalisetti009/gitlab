@@ -8,9 +8,18 @@ module EE
     # and be included in the `WikiPages::BaseService` service
     module BaseService
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
       private
 
+      override :increment_usage
+      def increment_usage(page)
+        super
+
+        track_event(page, group_internal_event_name) if namespace_container?
+      end
+
+      override :execute_hooks
       def execute_hooks(page)
         super
         process_wiki_repository_update
