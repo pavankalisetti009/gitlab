@@ -17,7 +17,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
     let(:params) { { project_id: project.id } }
 
     before do
-      stub_licensed_features(ai_workflows: true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     end
 
     context 'when success' do
@@ -483,7 +483,7 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
     end
 
     before do
-      stub_licensed_features(ai_workflows: true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
         allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
       end

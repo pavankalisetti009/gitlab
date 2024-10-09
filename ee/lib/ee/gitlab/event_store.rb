@@ -86,7 +86,9 @@ module EE
         end
 
         def register_security_policy_subscribers(store)
+          store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyCreatedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyDeletedEvent
+          store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyUpdatedEvent
         end
 
         def register_threat_insights_subscribers(store)

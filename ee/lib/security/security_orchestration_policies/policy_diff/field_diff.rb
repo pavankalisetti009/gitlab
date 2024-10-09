@@ -10,6 +10,13 @@ module Security
           @from = from
           @to = to
         end
+
+        def to_h
+          {
+            from: from,
+            to: to
+          }
+        end
       end
     end
   end

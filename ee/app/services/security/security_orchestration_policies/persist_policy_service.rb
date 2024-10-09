@@ -28,12 +28,21 @@ module Security
         )
 
         new_policies, deleted_policies, policies_changes, rearranged_policies = categorize_policies
+        created_policies = []
 
         ApplicationRecord.transaction do
           mark_policies_for_deletion(deleted_policies)
           update_rearranged_policies(rearranged_policies)
-          create_policies(new_policies)
+          created_policies = create_policies(new_policies)
           update_policies(policies_changes)
+        end
+
+        if created_policies.any? || policies_changes.any? || deleted_policies.any?
+          Security::SecurityOrchestrationPolicies::EventPublisher.new(
+            created_policies: created_policies,
+            policies_changes: policies_changes,
+            deleted_policies: deleted_policies
+          ).publish
         end
 
         success

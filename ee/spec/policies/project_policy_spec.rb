@@ -4206,7 +4206,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   describe 'duo_workflow' do
     let(:project) { public_project_in_group }
 
-    where(:duo_workflow_feature_flag, :duo_workflow_license, :current_user, :match_expected_result) do
+    where(:duo_workflow_feature_flag, :stage_check_available, :current_user, :match_expected_result) do
       true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
       true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
       true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
@@ -4232,7 +4232,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     with_them do
       before do
         stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
-        stub_licensed_features(ai_workflows: duo_workflow_license)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check_available)
       end
 
       it { is_expected.to match_expected_result }

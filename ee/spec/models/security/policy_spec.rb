@@ -100,6 +100,72 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#link_project!' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy) { create(:security_policy) }
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+
+    it 'creates a new link if one does not exist' do
+      expect { policy.link_project!(project) }.to change { Security::PolicyProjectLink.count }.by(1)
+        .and change { Security::ApprovalPolicyRuleProjectLink.count }.by(1)
+    end
+
+    it 'does not create a duplicate link' do
+      policy.link_project!(project)
+
+      expect { policy.link_project!(project) }.to not_change { Security::PolicyProjectLink.count }
+        .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+    end
+  end
+
+  describe '#unlink_project!' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy) { create(:security_policy) }
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+
+    context 'when link already exists' do
+      before do
+        create(:security_policy_project_link, project: project, security_policy: policy)
+        create(:approval_policy_rule_project_link, approval_policy_rule: approval_policy_rule, project: project)
+      end
+
+      it 'removes the link between the policy and the project' do
+        expect { policy.unlink_project!(project) }
+          .to change { Security::PolicyProjectLink.count }.by(-1)
+          .and change { Security::ApprovalPolicyRuleProjectLink.count }.by(-1)
+      end
+    end
+
+    it 'does nothing if no link exists' do
+      expect { policy.unlink_project!(project) }
+        .to not_change { Security::PolicyProjectLink.count }
+        .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+    end
+  end
+
+  describe '#update_project_approval_policy_rule_links' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:policy) { create(:security_policy) }
+
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+    let_it_be(:deleted_approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
+
+    let(:created_rules) { [approval_policy_rule] }
+    let(:deleted_rules) { [deleted_approval_policy_rule] }
+
+    before do
+      create(:approval_policy_rule_project_link, approval_policy_rule: deleted_approval_policy_rule, project: project)
+    end
+
+    it 'updates links for created and deleted rules' do
+      policy.update_project_approval_policy_rule_links(project, created_rules, deleted_rules)
+
+      expect(
+        Security::ApprovalPolicyRuleProjectLink.for_project(project).map(&:approval_policy_rule)
+      ).to contain_exactly(approval_policy_rule)
+    end
+  end
+
   describe '.upsert_policy' do
     shared_examples 'upserts policy' do |policy_type, assoc_name|
       let(:policy_configuration) { create(:security_orchestration_policy_configuration) }
@@ -358,8 +424,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       expect { policy.delete_approval_policy_rules }.not_to change { other_policy_rule.reload }
     end
 
-    # Skipped as we want to update foreign_key to set null on delete: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166482
-    xcontext 'with merged mr rules' do
+    context 'with merged mr rules' do
       let_it_be(:merged_rule) do
         create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
       end
