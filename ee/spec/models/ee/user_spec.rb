@@ -2192,6 +2192,7 @@ RSpec.describe User, feature_category: :system_access do
   describe '#manageable_namespaces_eligible_for_trial', :saas do
     let_it_be(:user) { create :user }
     let_it_be(:non_trialed_group_z) { create :group_with_plan, name: 'Zeta', plan: :free_plan }
+    let_it_be(:non_trialed_group_p) { create :group_with_plan, name: 'Rho', plan: :premium_plan }
     let_it_be(:non_trialed_group_a) { create :group_with_plan, name: 'Alpha', plan: :free_plan }
     let_it_be(:trialed_group) { create :group_with_plan, name: 'Omitted', plan: :free_plan, trial_ends_on: Date.today + 1.day }
     let_it_be(:non_trialed_subgroup) { create :group_with_plan, name: 'Sub-group', plan: :free_plan, parent: non_trialed_group_a }
@@ -2241,6 +2242,28 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       it { is_expected.to eq [non_trialed_group_a, non_trialed_group_z] }
+    end
+
+    context 'owner of a non-trialed premium group' do
+      before do
+        non_trialed_group_p.add_owner(user)
+      end
+
+      it { is_expected.to eq [non_trialed_group_p] }
+    end
+
+    context 'When duo_enterprise_trials are disabled' do
+      before do
+        stub_feature_flags(duo_enterprise_trials_registration: false)
+      end
+
+      context 'owner of a non-trialed premium group' do
+        before do
+          non_trialed_group_p.add_owner(user)
+        end
+
+        it { is_expected.to eq [] }
+      end
     end
 
     context 'owner of a top-level group with a sub-group' do
