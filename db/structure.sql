@@ -1065,6 +1065,24 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_22262f5f16d8() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  NEW."author_id_convert_to_bigint" := NEW."author_id";
+  NEW."closed_by_id_convert_to_bigint" := NEW."closed_by_id";
+  NEW."duplicated_to_id_convert_to_bigint" := NEW."duplicated_to_id";
+  NEW."id_convert_to_bigint" := NEW."id";
+  NEW."last_edited_by_id_convert_to_bigint" := NEW."last_edited_by_id";
+  NEW."milestone_id_convert_to_bigint" := NEW."milestone_id";
+  NEW."moved_to_id_convert_to_bigint" := NEW."moved_to_id";
+  NEW."project_id_convert_to_bigint" := NEW."project_id";
+  NEW."promoted_to_epic_id_convert_to_bigint" := NEW."promoted_to_epic_id";
+  NEW."updated_by_id_convert_to_bigint" := NEW."updated_by_id";
+  RETURN NEW;
+END;
+$$;
+
 CREATE FUNCTION trigger_248cafd363ff() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -12967,6 +12985,16 @@ CREATE TABLE issues (
     tmp_epic_id bigint,
     imported_from smallint DEFAULT 0 NOT NULL,
     correct_work_item_type_id bigint DEFAULT 0 NOT NULL,
+    author_id_convert_to_bigint bigint,
+    closed_by_id_convert_to_bigint bigint,
+    duplicated_to_id_convert_to_bigint bigint,
+    id_convert_to_bigint bigint DEFAULT 0 NOT NULL,
+    last_edited_by_id_convert_to_bigint bigint,
+    milestone_id_convert_to_bigint bigint,
+    moved_to_id_convert_to_bigint bigint,
+    project_id_convert_to_bigint bigint,
+    promoted_to_epic_id_convert_to_bigint bigint,
+    updated_by_id_convert_to_bigint bigint,
     CONSTRAINT check_2addf801cd CHECK ((work_item_type_id IS NOT NULL)),
     CONSTRAINT check_c33362cd43 CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_fba63f706d CHECK ((lock_version IS NOT NULL))
@@ -33681,6 +33709,8 @@ CREATE TRIGGER trigger_206cbe2dc1a2 BEFORE INSERT OR UPDATE ON packages_package_
 CREATE TRIGGER trigger_207005e8e995 BEFORE INSERT OR UPDATE ON operations_strategies FOR EACH ROW EXECUTE FUNCTION trigger_207005e8e995();
 
 CREATE TRIGGER trigger_219952df8fc4 BEFORE INSERT OR UPDATE ON merge_request_blocks FOR EACH ROW EXECUTE FUNCTION trigger_219952df8fc4();
+
+CREATE TRIGGER trigger_22262f5f16d8 BEFORE INSERT OR UPDATE ON issues FOR EACH ROW EXECUTE FUNCTION trigger_22262f5f16d8();
 
 CREATE TRIGGER trigger_248cafd363ff BEFORE INSERT OR UPDATE ON packages_npm_metadata FOR EACH ROW EXECUTE FUNCTION trigger_248cafd363ff();
 
