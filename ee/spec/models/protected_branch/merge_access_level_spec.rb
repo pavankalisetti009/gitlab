@@ -3,5 +3,5 @@
 require 'spec_helper'
 
 RSpec.describe ProtectedBranch::MergeAccessLevel, feature_category: :source_code_management do
-  it_behaves_like 'ee protected ref access', :protected_branch
+  it_behaves_like 'ee protected ref access'
 end
