@@ -14,12 +14,13 @@ import blobInfoQuery from 'shared_queries/repository/blob_info.query.graphql';
 import projectInfoQuery from '~/repository/queries/project_info.query.graphql';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import highlightMixin from '~/repository/mixins/highlight_mixin';
+import getRefMixin from '~/repository/mixins/get_ref';
 import {
   simpleViewerMock,
   projectMock,
   userPermissionsMock,
   propsMock,
-  refMock,
 } from 'jest/repository/mock_data';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 
@@ -103,7 +104,7 @@ const createComponent = async (mockData = {}) => {
       ...propsMock,
       path,
     },
-    mixins: [{ data: () => ({ ref: refMock }) }],
+    mixins: [getRefMixin, highlightMixin],
     provide: {
       targetBranch: 'test',
       originalBranch: 'test',
