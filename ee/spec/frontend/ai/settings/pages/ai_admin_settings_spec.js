@@ -1,9 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
+import MockAdapter from 'axios-mock-adapter';
 import { updateApplicationSettings } from '~/rest_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
+import axios from '~/lib/utils/axios_utils';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from 'ee/ai/settings/components/code_suggestions_connection_form.vue';
+import AiModelsForm from 'ee/ai/settings/components/ai_models_form.vue';
 import AiAdminSettings from 'ee/ai/settings/pages/ai_admin_settings.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
@@ -13,8 +16,11 @@ jest.mock('~/lib/utils/url_utility');
 jest.mock('~/alert');
 
 let wrapper;
+let axiosMock;
 
-const createComponent = (props = {}, provide = {}) => {
+const aiTermsAndConditionsPath = '/admin/ai/self_hosted_models/terms_and_condition';
+
+const createComponent = ({ props = {}, provide = {} } = {}) => {
   wrapper = shallowMount(AiAdminSettings, {
     propsData: {
       duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
@@ -24,6 +30,8 @@ const createComponent = (props = {}, provide = {}) => {
     },
     provide: {
       disabledDirectConnectionMethod: false,
+      selfHostedModelsEnabled: false,
+      aiTermsAndConditionsPath,
       ...provide,
     },
   });
@@ -32,6 +40,7 @@ const createComponent = (props = {}, provide = {}) => {
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
 const findCodeSuggestionsConnectionForm = () =>
   wrapper.findComponent(CodeSuggestionsConnectionForm);
+const findAiModelsForm = () => wrapper.findComponent(AiModelsForm);
 
 describe('AiAdminSettings', () => {
   beforeEach(() => {
@@ -62,6 +71,26 @@ describe('AiAdminSettings', () => {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         instance_level_ai_beta_features_enabled: false,
         disabled_direct_code_suggestions: false,
+      });
+    });
+
+    describe('when the ai models setting is enabled', () => {
+      beforeEach(() => {
+        axiosMock = new MockAdapter(axios);
+        jest.spyOn(axios, 'post');
+
+        createComponent({ provide: { selfHostedModelsEnabled: true } });
+      });
+
+      afterEach(() => {
+        axiosMock.restore();
+      });
+
+      it('triggers a post request to persist the setting', async () => {
+        await findAiCommonSettings().vm.$emit('submit', {});
+        await waitForPromises();
+
+        expect(axios.post).toHaveBeenCalledWith(aiTermsAndConditionsPath);
       });
     });
 
@@ -102,19 +131,24 @@ describe('AiAdminSettings', () => {
 
   describe('when duoProVisible', () => {
     it('is availabile it does display the connection form', () => {
-      createComponent({ duoProVisible: true });
+      createComponent({ props: { duoProVisible: true } });
       expect(findCodeSuggestionsConnectionForm().exists()).toBe(true);
     });
 
     it('is not availabile it does not display the connection form', () => {
-      createComponent({ duoProVisible: false });
+      createComponent({ props: { duoProVisible: false } });
       expect(findCodeSuggestionsConnectionForm().exists()).toBe(false);
+    });
+
+    it('is not availabile it does not display the AI models form', () => {
+      createComponent({ props: { duoProVisible: false } });
+      expect(findAiModelsForm().exists()).toBe(false);
     });
   });
 
   describe('onConnectionFormChange', () => {
     beforeEach(() => {
-      createComponent({ duoProVisible: true });
+      createComponent({ props: { duoProVisible: true } });
     });
 
     it('sets hasParentFormChanged to true when event emitted', async () => {
@@ -125,6 +159,16 @@ describe('AiAdminSettings', () => {
     it('sets hasParentFormChanged to false when event emitted', async () => {
       await findCodeSuggestionsConnectionForm().vm.$emit('change', false);
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
+    });
+  });
+
+  describe('onAiModelsFormChange', () => {
+    it('updates hasParentFormChanged when ai models form changes', async () => {
+      createComponent({ props: { duoProVisible: true } });
+
+      await findAiModelsForm().vm.$emit('change', true);
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
     });
   });
 });

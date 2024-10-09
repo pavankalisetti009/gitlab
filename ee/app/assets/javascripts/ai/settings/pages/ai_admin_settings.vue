@@ -1,15 +1,18 @@
 <script>
 import { updateApplicationSettings } from '~/rest_api';
+import axios from '~/lib/utils/axios_utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
+import AiModelsForm from '../components/ai_models_form.vue';
 
 export default {
   name: 'AiAdminSettings',
   components: {
     AiCommonSettings,
+    AiModelsForm,
     CodeSuggestionsConnectionForm,
   },
   i18n: {
@@ -18,7 +21,7 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
-  inject: ['disabledDirectConnectionMethod'],
+  inject: ['disabledDirectConnectionMethod', 'selfHostedModelsEnabled', 'aiTermsAndConditionsPath'],
   props: {
     redirectPath: {
       type: String,
@@ -34,11 +37,15 @@ export default {
     return {
       isLoading: false,
       disabledConnection: this.disabledDirectConnectionMethod,
+      aiModelsEnabled: this.selfHostedModelsEnabled,
     };
   },
   computed: {
     hasFormChanged() {
-      return this.disabledConnection !== this.disabledDirectConnectionMethod;
+      return (
+        this.disabledConnection !== this.disabledDirectConnectionMethod ||
+        this.aiModelsEnabled !== this.selfHostedModelsEnabled
+      );
     },
   },
   methods: {
@@ -52,25 +59,44 @@ export default {
           disabled_direct_code_suggestions: this.disabledConnection,
         });
 
+        if (this.aiModelsEnabled) {
+          await this.updateAiModelsSetting();
+        }
+
         visitUrlWithAlerts(this.redirectPath, [
           {
-            id: 'application-settings-successfully-updated',
             message: this.$options.i18n.successMessage,
             variant: VARIANT_INFO,
           },
         ]);
       } catch (error) {
-        createAlert({
-          message: this.$options.i18n.errorMessage,
-          captureError: true,
-          error,
-        });
+        this.onError(error);
       } finally {
         this.isLoading = false;
       }
     },
+    async updateAiModelsSetting() {
+      await axios
+        .post(this.aiTermsAndConditionsPath)
+        .catch((error) => {
+          this.onError(error);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
     onConnectionFormChange(value) {
       this.disabledConnection = value;
+    },
+    onAiModelsFormChange(value) {
+      this.aiModelsEnabled = value;
+    },
+    onError(error) {
+      createAlert({
+        message: this.$options.i18n.errorMessage,
+        captureError: true,
+        error,
+      });
     },
   },
 };
@@ -79,6 +105,7 @@ export default {
   <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
     <template #ai-common-settings-bottom>
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
+      <ai-models-form v-if="duoProVisible" @change="onAiModelsFormChange" />
     </template>
   </ai-common-settings>
 </template>
