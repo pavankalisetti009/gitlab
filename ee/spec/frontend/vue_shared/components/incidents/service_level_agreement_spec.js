@@ -10,6 +10,7 @@ import { calculateRemainingMilliseconds, formatTime } from '~/lib/utils/datetime
 const formatTimeActual = jest.requireActual('~/lib/utils/datetime_utility').formatTime;
 
 jest.mock('~/lib/utils/datetime_utility', () => ({
+  ...jest.requireActual('~/lib/utils/datetime_utility'),
   calculateRemainingMilliseconds: jest.fn(() => 1000),
   formatTime: jest.fn(),
 }));
