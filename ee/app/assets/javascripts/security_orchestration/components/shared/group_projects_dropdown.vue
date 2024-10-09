@@ -120,6 +120,11 @@ export default {
       required: false,
       default: false,
     },
+    isGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
