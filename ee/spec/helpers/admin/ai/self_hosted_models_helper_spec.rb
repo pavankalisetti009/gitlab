@@ -12,7 +12,8 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "CODESTRAL", modelName: "Codestral" },
         { modelValue: "CODELLAMA", modelName: "Codellama" },
         { modelValue: "DEEPSEEKCODER", modelName: "Deepseekcoder" },
-        { modelValue: "CLAUDE_3", modelName: "Claude 3" }
+        { modelValue: "CLAUDE_3", modelName: "Claude 3" },
+        { modelValue: "GPT", modelName: "Gpt" }
       ]
 
       expect(helper.model_choices_as_options).to match_array(expected_result)

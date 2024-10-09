@@ -4019,6 +4019,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Successfully updated %{mainFeature} / %{title}"
 msgstr ""
 
+msgid "AdminSelfHostedModels|The self-hosted model was successfully %{action}."
+msgstr ""
+
 msgid "AdminSelfHostedModels|There was an error saving the self-hosted model. Please try again."
 msgstr ""
 

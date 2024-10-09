@@ -24,7 +24,8 @@ module Ai
       codestral: 3,
       codellama: 4,
       deepseekcoder: 5,
-      claude_3: 6
+      claude_3: 6,
+      gpt: 7
     }
 
     # For now, only OpenAI API format is supported, this method will be potentially

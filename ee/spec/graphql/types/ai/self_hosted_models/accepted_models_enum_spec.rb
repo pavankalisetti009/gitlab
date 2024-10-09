@@ -14,6 +14,7 @@ RSpec.describe GitlabSchema.types['AiAcceptedSelfHostedModels'], feature_categor
       DEEPSEEKCODER
       LLAMA3
       CLAUDE_3
+      GPT
     ])
   end
 end

@@ -9,16 +9,19 @@ import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_t
 import createSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
 import updateSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
 import { createAlert } from '~/alert';
+import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/self_hosted_models/constants';
 import { SELF_HOSTED_MODEL_OPTIONS, mockSelfHostedModel as mockModelData } from './mock_data';
 
 Vue.use(VueApollo);
 
 jest.mock('~/alert');
+jest.mock('~/lib/utils/url_utility');
 
 describe('SelfHostedModelForm', () => {
   let wrapper;
 
+  const basePath = '/admin/ai/self_hosted_models';
   const createMutationSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiSelfHostedModelCreate: {
@@ -37,7 +40,6 @@ describe('SelfHostedModelForm', () => {
     apolloHandlers = [[createSelfHostedModelMutation, createMutationSuccessHandler]],
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
-    const basePath = '/admin/ai/self_hosted_models';
 
     wrapper = mountExtended(SelfHostedModelForm, {
       apolloProvider: mockApollo,
@@ -210,6 +212,15 @@ describe('SelfHostedModelForm', () => {
   });
 
   describe('When creating a self-hosted model', () => {
+    beforeEach(async () => {
+      await findNameInputField().setValue('test deployment');
+      await findEndpointInputField().setValue('http://test.com');
+      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
+      await findIdentifierInputField().setValue('provider/model-name');
+
+      wrapper.find('form').trigger('submit.prevent');
+    });
+
     it('renders the submit button with the correct text', () => {
       const button = findCreateButton();
 
@@ -217,13 +228,6 @@ describe('SelfHostedModelForm', () => {
     });
 
     it('invokes the create mutation with correct input variables', async () => {
-      await findNameInputField().setValue('test deployment');
-      await findEndpointInputField().setValue('http://test.com');
-      await findCollapsibleListBox().vm.$emit('select', 'MISTRAL');
-      await findIdentifierInputField().setValue('provider/model-name');
-
-      wrapper.find('form').trigger('submit.prevent');
-
       await waitForPromises();
 
       expect(createMutationSuccessHandler).toHaveBeenCalledWith({
@@ -236,12 +240,23 @@ describe('SelfHostedModelForm', () => {
         },
       });
     });
+
+    it('displays success message when model successfully created', async () => {
+      await waitForPromises();
+
+      expect(visitUrlWithAlerts).toHaveBeenCalledWith(basePath, [
+        expect.objectContaining({
+          message: 'The self-hosted model was successfully created.',
+          variant: 'success',
+        }),
+      ]);
+    });
   });
 
   describe('When editing a self-hosted model', () => {
     const updateMutationSuccessHandler = jest.fn().mockResolvedValue({
       data: {
-        aiSelfHostedModelCreate: {
+        aiSelfHostedModelUpdate: {
           errors: [],
         },
       },
@@ -288,6 +303,21 @@ describe('SelfHostedModelForm', () => {
           identifier: 'provider/model-name',
         },
       });
+    });
+
+    it('displays success message when model successfully saved', async () => {
+      await findNameInputField().setValue('test deployment');
+
+      wrapper.find('form').trigger('submit.prevent');
+
+      await waitForPromises();
+
+      expect(visitUrlWithAlerts).toHaveBeenCalledWith(basePath, [
+        expect.objectContaining({
+          message: 'The self-hosted model was successfully saved.',
+          variant: 'success',
+        }),
+      ]);
     });
   });
 });
