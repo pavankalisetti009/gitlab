@@ -45,14 +45,17 @@ module Security
         approval_rules.each do |merge_request_approval_rule|
           approval_rule = merge_request_approval_rule.try(:source_rule) || merge_request_approval_rule
 
-          if !fail_open?(approval_rule) && scan_removed?(approval_rule)
-            log_update_approval_rule(
-              'Updating MR approval rule',
-              reason: 'Scanner removed by MR',
-              approval_rule_id: approval_rule.id,
-              approval_rule_name: approval_rule.name,
-              missing_scans: missing_scans(approval_rule)
-            )
+          if scan_removed?(approval_rule)
+            unless fail_open?(approval_rule)
+              log_update_approval_rule(
+                'Updating MR approval rule',
+                reason: 'Scanner removed by MR',
+                approval_rule_id: approval_rule.id,
+                approval_rule_name: approval_rule.name,
+                missing_scans: missing_scans(approval_rule)
+              )
+            end
+
             evaluation.error!(
               merge_request_approval_rule, :scan_removed,
               context: validation_context, missing_scans: missing_scans(approval_rule)

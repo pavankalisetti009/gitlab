@@ -150,12 +150,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
 
       context 'when rule is excluded' do
         context 'when rule should fail open' do
-          it 'does not create violations' do
+          it 'creates a warning violation' do
             policy_a.update!(fallback_behavior: { fail: 'open' })
             service.error!(approval_rule_1, :scan_removed, missing_scans: rule_scanners)
 
-            expect { execute }.not_to change { violated_policies }
-            expect(violated_policies).to be_empty
+            expect { execute }.to change { violated_policies.size }.by(1)
+            expect(violated_policies).to contain_exactly policy_a
+            expect(merge_request.scan_result_policy_violations.last).to be_warn
           end
         end
 

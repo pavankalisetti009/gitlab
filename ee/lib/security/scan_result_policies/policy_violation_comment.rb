@@ -99,8 +99,8 @@ module Security
         ].compact.join("\n")
       end
 
-      def only_optional_approvals?
-        reports == optional_approval_reports
+      def blocking_violations?
+        reports != optional_approval_reports && details.fail_closed_policies.present?
       end
 
       def details
@@ -112,20 +112,25 @@ module Security
         <<~MARKDOWN
         #{reports_header}
         #{merge_request.author.name}, this merge request has policy violations and errors.
-        #{only_optional_approvals? ? '' : "**To unblock this merge request, fix these items:**\n"}
+        #{blocking_violations? ? "**To unblock this merge request, fix these items:**\n" : ''}
         #{violation_summary}
-
         #{
-          if only_optional_approvals?
-            'Consider including optional reviewers based on the policy rules in the MR widget.'
-          else
+          if blocking_violations?
             "If you think these items shouldn't be violations, ask eligible approvers of each policy to approve this merge request."
+          else
+            'Consider including optional reviewers based on the policy rules in the MR widget.'
+          end
+        }
+        #{
+          if details.fail_open_policies.any?
+            "\nThe following policies enforced on your project were skipped because they are configured to fail open: " \
+              "#{details.fail_open_policies.join(', ')}.\n\n#{array_to_list(details.fail_open_messages)}"
           end
         }
 
         #{
           if [newly_introduced_violations, previously_existing_violations, any_merge_request_commits].any?(&:present?)
-            only_optional_approvals? ? VIOLATIONS_DETECTED_TITLE : VIOLATIONS_BLOCKING_TITLE
+            blocking_violations? ? VIOLATIONS_BLOCKING_TITLE : VIOLATIONS_DETECTED_TITLE
           else
             ''
           end
@@ -134,12 +139,14 @@ module Security
       end
 
       def violation_summary
-        all_policies = details.unique_policy_names
-        any_merge_request_policies = details.unique_policy_names(:any_merge_request)
-        license_scanning_policies = details.unique_policy_names(:license_scanning)
+        fail_closed_policies = details.fail_closed_policies
+        return if fail_closed_policies.blank?
+
+        any_merge_request_policies = details.fail_closed_policies(:any_merge_request)
+        license_scanning_policies = details.fail_closed_policies(:license_scanning)
         errors = details.errors
-        summary = ["Resolve all violations in the following merge request approval policies" \
-          "#{all_policies.present? ? ": #{all_policies.join(', ')}." : '.'}"]
+        summary = ["Resolve all violations in the following merge request approval policies: " \
+          "#{fail_closed_policies.join(', ')}."]
 
         if any_merge_request_policies.present?
           summary << "Acquire approvals from eligible approvers defined in the following " \
@@ -153,7 +160,7 @@ module Security
 
         summary << 'Resolve the errors and re-run the pipeline.' if errors.present?
 
-        summary.map { |list_item| "- #{list_item}" }.join("\n")
+        array_to_list(summary)
       end
 
       def newly_introduced_violations
@@ -271,6 +278,10 @@ module Security
         MARKDOWN
 
         [(pipeline.report_type.humanize if render_title), info].compact.join("\n")
+      end
+
+      def array_to_list(array)
+        array.map { |item| "- #{item}" }.join("\n")
       end
     end
   end

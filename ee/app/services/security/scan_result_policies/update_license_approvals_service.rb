@@ -43,6 +43,12 @@ module Security
 
       def evaluate_rules(license_approval_rules)
         license_approval_rules.each do |approval_rule|
+          # We only error for fail-open. Fail closed policy is evaluated as "failing"
+          if !target_branch_pipeline && fail_open?(approval_rule)
+            evaluation.error!(approval_rule, :target_pipeline_missing, context: validation_context)
+            next
+          end
+
           rule_violated, violation_data = rule_violated?(approval_rule)
 
           if rule_violated
@@ -55,10 +61,7 @@ module Security
       end
 
       def rule_violated?(rule)
-        scan_result_policy_read = rule.scan_result_policy_read
-        return false, nil if !target_branch_pipeline && fail_open?(scan_result_policy_read)
-
-        denied_licenses_with_dependencies = violation_checker.execute(scan_result_policy_read)
+        denied_licenses_with_dependencies = violation_checker.execute(rule.scan_result_policy_read)
 
         if denied_licenses_with_dependencies.present?
           return true, build_violation_data(denied_licenses_with_dependencies)
@@ -139,8 +142,8 @@ module Security
         end
       end
 
-      def fail_open?(scan_result_policy_read)
-        scan_result_policy_read&.fail_open?
+      def fail_open?(approval_rule)
+        approval_rule.scan_result_policy_read&.fail_open?
       end
     end
   end

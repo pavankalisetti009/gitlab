@@ -19,7 +19,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
   end
 
-  let_it_be(:policy_a) do
+  let_it_be(:policy_a, reload: true) do
     create(:scan_result_policy_read, project: project,
       security_orchestration_policy_configuration: policy_configuration, orchestration_policy_idx: 0, rule_idx: 0)
   end
@@ -96,7 +96,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         service.add_violation(policy_b, { uuid: { newly_detected: [123] } })
         service.execute
 
-        expect(last_violation.status).to eq("completed")
+        expect(last_violation.status).to eq('failed')
         expect(last_violation).to be_valid
       end
 
@@ -155,7 +155,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         service.add_error(policy_a, :scan_removed, missing_scans: ['sast'])
         service.execute
 
-        expect(last_violation.status).to eq("completed")
+        expect(last_violation.status).to eq('failed')
         expect(last_violation).to be_valid
       end
 
@@ -230,11 +230,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     end
 
     it 'stores the correct status' do
-      service.add_error(policy_a, :scan_removed, missing_scans: ['sast'])
+      service.add_violation(policy_a, data, context: context)
       service.execute
 
-      expect(last_violation.status).to eq("completed")
+      expect(last_violation.status).to eq('failed')
       expect(last_violation).to be_valid
+    end
+
+    context 'when policy is fail-open' do
+      before do
+        policy_a.update!(fallback_behavior: { fail: 'open' })
+      end
+
+      it 'persists the violation as failed', :aggregate_failures do
+        service.add_violation(policy_a, data, context: context)
+        service.execute
+
+        expect(last_violation.status).to eq('failed')
+      end
     end
 
     context 'when other data is present' do
@@ -287,9 +300,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     let(:extra_data) { {} }
     let(:context) { nil }
 
-    it 'adds error into violation data' do
+    it 'adds error into violation data and persists the violation as failed', :aggregate_failures do
       expect(violation_data)
         .to eq({ errors: [{ error: 'SCAN_REMOVED' }] })
+      service.execute
+      expect(last_violation.status).to eq('failed')
+    end
+
+    context 'when policy is fail-open' do
+      before do
+        policy_a.update!(fallback_behavior: { fail: 'open' })
+      end
+
+      it 'persists the violation as warning', :aggregate_failures do
+        expect(violation_data)
+          .to eq({ errors: [{ error: 'SCAN_REMOVED' }] })
+        service.execute
+        expect(last_violation.status).to eq('warn')
+      end
     end
 
     context 'when other error is present' do
