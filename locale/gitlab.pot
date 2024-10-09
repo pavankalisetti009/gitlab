@@ -43952,9 +43952,6 @@ msgstr ""
 msgid "PromotionRequests|User promotion has been rejected. Some errors occurred"
 msgstr ""
 
-msgid "Promotions"
-msgstr ""
-
 msgid "Promotions|Add %{link_start} description templates %{link_end} to help your contributors to communicate effectively!"
 msgstr ""
 
@@ -46505,6 +46502,9 @@ msgid "Roadmap view"
 msgstr ""
 
 msgid "Role"
+msgstr ""
+
+msgid "Role promotions"
 msgstr ""
 
 msgid "Roles and permissions"
