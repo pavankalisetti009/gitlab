@@ -364,6 +364,7 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
             invited
             avatarUrl
             approved
+            lastActivityOn
           }
         }
         QUERY
@@ -405,6 +406,7 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
           expect(pending_members.first[:avatarUrl]).to eq(GravatarService.new.execute(pending_member.user.email))
           expect(pending_members.first[:approved]).to eq(pending_member.active?)
           expect(pending_members.first[:invited]).to eq(pending_member.invite?)
+          expect(pending_members.first[:last_activity_on]).to eq(pending_member.last_activity_on)
         end
 
         it 'returns pending project members' do
