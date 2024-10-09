@@ -1,4 +1,4 @@
-import { GlAlert, GlKeysetPagination, GlTable } from '@gitlab/ui';
+import { GlLink, GlAlert, GlKeysetPagination, GlTable } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { CONTEXT_TYPE } from 'ee/members/constants';
@@ -51,6 +51,20 @@ describe('PromotionRequestsApp', () => {
 
   beforeEach(() => {
     pendingMemberApprovalsQueryHandler.mockReset();
+  });
+
+  describe('mounted', () => {
+    it('renders a description paragraph with a link to the feature documentation', async () => {
+      await createComponent({ provide: groupDefaultProvide });
+      const descriptionElement = wrapper.findByTestId('description');
+      expect(descriptionElement.text()).toBe(
+        'Role promotions must be approved by an administrator. This setting can be changed in the Admin area. Learn more.',
+      );
+
+      expect(descriptionElement.findComponent(GlLink).attributes('href')).toBe(
+        '/help/administration/settings/sign_up_restrictions#enable-role-promotion-approval',
+      );
+    });
   });
 
   describe.each([
