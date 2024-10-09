@@ -94,6 +94,81 @@ RSpec.describe Auth::ContainerRegistryAuthenticationService, feature_category: :
 
   context 'when not in maintenance mode' do
     it_behaves_like 'a container registry auth service'
+
+    describe 'container repository factory auditing' do
+      include_context 'container registry auth service context'
+
+      let_it_be(:project) { create(:project) }
+
+      let(:current_params) do
+        { scopes: ["repository:#{project.full_path}:push"] }
+      end
+
+      let(:operation) { subject }
+      let(:event_type) { 'container_repository_created' }
+      let(:repository) { project.container_repositories.last }
+      let(:fail_condition!) do
+        create(:container_repository, project: project, name: '')
+      end
+
+      let(:author) { current_user }
+
+      let(:attributes) do
+        {
+          author_id: author.id,
+          entity_id: project.id,
+          entity_type: 'Project',
+          details: {
+            event_name: event_type,
+            author_class: author.class.to_s,
+            author_name: author.name,
+            custom_message: "Container repository #{repository.path} created",
+            target_details: repository.path,
+            target_id: repository.id,
+            target_type: repository.class.to_s
+          }
+        }
+      end
+
+      context 'with current user' do
+        let_it_be(:current_user) { create(:user) }
+
+        before_all do
+          project.add_developer(current_user)
+        end
+
+        include_examples 'audit event logging' do
+          let(:author) { current_user }
+        end
+      end
+
+      context 'with deploy token' do
+        let_it_be(:user) { create(:user) }
+        let(:deploy_token) do
+          create(:deploy_token, projects: [project], read_registry: true, write_registry: true, user: user)
+        end
+
+        let(:current_params) do
+          { scopes: ["repository:#{project.full_path}:push"], deploy_token: deploy_token }
+        end
+
+        include_examples 'audit event logging' do
+          let(:author) { deploy_token.user }
+        end
+      end
+
+      context 'with anonymous deploy token' do
+        let(:deploy_token) { create(:deploy_token, projects: [project], read_registry: true, write_registry: true) }
+
+        let(:current_params) do
+          { scopes: ["repository:#{project.full_path}:push"], deploy_token: deploy_token }
+        end
+
+        include_examples 'audit event logging' do
+          let(:author) { ::Gitlab::Audit::DeployTokenAuthor.new }
+        end
+      end
+    end
   end
 
   context 'when over storage limit' do
