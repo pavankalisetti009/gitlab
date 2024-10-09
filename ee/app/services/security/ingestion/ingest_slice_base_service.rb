@@ -13,33 +13,15 @@ module Security
       end
 
       def execute
-        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[
-            project_security_statistics
-            project_settings
-            security_findings
-            vulnerabilities
-            vulnerability_flags
-            vulnerability_finding_evidences
-            vulnerability_finding_links
-            vulnerability_finding_signatures
-            vulnerability_findings_remediations
-            vulnerability_identifiers
-            vulnerability_occurrences
-            vulnerability_occurrence_identifiers
-            vulnerability_occurrence_pipelines
-            vulnerability_reads
-            vulnerability_remediations
-            vulnerability_scanners
-            vulnerability_statistics
-          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474635'
-        ) do
-          ApplicationRecord.transaction do
-            self.class::TASKS.each { |task| execute_task(task) }
-          end
-
-          finding_maps.map(&:vulnerability_id)
+        ::Gitlab::Database::SecApplicationRecord.transaction do
+          self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
         end
+
+        ::ApplicationRecord.transaction do
+          self.class::MAIN_DB_TASKS.each { |task| execute_task(task) }
+        end
+
+        finding_maps.map(&:vulnerability_id)
       end
 
       private

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Scanner < ApplicationRecord
+  class Scanner < Gitlab::Database::SecApplicationRecord
     include EachBatch
     self.table_name = "vulnerability_scanners"
 

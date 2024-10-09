@@ -12,7 +12,13 @@ RSpec.describe Security::Ingestion::IngestReportSliceService, feature_category: 
 
     before do
       allow(Security::Ingestion::Tasks::UpdateVulnerabilityUuids).to receive(:execute)
-      described_class::TASKS.each do |task_name|
+      described_class::SEC_DB_TASKS.each do |task_name|
+        task = Object.const_get("Security::Ingestion::Tasks::#{task_name}", false)
+
+        allow(task).to receive(:execute)
+      end
+
+      described_class::MAIN_DB_TASKS.each do |task_name|
         task = Object.const_get("Security::Ingestion::Tasks::#{task_name}", false)
 
         allow(task).to receive(:execute)
@@ -53,7 +59,6 @@ RSpec.describe Security::Ingestion::IngestReportSliceService, feature_category: 
         expect(Security::Ingestion::Tasks::IngestIdentifiers).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::IngestFindings).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::IngestVulnerabilities).not_to have_received(:execute)
-        expect(Security::Ingestion::Tasks::IncreaseCountersTask).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::AttachFindingsToVulnerabilities).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::IngestFindingIdentifiers).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::IngestFindingLinks).not_to have_received(:execute)
@@ -64,6 +69,7 @@ RSpec.describe Security::Ingestion::IngestReportSliceService, feature_category: 
         expect(Security::Ingestion::Tasks::IngestVulnerabilityStatistics).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::IngestRemediations).not_to have_received(:execute)
         expect(Security::Ingestion::Tasks::HooksExecution).not_to have_received(:execute)
+        expect(Security::Ingestion::Tasks::IncreaseCountersTask).not_to have_received(:execute)
       end
     end
 
