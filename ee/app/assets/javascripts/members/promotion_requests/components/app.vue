@@ -1,5 +1,6 @@
 <script>
-import { GlTable, GlKeysetPagination, GlAlert } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlTable, GlKeysetPagination, GlAlert } from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { CONTEXT_TYPE } from '~/members/constants';
@@ -39,6 +40,8 @@ export default {
     GlAlert,
     UserAvatar,
     UserDate,
+    GlLink,
+    GlSprintf,
   },
   inject: ['context', 'group', 'project'],
   data() {
@@ -107,6 +110,12 @@ export default {
       };
     },
   },
+  helpDocsPath: helpPagePath('/administration/settings/sign_up_restrictions', {
+    anchor: 'enable-role-promotion-approval',
+  }),
+  description: s__(
+    'Members|Role promotions must be approved by an administrator. This setting can be changed in the Admin area. %{linkStart}Learn more%{linkEnd}.',
+  ),
   FIELDS,
 };
 </script>
@@ -120,7 +129,21 @@ export default {
       class="gl-top-10 gl-z-1 gl-my-4"
       >{{ error }}</gl-alert
     >
-    <gl-table :busy="isLoading" :items="pendingMemberApprovals.nodes" :fields="$options.FIELDS">
+    <gl-table
+      :busy="isLoading"
+      :items="pendingMemberApprovals.nodes"
+      :fields="$options.FIELDS"
+      caption-top
+    >
+      <template #table-caption>
+        <div class="gl-mt-3" data-testid="description">
+          <gl-sprintf :message="$options.description">
+            <template #link="{ content }">
+              <gl-link :href="$options.helpDocsPath" target="_blank">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </div>
+      </template>
       <template #cell(user)="{ item }">
         <user-avatar :user="item.user" />
       </template>
