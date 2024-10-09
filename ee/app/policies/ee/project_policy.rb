@@ -954,7 +954,7 @@ module EE
 
       with_scope :subject
       condition(:duo_workflow_available) do
-        @subject.namespace&.licensed_feature_available?(:ai_workflows)
+        ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow)
       end
 
       rule { duo_workflow_enabled & duo_workflow_available & can?(:developer_access) }.policy do

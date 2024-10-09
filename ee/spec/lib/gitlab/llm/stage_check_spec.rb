@@ -51,6 +51,20 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
           end
         end
       end
+
+      context 'when feature is duo_workflow' do
+        let(:feature_name) { :duo_workflow }
+
+        context 'when not on a plan with workflows licensed' do
+          before do
+            stub_licensed_features(ai_workflows: false)
+          end
+
+          it 'returns false' do
+            expect(described_class.available?(container, feature_name)).to eq(false)
+          end
+        end
+      end
     end
 
     context 'when gitlab.com', :saas do
