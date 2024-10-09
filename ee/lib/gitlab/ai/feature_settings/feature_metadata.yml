@@ -10,6 +10,7 @@ code_generations:
     - mistral
     - llama3
     - claude_3
+    - gpt
 code_completions:
   title: Code Completion
   release_state: GA

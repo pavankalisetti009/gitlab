@@ -15,6 +15,7 @@ module Types
         value 'LLAMA3', description: 'LLaMA 3: Suitable for code suggestions and duo chat.', value: 'llama3'
         value 'CLAUDE_3', description: 'Claude 3 model family, suitable for code generation and duo chat.',
           value: 'claude_3'
+        value 'GPT', description: 'GPT: Suitable for code generation.', value: 'gpt'
       end
     end
   end
