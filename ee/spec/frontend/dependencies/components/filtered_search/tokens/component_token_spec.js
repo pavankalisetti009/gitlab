@@ -223,6 +223,14 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
       expect(findSuggestions()).toHaveLength(1);
     });
+
+    it('should skip the query when the searched term is less than 3 characters', async () => {
+      await searchForComponent(
+        TEST_COMPONENTS[1].name.substring(0, ComponentToken.MINIMUM_SEARCH_LENGTH - 1),
+      );
+
+      expect(findSuggestions()).toHaveLength(0);
+    });
   });
 
   describe('when there is an error fetching the list of components', () => {
