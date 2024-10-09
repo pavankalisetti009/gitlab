@@ -10,5 +10,8 @@ module Security
       inverse_of: :approval_policy_rule_project_links
 
     validates :approval_policy_rule, uniqueness: { scope: :project_id }
+
+    scope :for_project, ->(project) { where(project: project) }
+    scope :for_policy_rules, ->(policy_rules) { where(approval_policy_rule: policy_rules) }
   end
 end

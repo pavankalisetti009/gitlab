@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_management do
-  let_it_be(:policy) { create(:security_policy) }
+  let_it_be(:project) { create(:project) }
+  let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+  let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
 
   context 'when event is Security::PolicyDeletedEvent' do
     let(:policy_deleted_event) do
@@ -18,6 +20,111 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       expect(::Security::DeleteSecurityPolicyWorker).to receive(:perform_async).with(policy.id)
 
       described_class.new.handle_event(policy_deleted_event)
+    end
+  end
+
+  context 'when event is Security::PolicyCreatedEvent' do
+    let(:policy_created_event) { Security::PolicyCreatedEvent.new(data: { security_policy_id: policy.id }) }
+
+    it_behaves_like 'subscribes to event' do
+      let(:event) { policy_created_event }
+    end
+
+    it 'calls Security::SyncProjectPolicyWorker' do
+      expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id, {})
+
+      described_class.new.handle_event(policy_created_event)
+    end
+
+    context 'when policy scope is not applicable to project' do
+      before do
+        allow_next_found_instance_of(Security::Policy) do |instance|
+          allow(instance).to receive(:scope_applicable?).and_return(false)
+        end
+      end
+
+      it 'does not call Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
+
+        described_class.new.handle_event(policy_created_event)
+      end
+    end
+
+    context 'when policy_configuration is scoped to a namespace with multiple projects' do
+      let_it_be(:namespace) { create(:namespace) }
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+      let_it_be(:policy_configuration) do
+        create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
+      end
+
+      let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+
+      it 'calls Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project1.id, policy.id, {})
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project2.id, policy.id, {})
+
+        described_class.new.handle_event(policy_created_event)
+      end
+    end
+  end
+
+  context 'when event is Security::PolicyUpdatedEvent' do
+    let(:event_payload) do
+      {
+        security_policy_id: policy.id,
+        diff: { enabled: { from: false, to: true } },
+        rules_diff: { created: [], updated: [], deleted: [] }
+      }
+    end
+
+    let(:policy_updated_event) { Security::PolicyUpdatedEvent.new(data: event_payload) }
+
+    it_behaves_like 'subscribes to event' do
+      let(:event) { policy_updated_event }
+    end
+
+    it 'calls Security::SyncProjectPolicyWorker' do
+      expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
+        event_payload.deep_stringify_keys)
+
+      described_class.new.handle_event(policy_updated_event)
+    end
+
+    context 'when policy_configuration is scoped to a namespace with multiple projects' do
+      let_it_be(:namespace) { create(:namespace) }
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+      let_it_be(:policy_configuration) do
+        create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
+      end
+
+      let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+
+      it 'calls Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project1.id, policy.id,
+          event_payload.deep_stringify_keys)
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project2.id, policy.id,
+          event_payload.deep_stringify_keys)
+
+        described_class.new.handle_event(policy_updated_event)
+      end
+    end
+
+    context 'when policy changes does not need refresh' do
+      let(:event_payload) do
+        {
+          security_policy_id: policy.id,
+          diff: { name: { from: 'Old', to: 'new' } },
+          rules_diff: { created: [], updated: [], deleted: [] }
+        }
+      end
+
+      it 'does not call Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
+
+        described_class.new.handle_event(policy_updated_event)
+      end
     end
   end
 end

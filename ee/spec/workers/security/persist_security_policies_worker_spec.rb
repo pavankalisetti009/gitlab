@@ -46,8 +46,8 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
             create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
           end
 
-          it 'marks the policy as deleted' do
-            expect { perform }.to change { Security::Policy.last.policy_index }.from(0).to(-1)
+          it 'deletes the policy' do
+            expect { perform }.to change { Security::Policy.count }.from(1).to(0)
           end
         end
       end

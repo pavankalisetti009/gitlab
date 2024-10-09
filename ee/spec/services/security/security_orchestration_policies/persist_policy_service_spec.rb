@@ -65,6 +65,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         expect { persist }.to change { policy_configuration.security_policies.reload.type_approval_policy.count }.by(3)
       end
 
+      it 'calls EventPublisher with created policies' do
+        expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+          created_policies: policy_configuration.security_policies.reload.type_approval_policy,
+          policies_changes: [],
+          deleted_policies: []
+        })
+
+        persist
+      end
+
       it 'creates policy rules' do
         expect do
           persist
@@ -230,6 +240,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         include_examples 'succeeds'
 
+        it 'calls EventPublisher with deleted policies' do
+          expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+            created_policies: [],
+            policies_changes: [],
+            deleted_policies: [Security::Policy.first]
+          })
+
+          persist
+        end
+
         it 'sets negative index for deleted policies' do
           expect do
             persist
@@ -306,6 +326,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
             policy_configuration
               .security_policies.order(policy_index: :asc).flat_map(&:approval_policy_rules).flat_map(&:rule_index)
           }.from(contain_exactly(0, 1)).to(contain_exactly(0, -2))
+        end
+
+        it 'calls EventPublisher with deleted policies' do
+          expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+            created_policies: [],
+            policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
+            deleted_policies: []
+          })
+
+          persist
         end
       end
     end

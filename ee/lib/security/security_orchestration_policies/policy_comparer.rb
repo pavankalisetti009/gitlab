@@ -22,6 +22,15 @@ module Security
       end
       strong_memoize_attr :diff
 
+      def event_payload
+        diff_hash = diff.to_h
+        {
+          security_policy_id: db_policy.id,
+          diff: diff_hash[:diff],
+          rules_diff: diff_hash[:rules_diff]
+        }
+      end
+
       private
 
       def db_policy_hash
