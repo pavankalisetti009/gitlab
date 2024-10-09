@@ -10,6 +10,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
     let_it_be(:namespace) { create(:group) }
     let_it_be(:started_at) { Date.current.to_s }
     let_it_be(:expires_on) { 1.year.from_now.to_date.to_s }
+    let_it_be(:yesterday) { Time.zone.yesterday }
     let_it_be(:error) { ServiceResponse.error(message: 'Something went wrong') }
     let_it_be(:success) { ServiceResponse.success(message: 'Everything is good') }
 
@@ -225,7 +226,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
 
       it 'returns error service response' do
         expect(execute_service).to be_error
-        expect(execute_service.message).to eq "Something went wrong"
+        expect(execute_service.message).to eq 'Something went wrong'
       end
 
       it 'does not enqueue refresh user assignments worker' do
@@ -249,7 +250,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
 
       it 'returns error service response' do
         expect(execute_service).to be_error
-        expect(execute_service.message).to eq "Something went wrong"
+        expect(execute_service.message).to eq 'Something went wrong'
       end
 
       it 'does not enqueue refresh user assignments worker' do
@@ -298,29 +299,18 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         end
 
         it 'creates add-ons' do
-          expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(2)
+          expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(1)
         end
 
-        it 'returns error service response' do
-          expect(execute_service).to be_error
-          expect(execute_service.message).to eq "Add-on purchase could not be saved"
+        it 'returns success service response' do
+          expect(execute_service).to be_success
+          expect(execute_service.message).to eq 'Nothing to provision or de-provision'
 
           add_on_purchases = execute_service.payload[:add_on_purchases]
-          expect(add_on_purchases.count).to eq 2
+          expect(add_on_purchases.count).to eq 1
 
-          expect(add_on_purchases.first).not_to be_persisted
+          expect(add_on_purchases.first).to be_persisted
           expect(add_on_purchases.first).to have_attributes(
-            add_on: have_attributes(name: 'code_suggestions'),
-            started_at: started_at.to_date,
-            expires_on: expires_on.to_date,
-            namespace: namespace,
-            purchase_xid: purchase_xid,
-            quantity: 0,
-            trial: trial
-          )
-
-          expect(add_on_purchases.second).to be_persisted
-          expect(add_on_purchases.second).to have_attributes(
             add_on: have_attributes(name: 'product_analytics'),
             started_at: started_at.to_date,
             expires_on: expires_on.to_date,
@@ -379,6 +369,87 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(1)
 
           expect(GitlabSubscriptions::AddOnPurchase.first.add_on).to be_code_suggestions
+        end
+      end
+
+      context 'with Duo Pro to provision and Duo Enterprise to deprovision' do
+        let(:add_on_products) do
+          {
+            'duo_pro' => [add_on_product],
+            'duo_enterprise' => [{
+              'started_on' => yesterday,
+              'expires_on' => yesterday,
+              'purchase_xid' => nil,
+              'quantity' => nil,
+              'trial' => false
+            }]
+          }
+        end
+
+        it 'provisions Duo Pro' do
+          expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(1)
+
+          expect(GitlabSubscriptions::AddOnPurchase.first.add_on).to be_code_suggestions
+        end
+      end
+
+      context 'with multiple deprovision parameters' do
+        let(:add_on_products) do
+          {
+            'duo_pro' => [{
+              'started_on' => yesterday,
+              'expires_on' => yesterday,
+              'purchase_xid' => nil,
+              'quantity' => nil,
+              'trial' => false
+            }],
+            'duo_enterprise' => [{
+              'started_on' => yesterday,
+              'expires_on' => yesterday,
+              'purchase_xid' => nil,
+              'quantity' => nil,
+              'trial' => false
+            }]
+          }
+        end
+
+        let!(:add_on_purchase) do
+          create(
+            :gitlab_subscription_add_on_purchase,
+            :gitlab_duo_pro,
+            started_at: Date.current.to_s,
+            expires_on: 1.year.from_now.to_date.to_s,
+            namespace: namespace,
+            purchase_xid: '123',
+            quantity: 2,
+            trial: false
+          )
+        end
+
+        it 'deprovision only add-on purchases with the same add-on name' do
+          execute_service
+
+          expect(add_on_purchase.reload.add_on).to be_code_suggestions
+        end
+
+        it 'expires date attributes' do
+          execute_service
+
+          expect(add_on_purchase.reload.started_at).to eq yesterday
+          expect(add_on_purchase.expires_on).to eq yesterday
+        end
+
+        it 'does not change other attributes' do
+          execute_service
+
+          expect(add_on_purchase.reload.purchase_xid).to eq '123'
+          expect(add_on_purchase.quantity).to eq 2
+        end
+
+        it 'executes successfully' do
+          expect(execute_service).to be_success
+          expect(execute_service.message).to eq('Nothing to provision or de-provision')
+          expect(execute_service.payload).to eq({ add_on_purchases: GitlabSubscriptions::AddOnPurchase.limit(1).to_a })
         end
       end
     end

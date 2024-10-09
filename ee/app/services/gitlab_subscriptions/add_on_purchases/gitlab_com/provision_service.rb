@@ -14,11 +14,13 @@ module GitlabSubscriptions
 
         def initialize(namespace, add_on_products = [])
           @namespace = namespace
-          @add_on_products = consolidate(add_on_products.deep_symbolize_keys)
+          @add_on_products = add_on_products
         end
 
         def execute
-          responses = add_on_products.map { |name, products| create_or_update(name, products.first) }
+          responses = consolidate(add_on_products.deep_symbolize_keys).map do |name, products|
+            create_or_update(name, products.first)
+          end
 
           if responses.any?(&:success?)
             GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker.perform_async(namespace.id)
@@ -36,24 +38,44 @@ module GitlabSubscriptions
         def consolidate(add_on_products)
           add_on_products.each_with_object({}) do |(key, value), hash|
             next unless value.presence
-            next if key == DUO_PRO && add_on_products[DUO_ENTERPRISE].present?
+            next if key == DUO_PRO && duo_enterprise_provisionable?
 
             hash[key] = value
           end
         end
 
+        def duo_enterprise_provisionable?
+          add_on_products[DUO_ENTERPRISE]&.first&.dig(:quantity).to_i > 0
+        end
+
         def create_or_update(name, product)
           add_on_purchase = add_on_purchase(name)
-          add_on = add_on(name)
+          return success unless executable?(add_on_purchase, product, name)
+
           attributes = attributes(product).merge(add_on_purchase: add_on_purchase)
+          service_class(add_on_purchase).new(namespace, add_on(name), attributes).execute
+        end
 
-          service_class = if add_on_purchase
-                            GitlabSubscriptions::AddOnPurchases::GitlabCom::UpdateService
-                          else
-                            GitlabSubscriptions::AddOnPurchases::CreateService
-                          end
+        def executable?(add_on_purchase, product, name)
+          create?(add_on_purchase, product) ||
+            update?(add_on_purchase, product) ||
+            deprovision?(add_on_purchase, product, name)
+        end
 
-          service_class.new(namespace, add_on, attributes).execute
+        def create?(add_on_purchase, product)
+          !add_on_purchase && product[:quantity].to_i > 0
+        end
+
+        def update?(add_on_purchase, product)
+          add_on_purchase && product[:quantity].to_i > 0
+        end
+
+        def deprovision?(add_on_purchase, product, name)
+          add_on_purchase && product[:quantity].to_i < 1 && add_on_remains_unchanged?(add_on_purchase, name)
+        end
+
+        def add_on_remains_unchanged?(add_on_purchase, name)
+          add_on_purchase.add_on.name.to_sym == mapped_name(name)
         end
 
         def attributes(product)
@@ -67,7 +89,7 @@ module GitlabSubscriptions
         end
 
         def add_on(name)
-          GitlabSubscriptions::AddOn.find_or_create_by_name(ADD_ON_MAPPING[name] || name)
+          GitlabSubscriptions::AddOn.find_or_create_by_name(mapped_name(name))
         end
 
         def add_on_purchase(name)
@@ -83,6 +105,22 @@ module GitlabSubscriptions
             message: responses.filter_map(&:message).join(" ").presence,
             payload: { add_on_purchases: responses.filter_map(&:payload).filter_map(&:values).flatten }
           }
+        end
+
+        def service_class(add_on_purchase)
+          if add_on_purchase
+            GitlabSubscriptions::AddOnPurchases::GitlabCom::UpdateService
+          else
+            GitlabSubscriptions::AddOnPurchases::CreateService
+          end
+        end
+
+        def success
+          ServiceResponse.success(message: "Nothing to provision or de-provision")
+        end
+
+        def mapped_name(name)
+          ADD_ON_MAPPING[name] || name
         end
       end
     end

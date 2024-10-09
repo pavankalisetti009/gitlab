@@ -145,6 +145,32 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
             end
           end
         end
+
+        context 'when /confidential is used' do
+          let(:widget_params) { { description_widget: { description: '/confidential' } } }
+          let(:opts) do
+            {
+              title: 'My work item',
+              work_item_type: work_item_type
+            }
+          end
+
+          before do
+            skip 'these examples only apply to a group container' unless container.is_a?(Group)
+          end
+
+          context 'with Epic type' do
+            let_it_be(:work_item_type) { create(:work_item_type, :epic, namespace: group) }
+
+            let(:feature_hash) { { issue_weights: true, epics: true } }
+
+            it 'saves the work item and applies the quick action' do
+              expect(service_result).to be_success
+              expect(work_item).to be_confidential
+              expect(work_item.synced_epic).to be_confidential
+            end
+          end
+        end
       end
     end
   end

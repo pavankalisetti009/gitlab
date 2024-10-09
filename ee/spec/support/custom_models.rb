@@ -17,4 +17,10 @@ RSpec.configure do |config|
 
     skip(skip_reason) if ai_gateway_url.blank? || litellm_proxy_url.blank?
   end
+
+  config.around(:each, :requires_custom_models_setup) do |example|
+    with_net_connect_allowed do
+      example.run
+    end
+  end
 end
