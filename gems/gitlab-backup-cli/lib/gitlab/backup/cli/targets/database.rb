@@ -5,8 +5,6 @@ module Gitlab
     module Cli
       module Targets
         class Database < Target
-          attr_reader :errors
-
           IGNORED_ERRORS = [
             # Ignore warnings
             /WARNING:/,
@@ -17,8 +15,14 @@ module Gitlab
           ].freeze
           IGNORED_ERRORS_REGEXP = Regexp.union(IGNORED_ERRORS).freeze
 
-          def initialize
+          attr_reader :errors
+          attr_reader :database_wrapper
+
+          def initialize(context)
+            super(context)
+
             @errors = []
+            @database_wrapper = ::Gitlab::Backup::Cli::Database::Wrapper.new(context)
           end
 
           def dump(destination_dir)
@@ -36,9 +40,9 @@ module Gitlab
 
               schemas = []
 
-              if Gitlab.config.backup.pg_schema
-                schemas << Gitlab.config.backup.pg_schema
-                schemas.push(*Gitlab::Database::EXTRA_SCHEMAS.map(&:to_s))
+              if context.backup_pg_schema
+                schemas << context.backup_pg_schema
+                schemas.push(*databse::EXTRA_SCHEMAS.map(&:to_s))
               end
 
               pg_dump = ::Gitlab::Backup::Cli::Utils::PgDump.new(
@@ -47,7 +51,8 @@ module Gitlab
                 schemas: schemas,
                 env: pg_env)
 
-              success = ::Backup::Dump::Postgres.new.dump(dump_file_name, pg_dump)
+                # TODO
+              success = ::Gitlab::Backup::Cli::Database::Postgres.new.dump(dump_file_name, pg_dump)
 
               backup_connection.release_snapshot! if backup_connection.snapshot_id
 
@@ -56,11 +61,11 @@ module Gitlab
               report_finish_status(success)
             end
           ensure
-            if multiple_databases?
-              ::Gitlab::Database::EachDatabase.each_connection(
+            if database_wrapper.multiple_databases?
+              ::Gitlab::Backup::Cli::Database::EachDatabase.each_connection(
                 only: base_models_for_backup.keys, include_shared: false
               ) do |_, database_connection_name|
-                backup_connection = ::Backup::DatabaseConnection.new(database_connection_name)
+                backup_connection = ::Gitlab::Backup::Cli::Database::Connection.new(database_connection_name, database_wrapper)
                 backup_connection.restore_timeouts!
               rescue ActiveRecord::ConnectionNotEstablished
                 raise DatabaseBackupError.new(
@@ -73,7 +78,7 @@ module Gitlab
 
           def restore(destination_dir)
             base_models_for_backup.each do |database_name, _|
-              backup_connection = ::Backup::DatabaseConnection.new(database_name)
+              backup_connection = ::Gitlab::Backup::Cli::Database::Connection.new(database_name, database_wrapper)
 
               config = backup_connection.database_configuration.activerecord_variables
 
@@ -125,7 +130,7 @@ module Gitlab
           protected
 
           def base_models_for_backup
-            @base_models_for_backup ||= ::Gitlab::Database.database_base_models_with_gitlab_shared
+            @base_models_for_backup ||= database_wrapper.database_base_models_with_gitlab_shared
           end
 
           def main_database?(database_name)
@@ -151,6 +156,7 @@ module Gitlab
           def drop_tables(database_name)
             Gitlab::Backup::Cli::Output.info 'Cleaning the database ... '
 
+            # TODO
             if Rake::Task.task_defined? "gitlab:db:drop_tables:#{database_name}"
               Rake::Task["gitlab:db:drop_tables:#{database_name}"].invoke
             else
@@ -181,13 +187,13 @@ module Gitlab
             # and reject the ones that are shared, so we don't get duplicates
             #
             # we consider a connection to be shared when it has `database_tasks: false`
-            ::Gitlab::Database::EachDatabase.each_connection(
+            ::Gitlab::Backup::Cli::Database::EachDatabase.each_connection(
               only: base_models_for_backup.keys, include_shared: false
             ) do |_, database_connection_name|
-              backup_connection = ::Backup::DatabaseConnection.new(database_connection_name)
+              backup_connection = ::Gitlab::Backup::Cli::Database::Connection.new(database_connection_name, database_wrapper)
               databases << backup_connection
 
-              next unless multiple_databases?
+              next unless database_wrapper.multiple_databases?
 
               begin
                 # Trigger a transaction snapshot export that will be used by pg_dump later on
@@ -201,10 +207,6 @@ module Gitlab
             end
 
             databases.each(&block)
-          end
-
-          def multiple_databases?
-            ::Gitlab::Database.database_mode == ::Gitlab::Database::MODE_MULTIPLE_DATABASES
           end
         end
       end

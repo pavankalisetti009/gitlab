@@ -124,6 +124,14 @@ module Gitlab
             gitlab_config.dig(env, 'gitaly', 'token')
           end
 
+          # Return the GitLab base directory
+          # @return [Pathname]
+          def gitlab_basepath
+            return Pathname.new(GITLAB_PATH) if GITLAB_PATH
+
+            raise ::Gitlab::Backup::Cli::Error, 'GITLAB_PATH is missing'
+          end
+
           private
 
           # Return the shared path used as a fallback base location to each blob type
@@ -144,14 +152,6 @@ module Gitlab
           def absolute_path(path)
             # Joins with gitlab_basepath when relative, otherwise return full path
             Pathname(File.expand_path(path, gitlab_basepath))
-          end
-
-          # Return the GitLab base directory
-          # @return [Pathname]
-          def gitlab_basepath
-            return Pathname.new(GITLAB_PATH) if GITLAB_PATH
-
-            raise ::Gitlab::Backup::Cli::Error, 'GITLAB_PATH is missing'
           end
 
           def gitlab_config
