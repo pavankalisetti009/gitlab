@@ -218,6 +218,14 @@ module EE
         ::Gitlab::Saas.feature_available?(:google_cloud_support)
       end
 
+      condition(:allow_top_level_group_owners_to_create_service_accounts, scope: :global) do
+        if ::Feature.enabled?(:allow_top_level_group_owners_to_create_service_accounts, @user)
+          ::Gitlab::CurrentSettings.current_application_settings.allow_top_level_group_owners_to_create_service_accounts?
+        else
+          is_gitlab_com?
+        end
+      end
+
       MemberRole.all_customizable_group_permissions.each do |ability|
         desc "Custom role on group that enables #{ability.to_s.tr('_', ' ')}"
         condition("custom_role_enables_#{ability}".to_sym) do
@@ -488,7 +496,7 @@ module EE
         prevent :admin_group_member
       end
 
-      rule { service_accounts_available & ~has_parent & (admin | (is_gitlab_com & owner)) }.policy do
+      rule { service_accounts_available & ~has_parent & (admin | (allow_top_level_group_owners_to_create_service_accounts & owner)) }.policy do
         enable :create_service_account
         enable :delete_service_account
       end

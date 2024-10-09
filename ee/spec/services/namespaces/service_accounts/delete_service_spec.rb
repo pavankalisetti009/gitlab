@@ -63,55 +63,65 @@ RSpec.describe Namespaces::ServiceAccounts::DeleteService, feature_category: :us
       context 'when group owner' do
         let_it_be(:current_user) { create(:user, owner_of: group) }
 
-        it_behaves_like 'service account deletion failure'
-      end
-    end
-  end
-
-  context 'when saas', :saas do
-    before do
-      stub_licensed_features(service_accounts: true)
-    end
-
-    context 'when current user is an admin' do
-      let_it_be(:current_user) { create(:admin) }
-
-      context 'when admin mode is enabled', :enable_admin_mode do
-        it_behaves_like 'service account deletion is success'
-
-        context 'when user to be deleted is not of type service account' do
-          let_it_be(:delete_user) { create(:user) }
-
-          before_all do
-            group.add_maintainer(delete_user)
+        context 'when allow_top_level_group_owners_to_create_service_accounts FF is disabled' do
+          before do
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
           end
 
           it_behaves_like 'service account deletion failure'
+
+          context 'when saas', :saas do
+            it_behaves_like 'service account deletion is success'
+          end
+        end
+
+        context 'when allow_top_level_group_owners_to_create_service_accounts is enabled' do
+          before do
+            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+          end
+
+          context 'when setting is off' do
+            before do
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+            end
+
+            it_behaves_like 'service account deletion failure'
+
+            context 'when saas', :saas do
+              it_behaves_like 'service account deletion failure'
+            end
+          end
+
+          context 'when setting is on' do
+            before do
+              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+            end
+
+            it_behaves_like 'service account deletion is success'
+
+            context 'when saas', :saas do
+              it_behaves_like 'service account deletion is success'
+            end
+
+            context 'when its a subgroup' do
+              let_it_be(:group) { create(:group, :private, parent: create(:group)) }
+              let_it_be(:delete_user) { create(:service_account, provisioned_by_group: group) }
+
+              it_behaves_like 'service account deletion failure'
+            end
+          end
         end
       end
-    end
 
-    context 'when current user is not an admin' do
-      context 'when not a group owner' do
-        let_it_be(:current_user) { create(:user, maintainer_of: group) }
-
-        it_behaves_like 'service account deletion failure'
-      end
-
-      context 'when group owner' do
+      context 'when user to be deleted is not of type service account' do
+        let_it_be(:delete_user) { create(:user) }
         let_it_be(:current_user) { create(:user, owner_of: group) }
 
-        it_behaves_like 'service account deletion is success'
-
-        context 'when user to be deleted is not of type service account' do
-          let_it_be(:delete_user) { create(:user) }
-
-          before_all do
-            group.add_maintainer(delete_user)
-          end
-
-          it_behaves_like 'service account deletion failure'
+        before_all do
+          group.add_maintainer(delete_user)
         end
+
+        it_behaves_like 'service account deletion failure'
       end
     end
   end

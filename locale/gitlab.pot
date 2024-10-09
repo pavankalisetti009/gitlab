@@ -5787,6 +5787,9 @@ msgstr ""
 msgid "Allow this key to push to this repository"
 msgstr ""
 
+msgid "Allow top-level group owners to create Service accounts."
+msgstr ""
+
 msgid "Allow use of licensed EE features"
 msgstr ""
 
@@ -51080,6 +51083,9 @@ msgid "Service access token expiration"
 msgstr ""
 
 msgid "Service account"
+msgstr ""
+
+msgid "Service account creation"
 msgstr ""
 
 msgid "Service account generated successfully"
