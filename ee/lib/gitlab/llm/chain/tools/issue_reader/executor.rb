@@ -132,19 +132,12 @@ module Gitlab
               issues.first if issues.one?
             end
 
-            def extract_resource(text, type)
-              project = extract_project(text, type)
-              return unless project
-
-              extractor = Gitlab::ReferenceExtractor.new(project, context.current_user)
-              extractor.analyze(text, {})
-              issues = extractor.issues
-
-              issues.first if issues.one?
-            end
-
             def resource_name
               RESOURCE_NAME
+            end
+
+            def get_resources(extractor)
+              extractor.issues
             end
           end
         end

@@ -556,6 +556,21 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '#cwe_name' do
+    it 'returns true if finding has a CWE identifier' do
+      finding = build(:security_finding, :with_finding_data)
+
+      expect(finding.cwe_name).to eq 'CWE-259'
+    end
+
+    it 'returns false if finding has no CWE identifier' do
+      finding = build(:security_finding, :with_finding_data)
+      finding.finding_data['identifiers'] = []
+
+      expect(finding.cwe_name).to be_nil
+    end
+  end
+
   describe '#ai_resolution_available?' do
     it 'returns true if the finding is a SAST finding' do
       expect(finding_1.ai_resolution_available?).to be true
@@ -580,7 +595,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     with_them do
       it 'returns the expected value for enabled' do
         finding.scan.scan_type = finding_report_type
-        finding.finding_data["identifiers"] << build(:vulnerabilities_identifier, external_type: 'cwe', name: cwe)
+        finding.finding_data["identifiers"] = [build(:ci_reports_security_identifier, :cwe, name: cwe).to_hash]
         expect(finding.ai_resolution_enabled?).to be enabled_value
       end
     end

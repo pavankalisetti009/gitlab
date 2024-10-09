@@ -22,12 +22,14 @@ RSpec.describe SnippetRepository, :request_store, :geo, type: :model do
     let!(:project_snippet_1) { create(:project_snippet, project: project_1) }
     let!(:project_snippet_2) { create(:project_snippet, project: project_2) }
     let!(:personal_snippet_1) { create(:personal_snippet) }
+    let!(:personal_snippet_2) { create(:personal_snippet) }
+    let!(:personal_snippet_3) { create(:personal_snippet) }
 
     let!(:snippet_repository_1) { create(:snippet_repository, snippet: project_snippet_1) }
     let!(:snippet_repository_2) { create(:snippet_repository, snippet: personal_snippet_1) }
 
-    let!(:snippet_repository_3) { create(:snippet_repository, shard_name: 'broken') }
-    let!(:snippet_repository_4) { create(:snippet_repository) }
+    let!(:snippet_repository_3) { create(:snippet_repository, snippet: personal_snippet_2, shard_name: 'broken') }
+    let!(:snippet_repository_4) { create(:snippet_repository, snippet: personal_snippet_3) }
     let!(:snippet_repository_5) { create(:snippet_repository, snippet: project_snippet_2) }
 
     describe '#in_replicables_for_current_secondary?' do

@@ -1,50 +1,38 @@
-import { GlFilteredSearchTokenSegment } from '@gitlab/ui';
+import { GlFilteredSearchTokenSegment, GlAvatar } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import createMockApollo from 'helpers/mock_apollo_helper';
+import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import searchTodosProjectsQuery from '~/todos/components/queries/search_todos_projects.query.graphql';
-import ProjectToken from '~/todos/components/filtered_search_tokens/project_token.vue';
+import AuthorToken from '~/todos/components/filtered_search_tokens/author_token.vue';
 import AsyncToken from '~/todos/components/filtered_search_tokens/async_token.vue';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { stubComponent } from 'helpers/stub_component';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { todosProjectsResponse } from '../../mock_data';
+import axios from '~/lib/utils/axios_utils';
+import { todosAuthorsResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
 const mockToken = {
-  type: 'project',
-  icon: 'project',
-  title: 'Project',
+  type: 'author',
+  icon: 'author',
+  title: 'Author',
   unique: true,
-  token: ProjectToken,
+  token: AuthorToken,
   operators: OPERATORS_IS,
+  status: ['pending'],
 };
 
-const searchTodosProjectsQuerySuccessHandler = jest.fn().mockResolvedValue(todosProjectsResponse);
-
-describe('ProjectToken', () => {
+describe('AuthorToken', () => {
   let wrapper;
+  let axiosMock;
 
-  function createComponent({
-    props = {},
-    data = {},
-    stubs = {},
-    searchTodosProjectsQueryHandler = searchTodosProjectsQuerySuccessHandler,
-  } = {}) {
-    const mockApollo = createMockApollo();
-    mockApollo.defaultClient.setRequestHandler(
-      searchTodosProjectsQuery,
-      searchTodosProjectsQueryHandler,
-    );
-    wrapper = mount(ProjectToken, {
-      apolloProvider: mockApollo,
+  function createComponent({ props = {}, data = {}, stubs = {} } = {}) {
+    wrapper = mount(AuthorToken, {
       propsData: {
         config: mockToken,
         value: { data: '' },
@@ -70,11 +58,19 @@ describe('ProjectToken', () => {
     return waitForPromises();
   };
 
+  beforeEach(() => {
+    axiosMock = new MockAdapter(axios);
+    axiosMock.onGet('/-/autocomplete/users.json').reply(200, todosAuthorsResponse);
+  });
+
+  afterEach(() => {
+    axiosMock.restore();
+  });
+
   it('starts fetching suggestions on mount', async () => {
     createComponent();
     await nextTick();
 
-    expect(searchTodosProjectsQuerySuccessHandler).toHaveBeenCalled();
     expect(findBaseToken().props('suggestionsLoading')).toBe(true);
 
     await waitForPromises();
@@ -83,25 +79,34 @@ describe('ProjectToken', () => {
   });
 
   it('sets the loading state while fetching suggestions', async () => {
+    const searchQuery = 'Mr. Tanuki';
     createComponent();
-
     await waitForPromises();
 
     expect(findBaseToken().props('suggestionsLoading')).toBe(false);
 
-    triggerFetchSuggestions('project');
+    triggerFetchSuggestions(searchQuery);
     await nextTick();
 
     expect(findBaseToken().props('suggestionsLoading')).toBe(true);
+
+    await waitForPromises();
+
+    expect(axiosMock.history.get[axiosMock.history.get.length - 1].params).toEqual({
+      active: true,
+      search: searchQuery,
+      todo_filter: true,
+      todo_state_filter: ['pending'],
+    });
   });
 
-  it("renders the projects' full paths in the suggestions list", () => {
+  it("renders the authors' avatars, names and usernames in the suggestions list", () => {
     createComponent({
       stubs: {
         AsyncToken: stubComponent(AsyncToken, {
           data() {
             return {
-              suggestions: [...todosProjectsResponse.data.projects.nodes],
+              suggestions: [...todosAuthorsResponse],
             };
           },
           template: `
@@ -114,22 +119,29 @@ describe('ProjectToken', () => {
         }),
       },
     });
-    const suggestionTexts = wrapper
-      .text()
-      .split('\n')
-      .map((text) => text.trim())
-      .filter(Boolean);
+    const avatars = wrapper.findAllComponents(GlAvatar);
 
-    todosProjectsResponse.data.projects.nodes.forEach((project, i) => {
-      expect(suggestionTexts[i]).toBe(project.fullPath);
+    todosAuthorsResponse.forEach((author, index) => {
+      expect(avatars.at(index).props()).toEqual(
+        expect.objectContaining({
+          alt: author.name,
+          entityName: author.username,
+          src: author.avatar_url,
+          shape: 'circle',
+          size: 32,
+        }),
+      );
     });
+    expect(wrapper.text()).toBe(
+      todosAuthorsResponse.flatMap((author) => [author.name, `@${author.username}`]).join(' '),
+    );
   });
 
-  it("renders the selected project's token", async () => {
-    const selectedProject = todosProjectsResponse.data.projects.nodes[0];
+  it("renders the selected author's token", async () => {
+    const selectedAuthor = todosAuthorsResponse[0];
     createComponent({
       props: {
-        value: { data: String(getIdFromGraphQLId(selectedProject.id)) },
+        value: { data: String(selectedAuthor.id) },
       },
     });
     await waitForPromises();
@@ -138,15 +150,14 @@ describe('ProjectToken', () => {
     const [tokenName, , tokenValue] = tokenSegments.wrappers;
 
     expect(tokenName.text()).toBe(mockToken.title);
-    expect(tokenValue.text()).toBe(selectedProject.name);
+    expect(tokenValue.text()).toBe(selectedAuthor.name);
   });
 
   it('creates an alert if the query fails', async () => {
-    createComponent({
-      searchTodosProjectsQueryHandler: jest.fn().mockRejectedValue(),
-    });
+    axiosMock.onGet('/-/autocomplete/users.json').reply(500);
+    createComponent();
     await waitForPromises();
 
-    expect(createAlert).toHaveBeenCalledWith({ message: 'There was a problem fetching projects.' });
+    expect(createAlert).toHaveBeenCalledWith({ message: 'There was a problem fetching authors.' });
   });
 });

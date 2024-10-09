@@ -125,18 +125,7 @@ module Gitlab
               epics.first if epics.one?
             end
 
-            def extract_resource(text, _type)
-              project = extract_project
-              return unless project
-
-              extractor = Gitlab::ReferenceExtractor.new(project, context.current_user)
-              extractor.analyze(text, {})
-              epics = extractor.epics
-
-              epics.first if epics.one?
-            end
-
-            def extract_project
+            def extract_project(_text, _type)
               return projects_from_context.first unless projects_from_context.blank?
 
               # Epics belong to a group. The `ReferenceExtractor` expects a `project`
@@ -146,6 +135,10 @@ module Gitlab
 
             def resource_name
               RESOURCE_NAME
+            end
+
+            def get_resources(extractor)
+              extractor.epics
             end
           end
         end

@@ -83,13 +83,22 @@ FactoryBot.define do
       end
     end
 
+    transient do
+      identifiers do
+        [
+          create(:ci_reports_security_identifier).to_hash,
+          create(:ci_reports_security_identifier, :cwe).to_hash
+        ]
+      end
+    end
+
     trait :with_finding_data do
       finding_data do
         {
           name: 'Test finding',
           description: 'The cipher does not provide data integrity update 1',
           solution: solution,
-          identifiers: [],
+          identifiers: identifiers,
           links: [
             {
               name: 'Cipher does not check for integrity first?',

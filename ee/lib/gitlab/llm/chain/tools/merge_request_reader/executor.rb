@@ -119,19 +119,12 @@ module Gitlab
               mrs.first if mrs.one?
             end
 
-            def extract_resource(text, type)
-              project = extract_project(text, type)
-              return unless project
-
-              extractor = Gitlab::ReferenceExtractor.new(project, context.current_user)
-              extractor.analyze(text, {})
-              mrs = extractor.merge_requests
-
-              mrs.first if mrs.one?
-            end
-
             def resource_name
               RESOURCE_NAME
+            end
+
+            def get_resources(extractor)
+              extractor.merge_requests
             end
           end
         end

@@ -18,6 +18,7 @@ describe('TodosFilterBar', () => {
   const generateFilterTokens = ({
     groupId = null,
     projectId = null,
+    authorId = null,
     type = null,
     action = null,
   } = {}) => {
@@ -25,6 +26,7 @@ describe('TodosFilterBar', () => {
     const tokens = [
       ['group', groupId],
       ['project', projectId],
+      ['author', authorId],
       ['category', type],
       ['reason', action],
     ]
@@ -40,13 +42,24 @@ describe('TodosFilterBar', () => {
   const findGlAlert = () => wrapper.findComponent(GlAlert);
   const findGlSorting = () => wrapper.findComponent(GlSorting);
 
+  const getAuthorTokenProp = () =>
+    findGlFilteredSearch()
+      .props('availableTokens')
+      .find((token) => token.type === 'author');
+
   const createComponent = () => {
-    wrapper = shallowMountExtended(TodosFilterBar);
+    wrapper = shallowMountExtended(TodosFilterBar, {
+      propsData: {
+        todosStatus: ['pending'],
+      },
+    });
   };
 
   beforeEach(createComponent);
 
   it('passes the correct props to the `GlFilteredSearch` component', () => {
+    const authorToken = getAuthorTokenProp();
+
     expect(cloneDeep(findGlFilteredSearch().props())).toEqual(
       expect.objectContaining({
         termsAsTokens: true,
@@ -54,17 +67,27 @@ describe('TodosFilterBar', () => {
         searchTextOptionLabel: 'Raw text search is not currently supported',
       }),
     );
+    expect(authorToken.status).toStrictEqual(['pending']);
+  });
+
+  it('updates the author token status', async () => {
+    wrapper.setProps({ todosStatus: ['done'] });
+    await nextTick();
+    const authorToken = getAuthorTokenProp();
+
+    expect(authorToken.status).toStrictEqual(['done']);
   });
 
   it('emits the `filters-changed` when filters are submitted', () => {
     const groupId = '33';
     const projectId = '12';
+    const authorId = '1';
     const type = 'ISSUE';
     const action = 'assigned';
 
     findGlFilteredSearch().vm.$emit(
       'input',
-      generateFilterTokens({ groupId, projectId, type, action }),
+      generateFilterTokens({ groupId, projectId, authorId, type, action }),
     );
     findGlFilteredSearch().vm.$emit('submit');
 
@@ -73,6 +96,7 @@ describe('TodosFilterBar', () => {
         {
           groupId: [groupId],
           projectId: [projectId],
+          authorId: [authorId],
           type: [type],
           action: [action],
           sort: 'CREATED_DESC',
@@ -104,6 +128,7 @@ describe('TodosFilterBar', () => {
         {
           groupId: [groupId],
           projectId: [],
+          authorId: [],
           type: [],
           action: [],
           sort: 'CREATED_DESC',
@@ -122,6 +147,7 @@ describe('TodosFilterBar', () => {
         {
           groupId: [],
           projectId: [],
+          authorId: [],
           type: [],
           action: [],
           sort: 'CREATED_DESC',
