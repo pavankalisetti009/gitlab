@@ -55,6 +55,13 @@ module EE
               user.skip_confirmation_notification!
             end
           end
+
+          override :user_attributes
+          def user_attributes
+            return super unless ::Onboarding.enabled? && user_params[:onboarding_status_email_opt_in].in?([true, false])
+
+            super.merge(onboarding_status_email_opt_in: user_params[:onboarding_status_email_opt_in])
+          end
         end
       end
     end

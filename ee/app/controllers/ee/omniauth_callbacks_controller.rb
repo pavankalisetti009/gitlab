@@ -62,7 +62,7 @@ module EE
     def onboarding_params
       # The sign in path for creating an account with sso will not have params as there are no
       # leads that would start out there. So we need to protect for that here by using fetch
-      request.env.fetch('omniauth.params', {}).slice('glm_source', 'glm_content', 'trial')
+      request.env.fetch('omniauth.params', {}).slice('glm_source', 'glm_content')
     end
 
     override :sign_in_and_redirect_or_verify_identity
@@ -77,6 +77,27 @@ module EE
       load_balancer_stick_request(::User, :user, user.id)
 
       redirect_to signup_identity_verification_path
+    end
+
+    override :build_auth_user_params
+    def build_auth_user_params
+      omniauth_params = request.env.fetch('omniauth.params', {}).deep_symbolize_keys
+
+      # This protects the sub classes group saml and ldap from adding this param. If the builder class inheritance
+      # were a bit more declarative and had a base class, we could probably be a bit more declarative here and skip
+      # the provider check.
+      # The opt_in check may get removed in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164411.
+      unless ::Onboarding.enabled? && oauth['provider'].to_sym.in?(::AuthHelper.providers_for_base_controller) &&
+          omniauth_params.key?(:onboarding_status_email_opt_in)
+        return super
+      end
+
+      data = super
+      # We want to say that if for some reason the param is nil, then we can't
+      # be certain the user was ever shown this option so we should default to false to follow opt in guidelines.
+      data[:onboarding_status_email_opt_in] =
+        ::Gitlab::Utils.to_boolean(omniauth_params[:onboarding_status_email_opt_in], default: false)
+      data
     end
 
     override :set_session_active_since
