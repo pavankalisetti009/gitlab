@@ -29,8 +29,9 @@ module GitlabSubscriptions
                 params :add_on do
                   requires :started_on, type: Date, desc: 'The date when purchase takes effect'
                   requires :expires_on, type: Date, desc: 'The date when purchase expires on'
-                  requires :quantity, type: Integer, desc: 'The quantity of the purchase'
-                  requires :purchase_xid, type: String,
+                  optional :quantity, type: Integer, desc: 'The quantity of the purchase',
+                    values: { value: ->(v) { v >= 0 }, message: 'Must be a non-negative integer if provided' }
+                  optional :purchase_xid, type: String,
                     desc: 'The purchase identifier  (example: the subscription name)'
                   optional :trial, type: Boolean, default: false, desc: 'Whether the add-on is a trial'
                 end

@@ -62,14 +62,14 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         )
       end
 
-      context 'when the add-on purchase cannot be saved' do
-        let(:quantity) { 0 }
+      context 'when a negative integer for quantity is provided' do
+        let(:quantity) { -1 }
 
         it 'returns active record errors' do
           expect { result }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
           expect(result).to have_gitlab_http_status(:bad_request)
-          expect(result.body).to include('"quantity":["must be greater than or equal to 1"]')
+          expect(result.body).to include('Must be a non-negative integer if provided')
         end
       end
 
