@@ -244,8 +244,9 @@ module Security
       finding_data['details']
     end
 
-    def cwe_value
-      identifiers.find(&:cwe?)&.name
+    def cwe_name
+      cwe_identifier = identifiers.find { |identifier| identifier[:external_type]&.casecmp?('cwe') }
+      cwe_identifier && cwe_identifier[:name]
     end
 
     def ai_resolution_available?
@@ -254,7 +255,7 @@ module Security
 
     def ai_resolution_enabled?
       ai_resolution_available? &&
-        ::Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
+        ::Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_name&.upcase)
     end
   end
 end
