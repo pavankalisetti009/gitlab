@@ -823,6 +823,8 @@
   - 1
 - - security_sync_policy_violation_comment
   - 1
+- - security_sync_project_policy
+  - 1
 - - security_sync_scan_policies
   - 1
 - - security_unassign_redundant_policy_configurations

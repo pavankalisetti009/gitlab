@@ -91,6 +91,27 @@ module Security
       id_in(ids).delete_all
     end
 
+    def link_project!(project)
+      transaction do
+        security_policy_project_links.for_project(project).first_or_create!
+        link_policy_rules_project!(project)
+      end
+    end
+
+    def unlink_project!(project)
+      transaction do
+        security_policy_project_links.for_project(project).delete_all
+        unlink_policy_rules_project!(project)
+      end
+    end
+
+    def update_project_approval_policy_rule_links(project, created_rules, deleted_rules)
+      transaction do
+        unlink_policy_rules_project!(project, deleted_rules)
+        link_policy_rules_project!(project, created_rules)
+      end
+    end
+
     def upsert_rule(rule_index, rule_hash)
       Security::PolicyRule
         .for_policy_type(type.to_sym)
@@ -154,6 +175,21 @@ module Security
     end
 
     private
+
+    def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
+      return if !type_approval_policy? || policy_rules.empty?
+
+      Security::ApprovalPolicyRuleProjectLink.insert_all(
+        policy_rules.map { |policy_rule| { approval_policy_rule_id: policy_rule.id, project_id: project.id } },
+        unique_by: [:approval_policy_rule_id, :project_id]
+      )
+    end
+
+    def unlink_policy_rules_project!(project, policy_rules = approval_policy_rules)
+      return if !type_approval_policy? || policy_rules.empty?
+
+      Security::ApprovalPolicyRuleProjectLink.for_project(project).for_policy_rules(policy_rules).delete_all
+    end
 
     def delete_approval_rules(rules_batch)
       delete_in_batches(ApprovalProjectRule.where(approval_policy_rule_id: rules_batch.select(:id)))

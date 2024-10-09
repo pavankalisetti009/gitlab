@@ -5,7 +5,6 @@ module Security
     include Gitlab::EventStore::Subscriber
 
     data_consistency :sticky
-    sidekiq_options retry: true
 
     deduplicate :until_executing, including_scheduled: true
     idempotent!
@@ -14,11 +13,50 @@ module Security
 
     def handle_event(event)
       security_policy_id = event.data[:security_policy_id]
-      Security::Policy.find_by_id(security_policy_id) || return
+      policy = Security::Policy.find_by_id(security_policy_id) || return
 
       case event
+      when Security::PolicyCreatedEvent
+        handle_create_event(policy)
+      when Security::PolicyUpdatedEvent
+        handle_update_event(policy, event.data)
       when Security::PolicyDeletedEvent
         ::Security::DeleteSecurityPolicyWorker.perform_async(security_policy_id)
+      end
+    end
+
+    private
+
+    def handle_create_event(policy)
+      all_projects(policy) do |project|
+        next unless policy.enabled && policy.scope_applicable?(project)
+
+        ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, {})
+      end
+    end
+
+    def handle_update_event(policy, event_data)
+      policy_diff = Security::SecurityOrchestrationPolicies::PolicyDiff::Diff.from_json(
+        event_data[:diff], event_data[:rules_diff]
+      )
+
+      return unless policy_diff.needs_refresh?
+
+      all_projects(policy) do |project|
+        ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, event_data)
+      end
+    end
+
+    def all_projects(policy)
+      configuration = policy.security_orchestration_policy_configuration
+      projects = if configuration.namespace?
+                   configuration.namespace.all_project_ids
+                 else
+                   Project.id_in(configuration.project_id).select(:id)
+                 end
+
+      projects.find_each do |project|
+        yield(project)
       end
     end
   end

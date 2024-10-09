@@ -43,6 +43,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
     {
       name: 'New Policy',
       description: 'New description',
+      enabled: true,
+      metadata: {},
+      policy_scope: {},
       rules: [rule_content_1, rule_content_2, rule_content_3]
     }
   end
@@ -55,9 +58,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
     create(:approval_policy_rule, :scan_finding, security_policy: db_policy, content: rule_content_2)
   end
 
-  subject(:policy_diffs) { described_class.new(db_policy: db_policy, yaml_policy: yaml_policy, policy_index: 0).diff }
+  let(:policy_comparer) { described_class.new(db_policy: db_policy, yaml_policy: yaml_policy, policy_index: 0) }
 
   describe '#diff' do
+    subject(:policy_diffs) { policy_comparer.diff }
+
     it 'returns the correct changes for policy fields' do
       diff = policy_diffs.diff
 
@@ -73,60 +78,93 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
       expect(rules_diff.updated).to be_empty
       expect(rules_diff.deleted).to be_empty
     end
+
+    context 'when yaml_policy has fewer rules than db_policy' do
+      let_it_be(:yaml_policy) do
+        {
+          name: 'New Policy',
+          description: 'New description',
+          rules: [rule_content_1]
+        }
+      end
+
+      it 'correctly identifies deleted rules' do
+        rules_diff = policy_diffs.rules_diff
+
+        expect(rules_diff.created).to be_empty
+        expect(rules_diff.updated).to be_empty
+        expect(rules_diff.deleted.first.id).to eq(approval_policy_rule_2.id)
+        expect(rules_diff.deleted.first.from).to eq(approval_policy_rule_2)
+        expect(rules_diff.deleted.first.to).to be_nil
+      end
+    end
+
+    context 'when rules are updated' do
+      let_it_be(:yaml_policy) do
+        {
+          name: 'New Policy',
+          description: 'New description',
+          rules: [rule_content_1, rule_content_3]
+        }
+      end
+
+      it 'handles the comparison correctly' do
+        rules_diff = policy_diffs.rules_diff
+
+        expect(rules_diff.created).to be_empty
+        expect(rules_diff.deleted).to be_empty
+        expect(rules_diff.updated.first.id).to eq(approval_policy_rule_2.id)
+        expect(rules_diff.updated.first.from).to eq(approval_policy_rule_2)
+        expect(rules_diff.updated.first.to).to eq(rule_content_3)
+      end
+    end
+
+    context 'when policies have no rules' do
+      let_it_be(:yaml_policy) { { name: 'New Policy' } }
+      let_it_be(:db_policy) do
+        create(:security_policy, :pipeline_execution_policy, name: 'Old Policy', description: 'Old description')
+      end
+
+      it 'handles the comparison correctly' do
+        rules_diff = policy_diffs.rules_diff
+
+        expect(rules_diff.created).to be_empty
+        expect(rules_diff.updated).to be_empty
+        expect(rules_diff.deleted).to be_empty
+      end
+    end
   end
 
-  context 'when yaml_policy has fewer rules than db_policy' do
-    let_it_be(:yaml_policy) do
-      {
-        name: 'New Policy',
-        description: 'New description',
-        rules: [rule_content_1]
-      }
+  describe '#event_payload' do
+    subject(:event_payload) { policy_comparer.event_payload }
+
+    it 'returns a hash with the expected keys' do
+      expect(event_payload.keys).to match_array([:security_policy_id, :diff, :rules_diff])
     end
 
-    it 'correctly identifies deleted rules' do
-      rules_diff = policy_diffs.rules_diff
-
-      expect(rules_diff.created).to be_empty
-      expect(rules_diff.updated).to be_empty
-      expect(rules_diff.deleted.first.id).to eq(approval_policy_rule_2.id)
-      expect(rules_diff.deleted.first.from).to eq(approval_policy_rule_2)
-      expect(rules_diff.deleted.first.to).to be_nil
-    end
-  end
-
-  context 'when rules are updated' do
-    let_it_be(:yaml_policy) do
-      {
-        name: 'New Policy',
-        description: 'New description',
-        rules: [rule_content_1, rule_content_3]
-      }
+    it 'includes the security policy id' do
+      expect(event_payload[:security_policy_id]).to eq(db_policy.id)
     end
 
-    it 'handles the comparison correctly' do
-      rules_diff = policy_diffs.rules_diff
-
-      expect(rules_diff.created).to be_empty
-      expect(rules_diff.deleted).to be_empty
-      expect(rules_diff.updated.first.id).to eq(approval_policy_rule_2.id)
-      expect(rules_diff.updated.first.from).to eq(approval_policy_rule_2)
-      expect(rules_diff.updated.first.to).to eq(rule_content_3)
-    end
-  end
-
-  context 'when policies have no rules' do
-    let_it_be(:yaml_policy) { { name: 'New Policy' } }
-    let_it_be(:db_policy) do
-      create(:security_policy, :pipeline_execution_policy, name: 'Old Policy', description: 'Old description')
+    it 'includes the diff from the diff object' do
+      expect(event_payload[:diff]).to eq({
+        name: { from: 'Old Policy', to: 'New Policy' },
+        description: { from: 'Old description', to: 'New description' }
+      })
     end
 
-    it 'handles the comparison correctly' do
-      rules_diff = policy_diffs.rules_diff
+    it 'includes the rules_diff from the diff object' do
+      expect(event_payload[:rules_diff]).to eq({ created: [rule_content_3], deleted: [], updated: [] })
+    end
 
-      expect(rules_diff.created).to be_empty
-      expect(rules_diff.updated).to be_empty
-      expect(rules_diff.deleted).to be_empty
+    context 'when diff is empty' do
+      let_it_be(:yaml_policy) { db_policy.to_policy_hash }
+
+      it 'returns empty hashes for diff and rules_diff' do
+        payload = event_payload
+        expect(payload[:diff]).to eq({})
+        expect(payload[:rules_diff]).to eq({ created: [], updated: [], deleted: [] })
+      end
     end
   end
 end
