@@ -14,6 +14,39 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
     it { is_expected.to validate_presence_of(:framework) }
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:description) }
+
+    describe '#requirements_count_per_framework' do
+      let_it_be(:compliance_framework_1) { create(:compliance_framework, :sox, namespace: group) }
+
+      subject(:new_compliance_requirement) { build(:compliance_requirement, framework: compliance_framework_1) }
+
+      context 'when requirements count is one less than max count' do
+        before do
+          49.times do |i|
+            create(:compliance_requirement, framework: compliance_framework_1, name: "Test#{i}")
+          end
+        end
+
+        it 'creates requirement with no error' do
+          expect(new_compliance_requirement.valid?).to eq(true)
+          expect(new_compliance_requirement.errors).to be_empty
+        end
+      end
+
+      context 'when requirements count is equal to max count' do
+        before do
+          50.times do |i|
+            create(:compliance_requirement, framework: compliance_framework_1, name: "Test#{i}")
+          end
+        end
+
+        it 'returns error' do
+          expect(new_compliance_requirement.valid?).to eq(false)
+          expect(new_compliance_requirement.errors.full_messages)
+            .to contain_exactly("Framework cannot have more than 50 requirements")
+        end
+      end
+    end
   end
 
   describe "associations" do
