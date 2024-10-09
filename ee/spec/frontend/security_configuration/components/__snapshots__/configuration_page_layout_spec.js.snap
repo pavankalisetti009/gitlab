@@ -3,27 +3,9 @@
 exports[`Security Configuration Page Layout component matches the snapshot 1`] = `
 <article>
   Page alert
-  <header
-    class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-flex gl-justify-between gl-mb-5 gl-mt-5"
-  >
-    <div
-      class="gl-flex gl-flex-col gl-justify-between gl-w-full md:gl-flex-row"
-    >
-      <div>
-        <h4
-          class="gl-mt-0"
-        >
-          Page title
-        </h4>
-        <p>
-          Scanner description
-        </p>
-      </div>
-      <div>
-        Action
-      </div>
-    </div>
-  </header>
+  <page-heading-stub>
+    Page titleScanner descriptionAction
+  </page-heading-stub>
   <div>
     form
   </div>

@@ -1,5 +1,10 @@
 <script>
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+
 export default {
+  components: {
+    PageHeading,
+  },
   props: {
     noBorder: {
       type: Boolean,
@@ -13,26 +18,21 @@ export default {
 <template>
   <article>
     <slot name="alert"></slot>
-    <header
-      class="gl-mt-5 gl-flex gl-justify-between"
-      :class="{
-        ['gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid']: !noBorder,
-      }"
-    >
-      <div class="gl-flex gl-w-full gl-flex-col gl-justify-between md:gl-flex-row">
-        <div>
-          <h4 class="gl-mt-0">
-            <slot name="heading"></slot>
-          </h4>
-          <p>
-            <slot name="description"></slot>
-          </p>
-        </div>
-        <div class="">
-          <slot name="actions"></slot>
-        </div>
-      </div>
-    </header>
+
+    <page-heading>
+      <template #heading>
+        <slot name="heading"></slot>
+      </template>
+
+      <template #description>
+        <slot name="description"></slot>
+      </template>
+
+      <template #actions>
+        <slot name="actions"></slot>
+      </template>
+    </page-heading>
+
     <slot></slot>
   </article>
 </template>

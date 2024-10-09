@@ -60,7 +60,7 @@ export default {
   i18n: {
     newOnDemandScanHeader: s__('OnDemandScans|New on-demand scan'),
     newOnDemandScanHeaderDescription: s__(
-      'OnDemandScans|On-demand scans run outside the DevOps cycle and find vulnerabilities in your projects. %{learnMoreLinkStart}Learn more%{learnMoreLinkEnd}',
+      'OnDemandScans|On-demand scans run outside the DevOps cycle and find vulnerabilities in your projects. %{learnMoreLinkStart}Learn more%{learnMoreLinkEnd}.',
     ),
     editOnDemandScanHeader: s__('OnDemandScans|Edit on-demand scan'),
     branchSelectorHelpText: s__(
@@ -332,9 +332,9 @@ export default {
     <template #description>
       <gl-sprintf :message="$options.i18n.newOnDemandScanHeaderDescription">
         <template #learnMoreLink="{ content }">
-          <gl-link :href="$options.helpPagePath" data-testid="help-page-link">
-            {{ content }}
-          </gl-link>
+          <gl-link :href="$options.helpPagePath" data-testid="help-page-link">{{
+            content
+          }}</gl-link>
         </template>
       </gl-sprintf>
     </template>
@@ -468,7 +468,7 @@ export default {
           data-testid="on-demand-scans-profiles-conflict-alert"
         />
 
-        <div class="gl-pt-6">
+        <div class="gl-flex gl-gap-3 gl-pt-6">
           <gl-button
             type="submit"
             variant="confirm"
