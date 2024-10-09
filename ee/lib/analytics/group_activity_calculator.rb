@@ -12,19 +12,19 @@ module Analytics
     end
 
     def issues_count
-      @issues_count ||= fetch_cached(:issues, Issue) do
+      @issues_count ||= fetch_cached(:issues) do
         IssuesFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).reorder(nil).count # rubocop:disable CodeReuse/ActiveRecord
       end
     end
 
     def merge_requests_count
-      @merge_requests_count ||= fetch_cached(:merge_requests, MergeRequest) do
+      @merge_requests_count ||= fetch_cached(:merge_requests) do
         MergeRequestsFinder.new(@current_user, issuable_params).execute.limit(RECENT_COUNT_LIMIT).reorder(nil).count # rubocop:disable CodeReuse/ActiveRecord
       end
     end
 
     def new_members_count
-      @new_members_count ||= fetch_cached(:new_members, Member) do
+      @new_members_count ||= fetch_cached(:new_members) do
         GroupMembersFinder.new(
           @group,
           @current_user,
@@ -44,11 +44,9 @@ module Analytics
         attempt_project_search_optimizations: true }
     end
 
-    def fetch_cached(type, klass, &block)
+    def fetch_cached(type, &block)
       Rails.cache.fetch(cache_key(type), CACHE_OPTIONS) do
-        ::Gitlab::Database::LoadBalancing::SessionMap
-          .current(klass.load_balancer)
-          .use_replicas_for_read_queries(&block)
+        ::Gitlab::Database::LoadBalancing::Session.current.use_replicas_for_read_queries(&block)
       end.to_i
     end
 
