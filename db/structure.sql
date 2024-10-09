@@ -12247,11 +12247,13 @@ CREATE TABLE import_source_users (
     import_type text NOT NULL,
     reassigned_by_user_id bigint,
     reassignment_error text,
+    reassignment_token text,
     CONSTRAINT check_05708218cd CHECK ((char_length(reassignment_error) <= 255)),
     CONSTRAINT check_0d7295a307 CHECK ((char_length(import_type) <= 255)),
     CONSTRAINT check_199c28ec54 CHECK ((char_length(source_username) <= 255)),
     CONSTRAINT check_562655155f CHECK ((char_length(source_name) <= 255)),
     CONSTRAINT check_cc9d4093b5 CHECK ((char_length(source_user_identifier) <= 255)),
+    CONSTRAINT check_cd2edb9334 CHECK ((char_length(reassignment_token) <= 32)),
     CONSTRAINT check_e2039840c5 CHECK ((char_length(source_hostname) <= 255))
 );
 
@@ -29247,6 +29249,8 @@ CREATE INDEX index_import_source_users_on_namespace_id_and_status ON import_sour
 CREATE INDEX index_import_source_users_on_placeholder_user_id ON import_source_users USING btree (placeholder_user_id);
 
 CREATE INDEX index_import_source_users_on_reassigned_by_user_id ON import_source_users USING btree (reassigned_by_user_id);
+
+CREATE UNIQUE INDEX index_import_source_users_on_reassignment_token ON import_source_users USING btree (reassignment_token);
 
 CREATE INDEX index_imported_projects_on_import_type_creator_id_created_at ON projects USING btree (import_type, creator_id, created_at) WHERE (import_type IS NOT NULL);
 
