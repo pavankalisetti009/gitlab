@@ -71,12 +71,19 @@ module Gitlab
         end
 
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
+          # Only load exclusions if the feature flag is enabled.
+          exclusions = if Feature.enabled?(:secret_detection_project_level_exclusions, project)
+                         active_exclusions
+                       else
+                         {}
+                       end
+
           if use_diff_scan?
             payloads = get_diffs
             # Pass payloads to gem for scanning.
             response = ::Gitlab::SecretDetection::ScanDiffs
-            .new(logger: secret_detection_logger)
-            .secrets_scan(payloads, timeout: logger.time_left)
+              .new(logger: secret_detection_logger)
+              .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
           else
             payloads = ::Gitlab::Checks::ChangedBlobs.new(
               project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
@@ -84,13 +91,6 @@ module Gitlab
 
             # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
             payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
-
-            # Only load exclusions if the feature flag is enabled.
-            exclusions = if Feature.enabled?(:secret_detection_project_level_exclusions, project)
-                           active_exclusions
-                         else
-                           {}
-                         end
 
             # Pass payloads to gem for scanning.
             response = ::Gitlab::SecretDetection::Scan
@@ -210,6 +210,10 @@ module Gitlab
         # Get changed paths
         paths = project.repository.find_changed_paths(commits, merge_commit_diff_mode: :all_parents)
 
+        # Reject diff blob objects from paths that are excluded
+        # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
+        paths.reject! { |changed_path| matches_excluded_path?(changed_path.path) }
+
         # Make multiple DiffBlobsRequests with smaller batch sizes to prevent timeout when generating diffs
         paths.each_slice(50) do |paths_slice|
           blob_pair_ids = paths_slice.map do |path|
@@ -325,7 +329,6 @@ module Gitlab
 
         message += LOG_MESSAGES[:skip_secret_detection]
         message += LOG_MESSAGES[:found_secrets_footer]
-
         message
       end
 
@@ -361,7 +364,7 @@ module Gitlab
         format(LOG_MESSAGES[:finding_message], finding.to_h)
       end
 
-      # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods.
+      # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods, entire method will be refactored shortly.
       def transform_findings(response)
         # Let's group the findings by the blob id.
         findings_by_blobs = response.results.group_by(&:blob_id)
@@ -406,7 +409,7 @@ module Gitlab
             # file paths when calling `GetTreeEntries()` RPC and not earlier. When diff scanning
             # is available, we will likely be able move this check to the gem/secret detection service
             # since paths will be available pre-scanning.
-            if entry_matches_excluded_path?(entry.path)
+            if matches_excluded_path?(entry.path)
               response.results.delete_if { |finding| finding.blob_id == entry.id }
 
               findings_by_blobs.delete(entry.id)
@@ -453,14 +456,14 @@ module Gitlab
           .group_by { |exclusion| exclusion.type.to_sym }
       end
 
-      def entry_matches_excluded_path?(path)
-        # Skip checking if tree entry match excluded paths when feature flag is disabled.
+      def matches_excluded_path?(path)
+        # Skip checking if the changed path matches an excluded path when feature flag is disabled.
         return false unless ::Feature.enabled?(:secret_detection_project_level_exclusions, project)
 
         # Skip paths that are too deep.
         return false if path.count('/') > MAX_PATH_EXCLUSIONS_DEPTH
 
-        # Skip any path exclusions past the maximum path exclusions count (i.e. 50 path exclusions).
+        # Check only the maximum amount of path exclusions allowed (i.e. 10 path exclusions).
         active_exclusions[:path]
           &.first(::Security::ProjectSecurityExclusion::MAX_PATH_EXCLUSIONS_PER_PROJECT)
           &.any? do |exclusion|
