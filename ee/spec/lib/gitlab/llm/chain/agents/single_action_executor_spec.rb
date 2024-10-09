@@ -30,11 +30,22 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
     let(:stream_response_service_double) { instance_double(::Gitlab::Llm::ResponseService) }
     let(:extra_resource) { {} }
     let(:current_file) { nil }
+    let(:additional_context) do
+      [
+        { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
+      ]
+    end
 
     let(:context) do
       Gitlab::Llm::Chain::GitlabContext.new(
-        current_user: user, container: nil, resource: resource, ai_request: nil,
-        extra_resource: extra_resource, current_file: current_file, agent_version: nil
+        current_user: user,
+        container: nil,
+        resource: resource,
+        ai_request: nil,
+        extra_resource: extra_resource,
+        current_file: current_file,
+        agent_version: nil,
+        additional_context: additional_context
       )
     end
 
@@ -43,16 +54,16 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
     let(:step_params) do
       {
-        prompt: user_input,
-        options: {
-          chat_history: [],
+        messages: [{
+          role: "user",
+          content: user_input,
           context: {
             type: issue_resource.current_page_type,
             content: issue_resource.current_page_short_description
           },
           current_file: nil,
-          additional_context: []
-        },
+          additional_context: context.additional_context
+        }],
         model_metadata: nil,
         unavailable_resources: %w[Pipelines Vulnerabilities]
       }
@@ -262,10 +273,10 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       it "sends request without context" do
         params = step_params
-        params[:options][:context] = nil
+        params[:messages].first[:context] = nil
 
         expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
+          expect(react_agent).to receive(:step).with(hash_including(params))
             .and_yield(action_event).and_return([action_event])
         end
 
@@ -286,7 +297,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       it "adds code file params to the question options" do
         params = step_params
-        params[:options][:current_file] = {
+        params[:messages].first[:current_file] = {
           file_path: 'test.py',
           data: 'code selection',
           selected_code: true
@@ -308,7 +319,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       it "adds code file params to the question options" do
         params = step_params
-        params[:options][:current_file] = {
+        params[:messages].first[:current_file] = {
           file_path: 'never.rb',
           data: 'puts "gonna give you up"',
           selected_code: false
