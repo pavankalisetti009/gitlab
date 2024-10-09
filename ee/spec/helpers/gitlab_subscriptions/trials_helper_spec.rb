@@ -422,6 +422,8 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       ]
     end
 
+    let_it_be(:premium) { premium_subscription.namespace }
+
     let(:parsed_selector_data) { Gitlab::Json.parse(selector_data[:items]) }
 
     before do
@@ -429,17 +431,40 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       all_groups.map { |group| group.add_owner(user) }
     end
 
+    context 'when duo_enterprise_trials are disabled' do
+      before do
+        stub_feature_flags(duo_enterprise_trials_registration: false)
+      end
+
+      describe '#trial_namespace_selector_data' do
+        subject(:selector_data) { helper.trial_namespace_selector_data(nil) }
+
+        it 'returns free group' do
+          group_options = [{ 'text' => free.name, 'value' => free.id.to_s }]
+
+          is_expected.to include(any_trial_eligible_namespaces: 'true')
+          new_group_option = parsed_selector_data[0]['options']
+          group_select_options = parsed_selector_data[1]['options']
+          expect(new_group_option).to eq([{ 'text' => _('Create group'), 'value' => '0' }])
+          expect(group_select_options).to eq(group_options)
+        end
+      end
+    end
+
     describe '#trial_namespace_selector_data' do
       subject(:selector_data) { helper.trial_namespace_selector_data(nil) }
 
-      it 'returns free group' do
-        group_options = [{ 'text' => free.name, 'value' => free.id.to_s }]
+      it 'returns free and premium group' do
+        group_options = [
+          { 'text' => free.name, 'value' => free.id.to_s },
+          { 'text' => premium.name, 'value' => premium.id.to_s }
+        ]
 
         is_expected.to include(any_trial_eligible_namespaces: 'true')
         new_group_option = parsed_selector_data[0]['options']
         group_select_options = parsed_selector_data[1]['options']
         expect(new_group_option).to eq([{ 'text' => _('Create group'), 'value' => '0' }])
-        expect(group_select_options).to eq(group_options)
+        expect(group_select_options).to match_array(group_options)
       end
     end
 

@@ -7,7 +7,7 @@ module Security
     #
     # Returns the ingested vulnerability IDs.
     class IngestReportSliceService < IngestSliceBaseService
-      TASKS = %i[
+      SEC_DB_TASKS = %i[
         IngestIdentifiers
         IngestFindings
         IngestVulnerabilities
@@ -23,6 +23,11 @@ module Security
         IngestRemediations
         HooksExecution
       ].freeze
+
+      # This needs to be defined for the IngestSliceBaseService to work.
+      # If operations are added later that interact with gitlab_main tables,
+      # they should be added here.
+      MAIN_DB_TASKS = %i[].freeze
 
       def execute
         # This will halt execution of this slice but we will keep calling this service

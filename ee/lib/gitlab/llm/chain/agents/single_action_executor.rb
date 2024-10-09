@@ -202,16 +202,22 @@ module Gitlab
 
           def step_params
             {
-              prompt: user_input,
-              options: {
-                chat_history: conversation,
-                context: current_resource_params,
-                current_file: current_file_params,
-                additional_context: context.additional_context
-              },
+              messages: messages,
               model_metadata: model_metadata_params,
               unavailable_resources: unavailable_resources_params
             }
+          end
+
+          def messages
+            conversation.append(
+              {
+                role: "user",
+                content: user_input,
+                context: current_resource_params,
+                current_file: current_file_params,
+                additional_context: context.additional_context
+              }
+            )
           end
 
           def get_tool_class(tool)

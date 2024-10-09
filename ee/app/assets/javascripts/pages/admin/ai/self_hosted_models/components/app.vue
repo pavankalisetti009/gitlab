@@ -66,7 +66,7 @@ export default {
       return this.selfHostedModels.length > 0;
     },
     isLoading() {
-      return this.$apollo?.queries?.selfHostedModels?.loading;
+      return this.$apollo.loading;
     },
   },
   emptyStateSvgPath: EmptyEnvironmentSvg,

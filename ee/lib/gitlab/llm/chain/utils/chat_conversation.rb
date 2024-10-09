@@ -28,7 +28,8 @@ module Gitlab
             return [] if messages.blank?
 
             messages.last(last_n).map do |message, _|
-              { role: message.role.to_sym, content: message.content }
+              { role: message.role.to_sym, content: message.content,
+                additional_context: message.extras['additional_context'] }
             end
           end
 

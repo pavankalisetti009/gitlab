@@ -10,7 +10,7 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
   let(:ai_request) { instance_double(Gitlab::Llm::Chain::Requests::Anthropic) }
   let(:additional_context) do
     [
-      { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+      { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
     ]
   end
 

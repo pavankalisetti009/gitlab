@@ -118,11 +118,17 @@ module EE
       end
 
       scope :eligible_for_trial, -> do
+        plans_eligible_for_trial = if ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
+                                     ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL
+                                   else
+                                     ::Plan::PLANS_ELIGIBLE_FOR_TRIAL
+                                   end
+
         left_joins(gitlab_subscription: :hosted_plan)
           .where(
             parent_id: nil,
             gitlab_subscriptions: { trial: [nil, false], trial_ends_on: [nil] },
-            plans: { name: [nil, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL] }
+            plans: { name: [nil, *plans_eligible_for_trial] }
           ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
 
@@ -503,7 +509,13 @@ module EE
     end
 
     def plan_eligible_for_trial?
-      ::Plan::PLANS_ELIGIBLE_FOR_TRIAL.include?(actual_plan_name)
+      plans_eligible_for_trial = if ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
+                                   ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL
+                                 else
+                                   ::Plan::PLANS_ELIGIBLE_FOR_TRIAL
+                                 end
+
+      plans_eligible_for_trial.include?(actual_plan_name)
     end
 
     def free_personal?
