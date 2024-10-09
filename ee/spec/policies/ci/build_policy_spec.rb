@@ -8,7 +8,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
   describe 'troubleshoot_job_with_ai' do
     let(:authorized) { true }
     let(:cloud_connector_user_access) { true }
-    let_it_be(:project) { create(:project, :private) }
+    let_it_be_with_reload(:project) { create(:project, :private) }
     let_it_be(:pipeline) { create(:ci_empty_pipeline, project: project) }
     let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
     let_it_be(:user) { create(:user) }
@@ -77,6 +77,17 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
 
     context 'when feature is not authorized' do
       let(:authorized) { false }
+
+      it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
+    end
+
+    context 'when user is nil with public project' do
+      before do
+        project.visibility_level = Gitlab::VisibilityLevel::PUBLIC
+        project.save!
+      end
+
+      subject { described_class.new(nil, build) }
 
       it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
     end

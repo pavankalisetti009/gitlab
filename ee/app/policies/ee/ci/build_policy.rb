@@ -8,7 +8,7 @@ module EE
       prepended do
         # Authorize access to the troubleshoot job to Cloud Connector Service
         condition(:troubleshoot_job_cloud_connector_authorized) do
-          @user.allowed_to_use?(:troubleshoot_job)
+          @user&.allowed_to_use?(:troubleshoot_job)
         end
 
         # Authorize access to Troubleshoot Job
