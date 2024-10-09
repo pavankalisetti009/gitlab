@@ -9,7 +9,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { STATUS_OPEN } from '~/issues/constants';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import { __, n__, sprintf, s__ } from '~/locale';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { formatListIssuesForLanes } from 'ee/boards/boards_util';
@@ -136,7 +136,7 @@ export default {
           });
     },
     epicDateString() {
-      return formatDate(this.epic.createdAt);
+      return localeDateFormat.asDateTimeFull.format(newDate(this.epic.createdAt));
     },
     isLoading() {
       return this.$apollo.queries.listsWithIssues.loading;

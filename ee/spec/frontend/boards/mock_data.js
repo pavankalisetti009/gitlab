@@ -475,6 +475,7 @@ export const mockEpic = {
   subscribed: false,
   blocked: false,
   blockedByCount: 0,
+  createdAt: '2020-08-06T16:53:50Z',
   hasIssues: true,
   descendantCounts: {
     openedIssues: 3,
