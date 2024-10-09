@@ -47,6 +47,29 @@ module EE
         })
       end
 
+      override :find_or_create_repository_from_path
+      def find_or_create_repository_from_path(path)
+        new_record = !::ContainerRepository.find_by_path(path)
+
+        repository = super(path)
+        audit_repository_created(repository) if new_record
+
+        repository
+      end
+
+      def audit_repository_created(repository)
+        audit_context = {
+          name: "container_repository_created",
+          author: current_user || deploy_token&.user || ::Gitlab::Audit::DeployTokenAuthor.new,
+          scope: repository.project,
+          target: repository,
+          target_details: repository.path,
+          message: "Container repository #{repository.path} created"
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
       def access_denied_in_maintenance_mode?
         @access_denied_in_maintenance_mode
       end
