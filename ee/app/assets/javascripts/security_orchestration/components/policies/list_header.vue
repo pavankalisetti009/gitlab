@@ -2,6 +2,7 @@
 import { GlAlert, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
@@ -20,6 +21,7 @@ export default {
     GlSprintf,
     InvalidPoliciesBanner,
     ProjectModal,
+    PageHeading,
   },
   inject: [
     'assignedPolicyProject',
@@ -112,31 +114,28 @@ export default {
     >
       {{ alertText }}
     </gl-alert>
-    <header class="gl-my-6 gl-flex gl-flex-col">
-      <div class="gl-flex gl-items-start">
-        <div class="gl-my-0 gl-grow">
-          <h2 class="gl-mt-0">
-            {{ $options.i18n.title }}
-          </h2>
-          <p data-testid="policies-subheader">
-            <gl-sprintf :message="$options.i18n.subtitle[namespaceType]">
-              <template #link="{ content }">
-                <gl-button
-                  class="!gl-pb-1"
-                  variant="link"
-                  :href="documentationPath"
-                  target="_blank"
-                >
-                  {{ content }}
-                </gl-button>
-              </template>
-            </gl-sprintf>
-          </p>
-        </div>
+
+    <page-heading :heading="$options.i18n.title">
+      <template #description>
+        <gl-sprintf :message="$options.i18n.subtitle[namespaceType]">
+          <template #link="{ content }">
+            <gl-button
+              class="!gl-pb-1"
+              variant="link"
+              :href="documentationPath"
+              target="_blank"
+              data-testid="more-information-link"
+            >
+              {{ content }}
+            </gl-button>
+          </template>
+        </gl-sprintf>
+      </template>
+
+      <template #actions>
         <gl-button
           v-if="!disableSecurityPolicyProject"
           data-testid="edit-project-policy-button"
-          class="gl-mr-4"
           :loading="projectIsBeingLinked"
           @click="showNewPolicyModal"
         >
@@ -145,7 +144,6 @@ export default {
         <gl-button
           v-else-if="hasAssignedPolicyProject"
           data-testid="view-project-policy-button"
-          class="gl-mr-3"
           target="_blank"
           :href="securityPolicyProjectPath"
         >
@@ -160,15 +158,15 @@ export default {
         >
           {{ $options.i18n.newPolicyButtonText }}
         </gl-button>
-      </div>
+      </template>
+    </page-heading>
 
-      <project-modal
-        :visible="modalVisible"
-        @close="modalVisible = false"
-        @project-updated="updateAlertText"
-        @updating-project="isUpdatingProject"
-      />
-    </header>
+    <project-modal
+      :visible="modalVisible"
+      @close="modalVisible = false"
+      @project-updated="updateAlertText"
+      @updating-project="isUpdatingProject"
+    />
 
     <!-- <breaking-changes-banner class="gl-mt-3 gl-mb-6" /> -->
     <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mb-6 gl-mt-3" />

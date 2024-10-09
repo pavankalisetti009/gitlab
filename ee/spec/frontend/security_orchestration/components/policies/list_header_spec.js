@@ -1,5 +1,6 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
 import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
 import ExceedingActionsBanner from 'ee/security_orchestration/components/policies/banners/exceeding_actions_banner.vue';
@@ -20,11 +21,11 @@ describe('List Header Component', () => {
   const findErrorAlert = () => wrapper.findByTestId('error-alert');
   const findScanNewPolicyModal = () => wrapper.findComponent(ProjectModal);
   const findHeader = () => wrapper.findByRole('heading');
-  const findMoreInformationLink = () => wrapper.findComponent(GlButton);
+  const findMoreInformationLink = () => wrapper.findByTestId('more-information-link');
   const findEditPolicyProjectButton = () => wrapper.findByTestId('edit-project-policy-button');
   const findViewPolicyProjectButton = () => wrapper.findByTestId('view-project-policy-button');
   const findNewPolicyButton = () => wrapper.findByTestId('new-policy-button');
-  const findSubheader = () => wrapper.findByTestId('policies-subheader');
+  const findPageDescription = () => wrapper.findByTestId('page-heading-description');
   const findBreakingChangesBanner = () => wrapper.findComponent(BreakingChangesBanner);
   const findInvalidPoliciesBanner = () => wrapper.findComponent(InvalidPoliciesBanner);
   const findExceedingActionsBanner = () => wrapper.findComponent(ExceedingActionsBanner);
@@ -58,6 +59,7 @@ describe('List Header Component', () => {
       stubs: {
         GlButton,
         GlSprintf,
+        PageHeading,
       },
     });
   };
@@ -119,14 +121,14 @@ describe('List Header Component', () => {
     });
   });
 
-  describe('subheader', () => {
+  describe('description', () => {
     it.each`
       namespaceType              | expectedText
       ${NAMESPACE_TYPES.GROUP}   | ${'Enforce security policies for this group.'}
       ${NAMESPACE_TYPES.PROJECT} | ${'Enforce security policies for this project.'}
-    `('displays the subheader for $namespaceType', ({ namespaceType, expectedText }) => {
+    `('displays the desciption for $namespaceType', ({ namespaceType, expectedText }) => {
       createWrapper({ provide: { namespaceType } });
-      expect(findSubheader().text()).toMatchInterpolatedText(expectedText);
+      expect(findPageDescription().text()).toMatchInterpolatedText(expectedText);
       expect(findMoreInformationLink().attributes('href')).toBe(documentationPath);
     });
   });
