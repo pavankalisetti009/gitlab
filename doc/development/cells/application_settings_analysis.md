@@ -7,9 +7,9 @@ info: Analysis of Application Settings for Cells 1.0.
 
 ## Statistics
 
-- Number of attributes: 498
+- Number of attributes: 499
 - Number of encrypted attributes: 43 (9.0%)
-- Number of attributes documented: 308 (62.0%)
+- Number of attributes documented: 309 (62.0%)
 - Number of attributes on GitLab.com different from the defaults: 218 (44.0%)
 - Number of attributes with `clusterwide` set: 498 (100.0%)
 - Number of attributes with `clusterwide: true` set: 120 (24.0%)
@@ -33,6 +33,7 @@ info: Analysis of Application Settings for Cells 1.0.
 | `allow_possible_spam` | `false` | `boolean` | `` | `true` | `false` | `false` | `false`| `false` |
 | `allow_project_creation_for_guest_and_below` | `false` | `boolean` | `boolean` | `true` | `true` | `false` | `false`| `true` |
 | `allow_runner_registration_token` | `false` | `boolean` | `boolean` | `true` | `true` | `false` | `false`| `true` |
+| `allow_top_level_group_owners_to_create_service_accounts` | `false` | `boolean` | `` | `true` | `false` | `false` | `???`| `false` |
 | `anthropic_api_key` | `true` | `bytea` | `` | `false` | `null` | `false` | `false`| `false` |
 | `archive_builds_in_seconds` | `false` | `integer` | `` | `false` | `null` | `false` | `false`| `false` |
 | `arkose_labs_client_secret` | `true` | `bytea` | `` | `false` | `null` | `true` | `true`| `false` |
@@ -342,7 +343,7 @@ info: Analysis of Application Settings for Cells 1.0.
 | `plantuml_enabled` | `false` | `boolean` | `boolean` | `false` | `null` | `true` | `true`| `true` |
 | `plantuml_url` | `false` | `character` | `string` | `false` | `null` | `true` | `true`| `true` |
 | `polling_interval_multiplier` | `false` | `numeric` | `float` | `true` | `1.0` | `false` | `false`| `true` |
-| `pre_receive_secret_detection_enabled` | `false` | `boolean` | `` | `true` | `false` | `true` | `true`| `false` |
+| `pre_receive_secret_detection_enabled` | `false` | `boolean` | `boolean` | `true` | `false` | `true` | `true`| `true` |
 | `prevent_merge_requests_author_approval` | `false` | `boolean` | `boolean` | `true` | `false` | `false` | `false`| `true` |
 | `prevent_merge_requests_committers_approval` | `false` | `boolean` | `boolean` | `true` | `false` | `false` | `false`| `true` |
 | `product_analytics_configurator_connection_string` | `true` | `bytea` | `` | `false` | `null` | `true` | `false`| `false` |
