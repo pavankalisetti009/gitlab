@@ -9,7 +9,7 @@ RSpec.describe Snippet, :elastic, feature_category: :global_search do
   end
 
   it 'always returns global result for Elasticsearch indexing for #use_elasticsearch?' do
-    snippet = create :snippet
+    snippet = create :personal_snippet
 
     expect(snippet.use_elasticsearch?).to eq(true)
 

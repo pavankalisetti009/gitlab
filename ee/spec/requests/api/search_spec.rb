@@ -355,7 +355,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     if level == :global
       context 'for snippet_titles scope', :sidekiq_inline do
         before do
-          create_list(:snippet, 2, :public, title: 'Some code', content: 'Check it out')
+          create_list(:personal_snippet, 2, :public, title: 'Some code', content: 'Check it out')
 
           ensure_elasticsearch_index!
         end
