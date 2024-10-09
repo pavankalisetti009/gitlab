@@ -52,7 +52,7 @@ end
 if $PROGRAM_NAME == __FILE__
   begin
     CiEnsureApplicationSettingsHaveDefinitionFile.new(
-      attributes: ApplicationSettingsAnalysis.new.attributes_from_codebase,
+      attributes: ApplicationSettingsAnalysis.new.attributes,
       definition_files: ApplicationSettingsAnalysis.definition_files
     ).execute!
   rescue CiEnsureApplicationSettingsHaveDefinitionFile::EXCEPTION
