@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: :importers do
   let_it_be(:user) { create(:user) }
+  let_it_be(:another_user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:bulk_import) { create(:bulk_import, user: user) }
   let_it_be(:filepath) { 'ee/spec/fixtures/bulk_imports/gz/epics.ndjson.gz' }
@@ -79,6 +80,15 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
         it_behaves_like 'successfully imports'
       end
 
+      it 'imports correct epic author' do
+        # map the original epic author to a user in the DB other than the one running the pipeline
+        ::BulkImports::UsersMapper.new(context: context).cache_source_user_id(1, another_user.id)
+
+        pipeline.run
+
+        expect(group.epics.first.author_id).to eq(another_user.id)
+      end
+
       it 'imports epic award emoji' do
         pipeline.run
 
@@ -118,11 +128,11 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
   describe '#load' do
     context 'when epic is not persisted' do
       it 'saves the epic' do
-        epic = build(:epic, group: group)
+        epic = build(:epic, group: group, author: another_user)
 
         expect(epic).to receive(:save).and_call_original
 
-        subject.load(context, [epic])
+        subject.load(context, epic)
       end
     end
 
