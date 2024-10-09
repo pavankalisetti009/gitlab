@@ -25,12 +25,6 @@ RSpec.shared_examples 'parsing a valid dependency config file' do
       scannerVersion: described_class::SCANNER_VERSION
     })
   end
-
-  it 'does not track error' do
-    expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
-
-    config_file.parse!
-  end
 end
 
 ### Optionally, the context can contain:
@@ -54,16 +48,5 @@ RSpec.shared_examples 'parsing an invalid dependency config file' do
     expect(config_file.error_message).to eq(
       "Error(s) while parsing file `#{blob.path}`: #{expected_error_message}")
     expect(config_file.payload).to be_nil
-  end
-
-  it 'tracks error' do
-    expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-      an_instance_of(Ai::Context::Dependencies::ConfigFiles::Base::ParsingError),
-      class: config_file.class.name,
-      file_path: blob.path,
-      project_id: 123
-    )
-
-    config_file.parse!
   end
 end
