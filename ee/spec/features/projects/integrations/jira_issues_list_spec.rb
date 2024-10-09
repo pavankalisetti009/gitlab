@@ -124,7 +124,7 @@ RSpec.describe 'Jira issues list', :js, feature_category: :integrations do
   def all_pages
     # the first and last navigation items
     # are Previous, and Next - ignore these.
-    all('ul.pagination li.page-item')[1..-2]
+    all('[data-testid="gl-pagination-li"]')[1..-2]
   end
 
   def navigate_to_page(page)

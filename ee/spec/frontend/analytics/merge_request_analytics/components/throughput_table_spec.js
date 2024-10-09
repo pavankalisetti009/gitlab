@@ -101,9 +101,9 @@ describe('ThroughputTable', () => {
 
   const findPagination = () => wrapper.findComponent(GlPagination);
 
-  const findPrevious = () => findPagination().findAll('.page-item').at(0);
+  const findPrevious = () => findPagination().findAll('[data-testid="gl-pagination-li"]').at(0);
 
-  const findNext = () => findPagination().findAll('.page-item').at(1);
+  const findNext = () => findPagination().findAll('[data-testid="gl-pagination-li"]').at(1);
 
   describe('default state', () => {
     beforeEach(async () => {
