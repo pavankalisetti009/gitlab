@@ -20,11 +20,11 @@ module QA
         Runtime::ApplicationSettings.enable_local_requests
 
         @mock_service = QA::Support::AuditEventStreamingService.new
-        @stream_destination_url = @mock_service.url('logs')
+        @stream_destination_url = @mock_service.destination_url
       end
 
       after(:context) do
-        @mock_service.teardown! if @mock_service
+        @mock_service&.teardown!
 
         Runtime::ApplicationSettings.disable_local_requests
       end
@@ -33,7 +33,7 @@ module QA
         next unless example.exception
 
         # If there is a failure this will output the logs from the smocker container (at the debug log level)
-        @mock_service.logs
+        @mock_service.container_logs
       end
 
       context 'with no destination' do
