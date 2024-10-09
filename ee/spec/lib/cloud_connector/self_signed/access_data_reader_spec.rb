@@ -148,7 +148,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     end
 
     let(:self_hosted_models_bundled_with) do
-      { "duo_enterprise" => [:code_suggestions, :duo_chat] }
+      { "duo_enterprise" => [:code_suggestions, *duo_chat_ent_unit_primitives] }
     end
 
     include_examples 'access data reader' do
