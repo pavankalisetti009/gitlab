@@ -13,7 +13,8 @@ module Gitlab
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant
+          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::MergeRequestReader
         ].freeze
 
         COMMAND_TOOLS = TOOLS + [
@@ -93,10 +94,6 @@ module Gitlab
         def tools
           tools = TOOLS.dup
 
-          if Feature.enabled?(:ai_merge_request_reader_for_chat, user)
-            tools << ::Gitlab::Llm::Chain::Tools::MergeRequestReader
-          end
-
           tools << ::Gitlab::Llm::Chain::Tools::CommitReader if Feature.enabled?(:ai_commit_reader_for_chat, user)
 
           tools
@@ -120,7 +117,6 @@ module Gitlab
           end
 
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-          Gitlab::AiGateway.push_feature_flag(:ai_merge_request_reader_for_chat, user)
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command

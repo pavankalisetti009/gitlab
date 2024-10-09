@@ -186,12 +186,9 @@ module Gitlab
             response = {
               prompt: prompt,
               options: option_params,
-              model_metadata: options[:model_metadata]
+              model_metadata: options[:model_metadata],
+              unavailable_resources: unavailable_resources
             }
-
-            if Feature.enabled?(:ai_merge_request_reader_for_chat, user)
-              response[:unavailable_resources] = %w[Pipelines Vulnerabilities]
-            end
 
             response.compact
           end
@@ -234,6 +231,10 @@ module Gitlab
             return service_name unless chat_feature_setting&.self_hosted?
 
             :self_hosted_models
+          end
+
+          def unavailable_resources
+            %w[Pipelines Vulnerabilities]
           end
         end
       end
