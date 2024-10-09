@@ -20,6 +20,8 @@ export const initAiSettings = (id, component) => {
     disabledDirectConnectionMethod,
     showEarlyAccessBanner,
     earlyAccessPath,
+    selfHostedModelsEnabled,
+    aiTermsAndConditionsPath,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -41,6 +43,8 @@ export const initAiSettings = (id, component) => {
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
       disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod),
       showEarlyAccessBanner: parseBoolean(showEarlyAccessBanner),
+      selfHostedModelsEnabled: parseBoolean(selfHostedModelsEnabled),
+      aiTermsAndConditionsPath,
       earlyAccessPath,
     },
     render: (createElement) =>

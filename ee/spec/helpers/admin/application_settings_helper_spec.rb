@@ -36,10 +36,10 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
 
       subject { helper.ai_settings_helper_data }
 
-      where(:duo_pro_visible, :purchased, :expected_duo_pro_visible_value) do
-        'true' | true | 'true'
-        'false' | false | 'false'
-        '' | nil | ''
+      where(:terms_accepted, :duo_pro_visible, :purchased, :expected_duo_pro_visible_value) do
+        true | true | true | 'true'
+        false | 'false' | false | 'false'
+        true | '' | nil | ''
       end
 
       with_them do
@@ -50,11 +50,15 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
             are_experiment_settings_allowed: "true",
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             redirect_path: general_admin_application_settings_path,
+            self_hosted_models_enabled: terms_accepted.to_s,
+            ai_terms_and_conditions_path: admin_ai_terms_and_conditions_path,
             duo_pro_visible: expected_duo_pro_visible_value
           }
         end
 
         before do
+          allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(terms_accepted)
+
           if purchased.nil?
             allow(CloudConnector::AvailableServices)
               .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
