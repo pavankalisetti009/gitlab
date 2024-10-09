@@ -8,7 +8,7 @@ export const TABS = [
   ...CE_TABS,
   {
     namespace: MEMBERS_TAB_TYPES.promotionRequest,
-    title: __('Promotions'),
+    title: __('Role promotions'),
     attrs: { 'data-testid': 'promotion-request-tab' },
     queryParamValue: TAB_QUERY_PARAM_VALUES.promotionRequest,
     component: PromotionRequestsTabApp,
