@@ -2,8 +2,8 @@
 import { GlForm, GlButton, GlCollapsibleListbox, GlFormFields } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { visitUrl } from '~/lib/utils/url_utility';
-import { s__ } from '~/locale';
+import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
+import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
 
@@ -51,6 +51,7 @@ export default {
       'AdminSelfHostedModels|Please enter a unique deployment name.',
     ),
     invalidEndpointError: s__('AdminSelfHostedModels|Please add a valid endpoint.'),
+    successMessage: s__('AdminSelfHostedModels|The self-hosted model was successfully %{action}.'),
   },
   formId: 'self-hosted-model-form',
   data() {
@@ -125,6 +126,11 @@ export default {
     isEditing() {
       return Boolean(this.initialFormValues.id);
     },
+    successMessage() {
+      return sprintf(this.$options.i18n.successMessage, {
+        action: this.isEditing ? 'saved' : 'created',
+      });
+    },
   },
   methods: {
     async onSubmit() {
@@ -160,9 +166,13 @@ export default {
             return;
           }
 
-          // TODO: Implement router to handle page transitions
           this.isSaving = false;
-          visitUrl(this.basePath);
+          visitUrlWithAlerts(this.basePath, [
+            {
+              message: this.successMessage,
+              variant: 'success',
+            },
+          ]);
         }
       } catch (error) {
         createAlert({
