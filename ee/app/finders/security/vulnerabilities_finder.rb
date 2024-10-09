@@ -26,9 +26,7 @@ module Security
     def initialize(vulnerable, params = {})
       @params = { include_archived_projects: false }.merge(params)
       @vulnerable = vulnerable
-      @vulnerabilities = vulnerable.vulnerabilities.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486271'
-      )
+      @vulnerabilities = vulnerable.vulnerabilities
     end
 
     def execute
