@@ -17,6 +17,11 @@ export const SLASH_COMMANDS = [
     shouldSubmit: true,
     description: s__('DuoChat|Delete all messages in this conversation.'),
   },
+  {
+    name: '/help',
+    shouldSubmit: true,
+    description: s__('DuoChat|Learn what Duo Chat can do.'),
+  },
 ];
 
 export const SOURCE_TYPES = {

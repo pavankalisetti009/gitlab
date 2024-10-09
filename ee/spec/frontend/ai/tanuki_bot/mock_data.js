@@ -12,6 +12,11 @@ export const MOCK_SLASH_COMMANDS = [
     shouldSubmit: true,
     description: 'Delete all messages in this conversation.',
   },
+  {
+    name: '/help',
+    shouldSubmit: true,
+    description: 'Learn what Duo Chat can do.',
+  },
 ];
 
 export const MOCK_SOURCE_TYPES = {
