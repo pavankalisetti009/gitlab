@@ -13,6 +13,7 @@ module EE
         expose :wiki_page_events, documentation: { type: 'boolean' }
         expose :job_events, documentation: { type: 'boolean' }
         expose :deployment_events, documentation: { type: 'boolean' }
+        expose :feature_flag_events, documentation: { type: 'boolean' }
         expose :releases_events, documentation: { type: 'boolean' }
         expose :subgroup_events, documentation: { type: 'boolean' }
         expose :emoji_events, documentation: { type: 'boolean' }
