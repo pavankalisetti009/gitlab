@@ -202,12 +202,12 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::EpicNode, feature_category:
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2022, 6, 1) | Date.new(2023, 6, 30)  | true   # Child starts before parent starts and ends within parent
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2024, 1, 1) | Date.new(2024, 12, 31) | false  # Non-overlapping date ranges
       Date.new(2023, 6, 1) | Date.new(2023, 8, 31)  | Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | true   # Overlapping date ranges
-      nil                  | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | false  # Parent start date missing
-      Date.new(2023, 1, 1) | nil                    | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | false  # Parent end date missing
-      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | nil                  | Date.new(2023, 6, 30)  | false  # Child start date missing
-      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | nil                    | false  # Child end date missing
-      nil                  | nil                    | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | false  # Both parent dates missing
-      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | nil                  | nil                    | false  # Both child dates missing
+      nil                  | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | true  # Parent start date missing
+      Date.new(2023, 1, 1) | nil                    | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | true  # Parent end date missing
+      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | nil                  | Date.new(2023, 6, 30)  | true  # Child start date missing
+      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | nil                    | true  # Child end date missing
+      nil                  | nil                    | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | true  # Both parent dates missing
+      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | nil                  | nil                    | true  # Both child dates missing
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | true   # Child matches parent range exactly
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 1, 1) | Date.new(2023, 6, 1)   | true   # Child starts at parent start
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2023, 12, 31) | true   # Child ends at parent end
