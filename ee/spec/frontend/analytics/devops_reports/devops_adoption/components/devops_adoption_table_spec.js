@@ -38,6 +38,8 @@ describe('DevopsAdoptionTable', () => {
   const findCol = (testId) => wrapper.findByTestId(testId);
   const findColRowChild = (col, row, child) =>
     wrapper.findAllByTestId(col).at(row).findComponent(child);
+  const findColRowHtmlElementChild = (col, row, child) =>
+    wrapper.findAllByTestId(col).at(row).find(child);
   const findColSubComponent = (colTestId, childComponent) =>
     findCol(colTestId).findComponent(childComponent);
   const findSortByLocalStorageSync = () => wrapper.findAllComponents(LocalStorageSync).at(0);
@@ -134,8 +136,7 @@ describe('DevopsAdoptionTable', () => {
         });
 
         it('grays the text out', () => {
-          const name = findColRowChild(TABLE_TEST_IDS_NAMESPACE, 1, 'span');
-
+          const name = findColRowHtmlElementChild(TABLE_TEST_IDS_NAMESPACE, 1, 'span');
           expect(name.classes()).toStrictEqual(['gl-text-gray-400']);
         });
 
