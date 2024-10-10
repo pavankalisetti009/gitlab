@@ -9,10 +9,6 @@ RSpec.describe DataSeeder, feature_category: :scalability do # rubocop:disable R
     # so not calling original here
     allow(FactoryBot).to receive(:create)
 
-    expect(TestEnv).to receive(:seed_db)
-    expect(TestEnv).to receive(:setup_factory_repo)
-    expect(TestEnv).to receive(:setup_forked_repo)
-
     described_class::EXCLUDED_FACTORIES.map(&:to_sym).each do |factory_name|
       expect(FactoryBot).not_to receive(:create).with(factory_name)
     end
