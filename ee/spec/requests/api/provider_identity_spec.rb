@@ -52,9 +52,11 @@ RSpec.describe API::ProviderIdentity, api: true, feature_category: :system_acces
   describe "Provider Identity API" do
     using RSpec::Parameterized::TableSyntax
 
+    identity_error = "SAML NameID is missing from your SAML response. Please contact your administrator"
+
     where(:provider_type, :provider_extern_uid_1, :provider_extern_uid_2, :provider_extern_uid_with_dot, :identity_type,
       :validation_error) do
-      "saml" | "saml-uid-1" | "saml-uid-2" | "saml-test@gmail.com" | Identity | "SAML NameID can't be blank"
+      "saml" | "saml-uid-1" | "saml-uid-2" | "saml-test@gmail.com" | Identity | identity_error
       "scim" | "scim-uid-1" | "scim-uid-2" | "scim-test@gmail.com" | ScimIdentity | "Extern uid can't be blank"
     end
 

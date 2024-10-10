@@ -277,7 +277,7 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
           expect(flash[:alert]).to eq(format(
             s_("GroupSAML|%{group_name} SAML authentication failed: %{message}"),
             group_name: group.name,
-            message: 'Extern uid has already been taken'
+            message: 'Extern uid has already been taken. Please contact your administrator to generate a unique extern_uid / NameID'
           ))
           expect(response).to redirect_to(root_path)
         end

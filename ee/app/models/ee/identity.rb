@@ -9,7 +9,9 @@ module EE
 
       belongs_to :saml_provider
 
-      validates :name_id, presence: true, if: :saml_provider
+      validates :name_id,
+        presence: { message: "is missing from your SAML response. Please contact your administrator" },
+        if: :saml_provider
 
       validates :saml_provider_id, presence: true, if: :group_saml?
 

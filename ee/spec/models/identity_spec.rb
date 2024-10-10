@@ -23,7 +23,8 @@ RSpec.describe Identity do
       identity = build(:identity, provider: 'group_saml', saml_provider: create(:saml_provider), extern_uid: "")
 
       expect(identity).not_to be_valid
-      expect(identity.errors.full_messages.join).to include("NameID can't be blank")
+      expect(identity.errors.full_messages.join)
+      .to include("SAML NameID is missing from your SAML response. Please contact your administrator")
     end
 
     context 'with enforced_group_managed_accounts' do
