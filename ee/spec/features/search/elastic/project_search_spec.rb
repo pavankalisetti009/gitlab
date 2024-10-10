@@ -3,22 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, feature_category: :global_search do
-  let_it_be(:user) { create(:user) }
-
-  let(:project) { create(:project, :repository, :wiki_repo, namespace: user.namespace) }
+  let_it_be(:user) { create(:user, maintainer_of: project) }
+  let_it_be(:project) { create(:project, :repository, :wiki_repo, namespace: user.namespace) }
 
   before do
     stub_ee_application_setting(
       elasticsearch_search: true,
       elasticsearch_indexing: true
     )
+    sign_in(user)
   end
 
   describe 'searching' do
     before do
-      project.add_maintainer(user)
-      sign_in(user)
-
       visit project_path(project)
     end
 
@@ -97,8 +94,6 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 
   describe 'displays Advanced Search status' do
     before do
-      sign_in(user)
-
       visit search_path(project_id: project.id, repository_ref: repository_ref, scope: scope, search: 'test')
     end
 
@@ -134,7 +129,6 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 
   describe 'when zoekt is not enabled' do
     before do
-      sign_in(user)
       visit project_path(project)
       ensure_elasticsearch_index!
 
@@ -165,8 +159,6 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
     let(:results) { Search::Zoekt::SearchResults.new(user, query, ::Project.id_in(project.id), node_id: zoekt_node.id) }
 
     before do
-      sign_in(user)
-
       allow_next_instance_of(SearchService) do |service|
         allow(service).to receive(:search_service).and_return(search_service)
         allow(service).to receive(:show_epics?).and_return(false)
