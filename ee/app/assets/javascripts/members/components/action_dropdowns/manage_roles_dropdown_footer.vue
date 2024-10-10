@@ -14,7 +14,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="manageMemberRolesPath" class="gl-border-t gl-border-gray-200 gl-p-2">
+  <div v-if="manageMemberRolesPath" class="gl-border-t gl-border-dropdown gl-p-2">
     <gl-button
       :href="manageMemberRolesPath"
       category="tertiary"
