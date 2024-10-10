@@ -220,6 +220,17 @@ DETAILS:
 - LLM: Vertex AI Codey [`codechat-bison`](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/code-chat)
 - [View documentation](../analytics/analytics_dashboards.md#generate-a-custom-visualization-with-gitlab-duo).
 
+### GitLab Duo Workflow
+
+DETAILS:
+**Offering:** GitLab.com
+**Status:** Experiment
+**Tier:** Ultimate
+
+- Automate tasks and help increase productivity in your development workflow.
+- LLM: Anthropic [Claude 3.5 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-5-sonnet)
+- [View documentation](../duo_workflow/index.md).
+
 ## Disable GitLab Duo features for specific groups or projects or an entire instance
 
 Disable GitLab Duo features by [following these instructions](turn_on_off.md).
