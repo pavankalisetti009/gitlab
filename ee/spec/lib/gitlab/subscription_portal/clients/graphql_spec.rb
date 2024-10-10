@@ -935,7 +935,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     subject(:get_billing_account_details) { client.get_billing_account_details(user) }
 
     context 'when the response is successful' do
-      it 'returns the billing account name' do
+      it 'returns the billing account name', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468344' do
         response = {
           success: true,
           data: {
