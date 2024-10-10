@@ -38987,9 +38987,6 @@ msgstr ""
 msgid "PackageRegistry|Other versions"
 msgstr ""
 
-msgid "PackageRegistry|Package Registry"
-msgstr ""
-
 msgid "PackageRegistry|Package asset deleted successfully"
 msgstr ""
 
@@ -39014,6 +39011,9 @@ msgid "PackageRegistry|Package protection rule deleted."
 msgstr ""
 
 msgid "PackageRegistry|Package protection rule updated."
+msgstr ""
+
+msgid "PackageRegistry|Package registry"
 msgstr ""
 
 msgid "PackageRegistry|Package updated by commit %{link} on branch %{branch}, built by pipeline %{pipeline}, and published to the registry %{datetime}"
