@@ -70,6 +70,26 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     end
   end
 
+  context 'when a dependency name contains an invalid byte sequence' do
+    it_behaves_like 'parsing a valid dependency config file' do
+      let(:invalid_byte_sequence) { [0xFE, 0x00, 0x00, 0x00].pack('C*') }
+      let(:config_file_content) do
+        <<~JSON
+          {
+            "parent_node": {
+              "child_node": [
+                { "name": "#{invalid_byte_sequence}lib1", "version": "1.0" },
+                { "name": "lib2", "version": "2.0" }
+              ]
+            }
+          }
+        JSON
+      end
+
+      let(:expected_formatted_lib_names) { ['lib1 (1.0)', 'lib2 (2.0)'] }
+    end
+  end
+
   it_behaves_like 'parsing an invalid dependency config file' do
     let(:expected_parsing_error_message) { 'content is not valid JSON' }
   end

@@ -47,7 +47,7 @@ module Ai
 
           def initialize(blob)
             @blob = blob
-            @content = blob.data
+            @content = sanitize_content(blob.data)
             @path = blob.path
             @errors = []
           end
@@ -55,8 +55,7 @@ module Ai
           def parse!
             return error('file empty') if content.blank?
 
-            @libs = extract_libs
-            sanitize_libs!
+            @libs = sanitize_libs(extract_libs)
 
             # Default error message if there are no other errors
             error('format not recognized or dependencies not present') if libs.blank? && errors.empty?
@@ -95,8 +94,8 @@ module Ai
             raise NotImplementedError
           end
 
-          def sanitize_libs!
-            @libs = Array.wrap(libs).filter_map do |lib|
+          def sanitize_libs(libs)
+            Array.wrap(libs).filter_map do |lib|
               next if lib.name.blank?
 
               lib.name = lib.name.strip
@@ -116,12 +115,18 @@ module Ai
             end
           end
 
+          def sanitize_content(content)
+            content
+              .encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
+              .delete("\u0000") # NULL byte is not permitted in JSON nor in PostgreSQL text-based columns
+          end
+
           def error(message)
             @errors << message
           end
 
           def checksum
-            Digest::SHA256.hexdigest(content)
+            Digest::SHA256.hexdigest(blob.data)
           end
           strong_memoize_attr :checksum
 
