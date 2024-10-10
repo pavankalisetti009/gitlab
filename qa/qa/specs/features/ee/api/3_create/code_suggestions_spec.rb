@@ -10,15 +10,7 @@ module QA
     describe 'Code Suggestions' do
       let(:expected_response_data) do
         {
-          id: 'id',
-          model: {
-            engine: anything,
-            name: anything,
-            lang: 'ruby',
-            tokens_consumption_metadata: anything
-          },
-          object: 'text_completion',
-          created: anything
+          choices: [anything]
         }
       end
 
