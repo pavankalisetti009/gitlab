@@ -57282,6 +57282,9 @@ msgstr ""
 msgid "Todos|Label priority"
 msgstr ""
 
+msgid "Todos|Leave feedback"
+msgstr ""
+
 msgid "Todos|Mark all as done"
 msgstr ""
 
