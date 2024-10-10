@@ -15,15 +15,13 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
     end
   end
 
-  describe '#clean_history?' do
-    Gitlab::Llm::ChatMessage::CLEAN_HISTORY_MESSAGES.each do |clean_message|
-      it "returns true for '#{clean_message}'" do
-        expect(build(:ai_chat_message, content: clean_message)).to be_clean_history
-      end
+  describe '#clear_history?' do
+    it "returns true for clear message" do
+      expect(build(:ai_chat_message, content: '/clear')).to be_clear_history
     end
 
     it 'returns false for regular message' do
-      expect(subject).not_to be_clean_history
+      expect(subject).not_to be_clear_history
     end
   end
 
@@ -32,7 +30,7 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
       [
         ['user', 'foo?', true],
         ['user', '/reset', false],
-        ['user', '/clean', false],
+        ['user', '/clear', false],
         ['assistant', 'foo?', false]
       ]
     end
@@ -67,17 +65,15 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
       end
     end
 
-    context 'for slash commands to clean history' do
-      Gitlab::Llm::ChatMessage::CLEAN_HISTORY_MESSAGES.each do |clean_message|
-        it "removes all messages from chat storage for message '#{clean_message}'" do
-          message = build(:ai_chat_message, content: clean_message, agent_version_id: 1)
+    context 'for slash commands to clear history' do
+      it "removes all messages from chat storage for message '/clear'" do
+        message = build(:ai_chat_message, content: '/clear', agent_version_id: 1)
 
-          expect_next_instance_of(Gitlab::Llm::ChatStorage, message.user, message.agent_version_id) do |instance|
-            expect(instance).to receive(:clean!)
-          end
-
-          message.save!
+        expect_next_instance_of(Gitlab::Llm::ChatStorage, message.user, message.agent_version_id) do |instance|
+          expect(instance).to receive(:clear!)
         end
+
+        message.save!
       end
     end
   end
