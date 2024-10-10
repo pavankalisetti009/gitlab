@@ -18,7 +18,13 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
+    },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
     },
     filters: {
       type: Object,
@@ -56,6 +62,7 @@ export default {
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"
+              :project-path="projectPath"
               :check="key"
               :filters="filters"
             />
@@ -73,7 +80,7 @@ export default {
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"
-              :project-id="value.id"
+              :project-path="value.fullPath"
               :filters="filters"
             />
           </gl-accordion-item>
@@ -90,6 +97,7 @@ export default {
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"
+              :project-path="projectPath"
               :standard="key"
               :filters="filters"
             />

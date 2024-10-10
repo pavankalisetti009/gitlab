@@ -28,10 +28,6 @@ export default {
     GlSprintf,
   },
   props: {
-    groupPath: {
-      type: String,
-      required: true,
-    },
     showDrawer: {
       type: Boolean,
       required: false,

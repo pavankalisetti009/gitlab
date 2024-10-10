@@ -3,7 +3,8 @@ import { GlAlert, GlTable, GlIcon, GlLink, GlLoadingIcon } from '@gitlab/ui';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import getProjectComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_adherence.query.graphql';
+import getProjectComplianceStandardsGroupAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_group_adherence.query.graphql';
+import getProjectComplianceStandardsProjectAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_project_adherence.query.graphql';
 import FrameworksInfo from '../shared/frameworks_info.vue';
 import Pagination from '../shared/pagination.vue';
 import { GRAPHQL_PAGE_SIZE } from '../../constants';
@@ -33,7 +34,8 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     filters: {
       type: Object,
@@ -45,10 +47,10 @@ export default {
       required: false,
       default: '',
     },
-    projectId: {
+    projectPath: {
       type: String,
       required: false,
-      default: '',
+      default: null,
     },
     standard: {
       type: String,
@@ -70,16 +72,20 @@ export default {
   },
   apollo: {
     adherences: {
-      query: getProjectComplianceStandardsAdherence,
+      query() {
+        return this.projectPath
+          ? getProjectComplianceStandardsProjectAdherence
+          : getProjectComplianceStandardsGroupAdherence;
+      },
       variables() {
         return {
-          fullPath: this.groupPath,
+          fullPath: this.projectPath ?? this.groupPath,
           filters: { ...this.filters, ...this.queryFilters },
           ...this.paginationCursors,
         };
       },
       update(data) {
-        const { nodes, pageInfo } = data?.group?.projectComplianceStandardsAdherence || {};
+        const { nodes, pageInfo } = data?.container?.projectComplianceStandardsAdherence || {};
         return {
           list: nodes,
           pageInfo,
@@ -101,10 +107,6 @@ export default {
     queryFilters() {
       if (this.check) {
         return { checkName: this.check };
-      }
-
-      if (this.projectId) {
-        return { projectIds: this.projectId };
       }
 
       if (this.standard) {
@@ -322,7 +324,6 @@ export default {
       </template>
     </gl-table>
     <fix-suggestions-sidebar
-      :group-path="groupPath"
       :show-drawer="showDrawer"
       :adherence="drawerAdherence"
       @close="closeDrawer"

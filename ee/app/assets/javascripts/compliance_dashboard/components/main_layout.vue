@@ -74,7 +74,8 @@ export default {
     },
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     rootAncestor: {
       type: Object,

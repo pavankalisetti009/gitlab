@@ -5,7 +5,8 @@ import { GlAlert, GlLink, GlTable, GlLoadingIcon } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import getProjectComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_adherence.query.graphql';
+import getProjectComplianceStandardsGroupAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_group_adherence.query.graphql';
+import getProjectComplianceStandardsProjectAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_project_adherence.query.graphql';
 import getProjectsInComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_projects_in_standards_adherence.query.graphql';
 import AdherenceBaseTable from 'ee/compliance_dashboard/components/standards_adherence_report/base_table.vue';
 import FixSuggestionsSidebar from 'ee/compliance_dashboard/components/standards_adherence_report/fix_suggestions_sidebar.vue';
@@ -29,9 +30,10 @@ describe('AdherencesBaseTable component', () => {
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
   const mockGraphQlSuccess = jest.fn().mockResolvedValue(defaultAdherencesResponse);
   const mockGraphQlError = jest.fn().mockRejectedValue(sentryError);
-  const createMockApolloProvider = (resolverMock) => {
+  const createMockApolloProvider = ({ group, project }) => {
     return createMockApollo([
-      [getProjectComplianceStandardsAdherence, resolverMock],
+      [getProjectComplianceStandardsGroupAdherence, group],
+      [getProjectComplianceStandardsProjectAdherence, project],
       [getProjectsInComplianceStandardsAdherence, mockGraphQlLoading],
     ]);
   };
@@ -52,7 +54,7 @@ describe('AdherencesBaseTable component', () => {
   function createComponent(
     mountFn = shallowMount,
     props = {},
-    resolverMock = mockGraphQlLoading,
+    resolverMock = { group: mockGraphQlLoading, project: mockGraphQlLoading },
     queryParams = {},
   ) {
     const currentQueryParams = { ...queryParams };
@@ -123,7 +125,7 @@ describe('AdherencesBaseTable component', () => {
   describe('when the adherence query fails', () => {
     beforeEach(() => {
       jest.spyOn(Sentry, 'captureException');
-      createComponent(shallowMount, {}, mockGraphQlError);
+      createComponent(shallowMount, {}, { group: mockGraphQlError });
     });
 
     it('renders the error message', async () => {
@@ -141,7 +143,7 @@ describe('AdherencesBaseTable component', () => {
       const noAdherencesResponse = createComplianceAdherencesResponse({ count: 0 });
       const mockResolver = jest.fn().mockResolvedValue(noAdherencesResponse);
 
-      createComponent(mount, {}, mockResolver);
+      createComponent(mount, {}, { group: mockResolver });
 
       return waitForPromises();
     });
@@ -155,7 +157,7 @@ describe('AdherencesBaseTable component', () => {
 
   describe('when there are standards adherence checks available', () => {
     beforeEach(() => {
-      createComponent(mount, {}, mockGraphQlSuccess);
+      createComponent(mount, {}, { group: mockGraphQlSuccess });
 
       return waitForPromises();
     });
@@ -193,7 +195,7 @@ describe('AdherencesBaseTable component', () => {
           .fn()
           .mockResolvedValue(preventApprovalbyMRCommitersAdherencesResponse);
 
-        createComponent(mount, {}, mockResolver);
+        createComponent(mount, {}, { group: mockResolver });
 
         return waitForPromises();
       });
@@ -217,7 +219,7 @@ describe('AdherencesBaseTable component', () => {
         });
         const mockResolver = jest.fn().mockResolvedValue(atLeastTwoApprovalsAdherencesResponse);
 
-        createComponent(mount, {}, mockResolver);
+        createComponent(mount, {}, { group: mockResolver });
 
         return waitForPromises();
       });
@@ -312,7 +314,7 @@ describe('AdherencesBaseTable component', () => {
   describe('compliance frameworks info', () => {
     describe('with compliance frameworks', () => {
       beforeEach(() => {
-        createComponent(mount, {}, mockGraphQlSuccess);
+        createComponent(mount, {}, { group: mockGraphQlSuccess });
 
         return waitForPromises();
       });
@@ -329,7 +331,7 @@ describe('AdherencesBaseTable component', () => {
         complianceFrameworksNodes: [],
       });
       beforeEach(() => {
-        createComponent(mount, {}, noFrameworksResponse);
+        createComponent(mount, {}, { group: noFrameworksResponse });
 
         return waitForPromises();
       });
@@ -344,7 +346,7 @@ describe('AdherencesBaseTable component', () => {
 
   describe('fixSuggestionSidebar', () => {
     beforeEach(() => {
-      createComponent(mount, {}, mockGraphQlSuccess);
+      createComponent(mount, {}, { group: mockGraphQlSuccess });
 
       return waitForPromises();
     });
@@ -355,7 +357,6 @@ describe('AdherencesBaseTable component', () => {
 
         await findFixSuggestionSidebar().vm.$emit('close');
 
-        expect(findFixSuggestionSidebar().props('groupPath')).toBe('example-group-path');
         expect(findFixSuggestionSidebar().props('showDrawer')).toBe(false);
         expect(findFixSuggestionSidebar().props('adherence')).toStrictEqual({});
       });
@@ -365,12 +366,45 @@ describe('AdherencesBaseTable component', () => {
       it('has the correct props when opened', async () => {
         await openSidebar();
 
-        expect(findFixSuggestionSidebar().props('groupPath')).toBe('example-group-path');
         expect(findFixSuggestionSidebar().props('showDrawer')).toBe(true);
         expect(findFixSuggestionSidebar().props('adherence')).toStrictEqual(
           wrapper.vm.adherences.list[0],
         );
       });
+    });
+  });
+
+  describe('container logic', () => {
+    it('uses group query when projectPath is missing', async () => {
+      const groupQueryMock = jest.fn().mockResolvedValue(new Promise(() => {}));
+      const projectQueryMock = jest.fn().mockResolvedValue(new Promise(() => {}));
+      createComponent(
+        shallowMount,
+        { groupPath: 'groupPath', projectPath: null },
+        { group: groupQueryMock, project: projectQueryMock },
+      );
+      await nextTick();
+
+      expect(groupQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({ fullPath: 'groupPath' }),
+      );
+      expect(projectQueryMock).not.toHaveBeenCalled();
+    });
+
+    it('uses project query when projectPath is missing', async () => {
+      const groupQueryMock = jest.fn().mockResolvedValue(new Promise(() => {}));
+      const projectQueryMock = jest.fn().mockResolvedValue(new Promise(() => {}));
+      createComponent(
+        shallowMount,
+        { groupPath: 'groupPath', projectPath: 'projectPath' },
+        { group: groupQueryMock, project: projectQueryMock },
+      );
+      await nextTick();
+
+      expect(projectQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({ fullPath: 'projectPath' }),
+      );
+      expect(groupQueryMock).not.toHaveBeenCalled();
     });
   });
 });

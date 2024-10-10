@@ -97,9 +97,9 @@ describe('GroupAdherences component', () => {
       createComponent({
         selected: 'Projects',
         projects: [
-          { name: 'Project A', id: 'project-a' },
-          { name: 'Project B', id: 'project-b' },
-          { name: 'Project C', id: 'project-c' },
+          { name: 'Project A', id: 'project-a', fullPath: 'path/a' },
+          { name: 'Project B', id: 'project-b', fullPath: 'path/b' },
+          { name: 'Project C', id: 'project-c', fullPath: 'path/c' },
         ],
       });
     });
@@ -117,7 +117,7 @@ describe('GroupAdherences component', () => {
       ).toMatchObject({
         groupPath: 'example-group-path',
         filters: {},
-        projectId: 'project-a',
+        projectPath: 'path/a',
       });
 
       expect(
@@ -125,7 +125,7 @@ describe('GroupAdherences component', () => {
       ).toMatchObject({
         groupPath: 'example-group-path',
         filters: {},
-        projectId: 'project-b',
+        projectPath: 'path/b',
       });
 
       expect(
@@ -133,7 +133,7 @@ describe('GroupAdherences component', () => {
       ).toMatchObject({
         groupPath: 'example-group-path',
         filters: {},
-        projectId: 'project-c',
+        projectPath: 'path/c',
       });
     });
   });

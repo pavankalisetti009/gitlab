@@ -8,7 +8,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { ROUTE_STANDARDS_ADHERENCE } from 'ee/compliance_dashboard/constants';
 import ComplianceStandardsAdherenceTable from 'ee/compliance_dashboard/components/standards_adherence_report/standards_adherence_table.vue';
 import Filters from 'ee/compliance_dashboard/components/standards_adherence_report/filters.vue';
-import getProjectComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_adherence.query.graphql';
+import getProjectComplianceStandardsGroupAdherence from 'ee/compliance_dashboard/graphql/compliance_standards_group_adherence.query.graphql';
 import getProjectsInComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_projects_in_standards_adherence.query.graphql';
 import { mapStandardsAdherenceQueryToFilters } from 'ee/compliance_dashboard/utils';
 import { createComplianceAdherencesResponse } from '../../mock_data';
@@ -26,7 +26,7 @@ describe('ComplianceStandardsAdherenceTable component', () => {
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
   const createMockApolloProvider = (resolverMock) => {
     return createMockApollo([
-      [getProjectComplianceStandardsAdherence, resolverMock],
+      [getProjectComplianceStandardsGroupAdherence, resolverMock],
       [getProjectsInComplianceStandardsAdherence, mockGraphQlLoading],
     ]);
   };
@@ -145,8 +145,8 @@ describe('ComplianceStandardsAdherenceTable component', () => {
       ]);
     });
 
-    it('contains the correct dropdown options when global project id provided', () => {
-      createComponent({ globalProjectId: 26 }, mockGraphQlSuccess);
+    it('contains the correct dropdown options when project path provided', () => {
+      createComponent({ projectPath: 'project/path' }, mockGraphQlSuccess);
       expect(findDropdown().props('items')).toEqual([
         { text: 'None' },
         { text: 'Checks' },

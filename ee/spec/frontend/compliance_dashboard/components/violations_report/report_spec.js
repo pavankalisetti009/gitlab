@@ -8,7 +8,8 @@ import ComplianceViolationsReport from 'ee/compliance_dashboard/components/viola
 import MergeRequestDrawer from 'ee/compliance_dashboard/components/violations_report/drawer.vue';
 import ViolationReason from 'ee/compliance_dashboard/components/violations_report/violations/reason.vue';
 import ViolationFilter from 'ee/compliance_dashboard/components/violations_report/violations/filter.vue';
-import getComplianceViolationsQuery from 'ee/compliance_dashboard/graphql/compliance_violations.query.graphql';
+import getComplianceViolationsGroupQuery from 'ee/compliance_dashboard/graphql/compliance_violations_group.query.graphql';
+import getComplianceViolationsProjectQuery from 'ee/compliance_dashboard/graphql/compliance_violations_project.query.graphql';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { mapViolations } from 'ee/compliance_dashboard/graphql/mappers';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -43,7 +44,7 @@ describe('ComplianceViolationsReport component', () => {
   };
 
   const violationsResponse = createComplianceViolationsResponse({ count: 2 });
-  const violations = violationsResponse.data.group.mergeRequestViolations.nodes;
+  const violations = violationsResponse.data.container.mergeRequestViolations.nodes;
   const sentryError = new Error('GraphQL networkError');
   const mockGraphQlSuccess = jest.fn().mockResolvedValue(violationsResponse);
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
@@ -84,14 +85,17 @@ describe('ComplianceViolationsReport component', () => {
     await nextTick();
   };
 
-  const createMockApolloProvider = (resolverMock) => {
-    return createMockApollo([[getComplianceViolationsQuery, resolverMock]]);
+  const createMockApolloProvider = ({ group, project }) => {
+    return createMockApollo([
+      [getComplianceViolationsGroupQuery, group],
+      [getComplianceViolationsProjectQuery, project],
+    ]);
   };
 
   const createComponent = (
     mountFn = shallowMount,
     props = {},
-    resolverMock = mockGraphQlLoading,
+    resolverMock = { group: mockGraphQlLoading, project: mockGraphQlLoading },
   ) => {
     return extendedWrapper(
       mountFn(ComplianceViolationsReport, {
@@ -138,7 +142,7 @@ describe('ComplianceViolationsReport component', () => {
   describe('when initializing', () => {
     beforeEach(() => {
       setWindowLocation(TEST_HOST + defaultQueryParams);
-      wrapper = createComponent(mount, {}, mockGraphQlLoading);
+      wrapper = createComponent(mount, {}, { group: mockGraphQlLoading });
     });
 
     it('renders the table loading icon', () => {
@@ -162,7 +166,7 @@ describe('ComplianceViolationsReport component', () => {
 
     beforeEach(() => {
       setWindowLocation(`${TEST_HOST + defaultQueryParams}&sort=${sort}`);
-      wrapper = createComponent(mount, {}, mockGraphQlLoading);
+      wrapper = createComponent(mount, {}, { group: mockGraphQlLoading });
     });
 
     it('fetches the list of merge request violations with sort params', () => {
@@ -180,7 +184,7 @@ describe('ComplianceViolationsReport component', () => {
     beforeEach(() => {
       setWindowLocation(TEST_HOST + defaultQueryParams);
       jest.spyOn(Sentry, 'captureException');
-      wrapper = createComponent(shallowMount, {}, mockGraphQlError);
+      wrapper = createComponent(shallowMount, {}, { group: mockGraphQlError });
     });
 
     it('renders the error message', async () => {
@@ -197,7 +201,7 @@ describe('ComplianceViolationsReport component', () => {
   describe('when there are violations', () => {
     beforeEach(() => {
       setWindowLocation(TEST_HOST + defaultQueryParams);
-      wrapper = createComponent(mount, {}, mockGraphQlSuccess);
+      wrapper = createComponent(mount, {}, { group: mockGraphQlSuccess });
 
       return waitForPromises();
     });
@@ -349,7 +353,7 @@ describe('ComplianceViolationsReport component', () => {
       const sortState = { sortBy: 'mergedAt', sortDesc: true };
 
       const changeTableSort = async () => {
-        wrapper = createComponent(mount, {}, mockGraphQlSuccess);
+        wrapper = createComponent(mount, {}, { group: mockGraphQlSuccess });
 
         await waitForPromises();
         await findViolationsTable().vm.$emit('sort-changed', sortState);
@@ -385,7 +389,7 @@ describe('ComplianceViolationsReport component', () => {
     describe('pagination', () => {
       it('renders and configures the pagination', () => {
         const { __typename, ...paginationProps } =
-          violationsResponse.data.group.mergeRequestViolations.pageInfo;
+          violationsResponse.data.container.mergeRequestViolations.pageInfo;
 
         expect(findPagination().props()).toMatchObject({
           ...paginationProps,
@@ -426,7 +430,7 @@ describe('ComplianceViolationsReport component', () => {
           });
           const mockResolver = jest.fn().mockResolvedValue(noPagesResponse);
 
-          wrapper = createComponent(mount, {}, mockResolver);
+          wrapper = createComponent(mount, {}, { group: mockResolver });
 
           return waitForPromises();
         });
@@ -485,37 +489,34 @@ describe('ComplianceViolationsReport component', () => {
     });
   });
 
-  describe('when initialized with global project id', () => {
-    const GLOBAL_PROJECT_ID = 4;
+  describe('when initialized with project path', () => {
+    const PROJECT_PATH = 'some/path';
+    const projectMockResolver = jest.fn().mockResolvedValue(violationsResponse);
+    const groupMockResolver = jest.fn().mockResolvedValue(new Promise(() => {}));
 
     beforeEach(() => {
       setWindowLocation(TEST_HOST + defaultQueryParams);
       wrapper = createComponent(
         mount,
         {
-          globalProjectId: GLOBAL_PROJECT_ID,
+          projectPath: PROJECT_PATH,
         },
-        mockGraphQlSuccess,
+        { group: groupMockResolver, project: projectMockResolver },
       );
 
       return waitForPromises();
     });
 
-    it('ignores project ids from filters', async () => {
-      await changeFilters({ projectIds: [5, 6, 7] });
-
-      expect(mockGraphQlSuccess).toHaveBeenCalledTimes(2);
-      expect(mockGraphQlSuccess).toHaveBeenNthCalledWith(2, {
-        fullPath: groupPath,
-        filters: expect.objectContaining({
-          projectIds: [`gid://gitlab/Project/${GLOBAL_PROJECT_ID}`],
+    it('uses project query to load data', () => {
+      expect(projectMockResolver).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: PROJECT_PATH,
         }),
-        sort: DEFAULT_SORT,
-        ...DEFAULT_PAGINATION_CURSORS,
-      });
+      );
+      expect(groupMockResolver).not.toHaveBeenCalled();
     });
 
-    it('hides project ids from violation filter', () => {
+    it('hides projects from violation filter', () => {
       expect(wrapper.findComponent(ViolationFilter).props('showProjectFilter')).toEqual(false);
     });
   });
