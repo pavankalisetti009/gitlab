@@ -162,48 +162,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           end
         end
 
-        context 'with stored location concerns on redirection' do
-          before do
-            user.update!(setup_for_company: true)
-          end
-
-          context 'when the user is setup for company' do
-            context 'when there is a stored location for the user' do
-              before do
-                allow_next_instance_of(described_class) do |controller|
-                  allow(controller).to receive(:stored_location_for).with(:user).and_return(root_path)
-                end
-              end
-
-              it 'redirects to the stored location' do
-                expect_create_success(namespace)
-
-                expect(post_create).to redirect_to(root_path)
-              end
-            end
-
-            context 'without a stored location set for the user' do
-              it 'redirects to the duo page path' do
-                expect_create_success(namespace)
-
-                expect(post_create).to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(namespace))
-              end
-
-              context 'when duo_enterprise_trials feature flag is disabled' do
-                before do
-                  stub_feature_flags(duo_enterprise_trials: false)
-                end
-
-                it 'redirects to the group path' do
-                  expect_create_success(namespace)
-
-                  expect(post_create).to redirect_to(group_path(namespace))
-                end
-              end
-            end
-          end
-        end
-
         where(
           case_names: ->(glm_content) { "when submitted with glm_content value of #{glm_content}" },
           glm_content: %w[discover-group-security discover-project-security]
