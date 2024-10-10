@@ -183,6 +183,70 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
     end
 
+    shared_examples 'creates work item with weight widget' do
+      let(:fields) do
+        <<~FIELDS
+          workItem {
+            workItemType {
+              name
+            }
+            widgets {
+              type
+              ... on WorkItemWidgetWeight {
+                weight
+              }
+            }
+          }
+          errors
+        FIELDS
+      end
+
+      let(:input) do
+        {
+          title: 'new title',
+          workItemTypeId: WorkItems::Type.default_by_type(:issue).to_global_id.to_s,
+          weightWidget: { 'weight' => 5 }
+        }
+      end
+
+      before do
+        stub_licensed_features(issue_weights: true)
+      end
+
+      it "sets the work item's weight", :aggregate_failures do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to change { WorkItem.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(type_response).to include({ 'name' => 'Issue' })
+        expect(widgets_response).to include(
+          {
+            'type' => 'WEIGHT',
+            'weight' => 5
+          }
+        )
+      end
+
+      context 'when feature is not available' do
+        before do
+          stub_licensed_features(issue_weights: false)
+        end
+
+        it 'returns an error', :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.to not_change { WorkItem.count }
+
+          expect(json_response['errors']).to include(
+            a_hash_including(
+              'message' => 'Following widget keys are not supported by Issue type: [:weight_widget]'
+            )
+          )
+        end
+      end
+    end
+
     context 'when creating work items in a project' do
       context 'with projectPath' do
         let_it_be(:container_params) { { project: project } }
@@ -190,6 +254,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:work_item_type) { :task }
 
         it_behaves_like 'creates work item with iteration widget'
+        it_behaves_like 'creates work item with weight widget'
       end
 
       context 'with namespacePath' do
@@ -198,6 +263,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:work_item_type) { :task }
 
         it_behaves_like 'creates work item with iteration widget'
+        it_behaves_like 'creates work item with weight widget'
       end
     end
 

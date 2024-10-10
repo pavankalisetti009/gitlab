@@ -9,12 +9,12 @@ RSpec.describe WorkItems::Callbacks::Weight, feature_category: :team_planning do
 
   let(:callback) { described_class.new(issuable: work_item, current_user: user, params: params) }
 
-  describe '#before_update' do
-    subject(:before_update_callback) { callback.before_update }
+  describe '#after_initialize' do
+    subject(:after_initialize_callback) { callback.after_initialize }
 
     shared_examples 'weight is unchanged' do
       it 'does not change work item weight value' do
-        expect { before_update_callback }
+        expect { after_initialize_callback }
           .to not_change { work_item.weight }
       end
     end
@@ -48,7 +48,7 @@ RSpec.describe WorkItems::Callbacks::Weight, feature_category: :team_planning do
             let(:params) { { weight: new_weight } }
 
             it 'correctly sets work item weight value' do
-              before_update_callback
+              after_initialize_callback
 
               expect(work_item.weight).to eq(new_weight)
             end
@@ -69,7 +69,7 @@ RSpec.describe WorkItems::Callbacks::Weight, feature_category: :team_planning do
           end
 
           it "removes the work item's weight" do
-            before_update_callback
+            after_initialize_callback
 
             expect(work_item.weight).to eq(nil)
           end

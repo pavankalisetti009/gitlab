@@ -8,6 +8,11 @@ module EE
         extend ::Gitlab::Utils::Override
 
         prepended do
+          argument :weight_widget,
+            ::Types::WorkItems::Widgets::WeightInputType,
+            required: false,
+            description: 'Input for weight widget.'
+
           argument :health_status_widget,
             ::Types::WorkItems::Widgets::HealthStatusInputType,
             required: false,
