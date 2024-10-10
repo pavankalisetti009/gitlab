@@ -23,7 +23,7 @@ RSpec.describe 'Groups > Add Ons > Discover Duo Pro > Hand Raise Lead', :js, :sa
   end
 
   it 'renders and submits when user interacts with hand raise lead trigger in the header' do
-    within_testid('discover-duo-pro-heading-actions') do
+    within_testid('discover-header-actions') do
       find_button('Contact sales').click
     end
 
@@ -31,7 +31,7 @@ RSpec.describe 'Groups > Add Ons > Discover Duo Pro > Hand Raise Lead', :js, :sa
   end
 
   it 'renders and submits when user interacts with hand raise lead trigger in the footer' do
-    within_testid('discover-duo-pro-footer-actions') do
+    within_testid('discover-footer-actions') do
       find_button('Contact sales').click
     end
 

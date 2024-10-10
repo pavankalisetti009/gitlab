@@ -1,0 +1,47 @@
+- page_title text_page_title
+
+.gl-grid.gl-grid-cols-1.lg:gl-grid-cols-2.gl-mt-7.gl-mx-auto{ class: 'gl-w-full lg:gl-w-16/20', data: { testid: 'hero-section' } }
+  .container.gl-my-7
+    = image_tag(hero_logo, width: 403)
+    %h2.gl-text-size-h1.gl-mb-5{ class: 'gl-w-3/4' }
+      = hero_header_text
+    .gl-flex.gl-flex-wrap.gl-flex-col.sm:gl-flex-row{ data: { testid: 'discover-header-actions' } }
+      = render Pajamas::ButtonComponent.new(href: buy_now_link,
+        category: :primary, variant: :confirm,
+        button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0',
+        data: { track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
+        = _('Buy now')
+      .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
+  .container.gl-p-0.lg:ml-6
+    = link_to hero_video, target: '_blank' do
+      = image_tag(hero_thumbnail, class: 'gl-w-full gl-min-w-500 gl-rounded-base')
+
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
+  .container.gl-mt-5{ data: { testid: 'why-section' } }
+    %h3.gl-text-lg.gl-mb-6
+      = why_section_header_text
+    .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-2
+      = render Pajamas::CardComponent.with_collection(discover_card_collection,
+        card_options: { class: 'gl-rounded-lg gl-p-2', data: { testid: 'why-entry' } },
+        body_options: { class: 'gl-pt-0' },
+        header_options: { class: 'gl-bg-default gl-py-4 gl-font-bold gl-border-b-0' })
+
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
+  .container.gl-mt-5{ data: { testid: 'core-feature-1' } }
+    %h3.gl-text-lg.gl-mb-6
+      = core_feature_one_header_text
+    .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-4
+      = render Pajamas::CardComponent.with_collection(core_section_one_card_collection,
+        card_options: { class: 'gl-h-full gl-flex gl-flex-col', data: { testid: 'core-1-entry' } },
+        header_options: { class: 'gl-bg-default gl-py-4 gl-font-bold gl-border-b-0' },
+        body_options: { class: 'gl-px-5 gl-py-4 gl-pt-0 gl-grow' },
+        footer_options: { class: 'gl-bg-default gl-border-0 gl-px-5 gl-py-4 gl-mt-auto' })
+
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
+  .container.gl-mt-7{ data: { testid: 'discover-footer-actions' } }
+    = render Pajamas::ButtonComponent.new(href: buy_now_link,
+      category: :primary, variant: :confirm,
+      button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0',
+      data: { track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
+      = _('Buy now')
+    .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }

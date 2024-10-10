@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'SAML group links', feature_category: :system_access do
   include ListboxHelpers
-  include Features::DomHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
