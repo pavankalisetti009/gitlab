@@ -26,7 +26,7 @@ module Gitlab
                 log_error(message: "Streaming error",
                   event_name: 'error_response_received',
                   ai_component: 'abstraction_layer',
-                  error: data&.dig("error"))
+                  error: data&.dig("error", "type"))
               end
 
               content = data&.dig('delta', 'text').to_s

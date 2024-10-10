@@ -100,8 +100,8 @@ module Gitlab
             Answer.error_answer(context: context, content: content, error_code: "M3003")
           end
 
-          def error_with_message(content)
-            Answer.error_answer(context: context, content: content)
+          def error_with_message(content, error_code:)
+            Answer.error_answer(context: context, content: content, error_code: error_code)
           end
 
           def already_used_answer
