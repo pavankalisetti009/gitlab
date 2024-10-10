@@ -27,7 +27,9 @@ module Security
           )
         )
 
-        new_policies, deleted_policies, policies_changes, rearranged_policies = categorize_policies
+        new_policies, deleted_policies, policies_changes, rearranged_policies = policy_configuration.policy_changes(
+          db_policies, policies
+        )
         created_policies = []
 
         ApplicationRecord.transaction do
@@ -60,35 +62,6 @@ module Security
         policy_configuration.security_policies.undeleted.merge(relation_scope)
       end
       strong_memoize_attr :db_policies
-
-      def categorize_policies
-        db_policies_with_checksums = db_policies.index_by(&:checksum)
-        db_policies_with_names = db_policies.index_by(&:name)
-
-        deleted_policies = db_policies_with_checksums.values
-        new_policies = []
-        policies_changes = []
-        rearranged_policies = []
-
-        policies.each_with_index do |policy_hash, index|
-          checksum = Security::Policy.checksum(policy_hash)
-          db_policy = db_policies_with_checksums[checksum] || db_policies_with_names[policy_hash[:name]]
-
-          next new_policies << [policy_hash, index] unless db_policy
-
-          deleted_policies.delete(db_policy)
-
-          if db_policy.checksum != checksum
-            policies_changes << Security::SecurityOrchestrationPolicies::PolicyComparer.new(
-              db_policy: db_policy, yaml_policy: policy_hash, policy_index: index
-            )
-          end
-
-          rearranged_policies << [db_policy, index] if db_policy.policy_index != index
-        end
-
-        [new_policies, deleted_policies, policies_changes, rearranged_policies]
-      end
 
       def create_policies(new_policies)
         new_policies.map do |policy_hash, index|
