@@ -404,6 +404,26 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
     it_behaves_like 'field with approval rules related check'
   end
 
+  describe '#approved' do
+    let_it_be_with_reload(:project) { create(:project, :public) }
+
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            mergeRequests {
+              nodes {
+                approved
+              }
+            }
+          }
+        }
+      )
+    end
+
+    it_behaves_like 'field with approval rules related check'
+  end
+
   describe '#detailed_merge_status' do
     let_it_be_with_reload(:project) { create(:project, :public) }
 
