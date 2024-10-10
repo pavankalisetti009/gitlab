@@ -318,11 +318,15 @@ export const MOCK_NETWORK_PROBES = {
       name: 'host_probe',
       success: true,
       message: 'customers.staging.gitlab.com reachable.',
+      details: {},
+      errors: [],
     },
     {
       name: 'host_probe',
       success: true,
       message: 'cloud.gitlab.com reachable.',
+      details: {},
+      errors: [],
     },
   ],
   error: [
@@ -330,11 +334,15 @@ export const MOCK_NETWORK_PROBES = {
       name: 'host_probe',
       success: false,
       message: 'customers.staging.gitlab.com is not reachable.',
+      details: {},
+      errors: [],
     },
     {
       name: 'host_probe',
       success: false,
       message: 'cloud.gitlab.com is not reachable.',
+      details: {},
+      errors: [],
     },
   ],
 };
@@ -345,11 +353,15 @@ export const MOCK_SYNCHRONIZATION_PROBES = {
       name: 'access_probe',
       success: true,
       message: 'Subscription can be synchronized.',
+      details: {},
+      errors: [],
     },
     {
       name: 'license_probe',
       success: true,
       message: 'Subscription synchronized successfully.',
+      details: {},
+      errors: [],
     },
   ],
   error: [
@@ -357,12 +369,16 @@ export const MOCK_SYNCHRONIZATION_PROBES = {
       name: 'access_probe',
       success: false,
       message: 'Subscription has not yet been synchronized. Synchronize your subscription.',
+      details: {},
+      errors: [],
     },
     {
       name: 'license_probe',
       success: false,
       message:
         'Subscription for this instance cannot be synchronized. Contact GitLab customer support to upgrade your license.',
+      details: {},
+      errors: [],
     },
   ],
 };
@@ -373,6 +389,8 @@ export const MOCK_SYSTEM_EXCHANGE_PROBES = {
       name: 'end_to_end_probe',
       success: true,
       message: 'Authentication with GitLab Cloud services succeeded.',
+      details: {},
+      errors: [],
     },
   ],
   error: [
@@ -380,6 +398,8 @@ export const MOCK_SYSTEM_EXCHANGE_PROBES = {
       name: 'end_to_end_probe',
       success: false,
       message: 'Authentication with GitLab Cloud services failed: Access token is missing',
+      details: {},
+      errors: [],
     },
   ],
 };

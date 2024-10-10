@@ -12,6 +12,8 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
         name
         success
         message
+        details
+        errors
       }
     FIELDS
   end
@@ -32,9 +34,12 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
 
   context 'when the user is authenticated' do
     let_it_be(:current_user) { create(:user) }
+    let_it_be(:errors) { ActiveModel::Errors.new(nil) }
 
-    let(:probe_results) { [CloudConnector::StatusChecks::Probes::ProbeResult.new('test_probe', true, 'probed')] }
     let(:service) { instance_double(CloudConnector::StatusChecks::StatusService, execute: service_response) }
+    let(:probe_results) do
+      [CloudConnector::StatusChecks::Probes::ProbeResult.new('test_probe', true, 'probed', [], errors)]
+    end
 
     before do
       # Allow any other calls for permission checks.
@@ -71,7 +76,7 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
           expect(graphql_data['cloudConnectorStatus']).to include(
             'success' => true,
             'probeResults' => match_array([{
-              'name' => 'test_probe', 'success' => true, 'message' => 'probed'
+              'name' => 'test_probe', 'success' => true, 'message' => 'probed', 'errors' => [], 'details' => []
             }])
           )
         end
@@ -90,7 +95,7 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
           expect(graphql_data['cloudConnectorStatus']).to include(
             'success' => false,
             'probeResults' => match_array([{
-              'name' => 'test_probe', 'success' => true, 'message' => 'probed'
+              'name' => 'test_probe', 'success' => true, 'message' => 'probed', 'errors' => [], 'details' => []
             }])
           )
         end
