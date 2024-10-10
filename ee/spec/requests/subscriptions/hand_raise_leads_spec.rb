@@ -50,6 +50,7 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
             uid: user.id,
             provider: 'gitlab',
             setup_for_company: user.setup_for_company,
+            existing_plan: namespace.actual_plan_name,
             glm_source: 'gitlab.com'
           }
         expect_next_instance_of(GitlabSubscriptions::CreateHandRaiseLeadService) do |service|

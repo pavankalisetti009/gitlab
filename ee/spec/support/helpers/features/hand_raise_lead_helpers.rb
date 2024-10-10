@@ -29,6 +29,7 @@ module Features
         "uid" => user.id,
         "setup_for_company" => user.setup_for_company,
         "provider" => "gitlab",
+        "existing_plan" => namespace.actual_plan.name,
         "glm_source" => 'gitlab.com'
       }
 

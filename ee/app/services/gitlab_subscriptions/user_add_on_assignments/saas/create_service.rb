@@ -38,19 +38,13 @@ module GitlabSubscriptions
         end
 
         def create_iterable_trigger
-          ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys)
+          ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params)
         end
 
         def iterable_params
-          {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            work_email: user.email,
-            namespace_id: namespace.id,
-            product_interaction: ::GitlabSubscriptions::AddOns::PRODUCT_INTERACTION[add_on_purchase.add_on_name.to_sym],
-            opt_in: user.onboarding_status_email_opt_in,
-            preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language)
-          }
+          ::Onboarding.add_on_seat_assignment_iterable_params(
+            user, ::GitlabSubscriptions::AddOns::PRODUCT_INTERACTION[add_on_purchase.add_on_name.to_sym], namespace
+          )
         end
       end
     end

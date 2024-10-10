@@ -26,10 +26,7 @@ module Subscriptions
     end
 
     def hand_raise_lead_params
-      params.permit(
-        :first_name, :last_name, :company_name, :company_size, :phone_number, :country,
-        :state, :namespace_id, :comment, :glm_content, :product_interaction
-      ).merge(hand_raise_lead_extra_params)
+      base_params.merge(hand_raise_lead_extra_params)
     end
 
     def hand_raise_lead_extra_params
@@ -38,16 +35,26 @@ module Subscriptions
         uid: current_user.id,
         provider: 'gitlab',
         setup_for_company: current_user.setup_for_company,
+        existing_plan: namespace.actual_plan_name,
         glm_source: 'gitlab.com'
       }
     end
 
-    def verify_namespace!
-      namespace = if params[:namespace_id].present? && params[:namespace_id] != '0'
-                    current_user.namespaces.find_by_id(params[:namespace_id])
-                  end
+    def base_params
+      params.permit(
+        :first_name, :last_name, :company_name, :company_size, :phone_number, :country,
+        :state, :namespace_id, :comment, :glm_content, :product_interaction
+      )
+    end
 
+    def verify_namespace!
       render_404 unless namespace
+    end
+
+    def namespace
+      @namespace ||= if base_params[:namespace_id].present? && base_params[:namespace_id] != '0'
+                       current_user.namespaces.find_by_id(base_params[:namespace_id])
+                     end
     end
   end
 end

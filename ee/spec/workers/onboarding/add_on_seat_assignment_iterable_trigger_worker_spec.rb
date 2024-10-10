@@ -31,6 +31,7 @@ RSpec.describe Onboarding::AddOnSeatAssignmentIterableTriggerWorker, :saas, type
           work_email: user_1.email,
           namespace_id: namespace.id,
           product_interaction: '_product_interaction_',
+          existing_plan: namespace.actual_plan_name,
           opt_in: user_1.onboarding_status_email_opt_in,
           preferred_language: ::Gitlab::I18n.trimmed_language_name(user_1.preferred_language)
         }.stringify_keys

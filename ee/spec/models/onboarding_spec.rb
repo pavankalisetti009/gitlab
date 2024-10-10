@@ -44,4 +44,25 @@ RSpec.describe Onboarding, feature_category: :onboarding do
       it { is_expected.to eq(false) }
     end
   end
+
+  describe '.add_on_seat_assignment_iterable_params' do
+    let(:namespace) { build(:namespace, id: non_existing_record_id) }
+
+    subject(:params) { described_class.add_on_seat_assignment_iterable_params(user, 'product_interaction', namespace) }
+
+    it 'has the correct params that are stringified' do
+      expected_params = {
+        'first_name' => user.first_name,
+        'last_name' => user.last_name,
+        'work_email' => user.email,
+        'namespace_id' => namespace.id,
+        'product_interaction' => 'product_interaction',
+        'existing_plan' => namespace.actual_plan_name,
+        'preferred_language' => 'English',
+        'opt_in' => user.onboarding_status_email_opt_in
+      }
+
+      expect(params).to eq(expected_params)
+    end
+  end
 end
