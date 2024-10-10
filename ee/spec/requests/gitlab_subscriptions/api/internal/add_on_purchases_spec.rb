@@ -62,6 +62,23 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         )
       end
 
+      context 'when body is missing parameters' do
+        let(:add_on_product) do
+          {
+            started_on: started_on,
+            expires_on: expires_on,
+            quantity: 1
+          }
+        end
+
+        it 'returns bad request response highlighting validation errors' do
+          expect { result }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
+
+          expect(result).to have_gitlab_http_status(:bad_request)
+          expect(result.body).to include('"purchase_xid":["can\'t be blank"]')
+        end
+      end
+
       context 'when a negative integer for quantity is provided' do
         let(:quantity) { -1 }
 
@@ -74,14 +91,22 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
       end
 
       context 'when the add-on purchase already exists' do
+        let(:existing_add_on_purchase_params) do
+          {
+            quantity: 5,
+            purchase_xid: 'A-S000010',
+            trial: false
+          }
+        end
+
         before do
           create(
             :gitlab_subscription_add_on_purchase,
             namespace: namespace,
             add_on: add_on,
-            quantity: 5,
-            purchase_xid: 'A-S000010',
-            trial: false
+            quantity: existing_add_on_purchase_params[:quantity],
+            purchase_xid: existing_add_on_purchase_params[:purchase_xid],
+            trial: existing_add_on_purchase_params[:trial]
           )
         end
 
@@ -99,6 +124,31 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
             'quantity' => add_on_product[:quantity],
             'trial' => add_on_product[:trial]
           )
+        end
+
+        context 'when only required add-on purchase params are used' do
+          let(:add_on_product) do
+            {
+              started_on: started_on,
+              expires_on: expires_on
+            }
+          end
+
+          it 'updates existing add-on purchase' do
+            expect { result }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
+
+            expect(result).to have_gitlab_http_status(:success)
+            expect(json_response.first).to eq(
+              'namespace_id' => namespace_id,
+              'namespace_name' => namespace.name,
+              'add_on' => add_on.name.titleize,
+              'started_on' => add_on_product[:started_on],
+              'expires_on' => add_on_product[:expires_on],
+              'purchase_xid' => existing_add_on_purchase_params[:purchase_xid],
+              'quantity' => existing_add_on_purchase_params[:quantity],
+              'trial' => existing_add_on_purchase_params[:trial]
+            )
+          end
         end
       end
 

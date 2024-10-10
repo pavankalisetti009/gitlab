@@ -37,7 +37,9 @@ module GitlabSubscriptions
 
         def consolidate(add_on_products)
           add_on_products.each_with_object({}) do |(key, value), hash|
-            next unless value.presence
+            value&.map!(&:compact)
+
+            next unless value&.any?(&:present?)
             next if key == DUO_PRO && duo_enterprise_provisionable?
 
             hash[key] = value
@@ -85,7 +87,7 @@ module GitlabSubscriptions
             expires_on: product[:expires_on],
             purchase_xid: product[:purchase_xid],
             trial: product[:trial]
-          }
+          }.compact
         end
 
         def add_on(name)
