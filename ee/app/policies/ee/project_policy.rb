@@ -26,10 +26,19 @@ module EE
       condition(:compliance_framework_available) { @subject.feature_available?(:compliance_framework, @user) }
 
       with_scope :subject
-      condition(:project_level_compliance_dashboard_enabled) { @subject.feature_available?(:project_level_compliance_dashboard) }
+      condition(:project_level_compliance_dashboard_enabled) do
+        in_group? && @subject.feature_available?(:project_level_compliance_dashboard)
+      end
 
       with_scope :subject
-      condition(:project_level_compliance_violations_report_enabled) { @subject.feature_available?(:project_level_compliance_violations_report) }
+      condition(:project_level_compliance_adherence_report_enabled) do
+        in_group? && @subject.feature_available?(:project_level_compliance_adherence_report)
+      end
+
+      with_scope :subject
+      condition(:project_level_compliance_violations_report_enabled) do
+        in_group? && @subject.feature_available?(:project_level_compliance_violations_report)
+      end
 
       with_scope :global
       condition(:is_development) { Rails.env.development? }
@@ -744,6 +753,10 @@ module EE
         enable :read_compliance_dashboard
       end
 
+      rule { (admin | owner | auditor) & project_level_compliance_adherence_report_enabled }.policy do
+        enable :read_compliance_adherence_report
+      end
+
       rule { (admin | owner | auditor) & project_level_compliance_violations_report_enabled }.policy do
         enable :read_compliance_violations_report
       end
@@ -810,6 +823,10 @@ module EE
       rule { custom_role_enables_admin_compliance_framework & compliance_framework_available }.policy do
         enable :read_compliance_dashboard
         enable :admin_compliance_framework
+      end
+
+      rule { custom_role_enables_admin_compliance_framework & project_level_compliance_adherence_report_enabled }.policy do
+        enable :read_compliance_adherence_report
       end
 
       rule { custom_role_enables_admin_compliance_framework & project_level_compliance_violations_report_enabled }.policy do
@@ -1028,6 +1045,10 @@ module EE
 
     def security_scans_service
       CloudConnector::AvailableServices.find_by_name(:sast)
+    end
+
+    def in_group?
+      project&.namespace&.group_namespace?
     end
   end
 end

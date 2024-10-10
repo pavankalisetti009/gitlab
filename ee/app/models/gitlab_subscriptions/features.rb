@@ -216,6 +216,7 @@ module GitlabSubscriptions
       group_level_compliance_adherence_report
       group_level_compliance_violations_report
       project_level_compliance_dashboard
+      project_level_compliance_adherence_report
       project_level_compliance_violations_report
       group_level_analytics_dashboard
       incident_management

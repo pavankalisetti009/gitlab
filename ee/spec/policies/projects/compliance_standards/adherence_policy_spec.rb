@@ -11,14 +11,27 @@ RSpec.describe ::Projects::ComplianceStandards::AdherencePolicy, feature_categor
   subject(:policy) { described_class.new(user, adherence) }
 
   before do
-    stub_licensed_features(group_level_compliance_adherence_report: true)
+    stub_licensed_features(
+      group_level_compliance_adherence_report: true,
+      project_level_compliance_adherence_report: true
+    )
   end
 
   context 'when user does not have owner access to group' do
-    it { is_expected.to be_disallowed(:read_compliance_adherence_report) }
+    context 'when user does not have access to the project directly' do
+      it { is_expected.to be_disallowed(:read_compliance_adherence_report) }
+    end
+
+    context 'when user has access to the project directly' do
+      before_all do
+        project.add_owner(user)
+      end
+
+      it { is_expected.to be_allowed(:read_compliance_adherence_report) }
+    end
   end
 
-  context 'when user does have access to project' do
+  context 'when user does have access to group' do
     before_all do
       group.add_owner(user)
     end

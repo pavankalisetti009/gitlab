@@ -207,7 +207,7 @@ module EE
           ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
           null: true,
           description: 'Compliance standards adherence for the projects in a group and its subgroups.',
-          resolver: ::Resolvers::Projects::ComplianceStandards::AdherenceResolver,
+          resolver: ::Resolvers::Projects::ComplianceStandards::GroupAdherenceResolver,
           authorize: :read_compliance_adherence_report
 
         field :value_stream_dashboard_usage_overview,

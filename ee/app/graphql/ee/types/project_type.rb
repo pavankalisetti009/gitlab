@@ -63,6 +63,13 @@ module EE
           resolver: ::Resolvers::ComplianceManagement::MergeRequests::ProjectComplianceViolationResolver,
           authorize: :read_compliance_violations_report
 
+        field :compliance_standards_adherence,
+          ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
+          null: true,
+          description: 'Compliance standards adherence for the project.',
+          resolver: ::Resolvers::Projects::ComplianceStandards::ProjectAdherenceResolver,
+          authorize: :read_compliance_adherence_report
+
         field :security_dashboard_path, GraphQL::Types::String,
           description: "Path to project's security dashboard.",
           null: true

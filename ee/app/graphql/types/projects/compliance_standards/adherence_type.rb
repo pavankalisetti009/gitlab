@@ -7,7 +7,7 @@ module Types
         graphql_name 'ComplianceStandardsAdherence'
         description 'Compliance standards adherence for a project.'
 
-        authorize :read_compliance_dashboard
+        authorize :read_compliance_adherence_report
 
         field :id, GraphQL::Types::ID,
           null: false, description: 'Compliance standards adherence ID.'
