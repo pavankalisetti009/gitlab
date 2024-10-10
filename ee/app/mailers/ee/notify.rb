@@ -15,7 +15,6 @@ module EE
       include ::Emails::UserCap
       include ::Emails::OncallRotation
       include ::Emails::GroupMemberships
-      include ::Emails::InProductMarketing
       include ::Emails::MergeCommits
       include ::Emails::AbandonedTrialNotification
       include ::Emails::ComplianceProjectFrameworks
