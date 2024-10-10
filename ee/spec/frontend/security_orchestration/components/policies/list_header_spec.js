@@ -122,7 +122,7 @@ describe('List Header Component', () => {
   describe('subheader', () => {
     it.each`
       namespaceType              | expectedText
-      ${NAMESPACE_TYPES.GROUP}   | ${'Enforce security policies for this group.'}
+      ${NAMESPACE_TYPES.GROUP}   | ${'Enforce security policies for all projects in this group.'}
       ${NAMESPACE_TYPES.PROJECT} | ${'Enforce security policies for this project.'}
     `('displays the subheader for $namespaceType', ({ namespaceType, expectedText }) => {
       createWrapper({ provide: { namespaceType } });

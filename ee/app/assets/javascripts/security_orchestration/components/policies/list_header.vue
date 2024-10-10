@@ -47,7 +47,7 @@ export default {
     title: s__('SecurityOrchestration|Policies'),
     subtitle: {
       [NAMESPACE_TYPES.GROUP]: s__(
-        'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for this group.',
+        'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for all projects in this group.',
       ),
       [NAMESPACE_TYPES.PROJECT]: s__(
         'SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for this project.',
