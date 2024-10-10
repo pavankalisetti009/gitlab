@@ -50,7 +50,7 @@ module Gitlab
       end
 
       def key
-        key_data = Rails.application.secrets.openid_connect_signing_key
+        key_data = Rails.application.credentials.openid_connect_signing_key
 
         raise NoSigningKeyError unless key_data
 

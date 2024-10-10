@@ -47,7 +47,7 @@ module Gitlab
 
         def key
           ActiveSupport::KeyGenerator
-            .new(Gitlab::Application.secrets.secret_key_base)
+            .new(Gitlab::Application.credentials.secret_key_base)
             .generate_key(salt)
         end
 

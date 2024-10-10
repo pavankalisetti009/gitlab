@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Geo::Oauth::LoginState, feature_category: :geo_replicatio
   end
 
   before do
-    allow(Gitlab::Application.secrets).to receive(:secret_key_base)
+    allow(Gitlab::Application.credentials).to receive(:secret_key_base)
       .and_return('712f2a504647cb8aa7b06f2273c1db026dd9d2566acf228cd44f25f7d372c165af72209f34cb9df6623780425ce717884cf0c7f85c1deb108bd45a8cd2c93427')
   end
 
