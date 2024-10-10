@@ -195,7 +195,7 @@ DETAILS:
 
 - Helps populate an issue more quickly by generating a more in-depth description, based on a short summary you provide.
 - LLM: Anthropic [Claude 3 Haiku](https://docs.anthropic.com/en/docs/about-claude/models#claude-3-a-new-generation-of-ai)
-- [View documentation](experiments.md#populate-an-issue-with-issue-description-generation).
+- [View documentation](../project/issues/managing_issues.md#populate-an-issue-with-issue-description-generation).
 
 ### Code Review Summary
 
