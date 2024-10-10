@@ -60,6 +60,8 @@
   - [Reading settings](#reading-settings)
   - [Precedence of settings](#precedence-of-settings)
   - [Usage of ENV vars to override settings at the instance level](#usage-of-env-vars-to-override-settings-at-the-instance-level)
+- [`workspaces_agent_configs` versioning](#workspaces_agent_configs-versioning)
+  - [How is `workspaces` linked with versioned `workspaces_agent_configs`?](#how-is-workspaces-linked-with-versioned-workspaces_agent_configs)
 - [FAQ](#faq)
   - [Why is the Result class in the top level lib directory?](#why-is-the-result-class-in-the-top-level-lib-directory)
   - [What are all the `noinspection` comments in the code?](#what-are-all-the-noinspection-comments-in-the-code)
@@ -824,6 +826,81 @@ following **non-production** purposes_:
 
 This is why ENV vars intentionally always have the highest precedence over all other methods of
 providing settings values.
+
+## `workspaces_agent_configs` versioning
+
+As outlined in [this epic](https://gitlab.com/groups/gitlab-org/-/epics/14872), we have implemented versioning for the workspaces_agent_configs table using the [`paper_trail` gem](https://github.com/paper-trail-gem/paper_trail).
+
+TL;DR:
+
+- Every time we update or create a record in the `workspaces_agent_configs` table, a new version is also inserted into the `workspaces_agent_config_versions` table to record a "snapshot" of previous version of the model. 
+- All the previous versions are recorded as JSON in a `jsonb` field named `object`. These versions can be retrieved with the `paper_trail` "`versions`" and "`versions[n]`" methods.
+- This JSON representation of the record can be retrieved and converted back into a full `WorkspaceAgentConfig` model instance object with the `paper_trail` "`reify`" method.
+
+No changes were made to the schema of the `workspaces_agent_configs` table itself. Instead, a new table, `workspaces_agent_config_versions`, was introduced to track all previous changes for each row in the `workspaces_agent_configs` table.
+
+```ruby
+foo = RemoteDevelopment::WorkspacesAgentConfig.new
+foo.workspaces_per_user_quota = 5 # Assign other appropriate values to each field also
+
+foo.save!
+foo.versions # => [version_for_create_operation]
+
+foo.workspaces_per_user_quota = 10
+
+foo.save!
+foo.versions # => [version_for_create_operation, version_for_update_operation]
+```
+
+When a new row is created or an existing row is updated or touched, at the point of `save`, a DB transaction is initiated with the following two operations:
+
+- A regular `save` for `foo` in the `workspaces_agent_configs` table.
+- An `insert` of a new version into `workspaces_agent_config_versions` to capture the applied changes.
+
+In the example above, we would now have 3 versions. All previous versions are stored in `workspaces_agent_config_versions`, while the most recent version is always stored in `workspaces_agent_configs`.
+
+```ruby
+foo = RemoteDevelopment::WorkspacesAgentConfig.find(foo_id)
+
+foo.versions[0].reify # => nil
+foo.versions[1].reify # => workspaces_per_user_quota: 5
+foo                   # => workspaces_per_user_quota: 10
+```
+
+It's important to note that `paper_trail` saves the version before each operation.
+In version 0, prior to creating the record, the `foo` row is `nil`.
+
+### How is `workspaces` linked with versioned `workspaces_agent_configs`?
+
+TL;DR: We added a new column, `workspaces_agent_config_version`, to the `workspaces` table to track the agent_config version associated with each workspace.
+
+When a workspace is created, the **latest** version number from its associated `workspaces_agent_configs` is assigned to its `workspaces_agent_config_version`.
+
+```ruby
+bar = RemoteDevelopment::Workspace.new
+bar.workspaces_agent_config_version = foo.versions.size # In this case, foo's version count is 2
+bar.workspaces_agent_config_version # => 2
+bar.save!
+```
+
+Instead of the usual `has_one` association for `workspaces_agent_config` which points directly to the `workspaces_agent_configs` table, we instead have a custom helper method of the same `workspaces_agent_config` name, which always returns the proper version of the config which is associated with the workspace based on the `workspaces_agent_config_version` field.
+
+This approach of replacing the `has_one` association with a custom method has the following benefits:
+
+1. It preserves the standard and expected ActiveRecord API, because it has the same name as a `has_one` association method.
+1. It hides the implementation details of versioning, by preserving the standard association API for a `has_one` association - in most cases, there's no need to be aware that we are doing versioning.
+1. It helps prevent developers from "accidentally" using a `has_one` association, and thus incorrectly retrieving and using the latest config instead of the proper associated versioned config.
+
+In the isolated cases where we _DO_ need to retrieve the actual latest record from the `workspaces_agent_configs` table, it is necessary to go through the agent association. For example: `workspace.agent.workspaces_agent_config`. However, this should only be necessary in rare cases, such as the actual methods/validations on the `Workspace` model which are directly related to the versioning logic.
+
+```ruby
+bar.workspaces_agent_config # => workspaces_per_user_quota: 10
+
+foo.workspaces_per_user_quota = 998
+foo.save! # => A new agent version is created
+
+bar.reload.workspaces_agent_config # => workspaces_per_user_quota: 10
+```
 
 ## FAQ
 
