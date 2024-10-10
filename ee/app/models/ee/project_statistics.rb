@@ -32,14 +32,6 @@ module EE
       (wiki_size * cost_factor).round
     end
 
-    def increase_vulnerability_counter!(increment)
-      self.class.id_in(id).update_all("vulnerability_count = vulnerability_count + #{increment}")
-    end
-
-    def decrease_vulnerability_counter!(decrement)
-      self.class.id_in(id).update_all("vulnerability_count = vulnerability_count - #{decrement}")
-    end
-
     private
 
     def cost_factor

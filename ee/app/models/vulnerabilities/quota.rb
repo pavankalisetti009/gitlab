@@ -52,7 +52,8 @@ module Vulnerabilities
 
     attr_reader :project
 
-    delegate :statistics, :project_setting, :root_ancestor, to: :project, private: true
+    delegate :security_statistics, :project_setting, :root_ancestor, to: :project, private: true
+    delegate :vulnerability_count, to: :security_statistics, private: true
 
     def store_over_usage
       with_redis { |redis| redis.set(redis_state_key, true) }
@@ -72,10 +73,6 @@ module Vulnerabilities
 
     def quota_usage
       100 * vulnerability_count / allowance
-    end
-
-    def vulnerability_count
-      statistics.vulnerability_count
     end
 
     def project_limit
