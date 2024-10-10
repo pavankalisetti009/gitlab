@@ -80,8 +80,9 @@ module SCA
     def direct_license_policies
       strong_memoize(:direct_license_policies) do
         license_policies.sort_by(&:classification).to_h do |policy|
-          reported_license = reported_license_by_license_model(policy.software_license)
-          [policy.software_license.canonical_id, build_policy(reported_license, policy)]
+          license = policy.software_license || policy.custom_software_license
+          reported_license = reported_license_by_license_model(license)
+          [license.canonical_id, build_policy(reported_license, policy)]
         end
       end
     end

@@ -480,6 +480,31 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
           expect(added[1].spdx_identifier).to eq('MS-PL')
           expect(added[1].classification).to eq('denied')
         end
+
+        context 'when base_report has new denied custom licenses' do
+          let(:custom_license) { create(:custom_software_license, name: 'Custom License') }
+
+          before do
+            base_report.add_license(id: nil, name: 'Custom License')
+
+            create(:software_license_policy, :denied,
+              project: project,
+              software_license: nil,
+              custom_software_license: custom_license,
+              scan_result_policy_read: create(:scan_result_policy_read, match_on_inclusion_license: true)
+            )
+          end
+
+          it 'returns differences with denied status' do
+            added = diff[:added]
+            expect(added[0].spdx_identifier).to eq('AML')
+            expect(added[0].classification).to eq('denied')
+            expect(added[1].name).to eq('Custom License')
+            expect(added[1].classification).to eq('denied')
+            expect(added[2].spdx_identifier).to eq('MS-PL')
+            expect(added[2].classification).to eq('denied')
+          end
+        end
       end
 
       context 'when base_report does not have denied licenses' do

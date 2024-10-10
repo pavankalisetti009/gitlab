@@ -10,5 +10,9 @@ module Security
 
     scope :by_name, ->(names) { where(name: names) }
     scope :by_project, ->(project) { where(project: project) }
+
+    def canonical_id
+      name.downcase
+    end
   end
 end
