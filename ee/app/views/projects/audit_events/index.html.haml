@@ -2,10 +2,9 @@
 - feature_available = @project.feature_available?(:audit_events)
 
 - if feature_available
-  %h1.page-title.gl-text-size-h-display
-    = _('Project audit events')
-  %p.light
-    = _('Track important events in your project.')
+  = render ::Layouts::PageHeadingComponent.new(_('Project audit events')) do |c|
+    - c.with_description do
+      = _('Track important events in your project.')
 
   - view_only = view_only_own_project_events?(@project)
 
