@@ -26,7 +26,7 @@ RSpec.describe Auth::ProvisionedUsersFinder do
       context 'when provisioning_group param is not passed' do
         let(:params) { { provisioning_group: nil } }
 
-        it 'raises provisioning group error' do
+        it 'raises provisioning group error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484416' do
           expect { finder }.to raise_error ArgumentError, 'Provisioning group is required for ProvisionedUsersFinder'
         end
       end
