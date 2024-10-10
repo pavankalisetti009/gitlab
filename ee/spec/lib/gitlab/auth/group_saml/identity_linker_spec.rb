@@ -85,7 +85,8 @@ RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker do
 
           expect(identity.reload.extern_uid).to eq(extern_uid)
           expect(identity_linker.failed?).to eq(true)
-          expect(identity_linker.error_message).to eq('Extern uid has already been taken')
+          expect(identity_linker.error_message).to eq("Extern uid has already been taken. " \
+            "Please contact your administrator to generate a unique extern_uid / NameID")
           expect(audit_event).to eq("Failed to update extern_uid from #{extern_uid} to #{uid}")
         end
       end
