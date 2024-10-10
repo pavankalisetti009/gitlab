@@ -2,20 +2,24 @@
 
 module Vulnerabilities
   module HistoricalStatistics
-    class DeletionWorker # rubocop:disable Scalability/IdempotentWorker
+    class DeletionWorker
       include ApplicationWorker
 
-      data_consistency :always
+      idempotent!
 
-      # rubocop:disable Scalability/CronWorkerContext
-      # This worker does not perform work scoped to a context
+      # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- preform delete that requires primary DB.
+      data_consistency :always
+      # rubocop:enable SidekiqLoadBalancing/WorkerDataConsistency
+
+      # rubocop:disable Scalability/CronWorkerContext -- This worker does not perform work scoped to a context.
       include CronjobQueue
       # rubocop:enable Scalability/CronWorkerContext
 
       feature_category :vulnerability_management
 
       def perform
-        DeletionService.execute
+        HistoricalStatistics::DeletionService.execute
+        NamespaceHistoricalStatistics::DeletionService.execute
       end
     end
   end

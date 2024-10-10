@@ -13,7 +13,8 @@ module Vulnerabilities
 
       def perform(project_ids)
         AdjustmentService.execute(project_ids)
-        HistoricalStatistics::AdjustmentService.execute(project_ids)
+        inserted_project_ids = HistoricalStatistics::AdjustmentService.execute(project_ids)
+        NamespaceHistoricalStatistics::AdjustmentService.execute(inserted_project_ids)
       end
     end
   end

@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerability_management do
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project) }
+  let_it_be(:namespace) { create(:namespace) }
+  let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :detected, :high_severity, project: project) }
   let(:vulnerability_ids) { [vulnerability.id] }
   let(:comment) { "i prefer lowercase." }
@@ -77,6 +78,7 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
 
       it 'updates the statistics', :sidekiq_inline do
         _active_vulnerability = create(:vulnerability, :with_finding, :high_severity, project: project)
+        Vulnerabilities::Read.update_all(traversal_ids: project.namespace.traversal_ids)
 
         service.execute
 
