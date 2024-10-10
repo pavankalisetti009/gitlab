@@ -102,10 +102,6 @@
       }
     }
   }
-
-  .severity-copy {
-    text-transform: capitalize;
-  }
 }
 
 .findings-drawer {
@@ -115,14 +111,6 @@
 
   .findings-drawer-nav-button {
     top: -1px;
-  }
-
-  .drawer-body {
-    line-height: $gl-line-height-20;
-
-    .drawer-heading {
-      font-size: $gl-font-size-large;
-    }
   }
 }
 
