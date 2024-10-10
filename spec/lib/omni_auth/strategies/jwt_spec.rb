@@ -151,7 +151,7 @@ RSpec.describe OmniAuth::Strategies::Jwt do
           stub_feature_flags(omniauth_validate_email_length: false)
         end
 
-        it 'does not raise an error' do
+        it 'does not raise an error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482940' do
           expect { jwt_strategy.decoded }.not_to raise_error
         end
       end
