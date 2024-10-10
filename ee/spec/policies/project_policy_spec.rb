@@ -1844,20 +1844,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features({ feature => true })
         end
 
-        context 'when user is eligible for access' do
-          where(role: %w[owner auditor])
+        context 'when project is in group' do
+          let(:project) { public_project_in_group }
 
-          with_them do
-            let(:current_user) { public_send(role) }
+          context 'when user is eligible for access' do
+            where(role: %w[owner auditor])
+
+            with_them do
+              let(:current_user) { public_send(role) }
+
+              it { is_expected.to be_allowed(permission) }
+            end
+          end
+
+          context 'allows admin', :enable_admin_mode do
+            let(:current_user) { admin }
 
             it { is_expected.to be_allowed(permission) }
           end
         end
 
-        context 'allows admin', :enable_admin_mode do
-          let(:current_user) { admin }
+        context 'when project is in personal namespace' do
+          let(:current_user) { owner }
+          let(:project) { public_project }
 
-          it { is_expected.to be_allowed(permission) }
+          it { is_expected.to be_disallowed(permission) }
         end
       end
 
@@ -1888,7 +1899,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it_behaves_like 'project level compliance feature', :project_level_compliance_dashboard, :read_compliance_dashboard
     end
 
-    describe 'group level compliance violations report' do
+    describe 'project level compliance adherence report' do
+      it_behaves_like 'project level compliance feature', :project_level_compliance_adherence_report, :read_compliance_adherence_report
+    end
+
+    describe 'project level compliance violations report' do
       it_behaves_like 'project level compliance feature', :project_level_compliance_violations_report, :read_compliance_violations_report
     end
   end

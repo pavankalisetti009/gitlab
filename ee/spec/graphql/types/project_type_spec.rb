@@ -35,6 +35,7 @@ RSpec.describe GitlabSchema.types['Project'] do
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics saved_reply merge_trains
       pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
+      compliance_standards_adherence
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -263,6 +264,48 @@ RSpec.describe GitlabSchema.types['Project'] do
       frameworks = results.flat_map(&:to_a)
 
       expect(frameworks).to match_array(projects.flat_map(&:compliance_management_frameworks))
+    end
+  end
+
+  describe 'compliance_standards_adherence' do
+    let_it_be(:group) { create(:group) }
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            id
+            name
+            complianceStandardsAdherence {
+              nodes {
+                id
+                status
+              }
+            }
+          }
+        }
+      )
+    end
+
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:adherence_1) do
+      create(:compliance_standards_adherence, project: project, check_name: :prevent_approval_by_merge_request_author)
+    end
+
+    let_it_be(:adherence_2) do
+      create(:compliance_standards_adherence, project: project, check_name: :prevent_approval_by_merge_request_committers)
+    end
+
+    before do
+      project.add_owner(user)
+      stub_licensed_features(project_level_compliance_adherence_report: true)
+    end
+
+    subject { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    it 'returns associated standard adherence statuses' do
+      adherence = subject.dig('data', 'project', 'complianceStandardsAdherence', 'nodes')
+
+      expect(adherence.count).to eq(2)
     end
   end
 

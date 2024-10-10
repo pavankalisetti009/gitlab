@@ -3,18 +3,18 @@
 module Resolvers
   module Projects
     module ComplianceStandards
-      class AdherenceResolver < BaseResolver
+      class GroupAdherenceResolver < BaseResolver
         include Gitlab::Graphql::Authorize::AuthorizeResource
 
         alias_method :group, :object
 
-        type ::Types::Projects::ComplianceStandards::AdherenceInputType.connection_type, null: true
+        type ::Types::Projects::ComplianceStandards::AdherenceType.connection_type, null: true
         description 'Compliance standards adherence for a project.'
 
         authorize :read_compliance_adherence_report
         authorizes_object!
 
-        argument :filters, Types::Projects::ComplianceStandards::AdherenceInputType,
+        argument :filters, Types::Projects::ComplianceStandards::GroupAdherenceInputType,
           required: false,
           default_value: {},
           description: 'Filters applied when retrieving compliance standards adherence.'
