@@ -77,6 +77,10 @@ RSpec.describe Vulnerabilities::HistoricalStatistics::AdjustmentService, feature
 
           expect(statistics).to eq(expected_statistics)
         end
+
+        it 'returns the correct values' do
+          expect(adjust_statistics).to eq([project.id])
+        end
       end
 
       context 'when there is already a vulnerability_historical_statistic record for project' do
@@ -91,6 +95,33 @@ RSpec.describe Vulnerabilities::HistoricalStatistics::AdjustmentService, feature
 
           expect(statistics).to eq(expected_statistics)
         end
+
+        it 'returns the correct values' do
+          expect(adjust_statistics).to eq([])
+        end
+      end
+    end
+  end
+
+  describe 'filter_inserted_project_ids' do
+    let(:project_2) { create(:project) }
+    let!(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: project, total: 2, critical: 1, high: 1) }
+    let!(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project_2, total: 2, critical: 1, high: 1) }
+    let(:project_ids) { [project.id, project_2.id] }
+
+    subject(:adjust_statistics) { described_class.new(project_ids).execute }
+
+    context 'when new records are created' do
+      it 'returns the correct values' do
+        expect(adjust_statistics).to match_array(project_ids)
+      end
+    end
+
+    context 'when records are being updated' do
+      let!(:vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: project_2, total: 2, critical: 1, high: 1) }
+
+      it 'returns the correct values' do
+        expect(adjust_statistics).to match_array([project.id]) # the project that inserted a record
       end
     end
   end

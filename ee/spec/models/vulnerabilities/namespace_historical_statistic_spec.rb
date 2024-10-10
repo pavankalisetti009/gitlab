@@ -24,7 +24,7 @@ RSpec.describe Vulnerabilities::NamespaceHistoricalStatistic, feature_category: 
   context 'with loose foreign key on vulnerability_namespace_historical_statistics.namespace_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:namespace) }
-      let_it_be(:model) { create(:vulnerability_namespace_historical_statistics, namespace: parent) }
+      let_it_be(:model) { create(:vulnerability_namespace_historical_statistic, namespace: parent) }
     end
   end
 end

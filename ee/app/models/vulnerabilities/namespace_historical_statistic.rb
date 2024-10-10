@@ -2,6 +2,8 @@
 
 module Vulnerabilities
   class NamespaceHistoricalStatistic < Gitlab::Database::SecApplicationRecord
+    include EachBatch
+
     self.table_name = 'vulnerability_namespace_historical_statistics'
 
     belongs_to :namespace
@@ -17,5 +19,9 @@ module Vulnerabilities
     validates :letter_grade, presence: true
 
     enum letter_grade: Vulnerabilities::Statistic.letter_grades
+
+    scope :older_than, ->(days:) {
+      where('"vulnerability_namespace_historical_statistics"."date" < (now() - interval ?)', "#{days} days")
+    }
   end
 end

@@ -640,7 +640,7 @@
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
-  :idempotent: false
+  :idempotent: true
   :tags: []
 - :name: cronjob:vulnerabilities_orphaned_remediations_cleanup
   :worker_name: Vulnerabilities::OrphanedRemediationsCleanupWorker
