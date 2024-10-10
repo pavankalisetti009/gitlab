@@ -54,9 +54,6 @@ describe('SelfHostedModelsPage', () => {
 
     it('renders the self-hosted models table and passes the correct props', () => {
       expect(findSelfHostedModelsTable().props('models')).toEqual(mockSelfHostedModelsList);
-      expect(findSelfHostedModelsTable().props('basePath')).toEqual(
-        '/admin/ai/self_hosted_models/',
-      );
     });
   });
 

@@ -14,10 +14,6 @@ export default {
       type: Array,
       required: true,
     },
-    newSelfHostedModelPath: {
-      type: String,
-      required: true,
-    },
   },
   fields: [
     {
@@ -56,10 +52,7 @@ export default {
       {{ item.title }}
     </template>
     <template #cell(model_name)="{ item }">
-      <model-select-dropdown
-        :ai-feature-setting="item"
-        :new-self-hosted-model-path="newSelfHostedModelPath"
-      />
+      <model-select-dropdown :ai-feature-setting="item" />
     </template>
   </gl-table-lite>
 </template>

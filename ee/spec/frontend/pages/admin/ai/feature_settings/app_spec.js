@@ -76,9 +76,6 @@ describe('FeatureSettingsApp', () => {
       expect(findAiFeatureSettingsTable().props('aiFeatureSettings')).toEqual(
         mockAiFeatureSettings,
       );
-      expect(findAiFeatureSettingsTable().props('newSelfHostedModelPath')).toEqual(
-        '/admin/ai/self_hosted_models/new',
-      );
     });
   });
 

@@ -50,11 +50,7 @@ export default {
       <gl-skeleton-loader />
     </div>
     <div v-else>
-      <!-- TODO: Set up router and remove hard-coded paths -->
-      <feature-settings-table
-        :ai-feature-settings="aiFeatureSettings"
-        new-self-hosted-model-path="/admin/ai/self_hosted_models/new"
-      />
+      <feature-settings-table :ai-feature-settings="aiFeatureSettings" />
     </div>
   </div>
 </template>

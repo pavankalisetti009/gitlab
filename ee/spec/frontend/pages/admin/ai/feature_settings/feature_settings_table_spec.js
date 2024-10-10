@@ -6,12 +6,15 @@ import { mockAiFeatureSettings } from './mock_data';
 describe('FeatureSettingsTable', () => {
   let wrapper;
 
-  const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
-
   const createComponent = ({ props }) => {
+    const newSelfHostedModelPath = '/admin/self_hosted_models/new';
+
     wrapper = mountExtended(FeatureSettingsTable, {
       propsData: {
         ...props,
+      },
+      provide: {
+        newSelfHostedModelPath,
       },
     });
   };
@@ -20,7 +23,6 @@ describe('FeatureSettingsTable', () => {
     createComponent({
       props: {
         aiFeatureSettings: mockAiFeatureSettings,
-        newSelfHostedModelPath,
       },
     });
   });
