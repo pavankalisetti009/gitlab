@@ -91,7 +91,7 @@ describe('MR Widget Security Reports - Summary Highlights', () => {
       });
 
       expect(wrapper.html()).toContain(color);
-      expect(wrapper.text()).toBe(count.toString());
+      expect(wrapper.text().replace(/\s+/, ' ')).toBe(`${count.toString()} vulnerabilities`);
     },
   );
 
