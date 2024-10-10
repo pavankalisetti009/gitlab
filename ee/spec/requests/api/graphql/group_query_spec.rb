@@ -350,8 +350,7 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
     end
 
     context 'when loading pending members' do
-      let(:group) { create(:group, :private) }
-      let!(:pending_member) { create(:group_member, :awaiting, group: group) }
+      let_it_be(:group) { create(:group, :private) }
 
       let(:query_fields) do
         <<~QUERY
@@ -379,11 +378,11 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
       end
 
       context 'when user does not have permission' do
-        before do
-          post_graphql(query, current_user: user)
-        end
-
         it 'does not return pending members of the group' do
+          create(:group_member, :awaiting, group: group)
+
+          post_graphql(query, current_user: user)
+
           expect(pending_members).to be_nil
         end
       end
@@ -391,11 +390,13 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
       context 'when user has permission' do
         before do
           group.add_owner(user)
-
-          post_graphql(query, current_user: user)
         end
 
         it 'returns pending members of the group' do
+          pending_member = create(:group_member, :awaiting, group: group)
+
+          post_graphql(query, current_user: user)
+
           expect(pending_members).not_to be_empty
           expect(pending_members.first[:name]).to eq(pending_member.user.name)
           expect(pending_members.first[:username]).to eq(pending_member.user.username)
@@ -406,7 +407,19 @@ RSpec.describe 'getting group information', feature_category: :groups_and_projec
           expect(pending_members.first[:invited]).to eq(pending_member.invite?)
         end
 
+        it 'returns pending project members' do
+          project = create(:project, namespace: group)
+          pending_member = create(:project_member, :awaiting, project: project)
+
+          post_graphql(query, current_user: user)
+
+          expect(pending_members).not_to be_empty
+          expect(pending_members.first[:username]).to eq(pending_member.user.username)
+        end
+
         it 'does not produce N+1 queries' do
+          create(:group_member, :awaiting, group: group)
+
           baseline = ActiveRecord::QueryRecorder.new { post_graphql(query, current_user: user) }
 
           create(:group_member, :awaiting, group: group)

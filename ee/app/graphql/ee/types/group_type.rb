@@ -248,7 +248,7 @@ module EE
           alpha: { milestone: '17.4' }
 
         field :pending_members,
-          ::Types::PendingGroupMemberType.connection_type,
+          ::Types::Members::PendingMemberInterface.connection_type,
           null: true,
           description: 'A pending membership of a user within this group.',
           resolver: Resolvers::PendingGroupMembersResolver,
