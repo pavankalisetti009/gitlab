@@ -23,7 +23,7 @@ module Gitlab
 
               next unless review_prompt.present?
 
-              response = review_response_for(user, review_prompt)
+              response = review_response_for(review_prompt)
 
               build_draft_notes(response, diff_file, mr_diff_refs)
             end
@@ -33,10 +33,10 @@ module Gitlab
 
           private
 
-          def ai_client(user, unit_primitive)
-            ::Gitlab::Llm::Anthropic::Client.new(
+          def ai_client
+            @ai_client ||= ::Gitlab::Llm::Anthropic::Client.new(
               user,
-              unit_primitive: unit_primitive,
+              unit_primitive: "review_merge_request",
               tracking_context: tracking_context
             )
           end
@@ -53,16 +53,16 @@ module Gitlab
             ai_prompt_class.new(diff_file.new_path, diff_file.raw_diff, hunk[:text]).to_prompt
           end
 
-          def review_response_for(user, prompt)
-            response = ai_client(user, "review_merge_request").messages_complete(**prompt)
+          def review_response_for(prompt)
+            response = ai_client.messages_complete(**prompt)
 
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
 
-          def summary_response_for(user, draft_notes)
+          def summary_response_for(draft_notes)
             summary_prompt = Gitlab::Llm::Templates::SummarizeReview.new(draft_notes).to_prompt
 
-            response = ai_client(user, "summarize_review").messages_complete(**summary_prompt)
+            response = ai_client.messages_complete(**summary_prompt)
 
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
@@ -148,7 +148,7 @@ module Gitlab
             if draft_notes.blank?
               s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
             else
-              response = summary_response_for(user, draft_notes)
+              response = summary_response_for(draft_notes)
 
               if response.errors.any? || response.response_body.blank?
                 s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
