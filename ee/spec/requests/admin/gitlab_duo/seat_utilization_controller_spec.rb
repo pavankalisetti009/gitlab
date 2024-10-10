@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_category: :seat_cost_management do
+RSpec.describe Admin::GitlabDuo::SeatUtilizationController, :cloud_licenses, feature_category: :seat_cost_management do
   include AdminModeHelper
 
   describe 'GET /code_suggestions', :with_cloud_connector do
@@ -16,7 +16,7 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
 
     shared_examples 'renders the activation form' do
       it 'renders the activation form and skips completion test' do
-        get admin_code_suggestions_path
+        get admin_gitlab_duo_seat_utilization_index_path
 
         expect(response).to render_template(:index)
         expect(response.body).to include('js-code-suggestions-page')
@@ -28,7 +28,7 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active) }
 
         it 'renders the activation form' do
-          get admin_code_suggestions_path
+          get admin_gitlab_duo_seat_utilization_index_path
 
           expect(response).to render_template(:index)
           expect(response.body).to include('js-code-suggestions-page')
@@ -36,9 +36,9 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
       end
     end
 
-    shared_examples 'hides code suggestions path' do
+    shared_examples 'hides seat utilization path' do
       it 'returns 404' do
-        get admin_code_suggestions_path
+        get admin_gitlab_duo_seat_utilization_index_path
 
         expect(response).to have_gitlab_http_status(:not_found)
         expect(response).to render_template('errors/not_found')
@@ -52,7 +52,7 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
         sign_in(user)
       end
 
-      it_behaves_like 'hides code suggestions path'
+      it_behaves_like 'hides seat utilization path'
     end
 
     context 'when the user is an admin' do
@@ -78,19 +78,19 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        it_behaves_like 'hides code suggestions path'
+        it_behaves_like 'hides seat utilization path'
       end
 
       context 'when the instance has a non-paid license' do
         let(:plan) { License::LEGACY_LICENSE_TYPE }
 
-        it_behaves_like 'hides code suggestions path'
+        it_behaves_like 'hides seat utilization path'
       end
 
       context 'when the instance does not have a license' do
         let(:license) { nil }
 
-        it_behaves_like 'hides code suggestions path'
+        it_behaves_like 'hides seat utilization path'
       end
     end
   end

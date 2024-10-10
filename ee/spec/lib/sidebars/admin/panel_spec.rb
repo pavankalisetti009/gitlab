@@ -62,7 +62,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
             stub_feature_flags(ai_custom_model: false)
           end
 
-          it 'renders code suggestions menu' do
+          it 'renders gitlab duo menu' do
             expect(menus).to include(instance_of(::Sidebars::Admin::Menus::CodeSuggestionsMenu))
           end
 

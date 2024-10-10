@@ -6,7 +6,7 @@ module Sidebars
       class AiPoweredFeaturesMenu < ::Sidebars::Admin::BaseMenu
         override :configure_menu_items
         def configure_menu_items
-          add_item(code_suggestions_menu_item)
+          add_item(gitlab_duo_menu_item)
           add_item(self_hosted_models_menu_item)
           add_item(features_menu_item)
 
@@ -30,11 +30,11 @@ module Sidebars
 
         private
 
-        def code_suggestions_menu_item
+        def gitlab_duo_menu_item
           ::Sidebars::MenuItem.new(
             title: s_('Admin|GitLab Duo'),
-            link: admin_code_suggestions_path,
-            active_routes: { controller: :code_suggestions },
+            link: admin_gitlab_duo_seat_utilization_index_path,
+            active_routes: { controller: :seat_utilization },
             item_id: :duo_pro_code_suggestions,
             container_html_options: { title: 'GitLab Duo' }
           )
