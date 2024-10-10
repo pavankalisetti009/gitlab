@@ -37,11 +37,6 @@ export default {
       default: null,
       required: false,
     },
-    isFromAccountValidationEmail: {
-      type: Boolean,
-      default: false,
-      required: false,
-    },
   },
   data() {
     return {
@@ -57,20 +52,11 @@ export default {
       return gon.subscriptions_url;
     },
   },
-  mounted() {
-    if (this.isFromAccountValidationEmail) {
-      this.showModal();
-    }
-  },
   methods: {
     showModal() {
       this.accountVerificationModalVisible = true;
     },
     handleSuccessfulVerification() {
-      if (this.isFromAccountValidationEmail) {
-        this.track('successful_validation', { label: 'account_validation_email' });
-      }
-
       this.accountVerificationModalVisible = false;
       this.shouldRenderSuccess = true;
       this.$emit('verifiedCreditCard');

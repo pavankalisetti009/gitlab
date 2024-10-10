@@ -11,11 +11,7 @@ export default (containerId = 'js-cc-validation-required-alert') => {
   return new Vue({
     el,
     render(createElement) {
-      return createElement(CreditCardValidationRequiredAlert, {
-        props: {
-          isFromAccountValidationEmail: 'openValidateAccountModal' in el.dataset,
-        },
-      });
+      return createElement(CreditCardValidationRequiredAlert);
     },
   });
 };

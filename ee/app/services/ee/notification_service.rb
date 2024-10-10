@@ -78,13 +78,6 @@ module EE
       end
     end
 
-    override :pipeline_finished
-    def pipeline_finished(pipeline, ref_status: nil, recipients: nil)
-      super
-
-      send_account_validation_email(pipeline)
-    end
-
     def added_as_approver(recipients, merge_request)
       recipients = notifiable_users(recipients, :custom, custom_action: :approver, project: merge_request.project)
 
@@ -178,20 +171,6 @@ module EE
           recipient.user.id, target.id, status, current_user.id, recipient.reason)
           .deliver_later
       end
-    end
-
-    def send_account_validation_email(pipeline)
-      return unless ::Feature.enabled?(:account_validation_email)
-      return unless ::Gitlab.com?
-      return unless pipeline.failed?
-      return unless pipeline.user_not_verified?
-
-      user = pipeline.user
-      return if user.has_required_credit_card_to_run_pipelines?(pipeline.project)
-      return unless user.can?(:receive_notifications)
-
-      email = user.notification_email_or_default
-      mailer.account_validation_email(pipeline, email).deliver_later
     end
   end
 end

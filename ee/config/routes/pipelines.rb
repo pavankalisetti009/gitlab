@@ -7,6 +7,4 @@ resources :pipelines, only: [] do
     get :license_count
     get :codequality_report
   end
-
-  get 'validate_account', action: :validate_account, controller: 'pipelines/email_campaigns'
 end
