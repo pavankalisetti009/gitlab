@@ -19,7 +19,8 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     defaultQuery: {
       type: Object,

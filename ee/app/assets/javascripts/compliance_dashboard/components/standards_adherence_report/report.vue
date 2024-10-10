@@ -9,10 +9,11 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
-    globalProjectId: {
-      type: Number,
+    projectPath: {
+      type: String,
       required: false,
       default: null,
     },
@@ -21,8 +22,5 @@ export default {
 </script>
 
 <template>
-  <compliance-standards-adherence-table
-    :group-path="groupPath"
-    :global-project-id="globalProjectId"
-  />
+  <compliance-standards-adherence-table :group-path="groupPath" :project-path="projectPath" />
 </template>

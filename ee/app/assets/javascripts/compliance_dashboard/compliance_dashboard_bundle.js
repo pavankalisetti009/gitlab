@@ -24,6 +24,7 @@ export default () => {
     adherencesCsvExportPath,
     frameworksCsvExportPath,
     groupPath,
+    projectPath,
     rootAncestorPath,
     rootAncestorName,
     rootAncestorComplianceCenterPath,
@@ -33,8 +34,6 @@ export default () => {
     migratePipelineToPolicyPath,
     groupSecurityPoliciesPath,
     disableScanPolicyUpdate,
-    projectId,
-
     featurePipelineMaintenanceModeEnabled,
     featureAdherenceReportEnabled,
     featureViolationsReportEnabled,
@@ -51,8 +50,6 @@ export default () => {
     defaultClient: createDefaultClient(),
   });
 
-  const globalProjectId = projectId ? parseInt(projectId, 10) : null;
-
   const routes = Object.entries({
     [ROUTE_STANDARDS_ADHERENCE]: parseBoolean(featureAdherenceReportEnabled),
     [ROUTE_VIOLATIONS]: parseBoolean(featureViolationsReportEnabled),
@@ -64,7 +61,7 @@ export default () => {
 
   const router = createRouter(basePath, {
     mergeCommitsCsvExportPath,
-    globalProjectId,
+    projectPath,
     groupPath,
     rootAncestorPath,
     rootAncestorName,
@@ -78,7 +75,7 @@ export default () => {
     name: 'ComplianceReportsApp',
     router,
     provide: {
-      namespaceType: 'group',
+      namespaceType: projectPath ? 'project' : 'group',
       groupPath,
       rootAncestorPath,
       pipelineConfigurationFullPathEnabled: parseBoolean(pipelineConfigurationFullPathEnabled),

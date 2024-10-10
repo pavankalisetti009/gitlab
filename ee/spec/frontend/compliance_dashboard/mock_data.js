@@ -70,11 +70,11 @@ export const createComplianceAdherencesResponse = ({
   complianceFrameworksNodes = complianceFrameworksNodesMock,
 } = {}) => ({
   data: {
-    group: {
+    container: {
       id: 'gid://gitlab/Group/1',
       __typename: 'Group',
       projectComplianceStandardsAdherence: {
-        __typename: 'ComplianceAdherenceConnection',
+        __typename: 'ComplianceStandardsAdherenceConnection',
         nodes: Array(count)
           .fill(null)
           .map((_, id) => createComplianceAdherence(id, checkName, complianceFrameworksNodes)),
@@ -147,7 +147,7 @@ export const createComplianceViolation = (id) => ({
 
 export const createComplianceViolationsResponse = ({ count = 1, pageInfo = {} } = {}) => ({
   data: {
-    group: {
+    container: {
       id: 'gid://gitlab/Group/1',
       __typename: 'Group',
       mergeRequestViolations: {

@@ -1,10 +1,7 @@
 <script>
 import { GlAlert, GlDisclosureDropdown } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import {
-  mapStandardsAdherenceQueryToFilters,
-  convertProjectIdsToGraphQl,
-} from 'ee/compliance_dashboard/utils';
+import { mapStandardsAdherenceQueryToFilters } from 'ee/compliance_dashboard/utils';
 import getProjectsInComplianceStandardsAdherence from 'ee/compliance_dashboard/graphql/compliance_projects_in_standards_adherence.query.graphql';
 import { ALLOWED_FILTER_TOKENS, NONE, CHECKS, PROJECTS, STANDARDS } from './constants';
 import AdherencesBaseTable from './base_table.vue';
@@ -23,10 +20,11 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
-    globalProjectId: {
-      type: Number,
+    projectPath: {
+      type: String,
       required: false,
       default: null,
     },
@@ -44,6 +42,9 @@ export default {
   },
   apollo: {
     projects: {
+      skip() {
+        return this.projectPath;
+      },
       query: getProjectsInComplianceStandardsAdherence,
       variables() {
         return {
@@ -59,12 +60,8 @@ export default {
     },
   },
   computed: {
-    graphQLGlobalProjectId() {
-      return this.globalProjectId && convertProjectIdsToGraphQl([this.globalProjectId])[0];
-    },
-
     projectsForFilter() {
-      return this.globalProjectId ? null : this.projects.list;
+      return this.projectPath ? null : this.projects.list;
     },
 
     dropdownItems() {
@@ -75,7 +72,7 @@ export default {
         {
           text: CHECKS,
         },
-        ...(!this.globalProjectId ? [{ text: PROJECTS }] : []),
+        ...(!this.projectPath ? [{ text: PROJECTS }] : []),
         {
           text: STANDARDS,
         },
@@ -180,6 +177,7 @@ export default {
     <div v-if="selected !== $options.NONE">
       <group-adherences
         :group-path="groupPath"
+        :project-path="projectPath"
         :filters="filters"
         :selected="selected"
         :projects="projects.list"
@@ -189,7 +187,7 @@ export default {
       <adherences-base-table
         :group-path="groupPath"
         :filters="filters"
-        :project-id="graphQLGlobalProjectId"
+        :project-path="projectPath"
       />
     </div>
   </section>

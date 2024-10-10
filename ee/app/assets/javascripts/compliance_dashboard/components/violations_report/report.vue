@@ -8,12 +8,12 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
-import getComplianceViolationsQuery from '../../graphql/compliance_violations.query.graphql';
+import getComplianceViolationsGroupQuery from '../../graphql/compliance_violations_group.query.graphql';
+import getComplianceViolationsProjectQuery from '../../graphql/compliance_violations_project.query.graphql';
 import { mapViolations } from '../../graphql/mappers';
 import { DEFAULT_PAGINATION_CURSORS, DEFAULT_SORT, GRAPHQL_PAGE_SIZE } from '../../constants';
 import {
   buildDefaultViolationsFilterParams,
-  convertProjectIdsToGraphQl,
   isTopLevelGroup,
   parseViolationsQueryFilter,
 } from '../../utils';
@@ -44,9 +44,10 @@ export default {
     },
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
-    globalProjectId: {
+    projectPath: {
       type: Number,
       required: false,
       default: null,
@@ -79,22 +80,27 @@ export default {
   },
   apollo: {
     violations: {
-      query: getComplianceViolationsQuery,
+      query() {
+        return this.projectPath
+          ? getComplianceViolationsProjectQuery
+          : getComplianceViolationsGroupQuery;
+      },
       variables() {
         const filters = parseViolationsQueryFilter(this.urlQuery);
-        if (this.globalProjectId) {
-          filters.projectIds = convertProjectIdsToGraphQl([this.globalProjectId]);
+
+        if (filters.projectIds.length === 0) {
+          delete filters.projectIds;
         }
 
         return {
-          fullPath: this.groupPath,
+          fullPath: this.projectPath ?? this.groupPath,
           filters,
           sort: this.sortParam,
           ...this.paginationCursors,
         };
       },
       update(data) {
-        const { nodes, pageInfo } = data?.group?.mergeRequestViolations || {};
+        const { nodes, pageInfo } = data?.container?.mergeRequestViolations || {};
         return {
           list: mapViolations(nodes),
           pageInfo,
@@ -244,7 +250,7 @@ export default {
       {{ $options.i18n.queryError }}
     </gl-alert>
     <violation-filter
-      :show-project-filter="!globalProjectId"
+      :show-project-filter="!projectPath"
       :group-path="groupPath"
       :default-query="defaultFilterParams"
       @filters-changed="updateUrlQuery"

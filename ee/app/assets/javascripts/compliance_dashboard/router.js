@@ -24,8 +24,8 @@ import NewFrameworkSuccess from './components/frameworks_report/edit_framework/n
 export function createRouter(basePath, props) {
   const {
     mergeCommitsCsvExportPath,
-    globalProjectId,
     groupPath,
+    projectPath,
     rootAncestorPath,
     rootAncestorName,
     rootAncestorComplianceCenterPath,
@@ -39,7 +39,7 @@ export function createRouter(basePath, props) {
       component: StandardsReport,
       props: {
         groupPath,
-        globalProjectId,
+        projectPath,
         rootAncestorPath,
       },
     },
@@ -50,7 +50,7 @@ export function createRouter(basePath, props) {
       props: {
         mergeCommitsCsvExportPath,
         groupPath,
-        globalProjectId,
+        projectPath,
       },
     },
     {
