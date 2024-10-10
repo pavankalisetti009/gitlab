@@ -8,7 +8,7 @@ module EE
           extend ::Gitlab::Utils::Override
 
           override :track_ci_minutes_usage!
-          def track_ci_minutes_usage!(build, runner)
+          def track_ci_minutes_usage!(build)
             ::Ci::Minutes::TrackLiveConsumptionService.new(build).execute
           end
 
