@@ -547,13 +547,13 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     subject(:product_analytics_usage_quota_app_data) { helper.product_analytics_usage_quota_app_data(group) }
 
     before do
-      allow(helper).to receive(:image_path).and_return('illustrations/chart-empty-state.svg')
+      allow(helper).to receive(:image_path).and_return('illustrations/empty-state/empty-dashboard-md.svg')
     end
 
     let(:data) do
       {
         namespace_path: group.full_path,
-        empty_state_illustration_path: "illustrations/chart-empty-state.svg"
+        empty_state_illustration_path: "illustrations/empty-state/empty-dashboard-md.svg"
       }
     end
 

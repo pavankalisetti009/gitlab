@@ -433,7 +433,6 @@ export default {
     <gl-empty-state
       v-else-if="showEmptyState"
       :svg-path="dashboardEmptyStateIllustrationPath"
-      :svg-height="null"
       :title="s__('Analytics|Dashboard not found')"
       :description="s__('Analytics|No dashboard matches the specified URL path.')"
       :primary-button-text="s__('Analytics|View available dashboards')"
