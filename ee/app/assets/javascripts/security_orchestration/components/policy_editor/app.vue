@@ -1,13 +1,7 @@
 <script>
 import { GlPath } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import {
-  getParameterByName,
-  removeParams,
-  visitUrl,
-  setUrlParams,
-  updateHistory,
-} from '~/lib/utils/url_utility';
+import { getParameterByName, removeParams, visitUrl } from '~/lib/utils/url_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import EditorWrapper from './editor_wrapper.vue';
@@ -26,7 +20,7 @@ export default {
   },
   data() {
     return {
-      selectedPolicy: null,
+      selectedPolicy: this.policyFromUrl(),
     };
   },
   computed: {
@@ -68,16 +62,10 @@ export default {
         visitUrl(removeParams(['type'], window.location.href));
       }
     },
-    policyFromUrl(policyType) {
-      if (policyType) {
-        updateHistory({
-          url: setUrlParams({ type: policyType }),
-          title: document.title,
-          replace: true,
-        });
-      }
+    policyFromUrl() {
+      const policyType = getParameterByName('type');
 
-      this.selectedPolicy = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
+      return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
         ({ urlParameter }) => urlParameter === policyType,
       );
     },
@@ -112,7 +100,7 @@ export default {
       <h3 data-testid="title">{{ title }}</h3>
       <gl-path v-if="enableWizard" :items="glPathItems" @selected="handlePathSelection" />
     </header>
-    <policy-type-selector v-if="!selectedPolicy" @select="policyFromUrl" />
+    <policy-type-selector v-if="!selectedPolicy" />
     <editor-wrapper v-else :selected-policy-type="selectedPolicy.value" />
   </div>
 </template>

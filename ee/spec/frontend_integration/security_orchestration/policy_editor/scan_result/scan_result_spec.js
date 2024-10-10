@@ -1,11 +1,13 @@
-import { GlEmptyState } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import * as urlUtils from '~/lib/utils/url_utility';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
-import SettingsSection from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_section.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
-import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
-import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  mergeUrlParams: jest.fn(),
+}));
 
 describe('Policy Editor', () => {
   let wrapper;
@@ -29,11 +31,6 @@ describe('Policy Editor', () => {
 
   const findSelectScanResultPolicyButton = () =>
     wrapper.findByTestId('select-policy-approval_policy');
-  const findYamlPreview = () => wrapper.findByTestId('rule-editor-preview');
-  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findApproverAction = () => wrapper.findComponent(ApproverAction);
-  const findRuleSection = () => wrapper.findComponent(RuleSection);
-  const findSettingsSection = () => wrapper.findComponent(SettingsSection);
 
   beforeEach(() => {
     createWrapper();
@@ -46,11 +43,10 @@ describe('Policy Editor', () => {
 
   describe('rendering', () => {
     it('renders the page correctly', () => {
-      expect(findEmptyState().exists()).toBe(false);
-      expect(findApproverAction().exists()).toBe(true);
-      expect(findRuleSection().exists()).toBe(true);
-      expect(findSettingsSection().exists()).toBe(true);
-      expect(findYamlPreview().exists()).toBe(true);
+      expect(urlUtils.mergeUrlParams).toHaveBeenCalledWith(
+        { type: 'approval_policy' },
+        'http://test.host/',
+      );
     });
   });
 });

@@ -1,11 +1,14 @@
-import { GlEmptyState } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
-import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
-import RuleSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/rule_section.vue';
+import * as urlUtils from '~/lib/utils/url_utility';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { createMockApolloProvider } from './apollo_util';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  mergeUrlParams: jest.fn(),
+}));
 
 describe('Policy Editor', () => {
   let wrapper;
@@ -29,9 +32,6 @@ describe('Policy Editor', () => {
 
   const findSelectPipelineExecutionPolicyButton = () =>
     wrapper.findByTestId('select-policy-pipeline_execution_policy');
-  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findActionSection = () => wrapper.findComponent(ActionSection);
-  const findRuleSection = () => wrapper.findComponent(RuleSection);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -39,10 +39,11 @@ describe('Policy Editor', () => {
       findSelectPipelineExecutionPolicyButton().vm.$emit('click');
     });
 
-    it('renders the page correctly', () => {
-      expect(findEmptyState().exists()).toBe(false);
-      expect(findActionSection().exists()).toBe(true);
-      expect(findRuleSection().exists()).toBe(true);
+    it('redirects to editor page with correct type', () => {
+      expect(urlUtils.mergeUrlParams).toHaveBeenCalledWith(
+        { type: 'pipeline_execution_policy' },
+        'http://test.host/',
+      );
     });
   });
 });

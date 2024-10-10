@@ -1,10 +1,13 @@
-import { GlEmptyState } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
+import * as urlUtils from '~/lib/utils/url_utility';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
-import ScanAction from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_action.vue';
-import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  mergeUrlParams: jest.fn(),
+}));
 
 describe('Policy Editor', () => {
   let wrapper;
@@ -25,9 +28,6 @@ describe('Policy Editor', () => {
 
   const findSelectScanExecutionPolicyButton = () =>
     wrapper.findByTestId('select-policy-scan_execution_policy');
-  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findScanAction = () => wrapper.findComponent(ScanAction);
-  const findRuleSection = () => wrapper.findComponent(RuleSection);
 
   beforeEach(() => {
     createWrapper();
@@ -39,10 +39,11 @@ describe('Policy Editor', () => {
   });
 
   describe('rendering', () => {
-    it('renders the page correctly', () => {
-      expect(findEmptyState().exists()).toBe(false);
-      expect(findScanAction().exists()).toBe(true);
-      expect(findRuleSection().exists()).toBe(true);
+    it('redirects to editor page with correct type', () => {
+      expect(urlUtils.mergeUrlParams).toHaveBeenCalledWith(
+        { type: 'scan_execution_policy' },
+        'http://test.host/',
+      );
     });
   });
 });
