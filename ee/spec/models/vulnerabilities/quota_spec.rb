@@ -6,6 +6,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
   using RSpec::Parameterized::TableSyntax
 
   let_it_be_with_refind(:project) { create(:project) }
+  let_it_be_with_refind(:security_statistics) { create(:project_security_statistics, project: project) }
 
   let(:quota) { described_class.new(project) }
 
@@ -16,7 +17,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
     subject(:validate!) { quota.validate! }
 
     before do
-      project.statistics.update!(vulnerability_count: vulnerability_count)
+      security_statistics.update!(vulnerability_count: vulnerability_count)
 
       stub_application_setting(max_number_of_vulnerabilities_per_project: max_number_of_vulnerabilities)
 
@@ -96,7 +97,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
       before do
         stub_application_setting(max_number_of_vulnerabilities_per_project: 100)
 
-        project.statistics.update!(vulnerability_count: vulnerability_count)
+        security_statistics.update!(vulnerability_count: vulnerability_count)
       end
 
       it { is_expected.to eq(critical?) }
@@ -115,7 +116,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
 
           stub_application_setting(max_number_of_vulnerabilities_per_project: 100)
 
-          project.statistics.update!(vulnerability_count: vulnerability_count)
+          security_statistics.update!(vulnerability_count: vulnerability_count)
         end
 
         it { is_expected.to eq(critical?) }
@@ -136,7 +137,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
       before do
         stub_application_setting(max_number_of_vulnerabilities_per_project: 100)
 
-        project.statistics.update!(vulnerability_count: vulnerability_count)
+        security_statistics.update!(vulnerability_count: vulnerability_count)
       end
 
       it { is_expected.to eq(full?) }
@@ -155,7 +156,7 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
 
           stub_application_setting(max_number_of_vulnerabilities_per_project: 100)
 
-          project.statistics.update!(vulnerability_count: vulnerability_count)
+          security_statistics.update!(vulnerability_count: vulnerability_count)
         end
 
         it { is_expected.to eq(full?) }

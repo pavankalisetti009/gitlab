@@ -292,7 +292,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
       end
 
       it 'does not change vulnerability_count' do
-        expect { subject }.to not_change { project.reload.statistics.vulnerability_count }
+        expect { subject }.to not_change { project.reload.security_statistics.vulnerability_count }
       end
     end
   end
