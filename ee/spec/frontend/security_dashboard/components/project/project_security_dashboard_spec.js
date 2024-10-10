@@ -2,6 +2,7 @@ import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import ProjectSecurityDashboard from 'ee/security_dashboard/components/project/project_security_dashboard.vue';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
@@ -46,6 +47,7 @@ describe('Project Security Dashboard component', () => {
       },
       stubs: {
         GlSprintf,
+        PageHeading,
       },
     });
   };
@@ -53,8 +55,8 @@ describe('Project Security Dashboard component', () => {
   it('should display page header and subheader', () => {
     createWrapper();
 
-    expect(wrapper.findByText('Security dashboard').exists()).toBe(true);
-    expect(wrapper.findByTestId('security-dashboard-description').text()).toBe(
+    expect(wrapper.findByTestId('page-heading').text()).toBe('Security dashboard');
+    expect(wrapper.findByTestId('page-heading-description').text()).toBe(
       'Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. Learn more.',
     );
     expect(wrapper.findComponent(GlLink).attributes('href')).toBe(

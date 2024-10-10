@@ -7,6 +7,7 @@ import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/projec
 import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
 import { DOC_PATH_PROJECT_SECURITY_DASHBOARD } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
 
@@ -29,6 +30,7 @@ export default {
     GlLineChart,
     GlSprintf,
     GlLink,
+    PageHeading,
   },
   props: {
     projectFullPath: {
@@ -175,11 +177,8 @@ export default {
   <div>
     <security-training-promo-banner v-if="shouldShowPromoBanner" />
 
-    <header class="vulnerability-header gl-my-5 gl-grid">
-      <h2 class="header-title gl-my-0">
-        {{ $options.i18n.title }}
-      </h2>
-      <p class="header-description gl-mb-0" data-testid="security-dashboard-description">
+    <page-heading :heading="$options.i18n.title">
+      <template #description>
         <gl-sprintf :message="$options.i18n.subtitle">
           <template #link="{ content }">
             <gl-link :href="$options.DOC_PATH_PROJECT_SECURITY_DASHBOARD" target="_blank">{{
@@ -187,8 +186,9 @@ export default {
             }}</gl-link>
           </template>
         </gl-sprintf>
-      </p>
-    </header>
+      </template>
+    </page-heading>
+
     <div>
       <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-6" />
       <gl-line-chart
