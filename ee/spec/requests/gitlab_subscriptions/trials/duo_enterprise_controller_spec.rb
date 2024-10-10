@@ -9,12 +9,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
   let_it_be(:another_free_group) { create(:group, owners: user) }
   let_it_be(:another_ultimate_group) { create(:group_with_plan, plan: :ultimate_plan, developers: user) }
   let_it_be(:ineligible_paid_group) { create(:group_with_plan, plan: :premium_plan, owners: user) }
+  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
   let(:subscriptions_trials_saas_feature) { true }
-
-  before_all do
-    create(:gitlab_subscription_add_on_purchase, :duo_enterprise)
-  end
 
   before do
     stub_saas_features(
@@ -187,13 +184,31 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
 
         it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
 
-        it 'shows valid flash message' do
+        it 'shows valid flash message', :freeze_time do
           post_create
 
-          expect(flash[:success]).to eq(
-            "You have successfully created a trial subscription from GitLab Duo Enterprise. To get started, enable " \
-              "the GitLab Duo Enterprise add-on for team members on this page by turning on the toggle for each team " \
-              "member. The subscription may take a minute to sync, so refresh the page if it's not visible yet.")
+          message = format(
+            s_(
+              'DuoEnterpriseTrial|You have successfully started a Duo Enterprise trial that will expire on %{exp_date}.'
+            ),
+            exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+          )
+          expect(flash[:success]).to have_content(message)
+        end
+
+        def expect_create_success(namespace)
+          service_params = {
+            step: step,
+            lead_params: lead_params,
+            trial_params: trial_params,
+            user: user
+          }
+
+          expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |instance|
+            expect(instance).to receive(:execute) do
+              create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
+          end
         end
       end
 
@@ -256,6 +271,13 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
 
           it { is_expected.to render_select_namespace_duo_enterprise }
         end
+
+        def expect_create_failure(reason, payload = {})
+          expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService) do |instance|
+            response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
+            expect(instance).to receive(:execute).and_return(response)
+          end
+        end
       end
 
       context 'when subscriptions_trials saas feature is not available' do
@@ -268,25 +290,5 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
     end
 
     it_behaves_like 'no eligible namespaces'
-  end
-
-  def expect_create_success(namespace)
-    service_params = {
-      step: step,
-      lead_params: lead_params,
-      trial_params: trial_params,
-      user: user
-    }
-
-    expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |instance|
-      expect(instance).to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: namespace }))
-    end
-  end
-
-  def expect_create_failure(reason, payload = {})
-    expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService) do |instance|
-      response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
-      expect(instance).to receive(:execute).and_return(response)
-    end
   end
 end

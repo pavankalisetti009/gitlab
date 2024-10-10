@@ -28,7 +28,9 @@ module GitlabSubscriptions
 
         if @result.success?
           # lead and trial created
-          flash[:success] = success_flash_message
+          flash[:success] = success_flash_message(
+            GitlabSubscriptions::Trials::DuoEnterprise.add_on_purchase_for_namespace(@result.payload[:namespace])
+          )
 
           redirect_to group_settings_gitlab_duo_seat_utilization_index_path(@result.payload[:namespace])
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::NO_SINGLE_NAMESPACE
@@ -79,12 +81,15 @@ module GitlabSubscriptions
         params.permit(*::Onboarding::Status::GLM_PARAMS, :namespace_id).to_h
       end
 
-      def success_flash_message
-        s_(
-          "DuoEnterpriseTrial|You have successfully created a trial subscription from GitLab Duo Enterprise. " \
-            "To get started, enable the GitLab Duo Enterprise add-on for team members on this page by turning on " \
-            "the toggle for each team member. The subscription may take a minute to sync, so refresh " \
-            "the page if it's not visible yet."
+      def success_flash_message(add_on_purchase)
+        safe_format(
+          s_(
+            'DuoEnterpriseTrial|You have successfully started a Duo Enterprise trial that will ' \
+              'expire on %{exp_date}. To give members access to new GitLab Duo Enterprise features, ' \
+              '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats.'
+          ),
+          success_doc_link,
+          exp_date: l(add_on_purchase.expires_on.to_date, format: :long)
         )
       end
     end
