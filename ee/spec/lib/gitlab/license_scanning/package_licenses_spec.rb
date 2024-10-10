@@ -491,6 +491,29 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         end
       end
 
+      context 'when a component is not supported by license scanning' do
+        let(:components_to_fetch) do
+          [
+            Hashie::Mash.new({ name: "beego", purl_type: "rpm", version: "v1.10.0",
+                               licenses: component_licenses })
+          ]
+        end
+
+        it 'skips the component' do
+          expect(fetch).to contain_exactly(
+            have_attributes(name: 'beego',
+              purl_type: 'rpm',
+              version: 'v1.10.0',
+              licenses: [{
+                "name" => "unknown",
+                "spdx_identifier" => "unknown",
+                "url" => nil
+              }]
+            )
+          )
+        end
+      end
+
       it 'returns the license information provided by the component' do
         expect(fetch).to contain_exactly(
           have_attributes(name: 'beego',
