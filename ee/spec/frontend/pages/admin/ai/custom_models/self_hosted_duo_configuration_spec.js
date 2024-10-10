@@ -2,13 +2,20 @@ import { nextTick } from 'vue';
 import FeatureSettingsPage from 'ee/pages/admin/ai/custom_models/ai_feature_settings_page.vue';
 import SelfHostedModelsPage from 'ee/pages/admin/ai/custom_models/self_hosted_models_page.vue';
 import SelfHostedDuoConfiguration from 'ee/pages/admin/ai/custom_models/self_hosted_duo_configuration.vue';
+import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('SelfHostedDuoConfiguration', () => {
   let wrapper;
 
   const createComponent = () => {
-    wrapper = shallowMountExtended(SelfHostedDuoConfiguration);
+    const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
+
+    wrapper = shallowMountExtended(SelfHostedDuoConfiguration, {
+      provide: {
+        newSelfHostedModelPath,
+      },
+    });
   };
 
   beforeEach(() => {
@@ -19,11 +26,16 @@ describe('SelfHostedDuoConfiguration', () => {
   const findSelfHostedModelsTab = () => wrapper.findByTestId('self-hosted-models-tab');
   const findFeatureSettingsPage = () => wrapper.findComponent(FeatureSettingsPage);
   const findSelfHostedModelsPage = () => wrapper.findComponent(SelfHostedModelsPage);
+  const findBetaBadge = () => wrapper.findComponent(BetaBadge);
 
   it('has a title', () => {
     const title = wrapper.find('h2');
 
-    expect(title.text()).toBe('Custom Models');
+    expect(title.text()).toBe('Self-hosted models');
+  });
+
+  it('has a beta badge', () => {
+    expect(findBetaBadge().exists()).toBe(true);
   });
 
   it('has a description', () => {

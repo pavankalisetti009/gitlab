@@ -13,13 +13,10 @@ export default {
     GlIcon,
     DeleteSelfHostedModelDisclosureItem,
   },
+  inject: ['basePath'],
   props: {
     models: {
       type: Array,
-      required: true,
-    },
-    basePath: {
-      type: String,
       required: true,
     },
   },

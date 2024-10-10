@@ -31,9 +31,21 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
     end
   end
 
-  shared_examples 'hides ai-powered features menu' do
-    it 'does not render ai-powered features menu' do
-      expect(menus).not_to include(instance_of(::Sidebars::Admin::Menus::AiPoweredFeaturesMenu))
+  shared_examples 'shows code suggestions menu' do
+    it 'renders code suggestions menu' do
+      expect(menus).to include(instance_of(::Sidebars::Admin::Menus::CodeSuggestionsMenu))
+    end
+  end
+
+  shared_examples 'hides self-hosted models menu' do
+    it 'does not render self-hosted models menu' do
+      expect(menus).not_to include(instance_of(::Sidebars::Admin::Menus::SelfHostedModelsMenu))
+    end
+  end
+
+  shared_examples 'shows self-hosted models menu' do
+    it 'renders self-hosted models menu' do
+      expect(menus).to include(instance_of(::Sidebars::Admin::Menus::SelfHostedModelsMenu))
     end
   end
 
@@ -51,22 +63,22 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
       end
 
       context 'when instance has a paid license' do
-        it 'renders ai-powered features menu' do
-          expect(menus).to include(instance_of(::Sidebars::Admin::Menus::AiPoweredFeaturesMenu))
-        end
-
-        it_behaves_like 'hides code suggestions menu'
-
         context 'when ai_custom_model feature is disabled' do
           before do
             stub_feature_flags(ai_custom_model: false)
           end
 
-          it 'renders gitlab duo menu' do
-            expect(menus).to include(instance_of(::Sidebars::Admin::Menus::CodeSuggestionsMenu))
+          it_behaves_like 'shows code suggestions menu'
+          it_behaves_like 'hides self-hosted models menu'
+        end
+
+        context 'when ai_custom_model feature is enabled' do
+          before do
+            stub_feature_flags(ai_custom_model: true)
           end
 
-          it_behaves_like 'hides ai-powered features menu'
+          it_behaves_like 'shows code suggestions menu'
+          it_behaves_like 'shows self-hosted models menu'
         end
       end
 
@@ -74,7 +86,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
         let(:license) { nil }
 
         it_behaves_like 'hides code suggestions menu'
-        it_behaves_like 'hides ai-powered features menu'
+        it_behaves_like 'hides self-hosted models menu'
       end
     end
 
@@ -84,7 +96,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
       end
 
       it_behaves_like 'hides code suggestions menu'
-      it_behaves_like 'hides ai-powered features menu'
+      it_behaves_like 'hides self-hosted models menu'
     end
   end
 end

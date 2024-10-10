@@ -50,11 +50,7 @@ export default {
       <gl-skeleton-loader />
     </div>
     <div v-else>
-      <!-- TODO: Set up router and remove hard-coded paths -->
-      <self-hosted-models-table
-        :models="selfHostedModels"
-        base-path="/admin/ai/self_hosted_models/"
-      />
+      <self-hosted-models-table :models="selfHostedModels" />
     </div>
   </div>
 </template>

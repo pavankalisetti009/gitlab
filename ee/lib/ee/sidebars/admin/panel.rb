@@ -42,7 +42,12 @@ module EE
           if ::Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
             insert_menu_after(
               ::Sidebars::Admin::Menus::SubscriptionMenu,
-              ::Sidebars::Admin::Menus::AiPoweredFeaturesMenu.new(context)
+              ::Sidebars::Admin::Menus::CodeSuggestionsMenu.new(context)
+            )
+
+            insert_menu_after(
+              ::Sidebars::Admin::Menus::CodeSuggestionsMenu,
+              ::Sidebars::Admin::Menus::SelfHostedModelsMenu.new(context)
             )
           else
             insert_menu_after(

@@ -18,13 +18,10 @@ export default {
     GlCollapsibleListbox,
     GlButton,
   },
+  inject: ['newSelfHostedModelPath'],
   props: {
     aiFeatureSetting: {
       type: Object,
-      required: true,
-    },
-    newSelfHostedModelPath: {
-      type: String,
       required: true,
     },
   },

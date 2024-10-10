@@ -37,9 +37,11 @@ describe('ModelSelectDropdown', () => {
     wrapper = mount(ModelSelectDropdown, {
       apolloProvider: mockApollo,
       propsData: {
-        newSelfHostedModelPath,
         aiFeatureSetting: mockAiFeatureSetting,
         ...props,
+      },
+      provide: {
+        newSelfHostedModelPath,
       },
       mocks: {
         $toast: {

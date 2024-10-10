@@ -10,15 +10,16 @@ describe('SelfHostedModelsTable', () => {
 
   const createComponent = ({ props }) => {
     const basePath = '/admin/ai/self_hosted_models';
+    const aiFeatureSettingsPath = '/admin/ai/feature_settings';
 
     wrapper = extendedWrapper(
       mount(SelfHostedModelsTable, {
         propsData: {
-          basePath,
           ...props,
         },
         provide: {
-          aiFeatureSettingsPath: 'path/to/ai/feature/settings',
+          basePath,
+          aiFeatureSettingsPath,
         },
       }),
     );

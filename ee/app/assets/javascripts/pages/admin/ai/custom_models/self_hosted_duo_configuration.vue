@@ -1,6 +1,7 @@
 <script>
 import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import SelfHostedModelsPage from './self_hosted_models_page.vue';
 import FeatureSettingsPage from './ai_feature_settings_page.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
@@ -8,16 +9,18 @@ import { SELF_HOSTED_DUO_TABS } from './constants';
 export default {
   name: 'SelfHostedDuoConfiguration',
   components: {
+    BetaBadge,
     GlTabs,
     GlTab,
     GlButton,
     SelfHostedModelsPage,
     FeatureSettingsPage,
   },
+  inject: ['newSelfHostedModelPath'],
   i18n: {
-    title: s__('AdminCustomModels|Custom Models'),
+    title: s__('AdminSelfHostedModels|Self-hosted models'),
     description: s__(
-      'AdminCustomModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features',
+      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features',
     ),
   },
   data() {
@@ -50,7 +53,10 @@ export default {
 
 <template>
   <div>
-    <h2>{{ $options.i18n.title }}</h2>
+    <div class="gl-flex gl-items-center gl-gap-3">
+      <h2>{{ $options.i18n.title }}</h2>
+      <beta-badge />
+    </div>
     <p>{{ $options.i18n.description }}</p>
     <div class="top-area gl-items-center">
       <gl-tabs class="gl-flex gl-grow" nav-class="gl-border-b-0">
@@ -65,8 +71,7 @@ export default {
           </template>
         </gl-tab>
       </gl-tabs>
-      <!-- TODO: Set up router and remove hard-coded paths -->
-      <gl-button variant="confirm" href="/admin/ai/self_hosted_models/new">{{
+      <gl-button variant="confirm" :href="newSelfHostedModelPath">{{
         s__('AdminSelfHostedModels|Add self-hosted model')
       }}</gl-button>
     </div>
