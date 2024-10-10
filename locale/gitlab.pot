@@ -50662,6 +50662,15 @@ msgstr ""
 msgid "SecurityReports|These vulnerabilities were detected in external sources. They are not necessarily tied to your GitLab project. For example, running containers, URLs, and so on."
 msgstr ""
 
+msgid "SecurityReports|This project has reached the maximum number of vulnerabilities it can contain and some of the vulnerabilities couldn't be ingested."
+msgstr ""
+
+msgid "SecurityReports|This project has reached the maximum number of vulnerabilities it can contain. New vulnerabilities will not be created."
+msgstr ""
+
+msgid "SecurityReports|This project is reaching the maximum number of vulnerabilities it can contain."
+msgstr ""
+
 msgid "SecurityReports|This selection is required."
 msgstr ""
 
