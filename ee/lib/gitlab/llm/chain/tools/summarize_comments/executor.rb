@@ -89,7 +89,7 @@ module Gitlab
             def perform
               error_message = _("This resource has no comments to summarize") unless notes.any?
 
-              return error_with_message(error_message) if error_message
+              return error_with_message(error_message, error_code: 'M4004') if error_message
 
               super
             end

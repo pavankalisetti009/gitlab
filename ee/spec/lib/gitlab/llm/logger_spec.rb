@@ -56,7 +56,7 @@ RSpec.describe Gitlab::Llm::Logger, feature_category: :ai_abstraction_layer do
         stub_feature_flags(expanded_ai_logging: false)
       end
 
-      it 'logs on debug level' do
+      it 'logs on info level with limited params' do
         expect(logger).to receive(:info).with(message: 'test',
           klass: 'Gitlab::Llm',
           event_name: 'received_response',

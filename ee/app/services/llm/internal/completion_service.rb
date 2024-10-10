@@ -59,7 +59,7 @@ module Llm
           ai_component: 'abstraction_layer',
           user_id: prompt_message.user.to_gid,
           resource_id: prompt_message.resource&.to_gid,
-          action_name: prompt_message.ai_action,
+          action_name: prompt_message.ai_action.to_sym,
           request_id: prompt_message.request_id,
           client_subscription_id: prompt_message.client_subscription_id,
           completion_service_name: completion_class_name

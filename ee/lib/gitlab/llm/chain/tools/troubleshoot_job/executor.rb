@@ -134,7 +134,7 @@ module Gitlab
                                 _('There is no job log to troubleshoot.')
                               end
 
-              return error_with_message(error_message) if error_message
+              return error_with_message(error_message, error_code: 'M4005') if error_message
 
               super
             end

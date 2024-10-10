@@ -223,7 +223,7 @@ module Gitlab
               log_error(message: "Failed to find a tool in GitLab Rails",
                 event_name: 'tool_not_find',
                 ai_component: 'duo_chat',
-                tool_name: tool_name)
+                tool_name: tool)
               raise ToolNotFoundError, tool: tool_name
             end
 
