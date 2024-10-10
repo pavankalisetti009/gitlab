@@ -8,11 +8,7 @@ import { sendDuoChatCommand } from 'ee/ai/utils';
 import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
-import {
-  GENIE_CHAT_RESET_MESSAGE,
-  GENIE_CHAT_CLEAN_MESSAGE,
-  GENIE_CHAT_CLEAR_MESSAGE,
-} from 'ee/ai/constants';
+import { GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
 import { TANUKI_BOT_TRACKING_EVENT_NAME } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
@@ -232,7 +228,7 @@ describeSkipVue3(skipReason, () => {
         unmockTracking();
       });
 
-      it('does set loading to `true` for a message other than the reset or clean ones', () => {
+      it('does set loading to `true` for a message other than the reset or clear messages', () => {
         findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         expect(actionSpies.setLoading).toHaveBeenCalled();
       });
@@ -276,7 +272,7 @@ describeSkipVue3(skipReason, () => {
         });
       });
 
-      it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
+      it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
         'does not set loading to `true` for "%s" message',
         async (msg) => {
           actionSpies.setLoading.mockReset();
@@ -306,7 +302,7 @@ describeSkipVue3(skipReason, () => {
         });
       });
 
-      it.each([GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
+      it.each([GENIE_CHAT_CLEAR_MESSAGE])(
         'refetches the `aiMessages` if the prompt is "%s" and does not call addDuoChatMessage',
         async (prompt) => {
           createComponent();
@@ -343,7 +339,7 @@ describeSkipVue3(skipReason, () => {
           await waitForPromises();
           expect(trackingSpy).toHaveBeenCalled();
         });
-        it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
+        it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
           'does not track if the sent message is "%s"',
           async (msg) => {
             createComponent();

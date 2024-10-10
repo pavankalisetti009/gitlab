@@ -75,7 +75,7 @@ module Gitlab
         idx ? all.first(idx + 1) : []
       end
 
-      def clean!
+      def clear!
         with_redis do |redis|
           redis.xtrim(key, 0)
           redis.del(feedback_key)

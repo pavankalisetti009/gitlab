@@ -20,7 +20,7 @@ module QA
           end
 
           def clear_chat_history
-            send_duo_chat_prompt('/clean')
+            send_duo_chat_prompt('/clear')
           end
 
           def empty_state?

@@ -13,12 +13,7 @@ import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import Tracking from '~/tracking';
-import {
-  i18n,
-  GENIE_CHAT_RESET_MESSAGE,
-  GENIE_CHAT_CLEAN_MESSAGE,
-  GENIE_CHAT_CLEAR_MESSAGE,
-} from 'ee/ai/constants';
+import { i18n, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
 import { TANUKI_BOT_TRACKING_EVENT_NAME, SLASH_COMMANDS, MESSAGE_TYPES } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
@@ -120,11 +115,7 @@ export default {
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
     isClearOrResetMessage(question) {
-      return [
-        GENIE_CHAT_CLEAN_MESSAGE,
-        GENIE_CHAT_CLEAR_MESSAGE,
-        GENIE_CHAT_RESET_MESSAGE,
-      ].includes(question);
+      return [GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(question);
     },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
@@ -186,7 +177,7 @@ export default {
               property: aiAction.requestId,
             });
           }
-          if ([GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE].includes(question)) {
+          if ([GENIE_CHAT_CLEAR_MESSAGE].includes(question)) {
             this.$apollo.queries.aiMessages.refetch();
           } else {
             this.addDuoChatMessage({
