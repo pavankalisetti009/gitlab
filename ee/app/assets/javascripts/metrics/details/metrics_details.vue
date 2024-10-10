@@ -1,6 +1,6 @@
 <script>
 import { GlLoadingIcon, GlEmptyState, GlSprintf, GlButton } from '@gitlab/ui';
-import EMPTY_CHART_SVG from '@gitlab/svgs/dist/illustrations/chart-empty-state.svg?url';
+import EMPTY_CHART_SVG from '@gitlab/svgs/dist/illustrations/status/status-nothing-sm.svg';
 import { uniqueId } from 'lodash';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -368,7 +368,7 @@ export default {
             />
           </div>
 
-          <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
+          <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG" :svg-height="72">
             <template #title>
               <p class="gl-my-0 gl-text-lg">
                 <gl-sprintf
@@ -387,7 +387,6 @@ export default {
               </p>
             </template>
           </gl-empty-state>
-
           <related-issue
             :id="$options.relatedIssuesId"
             :issues="issues"
