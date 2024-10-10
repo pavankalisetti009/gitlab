@@ -904,9 +904,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
   describe '#get_billing_account_details' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:rsa_key) { OpenSSL::PKey::RSA.generate(1024) }
-    let_it_be(:jwt_jti) { 'jwt_jti' }
-    let(:jwt) { Gitlab::CustomersDot::Jwt.new(user).encoded }
+    let(:jwt) { 'jwt token' }
 
     let(:expected_query) do
       <<~GQL
@@ -928,14 +926,15 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     end
 
     before do
-      stub_application_setting(customers_dot_jwt_signing_key: rsa_key.to_s)
-      allow(SecureRandom).to receive(:uuid).and_return(jwt_jti)
+      allow_next_instance_of(Gitlab::CustomersDot::Jwt) do |instance|
+        allow(instance).to receive(:encoded).and_return(jwt)
+      end
     end
 
     subject(:get_billing_account_details) { client.get_billing_account_details(user) }
 
     context 'when the response is successful' do
-      it 'returns the billing account name', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468344' do
+      it 'returns the billing account name' do
         response = {
           success: true,
           data: {
@@ -947,7 +946,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
           },
           'errors' => []
         }
-
         expect(client).to receive(:http_post).with('graphql', headers, { query: expected_query }).and_return(response)
 
         expect(subject).to eq(success: true,
