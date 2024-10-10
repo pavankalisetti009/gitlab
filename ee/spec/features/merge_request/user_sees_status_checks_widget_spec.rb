@@ -7,9 +7,30 @@ RSpec.describe 'Merge request > User sees status checks widget', :js, feature_ca
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:check_pending) { create(:external_status_check, project: project) }
-  let_it_be(:check_failed) { create(:external_status_check, project: project) }
-  let_it_be(:check_passed) { create(:external_status_check, project: project) }
+
+  let_it_be(:check_pending) do
+    create(
+      :external_status_check,
+      project: project,
+      external_url: "http://test1.host"
+    )
+  end
+
+  let_it_be(:check_failed) do
+    create(
+      :external_status_check,
+      project: project,
+      external_url: "http://test2.host"
+    )
+  end
+
+  let_it_be(:check_passed) do
+    create(
+      :external_status_check,
+      project: project,
+      external_url: "http://test3.host"
+    )
+  end
 
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:status_check_response_passed) { create(:status_check_response, external_status_check: check_passed, merge_request: merge_request, sha: merge_request.source_branch_sha, status: 'passed') }
