@@ -116,10 +116,39 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         let(:persistence_worker) { Security::PersistSecurityPoliciesWorker }
 
         shared_examples "persist policies" do
-          it "persists policies" do
-            expect(persistence_worker).to receive(:perform_async).with(configuration.id)
+          context 'when policies_changed? is false' do
+            before do
+              allow(configuration).to receive(:policies_changed?).and_return(false)
+            end
 
-            execute
+            it 'does not persist policies' do
+              expect(persistence_worker).not_to receive(:perform_async).with(configuration.id)
+
+              execute
+            end
+
+            it 'does not process policy' do
+              expect(Security::SecurityOrchestrationPolicies::ProcessRuleService).not_to receive(:new)
+              expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService).not_to receive(:new)
+              expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).not_to receive(:new)
+              expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService).not_to receive(:new)
+
+              expect { execute }
+                .to not_change(Security::OrchestrationPolicyRuleSchedule, :count)
+                .and not_change { configuration.reload.configured_at }
+            end
+          end
+
+          context 'when policies_changed? is true' do
+            before do
+              allow(configuration).to receive(:policies_changed?).and_return(true)
+            end
+
+            it 'persists policies' do
+              expect(persistence_worker).to receive(:perform_async).with(configuration.id)
+
+              execute
+            end
           end
         end
 

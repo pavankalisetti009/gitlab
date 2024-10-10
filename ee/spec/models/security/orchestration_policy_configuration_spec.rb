@@ -2559,4 +2559,169 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
     end
   end
+
+  describe '#policy_changes' do
+    let_it_be(:configuration) { create(:security_orchestration_policy_configuration) }
+
+    let_it_be(:db_policy1) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: configuration,
+        name: 'Policy 1', checksum: 'abc123', policy_index: 0
+      )
+    end
+
+    let_it_be(:db_policy2) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: configuration,
+        name: 'Policy 2', checksum: 'def456', policy_index: 1
+      )
+    end
+
+    let_it_be(:db_policy3) do
+      create(:security_policy,
+        security_orchestration_policy_configuration: configuration,
+        name: 'Policy 3', checksum: 'ghi789', policy_index: 2
+      )
+    end
+
+    let(:yaml_policy1) { { name: 'Policy 1', rules: ['Rule 1'] } }
+    let(:yaml_policy2) { { name: 'Policy 2', rules: ['Rule 2'] } }
+    let(:yaml_policy3) { { name: 'Policy 3', rules: ['Rule 3 Updated'] } }
+    let(:yaml_policy4) { { name: 'Policy 4', rules: ['Rule 4'] } }
+
+    let(:db_policies) { [] }
+    let(:yaml_policies) { [] }
+
+    let(:policy_changes) { configuration.policy_changes(db_policies, yaml_policies) }
+
+    before do
+      allow(Security::Policy).to receive(:checksum).and_return('abc123', 'def456', 'xyz789', 'jkl012')
+    end
+
+    context 'when new policies are introduced' do
+      let(:db_policies) { [db_policy1, db_policy2] }
+      let(:yaml_policies) { [yaml_policy1, yaml_policy2, yaml_policy4] }
+
+      it 'identifies new policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to match_array([[yaml_policy4, 2]])
+        expect(deleted_policies).to be_empty
+        expect(changed_policies).to be_empty
+        expect(rearranged_policies).to be_empty
+      end
+    end
+
+    context 'when policies are deleted' do
+      let(:db_policies) { [db_policy1, db_policy2, db_policy3] }
+      let(:yaml_policies) { [yaml_policy1, yaml_policy2] }
+
+      it 'identifies deleted policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to be_empty
+        expect(deleted_policies).to match_array([db_policy3])
+        expect(changed_policies).to be_empty
+        expect(rearranged_policies).to be_empty
+      end
+    end
+
+    context 'when policies are updated' do
+      let(:db_policies) { [db_policy1, db_policy2, db_policy3] }
+      let(:yaml_policies) { [yaml_policy1, yaml_policy2, yaml_policy3] }
+
+      it 'identifies changed policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to be_empty
+        expect(deleted_policies).to be_empty
+        expect(changed_policies.size).to eq(1)
+        expect(changed_policies.first).to be_a(Security::SecurityOrchestrationPolicies::PolicyComparer)
+        expect(changed_policies.first.db_policy).to eq(db_policy3)
+        expect(changed_policies.first.yaml_policy).to eq(yaml_policy3)
+        expect(changed_policies.first.policy_index).to eq(2)
+        expect(rearranged_policies).to be_empty
+      end
+    end
+
+    context 'when policies are rearranged' do
+      let(:db_policies) { [db_policy1, db_policy2] }
+      let(:yaml_policies) { [yaml_policy2, yaml_policy1] }
+
+      before do
+        allow(Security::Policy).to receive(:checksum).and_return('def456', 'abc123', 'xyz789', 'jkl012')
+      end
+
+      it 'identifies rearranged policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to be_empty
+        expect(deleted_policies).to be_empty
+        expect(changed_policies).to be_empty
+        expect(rearranged_policies).to match_array([[db_policy2, 0], [db_policy1, 1]])
+      end
+    end
+
+    context 'when db policies are empty' do
+      let(:db_policies) { [] }
+      let(:yaml_policies) { [yaml_policy1, yaml_policy2] }
+
+      it 'handles empty db_policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to match_array([[yaml_policy1, 0], [yaml_policy2, 1]])
+        expect(deleted_policies).to be_empty
+        expect(changed_policies).to be_empty
+        expect(rearranged_policies).to be_empty
+      end
+    end
+
+    context 'when yaml_policies are empty' do
+      let(:db_policies) { [db_policy1, db_policy2] }
+      let(:yaml_policies) { [] }
+
+      it 'handles empty yaml_policies', :aggregate_failures do
+        new_policies, deleted_policies, changed_policies, rearranged_policies = policy_changes
+
+        expect(new_policies).to be_empty
+        expect(deleted_policies).to match_array([db_policy1, db_policy2])
+        expect(changed_policies).to be_empty
+        expect(rearranged_policies).to be_empty
+      end
+    end
+  end
+
+  describe '#policies_changed?' do
+    let_it_be(:configuration) { create(:security_orchestration_policy_configuration) }
+
+    subject(:policies_changed?) { configuration.policies_changed? }
+
+    context 'when approval policies have changed' do
+      before do
+        create(:security_policy, :require_approval, security_orchestration_policy_configuration: configuration)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when scan execution policies have changed' do
+      before do
+        create(:security_policy, :scan_execution_policy, security_orchestration_policy_configuration: configuration)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when pipeline execution policy has changed' do
+      before do
+        create(:security_policy, :pipeline_execution_policy, security_orchestration_policy_configuration: configuration)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when no policies have changed' do
+      it { is_expected.to be_falsey }
+    end
+  end
 end

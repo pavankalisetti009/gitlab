@@ -146,7 +146,52 @@ module Security
       end
     end
 
+    def policies_changed?
+      approval_policies_changed? || scan_execution_policies_changed? || pipeline_execution_policy_changed?
+    end
+
+    def policy_changes(db_policies, yaml_policies)
+      db_policies_with_checksums = db_policies.index_by(&:checksum)
+      db_policies_with_names = db_policies.index_by(&:name)
+
+      deleted_policies = db_policies_with_checksums.values
+      new_policies = []
+      policies_changes = []
+      rearranged_policies = []
+
+      yaml_policies.each_with_index do |policy_hash, index|
+        checksum = Security::Policy.checksum(policy_hash)
+        db_policy = db_policies_with_checksums[checksum] || db_policies_with_names[policy_hash[:name]]
+
+        next new_policies << [policy_hash, index] unless db_policy
+
+        deleted_policies.delete(db_policy)
+
+        if db_policy.checksum != checksum
+          policies_changes << Security::SecurityOrchestrationPolicies::PolicyComparer.new(
+            db_policy: db_policy, yaml_policy: policy_hash, policy_index: index
+          )
+        end
+
+        rearranged_policies << [db_policy, index] if db_policy.policy_index != index
+      end
+
+      [new_policies, deleted_policies, policies_changes, rearranged_policies]
+    end
+
     private
+
+    def approval_policies_changed?
+      policy_changes(security_policies.type_approval_policy.undeleted, scan_result_policies).any?(&:present?)
+    end
+
+    def scan_execution_policies_changed?
+      policy_changes(security_policies.type_scan_execution_policy.undeleted, scan_execution_policy).any?(&:present?)
+    end
+
+    def pipeline_execution_policy_changed?
+      policy_changes(security_policies.type_pipeline_execution_policy.undeleted, pipeline_execution_policy).any?(&:present?)
+    end
 
     def policy_cache_key
       "security_orchestration_policy_configurations:#{id}:policy_yaml"
