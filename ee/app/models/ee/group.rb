@@ -96,6 +96,7 @@ module EE
       delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
       delegate :repository_read_only,
+        :default_compliance_framework,
         :default_compliance_framework_id,
         to: :namespace_settings, allow_nil: true
 
@@ -1105,6 +1106,13 @@ module EE
       root? &&
         licensed_feature_available?(:disable_personal_access_tokens) &&
         namespace_settings.disable_personal_access_tokens?
+    end
+
+    def active_compliance_frameworks?
+      # test default framework first since it is most likely to have projects assigned
+      [[default_compliance_framework] + compliance_management_frameworks].flatten.compact.uniq.any? do |framework|
+        framework.projects.any?
+      end
     end
 
     def enable_auto_assign_gitlab_duo_pro_seats?

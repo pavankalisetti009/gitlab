@@ -41,6 +41,7 @@ export default () => {
     featureProjectsReportEnabled,
     featureSecurityPoliciesEnabled,
     adherenceV2Enabled,
+    activeComplianceFrameworks,
   } = el.dataset;
 
   Vue.use(VueApollo);
@@ -92,6 +93,7 @@ export default () => {
       featurePipelineMaintenanceModeEnabled: parseBoolean(featurePipelineMaintenanceModeEnabled),
       featureSecurityPoliciesEnabled: parseBoolean(featureSecurityPoliciesEnabled),
       adherenceV2Enabled: parseBoolean(adherenceV2Enabled),
+      activeComplianceFrameworks: parseBoolean(activeComplianceFrameworks),
     },
 
     render: (createElement) => createElement('router-view'),

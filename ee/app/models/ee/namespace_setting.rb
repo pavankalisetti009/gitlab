@@ -10,6 +10,8 @@ module EE
 
       scope :duo_features_set, ->(setting) { where(duo_features_enabled: setting) }
 
+      belongs_to :default_compliance_framework, optional: true, class_name: "ComplianceManagement::Framework"
+
       validates :unique_project_download_limit,
         numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10_000 },
         presence: true

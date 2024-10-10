@@ -115,6 +115,7 @@ export default {
     goTo(name) {
       if (this.$route.name !== name) {
         this.$router.push({ name });
+
         this.track('click_report_tab', { label: name });
       }
     },

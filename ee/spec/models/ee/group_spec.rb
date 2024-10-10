@@ -4306,6 +4306,51 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe "#active_compliance_frameworks?" do
+    let_it_be(:framework) { create :compliance_framework }
+    let_it_be(:group) { framework.namespace }
+
+    context 'without default framework' do
+      context 'without assigned projects' do
+        it 'returns false' do
+          expect(group.active_compliance_frameworks?).to be false
+        end
+      end
+
+      context 'with assigned projects' do
+        let_it_be(:project) { create :project, namespace: group }
+
+        it 'returns true' do
+          ComplianceManagement::ComplianceFramework::ProjectSettings.find_or_create_by_project(project, framework)
+
+          expect(group.reset.active_compliance_frameworks?).to be true
+        end
+      end
+    end
+
+    context 'with default framework' do
+      before do
+        group.namespace_settings.update!(default_compliance_framework_id: framework.id)
+      end
+
+      context 'without assigned projects' do
+        it 'returns false' do
+          expect(group.active_compliance_frameworks?).to be false
+        end
+      end
+
+      context 'with assigned projects' do
+        let_it_be(:project) { create :project, namespace: group }
+
+        it 'returns true' do
+          ComplianceManagement::ComplianceFramework::ProjectSettings.find_or_create_by_project(project, framework)
+
+          expect(group.reset.active_compliance_frameworks?).to be true
+        end
+      end
+    end
+  end
+
   describe '#enterprise_users_extensions_marketplace_enabled?' do
     let_it_be(:group) { create(:group) }
 
