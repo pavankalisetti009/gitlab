@@ -333,10 +333,18 @@ the migration that was used to enqueue it. Pay careful attention to:
 When finalizing a batched background migration you also need to update the
 `finalized_by` in the corresponding `db/docs/batched_background_migrations`
 file. The value should be the timestamp/version of the migration you added to
-finalize it.
+finalize it. The [schema version of the RSpec tests](../testing_guide/testing_migrations_guide.md#testing-a-non-activerecordmigration-class)
+associated with the migration should also be set to this version to avoid having the tests fail due
+to future schema changes.
 
 See the below [Examples](#examples) for specific details on what the actual
 migration code should be.
+
+### Deleting batched background migration code
+
+Once a batched background migration has been finalized, the migration code in `lib/gitlab/background_migration/`
+and its associated tests can be deleted after the next required stop following the finalization.
+For example, if a migration is introduced in 17.0 and 17.2 and 17.5 are required stops, then the migration may be finalzied in 17.3, and its code may be deleted in 17.6.
 
 ### Use job arguments
 
