@@ -19838,6 +19838,9 @@ msgstr ""
 msgid "Disable group runners"
 msgstr ""
 
+msgid "Disable password authentication for users with an SSO identity"
+msgstr ""
+
 msgid "Disable personal access tokens"
 msgstr ""
 
@@ -21198,6 +21201,9 @@ msgid "Engine"
 msgstr ""
 
 msgid "Enhance security by storing service account keys in secret managers - learn more about %{docLinkStart}secret management with GitLab%{docLinkEnd}"
+msgstr ""
+
+msgid "Ensure users with SSO identities cannot sign in with password even when password authentication is enabled."
 msgstr ""
 
 msgid "Ensure your %{linkStart}environment is part of the deploy stage%{linkEnd} of your CI pipeline to track deployments to your cluster."
