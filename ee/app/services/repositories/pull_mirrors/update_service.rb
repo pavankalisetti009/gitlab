@@ -6,7 +6,7 @@ module Repositories
       def execute
         return ServiceResponse.error(message: _('Access Denied')) unless allowed?
 
-        if project.update(allowed_attributes.merge(mirror_user_id: current_user.id))
+        if update_mirror
           project.import_state.force_import_job! if project.mirror?
 
           ServiceResponse.success(payload: { project: project })
@@ -17,8 +17,27 @@ module Repositories
 
       private
 
+      def update_mirror
+        project.assign_attributes(allowed_attributes.merge(mirror_user_id: current_user.id))
+
+        update_project_import_relations
+
+        project.save
+      end
+
+      def update_project_import_relations
+        # Import data includes credentials that should be removed, when mirror is disabled.
+        project.remove_import_data if mirror_disabled?
+
+        project.import_state&.assign_attributes(last_error: nil)
+      end
+
+      def mirror_disabled?
+        allowed_attributes[:mirror] == false
+      end
+
       def allowed_attributes
-        Repositories::PullMirrors::Attributes.new(params).allowed
+        @allowed_attributes ||= Repositories::PullMirrors::Attributes.new(params).allowed
       end
 
       def allowed?

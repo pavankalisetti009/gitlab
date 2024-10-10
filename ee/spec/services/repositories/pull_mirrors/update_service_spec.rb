@@ -65,6 +65,26 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       end
     end
 
+    context 'when mirror is disabled' do
+      let(:enabled) { false }
+
+      it 'removes import data' do
+        is_expected.to be_success
+        expect(updated_project.reload.import_data).to be_nil
+      end
+    end
+
+    context 'when previous import had an error' do
+      before do
+        create(:import_state, project: project, last_error: 'Error')
+      end
+
+      it 'cleans up the previous error' do
+        is_expected.to be_success
+        expect(updated_project.reload.import_state.last_error).to be_nil
+      end
+    end
+
     context 'when params are invalid' do
       let(:url) { 'not_a_url' }
 
