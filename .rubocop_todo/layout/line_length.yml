@@ -3867,7 +3867,6 @@ Layout/LineLength:
     - 'spec/requests/api/feature_flags_spec.rb'
     - 'spec/requests/api/features_spec.rb'
     - 'spec/requests/api/files_spec.rb'
-    - 'spec/requests/api/generic_packages_spec.rb'
     - 'spec/requests/api/go_proxy_spec.rb'
     - 'spec/requests/api/graphql/boards/board_list_issues_query_spec.rb'
     - 'spec/requests/api/graphql/boards/board_list_query_spec.rb'
