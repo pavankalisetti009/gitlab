@@ -9,9 +9,20 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let(:cs_unit_primitives) { [:code_suggestions] }
     let(:cs_bundled_with) { { "duo_enterprise" => cs_unit_primitives, "duo_pro" => cs_unit_primitives } }
 
-    let(:duo_chat_unit_primitives) { [:duo_chat, :documentation_search] }
+    let(:duo_chat_unit_primitives) do
+      [:duo_chat, :documentation_search, :include_file_context, :include_snippet_context]
+    end
+
     let(:duo_chat_ent_unit_primitives) do
-      duo_chat_unit_primitives + [:ask_build, :ask_commit, :ask_epic, :ask_issue, :ask_merge_request]
+      duo_chat_unit_primitives + [
+        :include_merge_request_context,
+        :include_issue_context,
+        :ask_build,
+        :ask_commit,
+        :ask_epic,
+        :ask_issue,
+        :ask_merge_request
+      ]
     end
 
     let(:duo_chat_bundled_with) do
@@ -62,6 +73,44 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           semantic_search_issue
           summarize_issue_discussions
           summarize_merge_request
+        ]
+      }
+    end
+
+    let(:include_file_context_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          include_file_context
+        ],
+        "duo_pro" => %i[
+          include_file_context
+        ]
+      }
+    end
+
+    let(:include_snippet_context_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          include_snippet_context
+        ],
+        "duo_pro" => %i[
+          include_snippet_context
+        ]
+      }
+    end
+
+    let(:include_merge_request_context_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          include_merge_request_context
+        ]
+      }
+    end
+
+    let(:include_issue_context_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          include_issue_context
         ]
       }
     end
@@ -161,6 +210,10 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           vertex_ai_proxy: [ai_proxy_cut_off_date, vertex_ai_proxy_bundled_with, backend],
           resolve_vulnerability: [nil, resolve_vulnerability_bundled_with, backend],
           self_hosted_models: [self_hosted_models_cut_off_date, self_hosted_models_bundled_with, backend],
+          include_file_context: [nil, include_file_context_bundled_with, backend],
+          include_snippet_context: [nil, include_snippet_context_bundled_with, backend],
+          include_merge_request_context: [nil, include_merge_request_context_bundled_with, backend],
+          include_issue_context: [nil, include_issue_context_bundled_with, backend],
           generate_description: [nil, generate_description_bundled_with, backend],
           generate_commit_message: [generate_commit_message_cut_off_date, generate_commit_message_bundled_with,
             backend],
