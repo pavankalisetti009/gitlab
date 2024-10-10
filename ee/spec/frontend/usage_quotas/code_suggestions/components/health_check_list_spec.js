@@ -342,4 +342,29 @@ describe('HealthCheckList', () => {
       expect(healthStatusReq).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('downloadReport', () => {
+    beforeEach(() => {
+      createComponent();
+      return waitForPromises();
+    });
+
+    it('renders the download button and is enabled when not loading', () => {
+      const button = wrapper.findByTestId('download-report-button');
+
+      expect(button.exists()).toBe(true); // Check if the button is present
+      expect(button.attributes('disabled')).toBeUndefined(); // Button should be enabled
+    });
+
+    it('disables the download button when loading', async () => {
+      // Simulate running the health check, which should set isLoading to true
+      findRunHealthCheckButton().vm.$emit('click');
+      await nextTick(); // Ensure reactivity updates the DOM
+
+      const button = wrapper.findByTestId('download-report-button');
+
+      expect(button.exists()).toBe(true); // Check if the button is present
+      expect(button.attributes('disabled')).toBe('true'); // Button should be disabled with value "true"
+    });
+  });
 });

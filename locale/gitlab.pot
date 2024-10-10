@@ -13460,6 +13460,9 @@ msgstr ""
 msgid "CodeSuggestions|Code Suggestions"
 msgstr ""
 
+msgid "CodeSuggestions|Download Report"
+msgstr ""
+
 msgid "CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code."
 msgstr ""
 

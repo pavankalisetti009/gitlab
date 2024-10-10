@@ -15,6 +15,20 @@ module Types
 
       field :message, GraphQL::Types::String, null: true,
         description: 'Additional message or details about the probe result.'
+
+      field :errors, [GraphQL::Types::String], null: true,
+        description: 'Full list of errors about the probe result.'
+
+      field :details, GraphQL::Types::JSON, null: true, # rubocop:disable Graphql/JSONType -- Different type of probes will have different details
+        description: 'Additional details about the probe result.'
+
+      def errors
+        object.errors.full_messages
+      end
+
+      def details
+        object.details.as_json
+      end
     end
   end
 end

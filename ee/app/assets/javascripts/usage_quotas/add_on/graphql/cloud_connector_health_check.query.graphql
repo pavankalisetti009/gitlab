@@ -5,6 +5,8 @@ query getCloudConnectorHealthStatus {
       name
       success
       message
+      errors
+      details
     }
   }
 }
