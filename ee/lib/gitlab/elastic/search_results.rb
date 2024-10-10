@@ -17,6 +17,94 @@ module Gitlab
       # It allows us to search only for projects user has access to
       attr_reader :limit_project_ids
 
+      def self.parse_search_result(result, container, options = {})
+        ref = extract_ref_from_result(result['_source'])
+        path = extract_path_from_result(result['_source'])
+        basename = File.join(File.dirname(path), File.basename(path, '.*'))
+        content = extract_content_from_result(result['_source'])
+        group_id = result['_source']['group_id']&.to_i
+        num_context_lines = options[:num_context_lines]&.clamp(0, MAX_NUM_CONTEXT_LINES) || DEFAULT_NUM_CONTEXT_LINES
+
+        if group_level_result?(result['_source'])
+          group = container
+          group_level_blob = true
+        else
+          project = container
+          group = container.group
+          project_id = result['_source']['project_id'].to_i
+        end
+
+        total_lines = content.lines.size
+
+        highlight_content = get_highlight_content(result)
+
+        found_line_number = 0
+        highlight_found = false
+        matched_lines_count = highlight_content.scan(/#{::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG}(.*)\R/o).size
+
+        highlight_content.each_line.each_with_index do |line, index|
+          next unless line.include?(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG)
+
+          found_line_number = index
+          highlight_found = true
+          break
+        end
+
+        from = if found_line_number >= num_context_lines
+                 found_line_number - num_context_lines
+               else
+                 found_line_number
+               end
+
+        to = if (total_lines - found_line_number) > (num_context_lines + 1)
+               found_line_number + num_context_lines
+             else
+               found_line_number
+             end
+
+        data = content.lines[from..to]
+        # only send highlighted line number if a highlight was returned by Elasticsearch
+        highlight_line = highlight_found ? found_line_number + 1 : nil
+
+        ::Gitlab::Search::FoundBlob.new(
+          {
+            path: path,
+            basename: basename,
+            ref: ref,
+            matched_lines_count: matched_lines_count,
+            startline: from + 1,
+            highlight_line: highlight_line,
+            data: data.join,
+            project: project,
+            project_id: project_id,
+            group: group,
+            group_id: group_id,
+            group_level_blob: group_level_blob
+          }.compact
+        )
+      end
+
+      def self.extract_ref_from_result(source)
+        source['type'].eql?('wiki_blob') ? source['commit_sha'] : source['blob']['commit_sha']
+      end
+
+      def self.extract_path_from_result(source)
+        source['type'].eql?('wiki_blob') ? source['path'] : source['blob']['path'] || ''
+      end
+
+      def self.extract_content_from_result(source)
+        source['type'].eql?('wiki_blob') ? source['content'] : source['blob']['content']
+      end
+
+      def self.group_level_result?(source)
+        source['project_id'].blank?
+      end
+
+      def self.get_highlight_content(result)
+        content_key = result['_source']['type'].eql?('wiki_blob') ? 'content' : 'blob.content'
+        result.dig('highlight', content_key)&.first || ''
+      end
+
       def initialize(
         current_user, query, limit_project_ids = nil, root_ancestor_ids: nil,
         public_and_internal_projects: true, order_by: nil, sort: nil, filters: {})
@@ -205,73 +293,6 @@ module Gitlab
       alias_method :limited_issues_count, :issues_count
       alias_method :limited_merge_requests_count, :merge_requests_count
       alias_method :limited_milestones_count, :milestones_count
-
-      def self.parse_search_result(result, container, options = {})
-        ref = extract_ref_from_result(result['_source'])
-        path = extract_path_from_result(result['_source'])
-        basename = File.join(File.dirname(path), File.basename(path, '.*'))
-        content = extract_content_from_result(result['_source'])
-        group_id = result['_source']['group_id']&.to_i
-        num_context_lines = options[:num_context_lines]&.clamp(0, MAX_NUM_CONTEXT_LINES) || DEFAULT_NUM_CONTEXT_LINES
-
-        if group_level_result?(result['_source'])
-          group = container
-          group_level_blob = true
-        else
-          project = container
-          group = container.group
-          project_id = result['_source']['project_id'].to_i
-        end
-
-        total_lines = content.lines.size
-
-        highlight_content = get_highlight_content(result)
-
-        found_line_number = 0
-        highlight_found = false
-        matched_lines_count = highlight_content.scan(/#{::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG}(.*)\R/o).size
-
-        highlight_content.each_line.each_with_index do |line, index|
-          next unless line.include?(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG)
-
-          found_line_number = index
-          highlight_found = true
-          break
-        end
-
-        from = if found_line_number >= num_context_lines
-                 found_line_number - num_context_lines
-               else
-                 found_line_number
-               end
-
-        to = if (total_lines - found_line_number) > (num_context_lines + 1)
-               found_line_number + num_context_lines
-             else
-               found_line_number
-             end
-
-        data = content.lines[from..to]
-        # only send highlighted line number if a highlight was returned by Elasticsearch
-        highlight_line = highlight_found ? found_line_number + 1 : nil
-
-        ::Gitlab::Search::FoundBlob.new(
-          {
-            path: path,
-            basename: basename,
-            ref: ref,
-            matched_lines_count: matched_lines_count,
-            startline: from + 1,
-            highlight_line: highlight_line,
-            data: data.join,
-            project: project,
-            project_id: project_id,
-            group: group,
-            group_id: group_id,
-            group_level_blob: group_level_blob
-          }.compact
-        )
-      end
 
       def aggregations(scope)
         case scope
@@ -501,7 +522,7 @@ module Gitlab
         if count.nil?
           number_with_delimiter(0)
         elsif count >= ELASTIC_COUNT_LIMIT
-          number_with_delimiter(ELASTIC_COUNT_LIMIT) + '+'
+          "#{number_with_delimiter(ELASTIC_COUNT_LIMIT)}+"
         else
           number_with_delimiter(count)
         end
@@ -562,27 +583,6 @@ module Gitlab
 
       def allowed_to_read_users?
         Ability.allowed?(current_user, :read_users_list)
-      end
-
-      def self.extract_ref_from_result(source)
-        source['type'].eql?('wiki_blob') ? source['commit_sha'] : source['blob']['commit_sha']
-      end
-
-      def self.extract_path_from_result(source)
-        source['type'].eql?('wiki_blob') ? source['path'] : source['blob']['path'] || ''
-      end
-
-      def self.extract_content_from_result(source)
-        source['type'].eql?('wiki_blob') ? source['content'] : source['blob']['content']
-      end
-
-      def self.group_level_result?(source)
-        source['project_id'].blank?
-      end
-
-      def self.get_highlight_content(result)
-        content_key = result['_source']['type'].eql?('wiki_blob') ? 'content' : 'blob.content'
-        result.dig('highlight', content_key)&.first || ''
       end
 
       def create_map(results)
