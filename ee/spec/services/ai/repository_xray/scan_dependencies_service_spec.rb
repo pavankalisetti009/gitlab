@@ -141,6 +141,47 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
           })
         end
       end
+
+      context 'when a dependency name contains an invalid byte sequence' do
+        let_it_be(:invalid_unicode) { [0xFE, 0x00, 0x00, 0x00].pack('C*') }
+        let_it_be(:project) do
+          create(:project, :custom_repo, files:
+            valid_files.merge({
+              'requirements.txt' =>
+                <<~CONTENT
+                  r#{invalid_unicode}equests>=2.0,<3.0
+                  numpy==1.26.4
+                CONTENT
+            }))
+        end
+
+        it 'saves an X-Ray report for each valid config file' do
+          expect { execute }.to change { report_count }.by(3)
+          expect(reports_array).to contain_exactly(
+            *expected_reports_array,
+            {
+              'project_id' => project.id,
+              'lang' => 'python',
+              'payload' => a_hash_including(
+                'file_paths' => contain_exactly('requirements.txt'),
+                'libs' => contain_exactly(
+                  { 'name' => 'requests (>=2.0,<3.0)' },
+                  { 'name' => 'numpy (==1.26.4)' }))
+            })
+        end
+
+        it 'returns a success response' do
+          expect(execute).to be_success
+          expect(execute.message).to eq('Found 3 dependency config files')
+          expect(execute.payload).to match({
+            success_messages: contain_exactly(
+              'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
+              'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)',
+              'Found 2 dependencies in `requirements.txt` (PythonPip)'),
+            error_messages: []
+          })
+        end
+      end
     end
 
     context 'when the repository contains only invalid dependency config files' do
