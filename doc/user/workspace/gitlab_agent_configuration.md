@@ -56,8 +56,8 @@ If a cluster agent is allowed for one group, for example `subgroup-1`, then the 
 
 Prerequisites:
 
-- The [workspace infrastructure](configuration.md#set-up-workspace-infrastructure) must be set up.
-- You must be an administrator or group owner.
+- You must [set up workspace infrastructure](configuration.md#set-up-workspace-infrastructure).
+- You must have administrator access to the instance or the Owner role for the group.
 
 To allow a cluster agent for workspaces in a group:
 
@@ -73,8 +73,8 @@ The status of the selected agent is updated to **Allowed**, and the agent is dis
 
 Prerequisites:
 
-- The [workspace infrastructure](configuration.md#set-up-workspace-infrastructure) must be set up.
-- You must be an administrator or group owner.
+- You must [set up workspace infrastructure](configuration.md#set-up-workspace-infrastructure).
+- You must have administrator access to the instance or the Owner role for the group.
 
 To remove an allowed cluster agent from a group:
 
