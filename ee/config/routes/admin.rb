@@ -45,7 +45,10 @@ namespace :admin do
   resource :subscription, only: [:show]
   resources :role_promotion_requests, only: :index
 
-  get 'code_suggestions', to: 'code_suggestions#index'
+  namespace :gitlab_duo do
+    resources :seat_utilization, only: [:index]
+  end
+  get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
 
   namespace :ai do
     resources :self_hosted_models, only: [:index, :new, :create, :edit, :update, :destroy] do

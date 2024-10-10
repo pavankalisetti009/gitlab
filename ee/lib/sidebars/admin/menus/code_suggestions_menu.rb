@@ -6,7 +6,7 @@ module Sidebars
       class CodeSuggestionsMenu < ::Sidebars::Admin::BaseMenu
         override :link
         def link
-          admin_code_suggestions_path
+          admin_gitlab_duo_seat_utilization_index_path
         end
 
         override :title
@@ -21,7 +21,7 @@ module Sidebars
 
         override :active_routes
         def active_routes
-          { controller: :code_suggestions }
+          { controller: :seat_utilization }
         end
       end
     end

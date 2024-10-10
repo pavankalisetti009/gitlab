@@ -8,7 +8,7 @@ RSpec.describe Sidebars::Admin::Menus::AiPoweredFeaturesMenu, feature_category: 
   let(:menu) { described_class.new(context) }
 
   it_behaves_like 'Admin menu',
-    link: '/admin/code_suggestions',
+    link: '/admin/gitlab_duo/seat_utilization',
     title: s_('Admin|AI-powered features'),
     icon: 'tanuki-ai'
 
@@ -20,13 +20,13 @@ RSpec.describe Sidebars::Admin::Menus::AiPoweredFeaturesMenu, feature_category: 
   describe 'Menu items' do
     let(:sub_item) { described_class.new(context).renderable_items.find { |e| e.item_id == item_id } }
 
-    describe 'Code Suggestions' do
+    describe 'GitLab Duo' do
       let(:item_id) { :duo_pro_code_suggestions }
 
       it 'renders a sub item' do
-        expect(sub_item.link).to eq('/admin/code_suggestions')
+        expect(sub_item.link).to eq('/admin/gitlab_duo/seat_utilization')
         expect(sub_item.title).to eq('GitLab Duo')
-        expect(sub_item.active_routes).to eq({ controller: :code_suggestions })
+        expect(sub_item.active_routes).to eq({ controller: :seat_utilization })
       end
     end
 

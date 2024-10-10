@@ -31,12 +31,12 @@ module EE
             ::Sidebars::Admin::Menus::SubscriptionMenu.new(context)
           )
 
-          insert_code_suggestions_menu
+          insert_gilab_duo_menu
         end
 
         private
 
-        def insert_code_suggestions_menu
+        def insert_gilab_duo_menu
           return unless !gitlab_com_subscription? && License.current&.paid?
 
           if ::Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
