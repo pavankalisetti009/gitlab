@@ -159,11 +159,7 @@ module Gitlab
             strong_memoize_attr :available_resources_names
 
             def unavailable_resources_names
-              resources = %w[Pipelines Vulnerabilities]
-              resources << 'Merge Requests' unless Feature.enabled?(:ai_merge_request_reader_for_chat,
-                context.current_user)
-
-              resources.join(', ')
+              %w[Pipelines Vulnerabilities].join(', ')
             end
 
             def prompt_version

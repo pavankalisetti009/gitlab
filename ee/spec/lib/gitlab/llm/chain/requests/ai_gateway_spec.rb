@@ -8,10 +8,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
   subject(:instance) { described_class.new(user, tracking_context: tracking_context) }
 
-  before do
-    Feature.disable(:ai_merge_request_reader_for_chat)
-  end
-
   describe 'initializer' do
     it 'initializes the AI Gateway client' do
       expect(instance.ai_client.class).to eq(::Gitlab::Llm::AiGateway::Client)
@@ -204,6 +200,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     context 'when request is sent for a new ReAct Duo Chat prompt' do
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
       let(:prompt) { { prompt: user_prompt, options: options } }
+      let(:unavailable_resources) { %w[Pipelines Vulnerabilities] }
 
       let(:model_metadata) do
         { api_key: "test_token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-cool-model' }
@@ -246,23 +243,12 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
               selected_code: true
             }
           },
-          model_metadata: model_metadata
+          model_metadata: model_metadata,
+          unavailable_resources: unavailable_resources
         }
       end
 
       it_behaves_like 'performing request to the AI Gateway'
-
-      context 'when `ai_merge_request_reader_for_chat` feature flag is enabled' do
-        before do
-          stub_feature_flags(ai_merge_request_reader_for_chat: true)
-        end
-
-        let(:body) do
-          super().merge(unavailable_resources: %w[Pipelines Vulnerabilities])
-        end
-
-        it_behaves_like 'performing request to the AI Gateway'
-      end
     end
 
     context 'when request is sent to chat tools implemented via agents' do
@@ -347,6 +333,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
 
       let(:prompt) { { prompt: user_prompt, options: options } }
+      let(:unavailable_resources) { %w[Pipelines Vulnerabilities] }
 
       let(:options) do
         {
@@ -365,7 +352,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
               agent_type: "react",
               steps: []
             }
-          }
+          },
+          unavailable_resources: unavailable_resources
         }
       end
 

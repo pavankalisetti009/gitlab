@@ -34,34 +34,12 @@ RSpec.describe Ai::AiResource::MergeRequest, feature_category: :duo_chat do
       expect(wrapped_merge_request.current_page_sentence)
         .to include("utilize it instead of using the 'MergeRequestReader' tool.")
     end
-
-    context 'with mr for chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_merge_request_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_merge_request.current_page_sentence)
-          .to eq("")
-      end
-    end
   end
 
   describe '#current_page_short_description' do
     it 'returns prompt' do
       expect(wrapped_merge_request.current_page_short_description)
         .to include("The title of the merge request is '#{merge_request.title}'.")
-    end
-
-    context 'with mr for chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_merge_request_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_merge_request.current_page_short_description)
-          .to eq("")
-      end
     end
   end
 end

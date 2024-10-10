@@ -77,7 +77,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       ::Gitlab::Llm::Chain::Tools::IssueReader,
       ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
       ::Gitlab::Llm::Chain::Tools::EpicReader,
-      ::Gitlab::Llm::Chain::Tools::CiEditorAssistant
+      ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+      ::Gitlab::Llm::Chain::Tools::MergeRequestReader
     ]
   end
 
@@ -215,7 +216,6 @@ client_subscription_id: 'someid' }
       allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_request)
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
-      stub_feature_flags(ai_merge_request_reader_for_chat: false)
       stub_feature_flags(ai_commit_reader_for_chat: false)
     end
 
@@ -271,36 +271,6 @@ client_subscription_id: 'someid' }
       end
     end
 
-    context 'with merge request reader allowed' do
-      before do
-        stub_feature_flags(ai_merge_request_reader_for_chat: true)
-        allow(ai_request).to receive(:request)
-      end
-
-      let(:tools) do
-        [
-          ::Gitlab::Llm::Chain::Tools::IssueReader,
-          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
-          ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
-          ::Gitlab::Llm::Chain::Tools::MergeRequestReader
-        ]
-      end
-
-      it_behaves_like 'tool behind a feature flag'
-
-      it 'pushes feature flag to AI Gateway' do
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
-
-        subject
-      end
-    end
-
     context 'with commit reader allowed' do
       before do
         stub_feature_flags(ai_commit_reader_for_chat: true)
@@ -313,6 +283,7 @@ client_subscription_id: 'someid' }
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
           ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
           ::Gitlab::Llm::Chain::Tools::CommitReader
         ]
       end
@@ -322,8 +293,6 @@ client_subscription_id: 'someid' }
       it 'pushes feature flag to AI Gateway' do
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
           .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-         .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
          .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
 

@@ -237,11 +237,7 @@ module Gitlab
           end
 
           def unavailable_resources_params
-            resources = %w[Pipelines Vulnerabilities]
-            resources << 'Merge Requests' unless Feature.enabled?(:ai_merge_request_reader_for_chat,
-              context.current_user)
-
-            resources
+            %w[Pipelines Vulnerabilities]
           end
 
           attr_reader :stream_response_handler
