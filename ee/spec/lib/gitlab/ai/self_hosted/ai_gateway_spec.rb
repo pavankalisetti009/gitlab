@@ -37,8 +37,7 @@ RSpec.describe Gitlab::Ai::SelfHosted::AiGateway, feature_category: :"self-hoste
       expect(probes).to contain_exactly(
         an_instance_of(::CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe),
         an_instance_of(::CloudConnector::StatusChecks::Probes::HostProbe),
-        an_instance_of(::CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe),
-        an_instance_of(::CloudConnector::StatusChecks::Probes::EndToEndProbe)
+        an_instance_of(::CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe)
       )
     end
   end

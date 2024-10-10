@@ -19,8 +19,7 @@ module Gitlab
           [
             ::CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe.new,
             ::CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
-            ::CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe.new(user),
-            ::CloudConnector::StatusChecks::Probes::EndToEndProbe.new(user)
+            ::CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe.new(user)
           ]
         end
       end
