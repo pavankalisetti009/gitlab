@@ -99,12 +99,6 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           .to receive(:messages_complete)
           .with(second_review_prompt)
           .and_return(second_review_response)
-      end
-
-      allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
-        unit_primitive: 'summarize_review',
-        tracking_context: tracking_context
-      ) do |client|
         allow(client)
           .to receive(:messages_complete)
           .with(summary_prompt)
@@ -408,6 +402,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     context 'when the AI response is <review></review>' do
       let(:first_review_response) { { content: [{ text: ' <review></review> ' }] } }
       let(:second_review_response) { { content: [{ text: ' <review></review> ' }] } }
+      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -423,6 +418,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     context 'when the chat client returns an unsuccessful response' do
       let(:first_review_response) { { error: { message: 'Error' } } }
       let(:second_review_response) { { error: { message: 'Error' } } }
+      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
@@ -434,6 +430,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     context 'when the AI response is empty' do
       let(:first_review_response) { {} }
       let(:second_review_response) { {} }
+      let(:summary_response) { nil }
 
       it 'does not call DraftNote#new' do
         expect(DraftNote).not_to receive(:new)
