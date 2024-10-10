@@ -26,23 +26,23 @@ module Gitlab
     # solutions can be found at
     # https://gitlab.com/gitlab-org/gitlab/-/issues/227693
     REPLICATOR_CLASSES = [
+      ::Geo::LfsObjectReplicator,
+      ::Geo::MergeRequestDiffReplicator,
+      ::Geo::PackageFileReplicator,
+      ::Geo::TerraformStateVersionReplicator,
+      ::Geo::SnippetRepositoryReplicator,
+      ::Geo::GroupWikiRepositoryReplicator,
+      ::Geo::PipelineArtifactReplicator,
+      ::Geo::PagesDeploymentReplicator,
+      ::Geo::UploadReplicator,
+      ::Geo::JobArtifactReplicator,
       ::Geo::CiSecureFileReplicator,
       ::Geo::ContainerRepositoryReplicator,
       ::Geo::DependencyProxyBlobReplicator,
       ::Geo::DependencyProxyManifestReplicator,
-      ::Geo::DesignManagementRepositoryReplicator,
-      ::Geo::GroupWikiRepositoryReplicator,
-      ::Geo::JobArtifactReplicator,
-      ::Geo::LfsObjectReplicator,
-      ::Geo::MergeRequestDiffReplicator,
-      ::Geo::PackageFileReplicator,
-      ::Geo::PagesDeploymentReplicator,
-      ::Geo::PipelineArtifactReplicator,
-      ::Geo::ProjectRepositoryReplicator,
       ::Geo::ProjectWikiRepositoryReplicator,
-      ::Geo::SnippetRepositoryReplicator,
-      ::Geo::TerraformStateVersionReplicator,
-      ::Geo::UploadReplicator
+      ::Geo::DesignManagementRepositoryReplicator,
+      ::Geo::ProjectRepositoryReplicator
     ].freeze
 
     # We "regenerate" an 1hour valid JWT every 30 minutes, resulting in
