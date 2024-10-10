@@ -197,6 +197,7 @@ export default {
           :text="status.text"
           :value="status.value"
           :selected="isStatusSelected(status.value)"
+          :data-testid="`suggestion-${status.value}`"
           name="status"
         />
         <gl-dropdown-divider />
@@ -209,6 +210,7 @@ export default {
           :text="status.text"
           :value="status.value"
           :selected="isStatusSelected(status.value)"
+          :data-testid="`suggestion-${status.value}`"
           name="status"
         />
       </template>
