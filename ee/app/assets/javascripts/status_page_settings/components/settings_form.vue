@@ -82,11 +82,11 @@ export default {
 </script>
 
 <template>
-  <settings-block id="status-page" class="js-status-page-settings">
-    <template #title>
-      <span ref="sectionHeader">{{ $options.i18n.headerText }}</span>
-    </template>
-
+  <settings-block
+    id="status-page"
+    :title="$options.i18n.headerText"
+    class="js-status-page-settings"
+  >
     <template #description>
       <span ref="sectionSubHeader">{{ $options.i18n.subHeaderText }}</span>
     </template>

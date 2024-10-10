@@ -21,7 +21,7 @@ describe('Status Page settings form', () => {
 
   const findForm = () => wrapper.findComponent({ ref: 'settingsForm' });
   const findToggleButton = () => wrapper.findByTestId('settings-block-toggle');
-  const findSectionHeader = () => wrapper.findComponent({ ref: 'sectionHeader' });
+  const findSectionHeader = () => wrapper.findByTestId('settings-block-title');
   const findSectionSubHeader = () => wrapper.findComponent({ ref: 'sectionSubHeader' });
 
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('Status Page settings form', () => {
 
   describe('expand/collapse button', () => {
     it('renders as an expand button by default', () => {
-      expect(findToggleButton().text()).toContain('Expand');
+      expect(findToggleButton().attributes('aria-label')).toContain('Expand');
     });
   });
 
