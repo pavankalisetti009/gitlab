@@ -22,24 +22,15 @@ module Onboarding
       @params = params
 
       User.left_join_user_detail.id_in(user_ids).find_each do |user|
-        Onboarding::CreateIterableTriggerWorker.perform_async(user_iterable_params(user).stringify_keys)
+        Onboarding::CreateIterableTriggerWorker
+          .perform_async(
+            ::Onboarding.add_on_seat_assignment_iterable_params(user, params['product_interaction'], namespace)
+          )
       end
     end
 
     private
 
     attr_reader :namespace, :params
-
-    def user_iterable_params(user)
-      {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        work_email: user.email,
-        namespace_id: namespace.id,
-        product_interaction: params['product_interaction'],
-        opt_in: user.onboarding_status_email_opt_in,
-        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language)
-      }
-    end
   end
 end

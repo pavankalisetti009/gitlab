@@ -47,6 +47,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
           work_email: user.email,
           namespace_id: namespace.id,
           product_interaction: product_interaction,
+          existing_plan: namespace.actual_plan_name,
           preferred_language: 'English',
           opt_in: user.onboarding_status_email_opt_in
         }.stringify_keys
@@ -183,7 +184,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
 
         subject(:response) { service_instance.execute }
 
-        it 'handes the error correctly' do
+        it 'handles the error correctly' do
           # fill up the available seats
           create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase)
 

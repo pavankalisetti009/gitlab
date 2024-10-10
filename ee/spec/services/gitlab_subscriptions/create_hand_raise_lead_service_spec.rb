@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::CreateHandRaiseLeadService, feature_category: :subscription_management do
   describe '#execute' do
-    let(:params) { { first_name: 'Jeremy', product_interaction: 'Hand Raise PQL' } }
+    let(:params) { { first_name: 'Jeremy', product_interaction: 'Hand Raise PQL', existing_plan: 'free' } }
 
     subject(:execute) { described_class.new.execute(params) }
 
