@@ -35,7 +35,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
       it 'uses a different set of probes' do
         service_probes = service.probes
 
-        expect(service_probes.count).to eq(4)
+        expect(service_probes.count).to eq(3)
         expect(service_probes[0]).to be_an_instance_of(
           CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe
         )
@@ -43,7 +43,6 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
         expect(service_probes[2]).to be_an_instance_of(
           CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe
         )
-        expect(service_probes[3]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
       end
     end
   end
