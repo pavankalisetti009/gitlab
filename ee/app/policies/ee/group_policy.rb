@@ -674,7 +674,7 @@ module EE
         enable :admin_ci_minutes
       end
 
-      rule { (admin | owner) & group_credentials_inventory_available }.policy do
+      rule { (admin | owner) & group_credentials_inventory_available & ~has_parent }.policy do
         enable :read_group_credentials_inventory
         enable :admin_group_credentials_inventory
       end
