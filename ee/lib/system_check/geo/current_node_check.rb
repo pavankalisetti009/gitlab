@@ -20,7 +20,7 @@ module SystemCheck
         configured_name = GeoNode.current_node_name
         db_names = GeoNode.all.map(&:name)
         docs_url = Rails.application.routes.url_helpers.help_page_url(
-          'administration/geo/replication/troubleshooting',
+          'administration/geo/replication/troubleshooting.md',
           anchor: 'can-geo-detect-the-current-site-correctly')
 
         try_fixing_it(
