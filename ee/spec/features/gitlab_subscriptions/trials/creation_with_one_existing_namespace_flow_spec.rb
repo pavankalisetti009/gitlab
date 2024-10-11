@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Trial lead submission and creation with one eligible namespace', :saas_trial, :js, feature_category: :plan_provisioning do
   let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
-  let_it_be(:group) { create(:group, name: 'gitlab', owners: user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
+  let_it_be_with_reload(:group) { create(:group_with_plan, name: 'gitlab', owners: user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
 
   before_all do
     create(:gitlab_subscription_add_on, :duo_enterprise)
@@ -21,6 +21,22 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       submit_company_information_form(with_trial: true, button_text: 'Continue')
 
       expect_to_be_on_gitlab_duo_seat_utilization_page
+    end
+
+    context 'on a premium plan' do
+      it 'fills out form, submits and lands on the group page' do
+        group.gitlab_subscription.update!(hosted_plan_id: create(:premium_plan).id)
+
+        sign_in(user)
+
+        visit new_trial_path
+
+        fill_in_company_information
+
+        submit_company_information_form(with_trial: true, button_text: 'Continue')
+
+        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+      end
     end
 
     context 'when part of the discover security flow' do
