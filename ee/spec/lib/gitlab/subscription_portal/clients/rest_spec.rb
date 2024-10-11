@@ -36,7 +36,10 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
 
     it 'has a successful status' do
-      allow(Gitlab::HTTP).to receive(http_method).and_return(gitlab_http_response)
+      url = "#{::Gitlab::Routing.url_helpers.subscription_portal_url}/#{route_path}"
+      allow(Gitlab::HTTP).to receive(http_method)
+        .with(url, instance_of(Hash))
+        .and_return(gitlab_http_response)
 
       expect(subject[:success]).to eq(true)
     end
@@ -127,6 +130,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       client.generate_trial({})
     end
 
+    let(:route_path) { 'trials' }
+
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
@@ -144,6 +149,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     subject do
       client.generate_addon_trial({})
     end
+
+    let(:route_path) { 'trials/create_addon' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -163,6 +170,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       client.generate_lead({})
     end
 
+    let(:route_path) { 'trials/create_hand_raise_lead' }
+
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
@@ -174,6 +183,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     subject do
       client.generate_iterable({})
     end
+
+    let(:route_path) { 'trials/create_iterable' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -187,6 +198,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       client.opt_in_lead({})
     end
 
+    let(:route_path) { 'api/marketo_leads/opt_in' }
+
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
@@ -194,6 +207,11 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
   end
 
   describe '#create_subscription' do
+    subject do
+      client.create_subscription({}, 'customer@example.com', 'token')
+    end
+
+    let(:route_path) { 'subscriptions' }
     let(:headers) do
       {
         'Accept' => 'application/json',
@@ -201,10 +219,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
         'X-Customer-Email' => 'customer@example.com',
         'X-Customer-Token' => 'token'
       }
-    end
-
-    subject do
-      client.create_subscription({}, 'customer@example.com', 'token')
     end
 
     it_behaves_like 'when response is successful'
@@ -219,6 +233,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
       client.create_customer({})
     end
 
+    let(:route_path) { 'api/customers' }
+
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
@@ -232,6 +248,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     let(:http_method) { :get }
+    let(:route_path) { 'payment_forms/cc' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -246,6 +263,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     let(:http_method) { :get }
+    let(:route_path) { 'api/payment_methods/1' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -260,6 +278,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     let(:http_method) { :post }
+    let(:route_path) { 'api/payment_methods/test_payment_method_id/validate' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -274,6 +293,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     let(:http_method) { :get }
+    let(:route_path) { 'api/v1/oauth_app_id' }
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
@@ -294,6 +314,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
 
     let(:http_method) { :post }
+    let(:route_path) { 'api/v1/seat_links' }
     let(:headers) do
       {
         'Accept' => 'application/json',

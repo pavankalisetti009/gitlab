@@ -28,7 +28,7 @@ module Gitlab
           end
 
           def opt_in_lead(params)
-            http_post("api/leads/opt_in", admin_headers, params)
+            http_post("api/marketo_leads/opt_in", admin_headers, params)
           end
 
           def create_customer(params)
