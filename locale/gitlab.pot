@@ -27575,6 +27575,9 @@ msgstr ""
 msgid "I'm signing up for GitLab because:"
 msgstr ""
 
+msgid "I'm sorry, Duo Chat agent reached the limit before finding an answer for your question. Please try a different prompt or clear your conversation history with /clear."
+msgstr ""
+
 msgid "I'm sorry, I couldn't respond in time. Please try again."
 msgstr ""
 
