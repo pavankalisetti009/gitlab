@@ -2,6 +2,7 @@ import { GlFilteredSearchToken, GlBadge } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ActivityToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/activity_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -44,6 +45,7 @@ describe('ActivityToken', () => {
       },
       stubs: {
         QuerystringSync: true,
+        SearchSuggestion,
         ...stubs,
       },
     });
@@ -51,8 +53,7 @@ describe('ActivityToken', () => {
 
   const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
-  const findCheckedIcon = (value) => wrapper.findByTestId(`status-icon-${value}`);
-  const isOptionChecked = (v) => !findCheckedIcon(v).classes('gl-invisible');
+  const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
   const clickDropdownItem = async (...ids) => {
     await Promise.all(
