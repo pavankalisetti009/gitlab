@@ -5,7 +5,7 @@ import { uniqueId } from 'lodash';
 import accordionEventBus from './accordion_event_bus';
 
 // The below is not a CSS util and can therefore safely be built dynamically.
-// eslint-disable-next-line @gitlab/tailwind
+// eslint-disable-next-line @gitlab/tailwind-no-interpolation
 const accordionItemUniqueId = (name) => uniqueId(`gl-accordion-item-${name}-`);
 
 export default {
