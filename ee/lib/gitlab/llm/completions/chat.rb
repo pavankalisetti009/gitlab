@@ -97,6 +97,8 @@ module Gitlab
 
           tools << ::Gitlab::Llm::Chain::Tools::CommitReader if Feature.enabled?(:ai_commit_reader_for_chat, user)
 
+          tools << ::Gitlab::Llm::Chain::Tools::BuildReader if Feature.enabled?(:ai_build_reader_for_chat, user)
+
           tools
         end
 
@@ -117,8 +119,7 @@ module Gitlab
             stream_response_handler = ::Gitlab::Llm::ResponseService.new(context, response_options)
           end
 
-          Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
+          push_feature_flags
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 
@@ -172,6 +173,12 @@ module Gitlab
           Gitlab::Llm::Chain::SlashCommand.for(message: prompt_message, context: context, tools: COMMAND_TOOLS)
         end
         strong_memoize_attr :slash_command
+
+        def push_feature_flags
+          Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
+          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
+          Gitlab::AiGateway.push_feature_flag(:ai_build_reader_for_chat, user)
+        end
       end
     end
   end

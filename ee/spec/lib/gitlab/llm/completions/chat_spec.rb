@@ -217,6 +217,7 @@ client_subscription_id: 'someid' }
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
       stub_feature_flags(ai_commit_reader_for_chat: false)
+      stub_feature_flags(ai_build_reader_for_chat: false)
     end
 
     context 'when resource is an issue' do
@@ -271,10 +272,39 @@ client_subscription_id: 'someid' }
       end
     end
 
+    context 'with build reader allowed' do
+      before do
+        stub_feature_flags(ai_build_reader_for_chat: true)
+        allow(ai_request).to receive(:request)
+        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
+      end
+
+      let(:tools) do
+        [
+          ::Gitlab::Llm::Chain::Tools::IssueReader,
+          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
+          ::Gitlab::Llm::Chain::Tools::EpicReader,
+          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
+          ::Gitlab::Llm::Chain::Tools::BuildReader
+        ]
+      end
+
+      it_behaves_like 'tool behind a feature flag'
+
+      it 'pushes feature flag to AI Gateway' do
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+          .with(:ai_build_reader_for_chat, user).and_return(:ai_build_reader_for_chat)
+
+        subject
+      end
+    end
+
     context 'with commit reader allowed' do
       before do
         stub_feature_flags(ai_commit_reader_for_chat: true)
         allow(ai_request).to receive(:request)
+        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
       end
 
       let(:tools) do

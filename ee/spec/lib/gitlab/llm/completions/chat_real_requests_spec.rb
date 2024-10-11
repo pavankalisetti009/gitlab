@@ -273,6 +273,33 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
       end
     end
 
+    context 'with predefined build' do
+      let!(:build) { create(:ci_build, :trace_live, project: project) }
+      let(:executor) do
+        message = ::Gitlab::Llm::ChatMessage.new(
+          'user' => user,
+          'content' => input,
+          'role' => 'user',
+          'context' => create(:ai_chat_message, user: user, content: input, resource: resource)
+        )
+
+        described_class.new(message, ::Gitlab::Llm::Completions::Chat, options)
+      end
+
+      where(:input_template, :tools) do
+        'Summarize this Build' | %w[BuildReader]
+        'Summarize %<build_identifier>s Build' | %w[BuildReader]
+      end
+
+      with_them do
+        let(:resource) { build }
+        let(:input) { input_template }
+        let(:input) { format(input_template, build_identifier: build.to_gid) }
+
+        it_behaves_like 'successful prompt processing'
+      end
+    end
+
     context 'when asking to explain code' do
       # rubocop: disable Layout/LineLength -- keep table structure readable
       where(:input_template, :tools) do
