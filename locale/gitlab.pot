@@ -63398,6 +63398,9 @@ msgstr ""
 msgid "You have been granted access to the %{source_name} %{source_type} with the following role: %{role_name}."
 msgstr ""
 
+msgid "You have been granted access to the %{source_name} %{source_type}, which is part of the %{organization_name} organization with the following role: %{role_name}."
+msgstr ""
+
 msgid "You have been invited by %{link_to_inviter} to join %{source_name} %{strong_open}%{link_to_source}%{strong_close} as %{role}"
 msgstr ""
 
