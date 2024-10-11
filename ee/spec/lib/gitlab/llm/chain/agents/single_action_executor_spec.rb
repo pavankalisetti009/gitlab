@@ -176,6 +176,8 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       let(:llm_answer) { create(:answer, :tool, tool: Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
 
       before do
+        allow(Gitlab::ErrorTracking).to receive(:track_exception)
+
         stub_const("#{described_class.name}::MAX_ITERATIONS", 2)
 
         event = Gitlab::Duo::Chat::AgentEvents::Action.new(
@@ -196,9 +198,14 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
         end
       end
 
-      it "returns default answer" do
-        expect(answer.is_final?).to eq(true)
-        expect(answer.content).to include(Gitlab::Llm::Chain::Answer.default_final_message)
+      it "returns an error" do
+        expect(answer.is_final).to eq(true)
+        expect(answer.content).to include("I'm sorry, Duo Chat agent reached the limit before finding an " \
+          "answer for your question. Please try a different prompt or clear your conversation history with /clear.")
+        expect(answer.error_code).to include("A1006")
+        expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
+          kind_of(described_class::ExhaustedLoopError)
+        )
       end
     end
 

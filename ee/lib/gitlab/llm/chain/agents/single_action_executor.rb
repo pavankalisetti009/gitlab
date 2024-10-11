@@ -83,8 +83,6 @@ module Gitlab
                 source: "chat_v2",
                 error_code: "A1002"
               )
-            when ExhaustedLoopError
-              Answer.default_final_answer(context: context)
             when EOFError
               Answer.error_answer(
                 error: error,
@@ -110,6 +108,15 @@ module Gitlab
                   error_code: "A1004"
                 )
               end
+            when ExhaustedLoopError
+              Answer.error_answer(
+                error: error,
+                context: context,
+                content: _("I'm sorry, Duo Chat agent reached the limit before finding an answer for your question. " \
+                  "Please try a different prompt or clear your conversation history with /clear."),
+                source: "chat_v2",
+                error_code: "A1006"
+              )
             when Gitlab::AiGateway::ForbiddenError
               Answer.error_answer(
                 error: error,
