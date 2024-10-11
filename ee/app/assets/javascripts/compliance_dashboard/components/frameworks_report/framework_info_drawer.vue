@@ -69,6 +69,7 @@ export default {
       return [
         ...this.framework.scanExecutionPolicies.nodes,
         ...this.framework.scanResultPolicies.nodes,
+        ...this.framework.pipelineExecutionPolicies.nodes,
       ];
     },
     policiesTitle() {

@@ -199,6 +199,7 @@ describe('FrameworksTable component', () => {
         [
           ...frameworks[idx].scanExecutionPolicies.nodes,
           ...frameworks[idx].scanResultPolicies.nodes,
+          ...frameworks[idx].pipelineExecutionPolicies.nodes,
         ]
           .map((x) => x.name)
           .join(','),
