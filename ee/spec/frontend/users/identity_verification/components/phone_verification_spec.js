@@ -12,6 +12,7 @@ import Poll from '~/lib/utils/poll';
 import { createAlert, VARIANT_INFO } from '~/alert';
 
 jest.mock('~/lib/utils/datetime_utility', () => ({
+  ...jest.requireActual('~/lib/utils/datetime_utility'),
   calculateRemainingMilliseconds: jest.fn(),
 }));
 jest.mock('~/alert');

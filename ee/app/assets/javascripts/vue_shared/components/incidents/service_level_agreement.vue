@@ -2,8 +2,11 @@
 import { GlTooltipDirective } from '@gitlab/ui';
 import getIncidentStateQuery from 'ee/graphql_shared/queries/get_incident_state.query.graphql';
 import { STATUS_CLOSED } from '~/issues/constants';
-import { isValidDateString } from '~/lib/utils/datetime_range';
-import { formatTime, calculateRemainingMilliseconds } from '~/lib/utils/datetime_utility';
+import {
+  formatTime,
+  calculateRemainingMilliseconds,
+  isValidDateString,
+} from '~/lib/utils/datetime_utility';
 import { s__, sprintf } from '~/locale';
 
 export default {
