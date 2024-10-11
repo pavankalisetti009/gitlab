@@ -57129,6 +57129,9 @@ msgstr ""
 msgid "Todos|Could not merge"
 msgstr ""
 
+msgid "Todos|Could not restore to-dos."
+msgstr ""
+
 msgid "Todos|Created"
 msgstr ""
 
@@ -57198,6 +57201,9 @@ msgstr ""
 msgid "Todos|Mark all as done"
 msgstr ""
 
+msgid "Todos|Mark all as done failed. Try again later."
+msgstr ""
+
 msgid "Todos|Mark as done"
 msgstr ""
 
@@ -57206,6 +57212,11 @@ msgstr ""
 
 msgid "Todos|Marked"
 msgstr ""
+
+msgid "Todos|Marked 1 to-do as done"
+msgid_plural "Todos|Marked %d to-dos as done"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Todos|Member access request"
 msgstr ""
@@ -57251,6 +57262,11 @@ msgstr ""
 
 msgid "Todos|Removed from Merge Train"
 msgstr ""
+
+msgid "Todos|Restored 1 to-do"
+msgid_plural "Todos|Restored %d to-dos"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Todos|Review requested"
 msgstr ""
