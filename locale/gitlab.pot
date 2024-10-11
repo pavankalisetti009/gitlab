@@ -35907,6 +35907,9 @@ msgstr ""
 msgid "New related %{issueType}"
 msgstr ""
 
+msgid "New related Epic"
+msgstr ""
+
 msgid "New release"
 msgstr ""
 
@@ -62359,6 +62362,9 @@ msgid "WorkItem|Purple"
 msgstr ""
 
 msgid "WorkItem|Related to"
+msgstr ""
+
+msgid "WorkItem|Relates to %{workItemType} %{workItemReference}"
 msgstr ""
 
 msgid "WorkItem|Remove"

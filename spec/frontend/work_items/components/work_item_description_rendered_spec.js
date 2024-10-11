@@ -249,6 +249,7 @@ and even more`,
           hideButton: true,
           isGroup: false,
           parentId: 'gid://gitlab/WorkItem/818',
+          relatedItem: null,
           showProjectSelector: false,
           title:
             'item 2 with a really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really really rea',
