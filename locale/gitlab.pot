@@ -26608,6 +26608,9 @@ msgstr ""
 msgid "GroupSettings|Change group URL"
 msgstr ""
 
+msgid "GroupSettings|Change saved."
+msgstr ""
+
 msgid "GroupSettings|Changing a group's URL can have unintended side effects."
 msgstr ""
 
@@ -26663,6 +26666,9 @@ msgid "GroupSettings|Experiment"
 msgstr ""
 
 msgid "GroupSettings|Export group"
+msgstr ""
+
+msgid "GroupSettings|Failed to save changes."
 msgstr ""
 
 msgid "GroupSettings|Git abuse rate limit"
@@ -26722,6 +26728,12 @@ msgstr ""
 msgid "GroupSettings|Reporting"
 msgstr ""
 
+msgid "GroupSettings|Retry"
+msgstr ""
+
+msgid "GroupSettings|Saving..."
+msgstr ""
+
 msgid "GroupSettings|Select a project"
 msgstr ""
 
@@ -26771,6 +26783,9 @@ msgid "GroupSettings|This setting is applied on %{ancestor_group}. You can overr
 msgstr ""
 
 msgid "GroupSettings|Transfer group"
+msgstr ""
+
+msgid "GroupSettings|Undo"
 msgstr ""
 
 msgid "GroupSettings|Users can create %{link_start_project}project access tokens%{link_end} and %{link_start_group}group access tokens%{link_end} in this group"
