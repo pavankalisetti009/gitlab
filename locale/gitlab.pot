@@ -19235,6 +19235,12 @@ msgstr ""
 msgid "DesignManagement|Adding a design with the same filename replaces the file in a new version."
 msgstr ""
 
+msgid "DesignManagement|All designs have been archived."
+msgstr ""
+
+msgid "DesignManagement|An error occurred while loading designs. Please try again."
+msgstr ""
+
 msgid "DesignManagement|Archive design"
 msgstr ""
 
@@ -19319,6 +19325,11 @@ msgstr ""
 msgid "DesignManagement|Error uploading a new design. Please try again."
 msgstr ""
 
+msgid "DesignManagement|Failed to archive a design. Please try again."
+msgid_plural "DesignManagement|Failed to archive designs. Please try again."
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "DesignManagement|Go back to designs"
 msgstr ""
 
@@ -19352,6 +19363,9 @@ msgstr ""
 msgid "DesignManagement|Select all"
 msgstr ""
 
+msgid "DesignManagement|Select the design"
+msgstr ""
+
 msgid "DesignManagement|Show comments"
 msgstr ""
 
@@ -19371,6 +19385,9 @@ msgid "DesignManagement|To upload designs, you'll need to enable LFS and have an
 msgstr ""
 
 msgid "DesignManagement|Unresolve thread"
+msgstr ""
+
+msgid "DesignManagement|Unselect the design"
 msgstr ""
 
 msgid "DesignManagement|Upload designs"
