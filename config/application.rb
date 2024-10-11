@@ -339,7 +339,6 @@ module Gitlab
     config.assets.precompile << "page_bundles/ml_experiment_tracking.css"
     config.assets.precompile << "page_bundles/new_namespace.css"
     config.assets.precompile << "page_bundles/notes_shared.css"
-    config.assets.precompile << "page_bundles/notifications.css"
     config.assets.precompile << "page_bundles/oncall_schedules.css"
     config.assets.precompile << "page_bundles/operations.css"
     config.assets.precompile << "page_bundles/organizations.css"
