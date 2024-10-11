@@ -9,7 +9,7 @@ module GitlabSubscriptions
 
         ::Gitlab::Saas.feature_available?(:subscriptions_trials) &&
           user.can?(:admin_namespace, namespace) &&
-          GitlabSubscriptions::Trials::DuoProStatus.new(
+          GitlabSubscriptions::Trials::AddOnStatus.new(
             add_on_purchase: add_on_purchase_for_namespace(namespace.root_ancestor)
           ).show?
       end
@@ -19,7 +19,7 @@ module GitlabSubscriptions
         return false unless add_on_purchase.present?
 
         if add_on_purchase.trial?
-          GitlabSubscriptions::Trials::DuoProStatus.new(add_on_purchase: add_on_purchase).show?
+          GitlabSubscriptions::Trials::AddOnStatus.new(add_on_purchase: add_on_purchase).show?
         else
           add_on_purchase.active?
         end

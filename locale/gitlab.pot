@@ -57920,6 +57920,27 @@ msgstr ""
 msgid "TrialRegistration|To complete registration, we need additional details from you."
 msgstr ""
 
+msgid "TrialWidget|%{daysLeft} days left in trial"
+msgstr ""
+
+msgid "TrialWidget|GitLab Duo Enterprise"
+msgstr ""
+
+msgid "TrialWidget|GitLab Duo Enterprise Trial"
+msgstr ""
+
+msgid "TrialWidget|Learn more"
+msgstr ""
+
+msgid "TrialWidget|See upgrade options"
+msgstr ""
+
+msgid "TrialWidget|Upgrade"
+msgstr ""
+
+msgid "TrialWidget|Your trial of GitLab Duo Enterprise has ended"
+msgstr ""
+
 msgid "Trials|%{planName} Trial"
 msgstr ""
 

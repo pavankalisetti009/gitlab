@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::DuoProStatus, :saas, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::Trials::AddOnStatus, :saas, feature_category: :subscription_management do
   describe '#show?' do
     let(:group) { build(:group) }
 

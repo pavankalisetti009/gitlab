@@ -26,7 +26,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       before do
         build(
           :gitlab_subscription,
-          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 30.days.from_now
+          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
         )
       end
 
@@ -39,7 +39,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
           build(
             :gitlab_subscription,
             :active_trial, :free,
-            namespace: current_group, trial_starts_on: Time.current, trial_ends_on: 30.days.from_now
+            namespace: current_group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
           )
           create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
         end
@@ -62,11 +62,27 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       it { is_expected.to match_array(duo_pro_trial_widget_attribute_keys) }
     end
 
+    context 'when eligible for duo enterprise widget' do
+      let(:current_group) { build(:group) }
+      let(:duo_enterprise_trials_enabled) { true }
+      let(:duo_enterprise_trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
+      let(:add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: current_group)
+      end
+
+      before do
+        allow(GitlabSubscriptions::Trials::DuoEnterprise)
+          .to receive(:add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
+      end
+
+      it { is_expected.to match_array(duo_enterprise_trial_widget_attribute_keys) }
+    end
+
     context 'when not eligible for widget' do
       before do
         build(
           :gitlab_subscription,
-          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 30.days.from_now
+          :active_trial, :free, namespace: group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
         )
       end
 

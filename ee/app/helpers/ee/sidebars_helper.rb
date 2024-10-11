@@ -37,7 +37,6 @@ module EE
 
       context.merge!(
         GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes,
-        # GitlabSubscriptions::Trials::WidgetBuilder.new(current_user, root_namespace).attributes,
         show_tanuki_bot: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: nil)
       )
 
