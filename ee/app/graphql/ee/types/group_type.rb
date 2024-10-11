@@ -332,6 +332,13 @@ module EE
           resolver: ::Resolvers::Sbom::ComponentResolver,
           alpha: { milestone: '17.5' }
 
+        field :custom_fields, ::Types::Issuables::CustomFieldType.connection_type,
+          null: true,
+          description: 'Custom fields configured for the group. ' \
+            'Available only when feature flag `custom_fields_feature` is enabled.',
+          resolver: ::Resolvers::Issuables::CustomFieldsResolver,
+          alpha: { milestone: '17.5' }
+
         def billable_members_count(requested_hosted_plan: nil)
           object.billable_members_count(requested_hosted_plan)
         end

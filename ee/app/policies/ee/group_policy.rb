@@ -17,6 +17,7 @@ module EE
       condition(:epics_available, scope: :subject) { @subject.feature_available?(:epics) }
       condition(:iterations_available, scope: :subject) { @subject.feature_available?(:iterations) }
       condition(:subepics_available, scope: :subject) { @subject.feature_available?(:subepics) }
+      condition(:custom_fields_available, scope: :subject) { @subject.feature_available?(:custom_fields) }
       condition(:external_audit_events_available, scope: :subject) do
         @subject.feature_available?(:external_audit_events)
       end
@@ -442,6 +443,10 @@ module EE
       end
 
       rule { owner & epics_available }.enable :destroy_epic
+
+      rule { can?(:read_group) & custom_fields_available }.policy do
+        enable :read_custom_field
+      end
 
       rule { ~can?(:read_cross_project) }.policy do
         prevent :read_group_contribution_analytics

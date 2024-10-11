@@ -45,6 +45,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:pending_member_approvals) }
   it { expect(described_class).to have_graphql_field(:dependencies) }
   it { expect(described_class).to have_graphql_field(:components) }
+  it { expect(described_class).to have_graphql_field(:custom_fields) }
 
   describe 'components' do
     let_it_be(:guest) { create(:user) }
