@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { debounce } from 'lodash';
+import { debounce, uniq } from 'lodash';
 import { s__, __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import projectRunnerTags from './graphql/get_project_runner_tags.query.graphql';
@@ -26,13 +26,19 @@ export default {
       query() {
         return this.tagListQuery;
       },
+      variables() {
+        return {
+          fullPath: this.namespacePath,
+          tagList: this.search,
+        };
+      },
       update(data) {
         const {
           [this.namespaceType]: {
             runners: { nodes = [] },
           },
         } = data;
-        this.tags = getUniqueTagListFromEdges(nodes);
+        this.tags = uniq([...this.tags, ...getUniqueTagListFromEdges(nodes)]);
         this.selectExistingTags();
         this.sortTags();
 
@@ -40,11 +46,6 @@ export default {
       },
       error(error) {
         this.$emit('error', error);
-      },
-      variables() {
-        return {
-          fullPath: this.namespacePath,
-        };
       },
     },
   },
@@ -98,16 +99,19 @@ export default {
     };
   },
   computed: {
-    filteredUnselectedItems() {
+    items() {
       return this.tags
         .filter((tag) => tag.includes(this.search))
         .map((tag) => ({ text: tag, value: tag }));
     },
     isDropdownDisabled() {
-      return this.disabled || this.isTagListEmpty;
+      return this.disabled || (this.isTagListEmpty && !this.isSearching);
     },
     isProject() {
       return this.namespaceType === NAMESPACE_TYPES.PROJECT;
+    },
+    isSearching() {
+      return this.search.length > 0;
     },
     isTagListEmpty() {
       return this.tags.length === 0;
@@ -119,7 +123,7 @@ export default {
       return this.headerText || this.$options.i18n.runnerSearchHeader;
     },
     text() {
-      if (this.isTagListEmpty) {
+      if (this.isTagListEmpty && !this.selected.length) {
         return this.emptyTagsListPlaceholder || this.$options.i18n.noRunnerTagsText;
       }
 
@@ -137,7 +141,7 @@ export default {
       return this.selected?.includes(tag);
     },
     doesTagExist(tag) {
-      return this.tags.includes(tag);
+      return this.tags.includes(tag) || this.selected.includes(tag);
     },
     sortTags() {
       this.tags.sort((a) => (this.isTagSelected(a) ? -1 : 1));
@@ -172,7 +176,7 @@ export default {
     :block="block"
     :disabled="isDropdownDisabled"
     :toggle-class="toggleClass"
-    :items="filteredUnselectedItems"
+    :items="items"
     :loading="loading"
     :header-text="runnerSearchHeader"
     :no-caret="isTagListEmpty"
