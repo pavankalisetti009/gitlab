@@ -6,13 +6,21 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
 
 export const i18n = {
-  createNewIssueLinkText: s__('VulnerabilityManagement|Create Jira issue'),
+  createIssueText: s__('VulnerabilityManagement|Create Jira issue'),
 };
 
 export default {
   i18n,
   components: {
     GlButton,
+  },
+  inject: {
+    createJiraIssueUrl: {
+      default: '',
+    },
+    customizeJiraIssueEnabled: {
+      default: false,
+    },
   },
   props: {
     vulnerabilityId: {
@@ -24,6 +32,11 @@ export default {
     return {
       isLoading: false,
     };
+  },
+  computed: {
+    showCustomizeJiraIssue() {
+      return this.createJiraIssueUrl && this.customizeJiraIssueEnabled;
+    },
   },
   methods: {
     async createJiraIssue() {
@@ -58,13 +71,23 @@ export default {
 
 <template>
   <gl-button
+    v-if="showCustomizeJiraIssue"
+    variant="confirm"
+    category="secondary"
+    :href="createJiraIssueUrl"
+    icon="external-link"
+    target="_blank"
+    data-testid="customize-jira-issue"
+    >{{ $options.i18n.createIssueText }}</gl-button
+  >
+  <gl-button
+    v-else
     variant="confirm"
     category="secondary"
     :loading="isLoading"
-    icon="external-link"
     data-testid="create-new-jira-issue"
     @click="createJiraIssue"
   >
-    {{ $options.i18n.createNewIssueLinkText }}
+    {{ $options.i18n.createIssueText }}
   </gl-button>
 </template>

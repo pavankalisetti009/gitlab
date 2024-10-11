@@ -30604,6 +30604,9 @@ msgstr ""
 msgid "JiraService|Create only Jira issues for vulnerabilities in this project even if you've enabled GitLab issues."
 msgstr ""
 
+msgid "JiraService|Customize Jira issues"
+msgstr ""
+
 msgid "JiraService|Email for Jira Cloud or username for Jira Data Center and Jira Server"
 msgstr ""
 
@@ -30686,6 +30689,9 @@ msgid "JiraService|Leave blank to use your current configuration"
 msgstr ""
 
 msgid "JiraService|Move to Done"
+msgstr ""
+
+msgid "JiraService|Navigate to Jira issue before issue is created."
 msgstr ""
 
 msgid "JiraService|New API token or password"

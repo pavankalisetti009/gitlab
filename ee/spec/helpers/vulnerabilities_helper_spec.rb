@@ -89,6 +89,33 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
     end
   end
 
+  describe '#vulnerability_details_app_data' do
+    subject { helper.vulnerability_details_app_data(vulnerability, pipeline, project) }
+
+    let(:jira_integration) do
+      create(:jira_integration, project: project, issues_enabled: true, project_key: 'FE', project_keys: %w[FE BE],
+        vulnerabilities_enabled: true, vulnerabilities_issuetype: '10001', customize_jira_issue_enabled: false)
+    end
+
+    before do
+      allow(helper).to receive(:can?).and_return(true)
+      allow(vulnerability.project).to receive(:jira_integration).and_return(jira_integration)
+      allow(jira_integration).to receive(:new_issue_url_with_predefined_fields).and_return('https://jira.example.com/new')
+    end
+
+    it 'returns details app data' do
+      expect(subject).to match(
+        a_hash_including(
+          project_full_path: %r{namespace\d+\/project-\d+},
+          commit_path_template: %r{\/namespace\d+\/project-\d+\/\-\/commit\/\$COMMIT_SHA},
+          can_view_false_positive: 'false',
+          customize_jira_issue_enabled: 'false'
+        )
+      )
+      expect(Gitlab::Json.parse(subject[:vulnerability])['severity']).to eq('high')
+    end
+  end
+
   describe '#vulnerability_details' do
     before do
       allow(helper).to receive(:can?).and_return(true)

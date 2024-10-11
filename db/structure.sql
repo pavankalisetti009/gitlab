@@ -12766,6 +12766,7 @@ CREATE TABLE jira_tracker_data (
     jira_issue_regex text,
     jira_auth_type smallint DEFAULT 0 NOT NULL,
     project_keys text[] DEFAULT '{}'::text[] NOT NULL,
+    customize_jira_issue_enabled boolean DEFAULT false,
     CONSTRAINT check_0bf84b76e9 CHECK ((char_length(vulnerabilities_issuetype) <= 255)),
     CONSTRAINT check_0fbd71d9f2 CHECK ((integration_id IS NOT NULL)),
     CONSTRAINT check_214cf6a48b CHECK ((char_length(project_key) <= 255)),
