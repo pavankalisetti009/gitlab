@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EpicPresenter, feature_category: :portfolio_management do
-  include UsersHelper
+  include ::UsersHelper
   include Gitlab::Routing.url_helpers
 
   let(:user) { create(:user) }
