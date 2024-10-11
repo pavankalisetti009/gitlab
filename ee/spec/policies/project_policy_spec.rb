@@ -4221,33 +4221,39 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   describe 'duo_workflow' do
     let(:project) { public_project_in_group }
 
-    where(:duo_workflow_feature_flag, :stage_check_available, :current_user, :match_expected_result) do
-      true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
-      true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
-      true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
-      true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
-      true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
-      true  | false | ref(:owner)      | be_disallowed(:duo_workflow)
-      true  | false | ref(:maintainer) | be_disallowed(:duo_workflow)
-      true  | false | ref(:developer)  | be_disallowed(:duo_workflow)
-      true  | false | ref(:guest)      | be_disallowed(:duo_workflow)
-      true  | false | ref(:non_member) | be_disallowed(:duo_workflow)
-      false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
-      false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
-      false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
-      false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
-      false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
-      false | false | ref(:owner)      | be_disallowed(:duo_workflow)
-      false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
-      false | false | ref(:developer)  | be_disallowed(:duo_workflow)
-      false | false | ref(:guest)      | be_disallowed(:duo_workflow)
-      false | false | ref(:non_member) | be_disallowed(:duo_workflow)
+    where(:duo_workflow_feature_flag, :stage_check_available, :duo_features_enabled, :current_user, :match_expected_result) do
+      true  | true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:non_member) | be_disallowed(:duo_workflow)
+      false | false | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | false | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | false | false | ref(:non_member) | be_disallowed(:duo_workflow)
     end
 
     with_them do
       before do
         stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check_available)
+        stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
       end
 
       it { is_expected.to match_expected_result }

@@ -87,5 +87,17 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_workfl
         end
       end
     end
+
+    context 'when duo_features_enabled settings is turned off' do
+      before do
+        project.project_setting.update!(duo_features_enabled: false)
+      end
+
+      it 'returns an empty array' do
+        post_graphql(query, current_user: user)
+
+        expect(returned_workflows).to be_empty
+      end
+    end
   end
 end

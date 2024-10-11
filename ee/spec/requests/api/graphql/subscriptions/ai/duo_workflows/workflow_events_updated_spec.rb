@@ -47,7 +47,7 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
     end
 
-    it 'returns an empty array' do
+    it 'does not receive any data' do
       expect(response).to be_nil
     end
   end
@@ -77,6 +77,16 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
         expect(updated_workflow['metadata']).to eq(checkpoint.metadata.to_json)
         expect(updated_workflow['errors']).to eq([])
         expect(updated_workflow['workflowStatus']).to eq("CREATED")
+      end
+
+      context 'when duo_features_enabled settings is turned off' do
+        before do
+          project.project_setting.update!(duo_features_enabled: false)
+        end
+
+        it 'does not receive any data' do
+          expect(response).to be_nil
+        end
       end
     end
   end

@@ -15,7 +15,10 @@ module API
 
         helpers do
           def find_workflow!(id)
-            ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
+            workflow = ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
+            return workflow if current_user.can?(:read_duo_workflow, workflow)
+
+            forbidden!
           end
 
           def find_event!(workflow, id)
@@ -176,6 +179,7 @@ module API
               end
               patch '/:id' do
                 workflow = find_workflow!(params[:id])
+                forbidden! unless current_user.can?(:update_duo_workflow, workflow)
 
                 service = ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
                   workflow: workflow,
