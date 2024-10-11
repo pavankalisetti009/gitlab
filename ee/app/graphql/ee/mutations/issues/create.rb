@@ -12,7 +12,8 @@ module EE
 
           argument :epic_id, ::Types::GlobalIDType[::Epic],
             required: false,
-            description: 'ID of an epic to associate the issue with.'
+            description: 'ID of an epic to associate the issue with.',
+            deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
           argument :iteration_id, ::Types::GlobalIDType[::Iteration],
             required: false,
             description: 'Global iteration ID. Mutually exlusive argument with `iterationWildcardId`.'

@@ -6,7 +6,11 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
-        field :epic, ::Types::EpicType, null: true, description: 'Epic to which this issue belongs.'
+        field :epic,
+          ::Types::EpicType,
+          null: true,
+          description: 'Epic to which this issue belongs.',
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :has_epic, GraphQL::Types::Boolean,
           null: false,

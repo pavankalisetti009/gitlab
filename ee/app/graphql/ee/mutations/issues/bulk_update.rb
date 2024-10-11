@@ -14,7 +14,8 @@ module EE
 
           argument :epic_id, ::Types::GlobalIDType[::Epic],
             required: false,
-            description: 'Global ID of the epic that will be assigned to the issues.'
+            description: 'Global ID of the epic that will be assigned to the issues.',
+            deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
 
           argument :health_status, ::Types::HealthStatusEnum,
             required: false,

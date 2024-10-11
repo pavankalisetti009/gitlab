@@ -6,32 +6,31 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
-        %i[epics].each do |feature|
-          field "#{feature}_enabled", GraphQL::Types::Boolean,
-            null: true,
-            description: "Indicates if #{feature.to_s.humanize} are enabled for namespace"
-
-          define_method "#{feature}_enabled" do
-            object.feature_available?(feature)
-          end
-        end
+        field :epics_enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: "Indicates if Epics are enabled for namespace.",
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :epic, ::Types::EpicType,
           null: true, description: 'Find a single epic.',
-          resolver: ::Resolvers::EpicsResolver.single
+          resolver: ::Resolvers::EpicsResolver.single,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :epics, ::Types::EpicType.connection_type,
           null: true, description: 'Find epics.',
           extras: [:lookahead],
-          resolver: ::Resolvers::EpicsResolver
+          resolver: ::Resolvers::EpicsResolver,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :epic_board, ::Types::Boards::EpicBoardType,
           null: true, description: 'Find a single epic board.',
-          resolver: ::Resolvers::Boards::EpicBoardsResolver.single
+          resolver: ::Resolvers::Boards::EpicBoardsResolver.single,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :epic_boards, ::Types::Boards::EpicBoardType.connection_type,
           null: true,
-          description: 'Find epic boards.', resolver: ::Resolvers::Boards::EpicBoardsResolver
+          description: 'Find epic boards.', resolver: ::Resolvers::Boards::EpicBoardsResolver,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :iterations, ::Types::IterationType.connection_type,
           null: true, description: 'Find iterations.',
@@ -338,6 +337,10 @@ module EE
             'Available only when feature flag `custom_fields_feature` is enabled.',
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
           alpha: { milestone: '17.5' }
+
+        def epics_enabled
+          object.licensed_feature_available?(:epics)
+        end
 
         def billable_members_count(requested_hosted_plan: nil)
           object.billable_members_count(requested_hosted_plan)
