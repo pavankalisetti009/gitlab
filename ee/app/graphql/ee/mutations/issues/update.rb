@@ -12,7 +12,8 @@ module EE
           argument :epic_id, ::Types::GlobalIDType[::Epic],
             required: false,
             loads: ::Types::EpicType,
-            description: 'ID of the parent epic. NULL when removing the association.'
+            description: 'ID of the parent epic. NULL when removing the association.',
+            deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
         end
 
         def resolve(**args)

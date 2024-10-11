@@ -10,7 +10,8 @@ module Mutations
         required: false,
         loads: Types::EpicType,
         description: 'Global ID of the epic to be assigned to the issue, ' \
-        'epic will be removed if absent or set to null'
+          'epic will be removed if absent or set to null',
+        deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
 
       def resolve(project_path:, iid:, epic: nil)
         issue = authorized_find!(project_path: project_path, iid: iid)

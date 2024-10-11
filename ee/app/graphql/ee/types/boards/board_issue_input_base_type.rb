@@ -9,7 +9,8 @@ module EE
         prepended do
           argument :epic_id, ::Types::GlobalIDType[::Epic],
             required: false,
-            description: 'Filter by epic ID. Incompatible with epicWildcardId.'
+            description: 'Filter by epic ID. Incompatible with epicWildcardId.',
+            deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
 
           argument :iteration_title, GraphQL::Types::String,
             required: false,

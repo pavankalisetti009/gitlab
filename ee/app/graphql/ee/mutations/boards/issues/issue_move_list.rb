@@ -13,7 +13,8 @@ module EE
           prepended do
             argument :epic_id, EpicID,
               required: false,
-              description: 'ID of the parent epic. NULL when removing the association.'
+              description: 'ID of the parent epic. NULL when removing the association.',
+              deprecated: { reason: 'This will be replaced by WorkItem hierarchyWidget', milestone: '17.5' }
           end
 
           override :move_issue

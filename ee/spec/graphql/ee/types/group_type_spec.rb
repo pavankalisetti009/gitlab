@@ -204,6 +204,48 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     end
   end
 
+  describe '#epics_enabled?' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+
+    let(:query) do
+      <<~GQL
+        query {
+          group(fullPath: "#{group.full_path}") {
+            id,
+            epicsEnabled
+          }
+        }
+      GQL
+    end
+
+    before_all do
+      group.add_owner(current_user)
+    end
+
+    subject(:epics_enabled) do
+      result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
+
+      result.dig('data', 'group', 'epicsEnabled')
+    end
+
+    context 'when feature is available' do
+      it 'returns true' do
+        stub_licensed_features(epics: true)
+
+        expect(epics_enabled).to eq(true)
+      end
+    end
+
+    context 'when feature is not available' do
+      it 'returns false' do
+        stub_licensed_features(epics: false)
+
+        expect(epics_enabled).to eq(false)
+      end
+    end
+  end
+
   describe 'billable members count' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, namespace: group) }

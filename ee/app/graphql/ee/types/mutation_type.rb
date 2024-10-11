@@ -20,14 +20,21 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create
         mount_mutation ::Mutations::Issues::SetIteration
         mount_mutation ::Mutations::Issues::SetWeight
-        mount_mutation ::Mutations::Issues::SetEpic
+        mount_mutation ::Mutations::Issues::SetEpic,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Issues::SetEscalationPolicy
-        mount_mutation ::Mutations::Issues::PromoteToEpic
-        mount_mutation ::Mutations::EpicTree::Reorder
-        mount_mutation ::Mutations::Epics::Update
-        mount_mutation ::Mutations::Epics::Create
-        mount_mutation ::Mutations::Epics::SetSubscription
-        mount_mutation ::Mutations::Epics::AddIssue
+        mount_mutation ::Mutations::Issues::PromoteToEpic,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::EpicTree::Reorder,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Epics::Update,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Epics::Create,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Epics::SetSubscription,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Epics::AddIssue,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Geo::Registries::Update, alpha: { milestone: '16.1' }
         mount_mutation ::Mutations::Geo::Registries::BulkUpdate, alpha: { milestone: '16.4' }
         mount_mutation ::Mutations::GitlabSubscriptions::Activate
@@ -66,15 +73,24 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
-        mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences
-        mount_mutation ::Mutations::Boards::EpicBoards::Create
-        mount_mutation ::Mutations::Boards::EpicBoards::Destroy
-        mount_mutation ::Mutations::Boards::EpicBoards::EpicMoveList
-        mount_mutation ::Mutations::Boards::EpicBoards::Update
-        mount_mutation ::Mutations::Boards::EpicLists::Create
-        mount_mutation ::Mutations::Boards::EpicLists::Destroy
-        mount_mutation ::Mutations::Boards::EpicLists::Update
-        mount_mutation ::Mutations::Boards::Epics::Create
+        mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicBoards::Create,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicBoards::Destroy,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicBoards::EpicMoveList,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicBoards::Update,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicLists::Create,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicLists::Destroy,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::EpicLists::Update,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
+        mount_mutation ::Mutations::Boards::Epics::Create,
+          deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Boards::Lists::UpdateLimitMetrics
         mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Create, alpha: { milestone: '16.11' }
         mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Update, alpha: { milestone: '17.0' }
