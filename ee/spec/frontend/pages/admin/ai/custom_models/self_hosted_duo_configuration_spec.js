@@ -29,7 +29,7 @@ describe('SelfHostedDuoConfiguration', () => {
   const findBetaBadge = () => wrapper.findComponent(BetaBadge);
 
   it('has a title', () => {
-    const title = wrapper.find('h2');
+    const title = wrapper.findByTestId('self-hosted-title');
 
     expect(title.text()).toBe('Self-hosted models');
   });
@@ -40,7 +40,7 @@ describe('SelfHostedDuoConfiguration', () => {
 
   it('has a description', () => {
     expect(wrapper.text()).toMatch(
-      'Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features',
+      'Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
     );
   });
 
