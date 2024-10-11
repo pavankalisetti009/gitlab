@@ -1504,6 +1504,20 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to(allowed ? be_allowed(admin_policy) : be_disallowed(admin_policy)) }
       end
     end
+
+    context 'subgroup', :saas do
+      let(:current_user) { owner }
+      let(:subgroup) { create(:group, :private, parent: group) }
+
+      subject { described_class.new(current_user, subgroup) }
+
+      before do
+        stub_licensed_features(credentials_inventory: true)
+      end
+
+      it { is_expected.to be_disallowed(read_policy) }
+      it { is_expected.to be_disallowed(admin_policy) }
+    end
   end
 
   describe 'change_prevent_group_forking' do
