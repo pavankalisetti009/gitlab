@@ -155,7 +155,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
   end
 
   describe '.by_author' do
-    let_it_be(:included_user) { create(:user) }
+    let_it_be(:included_user) { user }
     let_it_be(:excluded_user) { create(:user) }
 
     subject(:by_author) { described_class.by_author(query_hash: query_hash, options: options) }
@@ -362,6 +362,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     let_it_be(:project_2) { create(:project, group: group) }
     let_it_be(:project_label_2) { create(:label, project: project_2, title: label_title) }
     let_it_be(:group_label) { create(:group_label, group: group, title: label_title) }
+    let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
 
     subject(:by_label_ids) { described_class.by_label_ids(query_hash: query_hash, options: options) }
 
@@ -441,7 +442,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         let(:search_level) { :global }
 
         context 'when multiple label names are provided' do
-          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
           let(:label_name) { [label_title, another_label.title] }
 
           it 'adds the label_ids filter to query_hash' do
@@ -582,7 +582,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         let(:project_ids) { nil }
 
         context 'when multiple label names are provided' do
-          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
           let(:label_name) { [label_title, another_label.title] }
 
           it 'adds the label_ids filter to query_hash' do
@@ -673,7 +672,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         let(:project_ids) { [project.id] }
 
         context 'when multiple label names are provided' do
-          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
           let(:label_name) { [label_title, another_label.title] }
 
           it 'adds the label_ids filter to query_hash' do
@@ -2679,7 +2677,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       described_class.by_search_level_and_membership(query_hash: query_hash, options: options)
     end
 
-    let_it_be(:user_with_access) { create(:user) }
+    let_it_be(:user_with_access) { user }
 
     let_it_be(:grp_public) { create(:group, :public) }
     let_it_be(:grp_public_prj_public) { create(:project, :public, group: grp_public) }
