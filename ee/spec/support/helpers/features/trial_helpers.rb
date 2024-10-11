@@ -1,17 +1,12 @@
 # frozen_string_literal: true
 
 require 'support/helpers/listbox_helpers'
+require_relative '../subscription_portal_helpers'
 
 module Features
   module TrialHelpers
     include ListboxHelpers
-
-    def expect_to_be_on_group_page(path: 'gitlab', name: 'gitlab')
-      expect(page).to have_current_path("/#{path}?trial=true")
-      within_testid('super-sidebar') do
-        expect(page).to have_selector('a[aria-current="page"]', text: name)
-      end
-    end
+    include SubscriptionPortalHelpers
 
     def expect_to_be_on_namespace_selection_with_errors
       expect_to_be_on_namespace_selection
@@ -67,16 +62,9 @@ module Features
     end
 
     def expect_to_be_on_group_security_dashboard(group_for_path: group)
-      expect(page).to have_current_path(group_security_dashboard_path(group_for_path, { trial: true }))
+      expect(page).to have_current_path(group_security_dashboard_path(group_for_path))
       within_testid('super-sidebar') do
         expect(page).to have_link(group_for_path.name)
-      end
-    end
-
-    def expect_to_be_on_group_usage_quotas_page(path: 'gitlab', name: 'gitlab')
-      expect(page).to have_current_path("/groups/#{path}/-/usage_quotas")
-      within_testid('super-sidebar') do
-        expect(page).to have_link(name)
       end
     end
 
@@ -152,6 +140,7 @@ module Features
         stub_apply_trial(
           namespace_id: group.id, result: trial_result, extra_params: extra_params.merge(existing_group_attrs)
         )
+        stub_duo_landing_page_data
       end
 
       click_button button_text
@@ -165,14 +154,30 @@ module Features
         result: result,
         extra_params: extra_with_glm_source(extra_params).merge(existing_group_attrs)
       )
+      stub_duo_landing_page_data
 
       click_button 'Activate my trial'
     end
 
     def submit_new_group_trial_selection_form(result: ServiceResponse.success, extra_params: {})
       stub_apply_trial(result: result, extra_params: extra_with_glm_source(extra_params))
+      stub_duo_landing_page_data
 
       click_button 'Activate my trial'
+    end
+
+    def update_with_applied_trials
+      update_with_duo_enterprise_trial
+      group = Group.last
+      plan = create(:ultimate_trial_plan)
+      group.gitlab_subscription.update!(
+        hosted_plan: plan, trial: true, trial_starts_on: Time.current, trial_ends_on: Time.current + 60.days
+      )
+    end
+
+    def stub_duo_landing_page_data
+      stub_licensed_features(code_suggestions: true)
+      stub_signing_key
     end
 
     def extra_with_glm_source(extra_params)
@@ -213,7 +218,9 @@ module Features
       }
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService, service_params) do |instance|
-        expect(instance).to receive(:execute).and_return(result)
+        expect(instance).to receive(:execute) do
+          update_with_applied_trials if result.success?
+        end.and_return(result)
       end
     end
 
@@ -245,7 +252,10 @@ module Features
       end
 
       # trial
-      stub_apply_duo_pro_trial(result: trial_result) if with_trial
+      if with_trial
+        stub_apply_duo_pro_trial(result: trial_result)
+        stub_duo_landing_page_data
+      end
 
       click_button 'Continue'
 
@@ -266,8 +276,19 @@ module Features
       }
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoProService, service_params) do |instance|
-        expect(instance).to receive(:execute).and_return(result)
+        expect(instance).to receive(:execute) do
+          update_with_duo_pro_trial if result.success?
+        end.and_return(result)
       end
+    end
+
+    def update_with_duo_pro_trial
+      group = Group.last
+      add_on = GitlabSubscriptions::AddOn.find_by_name('code_suggestions')
+      create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
+
+      # stub needed for landing on the duo page
+      stub_subscription_permissions_data(group.id)
     end
 
     def stub_apply_duo_enterprise_trial(result: ServiceResponse.success, extra_params: {})
@@ -283,8 +304,19 @@ module Features
       }
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, service_params) do |instance|
-        expect(instance).to receive(:execute).and_return(result)
+        expect(instance).to receive(:execute) do
+          update_with_duo_enterprise_trial if result.success?
+        end.and_return(result)
       end
+    end
+
+    def update_with_duo_enterprise_trial
+      group = Group.last
+      add_on = GitlabSubscriptions::AddOn.find_by_name('duo_enterprise')
+      create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: group)
+
+      # stub needed for landing on the duo page
+      stub_subscription_permissions_data(group.id)
     end
 
     def trial_failure
@@ -328,7 +360,10 @@ module Features
       end
 
       # trial
-      stub_apply_duo_enterprise_trial(result: trial_result) if with_trial
+      if with_trial
+        stub_apply_duo_enterprise_trial(result: trial_result)
+        stub_duo_landing_page_data
+      end
 
       click_button button_text
 
@@ -337,12 +372,14 @@ module Features
 
     def submit_duo_pro_trial_selection_form(result: ServiceResponse.success)
       stub_apply_duo_pro_trial(result: result, extra_params: { trial_entity: 'company' })
+      stub_duo_landing_page_data
 
       click_button 'Activate my trial'
     end
 
     def submit_duo_enterprise_trial_selection_form(result: ServiceResponse.success)
       stub_apply_duo_enterprise_trial(result: result)
+      stub_duo_landing_page_data
 
       click_button 'Activate my trial'
     end

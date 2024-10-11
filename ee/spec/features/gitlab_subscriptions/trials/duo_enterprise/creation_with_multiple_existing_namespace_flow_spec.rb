@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple eligible namespaces', :saas_trial, :js, feature_category: :acquisition do
-  include SubscriptionPortalHelpers
-
   # rubocop:disable Gitlab/RSpec/AvoidSetup -- skip registration and group creation
   let_it_be(:user) { create(:user) }
   let_it_be(:group) do
@@ -13,13 +11,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with multiple 
   end
 
   before_all do
-    create(:gitlab_subscription_add_on_purchase, :duo_enterprise)
-  end
-
-  before do
-    stub_licensed_features(code_suggestions: true)
-    stub_signing_key
-    stub_subscription_permissions_data(group.id)
+    create(:gitlab_subscription_add_on, :duo_enterprise)
   end
   # rubocop:enable Gitlab/RSpec/AvoidSetup
 

@@ -9,8 +9,12 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     create(:group, name: 'gitlab', owners: user)
   end
 
+  before_all do
+    create(:gitlab_subscription_add_on, :duo_enterprise)
+  end
+
   context 'when creating lead and applying trial is successful' do
-    it 'fills out form, submits and lands on the group page' do
+    it 'fills out form, submits and lands on the duo page' do
       sign_in(user)
 
       visit new_trial_path
@@ -25,11 +29,11 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_trial_selection_form
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
 
     context 'when new trial is selected from within an existing namespace' do
-      it 'fills out form, has the existing namespace preselected, submits and lands on the group page' do
+      it 'fills out form, has the existing namespace preselected, submits and lands on the duo page' do
         glm_params = { glm_source: '_glm_source_', glm_content: '_glm_content_' }
 
         sign_in(user)
@@ -46,7 +50,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         submit_trial_selection_form(extra_params: glm_params)
 
-        expect_to_be_on_group_page
+        expect_to_be_on_gitlab_duo_seat_utilization_page
       end
     end
 
@@ -74,7 +78,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
   end
 
   context 'when selecting to create a new group with an existing group name' do
-    it 'fills out form, submits and lands on the group page with a unique path' do
+    it 'fills out form, submits and lands on the duo page with a unique path' do
       sign_in(user)
 
       visit new_trial_path
@@ -94,7 +98,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
 
-      expect_to_be_on_group_page(path: group_name)
+      expect_to_be_on_gitlab_duo_seat_utilization_page(path: group_name)
     end
   end
 
@@ -126,7 +130,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name, name: group_name))
 
-      expect_to_be_on_group_page(path: group_name, name: group_name)
+      expect_to_be_on_gitlab_duo_seat_utilization_page(path: group_name, name: group_name)
     end
   end
 
@@ -153,7 +157,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_trial_selection_form
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -182,7 +186,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       submit_trial_selection_form
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 

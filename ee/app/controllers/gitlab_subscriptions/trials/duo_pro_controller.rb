@@ -73,7 +73,7 @@ module GitlabSubscriptions
           "DuoProTrial|You have successfully created a trial subscription from GitLab Duo Pro. " \
             "To get started, enable the GitLab Duo Pro add-on for team members on this page by turning on " \
             "the toggle for each team member. The subscription may take a minute to sync, so refresh " \
-            "the page if it's not visible yet"
+            "the page if it's not visible yet."
         )
       end
     end

@@ -73,7 +73,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
       {
         namespace_id: non_existing_record_id.to_s,
         trial_entity: '_trial_entity_',
-        organization_id: nil
+        organization_id: anything
       }.with_indifferent_access
     end
 
@@ -122,13 +122,44 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
         end
       end
 
-      context 'when successful' do
-        let(:namespace) { build_stubbed(:namespace) }
+      context 'when successful', :saas do
+        let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :free_plan) }
+        let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+        let_it_be(:ultimate_trial_plan) { create(:ultimate_trial_plan) }
 
-        it 'redirects to group path' do
-          expect_create_success(namespace)
+        context 'for basic success cases' do
+          before do
+            expect_create_success(namespace)
+          end
 
-          expect(post_create).to redirect_to(group_path(namespace, { trial: true }))
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(namespace)) }
+
+          it 'shows valid flash message', :freeze_time do
+            post_create
+
+            message = format(
+              s_(
+                'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
+                  'expire on %{exp_date}.'
+              ),
+              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(message)
+          end
+
+          context 'when duo_enterprise_trials feature flag is disabled' do
+            before do
+              stub_feature_flags(duo_enterprise_trials: false)
+            end
+
+            it { is_expected.to redirect_to(group_path(namespace)) }
+
+            it 'shows valid flash message' do
+              post_create
+
+              expect(flash[:success]).to eq(s_("BillingPlans|Congratulations, your free trial is activated."))
+            end
+          end
         end
 
         context 'with stored location concerns on redirection' do
@@ -152,10 +183,22 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             end
 
             context 'without a stored location set for the user' do
-              it 'redirects to the group path' do
+              it 'redirects to the duo page path' do
                 expect_create_success(namespace)
 
-                expect(post_create).to redirect_to(group_path(namespace, { trial: true }))
+                expect(post_create).to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(namespace))
+              end
+
+              context 'when duo_enterprise_trials feature flag is disabled' do
+                before do
+                  stub_feature_flags(duo_enterprise_trials: false)
+                end
+
+                it 'redirects to the group path' do
+                  expect_create_success(namespace)
+
+                  expect(post_create).to redirect_to(group_path(namespace))
+                end
               end
             end
           end
@@ -172,8 +215,41 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           it 'redirects to the group security dashboard' do
             expect_create_success(namespace)
 
-            expect(post_create).to redirect_to(group_security_dashboard_path(namespace, { trial: true }))
+            expect(post_create).to redirect_to(group_security_dashboard_path(namespace))
           end
+
+          it 'shows valid flash message' do
+            expect_create_success(namespace)
+
+            post_create
+
+            expect(flash[:success]).to eq(s_("BillingPlans|Congratulations, your free trial is activated."))
+          end
+        end
+
+        def expect_create_success(namespace)
+          service_params = {
+            step: step,
+            lead_params: lead_params.merge(glm_params),
+            trial_params: trial_params.merge(glm_params),
+            user: user
+          }
+
+          expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
+            expect(instance).to receive(:execute) do
+              update_with_applied_trials(namespace)
+            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
+          end
+        end
+
+        def update_with_applied_trials(namespace)
+          create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+          namespace.gitlab_subscription.update!(
+            hosted_plan: ultimate_trial_plan,
+            trial: true,
+            trial_starts_on: Time.current,
+            trial_ends_on: Time.current + 60.days
+          )
         end
       end
 
@@ -255,6 +331,14 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
           it { is_expected.to render_select_namespace }
         end
+
+        def expect_create_failure(reason, payload = {})
+          # validate params passed/called here perhaps
+          expect_next_instance_of(GitlabSubscriptions::Trials::CreateService) do |instance|
+            response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
+            expect(instance).to receive(:execute).and_return(response)
+          end
+        end
       end
 
       context 'when subscriptions_trials is not available' do
@@ -262,27 +346,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
         it { is_expected.to have_gitlab_http_status(:not_found) }
       end
-    end
-  end
-
-  def expect_create_success(namespace)
-    service_params = {
-      step: step,
-      lead_params: lead_params.merge(glm_params),
-      trial_params: trial_params.merge(glm_params),
-      user: user
-    }
-
-    expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
-      expect(instance).to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: namespace }))
-    end
-  end
-
-  def expect_create_failure(reason, payload = {})
-    # validate params passed/called here perhaps
-    expect_next_instance_of(GitlabSubscriptions::Trials::CreateService) do |instance|
-      response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
-      expect(instance).to receive(:execute).and_return(response)
     end
   end
 

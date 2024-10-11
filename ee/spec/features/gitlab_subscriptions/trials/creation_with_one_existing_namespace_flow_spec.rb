@@ -6,8 +6,12 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
   let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
   let_it_be(:group) { create(:group, name: 'gitlab', owners: user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
 
+  before_all do
+    create(:gitlab_subscription_add_on, :duo_enterprise)
+  end
+
   context 'when creating lead and applying trial is successful' do
-    it 'fills out form, submits and lands on the group page' do
+    it 'fills out form, submits and lands on the duo page' do
       sign_in(user)
 
       visit new_trial_path
@@ -16,7 +20,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
 
     context 'when part of the discover security flow' do
@@ -55,7 +59,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       # success
       submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -80,7 +84,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       submit_trial_selection_form
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
 
     it 'fails submitting trial and then chooses to create a namespace and apply trial to it' do
@@ -108,7 +112,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       group_name = 'gitlab1'
       submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
 
-      expect_to_be_on_group_page(path: group_name)
+      expect_to_be_on_gitlab_duo_seat_utilization_page(path: group_name)
     end
   end
 end
