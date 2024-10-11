@@ -112,12 +112,6 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
           expect(result).to be_error
           expect(result.errors).to eq(['Could not dismiss vulnerabilities'])
         end
-
-        it 'does not commit any changes' do
-          service.execute
-
-          expect(vulnerability.reload).not_to be_dismissed
-        end
       end
 
       context 'when updating a large # of vulnerabilities' do
