@@ -8747,7 +8747,9 @@ CREATE TABLE ci_pipeline_chat_data (
     chat_name_id bigint NOT NULL,
     response_url text NOT NULL,
     pipeline_id bigint NOT NULL,
-    partition_id bigint NOT NULL
+    partition_id bigint NOT NULL,
+    project_id bigint,
+    CONSTRAINT check_f6412eda6f CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_pipeline_chat_data_id_seq
@@ -28330,6 +28332,8 @@ CREATE INDEX index_ci_pipeline_artifacts_verification_state ON ci_pipeline_artif
 CREATE INDEX index_ci_pipeline_chat_data_on_chat_name_id ON ci_pipeline_chat_data USING btree (chat_name_id);
 
 CREATE UNIQUE INDEX index_ci_pipeline_chat_data_on_pipeline_id ON ci_pipeline_chat_data USING btree (pipeline_id);
+
+CREATE INDEX index_ci_pipeline_chat_data_on_project_id ON ci_pipeline_chat_data USING btree (project_id);
 
 CREATE INDEX index_ci_pipeline_messages_on_pipeline_id ON ci_pipeline_messages USING btree (pipeline_id);
 
