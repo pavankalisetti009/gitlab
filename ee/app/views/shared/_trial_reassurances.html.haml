@@ -8,7 +8,12 @@
     .gl-mb-6
       = image_tag 'illustrations/saas-trial-illustration.svg'
 
-    %h3.gl-mb-2.gl-text-center.gl-text-default= s_('InProductMarketing|Start your 30-day free trial')
+    %h3.gl-mb-2.gl-text-center.gl-text-default
+      - if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
+        = s_('InProductMarketing|Start your 60-day free trial')
+      - else
+        = s_('InProductMarketing|Start your 30-day free trial')
+
     %p.gl-mb-6.gl-text-center.gl-text-default= s_('InProductMarketing|No credit card required')
 
     %ul.gl-pl-0.gl-mb-6.gl-pl-0.gl-mb-6x.gl-text-default.gl-text-sm
