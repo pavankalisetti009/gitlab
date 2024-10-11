@@ -410,7 +410,7 @@ architectures are designed to have enough memory in most cases to avoid the need
 [Praefect requires its own database server](../gitaly/praefect.md#postgresql) and
 a third-party PostgreSQL database solution to achieve full HA.
 
-We hope to offer a built-in solution for these restrictions in the future. In the meantime, you can set up a 
+We hope to offer a built-in solution for these restrictions in the future. In the meantime, you can set up a
 non-HA PostgreSQL server using the Linux package as the specifications reflect. See the following issues for more information:
 
 - [`omnibus-gitlab#7292`](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/7292).
