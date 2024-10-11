@@ -212,7 +212,67 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       end
     end
 
-    describe '#sync_preexiting_states_approval_rules' do
+    describe '#sync_unenforceable_approval_rules' do
+      shared_examples 'it enqueues the UnenforceablePolicyRulesNotificationWorker' do
+        it 'enqueues the expected UnenforceablePolicyRulesNotificationWorker' do
+          expect(Security::UnenforceablePolicyRulesNotificationWorker).to(
+            receive(:perform_async).with(merge_request.id)
+          )
+
+          subject
+        end
+      end
+
+      shared_examples 'it does not enqueue the UnenforceablePolicyRulesNotificationWorker' do
+        it 'does not enqueue the UnenforceablePolicyRulesNotificationWorker' do
+          expect(Security::UnenforceablePolicyRulesNotificationWorker).not_to(
+            receive(:perform_async).with(merge_request.id)
+          )
+
+          subject
+        end
+      end
+
+      context 'when the merge request has no pipeline' do
+        let(:merge_request) do
+          create(:merge_request,
+            source_project: project,
+            source_branch: source_branch,
+            target_branch: 'master',
+            target_project: project)
+        end
+
+        it_behaves_like 'it enqueues the UnenforceablePolicyRulesNotificationWorker'
+      end
+
+      context 'when the merge request has a pipeline' do
+        let(:merge_request) do
+          create(:merge_request,
+            :with_head_pipeline,
+            source_project: project,
+            source_branch: source_branch,
+            target_branch: 'master',
+            target_project: project)
+        end
+
+        it_behaves_like 'it does not enqueue the UnenforceablePolicyRulesNotificationWorker'
+      end
+
+      context 'when the merge request is created for a different source branch' do
+        let(:merge_request) do
+          create(:merge_request,
+            source_project: project,
+            source_branch: 'feature',
+            target_branch: 'master',
+            target_project: project
+          )
+        end
+
+        it_behaves_like 'it does not enqueue the UnenforceablePolicyRulesNotificationWorker'
+      end
+    end
+
+    describe '#sync_preexisting_states_approval_rules' do
       let(:irrelevant_merge_request) { another_merge_request }
       let(:relevant_merge_request) { merge_request }
 

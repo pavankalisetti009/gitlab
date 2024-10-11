@@ -20,7 +20,8 @@ module EE
 
         trigger_suggested_reviewers_fetch
         sync_any_merge_request_approval_rules
-        sync_preexiting_states_approval_rules
+        sync_preexisting_states_approval_rules
+        sync_unenforceable_approval_rules
       end
 
       def trigger_suggested_reviewers_fetch
@@ -73,10 +74,18 @@ module EE
         end
       end
 
-      def sync_preexiting_states_approval_rules
+      def sync_preexisting_states_approval_rules
         merge_requests_for_source_branch.each do |merge_request|
           if merge_request.approval_rules.by_report_types([:scan_finding, :license_scanning]).any?
             ::Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker.perform_async(merge_request.id)
+          end
+        end
+      end
+
+      def sync_unenforceable_approval_rules
+        merge_requests_for_source_branch.each do |merge_request|
+          unless merge_request.head_pipeline_id
+            ::Security::UnenforceablePolicyRulesNotificationWorker.perform_async(merge_request.id)
           end
         end
       end

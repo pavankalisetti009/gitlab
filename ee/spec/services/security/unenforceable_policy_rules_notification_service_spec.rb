@@ -140,6 +140,31 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       end
     end
 
+    describe 'fail-closed rules' do
+      let!(:fail_closed_rule) do
+        create(
+          :report_approver_rule,
+          report_type,
+          name: "#{report_type} Fail Closed",
+          merge_request: merge_request,
+          approvals_required: 1,
+          scan_result_policy_read: closed_scan_result_policy_read,
+          approval_project_rule: approval_project_rule)
+      end
+
+      let!(:approval_project_rule) do
+        create(:approval_project_rule, :any_merge_request, project: project, approvals_required: 2,
+          applies_to_all_protected_branches: true, protected_branches: [protected_branch],
+          scan_result_policy_read: closed_scan_result_policy_read)
+      end
+
+      let(:closed_scan_result_policy_read) { create(:scan_result_policy_read, :fail_closed, project: project) }
+
+      it 'resets the approvals required to the source rule' do
+        expect { subject }.to change { fail_closed_rule.reload.approvals_required }.from(1).to(2)
+      end
+    end
+
     describe 'fail-open rules' do
       let_it_be_with_reload(:fail_open_rule) do
         create(
