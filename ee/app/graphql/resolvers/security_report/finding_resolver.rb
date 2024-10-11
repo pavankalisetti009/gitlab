@@ -12,11 +12,7 @@ module Resolvers
         description: 'UUID of the security report finding.'
 
       def resolve(**args)
-        if Feature.enabled?(:finding_resolver_use_pure_finder, pipeline.project)
-          ::Security::PureFindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute&.first
-        else
-          ::Security::FindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute&.findings&.first
-        end
+        ::Security::PureFindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute&.first
       end
     end
   end
