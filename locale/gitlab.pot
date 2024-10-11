@@ -28522,6 +28522,9 @@ msgstr ""
 msgid "InProductMarketing|Start your 30-day free trial"
 msgstr ""
 
+msgid "InProductMarketing|Start your 60-day free trial"
+msgstr ""
+
 msgid "InProductMarketing|Team members collaborating"
 msgstr ""
 
