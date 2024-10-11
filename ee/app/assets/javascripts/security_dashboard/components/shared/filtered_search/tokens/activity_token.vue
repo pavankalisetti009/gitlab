@@ -2,10 +2,8 @@
 import {
   GlBadge,
   GlFilteredSearchToken,
-  GlFilteredSearchSuggestion,
   GlDropdownDivider,
   GlDropdownSectionHeader,
-  GlIcon,
 } from '@gitlab/ui';
 import { without } from 'lodash';
 import { s__ } from '~/locale';
@@ -15,6 +13,7 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
 import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import eventHub from '../event_hub';
 
 const ITEMS = {
@@ -72,11 +71,10 @@ export default {
   components: {
     GlBadge,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
     GlDropdownDivider,
     GlDropdownSectionHeader,
-    GlIcon,
     QuerystringSync,
+    SearchSuggestion,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   props: {
@@ -265,21 +263,14 @@ export default {
               <div class="gl-grow">{{ group.text }}</div>
               <gl-badge :icon="group.icon" :variant="group.variant" /></div
           ></gl-dropdown-section-header>
-          <gl-filtered-search-suggestion
+          <search-suggestion
             v-for="activity in group.options"
             :key="activity.value"
+            :text="activity.text"
             :value="activity.value"
-          >
-            <div class="gl-flex gl-items-center">
-              <gl-icon
-                name="check"
-                class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-                :class="{ 'gl-invisible': !isActivitySelected(activity.value) }"
-                :data-testid="`status-icon-${activity.value}`"
-              />
-              {{ activity.text }}
-            </div>
-          </gl-filtered-search-suggestion>
+            :selected="isActivitySelected(activity.value)"
+            :data-testid="`suggestion-${activity.value}`"
+          />
           <gl-dropdown-divider
             v-if="index < activityTokenGroups.length - 1"
             :key="`${group.text}-divider`"

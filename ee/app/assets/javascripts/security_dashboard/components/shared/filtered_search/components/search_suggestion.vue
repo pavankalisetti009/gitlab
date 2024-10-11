@@ -24,7 +24,8 @@ export default {
      */
     name: {
       type: String,
-      required: true,
+      default: '',
+      required: false,
     },
     selected: {
       type: Boolean,
