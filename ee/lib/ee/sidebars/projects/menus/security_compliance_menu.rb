@@ -16,6 +16,7 @@ module EE
             add_item(vulnerability_report_menu_item)
             add_item(on_demand_scans_menu_item)
             add_item(dependencies_menu_item)
+            add_item(compliance_menu_item)
             add_item(scan_policies_menu_item)
             add_item(audit_events_menu_item)
             add_item(configuration_menu_item)
@@ -167,6 +168,20 @@ module EE
             )
           end
 
+          def compliance_menu_item
+            unless project_level_compliance_dashboard_available?
+              return ::Sidebars::NilMenuItem.new(item_id: :compliance)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: _('Compliance center'),
+              link: project_security_compliance_dashboard_path(context.project),
+              super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::SecureMenu,
+              active_routes: { path: 'compliance_dashboards#show' },
+              item_id: :compliance
+            )
+          end
+
           def audit_events_menu_item
             unless show_audit_events?
               return ::Sidebars::NilMenuItem.new(item_id: :audit_events)
@@ -184,6 +199,10 @@ module EE
           def show_audit_events?
             can?(context.current_user, :read_project_audit_events, context.project) &&
               (context.project.licensed_feature_available?(:audit_events) || context.show_promotions)
+          end
+
+          def project_level_compliance_dashboard_available?
+            can?(context.current_user, :read_compliance_dashboard, context.project)
           end
         end
       end

@@ -255,5 +255,34 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
         it { is_expected.to be_nil }
       end
     end
+
+    describe 'Compliance' do
+      let(:item_id) { :compliance }
+
+      context 'when project_level_compliance_dashboard feature is enabled' do
+        before do
+          stub_licensed_features(project_level_compliance_dashboard: true)
+        end
+
+        context 'when project is in personal namespace' do
+          it { is_expected.to be_nil }
+        end
+
+        context 'when project is in group' do
+          let_it_be(:user) { create(:user) }
+          let_it_be(:project) { create(:project, :public, :in_group) }
+
+          before_all do
+            project.add_owner(user)
+          end
+
+          it { is_expected.not_to be_nil }
+        end
+      end
+
+      context 'when project_level_compliance_dashboard feature is not enabled' do
+        it { is_expected.to be_nil }
+      end
+    end
   end
 end
