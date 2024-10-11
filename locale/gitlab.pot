@@ -36442,6 +36442,9 @@ msgstr ""
 msgid "No merge requests found"
 msgstr ""
 
+msgid "No merge requests match this list."
+msgstr ""
+
 msgid "No messages were logged"
 msgstr ""
 
