@@ -196,7 +196,7 @@ module EE
       def pages
         return {} unless pages_generator?
 
-        (options&.dig(:pages) || {}).tap do |pages_options|
+        pages_config.tap do |pages_options|
           pages_options[:path_prefix] = ExpandVariables.expand(pages_options[:path_prefix].to_s, -> {
             variables.sort_and_expand_all
           })
@@ -284,6 +284,11 @@ module EE
         ::Gitlab::Ci::Variables::Collection.new(
           project.google_cloud_platform_artifact_registry_integration&.ci_variables || []
         )
+      end
+
+      def pages_config
+        config = options&.dig(:pages)
+        config.is_a?(Hash) ? config : {}
       end
     end
   end
