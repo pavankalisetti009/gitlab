@@ -42708,6 +42708,9 @@ msgstr ""
 msgid "ProjectMaintenance|Blob IDs to remove"
 msgstr ""
 
+msgid "ProjectMaintenance|Blobs removal is scheduled."
+msgstr ""
+
 msgid "ProjectMaintenance|Blobs removed"
 msgstr ""
 
@@ -42777,6 +42780,9 @@ msgstr ""
 msgid "ProjectMaintenance|Text redacted"
 msgstr ""
 
+msgid "ProjectMaintenance|Text redaction removal is scheduled."
+msgstr ""
+
 msgid "ProjectMaintenance|To confirm, enter the following:"
 msgstr ""
 
@@ -42790,6 +42796,12 @@ msgid "ProjectMaintenance|Yes, redact matching strings"
 msgstr ""
 
 msgid "ProjectMaintenance|Yes, remove blobs"
+msgstr ""
+
+msgid "ProjectMaintenance|You will receive an email notification when the process is complete. Run housekeeping to remove old versions from repository."
+msgstr ""
+
+msgid "ProjectMaintenance|You will receive an email notification when the process is complete. To remove old versions from the repository, run housekeeping."
 msgstr ""
 
 msgid "ProjectOverview|Create new fork"
