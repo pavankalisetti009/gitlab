@@ -95,16 +95,19 @@ module Gitlab
 
           def has_children_within_timeframe?
             parent_date_range = extract_date_range(epic_info_flat_list.first)
-            return false unless parent_date_range
+            return true if !parent_date_range && children.present?
 
             children.any? do |child|
               child_date_range = extract_date_range(child.epic_info_flat_list.first)
-              next unless child_date_range
 
-              parent_date_range.cover?(child_date_range) || # child start and due dates are within the parent
-                parent_date_range.cover?(child_date_range.first) || # child starts within the parent
-                parent_date_range.cover?(child_date_range.last) || # child ends within the parent
-                child_date_range.cover?(parent_date_range) # parent start and due dates are within the child
+              if child_date_range
+                parent_date_range.cover?(child_date_range) || # child start and due dates are within the parent
+                  parent_date_range.cover?(child_date_range.first) || # child starts within the parent
+                  parent_date_range.cover?(child_date_range.last) || # child ends within the parent
+                  child_date_range.cover?(parent_date_range) # parent start and due dates are within the child
+              else
+                true
+              end
             end
           end
 
