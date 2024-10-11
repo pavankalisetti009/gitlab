@@ -72,6 +72,7 @@ RSpec.describe 'shared/billings/_trial_status.html.haml', :saas do
   context 'when eligible for trial' do
     before do
       allow(group).to receive(:eligible_for_trial?).and_return(true)
+      stub_feature_flags(duo_enterprise_trials: false)
     end
 
     it 'offers a trial' do

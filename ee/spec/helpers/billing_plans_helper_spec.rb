@@ -463,20 +463,34 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
     let(:namespace) { build(:namespace) }
 
-    where(:free_personal, :eligible_for_trial, :expected) do
-      false | true | true
-      true | true | false
-      false | false | false
-    end
-
-    with_them do
+    context 'with duo_enterprise_trials feature flag enabled' do
       before do
-        allow(namespace).to receive(:free_personal?).and_return(free_personal)
-        allow(namespace).to receive(:eligible_for_trial?).and_return(eligible_for_trial)
+        allow(namespace).to receive(:free_personal?).and_return(false)
+        allow(namespace).to receive(:eligible_for_trial?).and_return(true)
       end
 
-      it 'returns correct boolean value' do
-        expect(helper.show_start_free_trial_messages?(namespace)).to eql(expected)
+      it 'returns false' do
+        expect(helper.show_start_free_trial_messages?(namespace)).to be(false)
+      end
+    end
+
+    context 'with duo_enterprise_trials feature flag disabled' do
+      where(:free_personal, :eligible_for_trial, :expected) do
+        false | true  | true
+        true  | true  | false
+        false | false | false
+      end
+
+      with_them do
+        before do
+          allow(namespace).to receive(:free_personal?).and_return(free_personal)
+          allow(namespace).to receive(:eligible_for_trial?).and_return(eligible_for_trial)
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it 'returns correct boolean value' do
+          expect(helper.show_start_free_trial_messages?(namespace)).to eql(expected)
+        end
       end
     end
   end
