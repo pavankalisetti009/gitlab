@@ -19,7 +19,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
   let(:devfile_yaml) { read_devfile(devfile_fixture_name) }
   let(:expected_processed_devfile) { YAML.safe_load(example_processed_devfile).to_h }
-  let(:editor) { 'webide' }
   let(:workspace_root) { '/projects' }
   let(:dns_zone) { 'dns.zone.me' }
   let(:variables) do
@@ -45,7 +44,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       agent: agent,
       user: user,
       project: project,
-      editor: editor,
       max_hours_before_termination: 24,
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       devfile_ref: devfile_ref,
@@ -116,7 +114,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.actual_state).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
-        expect(workspace.editor).to eq('webide')
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "60001-#{workspace.name}.#{dns_zone}",

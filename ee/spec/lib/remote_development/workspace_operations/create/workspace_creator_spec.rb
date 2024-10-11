@@ -18,14 +18,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let(:processed_devfile_yaml) { YAML.safe_load(example_processed_devfile) }
 
-  let(:editor) { 'webide' }
   let(:workspace_root) { '/projects' }
   let(:params) do
     {
       agent: agent,
       user: user,
       project: project,
-      editor: editor,
       max_hours_before_termination: 24,
       desired_state: desired_state,
       devfile_ref: 'main',

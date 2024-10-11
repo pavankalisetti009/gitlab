@@ -22,7 +22,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import {
   DEFAULT_DESIRED_STATE,
-  DEFAULT_EDITOR,
   ROUTES,
   WORKSPACE_VARIABLE_INPUT_TYPE_ENUM,
   WORKSPACES_LIST_PAGE_SIZE,
@@ -428,7 +427,6 @@ describe('workspaces/user/pages/create.vue', () => {
           input: {
             clusterAgentId: selectedClusterAgentOneIDFixture,
             projectId: projectGid,
-            editor: DEFAULT_EDITOR,
             desiredState: DEFAULT_DESIRED_STATE,
             devfilePath,
             maxHoursBeforeTermination,

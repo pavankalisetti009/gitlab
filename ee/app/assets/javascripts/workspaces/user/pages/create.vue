@@ -29,7 +29,6 @@ import { addWorkspace } from '../services/apollo_cache_mutators';
 import {
   DEFAULT_DESIRED_STATE,
   DEFAULT_DEVFILE_PATH,
-  DEFAULT_EDITOR,
   ROUTES,
   PROJECT_VISIBILITY,
 } from '../constants';
@@ -218,7 +217,6 @@ export default {
             input: {
               projectId: this.projectId,
               clusterAgentId: this.selectedAgent,
-              editor: DEFAULT_EDITOR,
               desiredState: DEFAULT_DESIRED_STATE,
               devfileRef: this.devfileRef,
               devfilePath: this.devfilePath,

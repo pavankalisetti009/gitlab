@@ -359,13 +359,6 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
       end
     end
 
-    context "on editor" do
-      it 'validates editor is webide' do
-        workspace.editor = 'not-webide'
-        expect(workspace).not_to be_valid
-      end
-    end
-
     context 'on max_hours_before_termination' do
       context 'when max_hours_before_termination is greater than the agent max_hours_before_termination limit' do
         context 'when it is created' do

@@ -22,8 +22,7 @@ RSpec.describe 'Updating a workspace', feature_category: :workspaces do
       agent: agent,
       project: project,
       user: user,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-      editor: 'webide'
+      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING
     )
   end
 

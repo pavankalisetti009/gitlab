@@ -46,8 +46,11 @@ module Types
       field :url, GraphQL::Types::String,
         null: false, description: 'URL of the workspace.'
 
+      # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/498322 - Remove in 18.0
       field :editor, GraphQL::Types::String,
-        null: false, description: 'Editor used to configure the workspace. Must match a configured template.'
+        null: false,
+        description: 'Editor used to configure the workspace. Must match a configured template.',
+        deprecated: { reason: 'Field is not used', milestone: '17.5' }
 
       field :max_hours_before_termination, GraphQL::Types::Int,
         null: false, description: 'Number of hours until the workspace automatically terminates.'
@@ -78,6 +81,10 @@ module Types
 
       def project_id
         "gid://gitlab/Project/#{object.project_id}"
+      end
+
+      def editor
+        'webide'
       end
     end
   end

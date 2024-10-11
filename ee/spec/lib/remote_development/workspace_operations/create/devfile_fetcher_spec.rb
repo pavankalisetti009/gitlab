@@ -19,14 +19,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
   let(:devfile_yaml) { read_devfile(devfile_fixture_name) }
-  let(:editor) { 'webide' }
   let(:workspace_root) { '/projects' }
   let(:params) do
     {
       agent: agent,
       user: user,
       project: project,
-      editor: editor,
       max_hours_before_termination: 24,
       desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       devfile_ref: devfile_ref,

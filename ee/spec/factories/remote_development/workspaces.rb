@@ -19,7 +19,6 @@ FactoryBot.define do
     desired_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     actual_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     deployment_resource_version { 2 }
-    editor { 'webide' }
     max_hours_before_termination { 24 }
 
     devfile_ref { 'main' }

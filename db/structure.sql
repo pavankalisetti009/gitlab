@@ -21250,7 +21250,7 @@ CREATE TABLE workspaces (
     namespace text NOT NULL,
     desired_state text NOT NULL,
     actual_state text NOT NULL,
-    editor text NOT NULL,
+    editor text DEFAULT 'webide'::text NOT NULL,
     devfile_ref text NOT NULL,
     devfile_path text NOT NULL,
     devfile text,

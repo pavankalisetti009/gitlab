@@ -11,6 +11,7 @@ module RemoteDevelopment
     ignore_column :dns_zone, remove_with: '17.5', remove_after: '2024-10-11'
 
     ignore_column :config_version, remove_with: '17.6', remove_after: '2024-10-18'
+    ignore_column :editor, remove_with: '17.7', remove_after: '2024-11-21'
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces
@@ -24,7 +25,6 @@ module RemoteDevelopment
 
     validates :user, presence: true
     validates :agent, presence: true
-    validates :editor, presence: true
     validates :personal_access_token, presence: true
     # TODO: uncomment this line with below issue in 17.6
     # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
@@ -34,7 +34,6 @@ module RemoteDevelopment
     # for state validation rules
     validates :desired_state, inclusion: { in: VALID_DESIRED_STATES }
     validates :actual_state, inclusion: { in: VALID_ACTUAL_STATES }
-    validates :editor, inclusion: { in: ['webide'], message: "'webide' is currently the only supported editor" }
 
     validate :validate_workspaces_agent_config_present, if: -> { agent }
     validate :validate_workspaces_agent_config_version_is_within_range, if: -> do
