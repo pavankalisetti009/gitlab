@@ -54,14 +54,14 @@ module QA
         Page::Project::Show.perform { |project_page| project_page.click_file 'file.txt' }
         Page::File::Show.perform(&:reveal_code_owners)
 
-        expect(page).to have_content(user.name)
+        expect(page).to have_content(user.name), "Expected \"#{user.name}\" to be in Code owners section"
         expect(page).not_to have_content(user2.name)
 
         project.visit!
         Page::Project::Show.perform { |project_page| project_page.click_file 'README.md' }
         Page::File::Show.perform(&:reveal_code_owners)
 
-        expect(page).to have_content(user2.name)
+        expect(page).to have_content(user2.name), "Expected \"#{user2.name}\" to be in Code owners section"
         expect(page).not_to have_content(user.name)
       end
     end
