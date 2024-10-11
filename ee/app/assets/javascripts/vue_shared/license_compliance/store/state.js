@@ -3,8 +3,6 @@ export default () => ({
   approvalsApiPath: null,
   licensesApiPath: null,
   canManageLicenses: false,
-  currentLicenseInModal: null,
-  isAdmin: false,
   isLoadingLicenseReport: false,
   isLoadingManagedLicenses: false,
   pendingLicenses: [],
@@ -14,5 +12,4 @@ export default () => ({
   existingLicenses: [],
   hasLicenseCheckApprovalRule: false,
   isLoadingLicenseCheckApprovalRule: false,
-  knownLicenses: [],
 });

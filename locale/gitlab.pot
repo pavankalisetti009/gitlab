@@ -3213,9 +3213,6 @@ msgstr ""
 msgid "Add approval rule"
 msgstr ""
 
-msgid "Add approvers"
-msgstr ""
-
 msgid "Add branch or merge request"
 msgstr ""
 
@@ -18424,9 +18421,6 @@ msgstr ""
 msgid "Deloyment|Something went wrong starting the deployment. Please try again later."
 msgstr ""
 
-msgid "Denied"
-msgstr ""
-
 msgid "Denied authorization of chat nickname %{user_name}."
 msgstr ""
 
@@ -32227,40 +32221,13 @@ msgstr ""
 msgid "License overview"
 msgstr ""
 
-msgid "LicenseCompliance|%{docLinkStart}License Approvals%{docLinkEnd} are active"
-msgstr ""
-
-msgid "LicenseCompliance|%{docLinkStart}License Approvals%{docLinkEnd} are inactive"
-msgstr ""
-
 msgid "LicenseCompliance|Acceptable for use in this project"
-msgstr ""
-
-msgid "LicenseCompliance|Acceptable license to be used in the project"
-msgstr ""
-
-msgid "LicenseCompliance|Add license and related policy"
-msgstr ""
-
-msgid "LicenseCompliance|Add license policy"
-msgstr ""
-
-msgid "LicenseCompliance|Allow"
 msgstr ""
 
 msgid "LicenseCompliance|Allowed"
 msgstr ""
 
 msgid "LicenseCompliance|Denied"
-msgstr ""
-
-msgid "LicenseCompliance|Deny"
-msgstr ""
-
-msgid "LicenseCompliance|Disallow merge request if detected and will instruct developer to remove"
-msgstr ""
-
-msgid "LicenseCompliance|Learn more about %{linkStart}License Approvals%{linkEnd}"
 msgstr ""
 
 msgid "LicenseCompliance|License Compliance detected %d license"
@@ -32309,37 +32276,13 @@ msgstr ""
 msgid "LicenseCompliance|License Compliance detected no new licenses"
 msgstr ""
 
-msgid "LicenseCompliance|License name"
-msgstr ""
-
 msgid "LicenseCompliance|No policy matches this license"
 msgstr ""
 
 msgid "LicenseCompliance|Out-of-compliance with the project's policies and should be removed"
 msgstr ""
 
-msgid "LicenseCompliance|Remove license"
-msgstr ""
-
-msgid "LicenseCompliance|Remove license?"
-msgstr ""
-
-msgid "LicenseCompliance|There are currently no policies in this project."
-msgstr ""
-
-msgid "LicenseCompliance|There are currently no policies that match in this project."
-msgstr ""
-
-msgid "LicenseCompliance|This license already exists in this project."
-msgstr ""
-
 msgid "LicenseCompliance|Uncategorized"
-msgstr ""
-
-msgid "LicenseCompliance|Update approvals"
-msgstr ""
-
-msgid "LicenseCompliance|You are about to remove the license, %{name}, from this project."
 msgstr ""
 
 msgid "LicenseManagement|Allowed"
@@ -32366,9 +32309,6 @@ msgstr ""
 msgid "Licenses"
 msgstr ""
 
-msgid "Licenses|Acceptable license to be used in the project"
-msgstr ""
-
 msgid "Licenses|Drag your license file here or %{linkStart}select a file to upload%{linkEnd}."
 msgstr ""
 
@@ -32378,16 +32318,7 @@ msgstr ""
 msgid "Licenses|Error: You are trying to upload something other than a file"
 msgstr ""
 
-msgid "Licenses|Name"
-msgstr ""
-
-msgid "Licenses|Policy"
-msgstr ""
-
 msgid "Licenses|The file could not be uploaded."
-msgstr ""
-
-msgid "Licenses|Unacceptable license, if detected it will disallow a merge request until it's removed"
 msgstr ""
 
 msgid "Limit display of time tracking units to hours."
@@ -58708,9 +58639,6 @@ msgstr ""
 msgid "Update appearance settings"
 msgstr ""
 
-msgid "Update approvers"
-msgstr ""
-
 msgid "Update failed"
 msgstr ""
 
@@ -65370,9 +65298,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "load it anyway"
-msgstr ""
-
-msgid "loading"
 msgstr ""
 
 msgid "locked by %{path_lock_user_name} %{created_at}"

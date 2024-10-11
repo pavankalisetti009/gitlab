@@ -27,7 +27,6 @@ describe('License Report MR Widget', () => {
 
   const defaultState = {
     managedLicenses: [allowedLicense, deniedLicense],
-    currentLicenseInModal: licenseReportMock[0],
     isLoadingManagedLicenses: true,
   };
 
@@ -66,7 +65,6 @@ describe('License Report MR Widget', () => {
     setAPISettings: () => {},
     fetchManagedLicenses: () => {},
     fetchParsedLicenseReport: () => {},
-    fetchLicenseCheckApprovalRule: () => {},
   };
 
   const mountComponent = ({
@@ -386,7 +384,6 @@ describe('License Report MR Widget', () => {
     const actions = {
       setAPISettings: jest.fn(),
       fetchParsedLicenseReport: jest.fn(),
-      fetchLicenseCheckApprovalRule: jest.fn(),
     };
     mountComponent({ actions });
 
@@ -398,11 +395,6 @@ describe('License Report MR Widget', () => {
     });
 
     expect(actions.fetchParsedLicenseReport).toHaveBeenCalledWith(expect.any(Object), undefined);
-
-    expect(actions.fetchLicenseCheckApprovalRule).toHaveBeenCalledWith(
-      expect.any(Object),
-      undefined,
-    );
   });
 
   describe('approval status', () => {

@@ -126,7 +126,6 @@ export default {
     });
 
     this.fetchParsedLicenseReport();
-    this.fetchLicenseCheckApprovalRule();
   },
   methods: {
     trackVisitedPath(trackAction) {
@@ -136,11 +135,7 @@ export default {
       api.trackRedisHllUserEvent('users_visiting_testing_license_compliance_full_report');
       this.trackEvent('click_full_report_license_compliance');
     },
-    ...mapActions(LICENSE_MANAGEMENT, [
-      'setAPISettings',
-      'fetchParsedLicenseReport',
-      'fetchLicenseCheckApprovalRule',
-    ]),
+    ...mapActions(LICENSE_MANAGEMENT, ['setAPISettings', 'fetchParsedLicenseReport']),
   },
 };
 </script>
