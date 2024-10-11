@@ -2,7 +2,6 @@ import { LICENSE_APPROVAL_STATUS } from 'ee/vue_shared/license_compliance/consta
 import {
   normalizeLicense,
   getPackagesString,
-  getStatusTranslationsFromLicenseStatus,
   getIssueStatusFromLicenseStatus,
   convertToOldReportFormat,
   addLicensesMatchingReportGroupStatus,
@@ -45,22 +44,6 @@ describe('utils', () => {
       expect(getPackagesString(examplePackages, false, 3)).toBe(
         'Used by pg, puma, foo, bar, and baz',
       );
-    });
-  });
-
-  describe('getStatusTranslationsFromLicenseStatus', () => {
-    it('returns "Allowed" for allowed license status', () => {
-      expect(getStatusTranslationsFromLicenseStatus(LICENSE_APPROVAL_STATUS.ALLOWED)).toBe(
-        'Allowed',
-      );
-    });
-
-    it('returns "Denied" status for denied license status', () => {
-      expect(getStatusTranslationsFromLicenseStatus(LICENSE_APPROVAL_STATUS.DENIED)).toBe('Denied');
-    });
-
-    it('returns "" for any other status', () => {
-      expect(getStatusTranslationsFromLicenseStatus()).toBe('');
     });
   });
 

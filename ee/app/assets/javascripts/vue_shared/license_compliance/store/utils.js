@@ -1,6 +1,6 @@
 import { groupBy } from 'lodash';
 import { LICENSE_APPROVAL_STATUS } from 'ee/vue_shared/license_compliance/constants';
-import { s__, n__, sprintf } from '~/locale';
+import { n__, sprintf } from '~/locale';
 import { STATUS_FAILED, STATUS_NEUTRAL, STATUS_SUCCESS } from '~/ci/reports/constants';
 
 /**
@@ -17,16 +17,6 @@ export const normalizeLicense = (license) => {
     ...rest,
     approvalStatus,
   };
-};
-
-export const getStatusTranslationsFromLicenseStatus = (approvalStatus) => {
-  if (approvalStatus === LICENSE_APPROVAL_STATUS.ALLOWED) {
-    return s__('LicenseCompliance|Allowed');
-  }
-  if (approvalStatus === LICENSE_APPROVAL_STATUS.DENIED) {
-    return s__('LicenseCompliance|Denied');
-  }
-  return '';
 };
 
 export const getIssueStatusFromLicenseStatus = (approvalStatus) => {

@@ -9,12 +9,6 @@ const STATUSES = {
 };
 
 export const LICENSE_APPROVAL_STATUS = STATUSES;
-export const LICENSE_APPROVAL_CLASSIFICATION = STATUSES;
-
-export const LICENSE_APPROVAL_ACTION = {
-  ALLOW: 'allow',
-  DENY: 'deny',
-};
 
 export const REPORT_GROUPS = [
   {

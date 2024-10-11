@@ -12,10 +12,6 @@ export const isLicenseBeingUpdated =
   (id = null) =>
     state.pendingLicenses.includes(id);
 
-export const isAddingNewLicense = (_, getters) => getters.isLicenseBeingUpdated();
-
-export const hasPendingLicenses = (state) => state.pendingLicenses.length > 0;
-
 export const licenseReport = (state) => state.newLicenses;
 
 export const licenseReportGroups = (state) =>

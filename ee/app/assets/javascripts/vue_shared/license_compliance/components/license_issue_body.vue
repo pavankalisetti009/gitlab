@@ -1,11 +1,8 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
 import { GlLink } from '@gitlab/ui';
 import api from '~/api';
 import { InternalEvents } from '~/tracking';
 
-import { LICENSE_MANAGEMENT } from 'ee/vue_shared/license_compliance/store/constants';
 import { LICENSE_LINK_TELEMETRY_EVENT, CLICK_EXTERNAL_LINK_LICENSE_COMPLIANCE } from '../constants';
 import LicensePackages from './license_packages.vue';
 
@@ -25,7 +22,6 @@ export default {
     },
   },
   methods: {
-    ...mapActions(LICENSE_MANAGEMENT, ['setLicenseInModal']),
     trackLinkClick() {
       api.trackRedisHllUserEvent(LICENSE_LINK_TELEMETRY_EVENT);
       this.trackEvent(CLICK_EXTERNAL_LINK_LICENSE_COMPLIANCE);
