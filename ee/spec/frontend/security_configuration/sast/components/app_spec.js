@@ -2,6 +2,7 @@ import { GlLink, GlLoadingIcon, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ConfigurationPageLayout from 'ee/security_configuration/components/configuration_page_layout.vue';
 import SASTConfigurationApp, { i18n } from 'ee/security_configuration/sast/components/app.vue';
 import ConfigurationForm from 'ee/security_configuration/sast/components/configuration_form.vue';
@@ -36,12 +37,14 @@ describe('SAST Configuration App', () => {
         projectPath,
       },
       options,
+      stubs: {
+        PageHeading,
+      },
     });
     return waitForPromises();
   };
 
-  const findHeader = () => wrapper.find('header');
-  const findSubHeading = () => findHeader().find('p');
+  const findHeadingDescription = () => wrapper.findByTestId('page-heading-description');
   const findLink = (container = wrapper) => container.findComponent(GlLink);
   const findConfigurationForm = () => wrapper.findComponent(ConfigurationForm);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -76,11 +79,13 @@ describe('SAST Configuration App', () => {
     });
 
     it('displays a link to sastDocumentationPath', () => {
-      expect(findLink(findHeader()).attributes('href')).toBe(sastDocumentationPath);
+      expect(findLink(findHeadingDescription()).attributes('href')).toBe(sastDocumentationPath);
     });
 
     it('displays the subheading', () => {
-      expect(findSubHeading().text()).toMatchInterpolatedText(SASTConfigurationApp.i18n.helpText);
+      expect(findHeadingDescription().text()).toMatchInterpolatedText(
+        SASTConfigurationApp.i18n.helpText,
+      );
     });
   });
 
