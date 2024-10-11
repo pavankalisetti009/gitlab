@@ -7,7 +7,8 @@ module EE
 
       prepended do
         feature_category :portfolio_management, [:epics]
-        feature_category :team_planning, [:iterations, :wikis]
+        feature_category :team_planning, [:iterations]
+        feature_category :wiki, [:wikis]
         urgency :medium, [:epics, :iterations]
         feature_category :vulnerability_management, [:vulnerabilities]
         urgency :low, [:vulnerabilities]

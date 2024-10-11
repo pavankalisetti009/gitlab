@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe Projects::AutocompleteSourcesController do
+RSpec.describe Projects::AutocompleteSourcesController, feature_category: :text_editors do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:group2) { create(:group) }
@@ -47,7 +47,7 @@ RSpec.describe Projects::AutocompleteSourcesController do
     end
   end
 
-  describe '#iterations', :freeze_time, feature_category: :team_planning do
+  describe '#iterations', :freeze_time do
     let_it_be(:cadence) { create(:iterations_cadence, group: group) }
     let_it_be(:open_iteration) { create(:iteration, iterations_cadence: cadence) }
     let_it_be(:closed_iteration) { create(:iteration, :closed, iterations_cadence: cadence) }

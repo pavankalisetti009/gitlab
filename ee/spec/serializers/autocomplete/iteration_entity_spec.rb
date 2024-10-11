@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Autocomplete::IterationEntity, feature_category: :team_planning do
+RSpec.describe Autocomplete::IterationEntity, feature_category: :text_editors do
   let(:group) { build_stubbed(:group) }
   let(:iteration) { build_stubbed(:iteration, iterations_cadence: build_stubbed(:iterations_cadence, group: group)) }
 
