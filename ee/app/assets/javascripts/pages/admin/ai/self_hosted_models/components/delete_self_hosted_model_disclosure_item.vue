@@ -39,7 +39,7 @@ export default {
     },
     title: s__('AdminSelfHostedModels|This self-hosted model cannot be deleted'),
     actionCancel: {
-      text: __('Cancel'),
+      text: __('Okay'),
     },
   },
   i18n: {
@@ -68,6 +68,10 @@ export default {
     },
     primarySelected() {
       return this.canDelete ? this.deleteModel : this.goToFeatureSettingPage;
+    },
+    modalPrimaryAction() {
+      // Return a primary action only if the model is able to be deleted.
+      return this.canDelete ? this.modal.actionPrimary : null;
     },
   },
   methods: {
@@ -128,12 +132,20 @@ export default {
         <span class="gl-text-danger">{{ __('Delete') }}</span>
       </template>
     </gl-disclosure-dropdown-item>
+    <!--
+      TODO:
+      Since switching to tabbed pages in SelfHostedDuoConfiguration, the aiFeatureSettingsPath
+      will no longer work as it leads to the old page. There is currently no alternative as we
+      don't support tabbed routes yet. Support will be added in 17.6
+      https://gitlab.com/gitlab-org/gitlab/-/issues/497718. Until then we can
+      remove the CTA button linking the route when displaying the cannotDeleteModal.
+    -->
     <gl-modal
       :modal-id="`delete-${model.name}-model-modal`"
       :title="modal.title"
       size="sm"
       :no-focus-on-show="true"
-      :action-primary="modal.actionPrimary"
+      :action-primary="modalPrimaryAction"
       :action-cancel="modal.actionCancel"
       @primary="primarySelected"
     >
