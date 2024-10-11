@@ -9,7 +9,5 @@ export const dataset = {
   pipelineIid: '43',
   pipelineJobsPath: '/pipelineJobsPath',
   sourceBranch: 'main',
-  emptyStateUnauthorizedSvgPath: '/emptyStateUnauthorizedSvgPath',
-  emptyStateForbiddenSvgPath: '/emptyStateForbiddenSvgPath',
   canViewFalsePositive: 'true',
 };

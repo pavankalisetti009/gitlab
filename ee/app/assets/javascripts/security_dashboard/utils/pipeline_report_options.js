@@ -1,7 +1,6 @@
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
 import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findings.query.graphql';
-import { LOADING_VULNERABILITIES_ERROR_CODES } from 'ee/security_dashboard/store/modules/vulnerabilities/constants';
 
 export const getPipelineReportOptions = (data) => {
   const {
@@ -15,15 +14,9 @@ export const getPipelineReportOptions = (data) => {
     pipelineIid,
     pipelineJobsPath,
     sourceBranch,
-    emptyStateUnauthorizedSvgPath,
-    emptyStateForbiddenSvgPath,
     canViewFalsePositive,
     hasJiraVulnerabilitiesIntegrationEnabled,
   } = data;
-  const loadingErrorIllustrations = {
-    [LOADING_VULNERABILITIES_ERROR_CODES.UNAUTHORIZED]: emptyStateUnauthorizedSvgPath,
-    [LOADING_VULNERABILITIES_ERROR_CODES.FORBIDDEN]: emptyStateForbiddenSvgPath,
-  };
 
   return {
     commitPathTemplate,
@@ -42,7 +35,6 @@ export const getPipelineReportOptions = (data) => {
       jobsPath: pipelineJobsPath,
       sourceBranch,
     },
-    loadingErrorIllustrations,
     canViewFalsePositive: parseBoolean(canViewFalsePositive),
     vulnerabilitiesQuery: findingsQuery,
     hasJiraVulnerabilitiesIntegrationEnabled: parseBoolean(

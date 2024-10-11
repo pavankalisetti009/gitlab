@@ -3,7 +3,6 @@ import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
 import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findings.query.graphql';
 import { dataset } from 'ee_jest/security_dashboard/mock_data/pipeline_report_dataset';
 import { createAlert } from '~/alert';
-import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
 
 const mockCeOptions = {
   foo: 'bar',
@@ -40,10 +39,6 @@ describe('createAppOptions', () => {
     expect(options).toMatchObject({
       ...mockCeOptions,
       provide: {
-        loadingErrorIllustrations: {
-          [HTTP_STATUS_UNAUTHORIZED]: dataset.emptyStateUnauthorizedSvgPath,
-          [HTTP_STATUS_FORBIDDEN]: dataset.emptyStateForbiddenSvgPath,
-        },
         commitPathTemplate: dataset.commitPathTemplate,
         projectFullPath: dataset.projectFullPath,
         emptyStateSvgPath: dataset.emptyStateSvgPath,
