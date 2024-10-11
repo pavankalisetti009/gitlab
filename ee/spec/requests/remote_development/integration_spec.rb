@@ -97,7 +97,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   let(:expected_processed_devfile) { YAML.safe_load(expected_processed_devfile_yaml).to_h }
-  let(:editor) { "webide" }
   let(:workspace_root) { "/projects" }
   let(:user_provided_variables) do
     [
@@ -217,7 +216,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(workspace.desired_state_updated_at).to eq(Time.current)
     expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
     expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
-    expect(workspace.editor).to eq("webide")
     expect(workspace.url).to eq(URI::HTTPS.build({
       host: "60001-#{workspace.name}.#{dns_zone}",
       query: {

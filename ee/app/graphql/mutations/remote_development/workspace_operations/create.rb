@@ -26,10 +26,12 @@ module Mutations
           required: true,
           description: 'Desired state of the created workspace.'
 
+        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/498322 - Remove in 18.0
         argument :editor,
           GraphQL::Types::String,
-          required: true,
-          description: 'Editor to inject into the created workspace. Must match a configured template.'
+          required: false,
+          description: 'Editor to inject into the created workspace. Must match a configured template.',
+          deprecated: { reason: 'Argument is not used', milestone: '17.5' }
 
         argument :max_hours_before_termination,
           GraphQL::Types::Int,

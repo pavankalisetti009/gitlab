@@ -27,7 +27,6 @@ module RemoteDevelopment
           }
           params => {
             desired_state: String => desired_state,
-            editor: String => editor,
             max_hours_before_termination: Integer => max_hours_before_termination,
             devfile_ref: String => devfile_ref,
             devfile_path: String => devfile_path,
@@ -44,7 +43,6 @@ module RemoteDevelopment
           workspace.actual_state = CREATION_REQUESTED
           workspace.desired_config_generator_version =
             RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
-          workspace.editor = editor
           workspace.max_hours_before_termination = max_hours_before_termination
           workspace.devfile_ref = devfile_ref
           workspace.devfile_path = devfile_path
