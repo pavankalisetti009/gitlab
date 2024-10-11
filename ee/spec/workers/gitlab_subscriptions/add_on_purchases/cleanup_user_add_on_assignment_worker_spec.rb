@@ -70,6 +70,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
             create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
           end
 
+          before do
+            add_on_purchase.assigned_users.create!(user: remove_user)
+          end
+
           it 'removes the user addon assignment' do
             expect do
               subject
