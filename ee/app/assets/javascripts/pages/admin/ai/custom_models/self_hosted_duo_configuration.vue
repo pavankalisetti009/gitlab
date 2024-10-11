@@ -1,6 +1,7 @@
 <script>
 import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import SelfHostedModelsPage from './self_hosted_models_page.vue';
 import FeatureSettingsPage from './ai_feature_settings_page.vue';
@@ -15,12 +16,13 @@ export default {
     GlButton,
     SelfHostedModelsPage,
     FeatureSettingsPage,
+    PageHeading,
   },
   inject: ['newSelfHostedModelPath'],
   i18n: {
     title: s__('AdminSelfHostedModels|Self-hosted models'),
     description: s__(
-      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features',
+      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
     ),
   },
   data() {
@@ -53,12 +55,21 @@ export default {
 
 <template>
   <div>
-    <div class="gl-flex gl-items-center gl-gap-3">
-      <h2>{{ $options.i18n.title }}</h2>
-      <beta-badge />
-    </div>
-    <p>{{ $options.i18n.description }}</p>
-    <div class="top-area gl-items-center">
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex gl-items-center gl-gap-3">
+          <span data-testid="self-hosted-title">{{ $options.i18n.title }}</span>
+          <beta-badge class="gl-flex" />
+        </div>
+      </template>
+      <template #description>{{ $options.i18n.description }}</template>
+      <template #actions>
+        <gl-button variant="confirm" :href="newSelfHostedModelPath">
+          {{ s__('AdminSelfHostedModels|Add self-hosted model') }}
+        </gl-button>
+      </template>
+    </page-heading>
+    <div class="top-area gl-items-center gl-border-b-0">
       <gl-tabs class="gl-flex gl-grow" nav-class="gl-border-b-0">
         <gl-tab
           v-for="tab in $options.tabs"
@@ -71,9 +82,6 @@ export default {
           </template>
         </gl-tab>
       </gl-tabs>
-      <gl-button variant="confirm" :href="newSelfHostedModelPath">{{
-        s__('AdminSelfHostedModels|Add self-hosted model')
-      }}</gl-button>
     </div>
     <div v-if="isSelfHostedModelsTab">
       <self-hosted-models-page />
