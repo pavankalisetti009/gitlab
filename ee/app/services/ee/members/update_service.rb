@@ -9,9 +9,17 @@ module EE
 
       override :execute
       def execute(members, permission: :update)
-        return super unless non_admin_and_member_promotion_management_enabled? && members.present?
-
         members = Array.wrap(members)
+
+        return super unless members.present?
+
+        unless seats_available_for?(members)
+          members.each { |m| m.errors.add(:base, 'No seat available') }
+          return prepare_response(members)
+        end
+
+        return super unless non_admin_and_member_promotion_management_enabled?
+
         validate_update_permission!(members, permission)
 
         service_response = GitlabSubscriptions::MemberManagement::QueueNonBillableToBillableService.new(
@@ -48,6 +56,16 @@ module EE
       end
 
       private
+
+      def seats_available_for?(members)
+        root_namespace = source.root_ancestor
+
+        return true unless root_namespace.block_seat_overages?
+
+        user_ids = members.map(&:user_id)
+
+        root_namespace.seats_available_for?(user_ids, params[:access_level], params[:member_role_id])
+      end
 
       override :has_update_permissions?
       def has_update_permissions?(member, permission)

@@ -164,6 +164,47 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
     end
   end
 
+  context 'when block seat overages is enabled', :saas do
+    let_it_be_with_refind(:group) { create(:group, owners: user) }
+
+    before_all do
+      create(:gitlab_subscription, :ultimate, namespace: group, seats: 1)
+      group.namespace_settings.update!(seat_control: :block_overages)
+    end
+
+    it 'rejects promoting a user in a subgroup if there is no seat available' do
+      subgroup = create(:group, parent: group)
+      member = subgroup.add_guest(create(:user))
+      params = { access_level: ::Gitlab::Access::DEVELOPER, source: group }
+
+      result = described_class.new(user, params).execute(member)
+
+      expect(result[:status]).to eq(:error)
+      expect(member.reload.access_level).to eq(::Gitlab::Access::GUEST)
+    end
+
+    it 'rejects multiple member promotions if there are not enough seats available' do
+      group.gitlab_subscription.update!(seats: 2)
+      member_a = group.add_guest(create(:user))
+      member_b = group.add_guest(create(:user))
+      params = { access_level: ::Gitlab::Access::DEVELOPER, source: group }
+
+      result = described_class.new(user, params).execute([member_a, member_b])
+
+      expect(result[:status]).to eq(:error)
+      expect(member_a.reload.access_level).to eq(::Gitlab::Access::GUEST)
+      expect(member_b.reload.access_level).to eq(::Gitlab::Access::GUEST)
+    end
+
+    it 'handles an empty array of members' do
+      params = { access_level: ::Gitlab::Access::DEVELOPER, source: group }
+
+      result = described_class.new(user, params).execute([])
+
+      expect(result[:status]).to eq(:success)
+    end
+  end
+
   context 'when current user can update the given member' do
     let(:current_user) { user }
 

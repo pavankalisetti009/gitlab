@@ -348,6 +348,36 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
         end
       end
     end
+
+    context 'with block seat overages enabled', :saas do
+      before do
+        create(:gitlab_subscription, :ultimate, namespace: group, seats: 1)
+        group.namespace_settings.update!(seat_control: :block_overages)
+      end
+
+      it 'rejects promoting a member if there is no billable seat available' do
+        member = group.add_guest(create(:user))
+        params = { group_member: { access_level: ::Gitlab::Access::DEVELOPER } }
+
+        put group_group_member_path(group_id: group, id: member.id), xhr: true, params: params
+
+        expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        expect(json_response['message']).to eq('No seat available')
+        expect(member.reload.access_level).to eq(::Gitlab::Access::GUEST)
+      end
+
+      it 'promotes a member if there is a billable seat available' do
+        group.gitlab_subscription.update!(seats: 2)
+        member = group.add_guest(create(:user))
+        params = { group_member: { access_level: ::Gitlab::Access::DEVELOPER } }
+
+        put group_group_member_path(group_id: group, id: member.id), xhr: true, params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.keys).not_to include('message')
+        expect(member.reload.access_level).to eq(::Gitlab::Access::DEVELOPER)
+      end
+    end
   end
 
   describe "GET /groups/*group_id/-/group_members/export_csv" do
