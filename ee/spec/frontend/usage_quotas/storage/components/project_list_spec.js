@@ -90,7 +90,7 @@ describe('ProjectList', () => {
         createComponent({ props: { projects: [project] } });
 
         const linkToDocumentation = wrapper.findByRole('link', {
-          href: '/help/user/usage_quotas.html#view-project-fork-storage-usage',
+          href: '/help/user/storage_usage_quotas.html#view-project-fork-storage-usage',
         });
 
         expect(linkToDocumentation.exists()).toBe(true);

@@ -168,7 +168,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
                   (0 B of 0 B). If a project reaches 100% of the storage quota (0 B)
                   the project will be in a read-only state, and you won't be able to push to your repository or add large files.
                   To reduce storage usage, reduce git repository and git LFS storage. For more information about storage limits,
-                  see our docs: http://localhost/help/user/usage_quotas.md#project-storage-limit.
+                  see our docs: http://localhost/help/user/storage_usage_quotas.md#project-storage-limit.
                 MSG
               "type" => "alert"
             }
@@ -213,7 +213,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
                                                            "(11 B of 12 B). If #{project.namespace.name} exceeds the storage quota, " \
                                                            "all projects in the namespace will be locked and actions will be restricted. " \
                                                            "To manage storage, or purchase additional storage, " \
-                                                           "see http://localhost/help/user/usage_quotas.md#manage-storage-usage. " \
+                                                           "see http://localhost/help/user/storage_usage_quotas.md#manage-storage-usage. " \
                                                            "To learn more about restricted actions, see http://localhost/help/user/read_only_namespaces.md#restricted-actions", "type" => "alert" }])
           end
         end
@@ -232,7 +232,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
                                                            "(11 B of 12 B). If #{group.name} exceeds the storage quota, " \
                                                            "all projects in the namespace will be locked and actions will be restricted. " \
                                                            "To manage storage, or purchase additional storage, " \
-                                                           "see http://localhost/help/user/usage_quotas.md#manage-storage-usage. " \
+                                                           "see http://localhost/help/user/storage_usage_quotas.md#manage-storage-usage. " \
                                                            "To learn more about restricted actions, see http://localhost/help/user/read_only_namespaces.md#restricted-actions", "type" => "alert" }])
           end
         end

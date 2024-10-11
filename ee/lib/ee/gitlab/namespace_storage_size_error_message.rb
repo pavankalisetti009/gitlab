@@ -17,14 +17,14 @@ module EE
         _(
           "Your action has been rejected because the namespace storage limit has been reached. " \
           "For more information, visit %{doc_url}.") % {
-            doc_url: help_page_url('user/usage_quotas.md')
+            doc_url: help_page_url('user/storage_usage_quotas.md')
           }
       end
 
       def merge_error
         manage_storage_url = link_to(
           '',
-          help_page_path('user/usage_quotas.md'),
+          help_page_path('user/storage_usage_quotas.md'),
           target: '_blank',
           rel: 'noopener noreferrer'
         )
@@ -88,7 +88,7 @@ module EE
       def push_message_params
         {
           namespace_name: message_params[:namespace_name],
-          manage_storage_url: help_page_url('user/usage_quotas.md', 'manage-storage-usage'),
+          manage_storage_url: help_page_url('user/storage_usage_quotas.md', 'manage-storage-usage'),
           restricted_actions_url: help_page_url('user/read_only_namespaces.md', 'restricted-actions'),
           current_size: formatted(current_size),
           size_limit: formatted(limit),

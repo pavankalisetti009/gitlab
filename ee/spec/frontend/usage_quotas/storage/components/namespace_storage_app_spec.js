@@ -110,7 +110,7 @@ describe('NamespaceStorageApp', () => {
     });
   });
 
-  // https://docs.gitlab.com/ee/user/usage_quotas#project-storage-limit
+  // https://docs.gitlab.com/ee/user/storage_usage_quotas#project-storage-limit
   describe('Namespace under Project type storage enforcement', () => {
     it('sets default sorting to STORAGE_SIZE_DESC, when the limit is NOT set', () => {
       createComponent({

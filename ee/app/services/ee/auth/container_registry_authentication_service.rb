@@ -18,7 +18,7 @@ module EE
             _("Your action has been rejected because the namespace storage limit has been reached. " \
             "For more information, " \
             "visit %{doc_url}."),
-            doc_url: Rails.application.routes.url_helpers.help_page_url('user/usage_quotas.md')
+            doc_url: Rails.application.routes.url_helpers.help_page_url('user/storage_usage_quotas.md')
           )
         )
       end

@@ -199,7 +199,7 @@ describe('StorageUsageStatistics', () => {
 
       describe('enforcementType is namespace', () => {
         // Namespace enforcement type is declared in ee/app/models/namespaces/storage/root_size.rb
-        // More about namespace storage limit at https://docs.gitlab.com/ee/user/usage_quotas#namespace-storage-limit
+        // More about namespace storage limit at https://docs.gitlab.com/ee/user/storage_usage_quotas#namespace-storage-limit
         beforeEach(() => {
           createComponent();
         });
