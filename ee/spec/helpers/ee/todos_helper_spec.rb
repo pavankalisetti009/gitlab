@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe ::TodosHelper do
   include Devise::Test::ControllerHelpers
 
+  let_it_be(:user) { create(:user) }
+
   describe '#todo_types_options' do
     it 'includes options for an epic todo' do
       expect(helper.todo_types_options).to include(
@@ -145,10 +147,19 @@ RSpec.describe ::TodosHelper do
 
       helper.todo_groups_requiring_saml_reauth(todos)
     end
+
+    context 'with todos that have no group relation' do
+      let_it_be(:ssh_key_todo) do
+        create(:todo, project: nil, group: nil, target: create(:key, user: user), user: user)
+      end
+
+      it 'ignores todos with no group relation' do
+        expect(helper.todo_groups_requiring_saml_reauth([ssh_key_todo, issue_todo])).to eq([issue_todo.project.group])
+      end
+    end
   end
 
   describe '#todo_target_path_anchor' do
-    let_it_be(:user) { create(:user) }
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
     let_it_be(:author) { create(:user) }
@@ -171,7 +182,6 @@ RSpec.describe ::TodosHelper do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:merge_request) { create(:merge_request) }
-    let_it_be(:user) { create(:user) }
     let_it_be(:todo) { create(:todo, target: merge_request, user: user) }
 
     where(:action, :expected_action_name) do

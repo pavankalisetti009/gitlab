@@ -57303,6 +57303,12 @@ msgstr ""
 msgid "Todos|Review submitted"
 msgstr ""
 
+msgid "Todos|SSH key"
+msgstr ""
+
+msgid "Todos|SSH key expired"
+msgstr ""
+
 msgid "Todos|Something went wrong. Please try again."
 msgstr ""
 
@@ -57337,6 +57343,9 @@ msgid "Todos|You"
 msgstr ""
 
 msgid "Todos|You're all done!"
+msgstr ""
+
+msgid "Todos|Your SSH key has expired"
 msgstr ""
 
 msgid "Todos|Your To-Do List shows what to work on next"

@@ -25908,7 +25908,9 @@ Represents an SSH key.
 | <a id="keyexpiresat"></a>`expiresAt` | [`Time!`](#time) | Timestamp of when the key expires. It's null if it never expires. |
 | <a id="keyid"></a>`id` | [`ID!`](#id) | ID of the key. |
 | <a id="keykey"></a>`key` | [`String!`](#string) | Public key of the key pair. |
+| <a id="keyname"></a>`name` | [`String`](#string) | Name or title of this object. |
 | <a id="keytitle"></a>`title` | [`String!`](#string) | Title of the key. |
+| <a id="keyweburl"></a>`webUrl` | [`String`](#string) | URL of this object. |
 
 ### `Label`
 
@@ -39168,6 +39170,7 @@ Values for sorting timelogs.
 | <a id="todoactionenumokr_checkin_requested"></a>`okr_checkin_requested` | An OKR assigned to the user requires an update. |
 | <a id="todoactionenumreview_requested"></a>`review_requested` | Review was requested from the user. |
 | <a id="todoactionenumreview_submitted"></a>`review_submitted` | Merge request authored by the user received a review. |
+| <a id="todoactionenumssh_key_expired"></a>`ssh_key_expired` | SSH key of the user has expired. |
 | <a id="todoactionenumunmergeable"></a>`unmergeable` | Merge request authored by the user could not be merged. |
 
 ### `TodoSort`
@@ -39203,6 +39206,7 @@ Sort options for todos.
 | <a id="todotargetenumdesign"></a>`DESIGN` | Design. |
 | <a id="todotargetenumepic"></a>`EPIC` | An Epic. |
 | <a id="todotargetenumissue"></a>`ISSUE` | Issue. |
+| <a id="todotargetenumkey"></a>`KEY` | SSH key. |
 | <a id="todotargetenummergerequest"></a>`MERGEREQUEST` | Merge request. |
 | <a id="todotargetenumnamespace"></a>`NAMESPACE` | Namespace. |
 | <a id="todotargetenumproject"></a>`PROJECT` | Project. |
@@ -41448,6 +41452,7 @@ Implementations:
 - [`EpicIssue`](#epicissue)
 - [`Group`](#group)
 - [`Issue`](#issue)
+- [`Key`](#key)
 - [`MergeRequest`](#mergerequest)
 - [`Namespace`](#namespace)
 - [`Project`](#project)
