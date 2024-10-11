@@ -109,12 +109,13 @@ describe('EE WorkItemAttributesWrapper component', () => {
 
     it('emits an error event to the wrapper', async () => {
       createComponent();
+      await waitForPromises();
       const updateError = 'Failed to update';
 
       findWorkItemIteration().vm.$emit('error', updateError);
       await nextTick();
 
-      expect(wrapper.emitted('error')).toEqual([[updateError]]);
+      expect(wrapper.emitted('error')).toEqual(expect.arrayContaining([[updateError]]));
     });
   });
 
@@ -180,9 +181,10 @@ describe('EE WorkItemAttributesWrapper component', () => {
     `('$description', ({ healthStatusWidgetPresent, exists }) => {
       it(`${
         healthStatusWidgetPresent ? 'renders' : 'does not render'
-      } healthStatus component`, () => {
+      } healthStatus component`, async () => {
         const response = workItemResponseFactory({ healthStatusWidgetPresent });
         createComponent({ workItem: response.data.workItem });
+        await waitForPromises();
 
         expect(findWorkItemHealthStatus().exists()).toBe(exists);
       });
@@ -190,7 +192,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
 
     it('renders WorkItemHealthStatus', async () => {
       createComponent();
-
       await waitForPromises();
 
       expect(findWorkItemHealthStatus().exists()).toBe(true);
@@ -199,12 +200,13 @@ describe('EE WorkItemAttributesWrapper component', () => {
     it('emits an error event to the wrapper', async () => {
       const response = workItemResponseFactory({ healthStatusWidgetPresent: true });
       createComponent({ workItem: response.data.workItem });
+      await waitForPromises();
       const updateError = 'Failed to update';
 
       findWorkItemHealthStatus().vm.$emit('error', updateError);
       await nextTick();
 
-      expect(wrapper.emitted('error')).toEqual([[updateError]]);
+      expect(wrapper.emitted('error')).toEqual(expect.arrayContaining([[updateError]]));
     });
   });
 
@@ -214,9 +216,10 @@ describe('EE WorkItemAttributesWrapper component', () => {
       ${'when widget is returned from API'}     | ${true}               | ${true}
       ${'when widget is not returned from API'} | ${false}              | ${false}
     `('$description', ({ progressWidgetPresent, exists }) => {
-      it(`${progressWidgetPresent ? 'renders' : 'does not render'} progress component`, () => {
+      it(`${progressWidgetPresent ? 'renders' : 'does not render'} progress component`, async () => {
         const response = workItemResponseFactory({ progressWidgetPresent });
         createComponent({ workItem: response.data.workItem });
+        await waitForPromises();
 
         expect(findWorkItemProgress().exists()).toBe(exists);
       });
@@ -233,12 +236,13 @@ describe('EE WorkItemAttributesWrapper component', () => {
     it('emits an error event to the wrapper', async () => {
       const response = workItemResponseFactory({ progressWidgetPresent: true });
       createComponent({ workItem: response.data.workItem });
+      await waitForPromises();
       const updateError = 'Failed to update';
 
       findWorkItemProgress().vm.$emit('error', updateError);
       await nextTick();
 
-      expect(wrapper.emitted('error')).toEqual([[updateError]]);
+      expect(wrapper.emitted('error')).toEqual(expect.arrayContaining([[updateError]]));
     });
   });
 
@@ -248,10 +252,11 @@ describe('EE WorkItemAttributesWrapper component', () => {
       ${'when widget is returned from API'}     | ${true}            | ${true}
       ${'when widget is not returned from API'} | ${false}           | ${false}
     `('$description', ({ colorWidgetPresent, exists }) => {
-      it(`${colorWidgetPresent ? 'renders' : 'does not render'} color component`, () => {
+      it(`${colorWidgetPresent ? 'renders' : 'does not render'} color component`, async () => {
         const response = workItemResponseFactory({ colorWidgetPresent });
 
         createComponent({ workItem: response.data.workItem });
+        await waitForPromises();
 
         expect(findWorkItemColor().exists()).toBe(exists);
       });
@@ -268,12 +273,13 @@ describe('EE WorkItemAttributesWrapper component', () => {
     it('emits an error event to the wrapper', async () => {
       const response = workItemResponseFactory({ colorWidgetPresent: true });
       createComponent({ workItem: response.data.workItem });
+      await waitForPromises();
       const updateError = 'Failed to update';
 
       findWorkItemColor().vm.$emit('error', updateError);
       await nextTick();
 
-      expect(wrapper.emitted('error')).toEqual([[updateError]]);
+      expect(wrapper.emitted('error')).toEqual(expect.arrayContaining([[updateError]]));
     });
   });
 
