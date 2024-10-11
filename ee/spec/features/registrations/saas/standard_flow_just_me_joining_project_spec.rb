@@ -42,7 +42,8 @@ RSpec.describe 'Standard flow for user picking just me and joining a project', :
       expect(page).to have_field('user_setup_for_company_true', valid: false)
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using GitLab?')
-      expect(page).to have_content(_('Enables a free GitLab Ultimate trial when you create a new project.'))
+      expect(page)
+        .to have_content(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
       expect(page).to have_content('What would you like to do?')
     end
   end
