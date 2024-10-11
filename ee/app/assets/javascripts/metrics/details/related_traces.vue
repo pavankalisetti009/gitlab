@@ -48,6 +48,19 @@ export default {
 
       return viewTracesUrlWithMetric(this.tracingIndexUrl, dataPoint);
     },
+    iconAttrs(item) {
+      if (item.traceIds.length > 0) {
+        return {
+          name: 'status_created',
+          size: 16,
+        };
+      }
+      return {
+        name: 'severity-low',
+        size: 8,
+        class: 'gl-ml-2',
+      };
+    },
   },
 };
 </script>
@@ -66,7 +79,7 @@ export default {
         :key="item.seriesName"
         class="gl-flex gl-items-center gl-gap-3"
       >
-        <gl-icon name="status_created" :size="16" :style="{ color: item.color }" />
+        <gl-icon :style="{ color: item.color }" v-bind="iconAttrs(item)" />
         <span>
           {{ item.seriesName }}
           <gl-sprintf :message="s__('ObservabilityMetrics|(Value: %{value})')">

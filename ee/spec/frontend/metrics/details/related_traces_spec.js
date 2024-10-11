@@ -71,22 +71,32 @@ describe('RelatedTraces', () => {
 
     describe('sorts the list items by value descending', () => {
       it.each`
-        index | expectedValue
-        ${0}  | ${9000}
-        ${1}  | ${4000}
-        ${2}  | ${1500}
-      `('renders the item at $index with value $expectedValue', ({ index, expectedValue }) => {
-        const item = findTracesListItems().at(index);
+        index | expectedValue | hasTraces
+        ${0}  | ${9000}       | ${true}
+        ${1}  | ${4000}       | ${true}
+        ${2}  | ${1500}       | ${false}
+      `(
+        'renders the item at $index with value $expectedValue',
+        ({ index, expectedValue, hasTraces }) => {
+          const item = findTracesListItems().at(index);
 
-        expect(item.text()).toContain(`${expectedValue}`);
-        expect(item.text()).toContain(
-          mockDataPoints.find(({ value }) => value === expectedValue).seriesName,
-        );
-        expect(item.findComponent(GlIcon).props()).toMatchObject({
-          name: 'status_created',
-          size: 16,
-        });
-      });
+          expect(item.text()).toContain(`${expectedValue}`);
+          expect(item.text()).toContain(
+            mockDataPoints.find(({ value }) => value === expectedValue).seriesName,
+          );
+          if (hasTraces) {
+            expect(item.findComponent(GlIcon).props()).toMatchObject({
+              name: 'status_created',
+              size: 16,
+            });
+          } else {
+            expect(item.findComponent(GlIcon).props()).toMatchObject({
+              name: 'severity-low',
+              size: 8,
+            });
+          }
+        },
+      );
     });
   });
 
