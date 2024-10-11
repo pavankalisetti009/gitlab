@@ -136,6 +136,43 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
     end
 
+    shared_examples 'trial widget data' do
+      describe 'trial widget when subscriptions_trials feature is available', :saas do
+        let(:root_group) { namespace }
+        let(:presenter) { GitlabSubscriptions::Trials::WidgetPresenter.new(root_group, user: user) }
+
+        before do
+          stub_saas_features(subscriptions_trials: true)
+          allow(root_group).to receive(:actual_plan_name).and_return('_actual_plan_name_')
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :admin_namespace, root_group).and_return(true)
+          allow(GitlabSubscriptions::Trials::WidgetPresenter).to receive(:new).and_return(presenter)
+        end
+
+        context 'when eligible for Duo Enterprise trial widget' do
+          before do
+            build(:gitlab_subscription, :ultimate, namespace: root_group)
+            build_stubbed(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: root_group)
+            allow(presenter).to receive(:attributes).and_return({ trial_widget_data_attrs: {} })
+          end
+
+          it 'returns Duo Enterprise trial widget data' do
+            expect(super_sidebar_context).to include(:trial_widget_data_attrs)
+          end
+        end
+
+        context 'when not eligible for any widget' do
+          before do
+            allow(presenter).to receive(:attributes).and_return({})
+          end
+
+          it 'does not return any trial widget data' do
+            expect(super_sidebar_context).not_to include(:trial_widget_data_attrs)
+          end
+        end
+      end
+    end
+
     context 'with global concerns' do
       subject(:super_sidebar_context) do
         helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: nil)

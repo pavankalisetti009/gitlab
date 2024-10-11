@@ -95,3 +95,33 @@ export const DUO_PRO_TRIAL_POPOVER_LEARN_TITLE = s__('DuoProTrial|Learn about fe
 export const DUO_PRO_TRIAL_POPOVER_PURCHASE_TITLE = s__('DuoProTrial|Purchase now');
 export const DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY = 'duo_pro_trial_status_popover';
 export const DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY = 'duo_pro_trial_ended_popover';
+
+const DUO_ENTERPRISE = 'duo_enterprise';
+
+export const TRIAL_WIDGET = {
+  i18n: {
+    widgetRemainingDays: s__('TrialWidget|%{daysLeft} days left in trial'),
+    learnMore: s__('TrialWidget|Learn more'),
+    upgradeText: s__('TrialWidget|Upgrade'),
+    seeUpgradeOptionsText: s__('TrialWidget|See upgrade options'),
+    dismiss: __('Dismiss'),
+  },
+  trackingEvents: {
+    action: 'click_link',
+    activeTrialOptions: {
+      category: 'trial_status_widget',
+    },
+    trialEndedOptions: {
+      category: 'trial_ended_widget',
+      label: 'your_trial_has_ended',
+    },
+  },
+  trialTypes: {
+    [DUO_ENTERPRISE]: {
+      name: s__('TrialWidget|GitLab Duo Enterprise'),
+      widgetTitle: s__('TrialWidget|GitLab Duo Enterprise Trial'),
+      widgetTitleExpiredTrial: s__('TrialWidget|Your trial of GitLab Duo Enterprise has ended'),
+    },
+  },
+  containerId: 'trial-sidebar-widget',
+};

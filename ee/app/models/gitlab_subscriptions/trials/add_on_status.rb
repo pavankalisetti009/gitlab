@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   module Trials
-    class DuoProStatus
+    class AddOnStatus
       TIME_FRAME_AFTER_EXPIRATION = 10.days
       private_constant :TIME_FRAME_AFTER_EXPIRATION
 

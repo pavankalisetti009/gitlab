@@ -9,6 +9,7 @@ module GitlabSubscriptions
         super
 
         @widget_presenter = GitlabSubscriptions::Trials::StatusWidgetPresenter.new(namespace) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        @duo_enterprise_presenter = DuoEnterpriseStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
       end
 
       def attributes
@@ -19,7 +20,7 @@ module GitlabSubscriptions
 
       private
 
-      attr_reader :widget_presenter
+      attr_reader :widget_presenter, :duo_enterprise_presenter
 
       def eligible?
         eligible_for_widget? && presenter.eligible_for_widget?
@@ -27,7 +28,9 @@ module GitlabSubscriptions
 
       def presenter
         @presenter ||=
-          if widget_presenter.eligible_for_widget?
+          if duo_enterprise_presenter.eligible_for_widget?
+            duo_enterprise_presenter
+          elsif widget_presenter.eligible_for_widget?
             widget_presenter
           else
             DuoProStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
