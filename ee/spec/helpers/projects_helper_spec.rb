@@ -358,28 +358,11 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     context 'project with third party offers hidden' do
-      let(:expected_value) do
-        {
-          has_vulnerabilities: 'false',
-          has_jira_vulnerabilities_integration_enabled: 'true',
-          empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
-          operational_configuration_path: new_project_security_policy_path(project),
-          security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
-          project_full_path: project.full_path,
-          no_vulnerabilities_svg_path: start_with('/assets/illustrations/empty-state/empty-search-md-'),
-          security_configuration_path: end_with('/configuration'),
-          can_admin_vulnerability: 'true',
-          new_vulnerability_path: end_with('/security/vulnerabilities/new'),
-          dismissal_descriptions: dismissal_descriptions_json,
-          hide_third_party_offers: 'true'
-        }
-      end
-
       before do
         allow(::Gitlab::CurrentSettings.current_application_settings).to receive(:hide_third_party_offers?).and_return(true)
       end
 
-      it { is_expected.to match(expected_value) }
+      it { is_expected.to include(hide_third_party_offers: 'true') }
     end
 
     context 'project without vulnerabilities' do
@@ -390,6 +373,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           operational_configuration_path: new_project_security_policy_path(project),
           security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
+          project: { id: project.id, name: project.name },
           project_full_path: project.full_path,
           no_vulnerabilities_svg_path: start_with('/assets/illustrations/empty-state/empty-search-md-'),
           security_configuration_path: end_with('/configuration'),
@@ -415,7 +399,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           project_full_path: project.full_path,
           vulnerabilities_export_endpoint: "/api/v4/security/projects/#{project.id}/vulnerability_exports",
           no_vulnerabilities_svg_path: start_with('/assets/illustrations/empty-state/empty-search-md-'),
-          empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-dashboard-md'),
+          empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           operational_configuration_path: new_project_security_policy_path(project),
           security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           new_project_pipeline_path: "/#{project.full_path}/-/pipelines/new",

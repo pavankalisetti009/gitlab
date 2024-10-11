@@ -224,44 +224,43 @@ module EE
       end
     end
 
-    def project_security_dashboard_config(project)
-      if project.vulnerabilities.none?
-        {
-          has_vulnerabilities: 'false',
-          has_jira_vulnerabilities_integration_enabled: project.configured_to_create_issues_from_vulnerabilities?.to_s,
-          operational_configuration_path: new_project_security_policy_path(@project),
-          empty_state_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
-          security_dashboard_empty_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
-          no_vulnerabilities_svg_path: image_path('illustrations/empty-state/empty-search-md.svg'),
-          project_full_path: project.full_path,
-          security_configuration_path: project_security_configuration_path(@project),
-          can_admin_vulnerability: can?(current_user, :admin_vulnerability, project).to_s,
-          new_vulnerability_path: new_project_security_vulnerability_path(@project),
-          dismissal_descriptions: dismissal_descriptions.to_json,
-          hide_third_party_offers: ::Gitlab::CurrentSettings.current_application_settings.hide_third_party_offers?.to_s
-        }.merge!(security_dashboard_pipeline_data(project))
-      else
+    def base_project_security_dashboard_config(project)
+      {
+        has_vulnerabilities: 'false',
+        has_jira_vulnerabilities_integration_enabled: project.configured_to_create_issues_from_vulnerabilities?.to_s,
+        empty_state_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
+        security_dashboard_empty_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
+        no_vulnerabilities_svg_path: image_path('illustrations/empty-state/empty-search-md.svg'),
+        project: { id: project.id, name: project.name },
+        project_full_path: project.full_path,
+        security_configuration_path: project_security_configuration_path(@project),
+        can_admin_vulnerability: can?(current_user, :admin_vulnerability, project).to_s,
+        new_vulnerability_path: new_project_security_vulnerability_path(@project),
+        dismissal_descriptions: dismissal_descriptions.to_json,
+        hide_third_party_offers: ::Gitlab::CurrentSettings.current_application_settings.hide_third_party_offers?.to_s,
+        operational_configuration_path: new_project_security_policy_path(@project)
+      }.merge(security_dashboard_pipeline_data(project))
+    end
+
+    def project_security_dashboard_config_with_vulnerabilities(project)
+      base_project_security_dashboard_config(project).merge(
         {
           has_vulnerabilities: 'true',
-          has_jira_vulnerabilities_integration_enabled: project.configured_to_create_issues_from_vulnerabilities?.to_s,
-          project: { id: project.id, name: project.name },
-          project_full_path: project.full_path,
           vulnerabilities_export_endpoint: expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
-          empty_state_svg_path: image_path('illustrations/empty-state/empty-dashboard-md.svg'),
-          security_dashboard_empty_svg_path: image_path('illustrations/empty-state/empty-secure-md.svg'),
-          no_vulnerabilities_svg_path: image_path('illustrations/empty-state/empty-search-md.svg'),
           new_project_pipeline_path: new_project_pipeline_path(project),
-          operational_configuration_path: new_project_security_policy_path(@project),
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
-          can_admin_vulnerability: can?(current_user, :admin_vulnerability, project).to_s,
           can_view_false_positive: can_view_false_positive?,
-          security_configuration_path: project_security_configuration_path(@project),
-          new_vulnerability_path: new_project_security_vulnerability_path(@project),
-          dismissal_descriptions: dismissal_descriptions.to_json,
-          hide_third_party_offers: ::Gitlab::CurrentSettings.current_application_settings.hide_third_party_offers?.to_s
-        }.merge!(security_dashboard_pipeline_data(project))
-         .merge!(vulnerability_quota: vulnerability_quota_information(project))
-      end
+          vulnerability_quota: vulnerability_quota_information(project)
+        }
+      )
+    end
+
+    def project_security_dashboard_config(project)
+      has_vulnerabilities = project.vulnerabilities.exists?
+
+      return project_security_dashboard_config_with_vulnerabilities(project) if has_vulnerabilities
+
+      base_project_security_dashboard_config(project)
     end
 
     def can_view_false_positive?
