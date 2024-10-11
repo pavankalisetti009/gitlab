@@ -39,7 +39,7 @@ module Resolvers
 
       def queued_durations(selection)
         percentiles =
-          ::Types::Ci::JobsDurationStatisticsType::PERCENTILES
+          ::Types::Ci::DurationStatisticsType::PERCENTILES
             .filter_map { |p| percentile_disc_sql(selection, p) }
             .join(', ')
 

@@ -8,14 +8,14 @@ module Types
       graphql_name 'CiJobsStatistics'
       description 'Statistics for a group of CI jobs.'
 
-      field :queued_duration, JobsDurationStatisticsType,
+      field :queued_duration, DurationStatisticsType,
         null: true,
         description:
-          "Statistics for amount of time that jobs were waiting to be picked up. The calculation is performed " \
-          "based on the most recent #{Resolvers::Ci::RunnersJobsStatisticsResolver::JOBS_LIMIT} jobs executed by " \
-          "the #{Resolvers::Ci::RunnersJobsStatisticsResolver::RUNNERS_LIMIT} most recently created runners in " \
-          "context. If no filter is applied to runners, the calculation is performed based on the most " \
-          "recent #{Resolvers::Ci::RunnersJobsStatisticsResolver::JOBS_LIMIT} jobs globally."
+          "Statistics for the amount of time that jobs were waiting to be picked up. The calculation is based " \
+          "on the #{Resolvers::Ci::RunnersJobsStatisticsResolver::JOBS_LIMIT} most recent jobs run " \
+          "by the #{Resolvers::Ci::RunnersJobsStatisticsResolver::RUNNERS_LIMIT} most recently created runners " \
+          "in context. If no filter is applied to runners, the calculation uses the " \
+          "#{Resolvers::Ci::RunnersJobsStatisticsResolver::JOBS_LIMIT} most recent jobs globally."
 
       def queued_duration
         object.object[:queued_duration]
