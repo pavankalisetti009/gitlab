@@ -921,10 +921,9 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
     def self.run_group_permission_checks(permissions_matrix)
       permissions_matrix.each_pair do |role, matrix|
         it "has the correct permissions for group #{role}s" do
-          create(:project_group_link, role, group: group,
-            project: project)
+          create(:project_group_link, role, group: group, project: project)
 
-          protected_branch.save!
+          protected_branch.save!(validate: false)
 
           aggregate_failures do
             matrix.each do |action, allowed|
