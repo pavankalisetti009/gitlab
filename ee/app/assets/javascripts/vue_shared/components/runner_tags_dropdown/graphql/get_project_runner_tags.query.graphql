@@ -1,7 +1,7 @@
-query getProjectRunnerTags($fullPath: ID!) {
+query getProjectRunnerTags($fullPath: ID!, $tagList: [String!]) {
   project(fullPath: $fullPath) {
     id
-    runners {
+    runners(tagList: $tagList) {
       nodes {
         id
         tagList

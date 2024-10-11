@@ -53,42 +53,45 @@ describe('RunnerTagsDropdown', () => {
 
   it('should load data', () => {
     expect(handlers.projectRequestHandler).toHaveBeenCalledTimes(1);
+    expect(handlers.projectRequestHandler).toHaveBeenCalledWith({
+      fullPath: 'gitlab-org/testPath',
+      tagList: '',
+    });
     expect(findDropdownItems()).toHaveLength(5);
     expect(wrapper.emitted('tags-loaded')).toHaveLength(1);
+    expect(wrapper.emitted('tags-loaded')[0][0]).toEqual([
+      'macos',
+      'linux',
+      'docker',
+      'backup',
+      'development',
+    ]);
   });
 
   it('should select tags', async () => {
-    expect(findTagsList().props('toggleText')).toBe('Select runner tags');
-
     toggleDropdown();
     await waitForPromises();
-
     findDropdownItems().at(0).vm.$emit('select', ['macos']);
     await nextTick();
     findDropdownItems().at(2).vm.$emit('select', ['docker']);
     await nextTick();
 
-    expect(findTagsList().props('toggleText')).toBe('macos, docker');
     expect(wrapper.emitted('input')).toHaveLength(2);
   });
 
-  it.each`
-    query       | expectedLength | expectedTagText
-    ${'macos'}  | ${1}           | ${'macos'}
-    ${'docker'} | ${1}           | ${'docker'}
-    ${'ma'}     | ${1}           | ${'macos'}
-  `('should filter out results by search', async ({ query, expectedLength, expectedTagText }) => {
+  it('should filter out results by search', async () => {
     toggleDropdown();
 
     expect(findDropdownItems()).toHaveLength(
       getUniqueTagListFromEdges(RUNNER_TAG_LIST_MOCK).length,
     );
 
-    findSearchBox().vm.$emit('input', query);
+    findSearchBox().vm.$emit('input', 'macos');
     await nextTick();
-
-    expect(findDropdownItems()).toHaveLength(expectedLength);
-    expect(findDropdownItems().at(0).text()).toBe(expectedTagText);
+    expect(handlers.projectRequestHandler).toHaveBeenCalledWith({
+      fullPath: 'gitlab-org/testPath',
+      tagList: 'macos',
+    });
   });
 
   it('should render selected tags on top after re-open', async () => {
@@ -129,12 +132,47 @@ describe('RunnerTagsDropdown', () => {
     expect(findTagsList().props('headerText')).toBe(testHeader);
   });
 
-  it('renders custom placeholder for empty lists', async () => {
-    const emptyTagsListPlaceholder = 'emptyTagsListPlaceholder';
-    createComponent({ emptyTagsListPlaceholder }, { handlers: emptyTagListHandler });
-    await waitForPromises();
+  describe('toggle text', () => {
+    it('renders default text', async () => {
+      createComponent();
+      await waitForPromises();
+      expect(findTagsList().props('toggleText')).toBe('Select runner tags');
+    });
 
-    expect(findTagsList().props('toggleText')).toBe(emptyTagsListPlaceholder);
+    it('renders selected tags', async () => {
+      createComponent();
+      await waitForPromises();
+      toggleDropdown();
+      await waitForPromises();
+      findDropdownItems().at(0).vm.$emit('select', ['macos']);
+      await nextTick();
+      findDropdownItems().at(2).vm.$emit('select', ['docker']);
+      await nextTick();
+
+      expect(findTagsList().props('toggleText')).toBe('macos, docker');
+    });
+
+    it('renders selected tags if search is empty, but tags are already selected', async () => {
+      createComponent({ value: ['macos'] }, { handlers: emptyTagListHandler });
+      await waitForPromises();
+      await findTagsList().vm.$emit('select', ['macos']);
+      expect(findTagsList().props('toggleText')).toBe('macos');
+    });
+
+    it('renders custom placeholder for empty lists', async () => {
+      const emptyTagsListPlaceholder = 'emptyTagsListPlaceholder';
+      createComponent({ emptyTagsListPlaceholder }, { handlers: emptyTagListHandler });
+      await waitForPromises();
+
+      expect(findTagsList().props('toggleText')).toBe(emptyTagsListPlaceholder);
+    });
+
+    it('renders default text for empty lists', async () => {
+      createComponent({}, { handlers: emptyTagListHandler });
+      await waitForPromises();
+
+      expect(findTagsList().props('toggleText')).toBe('No tags exist');
+    });
   });
 
   describe('disabled state', () => {
@@ -145,15 +183,17 @@ describe('RunnerTagsDropdown', () => {
       expect(findTagsList().props('disabled')).toBe(true);
     });
 
-    it('disables listbox for empty lists', async () => {
-      createComponent(
-        {},
-        {
-          handlers: emptyTagListHandler,
-        },
-      );
+    it('disables listbox for empty lists when not searching', async () => {
+      createComponent({}, { handlers: emptyTagListHandler });
       await waitForPromises();
       expect(findTagsList().props('disabled')).toBe(true);
+    });
+
+    it('does not disable the listbox for empty lists when searching', async () => {
+      createComponent({}, { handlers: emptyTagListHandler });
+      await waitForPromises();
+      await findTagsList().vm.$emit('search', 'macos');
+      expect(findTagsList().props('disabled')).toBe(false);
     });
   });
 
@@ -193,22 +233,15 @@ describe('RunnerTagsDropdown', () => {
     });
   });
 
-  describe('No runners', () => {
+  describe('no runners', () => {
     beforeEach(async () => {
       const savedOnBackendTags = ['docker', 'node'];
 
-      createComponent(
-        {
-          value: savedOnBackendTags,
-        },
-        {
-          handlers: emptyTagListHandler,
-        },
-      );
+      createComponent({ value: savedOnBackendTags }, { handlers: emptyTagListHandler });
       await waitForPromises();
     });
 
-    it('should have disabled listbox', () => {
+    it('should have a disabled listbox', () => {
       expect(findTagsList().props('disabled')).toBe(true);
     });
   });
