@@ -32,12 +32,18 @@ module Security
       applicable_rules = approval_rules.applicable_to_branch(merge_request.target_branch)
 
       violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, report_type)
-      applicable_rules.each do |rule|
-        next if rule.scan_result_policy_read.nil? || rule.scan_result_policy_read&.fail_open?
-
+      fail_closed_applicable_rules = applicable_rules.reject do |rule|
+        rule.scan_result_policy_read.nil? || rule.scan_result_policy_read&.fail_open?
+      end
+      fail_closed_applicable_rules.each do |rule|
         violations.add_error(rule.scan_result_policy_read, :artifacts_missing,
           context: related_pipelines_context(pipeline, merge_request, report_type))
       end
+
+      if ::Feature.enabled?(:policy_mergability_check, project)
+        merge_request.reset_required_approvals(fail_closed_applicable_rules)
+      end
+
       violations.execute
 
       generate_policy_bot_comment(merge_request, applicable_rules, report_type)
