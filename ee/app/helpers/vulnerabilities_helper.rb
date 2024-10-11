@@ -3,6 +3,16 @@
 module VulnerabilitiesHelper
   FINDING_FIELDS = %i[metadata identifiers name issue_feedback merge_request_feedback project project_fingerprint scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links].freeze
 
+  def vulnerability_details_app_data(vulnerability, pipeline, project)
+    {
+      vulnerability: vulnerability_details_json(vulnerability, pipeline),
+      can_view_false_positive: project.licensed_feature_available?(:sast_fp_reduction).to_s,
+      commit_path_template: commit_path_template(project),
+      project_full_path: project.full_path,
+      customize_jira_issue_enabled: project.jira_integration&.customize_jira_issue_enabled.to_s
+    }
+  end
+
   def vulnerability_details_json(vulnerability, pipeline)
     vulnerability_details(vulnerability, pipeline).to_json
   end

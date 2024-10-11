@@ -1,4 +1,4 @@
-import { GlAlert, GlCollapsibleListbox, GlFormInput } from '@gitlab/ui';
+import { GlAlert, GlCollapsibleListbox, GlFormCheckbox, GlFormInput } from '@gitlab/ui';
 import { within } from '@testing-library/dom';
 import { nextTick } from 'vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -39,8 +39,7 @@ describe('JiraIssueCreationVulnerabilities', () => {
 
   const withinComponent = () => within(wrapper.element);
   const findHiddenInput = (name) => wrapper.find(`input[name="service[${name}]"]`);
-  const findEnableJiraVulnerabilities = () =>
-    wrapper.findByTestId('jira-enable-vulnerabilities-checkbox');
+  const findEnableJiraVulnerabilities = () => wrapper.findAllComponents(GlFormCheckbox).at(0);
   const findIssueTypeSection = () => wrapper.findByTestId('issue-type-section');
   const findIssueTypeListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findIssueTypeLabel = () => wrapper.findComponent('label');
@@ -48,9 +47,12 @@ describe('JiraIssueCreationVulnerabilities', () => {
   const findProjectKeyInput = () => findProjectKey().findComponent(GlFormInput);
   const findFetchIssueTypeButton = () =>
     wrapper.findByTestId('jira-issue-types-fetch-retry-button');
+  const findCustomizeJiraIssueCheckbox = () => wrapper.findAllComponents(GlFormCheckbox).at(1);
   const findFetchErrorAlert = () => wrapper.findComponent(GlAlert);
   const setEnableJiraVulnerabilitiesChecked = (isChecked) =>
     findEnableJiraVulnerabilities().vm.$emit('input', isChecked);
+  const setCustomizeJiraIssueEnabled = (isChecked) =>
+    findCustomizeJiraIssueCheckbox().vm.$emit('input', isChecked);
 
   describe('content', () => {
     beforeEach(() => {
@@ -67,7 +69,7 @@ describe('JiraIssueCreationVulnerabilities', () => {
 
     describe('when Jira issue creation is enabled', () => {
       beforeEach(async () => {
-        await findEnableJiraVulnerabilities().setChecked();
+        await setEnableJiraVulnerabilitiesChecked(true);
       });
 
       it('shows a reason why the issue type is needed', () => {
@@ -273,6 +275,28 @@ describe('JiraIssueCreationVulnerabilities', () => {
       it('shows a warning message telling the user to refetch the issues list', () => {
         expect(wrapper.text()).toContain('Fetch issue types again for the new project key.');
       });
+    });
+  });
+
+  describe('Customize Jira issue checkbox', () => {
+    it.each([true, false])(
+      'sets the hidden "customize_jira_issue_enabled" input value to: "%s"',
+      async (isChecked) => {
+        wrapper = createShallowComponent();
+        await setEnableJiraVulnerabilitiesChecked(true);
+        await setCustomizeJiraIssueEnabled(isChecked);
+        expect(findHiddenInput('customize_jira_issue_enabled').attributes('value')).toBe(
+          `${isChecked}`,
+        );
+      },
+    );
+
+    it('renders a label and description', async () => {
+      wrapper = createFullComponent();
+      await setEnableJiraVulnerabilitiesChecked(true);
+      expect(findCustomizeJiraIssueCheckbox().text()).toMatchInterpolatedText(
+        'Customize Jira issues Navigate to Jira issue before issue is created.',
+      );
     });
   });
 });

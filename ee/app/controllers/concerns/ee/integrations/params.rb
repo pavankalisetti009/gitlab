@@ -17,6 +17,7 @@ module EE
         :static_context,
         :vulnerabilities_enabled,
         :vulnerabilities_issuetype,
+        :customize_jira_issue_enabled,
         :workload_identity_federation_project_id,
         :workload_identity_federation_project_number,
         :workload_identity_pool_id,

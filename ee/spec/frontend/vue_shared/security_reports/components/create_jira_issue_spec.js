@@ -1,8 +1,8 @@
 import { GlButton } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import Component from 'ee/vue_shared/security_reports/components/create_jira_issue.vue';
+import CreateJiraIssue from 'ee/vue_shared/security_reports/components/create_jira_issue.vue';
 import vulnerabilityExternalIssueLinkCreate from 'ee/vue_shared/security_reports/graphql/vulnerability_external_issue_link_create.mutation.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -17,11 +17,6 @@ describe('create_jira_issue', () => {
 
   const findButton = () => wrapper.findComponent(GlButton);
 
-  const clickOnButton = async () => {
-    await findButton().trigger('click');
-    return waitForPromises();
-  };
-
   const successHandler = jest
     .fn()
     .mockResolvedValue(vulnerabilityExternalIssueLinkCreateMockFactory());
@@ -35,75 +30,112 @@ describe('create_jira_issue', () => {
   function createMockApolloProvider(handler) {
     Vue.use(VueApollo);
     const requestHandlers = [[vulnerabilityExternalIssueLinkCreate, handler]];
-
     return createMockApollo(requestHandlers);
   }
 
   const createComponent = (options = {}) => {
-    wrapper = mount(Component, {
+    wrapper = shallowMount(CreateJiraIssue, {
       apolloProvider: options.mockApollo,
       propsData: {
         ...defaultProps,
         ...options.propsData,
       },
+      provide: {
+        ...options.provide,
+      },
     });
   };
 
-  it('should render button with correct text in default variant', () => {
-    createComponent();
+  describe('create jira issue button', () => {
+    const clickButton = () => {
+      findButton().vm.$emit('click');
+      return waitForPromises();
+    };
 
-    expect(findButton().text()).toBe('Create Jira issue');
+    it.each`
+      createJiraIssueUrl      | customizeJiraIssueEnabled
+      ${''}                   | ${false}
+      ${'/create-jira-issue'} | ${false}
+      ${''}                   | ${true}
+    `(
+      'renders create jira issue button when createJiraIssueUrl is $createJiraIssueUrl and customizeJiraIssueEnabled is $customizeJiraIssueEnabled',
+      ({ createJiraIssueUrl, customizeJiraIssueEnabled }) => {
+        createComponent({ provide: { createJiraIssueUrl, customizeJiraIssueEnabled } });
+
+        // if href is not set it's the create jira issue button
+        expect(findButton().props('href')).toBeUndefined();
+      },
+    );
+
+    it('should render button with correct text and props', () => {
+      createComponent();
+
+      expect(findButton().text()).toBe('Create Jira issue');
+      expect(findButton().props()).toMatchObject({
+        variant: 'confirm',
+        category: 'secondary',
+      });
+    });
+
+    describe('given a pending response', () => {
+      beforeEach(() => {
+        const mockApollo = createMockApolloProvider(pendingHandler);
+        createComponent({ mockApollo });
+      });
+
+      it('renders spinner correctly', async () => {
+        const button = findButton();
+        expect(button.props('loading')).toBe(false);
+        await clickButton();
+        expect(button.props('loading')).toBe(true);
+      });
+    });
+
+    describe('given an error response', () => {
+      beforeEach(async () => {
+        const mockApollo = createMockApolloProvider(errorHandler);
+        createComponent({ mockApollo });
+        await clickButton();
+      });
+
+      it('show throw createJiraIssueError event with correct message', () => {
+        expect(wrapper.emitted('create-jira-issue-error')).toEqual([['foo']]);
+      });
+    });
+
+    describe('given an successful response', () => {
+      beforeEach(async () => {
+        const mockApollo = createMockApolloProvider(successHandler);
+        createComponent({ mockApollo });
+        await clickButton();
+      });
+
+      it('should emit mutated event', () => {
+        expect(wrapper.emitted('mutated')).not.toBe(undefined);
+      });
+    });
   });
 
-  it('should render button in confirm variant', () => {
-    createComponent();
-
-    expect(findButton().props('variant')).toBe('confirm');
-  });
-
-  describe('given a pending response', () => {
+  describe('customize jira issue button', () => {
     beforeEach(() => {
-      const mockApollo = createMockApolloProvider(pendingHandler);
-
-      createComponent({ mockApollo });
+      createComponent({
+        provide: { createJiraIssueUrl: '/create-jira-issue', customizeJiraIssueEnabled: true },
+      });
     });
 
-    it('renders spinner correctly', async () => {
-      const button = findButton();
-
-      expect(button.props('loading')).toBe(false);
-
-      await clickOnButton();
-
-      expect(button.props('loading')).toBe(true);
-    });
-  });
-
-  describe('given an error response', () => {
-    beforeEach(async () => {
-      const mockApollo = createMockApolloProvider(errorHandler);
-
-      createComponent({ mockApollo });
-
-      await clickOnButton();
+    it('renders customize jira issue button when createJiraIssueUrl is given and customizeJiraIssueEnabled is true', () => {
+      // if href is set, it's the customize jira issue button
+      expect(findButton().attributes('href')).toBe('/create-jira-issue');
     });
 
-    it('show throw createJiraIssueError event with correct message', () => {
-      expect(wrapper.emitted('create-jira-issue-error')).toEqual([['foo']]);
-    });
-  });
-
-  describe('given an successful response', () => {
-    beforeEach(async () => {
-      const mockApollo = createMockApolloProvider(successHandler);
-
-      createComponent({ mockApollo });
-
-      await clickOnButton();
-    });
-
-    it('should emit mutated event', () => {
-      expect(wrapper.emitted('mutated')).not.toBe(undefined);
+    it('should render button with correct text and props', () => {
+      expect(findButton().text()).toBe('Create Jira issue');
+      expect(findButton().props()).toMatchObject({
+        variant: 'confirm',
+        category: 'secondary',
+        icon: 'external-link',
+        target: '_blank',
+      });
     });
   });
 });

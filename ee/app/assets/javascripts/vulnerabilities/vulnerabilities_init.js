@@ -9,7 +9,7 @@ export default (el) => {
     return null;
   }
 
-  const { canViewFalsePositive, projectFullPath } = el.dataset;
+  const { canViewFalsePositive, projectFullPath, customizeJiraIssueEnabled } = el.dataset;
 
   const vulnerabilityJson = JSON.parse(el.dataset.vulnerability);
   const dismissalDescriptions = vulnerabilityJson.dismissal_descriptions;
@@ -38,6 +38,7 @@ export default (el) => {
       relatedJiraIssuesHelpPath: vulnerability.relatedJiraIssuesHelpPath,
       jiraIntegrationSettingsPath: vulnerability.jiraIntegrationSettingsPath,
       canViewFalsePositive: parseBoolean(canViewFalsePositive),
+      customizeJiraIssueEnabled: parseBoolean(customizeJiraIssueEnabled),
       projectFullPath,
       dismissalDescriptions,
     },

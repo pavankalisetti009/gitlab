@@ -21,7 +21,8 @@ module EE
           enable_jira_vulnerabilities: integration.jira_vulnerabilities_integration_enabled?.to_s,
           project_key: integration.project_key,
           project_keys: integration.project_keys_as_string,
-          vulnerabilities_issuetype: integration.vulnerabilities_issuetype
+          vulnerabilities_issuetype: integration.vulnerabilities_issuetype,
+          customize_jira_issue_enabled: integration.customize_jira_issue_enabled.to_s
         )
       end
 

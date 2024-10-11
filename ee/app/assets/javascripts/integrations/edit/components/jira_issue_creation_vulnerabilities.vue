@@ -37,6 +37,10 @@ export const i18n = {
     missing: s__('JiraService|Enter a Jira project key to generate issue types.'),
     changed: s__('JiraService|Fetch issue types again for the new project key.'),
   },
+  customizeJiraIssueCheckbox: {
+    label: s__('JiraService|Customize Jira issues'),
+    description: s__('JiraService|Navigate to Jira issue before issue is created.'),
+  },
 };
 
 export default {
@@ -76,6 +80,11 @@ export default {
       required: false,
       default: null,
     },
+    initialCustomizeJiraIssueEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     isValidated: {
       type: Boolean,
       required: false,
@@ -89,6 +98,7 @@ export default {
       issueCreationProjectKey: this.initialProjectKey,
       isJiraVulnerabilitiesEnabled: this.initialIsEnabled,
       selectedJiraIssueTypeId: null,
+      isCustomizeJiraIssueEnabled: this.initialCustomizeJiraIssueEnabled,
     };
   },
   computed: {
@@ -269,6 +279,24 @@ export default {
             <gl-icon name="warning" class="gl-text-orange-500" />
             {{ projectKeyWarning }}
           </p>
+        </div>
+
+        <div class="gl-mb-5">
+          <gl-form-checkbox
+            v-model="isCustomizeJiraIssueEnabled"
+            data-testid="customize-jira-issue-checkbox"
+          >
+            <span>{{ $options.i18n.customizeJiraIssueCheckbox.label }}</span>
+            <template #help>
+              {{ $options.i18n.customizeJiraIssueCheckbox.description }}
+            </template>
+          </gl-form-checkbox>
+
+          <input
+            name="service[customize_jira_issue_enabled]"
+            type="hidden"
+            :value="isCustomizeJiraIssueEnabled"
+          />
         </div>
       </div>
     </template>
