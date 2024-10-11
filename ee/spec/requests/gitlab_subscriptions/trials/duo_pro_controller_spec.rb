@@ -168,13 +168,13 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
 
         it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
 
-        it 'shows valid flash message', :freeze_time do
+        it 'shows valid flash message' do
           post_create
 
           expect(flash[:success]).to eq(
             "You have successfully created a trial subscription from GitLab Duo Pro. To get started, enable " \
               "the GitLab Duo Pro add-on for team members on this page by turning on the toggle for each team " \
-              "member. The subscription may take a minute to sync, so refresh the page if it's not visible yet")
+              "member. The subscription may take a minute to sync, so refresh the page if it's not visible yet.")
         end
 
         context 'when feature flag duo_enterprise_trials is disabled' do

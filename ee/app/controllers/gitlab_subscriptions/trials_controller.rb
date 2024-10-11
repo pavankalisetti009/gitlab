@@ -3,6 +3,7 @@
 # EE:SaaS
 module GitlabSubscriptions
   class TrialsController < ApplicationController
+    include SafeFormatHelper
     include OneTrustCSP
     include GoogleAnalyticsCSP
 
@@ -30,6 +31,11 @@ module GitlabSubscriptions
 
       if @result.success?
         # lead and trial created
+        # Reset on the subscription is needed here since CustomersDot updates the record we are operating
+        # on during the request cycle, so it will need updated to see that change as we do not
+        # re-find it.
+        flash[:success] = success_flash_message(@result.payload[:namespace].gitlab_subscription.reset)
+
         redirect_to trial_success_path(@result.payload[:namespace])
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::NO_SINGLE_NAMESPACE
         # lead created, but we now need to select namespace and then apply a trial
@@ -56,9 +62,15 @@ module GitlabSubscriptions
 
     def trial_success_path(namespace)
       if discover_group_security_flow?
-        group_security_dashboard_path(namespace, { trial: true })
+        group_security_dashboard_path(namespace)
       else
-        stored_location_or_provided_path(group_path(namespace, { trial: true }))
+        path = if Feature.enabled?(:duo_enterprise_trials, current_user)
+                 group_settings_gitlab_duo_seat_utilization_index_path(namespace)
+               else
+                 group_path(namespace)
+               end
+
+        stored_location_or_provided_path(path)
       end
     end
 
@@ -98,6 +110,29 @@ module GitlabSubscriptions
 
     def check_feature_available!
       render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+    end
+
+    def success_flash_message(subscription)
+      if discover_group_security_flow? || Feature.disabled?(:duo_enterprise_trials, current_user)
+        s_("BillingPlans|Congratulations, your free trial is activated.")
+      else
+        safe_format(
+          s_(
+            "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
+              "expire on %{exp_date}. " \
+              "To give members access to new GitLab Duo Enterprise features, " \
+              "%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats."
+          ),
+          tag_pair(
+            helpers.link_to(
+              '', help_page_path('subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-seats'),
+              target: '_blank', rel: 'noopener noreferrer'
+            ),
+            :assign_link_start, :assign_link_end
+          ),
+          exp_date: l(subscription.trial_ends_on.to_date, format: :long)
+        )
+      end
     end
   end
 end

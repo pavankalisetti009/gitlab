@@ -5,8 +5,12 @@ require 'spec_helper'
 RSpec.describe 'Trial lead submission, group and trial creation', :with_current_organization, :saas_trial, :js, feature_category: :acquisition do
   let_it_be(:user) { create(:user, organizations: [current_organization]) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- We need to ensure user is member of current organization
 
+  before_all do
+    create(:gitlab_subscription_add_on, :duo_enterprise)
+  end
+
   context 'when creating lead, group and applying trial is successful' do
-    it 'fills out form, testing validations, submits and lands on the group page' do
+    it 'fills out form, testing validations, submits and lands on the duo page' do
       sign_in(user)
 
       visit new_trial_path
@@ -43,7 +47,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
 
     context 'when part of the discover security flow' do
@@ -71,7 +75,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
     end
 
     context 'when source of the trial initiation is about.gitlab.com' do
-      it 'fills out form without the company question, submits and lands on the group page' do
+      it 'fills out form without the company question, submits and lands on the duo page' do
         glm_source = 'about.gitlab.com'
 
         sign_in(user)
@@ -90,12 +94,12 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
-        expect_to_be_on_group_page
+        expect_to_be_on_gitlab_duo_seat_utilization_page
       end
     end
 
     context 'when source of the trial initiation is not a gitlab domain' do
-      it 'fills out form, submits and lands on the group page' do
+      it 'fills out form, submits and lands on the duo page' do
         glm_source = '_some_other_source_'
 
         sign_in(user)
@@ -114,7 +118,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
-        expect_to_be_on_group_page
+        expect_to_be_on_gitlab_duo_seat_utilization_page
       end
     end
   end
@@ -142,7 +146,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
@@ -168,7 +172,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       # success
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_group_page
+      expect_to_be_on_gitlab_duo_seat_utilization_page
     end
   end
 
