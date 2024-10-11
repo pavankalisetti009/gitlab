@@ -21146,6 +21146,9 @@ msgstr ""
 msgid "Enables a free GitLab Ultimate trial when you create a new project."
 msgstr ""
 
+msgid "Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project."
+msgstr ""
+
 msgid "End Time"
 msgstr ""
 
@@ -58027,6 +58030,9 @@ msgstr ""
 msgid "Trial|Start free GitLab Ultimate trial"
 msgstr ""
 
+msgid "Trial|Start free Ultimate + GitLab Duo Enterprise trial"
+msgstr ""
+
 msgid "Trial|State or province"
 msgstr ""
 
@@ -58040,6 +58046,9 @@ msgid "Trial|Your GitLab Ultimate trial lasts for 30 days, but you can keep your
 msgstr ""
 
 msgid "Trial|Your combined Ultimate and GitLab Duo Enterprise trial lasts for 60 days. We just need some additional information to activate it."
+msgstr ""
+
+msgid "Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan."
 msgstr ""
 
 msgid "Trigger"

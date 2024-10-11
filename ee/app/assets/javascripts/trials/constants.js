@@ -1,11 +1,17 @@
 import { s__ } from '~/locale';
 import { PROMO_URL } from '~/constants';
 
-export const ULTIMATE_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Start free GitLab Ultimate trial');
+export const ULTIMATE_TRIAL_FORM_SUBMIT_TEXT = gon.features?.duoEnterpriseTrialsRegistration
+  ? s__('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+  : s__('Trial|Start free GitLab Ultimate trial');
 export const GENERIC_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Continue');
-export const ULTIMATE_TRIAL_FOOTER_DESCRIPTION = s__(
-  "Trial|You don't need a credit card to start a trial. After the 30-day trial period, your account automatically becomes a GitLab Free account. You can use your GitLab Free account forever, or upgrade to a paid tier.",
-);
+export const ULTIMATE_TRIAL_FOOTER_DESCRIPTION = gon.features?.duoEnterpriseTrialsRegistration
+  ? s__(
+      'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+    )
+  : s__(
+      "Trial|You don't need a credit card to start a trial. After the 30-day trial period, your account automatically becomes a GitLab Free account. You can use your GitLab Free account forever, or upgrade to a paid tier.",
+    );
 export const TRIAL_COMPANY_SIZE_PROMPT = s__('Trial|Select number of employees');
 export const TRIAL_PHONE_DESCRIPTION = s__('Trial|Allowed characters: +, 0-9, -, and spaces.');
 export const TRIAL_STATE_LABEL = s__('Trial|State or province');

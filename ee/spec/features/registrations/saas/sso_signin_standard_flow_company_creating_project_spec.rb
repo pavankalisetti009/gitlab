@@ -15,7 +15,7 @@ RSpec.describe 'Single sign on for signing up through sign in flow for user pick
       ensure_onboarding { expect_to_see_company_form }
 
       fill_in_company_form(glm: false)
-      click_on s_('Trial|Start free GitLab Ultimate trial')
+      click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
 
@@ -45,7 +45,8 @@ RSpec.describe 'Single sign on for signing up through sign in flow for user pick
       expect(page).to have_field('user_setup_for_company_true', valid: false)
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using GitLab?')
-      expect(page).to have_content(_('Enables a free GitLab Ultimate trial when you create a new project.'))
+      expect(page)
+        .to have_content(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
       expect(page).to have_content('What would you like to do?')
       expect(page).not_to have_content(_("I'd like to receive updates about GitLab via email"))
     end
