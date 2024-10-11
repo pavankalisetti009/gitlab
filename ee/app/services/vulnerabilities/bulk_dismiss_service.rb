@@ -17,16 +17,7 @@ module Vulnerabilities
       ensure_authorized_projects!
 
       vulnerability_ids.each_slice(MAX_BATCH).each do |ids|
-        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-          %w[
-            notes
-            vulnerability_state_transitions
-            vulnerability_reads
-            vulnerabilities
-          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/486990'
-        ) do
-          dismiss(Vulnerability.id_in(ids))
-        end
+        dismiss(Vulnerability.id_in(ids))
       end
       refresh_statistics
 
@@ -64,7 +55,6 @@ module Vulnerabilities
       system_notes = system_note_attributes_for(vulnerability_attrs)
 
       ApplicationRecord.transaction do
-        Note.insert_all!(system_notes)
         Vulnerabilities::StateTransition.insert_all!(state_transitions)
         # The `insert_or_update_vulnerability_reads` database trigger does not
         # update the dismissal_reason and we are moving away from using
@@ -80,6 +70,7 @@ module Vulnerabilities
           updated_at: now
         )
       end
+      Note.insert_all!(system_notes)
     end
 
     def transition_attributes_for(attrs)
