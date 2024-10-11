@@ -1,4 +1,5 @@
 import timezoneMock from 'timezone-mock';
+import { ApolloError } from '@apollo/client/core';
 import * as utils from 'ee/compliance_dashboard/utils';
 import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
@@ -239,6 +240,27 @@ describe('compliance report utils', () => {
       };
       const newFilters = { project: '', framework: 'current-framework', frameworkExclude: false };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(false);
+    });
+  });
+
+  describe('isGraphqlFieldMissingError', () => {
+    const graphqlError = new ApolloError({
+      graphQLErrors: [
+        {
+          message: "Field 'foo' doesn't exist on type 'Project'",
+        },
+      ],
+    });
+
+    it('returns true when error looks like graphql one and references correct field', () => {
+      expect(utils.isGraphqlFieldMissingError(graphqlError, 'foo')).toBe(true);
+    });
+
+    it('returns false when error looks like graphql one but references other field', () => {
+      expect(utils.isGraphqlFieldMissingError(graphqlError, 'bar')).toBe(false);
+    });
+    it('returns false for other errors', () => {
+      expect(utils.isGraphqlFieldMissingError(new Error('test'), 'foo')).toBe(false);
     });
   });
 });
