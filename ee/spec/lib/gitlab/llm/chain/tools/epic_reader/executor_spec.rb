@@ -310,6 +310,34 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
           end
         end
       end
+
+      describe '#get_resources' do
+        let(:extractor) { double }
+
+        context 'when work items are referenced' do
+          let(:work_item) { create(:work_item, :epic, namespace: group, synced_epic: epic1) }
+
+          before do
+            allow(extractor).to receive(:has_work_item_references?).and_return(true)
+            allow(extractor).to receive(:work_items).and_return([work_item])
+          end
+
+          it 'returns synced epics from work items' do
+            expect(tool.send(:get_resources, extractor)).to eq([epic1])
+          end
+        end
+
+        context 'when epics are referenced' do
+          before do
+            allow(extractor).to receive(:has_work_item_references?).and_return(false)
+            allow(extractor).to receive(:epics).and_return([epic1])
+          end
+
+          it 'returns epics' do
+            expect(tool.send(:get_resources, extractor)).to eq([epic1])
+          end
+        end
+      end
     end
   end
 end
