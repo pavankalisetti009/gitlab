@@ -72,7 +72,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
         expect(permissions(owner, work_item)).to be_allowed(
           :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
           :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
-          :mark_note_as_internal, :create_timelog, :destroy_issue
+          :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note
         )
       end
 
@@ -83,7 +83,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
         # these permissions are either not yet defined for group level issues or not allowed
         expect(permissions(owner, work_item)).to be_disallowed(
           :read_issuable_resource_link, :read_issue_iid, :read_design,
-          :create_requirement_test_report, :resolve_note, :admin_note,
+          :create_requirement_test_report, :admin_note,
           :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
           :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
         )
