@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning" do
-  describe '.any_add_on_purchase_for_namespace' do
-    subject { described_class.any_add_on_purchase_for_namespace(namespace) }
+  describe '.enterprise_or_pro_for_namespace' do
+    subject { described_class.enterprise_or_pro_for_namespace(namespace) }
 
     let(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
     let(:expires_on) { 1.year.from_now.to_date }
@@ -23,7 +23,7 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
     end
 
     context 'with different namespace' do
-      subject { described_class.any_add_on_purchase_for_namespace("foo") }
+      subject { described_class.enterprise_or_pro_for_namespace("foo") }
 
       it { is_expected.to be_nil }
     end
@@ -32,6 +32,21 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
       let(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
       it { is_expected.to eq(add_on_purchase) }
+    end
+
+    context 'with multiple duo add-ons' do
+      let(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+      let!(:duo_enterprise_add_on_purchase) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_enterprise_add_on,
+          namespace: namespace,
+          expires_on: expires_on
+        )
+      end
+
+      it { is_expected.to eq(duo_enterprise_add_on_purchase) }
     end
 
     context 'with non Duo add-on' do
