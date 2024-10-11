@@ -7,7 +7,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import { createAlert } from '~/alert';
-import { visitUrl } from '~/lib/utils/url_utility';
 import deleteSelfHostedModelMutation from 'ee/pages/admin/ai/self_hosted_models/graphql/mutations/delete_self_hosted_model.mutation.graphql';
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
@@ -69,7 +68,7 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findDisclosureDeleteButton = () => wrapper.findComponent(GlDisclosureDropdownItem);
   const findModalText = () => wrapper.findByTestId('delete-model-confirmation-message').text();
-  const findCancelButton = () => wrapper.findAllComponents(GlButton).at(0);
+  const findSecondaryButton = () => wrapper.findAllComponents(GlButton).at(0);
   const findDeleteButton = () => wrapper.findAllComponents(GlButton).at(1);
 
   it('renders the disclosure delete button', () => {
@@ -109,7 +108,7 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
       });
 
       it('has a cancel button', () => {
-        expect(findCancelButton().text()).toBe('Cancel');
+        expect(findSecondaryButton().text()).toBe('Cancel');
       });
 
       describe('deleting a self-hosted model', () => {
@@ -192,16 +191,8 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
         expect(body).toContain('code_suggestions');
       });
 
-      it('has a cancel button', () => {
-        expect(findCancelButton().text()).toBe('Cancel');
-      });
-
-      it('navigates to the aiFeatureSettignsPage when primary is clicked', async () => {
-        expect(findDeleteButton().text()).toBe('Configure AI Features');
-
-        await findModal().vm.$emit('primary');
-
-        expect(visitUrl).toHaveBeenCalledWith(AI_FEATURE_SETTINGS_PATH);
+      it('has an Okay button to acknowledge the modal', () => {
+        expect(findSecondaryButton().text()).toBe('Okay');
       });
     });
   });
