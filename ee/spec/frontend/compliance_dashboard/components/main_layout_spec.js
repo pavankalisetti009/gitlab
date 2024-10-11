@@ -34,6 +34,7 @@ describe('ComplianceReportsApp component', () => {
   };
 
   const findHeader = () => wrapper.findComponent(ReportHeader);
+  const findExportDropdown = () => wrapper.findByText('Export');
   const findMergeCommitsExportButton = () => wrapper.findByText('Export chain of custody report');
   const findViolationsExportButton = () => wrapper.findByText('Export violations report');
   const findAdherencesExportButton = () => wrapper.findByText('Export standards adherence report');
@@ -226,6 +227,22 @@ describe('ComplianceReportsApp component', () => {
       wrapper = createComponent(mount, {}, { frameworksCsvExportPath: null });
       expect(findFrameworksExportButton().exists()).toBe(false);
     });
+  });
+
+  it('does not render export button if no report is available', () => {
+    wrapper = createComponent(
+      mount,
+      {},
+      {
+        projectFrameworksCsvExportPath: null,
+        mergeCommitsCsvExportPath: null,
+        violationsCsvExportPath: null,
+        adherencesCsvExportPath: null,
+        frameworksCsvExportPath: null,
+      },
+    );
+
+    expect(findExportDropdown().exists()).toBe(false);
   });
 
   describe.each`
