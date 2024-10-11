@@ -63668,9 +63668,6 @@ msgstr ""
 msgid "You've already enabled two-factor authentication using a one-time password authenticator. In order to register a different device, you must first delete this authenticator."
 msgstr ""
 
-msgid "You've already enabled two-factor authentication using a one-time password authenticator. In order to register a different device, you must first disable two-factor authentication."
-msgstr ""
-
 msgid "You've reached your limit of %{limit} projects created. Contact your GitLab administrator."
 msgstr ""
 
