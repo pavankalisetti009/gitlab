@@ -8,17 +8,17 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
-  let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
-  let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
-  let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+  let_it_be(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
+  let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
+  let_it_be(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+
+  before do
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+  end
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
     let(:params) { { project_id: project.id } }
-
-    before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
-    end
 
     context 'when success' do
       it 'creates the Ai::DuoWorkflows::Workflow' do
@@ -50,25 +50,36 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
       end
     end
 
-    context 'with a project where the user is not a developer' do
-      let(:guest) { create(:user, guest_of: project) }
+    context 'when failure' do
+      shared_examples 'workflow access is forbidden' do
+        it 'workflow access is forbidden' do
+          post api(path, user), params: params
 
-      it 'is forbidden' do
-        post api(path, guest), params: params
-
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'when the duo_workflows feature flag is disabled for the user' do
-      before do
-        stub_feature_flags(duo_workflow: false)
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
       end
 
-      it 'is forbidden' do
-        post api(path, user), params: params
+      context 'with a project where the user is not a developer' do
+        let(:user) { create(:user, guest_of: project) }
 
-        expect(response).to have_gitlab_http_status(:forbidden)
+        it_behaves_like 'workflow access is forbidden'
+      end
+
+      context 'when the duo_workflows feature flag is disabled for the user' do
+        before do
+          stub_feature_flags(duo_workflow: false)
+        end
+
+        it_behaves_like 'workflow access is forbidden'
+      end
+
+      context 'when duo_features_enabled settings is turned off' do
+        before do
+          project.project_setting.update!(duo_features_enabled: false)
+          project.reload
+        end
+
+        it_behaves_like 'workflow access is forbidden'
       end
     end
 
@@ -139,6 +150,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
       end
     end
 
+    context 'when duo_features_enabled settings is turned off' do
+      before do
+        workflow.project.project_setting.update!(duo_features_enabled: false)
+        workflow.project.reload
+      end
+
+      it 'returns forbidden' do
+        get api(path, user)
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
     context 'with a workflow belonging to a different user' do
       let(:workflow) { create(:duo_workflows_workflow) }
 
@@ -191,8 +214,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
     let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints" }
 
     it 'returns the checkpoints in descending order of thread_ts' do
-      checkpoint1 = create(:duo_workflows_checkpoint, project: project)
-      checkpoint2 = create(:duo_workflows_checkpoint, project: project)
+      checkpoint1 = create(:duo_workflows_checkpoint, workflow: workflow)
+      checkpoint2 = create(:duo_workflows_checkpoint, workflow: workflow)
       workflow.checkpoints << checkpoint1
       workflow.checkpoints << checkpoint2
 

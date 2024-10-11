@@ -56,6 +56,15 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
 
           it { is_expected.to be_allowed(:read_duo_workflow) }
           it { is_expected.to be_allowed(:update_duo_workflow) }
+
+          context "when duo_features_enabled settings is turned off" do
+            before do
+              project.project_setting.update!(duo_features_enabled: false)
+            end
+
+            it { is_expected.to be_disallowed(:read_duo_workflow) }
+            it { is_expected.to be_disallowed(:update_duo_workflow) }
+          end
         end
       end
     end

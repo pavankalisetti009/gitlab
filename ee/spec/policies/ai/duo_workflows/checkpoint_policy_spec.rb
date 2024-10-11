@@ -51,6 +51,15 @@ RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_workfl
           end
 
           it { is_expected.to be_allowed(:read_duo_workflow_event) }
+
+          context "when duo_features_enabled settings is turned off" do
+            before do
+              project.project_setting.update!(duo_features_enabled: false)
+            end
+
+            it { is_expected.to be_disallowed(:read_duo_workflow) }
+            it { is_expected.to be_disallowed(:update_duo_workflow) }
+          end
         end
       end
     end
