@@ -108,7 +108,8 @@ export default {
     hasLinkedPolicies() {
       return Boolean(
         this.formData.scanResultPolicies?.pageInfo.startCursor ||
-          this.formData.scanExecutionPolicies?.pageInfo.startCursor,
+          this.formData.scanExecutionPolicies?.pageInfo.startCursor ||
+          this.formData.pipelineExecutionPolicies?.pageInfo.startCursor,
       );
     },
 

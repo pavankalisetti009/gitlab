@@ -240,25 +240,30 @@ describe('Edit Framework Form', () => {
       expect(findDeleteButton().exists()).toBe(false);
     });
 
-    it('is disabled if there are linked policies', async () => {
-      const response = createComplianceFrameworksReportResponse();
-      response.data.namespace.complianceFrameworks.nodes[0].scanResultPolicies.pageInfo.startCursor =
-        'MQ';
-      wrapper = createComponent(shallowMountExtended, {
-        requestHandlers: [[getComplianceFrameworkQuery, () => response]],
-      });
+    it.each`
+      policyType                     | policyCursor | buttonState
+      ${'scanResultPolicies'}        | ${'MQ'}      | ${true}
+      ${'scanResultPolicies'}        | ${null}      | ${false}
+      ${'pipelineExecutionPolicies'} | ${'MQ'}      | ${true}
+      ${'pipelineExecutionPolicies'} | ${null}      | ${false}
+      ${'scanExecutionPolicies'}     | ${'MQ'}      | ${true}
+      ${'scanExecutionPolicies'}     | ${null}      | ${false}
+    `(
+      'is $buttonState when $policyType has cursor $policyCursor',
+      async ({ policyType, policyCursor, buttonState }) => {
+        const response = createComplianceFrameworksReportResponse();
+        response.data.namespace.complianceFrameworks.nodes[0][policyType].pageInfo.startCursor =
+          policyCursor;
 
-      await waitForPromises();
+        wrapper = createComponent(shallowMountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => response]],
+        });
 
-      expect(findDeleteButton().props('disabled')).toBe(true);
-    });
+        await waitForPromises();
 
-    it('is not disabled if there are no linked policies', async () => {
-      wrapper = createComponent(shallowMountExtended);
-      await waitForPromises();
-
-      expect(findDeleteButton().props('disabled')).toBe(false);
-    });
+        expect(findDeleteButton().props('disabled')).toBe(buttonState);
+      },
+    );
 
     it('renders delete button if editing existing framework', async () => {
       wrapper = createComponent();

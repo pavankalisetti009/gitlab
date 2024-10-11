@@ -63,6 +63,11 @@ query getComplianceFrameworkWithPolicies(
             startCursor
           }
         }
+        pipelineExecutionPolicies {
+          pageInfo {
+            startCursor
+          }
+        }
       }
       pageInfo {
         ...PageInfo

@@ -315,6 +315,12 @@ export const createFramework = ({
       startCursor: null,
     },
   },
+  pipelineExecutionPolicies: {
+    nodes: [],
+    pageInfo: {
+      startCursor: null,
+    },
+  },
   pipelineConfigurationFullPath: null,
   __typename: 'ComplianceFramework',
 });

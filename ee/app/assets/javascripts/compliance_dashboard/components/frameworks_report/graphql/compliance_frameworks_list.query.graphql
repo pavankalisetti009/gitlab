@@ -53,6 +53,20 @@ query complianceFrameworksList(
             }
           }
         }
+        pipelineExecutionPolicies(first: 100) {
+          nodes {
+            name
+            source {
+              ... on GroupSecurityPolicySource {
+                namespace {
+                  id
+                  name
+                  fullPath
+                }
+              }
+            }
+          }
+        }
         projects {
           nodes {
             id

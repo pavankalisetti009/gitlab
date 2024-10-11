@@ -112,8 +112,12 @@ export default {
       this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
     getPoliciesList(item) {
-      const { scanExecutionPolicies, scanResultPolicies } = item;
-      return [...scanExecutionPolicies.nodes, ...scanResultPolicies.nodes]
+      const { scanExecutionPolicies, scanResultPolicies, pipelineExecutionPolicies } = item;
+      return [
+        ...scanExecutionPolicies.nodes,
+        ...scanResultPolicies.nodes,
+        ...pipelineExecutionPolicies.nodes,
+      ]
         .map((x) => x.name)
         .join(',');
     },
