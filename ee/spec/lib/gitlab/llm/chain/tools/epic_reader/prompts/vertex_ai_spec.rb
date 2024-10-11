@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Prompts::VertexAi, feature
 
       expect(prompt).to include('foo?')
       expect(prompt).to include('some suggestions')
-      expect(prompt).to include('You can fetch information about a resource called: an epic.')
+      expect(prompt).to include('You can fetch information about a resource called: an epic or work item.')
     end
   end
 end

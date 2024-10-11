@@ -16,8 +16,8 @@ module Gitlab
             ONLY if the user question fulfills the strict usage conditions below.
 
             **Strict Usage Conditions:**
-            * **Condition 1: epic ID Provided:** This tool MUST be used ONLY when the user provides a valid epic ID.
-            * **Condition 2: epic URL Context:** This tool MUST be used ONLY when the user is actively viewing a specific epic URL or a specific URL is provided by the user.
+            * **Condition 1: epic ID Provided:** This tool MUST be used ONLY when the user provides a valid epic or work item ID.
+            * **Condition 2: epic URL Context:** This tool MUST be used ONLY when the user is actively viewing a specific epic or work item URL or a specific URL is provided by the user.
 
             **Do NOT** attempt to search for or identify epics based on descriptions, keywords, or user questions.
 
@@ -46,9 +46,9 @@ module Gitlab
 
             SYSTEM_PROMPT = Utils::Prompt.as_system(
               <<~PROMPT
-                You can fetch information about a resource called: an epic.
-                An epic can be referenced by url or numeric IDs preceded by symbol.
-                An epic can also be referenced by a GitLab reference.
+                You can fetch information about a resource called: an epic or work item.
+                An epic or work item can be referenced by url or numeric IDs preceded by symbol.
+                An epic or work item can also be referenced by a GitLab reference.
                 A GitLab reference ends with a number preceded by the delimiter & and contains one or more /.
                 ResourceIdentifierType can only be one of [current, iid, url, reference]
                 ResourceIdentifier can be number, url. If ResourceIdentifier is not a number or a url
@@ -56,8 +56,8 @@ module Gitlab
                 When you see a GitLab reference, ResourceIdentifierType should be reference.
 
                 Make sure the response is a valid JSON. The answer should be just the JSON without any other commentary!
-                References in the given question to the current epic can be also for example "this epic" or "that epic",
-                referencing the epic that the user currently sees.
+                References in the given question to the current epic or work item can be also for example "this epic" or "that epic",
+                referencing the epic or work item  that the user currently sees.
                 Question: (the user question)
                 Response (follow the exact JSON response):
                 ```json
@@ -67,7 +67,7 @@ module Gitlab
                 }
                 ```
 
-                Examples of epic reference identifier:
+                Examples of epic or work item reference identifier:
 
                 Question: The user question or request may include https://some.host.name/some/long/path/-/epics/410692
                 Response:
@@ -75,6 +75,15 @@ module Gitlab
                 {
                   "ResourceIdentifierType": "url",
                   "ResourceIdentifier": "https://some.host.name/some/long/path/-/epics/410692"
+                }
+                ```
+
+                Question: The user question or request may include https://some.host.name/some/long/path/-/work_items/410692
+                Response:
+                ```json
+                {
+                  "ResourceIdentifierType": "url",
+                  "ResourceIdentifier": "https://some.host.name/some/long/path/-/work_items/410692"
                 }
                 ```
 
@@ -138,7 +147,12 @@ module Gitlab
             end
 
             def get_resources(extractor)
-              extractor.epics
+              if extractor.has_work_item_references?
+                work_items = extractor.work_items
+                work_items.map(&:synced_epic)
+              else
+                extractor.epics
+              end
             end
           end
         end
