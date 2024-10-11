@@ -1,6 +1,6 @@
 <script>
 import { GlIcon, GlButton } from '@gitlab/ui';
-import emptyStateIllustration from '@gitlab/svgs/dist/illustrations/empty-state/empty-dashboard-md.svg?url';
+import emptyStateIllustration from '@gitlab/svgs/dist/illustrations/status/status-settings-sm.svg';
 import ApprovalsEmptyState from '~/deployments/components/approvals_empty_state.vue';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
