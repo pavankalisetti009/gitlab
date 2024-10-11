@@ -109,9 +109,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         )
       end
 
-      context 'when work_item_epics feature flag is disabled' do
+      context 'when lock_work_item_epics feature flag is enabled' do
         before do
-          stub_feature_flags(work_item_epics: false)
+          stub_feature_flags(lock_work_item_epics: true)
         end
 
         it 'does not change confidentiality' do
@@ -529,9 +529,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
           it_behaves_like 'updates the color widget'
 
-          context 'when work_item_epics feature flag is disabled' do
+          context 'when lock_work_item_epics feature flag is enabled' do
             before do
-              stub_feature_flags(work_item_epics: false)
+              stub_feature_flags(lock_work_item_epics: true)
             end
 
             it_behaves_like 'work item is not updated' do
@@ -657,9 +657,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
             it_behaves_like "updates the work item's start and due date"
 
-            context 'when work_item_epics feature flag is disabled' do
+            context 'when lock_work_item_epics feature flag is enabled' do
               before do
-                stub_feature_flags(work_item_epics: false)
+                stub_feature_flags(lock_work_item_epics: true)
               end
 
               it_behaves_like 'work item is not updated' do
@@ -994,9 +994,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             )
           end
 
-          context 'when work_item_epics feature flag is disabled' do
+          context 'when lock_work_item_epics feature flag is enabled' do
             before do
-              stub_feature_flags(work_item_epics: false)
+              stub_feature_flags(lock_work_item_epics: true)
             end
 
             it_behaves_like 'work item is not updated' do

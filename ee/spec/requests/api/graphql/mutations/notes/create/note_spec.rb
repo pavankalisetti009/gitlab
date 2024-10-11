@@ -80,9 +80,9 @@ RSpec.describe 'Adding a Note to an Epic', feature_category: :portfolio_manageme
 
         it_behaves_like 'a Note mutation that creates a Note'
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it_behaves_like 'a Note mutation that does not create a Note'

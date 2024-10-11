@@ -47,7 +47,7 @@ module EE
 
         scope = group_issue? ? subject_container : subject_container.group
 
-        ::Feature.enabled?(:work_item_epics, scope.root_ancestor, type: :beta)
+        ::Feature.disabled?(:lock_work_item_epics, scope.root_ancestor)
       end
 
       rule { can_be_promoted_to_epic }.policy do

@@ -116,9 +116,9 @@ RSpec.describe "Converts a work item to a new type", feature_category: :team_pla
         )
       end
 
-      context 'when work_item_epics feature flag is disabled' do
+      context 'when lock_work_item_epics feature flag is enabled' do
         before do
-          stub_feature_flags(work_item_epics: false)
+          stub_feature_flags(lock_work_item_epics: true)
         end
 
         it 'does not convert the work item type', :aggregate_failures do

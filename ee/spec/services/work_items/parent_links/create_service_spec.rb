@@ -151,19 +151,15 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it_behaves_like 'creates parent link only'
         end
 
-        context 'when work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(work_item_epics: true)
-          end
-
+        context 'when lock_work_item_epics feature flag is disabled' do
           it_behaves_like 'creates parent link only'
 
           context 'when issue already has an epic' do
@@ -197,15 +193,15 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it_behaves_like 'does not create parent link'
         end
 
-        context 'when work_item_epics feature flag is enabled' do
+        context 'when lock_work_item_epics feature flag is disabled' do
           let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
           let_it_be(:other_epic_work_item_link) do
             create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
@@ -214,10 +210,6 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
           before_all do
             other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
-          end
-
-          before do
-            stub_feature_flags(work_item_epics: true)
           end
 
           context 'when child is type :epic' do
@@ -283,19 +275,15 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it_behaves_like 'does not create parent link'
         end
 
-        context 'when work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(work_item_epics: true)
-          end
-
+        context 'when lock_work_item_epics feature flag is disabled' do
           it_behaves_like 'creates parent link only'
 
           context 'when legacy epic already has a parent epic' do
@@ -329,15 +317,15 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it_behaves_like 'does not create parent link'
         end
 
-        context 'when work_item_epics feature flag is enabled' do
+        context 'when lock_work_item_epics feature flag is disabled' do
           let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
           let_it_be(:other_epic_work_item_link) do
             create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
@@ -346,10 +334,6 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
 
           before_all do
             other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
-          end
-
-          before do
-            stub_feature_flags(work_item_epics: true)
           end
 
           context 'when child is type :epic' do
