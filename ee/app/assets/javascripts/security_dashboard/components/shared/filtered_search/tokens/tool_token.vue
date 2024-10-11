@@ -228,6 +228,7 @@ export default {
             :text="tool.text"
             :value="tool.value"
             :selected="isToolSelected(tool.value)"
+            :data-testid="`suggestion-${tool.value}`"
             name="tool"
           />
         </template>
@@ -242,6 +243,7 @@ export default {
             :text="tool.text"
             :value="tool.value"
             :selected="isToolSelected(tool.value)"
+            :data-testid="`suggestion-${tool.value}`"
             name="tool"
           />
         </template>
