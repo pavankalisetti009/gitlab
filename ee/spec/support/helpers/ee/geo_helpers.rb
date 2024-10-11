@@ -278,5 +278,33 @@ module EE
 
       skip "Skipping because verification is not enabled for #{replicator_class.model}"
     end
+
+    def stub_dummy_console_action
+      stub_const('DummyGeoConsoleAction', Class.new(Geo::Console::Action))
+
+      DummyGeoConsoleAction.class_eval do
+        def name
+          "Dummy action"
+        end
+
+        def execute
+          @output_stream.puts "Executing" # rubocop:disable Gitlab/ModuleWithInstanceVariables -- subclass of code under test
+        end
+      end
+    end
+
+    def stub_dummy_console_multiple_choice_menu
+      stub_const('DummyGeoConsoleMultipleChoiceMenu', Class.new(Geo::Console::MultipleChoiceMenu))
+
+      DummyGeoConsoleMultipleChoiceMenu.class_eval do
+        def name
+          "Dummy action"
+        end
+
+        def choices
+          [Geo::Console::Exit.new]
+        end
+      end
+    end
   end
 end
