@@ -63,22 +63,10 @@ module GitlabSubscriptions
     def trial_success_path(namespace)
       if discover_group_security_flow?
         group_security_dashboard_path(namespace)
+      elsif Feature.enabled?(:duo_enterprise_trials, current_user)
+        group_settings_gitlab_duo_seat_utilization_index_path(namespace)
       else
-        path = if Feature.enabled?(:duo_enterprise_trials, current_user)
-                 group_settings_gitlab_duo_seat_utilization_index_path(namespace)
-               else
-                 group_path(namespace)
-               end
-
-        stored_location_or_provided_path(path)
-      end
-    end
-
-    def stored_location_or_provided_path(path)
-      if current_user.setup_for_company
-        stored_location_for(:user) || path
-      else
-        path
+        group_path(namespace)
       end
     end
 
