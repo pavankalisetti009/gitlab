@@ -1,7 +1,7 @@
 import { GlButton } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import NamespaceStorageApp from '~/usage_quotas/storage/components/namespace_storage_app.vue';
 import ProjectList from '~/usage_quotas/storage/components/project_list.vue';
@@ -30,7 +30,7 @@ describe('NamespaceStorageApp', () => {
   const findProjectList = () => wrapper.findComponent(ProjectList);
 
   const createComponent = ({ provide = {} } = {}) => {
-    wrapper = mountExtended(NamespaceStorageApp, {
+    wrapper = shallowMountExtended(NamespaceStorageApp, {
       apolloProvider: createMockApollo([
         [getNamespaceStorageQuery, getNamespaceStorageHandler],
         [getProjectListStorageQuery, getProjectListStorageHandler],
@@ -38,6 +38,9 @@ describe('NamespaceStorageApp', () => {
       provide: {
         ...defaultNamespaceProvideValues,
         ...provide,
+      },
+      stubs: {
+        StorageUsageStatistics,
       },
     });
   };
