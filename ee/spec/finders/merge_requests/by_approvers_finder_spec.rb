@@ -64,6 +64,21 @@ RSpec.describe MergeRequests::ByApproversFinder, feature_category: :code_review_
           merge_request_with_project_group_approver
         ])
     end
+
+    context "with two approval rules targeting the same user on the same MR" do
+      let(:double_approval_user) do
+        merge_request_with_approver.approval_rules.first.approvers.first
+      end
+
+      before do
+        2.times { create(:approval_merge_request_rule, merge_request: merge_request_with_approver, users: [double_approval_user]) }
+      end
+
+      it 'correctly returns merge request' do
+        expect(merge_requests(names: [double_approval_user.username])).to match_array(
+          [merge_request_with_approver, merge_request_with_two_approvers])
+      end
+    end
   end
 
   context 'filter by second approver' do
