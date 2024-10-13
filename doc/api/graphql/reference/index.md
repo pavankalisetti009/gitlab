@@ -19463,7 +19463,7 @@ Represents a deployment freeze window of a project.
 
 ### `CiGroupEnvironmentScope`
 
-Ci/CD environment scope for a group.
+CI/CD environment scope for a group.
 
 #### Fields
 
