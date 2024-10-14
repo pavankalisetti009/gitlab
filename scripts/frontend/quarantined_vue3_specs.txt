@@ -176,7 +176,6 @@ ee/spec/frontend/vue_shared/components/reports/report_issues_spec.js
 ee/spec/frontend/vue_shared/components/reports/report_item_spec.js
 ee/spec/frontend/vue_shared/purchase_flow/components/checkout/sprintf_with_links_spec.js
 ee/spec/frontend/vue_shared/security_reports/components/security_training_promo_spec.js
-ee/spec/frontend/vulnerabilities/code_flow/code_flow_steps_section_spec.js
 ee/spec/frontend/vulnerabilities/generic_report/types/list_graphql_spec.js
 ee/spec/frontend/vulnerabilities/related_issues_spec.js
 ee/spec/frontend/vulnerabilities/vulnerability_file_content_viewer_spec.js
