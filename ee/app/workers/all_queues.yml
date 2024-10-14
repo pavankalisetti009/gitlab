@@ -249,7 +249,7 @@
 - :name: cronjob:geo_metrics_update
   :worker_name: Geo::MetricsUpdateWorker
   :feature_category: :geo_replication
-  :has_external_dependencies: false
+  :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
@@ -735,7 +735,7 @@
 - :name: geo:geo_container_repository_sync
   :worker_name: Geo::ContainerRepositorySyncWorker
   :feature_category: :geo_replication
-  :has_external_dependencies: false
+  :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
@@ -825,7 +825,7 @@
 - :name: geo:geo_sync
   :worker_name: Geo::SyncWorker
   :feature_category: :geo_replication
-  :has_external_dependencies: false
+  :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1

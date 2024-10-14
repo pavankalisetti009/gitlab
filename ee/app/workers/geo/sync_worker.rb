@@ -9,6 +9,7 @@ module Geo
     include GeoQueue
 
     idempotent!
+    worker_has_external_dependencies!
     data_consistency :sticky
     sidekiq_options retry: false, dead: false
     loggable_arguments 0, 1

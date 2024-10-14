@@ -5,6 +5,7 @@ module Geo
     include ApplicationWorker
 
     idempotent!
+    worker_has_external_dependencies!
     data_consistency :always
     deduplicate :until_executed, ttl: 20.minutes
 
