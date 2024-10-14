@@ -6,6 +6,7 @@ import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_repor
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 
 import complianceFrameworkPoliciesQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/compliance_frameworks_policies.query.graphql';
+import namespacePoliciesQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/namespace_policies.query.graphql';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -44,7 +45,41 @@ const makePolicy = ({ name, enabled, description, __typename, ...rest }) => ({
   ...rest,
 });
 
-const makeFakeResponse = () => ({
+const makeCompliancePoliciesResponse = () => ({
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/29',
+      complianceFrameworks: {
+        nodes: [
+          {
+            id: 'gid://gitlab/ComplianceManagement::Framework/7',
+            name: 'ddd',
+            scanResultPolicies: {
+              nodes: [{ name: 'test', __typename: 'ScanResultPolicy' }],
+              pageInfo: pageInfo('A2'),
+              __typename: 'ScanResultPolicyConnection',
+            },
+            scanExecutionPolicies: {
+              nodes: [{ name: 'testE2', __typename: 'ScanExecutionPolicy' }],
+              pageInfo: pageInfo('SE2'),
+              __typename: 'ScanExecutionPolicyConnection',
+            },
+            pipelineExecutionPolicies: {
+              nodes: [{ name: 'testPE', __typename: 'PipelineExecutionPolicy' }],
+              pageInfo: pageInfo('PE2'),
+              __typename: 'PipelineExecutionPolicyConnection',
+            },
+            __typename: 'ComplianceFramework',
+          },
+        ],
+        __typename: 'ComplianceFrameworkConnection',
+      },
+      __typename: 'Namespace',
+    },
+  },
+});
+
+const makeNamespacePoliciesResponse = () => ({
   data: {
     namespace: {
       id: 'gid://gitlab/Group/29',
@@ -84,25 +119,23 @@ const makeFakeResponse = () => ({
         pageInfo: pageInfo('SE1'),
         __typename: 'ScanExecutionPolicyConnection',
       },
-      complianceFrameworks: {
+      pipelineExecutionPolicies: {
         nodes: [
-          {
-            id: 'gid://gitlab/ComplianceManagement::Framework/7',
-            name: 'ddd',
-            scanResultPolicies: {
-              nodes: [{ name: 'test', __typename: 'ScanResultPolicy' }],
-              pageInfo: pageInfo('A2'),
-              __typename: 'ScanResultPolicyConnection',
-            },
-            scanExecutionPolicies: {
-              nodes: [{ name: 'testE2', __typename: 'ScanExecutionPolicy' }],
-              pageInfo: pageInfo('SE2'),
-              __typename: 'ScanExecutionPolicyConnection',
-            },
-            __typename: 'ComplianceFramework',
-          },
+          makePolicy({
+            name: 'testPE',
+            enabled: true,
+            description: 'PE1',
+            __typename: 'PipelineExecutionPolicy',
+          }),
+          makePolicy({
+            name: 'testPE2',
+            enabled: false,
+            description: 'PE2',
+            __typename: 'PipelineExecutionPolicy',
+          }),
         ],
-        __typename: 'ComplianceFrameworkConnection',
+        pageInfo: pageInfo('PE1'),
+        __typename: 'PipelineExecutionPolicyConnection',
       },
       __typename: 'Namespace',
     },
@@ -133,38 +166,67 @@ describe('PoliciesSection component', () => {
   }
 
   describe('when multiple pages are present', () => {
-    let loadHandler;
+    let namespaceLoadHandler;
+    let complianceLoadHandler;
 
     beforeEach(() => {
-      const responseWithNextPages = makeFakeResponse();
+      const responseWithNextPages = makeNamespacePoliciesResponse();
       responseWithNextPages.data.namespace.approvalPolicies.pageInfo.hasNextPage = true;
 
-      loadHandler = jest
+      namespaceLoadHandler = jest
         .fn()
         .mockResolvedValueOnce(responseWithNextPages)
-        .mockResolvedValueOnce(makeFakeResponse());
+        .mockResolvedValueOnce(makeNamespacePoliciesResponse());
+
+      complianceLoadHandler = jest
+        .fn()
+        .mockResolvedValueOnce(makeCompliancePoliciesResponse())
+        .mockResolvedValueOnce(makeCompliancePoliciesResponse());
 
       wrapper = createComponent({
-        requestHandlers: [[complianceFrameworkPoliciesQuery, loadHandler]],
+        requestHandlers: [
+          [namespacePoliciesQuery, namespaceLoadHandler],
+          [complianceFrameworkPoliciesQuery, complianceLoadHandler],
+        ],
       });
     });
 
-    it('loads next pages with appropriate cursors if has next pages', async () => {
+    it('loads next pages for namespace policies with appropriate cursors if has next pages', async () => {
       await waitForPromises();
-      expect(loadHandler).toHaveBeenCalledWith({
-        approvalPoliciesGlobalAfter: 'A1',
-        approvalPoliciesAfter: 'A2',
-        scanExecutionPoliciesGlobalAfter: 'SE1',
-        scanExecutionPoliciesAfter: 'SE2',
-        complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
+
+      expect(namespaceLoadHandler).toHaveBeenCalledWith({
+        approvalPoliciesAfter: 'A1',
+        scanExecutionPoliciesAfter: 'SE1',
+        pipelineExecutionPoliciesAfter: 'PE1',
         fullPath: 'Commit451',
       });
+
+      expect(complianceLoadHandler).toHaveBeenCalledWith({
+        complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
+        fullPath: 'Commit451',
+        approvalPoliciesAfter: null,
+        pipelineExecutionPoliciesAfter: null,
+        scanExecutionPoliciesAfter: null,
+      });
     });
 
-    it('correctly stops loading next pages', async () => {
+    it('correctly stops loading next pages for namespace policies after two calls', async () => {
       await waitForPromises();
       await waitForPromises();
-      expect(loadHandler).toHaveBeenCalledTimes(2);
+      expect(namespaceLoadHandler).toHaveBeenCalledTimes(2);
+    });
+
+    it('correctly loads compliance policies', async () => {
+      await waitForPromises();
+
+      expect(complianceLoadHandler).toHaveBeenCalledTimes(1);
+      expect(complianceLoadHandler).toHaveBeenCalledWith({
+        complianceFramework: 'gid://gitlab/ComplianceManagement::Framework/1',
+        fullPath: 'Commit451',
+        approvalPoliciesAfter: null,
+        pipelineExecutionPoliciesAfter: null,
+        scanExecutionPoliciesAfter: null,
+      });
     });
   });
 
@@ -172,7 +234,11 @@ describe('PoliciesSection component', () => {
     beforeEach(() => {
       wrapper = createComponent({
         requestHandlers: [
-          [complianceFrameworkPoliciesQuery, jest.fn().mockResolvedValue(makeFakeResponse())],
+          [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
+          [
+            complianceFrameworkPoliciesQuery,
+            jest.fn().mockResolvedValue(makeCompliancePoliciesResponse()),
+          ],
         ],
       });
 
@@ -202,9 +268,10 @@ describe('PoliciesSection component', () => {
 
     it('correctly calculates policies', () => {
       const { items: policies } = findPoliciesTable().vm.$attrs;
-      expect(policies).toHaveLength(2);
+      expect(policies).toHaveLength(3);
       expect(policies.find((p) => p.name === 'test')).toBeDefined();
       expect(policies.find((p) => p.name === 'testE2')).toBeDefined();
+      expect(policies.find((p) => p.name === 'testPE')).toBeDefined();
     });
 
     it('displays disabled badge for disabled policy', () => {

@@ -1,17 +1,16 @@
 <script>
 import { GlBadge, GlButton, GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
-
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import { getPolicyType } from 'ee/security_orchestration/utils';
 import { i18n } from '../constants';
+import namespacePoliciesQuery from '../graphql/namespace_policies.query.graphql';
 import complianceFrameworkPoliciesQuery from '../graphql/compliance_frameworks_policies.query.graphql';
-
 import EditSection from './edit_section.vue';
 
 function extractPolicies(policies) {
   return {
-    policies: policies.nodes,
+    policies: policies.nodes || [],
     hasNextPage: policies.pageInfo.hasNextPage,
     endCursor: policies.pageInfo.endCursor,
   };
@@ -31,7 +30,6 @@ export default {
   },
   provide() {
     return {
-      // required for drawer component
       namespacePath: this.fullPath,
     };
   },
@@ -51,85 +49,85 @@ export default {
     return {
       selectedPolicy: null,
       rawPolicies: {
-        globalApprovalPolicies: [],
-        globalScanExecutionPolicies: [],
-        approvalPolicies: [],
-        scanExecutionPolicies: [],
+        namespaceApprovalPolicies: [],
+        namespaceScanExecutionPolicies: [],
+        namespacePipelineExecutionPolicies: [],
+        complianceApprovalPolicies: [],
+        complianceScanExecutionPolicies: [],
+        compliancePipelineExecutionPolicies: [],
       },
       policiesLoaded: false,
+      namespacePoliciesLoaded: false,
       policiesLoadCursor: {
-        approvalPoliciesGlobalAfter: null,
-        scanExecutionPoliciesGlobalAfter: null,
-        approvalPoliciesAfter: null,
-        scanExecutionPoliciesAfter: null,
+        namespaceApprovalPoliciesAfter: null,
+        namespaceScanExecutionPoliciesAfter: null,
+        namespacePipelineExecutionPoliciesAfter: null,
+        complianceApprovalPoliciesAfter: null,
+        complianceScanExecutionPoliciesAfter: null,
+        compliancePipelineExecutionPoliciesAfter: null,
       },
     };
   },
+
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    rawGroupPolicies: {
+    namespacePolicies: {
+      query: namespacePoliciesQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+          approvalPoliciesAfter: this.policiesLoadCursor.namespaceApprovalPoliciesAfter,
+          scanExecutionPoliciesAfter: this.policiesLoadCursor.namespaceScanExecutionPoliciesAfter,
+          pipelineExecutionPoliciesAfter:
+            this.policiesLoadCursor.namespacePipelineExecutionPoliciesAfter,
+        };
+      },
+      update(data) {
+        this.updatePolicies(
+          data.namespace,
+          {
+            approvalField: 'approvalPolicies',
+            scanExecutionField: 'scanExecutionPolicies',
+            pipelineExecutionField: 'pipelineExecutionPolicies',
+            target: 'namespace',
+          },
+          'namespacePoliciesLoaded',
+        );
+      },
+      error(error) {
+        this.handleError(error);
+      },
+      skip() {
+        return this.namespacePoliciesLoaded;
+      },
+    },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
+    complianceFrameworkPolicies: {
       query: complianceFrameworkPoliciesQuery,
       variables() {
         return {
           fullPath: this.fullPath,
           complianceFramework: this.graphqlId,
-          ...this.policiesLoadCursor,
+          approvalPoliciesAfter: this.policiesLoadCursor.complianceApprovalPoliciesAfter,
+          scanExecutionPoliciesAfter: this.policiesLoadCursor.complianceScanExecutionPoliciesAfter,
+          pipelineExecutionPoliciesAfter:
+            this.policiesLoadCursor.compliancePipelineExecutionPoliciesAfter,
         };
       },
       update(data) {
-        const {
-          policies: pendingGlobalApprovalPolicies,
-          hasNextPage: hasNextGlobalApprovalPolicies,
-          endCursor: approvalPoliciesGlobalAfter,
-        } = extractPolicies(data.namespace.approvalPolicies);
-        const {
-          policies: pendingGlobalScanExecutionPolicies,
-          hasNextPage: hasNextGlobalScanExecutionPolicies,
-          endCursor: scanExecutionPoliciesGlobalAfter,
-        } = extractPolicies(data.namespace.scanExecutionPolicies);
-        const {
-          policies: pendingApprovalPolicies,
-          hasNextPage: hasNextApprovalPolicies,
-          endCursor: approvalPoliciesAfter,
-        } = extractPolicies(data.namespace.complianceFrameworks.nodes[0].scanResultPolicies);
-        const {
-          policies: pendingScanExecutionPolicies,
-          hasNextPage: hasNextScanExecutionPolicies,
-          endCursor: scanExecutionPoliciesAfter,
-        } = extractPolicies(data.namespace.complianceFrameworks.nodes[0].scanExecutionPolicies);
-
-        this.policiesLoaded =
-          !hasNextGlobalApprovalPolicies &&
-          !hasNextGlobalScanExecutionPolicies &&
-          !hasNextApprovalPolicies &&
-          !hasNextScanExecutionPolicies;
-
-        const newCursor = {
-          approvalPoliciesGlobalAfter,
-          scanExecutionPoliciesGlobalAfter,
-          approvalPoliciesAfter,
-          scanExecutionPoliciesAfter,
-        };
-
-        [
-          'approvalPoliciesGlobalAfter',
-          'scanExecutionPoliciesGlobalAfter',
-          'approvalPoliciesAfter',
-          'scanExecutionPoliciesAfter',
-        ].forEach((cursorField) => {
-          if (newCursor[cursorField]) {
-            this.policiesLoadCursor[cursorField] = newCursor[cursorField];
-          }
-        });
-
-        this.rawPolicies.approvalPolicies.push(...pendingApprovalPolicies);
-        this.rawPolicies.scanExecutionPolicies.push(...pendingScanExecutionPolicies);
-        this.rawPolicies.globalApprovalPolicies.push(...pendingGlobalApprovalPolicies);
-        this.rawPolicies.globalScanExecutionPolicies.push(...pendingGlobalScanExecutionPolicies);
+        this.updatePolicies(
+          data.namespace.complianceFrameworks.nodes[0],
+          {
+            approvalField: 'scanResultPolicies',
+            scanExecutionField: 'scanExecutionPolicies',
+            pipelineExecutionField: 'pipelineExecutionPolicies',
+            target: 'compliance',
+          },
+          'policiesLoaded',
+        );
       },
       error(error) {
-        this.errorMessage = this.$options.i18n.fetchError;
-        Sentry.captureException(error);
+        this.handleError(error);
       },
       skip() {
         return this.policiesLoaded;
@@ -139,24 +137,26 @@ export default {
 
   computed: {
     policies() {
-      const approvalPoliciesSet = new Set(this.rawPolicies.approvalPolicies.map((p) => p.name));
+      const approvalPoliciesSet = new Set(
+        this.rawPolicies.complianceApprovalPolicies.map((p) => p.name),
+      );
       const scanExecutionPoliciesSet = new Set(
-        this.rawPolicies.scanExecutionPolicies.map((p) => p.name),
+        this.rawPolicies.complianceScanExecutionPolicies.map((p) => p.name),
+      );
+      const pipelineExecutionPoliciesSet = new Set(
+        this.rawPolicies.compliancePipelineExecutionPolicies.map((p) => p.name),
       );
 
       return [
-        ...this.rawPolicies.globalApprovalPolicies
+        ...this.rawPolicies.namespaceApprovalPolicies
           .filter((p) => approvalPoliciesSet.has(p.name))
-          .map((p) => ({
-            ...p,
-            isLinked: true,
-          })),
-        ...this.rawPolicies.globalScanExecutionPolicies
+          .map((p) => ({ ...p, isLinked: true })),
+        ...this.rawPolicies.namespaceScanExecutionPolicies
           .filter((p) => scanExecutionPoliciesSet.has(p.name))
-          .map((p) => ({
-            ...p,
-            isLinked: true,
-          })),
+          .map((p) => ({ ...p, isLinked: true })),
+        ...this.rawPolicies.namespacePipelineExecutionPolicies
+          .filter((p) => pipelineExecutionPoliciesSet.has(p.name))
+          .map((p) => ({ ...p, isLinked: true })),
       ].sort((a, b) => (a.name > b.name ? 1 : -1));
     },
 
@@ -164,9 +164,59 @@ export default {
       // eslint-disable-next-line no-underscore-dangle
       return this.selectedPolicy ? getPolicyType(this.selectedPolicy.__typename) : '';
     },
+    isLoading() {
+      return (
+        this.$apollo.queries.complianceFrameworkPolicies.loading ||
+        this.$apollo.queries.namespacePolicies.loading
+      );
+    },
   },
 
   methods: {
+    updatePolicies(
+      namespaceData,
+      { approvalField, scanExecutionField, pipelineExecutionField, target },
+      loadedIndicator,
+    ) {
+      const {
+        policies: pendingApprovalPolicies,
+        hasNextPage: hasNextApprovalPolicies,
+        endCursor: approvalPoliciesAfter,
+      } = extractPolicies(namespaceData[approvalField]);
+
+      const {
+        policies: pendingScanExecutionPolicies,
+        hasNextPage: hasNextScanExecutionPolicies,
+        endCursor: scanExecutionPoliciesAfter,
+      } = extractPolicies(namespaceData[scanExecutionField]);
+
+      const {
+        policies: pendingPipelineExecutionPolicies,
+        hasNextPage: hasNextPipelineExecutionPolicies,
+        endCursor: pipelineExecutionPoliciesAfter,
+      } = extractPolicies(namespaceData[pipelineExecutionField]);
+
+      this.rawPolicies[`${target}ApprovalPolicies`].push(...pendingApprovalPolicies);
+      this.rawPolicies[`${target}ScanExecutionPolicies`].push(...pendingScanExecutionPolicies);
+      this.rawPolicies[`${target}PipelineExecutionPolicies`].push(
+        ...pendingPipelineExecutionPolicies,
+      );
+
+      this.policiesLoadCursor[`${target}ApprovalPoliciesAfter`] = approvalPoliciesAfter;
+      this.policiesLoadCursor[`${target}ScanExecutionPoliciesAfter`] = scanExecutionPoliciesAfter;
+      this.policiesLoadCursor[`${target}PipelineExecutionPoliciesAfter`] =
+        pipelineExecutionPoliciesAfter;
+      this[loadedIndicator] =
+        !hasNextApprovalPolicies &&
+        !hasNextScanExecutionPolicies &&
+        !hasNextPipelineExecutionPolicies;
+    },
+
+    handleError(error) {
+      this.errorMessage = this.$options.i18n.fetchError;
+      Sentry.captureException(error);
+    },
+
     openPolicyDrawerFromRow(rows) {
       if (rows.length === 0) return;
       this.openPolicyDrawer(rows[0]);
@@ -218,7 +268,7 @@ export default {
       ref="policiesTable"
       :items="policies"
       :fields="$options.tableFields"
-      :busy="$apollo.queries.rawGroupPolicies.loading"
+      :busy="isLoading"
       responsive
       stacked="md"
       hover
