@@ -18,7 +18,7 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
   let(:fields) do
     Analytics::AiAnalytics::DuoChatUsageService::FIELDS +
       Analytics::AiAnalytics::CodeSuggestionUsageService::FIELDS +
-      [:duo_pro_assigned_users_count]
+      [:duo_assigned_users_count]
   end
 
   let(:expected_filters) { { from: from, to: to } }
@@ -69,7 +69,7 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
         code_suggestions_contributors_count: 3,
         code_suggestions_shown_count: 5,
         code_suggestions_accepted_count: 2,
-        duo_pro_assigned_users_count: 3
+        duo_assigned_users_count: 3
       })
     end
   end

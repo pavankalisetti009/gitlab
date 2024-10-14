@@ -61,7 +61,10 @@ module Resolvers
         end
 
         def selected_fields
-          lookahead.selections.map(&:name)
+          names = lookahead.selections.map(&:name)
+          # Deprecation compatibility. Remove in https://gitlab.com/gitlab-org/gitlab/-/issues/498483
+          names << :duo_assigned_users_count if names.include?(:duo_pro_assigned_users_count)
+          names
         end
       end
     end

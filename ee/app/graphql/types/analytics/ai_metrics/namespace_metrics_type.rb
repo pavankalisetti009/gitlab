@@ -20,12 +20,17 @@ module Types
         field :code_suggestions_shown_count, GraphQL::Types::Int,
           description: 'Total count of code suggestions shown to code contributors.',
           null: true
+        field :duo_assigned_users_count, GraphQL::Types::Int,
+          description: 'Total assigned Duo Pro and Enterprise seats. Ignores time period filter. Returns current data.',
+          null: true
         field :duo_chat_contributors_count, GraphQL::Types::Int,
           description: 'Number of contributors who used GitLab Duo Chat features.',
           null: true
         field :duo_pro_assigned_users_count, GraphQL::Types::Int,
-          description: 'Number of assigned Duo Pro seats. Ignores time period filter and always returns current data.',
-          null: true
+          description: 'Number of assigned Duo Pro and Enterprise seats. Ignores time period filter.',
+          null: true,
+          deprecated: { reason: 'use duoAssignedUsersCount for the same behavior', milestone: '17.6' },
+          hash_key: :duo_assigned_users_count
       end
       # rubocop: enable GraphQL/ExtractType
       # rubocop: enable Graphql/AuthorizeTypes
