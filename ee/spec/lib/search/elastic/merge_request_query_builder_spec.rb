@@ -70,6 +70,14 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
         end
       end
     end
+
+    context 'when the query is with fields' do
+      let(:options) { base_options.merge(fields: ['title']) }
+
+      it 'returns the expected query' do
+        assert_names_in_query(build, with: %w[merge_request:match:search_terms])
+      end
+    end
   end
 
   describe 'filters' do
