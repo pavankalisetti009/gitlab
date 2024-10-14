@@ -7,12 +7,7 @@ module Vulnerabilities
 
     attr_accessor :scan_type
 
-    has_many :findings,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
-      },
-      class_name: 'Vulnerabilities::Finding',
-      inverse_of: :scanner
+    has_many :findings, class_name: 'Vulnerabilities::Finding', inverse_of: :scanner
     has_many :security_findings,
       -> {
         allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472344')
