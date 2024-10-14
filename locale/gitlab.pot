@@ -59657,6 +59657,9 @@ msgstr ""
 msgid "UserMapping|Placeholder %{name} (@%{username}) kept as placeholder."
 msgstr ""
 
+msgid "UserMapping|Placeholder deleted"
+msgstr ""
+
 msgid "UserMapping|Placeholder user"
 msgstr ""
 
