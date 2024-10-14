@@ -497,11 +497,6 @@ msgid_plural "%d vulnerabilities"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d vulnerability dismissed"
-msgid_plural "%d vulnerabilities dismissed"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d vulnerability set to confirmed"
 msgid_plural "%d vulnerabilities set to confirmed"
 msgstr[0] ""
@@ -50295,15 +50290,6 @@ msgstr ""
 msgid "SecurityReports|Cluster"
 msgstr ""
 
-msgid "SecurityReports|Comment added to '%{vulnerabilityName}'"
-msgstr ""
-
-msgid "SecurityReports|Comment deleted on '%{vulnerabilityName}'"
-msgstr ""
-
-msgid "SecurityReports|Comment edited on '%{vulnerabilityName}'"
-msgstr ""
-
 msgid "SecurityReports|Configure security testing"
 msgstr ""
 
@@ -50344,12 +50330,6 @@ msgid "SecurityReports|Dismiss vulnerability"
 msgstr ""
 
 msgid "SecurityReports|Dismissal comment"
-msgstr ""
-
-msgid "SecurityReports|Dismissed '%{vulnerabilityName}'"
-msgstr ""
-
-msgid "SecurityReports|Dismissed '%{vulnerabilityName}'. Turn off the hide dismissed toggle to view."
 msgstr ""
 
 msgid "SecurityReports|Dismissed (all reasons)"
@@ -50567,37 +50547,16 @@ msgstr ""
 msgid "SecurityReports|The security report for this pipeline has %{helpPageLinkStart}expired%{helpPageLinkEnd}. Re-run the pipeline to generate a new security report."
 msgstr ""
 
-msgid "SecurityReports|There was an error adding the comment."
-msgstr ""
-
 msgid "SecurityReports|There was an error creating a Jira issue for the finding. Please try again."
-msgstr ""
-
-msgid "SecurityReports|There was an error creating the issue."
 msgstr ""
 
 msgid "SecurityReports|There was an error creating the issue. Please try again."
 msgstr ""
 
-msgid "SecurityReports|There was an error creating the merge request"
-msgstr ""
-
-msgid "SecurityReports|There was an error creating the merge request."
-msgstr ""
-
 msgid "SecurityReports|There was an error creating the merge request. Please try again."
 msgstr ""
 
-msgid "SecurityReports|There was an error deleting the comment."
-msgstr ""
-
 msgid "SecurityReports|There was an error dismissing the finding. Please try again."
-msgstr ""
-
-msgid "SecurityReports|There was an error dismissing the vulnerabilities."
-msgstr ""
-
-msgid "SecurityReports|There was an error dismissing the vulnerability."
 msgstr ""
 
 msgid "SecurityReports|There was an error fetching the finding. Please try again."
@@ -50607,9 +50566,6 @@ msgid "SecurityReports|There was an error fetching the finding. The security rep
 msgstr ""
 
 msgid "SecurityReports|There was an error reverting the dismissal."
-msgstr ""
-
-msgid "SecurityReports|There was an error reverting this dismissal."
 msgstr ""
 
 msgid "SecurityReports|There was an error while generating the report."
@@ -55596,9 +55552,6 @@ msgid "There was a problem sending the confirmation email"
 msgstr ""
 
 msgid "There was a problem updating the keep latest artifacts setting."
-msgstr ""
-
-msgid "There was an error creating the issue"
 msgstr ""
 
 msgid "There was an error fetching configuration for charts"

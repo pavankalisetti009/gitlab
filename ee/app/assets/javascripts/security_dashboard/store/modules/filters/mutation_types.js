@@ -1,2 +1,0 @@
-export const SET_FILTER = 'SET_FILTER';
-export const SET_HIDE_DISMISSED = 'SET_HIDE_DISMISSED';
