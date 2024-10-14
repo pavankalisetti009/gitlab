@@ -1436,7 +1436,7 @@ Input type: `AbuseReportLabelCreateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationabusereportlabelcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationabusereportlabelcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
-| <a id="mutationabusereportlabelcreatelabel"></a>`label` | [`Label`](#label) | Label after mutation. |
+| <a id="mutationabusereportlabelcreatelabel"></a>`label` | [`AbuseReportLabel`](#abusereportlabel) | Label after mutation. |
 
 ### `Mutation.achievementsAward`
 
@@ -17250,6 +17250,21 @@ An abuse report.
 | <a id="abusereportdiscussionresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
 | <a id="abusereportdiscussionresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
 
+### `AbuseReportLabel`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportlabelcolor"></a>`color` | [`String!`](#string) | Background color of the label. |
+| <a id="abusereportlabelcreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
+| <a id="abusereportlabeldescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
+| <a id="abusereportlabeldescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
+| <a id="abusereportlabelid"></a>`id` | [`ID!`](#id) | Label ID. |
+| <a id="abusereportlabeltextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
+| <a id="abusereportlabeltitle"></a>`title` | [`String!`](#string) | Content of the label. |
+| <a id="abusereportlabelupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the label was last updated. |
+
 ### `AbuseReportNote`
 
 #### Fields
@@ -25995,14 +26010,14 @@ Represents an SSH key.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="labelcolor"></a>`color` | [`String!`](#string) | Background color of the label. |
-| <a id="labelcreatedat"></a>`createdAt` | [`Time!`](#time) | When this label was created. |
+| <a id="labelcreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
 | <a id="labeldescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
 | <a id="labeldescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
 | <a id="labelid"></a>`id` | [`ID!`](#id) | Label ID. |
 | <a id="labellockonmerge"></a>`lockOnMerge` | [`Boolean!`](#boolean) | Indicates this label is locked for merge requests that have been merged. |
 | <a id="labeltextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
 | <a id="labeltitle"></a>`title` | [`String!`](#string) | Content of the label. |
-| <a id="labelupdatedat"></a>`updatedAt` | [`Time!`](#time) | When this label was last updated. |
+| <a id="labelupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the label was last updated. |
 
 ### `LfsObjectRegistry`
 
@@ -41294,6 +41309,25 @@ Implementations:
 | <a id="googlecloudloggingconfigurationinterfaceid"></a>`id` | [`ID!`](#id) | ID of the configuration. |
 | <a id="googlecloudloggingconfigurationinterfacelogidname"></a>`logIdName` | [`String!`](#string) | Log ID. |
 | <a id="googlecloudloggingconfigurationinterfacename"></a>`name` | [`String!`](#string) | Name of the external destination to send audit events to. |
+
+#### `LabelInterface`
+
+Implementations:
+
+- [`AbuseReportLabel`](#abusereportlabel)
+- [`Label`](#label)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="labelinterfacecolor"></a>`color` | [`String!`](#string) | Background color of the label. |
+| <a id="labelinterfacecreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
+| <a id="labelinterfacedescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
+| <a id="labelinterfaceid"></a>`id` | [`ID!`](#id) | Label ID. |
+| <a id="labelinterfacetextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
+| <a id="labelinterfacetitle"></a>`title` | [`String!`](#string) | Content of the label. |
+| <a id="labelinterfaceupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the label was last updated. |
 
 #### `MemberInterface`
 
