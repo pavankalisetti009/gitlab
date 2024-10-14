@@ -17104,7 +17104,7 @@ ALTER SEQUENCE project_group_links_id_seq OWNED BY project_group_links.id;
 
 CREATE TABLE project_import_data (
     id bigint NOT NULL,
-    project_id bigint,
+    project_id bigint NOT NULL,
     data text,
     encrypted_credentials text,
     encrypted_credentials_iv character varying,
