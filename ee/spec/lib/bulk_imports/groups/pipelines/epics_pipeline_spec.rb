@@ -3,10 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: :importers do
+  include Import::UserMappingHelper
+
   let_it_be(:user) { create(:user) }
   let_it_be(:another_user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:bulk_import) { create(:bulk_import, user: user) }
+  let_it_be(:bulk_import) { create(:bulk_import, :with_configuration, user: user) }
   let_it_be(:filepath) { 'ee/spec/fixtures/bulk_imports/gz/epics.ndjson.gz' }
   let_it_be(:entity) do
     create(
@@ -25,11 +27,15 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
   let(:tmpdir) { Dir.mktmpdir }
   let(:licensed_epics) { true }
   let(:licensed_subepics) { true }
+  let(:importer_user_mapping_enabled) { false }
 
   before do
     FileUtils.copy_file(filepath, File.join(tmpdir, 'epics.ndjson.gz'))
     stub_licensed_features(epics: licensed_epics, subepics: licensed_subepics)
     group.add_owner(user)
+
+    allow(context).to receive(:importer_user_mapping_enabled?).and_return(importer_user_mapping_enabled)
+    allow(Import::PlaceholderReferences::PushService).to receive(:from_record).and_call_original
   end
 
   subject(:pipeline) { described_class.new(context) }
@@ -123,19 +129,84 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
         expect(note.system_note_metadata.action).to eq('relate_epic')
       end
     end
+
+    context 'when importer_user_mapping is enabled' do
+      let(:importer_user_mapping_enabled) { true }
+
+      let(:epic) do
+        {
+          author_id: 101,
+          iid: 2,
+          updated_by_id: 101,
+          last_edited_by_id: 101,
+          assignee_id: 101,
+          last_edited_at: "2019-11-20T17:02:09.812Z",
+          title: "Child epic",
+          description: "Child epic description",
+          state_id: "opened",
+          notes: [
+            {
+              note: "added epic &1 as parent epic",
+              noteable_type: "Epic",
+              author_id: 101,
+              system: true
+            }
+          ],
+          award_emoji: [
+            {
+              name: "clapper",
+              user_id: 101
+            }
+          ]
+        }.deep_stringify_keys
+      end
+
+      before do
+        allow_next_instance_of(BulkImports::Common::Extractors::NdjsonExtractor) do |extractor|
+          allow(extractor).to receive(:remove_tmp_dir)
+          allow(extractor).to receive(:extract).and_return(BulkImports::Pipeline::ExtractedData.new(data: [[epic, 0]]))
+        end
+      end
+
+      it 'imports epics and maps user references to placeholder users', :aggregate_failures do
+        pipeline.run
+
+        epic = group.reload.epics.last
+
+        work_item = epic.issue
+        note = epic.notes.first
+        award_emoji = epic.award_emoji.first
+
+        source_user = Import::SourceUser.find_by(source_user_identifier: 101)
+        expect(source_user.placeholder_user).to eq(epic.author)
+
+        expect(epic.author).to be_placeholder
+        expect(epic.last_edited_by).to be_placeholder
+        expect(epic.updated_by).to be_placeholder
+        expect(epic.assignee_id).to be_nil
+        expect(work_item.author).to be_placeholder
+        expect(work_item.last_edited_by).to be_placeholder
+        expect(work_item.updated_by).to be_placeholder
+        expect(note.author).to be_placeholder
+        expect(award_emoji.user).to be_placeholder
+
+        user_references = placeholder_user_references(::Import::SOURCE_DIRECT_TRANSFER, bulk_import.id)
+
+        expect(user_references).to match_array([
+          ['Epic', epic.id, 'author_id', source_user.id],
+          ['Epic', epic.id, 'last_edited_by_id', source_user.id],
+          ['Epic', epic.id, 'updated_by_id', source_user.id],
+          ['WorkItem', work_item.id, 'author_id', source_user.id],
+          ['WorkItem', work_item.id, 'last_edited_by_id', source_user.id],
+          ['WorkItem', work_item.id, 'updated_by_id', source_user.id],
+          ['Note', note.id, 'author_id', source_user.id],
+          ['AwardEmoji', award_emoji.id, 'user_id', source_user.id]
+        ])
+      end
+    end
   end
 
   describe '#load' do
-    context 'when epic is not persisted' do
-      it 'saves the epic' do
-        epic = build(:epic, group: group, author: another_user)
-
-        expect(epic).to receive(:save).and_call_original
-
-        subject.load(context, epic)
-      end
-    end
-
     context 'when epic is missing' do
       it 'returns' do
         expect(subject.load(context, nil)).to be_nil
