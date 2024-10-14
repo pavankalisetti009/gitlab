@@ -87,9 +87,7 @@ module Vulnerabilities
     has_many :merge_request_links, through: :vulnerability
 
     has_many :finding_identifiers, class_name: 'Vulnerabilities::FindingIdentifier', inverse_of: :finding, foreign_key: 'occurrence_id'
-    has_many :identifiers, -> {
-      allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
-    }, through: :finding_identifiers, class_name: 'Vulnerabilities::Identifier'
+    has_many :identifiers, through: :finding_identifiers, class_name: 'Vulnerabilities::Identifier'
 
     has_many :finding_links, class_name: 'Vulnerabilities::FindingLink', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
 
@@ -181,7 +179,7 @@ module Vulnerabilities
       where(
         false_positive ? 'EXISTS (?)' : 'NOT EXISTS (?)',
         ::Vulnerabilities::Flag.select(1).false_positive.where(flags[:vulnerability_occurrence_id].eq(arel_table[:id]))
-      ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/474747")
+      )
     end
 
     scope :with_fix_available, ->(fix_available) do
@@ -297,10 +295,8 @@ module Vulnerabilities
     end
 
     def issue_feedback
-      Gitlab::Database.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747') do
-        related_issues = vulnerability&.related_issues
-        related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues)
-      end
+      related_issues = vulnerability&.related_issues
+      related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues)
     end
 
     def merge_request_feedback
@@ -346,11 +342,9 @@ module Vulnerabilities
     end
 
     def remediations
-      rems = super.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
+      return metadata['remediations'] unless super.present?
 
-      return metadata['remediations'] unless rems.present?
-
-      rems.as_json(only: [:summary], methods: [:diff])
+      super.as_json(only: [:summary], methods: [:diff])
     end
 
     def build_evidence_request(data)
