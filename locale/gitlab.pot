@@ -737,6 +737,9 @@ msgid_plural "%{count} more releases"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{count} more reviewers"
+msgstr ""
+
 msgid "%{count} of %{required} approvals from %{name}"
 msgstr ""
 
@@ -31764,6 +31767,9 @@ msgstr ""
 msgid "Label|Assignee"
 msgstr ""
 
+msgid "Label|Reviewer"
+msgstr ""
+
 msgid "Lacking permissions to the blocking merge request"
 msgstr ""
 
@@ -46434,6 +46440,9 @@ msgid "Review App|View latest app"
 msgstr ""
 
 msgid "Review changes"
+msgstr ""
+
+msgid "Review requested from %{reviewerName}"
 msgstr ""
 
 msgid "Review requests"
