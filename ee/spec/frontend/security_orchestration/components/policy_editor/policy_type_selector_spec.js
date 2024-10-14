@@ -81,6 +81,11 @@ describe('PolicyTypeSelector component', () => {
         expect(findPolicyButton(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter).exists()).toBe(
           true,
         );
+
+        expect(
+          findPolicyButton(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter).attributes('href'),
+        ).toContain(`?type=${POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter}`);
+
         expect(
           findMaxAllowedPolicyText(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter).exists(),
         ).toBe(false);
@@ -129,24 +134,5 @@ describe('PolicyTypeSelector component', () => {
   it('displays a cancel button which brings back to policies page', () => {
     factory();
     expect(wrapper.findByTestId('back-button').attributes('href')).toBe(policiesPath);
-  });
-
-  it.each([
-    POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
-    POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-    POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
-    POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter,
-  ])('should emit selected policy type', (parameter) => {
-    factory({
-      maxActiveScanExecutionPoliciesReached: false,
-      maxActiveScanResultPoliciesReached: false,
-      glFeatures: {
-        vulnerabilityManagementPolicyType: true,
-      },
-    });
-
-    findPolicyButton(parameter).vm.$emit('click');
-
-    expect(wrapper.emitted('select')).toEqual([[parameter]]);
   });
 });

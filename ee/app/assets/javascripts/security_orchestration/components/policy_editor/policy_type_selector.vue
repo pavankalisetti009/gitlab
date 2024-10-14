@@ -4,6 +4,7 @@ import magnifyingGlassIllustrationUrl from '@gitlab/svgs/dist/illustrations/sear
 import pipelineIllustrationUrl from '@gitlab/svgs/dist/illustrations/milestone-sm.svg';
 import vulnerabilityIllustrationUrl from '@gitlab/svgs/dist/illustrations/scan-alert-sm.svg';
 import { GlButton, GlCard, GlIcon, GlSprintf } from '@gitlab/ui';
+import { mergeUrlParams } from '~/lib/utils/url_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { s__, __, n__ } from '~/locale';
@@ -125,6 +126,9 @@ export default {
     instanceCountText(policyCount) {
       return n__('policy', 'policies', policyCount);
     },
+    constructUrl(policyType) {
+      return mergeUrlParams({ type: policyType }, window.location.href);
+    },
   },
   i18n,
   safeHtmlConfig: { ADD_TAGS: ['use'] },
@@ -148,8 +152,8 @@ export default {
             <gl-button
               v-if="!option.hasMax"
               variant="confirm"
+              :href="constructUrl(option.urlParameter)"
               :data-testid="`select-policy-${option.urlParameter}`"
-              @click="$emit('select', option.urlParameter)"
             >
               {{ $options.i18n.selectPolicy }}
             </gl-button>

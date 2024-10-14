@@ -172,26 +172,4 @@ describe('App component', () => {
       });
     });
   });
-
-  it.each([
-    POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
-    POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-  ])('should update url without page refresh when policy is selected', (parameter) => {
-    document.title = 'Test title';
-
-    factory({ provide: { namespaceType: NAMESPACE_TYPES.PROJECT } });
-
-    jest.spyOn(urlUtils, 'updateHistory');
-    expect(findPolicySelection().exists()).toBe(true);
-
-    expect(urlUtils.updateHistory).toHaveBeenCalledTimes(0);
-
-    findPolicySelection().vm.$emit('select', parameter);
-
-    expect(urlUtils.updateHistory).toHaveBeenCalledWith({
-      replace: true,
-      title: 'Test title',
-      url: `http://test.host/?type=${parameter}`,
-    });
-  });
 });
