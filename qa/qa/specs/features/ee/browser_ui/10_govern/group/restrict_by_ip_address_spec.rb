@@ -64,7 +64,11 @@ module QA
 
         # Note: If you run this test against GDK make sure you've enabled sshd
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
-        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' } do
+        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
+          type: :investigating,
+          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/471172",
+          only: { job: /gdk-qa-.*/ }
+        } do
           let(:key) do
             create(:ssh_key, api_client: api_client, title: "ssh key for allowed ip restricted access #{Time.now.to_f}")
           end
@@ -110,7 +114,11 @@ module QA
 
         # Note: If you run this test against GDK make sure you've enabled sshd
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
-        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' } do
+        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
+          type: :investigating,
+          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/471172",
+          only: { job: /gdk-qa-.*/ }
+        } do
           let(:key) do
             create(:ssh_key, api_client: api_client, title: "ssh key for allowed ip restricted access #{Time.now.to_f}")
           end
