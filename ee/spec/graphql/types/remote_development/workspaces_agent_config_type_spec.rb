@@ -7,6 +7,7 @@ RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :w
     %i[
       id cluster_agent project_id enabled dns_zone network_policy_enabled gitlab_workspaces_proxy_namespace
       workspaces_quota workspaces_per_user_quota default_max_hours_before_termination max_hours_before_termination_limit
+      allow_privilege_escalation use_kubernetes_user_namespaces default_runtime_class annotations labels
       created_at updated_at
     ]
   end

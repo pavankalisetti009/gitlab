@@ -41,6 +41,23 @@ module Types
       field :max_hours_before_termination_limit, GraphQL::Types::Int, null: false,
         description: 'Max hours before worksapce termination limit of the workspaces agent config.'
 
+      field :allow_privilege_escalation, GraphQL::Types::Boolean,
+        null: false, description: 'Allow privilege escalation.'
+
+      field :use_kubernetes_user_namespaces, GraphQL::Types::Boolean,
+        null: false, description: 'Indicates whether to use user namespaces in Kubernetes.'
+
+      # rubocop:disable GraphQL/ ExtractType -- The field name is called default_runtime_class
+      field :default_runtime_class, GraphQL::Types::String,
+        null: false, description: 'Default Kubernetes RuntimeClass.'
+      # rubocop:enable GraphQL/ ExtractType
+
+      field :annotations, [::Types::RemoteDevelopment::KubernetesAnnotationType],
+        null: false, description: 'Annotations to apply to Kubernetes objects.'
+
+      field :labels, [::Types::RemoteDevelopment::KubernetesLabelType],
+        null: false, description: 'Labels to apply to Kubernetes objects.'
+
       field :created_at, Types::TimeType,
         null: false, description: 'Timestamp of when the workspaces agent config was created.'
 
