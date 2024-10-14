@@ -1,5 +1,5 @@
 <script>
-import { n__, sprintf, s__ } from '~/locale';
+import { n__, sprintf, s__, __ } from '~/locale';
 import { getApprovalRuleNamesLeft } from 'ee/vue_merge_request_widget/mappers';
 import { toNounSeriesText } from '~/lib/utils/grammar';
 import { TYPENAME_MERGE_REQUEST } from '~/graphql_shared/constants';
@@ -79,6 +79,10 @@ export default {
     approvalsLeftMessage() {
       if (this.approvalsOptional) {
         return s__('mrWidget|Approval is optional');
+      }
+
+      if (this.mergeRequest.approved) {
+        return __('All required approvals given');
       }
 
       if (this.rulesLeft.length && !this.shortText) {

@@ -3,6 +3,7 @@ query approvalSummary($projectPath: ID!, $iid: String!) {
     id
     mergeRequest(iid: $iid) {
       id
+      approved
       approvalsLeft
       approvalsRequired
       approvedBy {

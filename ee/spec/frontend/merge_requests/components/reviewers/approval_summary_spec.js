@@ -16,6 +16,7 @@ const mockData = ({ approvalsRequired = 1, approvalsLeft = 1, approvedBy = [] } 
       id: 1,
       mergeRequest: {
         id: 1,
+        approved: approvalsLeft === 0,
         approvalsLeft,
         approvalsRequired,
         approvedBy: {
@@ -79,6 +80,16 @@ describe('Reviewers drawer approval summary component', () => {
 
       expect(wrapper.text()).toBe('Requires 1 approval from Code Owners.');
     });
+
+    it('renders approval given when approved', async () => {
+      createComponent({
+        resolver: jest.fn().mockResolvedValue(mockData({ approvalsLeft: 0 })),
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.text()).toBe('All required approvals given');
+    });
   });
 
   describe('when approval is optional', () => {
@@ -98,6 +109,8 @@ describe('Reviewers drawer approval summary component', () => {
 
     await waitForPromises();
 
+    expect(wrapper.text()).toBe('Requires 1 approval from Code Owners.');
+
     mockedSubscription.next({
       data: {
         mergeRequestApprovalStateUpdated: mockData({
@@ -110,6 +123,6 @@ describe('Reviewers drawer approval summary component', () => {
 
     await waitForPromises();
 
-    expect(wrapper.text()).toBe('Requires 0 approvals from Code Owners.');
+    expect(wrapper.text()).toBe('All required approvals given');
   });
 });
