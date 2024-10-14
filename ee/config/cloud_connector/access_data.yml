@@ -49,6 +49,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - ask_epic
           - ask_issue
           - ask_merge_request
+          - explain_code
+          - refactor_code
+          - fix_code
+          - write_tests
   include_file_context:
     backend: 'gitlab-ai-gateway'
     bundled_with:
@@ -166,6 +170,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - ask_epic
           - ask_issue
           - ask_merge_request
+          - explain_code
+          - refactor_code
+          - fix_code
+          - write_tests
   generate_commit_message:
     backend: 'gitlab-ai-gateway'
     cut_off_date: 2024-10-17 00:00:00 UTC
