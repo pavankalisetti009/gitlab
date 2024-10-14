@@ -7,6 +7,10 @@ module CloudConnector
 
     validate :validate_license
 
+    def initialize(license)
+      @license = license
+    end
+
     def execute
       return error_response(errors.full_messages.join(", ")) unless valid?
 
@@ -26,6 +30,8 @@ module CloudConnector
 
     private
 
+    attr_reader :license
+
     def client
       Gitlab::SubscriptionPortal::Client
     end
@@ -39,10 +45,6 @@ module CloudConnector
       else
         errors.add(:license, 'not found')
       end
-    end
-
-    def license
-      ::License.current
     end
 
     def license_key
