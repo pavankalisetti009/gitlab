@@ -202,6 +202,13 @@ module EE
           resolver_method: :object,
           alpha: { milestone: '17.5' }
 
+        field :ai_user_metrics,
+          ::Types::Analytics::AiMetrics::UserMetricsType.connection_type,
+          null: true,
+          description: 'AI-related user metrics.',
+          resolver: ::Resolvers::Analytics::AiMetrics::UserMetricsResolver,
+          alpha: { milestone: '17.5' }
+
         field :project_compliance_standards_adherence,
           ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
           null: true,
