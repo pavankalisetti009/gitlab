@@ -162,6 +162,28 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           end
         end
 
+        context 'when the namespace applying is on the premium plan' do
+          let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
+          let_it_be(:ultimate_trial_paid_customer_plan) { create(:ultimate_trial_paid_customer_plan) }
+
+          before do
+            expect_create_with_premium_success(namespace)
+          end
+
+          it 'shows valid flash message', :freeze_time do
+            post_create
+
+            message = format(
+              s_(
+                'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
+                  'expire on %{exp_date}.'
+              ),
+              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(message)
+          end
+        end
+
         where(
           case_names: ->(glm_content) { "when submitted with glm_content value of #{glm_content}" },
           glm_content: %w[discover-group-security discover-project-security]
@@ -182,6 +204,22 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             post_create
 
             expect(flash[:success]).to eq(s_("BillingPlans|Congratulations, your free trial is activated."))
+          end
+        end
+
+        def expect_create_with_premium_success(namespace)
+          service_params = {
+            step: step,
+            lead_params: lead_params.merge(glm_params),
+            trial_params: trial_params.merge(glm_params),
+            user: user
+          }
+
+          expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
+            expect(instance).to receive(:execute) do
+              create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+              namespace.gitlab_subscription.update!(hosted_plan: ultimate_trial_paid_customer_plan)
+            end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
         end
 

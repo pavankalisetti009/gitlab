@@ -147,7 +147,7 @@ module QA
       def register_for_trial(group: nil)
         EE::Flow::Trial.register_for_trial(group: group)
         Page::Group::Show.perform do |group|
-          expect(group).to have_trial_activated_alert
+          expect(group).to have_notice('You have successfully started an Ultimate and GitLab Duo Enterprise trial')
         end
       end
 

@@ -31,10 +31,12 @@ module GitlabSubscriptions
 
       if @result.success?
         # lead and trial created
-        # Reset on the subscription is needed here since CustomersDot updates the record we are operating
-        # on during the request cycle, so it will need updated to see that change as we do not
-        # re-find it.
-        flash[:success] = success_flash_message(@result.payload[:namespace].gitlab_subscription.reset)
+        # We go off the add on here instead of the subscription for the expiration date since
+        # in the premium with ultimate trial case the trial_ends_on does not exist on the
+        # gitlab_subscription record.
+        flash[:success] = success_flash_message(
+          GitlabSubscriptions::Trials::DuoEnterprise.add_on_purchase_for_namespace(@result.payload[:namespace])
+        )
 
         redirect_to trial_success_path(@result.payload[:namespace])
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::NO_SINGLE_NAMESPACE
@@ -100,7 +102,7 @@ module GitlabSubscriptions
       render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
     end
 
-    def success_flash_message(subscription)
+    def success_flash_message(add_on_purchase)
       if discover_group_security_flow? || Feature.disabled?(:duo_enterprise_trials, current_user)
         s_("BillingPlans|Congratulations, your free trial is activated.")
       else
@@ -118,7 +120,7 @@ module GitlabSubscriptions
             ),
             :assign_link_start, :assign_link_end
           ),
-          exp_date: l(subscription.trial_ends_on.to_date, format: :long)
+          exp_date: l(add_on_purchase.expires_on.to_date, format: :long)
         )
       end
     end
