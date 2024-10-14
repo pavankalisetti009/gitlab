@@ -26,6 +26,14 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
     it { is_expected.to be_disallowed(:admin_note) }
   end
 
+  shared_examples 'can resolve epic discussions' do
+    it { is_expected.to be_allowed(:resolve_note) }
+  end
+
+  shared_examples 'cannot resolve epic discussions' do
+    it { is_expected.to be_disallowed(:resolve_note) }
+  end
+
   shared_examples 'can admin epic relations' do
     it do
       is_expected.to be_allowed(
@@ -85,7 +93,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
         :set_epic_metadata, :set_confidentiality,
         :admin_epic_relation, :read_epic_relation,
         :admin_epic_tree_relation, :read_epic_link_relation,
-        :create_epic_tree_relation, :resolve_note
+        :create_epic_tree_relation
       )
     end
   end
@@ -114,6 +122,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       it_behaves_like 'can comment on epics'
       it_behaves_like 'cannot edit epic comments'
       it_behaves_like 'can admin epic relations'
+      it_behaves_like 'cannot resolve epic discussions'
     end
 
     context 'reporter group member' do
@@ -124,6 +133,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       it_behaves_like 'can manage epics'
       it_behaves_like 'can comment on epics'
       it_behaves_like 'cannot edit epic comments'
+      it_behaves_like 'cannot resolve epic discussions'
 
       it 'cannot destroy epics' do
         is_expected.to be_disallowed(:destroy_epic)
@@ -138,6 +148,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       it_behaves_like 'can manage epics'
       it_behaves_like 'can comment on epics'
       it_behaves_like 'can edit epic comments'
+      it_behaves_like 'can resolve epic discussions'
 
       it 'cannot destroy epics' do
         is_expected.to be_disallowed(:destroy_epic)
@@ -152,6 +163,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       it_behaves_like 'can manage epics'
       it_behaves_like 'can comment on epics'
       it_behaves_like 'can edit epic comments'
+      it_behaves_like 'can resolve epic discussions'
 
       it 'can destroy epics' do
         is_expected.to be_allowed(:destroy_epic)
