@@ -382,6 +382,7 @@ module MergeRequestsHelper
           lists: [
             {
               title: _('Returned to you'),
+              helpContent: _('Reviewers left feedback, or requested changes from you, on these merge requests.'),
               query: 'assignedMergeRequests',
               variables: {
                 reviewStates: %w[REVIEWED REQUESTED_CHANGES]
@@ -389,6 +390,7 @@ module MergeRequestsHelper
             },
             {
               title: _('Reviews requested'),
+              helpContent: _('These merge requests need a review from you.'),
               query: 'reviewRequestedMergeRequests',
               variables: {
                 reviewStates: %w[UNAPPROVED UNREVIEWED REVIEW_STARTED]
@@ -396,6 +398,7 @@ module MergeRequestsHelper
             },
             {
               title: _('Assigned to you'),
+              helpContent: _("You're assigned to these merge requests, but they don't have reviewers yet."),
               query: 'assignedMergeRequests',
               variables: {
                 reviewerWildcardId: 'NONE'
@@ -409,6 +412,7 @@ module MergeRequestsHelper
           lists: [
             {
               title: _('Waiting for others'),
+              helpContent: _('Your assigned merge requests that are waiting for approvals, and reviews you have requested changes for.'),
               query: 'assigneeOrReviewerMergeRequests',
               variables: {
                 reviewerReviewStates: %w[REVIEWED REQUESTED_CHANGES],
@@ -417,6 +421,7 @@ module MergeRequestsHelper
             },
             {
               title: _('Approved by you'),
+              helpContent: _("You've reviewed and approved these merge requests."),
               query: 'reviewRequestedMergeRequests',
               variables: {
                 reviewState: 'APPROVED'
@@ -424,6 +429,7 @@ module MergeRequestsHelper
             },
             {
               title: _('Approved by others'),
+              helpContent: _('Includes all merge requests you are assigned to and a reviewer has approved.'),
               query: 'assignedMergeRequests',
               variables: {
                 reviewState: 'APPROVED'
@@ -431,6 +437,7 @@ module MergeRequestsHelper
             },
             {
               title: _('Merged recently'),
+              helpContent: _('These merge requests merged after %{date}. You were an assignee or a reviewer.') % { date: 2.weeks.ago.to_date.to_formatted_s(:long) },
               query: 'assigneeOrReviewerMergeRequests',
               variables: {
                 state: 'merged',
