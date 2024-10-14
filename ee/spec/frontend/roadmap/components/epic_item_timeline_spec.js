@@ -108,7 +108,7 @@ describe('EpicItemTimelineComponent', () => {
     it('shows the start and end dates', () => {
       wrapper = createComponent();
 
-      expect(wrapper.findComponent(GlPopover).text()).toContain('Jun 26, 2017 – Mar 10, 2018');
+      expect(wrapper.findComponent(GlPopover).text()).toContain('Jun 26, 2017 – Mar 10, 2018');
     });
 
     it.each`

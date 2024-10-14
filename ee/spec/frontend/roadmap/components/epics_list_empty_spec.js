@@ -82,7 +82,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Jul 1, 2016 to Sep 30, 2019.',
+        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Jul 1, 2016 – Sep 30, 2019.',
       );
     });
 
@@ -95,7 +95,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To widen your search, change or remove filters; from Jul 1, 2016 to Sep 30, 2019.',
+        'To widen your search, change or remove filters; from Jul 1, 2016 – Sep 30, 2019.',
       );
     });
   });
@@ -107,7 +107,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Jan 1 to Dec 31, 2018.',
+        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Jan 1 – Dec 31, 2018.',
       );
     });
 
@@ -118,7 +118,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To widen your search, change or remove filters; from Jan 1 to Dec 31, 2018.',
+        'To widen your search, change or remove filters; from Jan 1 – Dec 31, 2018.',
       );
     });
   });
@@ -139,7 +139,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Dec 31, 2017 to Apr 6, 2018.',
+        'To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from Dec 31, 2017 – Apr 6, 2018.',
       );
     });
 
@@ -152,7 +152,7 @@ describe('EpicsListEmpty', () => {
       });
 
       expect(findSubTitle().text()).toBe(
-        'To widen your search, change or remove filters; from Dec 31, 2017 to Apr 12, 2018.',
+        'To widen your search, change or remove filters; from Dec 31, 2017 – Apr 12, 2018.',
       );
     });
   });

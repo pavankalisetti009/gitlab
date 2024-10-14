@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import { dateInWords } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, nDaysAfter } from '~/lib/utils/datetime_utility';
 import { s__, sprintf } from '~/locale';
 
 import {
@@ -56,37 +56,17 @@ export default {
       let endDate;
 
       if (this.presetTypeQuarters) {
-        const quarterStart = this.timeframeStart.range[0];
-        const quarterEnd = this.timeframeEnd.range[2];
-        startDate = dateInWords(
-          quarterStart,
-          true,
-          quarterStart.getFullYear() === quarterEnd.getFullYear(),
-        );
-        endDate = dateInWords(quarterEnd, true);
+        startDate = this.timeframeStart.range.at(0);
+        endDate = this.timeframeEnd.range.at(2);
       } else if (this.presetTypeMonths) {
-        startDate = dateInWords(
-          this.timeframeStart,
-          true,
-          this.timeframeStart.getFullYear() === this.timeframeEnd.getFullYear(),
-        );
-        endDate = dateInWords(this.timeframeEnd, true);
+        startDate = this.timeframeStart;
+        endDate = this.timeframeEnd;
       } else if (this.presetTypeWeeks) {
-        const end = new Date(this.timeframeEnd.getTime());
-        end.setDate(end.getDate() + 6);
-
-        startDate = dateInWords(
-          this.timeframeStart,
-          true,
-          this.timeframeStart.getFullYear() === end.getFullYear(),
-        );
-        endDate = dateInWords(end, true);
+        startDate = this.timeframeStart;
+        endDate = nDaysAfter(this.timeframeEnd, 6);
       }
 
-      return {
-        startDate,
-        endDate,
-      };
+      return localeDateFormat.asDate.formatRange(startDate, endDate);
     },
     message() {
       if (this.hasFiltersApplied) {
@@ -113,15 +93,10 @@ export default {
       }
 
       if (this.hasFiltersApplied) {
-        return sprintf(emptyStateWithFilters, {
-          startDate: this.timeframeRange.startDate,
-          endDate: this.timeframeRange.endDate,
-        });
+        return sprintf(emptyStateWithFilters, { dateRange: this.timeframeRange });
       }
-      return sprintf(emptyStateDefault, {
-        startDate: this.timeframeRange.startDate,
-        endDate: this.timeframeRange.endDate,
-      });
+
+      return sprintf(emptyStateDefault, { dateRange: this.timeframeRange });
     },
     extraProps() {
       const props = {};
