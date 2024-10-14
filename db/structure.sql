@@ -2235,6 +2235,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_b75e5731e305() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "dast_profiles"
+  WHERE "dast_profiles"."id" = NEW."dast_profile_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_c17a166692a2() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -10208,7 +10224,8 @@ ALTER SEQUENCE dast_profiles_id_seq OWNED BY dast_profiles.id;
 
 CREATE TABLE dast_profiles_pipelines (
     dast_profile_id bigint NOT NULL,
-    ci_pipeline_id bigint NOT NULL
+    ci_pipeline_id bigint NOT NULL,
+    project_id bigint
 );
 
 COMMENT ON TABLE dast_profiles_pipelines IS '{"owner":"group::dynamic analysis","description":"Join table between DAST Profiles and CI Pipelines"}';
@@ -28740,6 +28757,8 @@ CREATE UNIQUE INDEX index_dast_profiles_on_project_id_and_name ON dast_profiles 
 
 CREATE UNIQUE INDEX index_dast_profiles_pipelines_on_ci_pipeline_id ON dast_profiles_pipelines USING btree (ci_pipeline_id);
 
+CREATE INDEX index_dast_profiles_pipelines_on_project_id ON dast_profiles_pipelines USING btree (project_id);
+
 CREATE INDEX index_dast_profiles_tags_on_project_id ON dast_profiles_tags USING btree (project_id);
 
 CREATE INDEX index_dast_profiles_tags_on_tag_id ON dast_profiles_tags USING btree (tag_id);
@@ -33897,6 +33916,8 @@ CREATE TRIGGER trigger_b046dd50c711 BEFORE INSERT OR UPDATE ON incident_manageme
 CREATE TRIGGER trigger_b2612138515d BEFORE INSERT OR UPDATE ON project_relation_exports FOR EACH ROW EXECUTE FUNCTION trigger_b2612138515d();
 
 CREATE TRIGGER trigger_b4520c29ea74 BEFORE INSERT OR UPDATE ON approval_merge_request_rule_sources FOR EACH ROW EXECUTE FUNCTION trigger_b4520c29ea74();
+
+CREATE TRIGGER trigger_b75e5731e305 BEFORE INSERT OR UPDATE ON dast_profiles_pipelines FOR EACH ROW EXECUTE FUNCTION trigger_b75e5731e305();
 
 CREATE TRIGGER trigger_c17a166692a2 BEFORE INSERT OR UPDATE ON audit_events_streaming_headers FOR EACH ROW EXECUTE FUNCTION trigger_c17a166692a2();
 
