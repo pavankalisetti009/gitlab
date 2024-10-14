@@ -32,13 +32,15 @@ module QA
       let(:group) { create(:group, path: "test-group-#{SecureRandom.hex(8)}") }
 
       let(:project) { create(:project, name: 'project-shared-with-group') }
-      let(:user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:user) { create(:user) }
 
       # rubocop:disable RSpec/InstanceVariable
       before do
         @event_count = get_audit_event_count(group)
+      end
+
+      after do
+        user.remove_via_api!
       end
 
       context 'for add group', :blocking,

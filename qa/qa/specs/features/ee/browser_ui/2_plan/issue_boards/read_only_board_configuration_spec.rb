@@ -3,9 +3,7 @@
 module QA
   RSpec.describe 'Plan', :blocking, product_group: :project_management do
     describe 'Read-only board configuration' do
-      let(:qa_user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:qa_user) { create(:user) }
 
       let(:label_board_list) do
         EE::Resource::Board::BoardList::Project::LabelBoardList.fabricate_via_api!
@@ -20,6 +18,10 @@ module QA
 
         label_board_list.project.visit!
         Page::Project::Menu.perform(&:go_to_issue_boards)
+      end
+
+      after do
+        qa_user.remove_via_api!
       end
 
       it 'shows board configuration to user without edit permission', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347959' do

@@ -18,12 +18,14 @@ module QA
 
     describe 'Project', :blocking do
       let(:project) { create(:project, :with_readme, name: 'awesome-project') }
-      let(:user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:user) { create(:user) }
 
       before do
         sign_in
+      end
+
+      after do
+        user.remove_via_api!
       end
 
       context "for add project", testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347904' do
