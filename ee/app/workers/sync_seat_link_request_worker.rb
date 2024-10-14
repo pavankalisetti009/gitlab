@@ -35,10 +35,17 @@ class SyncSeatLinkRequestWorker
     save_future_subscriptions(response_data)
     update_add_on_purchases
     update_reconciliation!(response_data)
-    ::CloudConnector::SyncServiceTokenWorker.perform_async if seat_link_data.refresh_token
+
+    perform_cloud_connector_sync if refresh_token
   end
 
   private
+
+  def perform_cloud_connector_sync
+    ::CloudConnector::SyncServiceTokenWorker.perform_async(
+      license_id: License.current.id
+    )
+  end
 
   def reset_license!(license_key)
     License.reset_current

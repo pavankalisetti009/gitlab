@@ -26,7 +26,11 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
 
     shared_examples 'Cloud Connector Access sync' do
       before do
-        allow(Gitlab::SubscriptionPortal::Client).to receive(:get_cloud_connector_access_data).and_return(response)
+        allow(Gitlab::SubscriptionPortal::Client).to(
+          receive(:get_cloud_connector_access_data)
+            .with(expected_license.data)
+            .and_return(response)
+        )
       end
 
       context 'when graphql query response is successful' do
@@ -92,19 +96,35 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
     end
 
-    subject(:sync_cloud_connector_access) { described_class.new.execute }
+    subject(:sync_cloud_connector_access) { described_class.new(expected_license).execute }
 
     context 'with license checks' do
+      let(:expected_license) { license }
+
       context 'when license is valid cloud license' do
-        before do
-          # Setting the date as 12th March 2020 12:00 UTC for tests and creating new license
-          create_current_license(cloud_licensing_enabled: true, starts_at: '2020-02-12'.to_date)
+        let!(:license) { create_current_license(cloud_licensing_enabled: true, starts_at: '2020-02-12'.to_date) }
+
+        include_examples 'Cloud Connector Access sync'
+      end
+
+      context 'when more than one license exists' do
+        let!(:expected_license) do
+          create(:license, data: create(:gitlab_license, cloud_licensing_enabled: true).export)
+        end
+
+        let!(:license) do
+          # This test ensures that we do not rely on License.current, which maintains an in-memory
+          # cache that can drift across different instances of this service object executing in
+          # different processes, but instead always load the given license from the database.
+          create(:license, data: create(:gitlab_license, cloud_licensing_enabled: true).export)
         end
 
         include_examples 'Cloud Connector Access sync'
       end
 
       context 'when license is missing' do
+        let!(:license) { nil }
+
         before do
           License.current.destroy!
         end
@@ -113,7 +133,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'when using a trial license' do
-        before do
+        let!(:license) do
           create_current_license(cloud_licensing_enabled: true, restrictions: { trial: true })
         end
 
@@ -121,7 +141,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'when the license has no expiration date' do
-        before do
+        let!(:license) do
           create_current_license_without_expiration(cloud_licensing_enabled: true, block_changes_at: nil)
         end
 
@@ -129,7 +149,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'when using an expired license' do
-        before do
+        let!(:license) do
           create_current_license(cloud_licensing_enabled: true, expires_at: Time.zone.now.utc.to_date - 10.days)
         end
 
@@ -137,7 +157,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'when using an expired license, and grace period has passed' do
-        before do
+        let!(:license) do
           create_current_license(cloud_licensing_enabled: true, expires_at: Time.zone.now.utc.to_date - 15.days)
         end
 
@@ -145,7 +165,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'with a non offline cloud license' do
-        before do
+        let!(:license) do
           create_current_license(cloud_licensing_enabled: true, offline_cloud_licensing_enabled: true)
         end
 
@@ -153,7 +173,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'with a non cloud license' do
-        before do
+        let!(:license) do
           create_current_license(starts_at: '2020-02-12'.to_date)
         end
 
