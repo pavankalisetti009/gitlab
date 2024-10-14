@@ -145,14 +145,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       end
 
       it_behaves_like 'sets approvals_required to 0'
-
-      context 'when include_manual_to_pipeline_completion is disabled' do
-        before do
-          stub_feature_flags(include_manual_to_pipeline_completion: false)
-        end
-
-        it_behaves_like 'does not update approvals_required'
-      end
     end
 
     context 'when security scan is removed in current pipeline' do

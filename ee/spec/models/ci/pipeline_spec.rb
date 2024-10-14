@@ -226,24 +226,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     context 'when pipeline is blocked' do
       it_behaves_like 'storing the security scans', :block
     end
-
-    context 'when include_manual_to_pipeline_completion is false' do
-      before do
-        stub_feature_flags(include_manual_to_pipeline_completion: false)
-      end
-
-      it_behaves_like 'completed statuses scans are stored'
-
-      context 'when pipeline is blocked' do
-        it 'does not schedule store security scans job' do
-          allow(::Security::StoreScansWorker).to receive(:perform_async)
-
-          pipeline.update!(status_event: :block)
-
-          expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
-        end
-      end
-    end
   end
 
   describe '::Ai::StoreRepositoryXrayWorker' do
@@ -378,36 +360,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       with_them do
         it_behaves_like 'ingesting sbom reports'
       end
-
-      context 'with include_manual_to_pipeline_completion FF disabled' do
-        before do
-          stub_feature_flags(include_manual_to_pipeline_completion: false)
-        end
-
-        context 'for completed status' do
-          where(:transition) { %i[succeed drop skip cancel] }
-
-          with_them do
-            it_behaves_like 'ingesting sbom reports'
-          end
-        end
-
-        context 'for manual status' do
-          where(:transition) do
-            %i[
-              block
-            ]
-          end
-
-          with_them do
-            it 'does not try to ingest sbom reports' do
-              transition_pipeline
-
-              expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
-            end
-          end
-        end
-      end
     end
 
     context 'when transitioning to a non-completed status except block' do
@@ -426,31 +378,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
           transition_pipeline
 
           expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
-        end
-      end
-
-      context 'with include_manual_to_pipeline_completion FF disabled' do
-        before do
-          stub_feature_flags(include_manual_to_pipeline_completion: false)
-        end
-
-        where(:transition) do
-          %i[
-            enqueue
-            request_resource
-            prepare
-            block
-            run
-            delay
-          ]
-        end
-
-        with_them do
-          it 'does not try to ingest sbom reports' do
-            transition_pipeline
-
-            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
-          end
         end
       end
     end
@@ -559,34 +486,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         subject(:transition_pipeline) { pipeline.block }
 
         it_behaves_like 'schedules worker'
-      end
-
-      context 'when include_manual_to_pipeline_completion is disabled' do
-        before do
-          stub_feature_flags(include_manual_to_pipeline_completion: false)
-        end
-
-        context 'on pipeline complete' do
-          subject(:transition_pipeline) { pipeline.succeed }
-
-          it_behaves_like 'schedules worker'
-        end
-
-        context 'on pipeline manual' do
-          subject(:transition_pipeline) { pipeline.block }
-
-          Ci::HasStatus::ACTIVE_STATUSES.each do |status|
-            context "from #{status}" do
-              let(:from_status) { status }
-
-              it 'does not schedule worker' do
-                expect(Ci::SyncReportsToReportApprovalRulesWorker).not_to receive(:perform_async)
-
-                transition_pipeline
-              end
-            end
-          end
-        end
       end
     end
 

@@ -283,14 +283,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
 
         it_behaves_like 'executes service and workers'
       end
-
-      context 'when include_manual_to_pipeline_completion is disabled' do
-        before do
-          allow(pipeline).to receive(:include_manual_to_pipeline_completion_enabled?).and_return(false)
-        end
-
-        it_behaves_like 'executes service and workers'
-      end
     end
   end
 end

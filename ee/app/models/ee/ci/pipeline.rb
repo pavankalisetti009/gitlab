@@ -56,8 +56,6 @@ module EE
 
         state_machine :status do
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            next if pipeline.manual? && !pipeline.include_manual_to_pipeline_completion_enabled?
-
             pipeline.run_after_commit do
               if pipeline.can_store_security_reports?
                 ::Security::StoreScansWorker.perform_async(pipeline.id)
@@ -77,8 +75,6 @@ module EE
           end
 
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            next if pipeline.manual? && !pipeline.include_manual_to_pipeline_completion_enabled?
-
             pipeline.run_after_commit do
               ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(pipeline.id)
             end
