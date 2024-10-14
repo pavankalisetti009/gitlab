@@ -140,7 +140,7 @@ describe('SuperSidebar component', () => {
 
     it('adds inert attribute when collapsed', () => {
       createWrapper({ sidebarState: { isCollapsed: true } });
-      expect(findSidebar().attributes('inert')).toBe('inert');
+      expect(findSidebar().attributes('inert')).toBeDefined();
     });
 
     it('does not add inert attribute when expanded', () => {
@@ -292,7 +292,7 @@ describe('SuperSidebar component', () => {
     it(`initially makes sidebar inert and peekable (${STATE_CLOSED})`, () => {
       createWrapper({ sidebarState: { isCollapsed: true, isPeekable: true } });
 
-      expect(findSidebar().attributes('inert')).toBe('inert');
+      expect(findSidebar().attributes('inert')).toBeDefined();
       expect(findSidebar().classes()).not.toContain(peekHintClass);
       expect(findSidebar().classes()).not.toContain(hasPeekedClass);
       expect(findSidebar().classes()).not.toContain(peekClass);
@@ -304,7 +304,7 @@ describe('SuperSidebar component', () => {
       findPeekBehavior().vm.$emit('change', STATE_WILL_OPEN);
       await nextTick();
 
-      expect(findSidebar().attributes('inert')).toBe('inert');
+      expect(findSidebar().attributes('inert')).toBeDefined();
       expect(findSidebar().classes()).toContain(peekHintClass);
       expect(findSidebar().classes()).toContain(hasPeekedClass);
       expect(findSidebar().classes()).not.toContain(peekClass);
@@ -461,6 +461,7 @@ describe('SuperSidebar component', () => {
 
       wrapper.vm.sidebarState.isCollapsed = false;
       await nextTick();
+      await nextTick();
 
       expect(focusSpy).toHaveBeenCalledTimes(1);
     });
@@ -479,6 +480,7 @@ describe('SuperSidebar component', () => {
 
       wrapper.vm.sidebarState.isCollapsed = false;
       await nextTick();
+      await nextTick();
 
       expect(focusSpy).toHaveBeenCalledTimes(1);
 
@@ -495,9 +497,10 @@ describe('SuperSidebar component', () => {
     });
 
     const ESC_KEY = 27;
-    it('collapses sidebar when sidebar is in overlay mode', () => {
+    it('collapses sidebar when sidebar is in overlay mode', async () => {
       jest.spyOn(bp, 'windowWidth').mockReturnValue(lg);
-      findSidebar().trigger('keydown', { keyCode: ESC_KEY });
+      await findSidebar().trigger('keydown.esc', { keyCode: ESC_KEY });
+
       expect(toggleSuperSidebarCollapsed).toHaveBeenCalled();
     });
 
