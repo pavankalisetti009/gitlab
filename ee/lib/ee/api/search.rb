@@ -9,9 +9,19 @@ module EE
         helpers do
           extend ::Gitlab::Utils::Override
 
+          params :search_params_ee do
+            optional :fields, type: Array[String], coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce,
+              values: %w[title], desc: 'Array of fields you wish to search'
+          end
+
           override :scope_preload_method
           def scope_preload_method
             super.merge(blobs: :with_api_commit_entity_associations).freeze
+          end
+
+          override :search_params
+          def search_params
+            super.merge(fields: params[:fields])
           end
 
           override :verify_search_scope!

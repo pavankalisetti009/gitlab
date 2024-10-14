@@ -578,7 +578,8 @@ module Gitlab
           :not_target_branch,
           :author_username,
           :not_author_username,
-          :label_name
+          :label_name,
+          :fields
         )
       end
 

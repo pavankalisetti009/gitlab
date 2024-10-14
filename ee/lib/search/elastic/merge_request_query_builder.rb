@@ -57,6 +57,8 @@ module Search
       def build_query_hash(query:, options:)
         if query =~ /!(\d+)\z/
           ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
+        elsif options[:fields].present?
+          ::Search::Elastic::Queries.by_simple_query_string(fields: options[:fields], query: query, options: options)
         else
           # iid field can be added here as lenient option will
           # pardon format errors, like integer out of range.
