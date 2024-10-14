@@ -27,9 +27,16 @@ module EE
         sync_security_scan_orchestration_policies(target_project)
         trigger_blocked_merge_requests_merge_status_updated(merge_request)
         track_policies_fallback_behavior(merge_request)
+        publish_event_store_event(merge_request)
       end
 
       private
+
+      def publish_event_store_event(merge_request)
+        return unless ::Feature.enabled? :ff_compliance_audit_mr_merge, merge_request.project
+
+        ::Gitlab::EventStore.publish ::MergeRequests::MergedEvent.new(data: { merge_request_id: merge_request.id })
+      end
 
       def compliance_violations_enabled?(group)
         group.licensed_feature_available?(:group_level_compliance_dashboard)
