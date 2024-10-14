@@ -480,7 +480,7 @@ RSpec.describe EE::Gitlab::Checks::PushRules::CommitCheck, feature_category: :so
           it 'raises error' do
             expect { subject.validate! }
               .to raise_error(Gitlab::GitAccess::ForbiddenError,
-                "Your git username is inconsistent with GitLab account name")
+                "Your git author name is inconsistent with GitLab account name")
           end
         end
       end
