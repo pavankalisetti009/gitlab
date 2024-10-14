@@ -166,7 +166,7 @@ module Gitlab
 
       def add_components_with_license(components_with_licenses)
         components_with_licenses.each do |component|
-          add_record_with_ingested_licenses(component)
+          add_record_with_ingested_licenses(component) if supported_for_license_scanning?(component.purl_type)
         end
       end
 
@@ -188,6 +188,10 @@ module Gitlab
             url: component_license.url || self.class.url_for(spdx_id)
           }
         end
+      end
+
+      def supported_for_license_scanning?(purl_type)
+        ::Enums::Sbom.dependency_scanning_purl_type?(purl_type)
       end
     end
   end
