@@ -8,7 +8,9 @@ module QA
 
       let!(:project) { create(:project, :with_readme, group: target_group_with_project) }
 
-      let(:maintainer_user) { create(:user) }
+      let(:maintainer_user) do
+        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
+      end
 
       before do
         source_group_with_members.add_member(maintainer_user, Resource::Members::AccessLevel::MAINTAINER)
@@ -18,7 +20,6 @@ module QA
         project.remove_via_api!
         source_group_with_members.remove_via_api!
         target_group_with_project.remove_via_api!
-        maintainer_user.remove_via_api!
       end
 
       it 'can be shared with another group with correct access level', :blocking,
