@@ -18,7 +18,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
   shared_examples 'common ai metrics' do
     let(:fields) do
       %w[codeSuggestionsContributorsCount codeContributorsCount codeSuggestionsShownCount codeSuggestionsAcceptedCount
-        duoChatContributorsCount duoProAssignedUsersCount]
+        duoChatContributorsCount duoProAssignedUsersCount duoAssignedUsersCount]
     end
 
     let(:from) { '2024-05-01'.to_date }
@@ -33,7 +33,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         code_suggestions_shown_count: 5,
         code_suggestions_accepted_count: 2,
         duo_chat_contributors_count: 8,
-        duo_pro_assigned_users_count: 18
+        duo_assigned_users_count: 18
       }
     end
 
@@ -58,7 +58,8 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         'codeSuggestionsShownCount' => 5,
         'codeSuggestionsAcceptedCount' => 2,
         'duoChatContributorsCount' => 8,
-        'duoProAssignedUsersCount' => 18
+        'duoProAssignedUsersCount' => 18,
+        'duoAssignedUsersCount' => 18
       })
     end
 
@@ -79,7 +80,8 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           'codeSuggestionsShownCount' => 5,
           'codeSuggestionsAcceptedCount' => 2,
           'duoChatContributorsCount' => nil,
-          'duoProAssignedUsersCount' => nil
+          'duoProAssignedUsersCount' => nil,
+          'duoAssignedUsersCount' => nil
         })
       end
     end

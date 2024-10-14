@@ -18,15 +18,15 @@ module Analytics
 
         data = add_code_suggestions_usage(data)
         data = add_duo_chat_usage(data)
-        data = add_duo_pro_assigned(data)
+        data = add_duo_assigned(data)
 
         ServiceResponse.success(payload: data)
       end
 
       private
 
-      def add_duo_pro_assigned(data)
-        return data unless fields.include?(:duo_pro_assigned_users_count)
+      def add_duo_assigned(data)
+        return data unless fields.include?(:duo_assigned_users_count)
 
         # TODO: Refactor after https://gitlab.com/gitlab-org/gitlab/-/issues/489759 is done.
         # current code assumes that addons are mutually exclusive
@@ -36,7 +36,7 @@ module Analytics
         enterprise_users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
           current_user, namespace, add_on_name: :duo_enterprise).execute
 
-        data.merge(duo_pro_assigned_users_count: pro_users.count + enterprise_users.count)
+        data.merge(duo_assigned_users_count: pro_users.count + enterprise_users.count)
       end
 
       def add_code_suggestions_usage(data)
