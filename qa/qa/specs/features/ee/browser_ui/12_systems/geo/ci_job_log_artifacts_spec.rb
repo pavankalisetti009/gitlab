@@ -6,7 +6,7 @@ module QA
       let(:file_name) { 'geo_artifact.txt' }
       let(:directory_name) { 'geo_artifacts' }
       let(:pipeline_job_name) { 'test-artifacts' }
-      let(:executor) { "qa-runner-#{Time.now.to_i}" }
+      let(:executor) { "qa-runner-#{SecureRandom.hex(6)}" }
 
       let(:project) { create(:project, name: 'geo-project-with-artifacts') }
       let!(:runner) { create(:project_runner, project: project, name: executor, tags: [executor]) }

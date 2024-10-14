@@ -15,7 +15,7 @@ module QA
       end
 
       before do
-        @executor = "qa-runner-#{Time.now.to_i}"
+        @executor = "qa-runner-#{SecureRandom.hex(6)}"
 
         Flow::Login.sign_in
 
