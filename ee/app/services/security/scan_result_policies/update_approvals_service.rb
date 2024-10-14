@@ -16,11 +16,7 @@ module Security
       end
 
       def execute
-        pipeline_complete = if pipeline.include_manual_to_pipeline_completion_enabled?
-                              pipeline.complete_or_manual?
-                            else
-                              pipeline.complete?
-                            end
+        pipeline_complete = pipeline.complete_or_manual?
 
         return unless pipeline_complete
         return unless pipeline.can_store_security_reports?

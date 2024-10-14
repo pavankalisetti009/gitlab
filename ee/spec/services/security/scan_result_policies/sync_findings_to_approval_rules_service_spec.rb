@@ -53,14 +53,6 @@ RSpec.describe Security::ScanResultPolicies::SyncFindingsToApprovalRulesService,
     context 'when pipeline is in manual state' do
       let_it_be_with_refind(:pipeline) { create(:ee_ci_pipeline, :manual, project: project) }
 
-      context 'when include_manual_to_pipeline_completion is disabled' do
-        before do
-          stub_feature_flags(include_manual_to_pipeline_completion: false)
-        end
-
-        it_behaves_like 'does not update approvals'
-      end
-
       it_behaves_like 'updates approvals'
     end
 

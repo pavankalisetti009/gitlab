@@ -66,21 +66,7 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
         allow(Sbom::IngestReportsWorker).to receive(:perform_async)
       end
 
-      context 'with include_manual_to_pipeline_completion FF disabled' do
-        before do
-          allow(pipeline).to receive(:include_manual_to_pipeline_completion_enabled?).and_return(false)
-        end
-
-        it_behaves_like 'ingesting sbom reports in a single pipeline'
-      end
-
-      context 'with include_manual_to_pipeline_completion FF enabled' do
-        before do
-          allow(pipeline).to receive(:include_manual_to_pipeline_completion_enabled?).and_return(true)
-        end
-
-        it_behaves_like 'ingesting sbom reports in a single pipeline'
-      end
+      it_behaves_like 'ingesting sbom reports in a single pipeline'
     end
 
     context 'with a parent-child pipeline hierarchy' do
@@ -111,7 +97,7 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
           context 'on the default branch' do
             context 'when the whole pipeline hierarchy has not completed' do
               before do
-                allow(child_pipeline_2).to receive(complete_method).and_return(false)
+                allow(child_pipeline_2).to receive(:complete_or_manual?).and_return(false)
               end
 
               it 'does not schedule Sbom::IngestReportsWorker' do
@@ -156,7 +142,7 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
         end
       end
 
-      let_it_be(:parent_pipeline)  { create(:ci_pipeline, :success, project: project) }
+      let_it_be(:parent_pipeline) { create(:ci_pipeline, :success, project: project) }
       let_it_be(:child_pipeline_1) { create(:ci_pipeline, :success, project: project, child_of: parent_pipeline) }
       let_it_be(:child_pipeline_2) { create(:ci_pipeline, :success, project: project, child_of: parent_pipeline) }
 
@@ -167,44 +153,16 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
         allow(Sbom::IngestReportsWorker).to receive(:perform_async)
       end
 
-      context 'with include_manual_to_pipeline_completion FF disabled' do
-        let(:complete_method) { :complete? }
+      context 'when the parent pipeline completes' do
+        let(:pipeline) { parent_pipeline }
 
-        before do
-          allow(pipeline).to receive(:include_manual_to_pipeline_completion_enabled?).and_return(false)
-        end
-
-        context 'when the parent pipeline completes' do
-          let(:pipeline) { parent_pipeline }
-
-          it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
-        end
-
-        context 'when a child pipeline completes' do
-          let(:pipeline) { child_pipeline_1 }
-
-          it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
-        end
+        it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
       end
 
-      context 'with include_manual_to_pipeline_completion FF enabled' do
-        let(:complete_method) { :complete_or_manual? }
+      context 'when a child pipeline completes' do
+        let(:pipeline) { child_pipeline_1 }
 
-        before do
-          allow(pipeline).to receive(:include_manual_to_pipeline_completion_enabled?).and_return(true)
-        end
-
-        context 'when the parent pipeline completes' do
-          let(:pipeline) { parent_pipeline }
-
-          it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
-        end
-
-        context 'when a child pipeline completes' do
-          let(:pipeline) { child_pipeline_1 }
-
-          it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
-        end
+        it_behaves_like 'ingesting sbom reports in a parent-child pipeline hierarchy'
       end
     end
   end
