@@ -14,7 +14,7 @@ import {
  *
  * This card is used on Namespace Usage Quotas
  * when the namespace has Namespace-level storage limits
- * https://docs.gitlab.com/ee/user/usage_quotas#namespace-storage-limit
+ * https://docs.gitlab.com/ee/user/storage_usage_quotas#namespace-storage-limit
  * It breaks down the storage available: included in the plan & purchased storage
  */
 

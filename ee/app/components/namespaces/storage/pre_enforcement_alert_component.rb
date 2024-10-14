@@ -37,11 +37,11 @@ module Namespaces
       end
 
       def storage_limit_docs_link
-        help_page_path('user/usage_quotas.md', anchor: 'namespace-storage-limit')
+        help_page_path('user/storage_usage_quotas.md', anchor: 'namespace-storage-limit')
       end
 
       def learn_more_link
-        help_page_path('user/usage_quotas.md', anchor: 'manage-your-storage-usage')
+        help_page_path('user/storage_usage_quotas.md', anchor: 'manage-your-storage-usage')
       end
 
       def strong_tags

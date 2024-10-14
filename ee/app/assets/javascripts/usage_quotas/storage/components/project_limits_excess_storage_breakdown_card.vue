@@ -18,7 +18,7 @@ import { STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE, BUY_STORAGE } from '../const
  *
  * This card is used on Namespace Usage Quotas
  * when the namespace has Project-level storage limits
- * https://docs.gitlab.com/ee/user/usage_quotas#project-storage-limit
+ * https://docs.gitlab.com/ee/user/storage_usage_quotas#project-storage-limit
  * It describes the relationship between excess storage and purchased storage
  */
 

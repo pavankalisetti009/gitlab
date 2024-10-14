@@ -98,7 +98,7 @@ module Namespaces
       end
 
       def faq_link_start
-        link_start(help_page_path('user/usage_quotas.md', anchor: 'namespace-storage-limit'))
+        link_start(help_page_path('user/storage_usage_quotas.md', anchor: 'namespace-storage-limit'))
       end
 
       def link_start(url)

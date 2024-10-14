@@ -39,7 +39,7 @@ module Gitlab
     end
 
     def limit_docs_url
-      ::Gitlab::Routing.url_helpers.help_page_url('user/usage_quotas.md', anchor: 'project-storage-limit')
+      ::Gitlab::Routing.url_helpers.help_page_url('user/storage_usage_quotas.md', anchor: 'project-storage-limit')
     end
 
     def formatted(number)

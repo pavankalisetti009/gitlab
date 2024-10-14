@@ -21,7 +21,7 @@ RSpec.describe EE::Gitlab::NamespaceStorageSizeErrorMessage, :saas, feature_cate
     it 'returns the expected message' do
       expected_message = "Your action has been rejected because the namespace storage limit has been reached. " \
                          "For more information, visit " \
-                         "#{Rails.application.routes.url_helpers.help_page_url('user/usage_quotas.md')}."
+                         "#{Rails.application.routes.url_helpers.help_page_url('user/storage_usage_quotas.md')}."
 
       expect(error_message.commit_error).to eq(expected_message)
     end
@@ -31,7 +31,7 @@ RSpec.describe EE::Gitlab::NamespaceStorageSizeErrorMessage, :saas, feature_cate
     it 'returns the expected message' do
       expected_message = 'Your namespace storage is full. ' \
                          'This merge request cannot be merged. To continue, ' \
-                         '<a target="_blank" rel="noopener noreferrer" href="/help/user/usage_quotas.md">' \
+                         '<a target="_blank" rel="noopener noreferrer" href="/help/user/storage_usage_quotas.md">' \
                          'manage your storage usage</a>.'
 
       expect(error_message.merge_error).to eq(expected_message)
@@ -40,7 +40,7 @@ RSpec.describe EE::Gitlab::NamespaceStorageSizeErrorMessage, :saas, feature_cate
 
   describe 'push error messages' do
     let(:usage_quotas_guide) do
-      ::Gitlab::Routing.url_helpers.help_page_url('user/usage_quotas.md', anchor: 'manage-storage-usage')
+      ::Gitlab::Routing.url_helpers.help_page_url('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
     end
 
     let(:read_only_namespaces_guide) do

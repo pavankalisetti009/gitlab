@@ -77,7 +77,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
 
     context 'when namespace is NOT in phased rollout and uses dashboard limit for enforcement' do
       # After we enable Namespace enforcement, namespaces created after that date will use
-      # the dashboard limit https://docs.gitlab.com/ee/user/usage_quotas.html
+      # the dashboard limit https://docs.gitlab.com/ee/user/storage_usage_quotas.html
       # the dashboard limit is stored in the storage_size_limit plan limit
 
       before do
@@ -186,7 +186,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
         expect(page).to have_link(
           'A namespace storage limit',
           href: help_page_path(
-            'user/usage_quotas.md',
+            'user/storage_usage_quotas.md',
             anchor: 'namespace-storage-limit'
           )
         )
@@ -198,7 +198,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
         expect(page).to have_link(
           'How can I manage my storage',
           href: help_page_path(
-            'user/usage_quotas.md',
+            'user/storage_usage_quotas.md',
             anchor: 'manage-your-storage-usage'
           )
         )

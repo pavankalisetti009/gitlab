@@ -2,6 +2,6 @@
 
 <%= s_('NamespaceStorage|If %{name} exceeds the storage quota, all projects in the namespace will be locked and actions will be restricted.') % { name: @namespace.name } %> <%= s_('NamespaceStorage|Learn about which actions become restricted: %{url}') % { url: help_page_url('user/read_only_namespaces.md') } %>
 
-<%= s_('NamespaceStorage|Manage your storage usage or purchase additional storage.') %> <%= s_('Learn more: %{url}') % { url: help_page_url('user/usage_quotas.md', anchor: 'manage-your-storage-usage') } %>
+<%= s_('NamespaceStorage|Manage your storage usage or purchase additional storage.') %> <%= s_('Learn more: %{url}') % { url: help_page_url('user/storage_usage_quotas.md', anchor: 'manage-your-storage-usage') } %>
 
 <%= s_('NamespaceStorage|Buy more storage') %> → <%= @buy_storage_url %>
