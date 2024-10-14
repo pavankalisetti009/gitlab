@@ -92,6 +92,8 @@ module BillingPlansHelper
   end
 
   def show_start_free_trial_messages?(namespace)
+    return false if Feature.enabled?(:duo_enterprise_trials, current_user)
+
     !namespace.free_personal? && namespace.eligible_for_trial?
   end
 
