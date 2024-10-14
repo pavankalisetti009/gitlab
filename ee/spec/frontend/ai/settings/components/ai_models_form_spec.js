@@ -35,11 +35,11 @@ describe('AiModelsForm', () => {
   const findTestingAgreementLink = () => wrapper.findComponent(PromoPageLink);
 
   it('has the correct title', () => {
-    expect(findTitle()).toBe('AI models');
+    expect(findTitle()).toBe('Self-hosted AI models');
   });
 
   it('has the correct label', () => {
-    expect(findCheckboxLabel().text()).toBe('Allow use of self-hosted models');
+    expect(findCheckboxLabel().text()).toBe('Turn on self-hosted models');
   });
 
   describe('when self-hosted models have been enabled', () => {
@@ -58,7 +58,7 @@ describe('AiModelsForm', () => {
     describe('help text', () => {
       it('renders the correct text', () => {
         expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
-          'You have enabled self-hosted models and agreed to the GitLab Testing Agreement',
+          'You have turned on self-hosted AI models and agreed to the GitLab Testing Agreement',
         );
       });
 
@@ -86,7 +86,7 @@ describe('AiModelsForm', () => {
     describe('help text', () => {
       it('renders the correct text', () => {
         expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
-          'By enabling self-hosted models, you agree to the GitLab Testing Agreement',
+          'By turning on self-hosted AI models, you agree to the GitLab Testing Agreement',
         );
       });
 
