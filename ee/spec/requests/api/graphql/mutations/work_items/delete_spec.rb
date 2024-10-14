@@ -78,9 +78,9 @@ RSpec.describe 'Delete a work item', feature_category: :team_planning do
           end.to change { WorkItem.count }.by(-1)
         end
 
-        context 'when work_item_epics feature flag is disabled' do
+        context 'when lock_work_item_epics feature flag is enabled' do
           before do
-            stub_feature_flags(work_item_epics: false)
+            stub_feature_flags(lock_work_item_epics: true)
           end
 
           it 'does not deletes the epic work item' do

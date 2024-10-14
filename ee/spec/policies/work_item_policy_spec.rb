@@ -23,94 +23,93 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
     before do
       stub_licensed_features(issuable_resource_links: true, epics: true)
-      stub_feature_flags(work_item_epics: false)
     end
 
-    it 'does allow' do
-      # allows read permissions
-      expect(permissions(reporter, work_item)).to be_allowed(
-        :read_cross_project, :read_issue, :read_incident_management_timeline_event, :read_issuable,
-        :read_issuable_participables, :read_issuable_metric_image, :read_note, :read_internal_note,
-        :read_work_item, :read_crm_contacts
-      )
-    end
-
-    it 'does not allow' do
-      # these read permissions are not yet allowed on group level issues
-      expect(permissions(owner, work_item)).to be_disallowed(
-        :read_issuable_resource_link, :read_issue_iid, :read_design
-      )
-
-      # does not allow permissions that modify the issue
-      expect(permissions(owner, work_item)).to be_disallowed(
-        :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :admin_issue_link,
-        :award_emoji, :create_todo, :update_subscription, :create_requirement_test_report,
-        :reopen_issue, :set_confidentiality, :set_issue_crm_contacts, :resolve_note, :admin_note,
-        :set_note_created_at, :reposition_note, :mark_note_as_internal, :create_design, :update_design,
-        :destroy_design, :move_design, :upload_issuable_metric_image, :update_issuable_metric_image,
-        :destroy_issuable_metric_image, :admin_issuable_resource_link, :create_timelog, :admin_timelog,
-        :destroy_issue, :admin_issue_metrics, :admin_issue_metrics_list
-      )
-    end
-
-    context 'when work_item_epics is enabled' do
+    context 'when lock_work_item_epics feature is enabled' do
       before do
-        stub_feature_flags(work_item_epics: true)
+        stub_feature_flags(lock_work_item_epics: true)
       end
 
       it 'does allow' do
-        # allows read permissions for guest users
-        expect(permissions(guest, work_item)).to be_allowed(
-          :read_cross_project, :read_issue, :read_incident_management_timeline_event, :read_issuable,
-          :read_issuable_participables, :read_issuable_metric_image, :read_note, :read_work_item
-        )
-
         # allows read permissions
-        expect(permissions(reporter, work_item)).to be_allowed(:read_internal_note, :read_crm_contacts, :reopen_issue)
-
-        # allows some permissions that modify the issue
-        expect(permissions(owner, work_item)).to be_allowed(
-          :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
-          :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
-          :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note
+        expect(permissions(reporter, work_item)).to be_allowed(
+          :read_cross_project, :read_issue, :read_incident_management_timeline_event, :read_issuable,
+          :read_issuable_participables, :read_issuable_metric_image, :read_note, :read_internal_note,
+          :read_work_item, :read_crm_contacts
         )
       end
 
       it 'does not allow' do
-        expect(permissions(owner, work_item)).to be_allowed(
-          :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
-        )
-        # these permissions are either not yet defined for group level issues or not allowed
+        # these read permissions are not yet allowed on group level issues
         expect(permissions(owner, work_item)).to be_disallowed(
-          :read_issuable_resource_link, :read_issue_iid, :read_design,
-          :create_requirement_test_report, :admin_note,
-          :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
-          :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
+          :read_issuable_resource_link, :read_issue_iid, :read_design
+        )
+
+        # does not allow permissions that modify the issue
+        expect(permissions(owner, work_item)).to be_disallowed(
+          :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :admin_issue_link,
+          :award_emoji, :create_todo, :update_subscription, :create_requirement_test_report,
+          :reopen_issue, :set_confidentiality, :set_issue_crm_contacts, :resolve_note, :admin_note,
+          :set_note_created_at, :reposition_note, :mark_note_as_internal, :create_design, :update_design,
+          :destroy_design, :move_design, :upload_issuable_metric_image, :update_issuable_metric_image,
+          :destroy_issuable_metric_image, :admin_issuable_resource_link, :create_timelog, :admin_timelog,
+          :destroy_issue, :admin_issue_metrics, :admin_issue_metrics_list
         )
       end
+    end
 
-      context 'when related_epics feature is available' do
-        before do
-          stub_licensed_features(related_epics: true, epics: true)
-        end
+    it 'does allow' do
+      # allows read permissions for guest users
+      expect(permissions(guest, work_item)).to be_allowed(
+        :read_cross_project, :read_issue, :read_incident_management_timeline_event, :read_issuable,
+        :read_issuable_participables, :read_issuable_metric_image, :read_note, :read_work_item
+      )
 
-        it 'allow linking of epic work items' do
-          expect(permissions(guest, work_item)).to be_allowed(
-            :admin_work_item_link
-          )
-        end
+      # allows read permissions
+      expect(permissions(reporter, work_item)).to be_allowed(:read_internal_note, :read_crm_contacts, :reopen_issue)
+
+      # allows some permissions that modify the issue
+      expect(permissions(owner, work_item)).to be_allowed(
+        :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
+        :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
+        :mark_note_as_internal, :create_timelog, :destroy_issue, :resolve_note
+      )
+    end
+
+    it 'does not allow' do
+      expect(permissions(owner, work_item)).to be_allowed(
+        :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
+      )
+      # these permissions are either not yet defined for group level issues or not allowed
+      expect(permissions(owner, work_item)).to be_disallowed(
+        :read_issuable_resource_link, :read_issue_iid, :read_design,
+        :create_requirement_test_report, :admin_note,
+        :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
+        :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
+      )
+    end
+
+    context 'when related_epics feature is available' do
+      before do
+        stub_licensed_features(related_epics: true, epics: true)
       end
 
-      context 'when related_epics feature is not available' do
-        before do
-          stub_licensed_features(related_epics: false, epics: true)
-        end
+      it 'allow linking of epic work items' do
+        expect(permissions(guest, work_item)).to be_allowed(
+          :admin_work_item_link
+        )
+      end
+    end
 
-        it 'does not allow linking of epic work items' do
-          expect(permissions(guest, work_item)).to be_disallowed(
-            :admin_work_item_link
-          )
-        end
+    context 'when related_epics feature is not available' do
+      before do
+        stub_licensed_features(related_epics: false, epics: true)
+      end
+
+      it 'does not allow linking of epic work items' do
+        expect(permissions(guest, work_item)).to be_disallowed(
+          :admin_work_item_link
+        )
       end
     end
   end

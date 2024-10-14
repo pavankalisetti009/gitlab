@@ -104,9 +104,9 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
         stub_licensed_features(epics: true, related_epics: true)
       end
 
-      context 'when work_item_epics is disabled' do
+      context 'when lock_work_item_epics is enabled' do
         before do
-          stub_feature_flags(work_item_epics: false)
+          stub_feature_flags(lock_work_item_epics: true)
         end
 
         it 'does not create the links' do
@@ -128,10 +128,6 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
 
       context 'when synced_work_item is false' do
         let(:synced_work_item) { false }
-
-        before do
-          stub_feature_flags(work_item_epics: true)
-        end
 
         it_behaves_like 'successful response', link_type: 'blocks'
 

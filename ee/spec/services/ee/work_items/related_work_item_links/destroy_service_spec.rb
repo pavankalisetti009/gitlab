@@ -51,9 +51,9 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
         stub_licensed_features(epics: true, related_epics: true)
       end
 
-      context 'when work_item_epics is disabled' do
+      context 'when lock_work_item_epics is enabled' do
         before do
-          stub_feature_flags(work_item_epics: false)
+          stub_feature_flags(lock_work_item_epics: true)
         end
 
         it 'does not destroy the links' do
