@@ -4,8 +4,8 @@ module QA
   RSpec.describe 'Create' do
     describe 'Codeowners', product_group: :source_code do
       # Create one user to be the assigned approver and another user who will not be an approver
-      let(:approver) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1) }
-      let(:non_approver) { Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2) }
+      let(:approver) { create(:user) }
+      let(:non_approver) { create(:user) }
       let(:project) { create(:project, :with_readme, name: 'assign-approvers') }
       let(:branch_name) { 'protected-branch' }
 
@@ -16,6 +16,11 @@ module QA
         Flow::Login.sign_in
 
         project.visit!
+      end
+
+      after do
+        approver.remove_via_api!
+        non_approver.remove_via_api!
       end
 
       it 'merge request assigns code owners as approvers', :blocking,

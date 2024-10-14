@@ -18,13 +18,9 @@ module QA
 
       let(:project) { create(:project, name: 'codeowners') }
 
-      let(:user) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:user) { create(:user) }
 
-      let(:user2) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2)
-      end
+      let(:user2) { create(:user) }
 
       let(:codeowners_file_content) do
         <<-CONTENT
@@ -44,6 +40,11 @@ module QA
           { action: 'create', file_path: 'README.md', content: 'bar' },
           { action: 'create', file_path: 'CODEOWNERS', content: codeowners_file_content }
         ])
+      end
+
+      after do
+        user.remove_via_api!
+        user2.remove_via_api!
       end
 
       it 'displays owners specified in CODEOWNERS file',

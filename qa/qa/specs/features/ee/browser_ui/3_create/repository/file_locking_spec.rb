@@ -3,13 +3,9 @@
 module QA
   RSpec.describe 'Create' do
     describe 'File Locking', product_group: :source_code do
-      let(:user_one) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
-      end
+      let(:user_one) { create(:user) }
 
-      let(:user_two) do
-        Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_2, Runtime::Env.gitlab_qa_password_2)
-      end
+      let(:user_two) { create(:user) }
 
       let(:project) { create(:project, :with_readme, name: 'file_locking') }
 
@@ -30,6 +26,11 @@ module QA
           branch.project = project
           branch.branch_name = project.default_branch
         end
+      end
+
+      after do
+        user_one.remove_via_api!
+        user_two.remove_via_api!
       end
 
       it 'locks a directory and tries to push as a second user', :blocking,
