@@ -5,6 +5,8 @@ module Geo
     include ApplicationWorker
 
     data_consistency :always
+    worker_has_external_dependencies!
+
     include GeoQueue
     include Gitlab::Geo::LogHelpers
 
