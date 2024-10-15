@@ -50,9 +50,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
 
     context 'when eligible for duo pro widget' do
       let(:current_group) { create(:group) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
-      let(:duo_pro_trial_widget_attribute_keys) do
-        [:duo_pro_trial_status_widget_data_attrs, :duo_pro_trial_status_popover_data_attrs]
-      end
+      let(:duo_pro_trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
 
       before do
         build(:gitlab_subscription, :ultimate, namespace: current_group)

@@ -102,8 +102,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         end
 
         describe 'does not return trial status widget data' do
-          it { is_expected.not_to include(:duo_pro_trial_status_widget_data_attrs) }
-          it { is_expected.not_to include(:duo_pro_trial_status_popover_data_attrs) }
+          it { is_expected.not_to include(:trial_widget_data_attrs) }
         end
 
         context 'when a namespace is qualified for duo pro trial status widget' do
@@ -118,8 +117,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
               build(:gitlab_subscription, :ultimate, namespace: root_group)
             end
 
-            it { is_expected.to include(:duo_pro_trial_status_widget_data_attrs) }
-            it { is_expected.to include(:duo_pro_trial_status_popover_data_attrs) }
+            it { is_expected.to include(:trial_widget_data_attrs) }
           end
 
           context 'when a namespace is also qualified for a trial status widget' do
@@ -129,8 +127,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
 
             it { is_expected.to include(:trial_status_widget_data_attrs) }
             it { is_expected.to include(:trial_status_popover_data_attrs) }
-            it { is_expected.not_to include(:duo_pro_trial_status_widget_data_attrs) }
-            it { is_expected.not_to include(:duo_pro_trial_status_popover_data_attrs) }
+            it { is_expected.not_to include(:trial_widget_data_attrs) }
           end
         end
       end
