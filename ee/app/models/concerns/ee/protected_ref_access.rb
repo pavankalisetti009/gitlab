@@ -12,6 +12,8 @@ module EE
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
 
+    DEVELOPER_OWNER_ACCESS = ::Gitlab::Access::DEVELOPER..::Gitlab::Access::OWNER.freeze
+
     module Scopes
       extend ActiveSupport::Concern
 
@@ -102,11 +104,9 @@ module EE
       # or inherited through ancestor groups of the project.
       # See https://gitlab.com/gitlab-org/gitlab/-/issues/423835
 
-      project_group_link = project.project_group_links.find_by(group: group)
-      return false unless project_group_link.present?
-      return false if project_group_link.group_access < ::Gitlab::Access::DEVELOPER
+      return false unless group_has_developer_access_to_project?
 
-      group.members.where(user: current_user).where('access_level >= ?', ::Gitlab::Access::DEVELOPER).exists?
+      group.members.exists?(user: current_user, access_level: DEVELOPER_OWNER_ACCESS)
     end
 
     def user?
@@ -130,7 +130,7 @@ module EE
     end
 
     def validate_group_membership
-      return if project.project_group_links.where(group: group).exists?
+      return if group_has_developer_access_to_project?
 
       errors.add(:group, 'does not have access to the project')
     end
@@ -139,6 +139,10 @@ module EE
       return if project.member?(user)
 
       errors.add(:user, 'is not a member of the project')
+    end
+
+    def group_has_developer_access_to_project?
+      project.project_group_links.exists?(group: group, group_access: DEVELOPER_OWNER_ACCESS)
     end
   end
 end
