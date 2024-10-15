@@ -8,6 +8,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images.query.graphql';
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
 import ImageToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/image_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -68,14 +69,16 @@ describe('Image Token component', () => {
         projectFullPath,
         ...provide,
       },
-      stubs,
+      stubs: {
+        SearchSuggestion,
+        ...stubs,
+      },
     });
   };
 
   const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
-  const findCheckedIcon = (value) => wrapper.findByTestId(`image-icon-${value}`);
-  const isOptionChecked = (v) => !findCheckedIcon(v).classes('gl-invisible');
+  const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
   const clickDropdownItem = async (...ids) => {
     await Promise.all(
@@ -94,8 +97,9 @@ describe('Image Token component', () => {
     const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
     const findTruncateTexts = () =>
       wrapper
-        .findAllByTestId('truncate-image')
-        .wrappers.map((component) => component.props('text'));
+        .findAllComponents(SearchSuggestion)
+        .wrappers.filter((component) => component.props('truncate'))
+        .map((component) => component.props('text'));
 
     const stubs = {
       GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {

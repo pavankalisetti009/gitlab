@@ -250,7 +250,7 @@ export default {
       @complete="emitFiltersChanged"
     >
       <template #view>
-        {{ toggleText }}
+        <span data-testid="activity-token-placeholder">{{ toggleText }}</span>
       </template>
       <template #suggestions>
         <template v-for="(group, index) in activityTokenGroups">

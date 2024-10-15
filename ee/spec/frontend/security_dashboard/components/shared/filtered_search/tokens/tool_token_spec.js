@@ -1,4 +1,4 @@
-import { GlFilteredSearchToken } from '@gitlab/ui';
+import { GlFilteredSearchToken, GlDropdownSectionHeader } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ToolToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/tool_token.vue';
@@ -6,7 +6,6 @@ import QuerystringSync from 'ee/security_dashboard/components/shared/filters/que
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { MOCK_SCANNERS } from './mock_data';
 
@@ -81,60 +80,48 @@ describe('ToolToken', () => {
   };
 
   describe('default view', () => {
-    const findViewSlot = () => wrapper.findByTestId('slot-view');
-
     beforeEach(() => {
-      createWrapper({
-        stubs: {
-          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
-            template: `
-            <div>
-                <div data-testid="slot-view">
-                    <slot name="view"></slot>
-                </div>
-                <div data-testid="slot-suggestions">
-                    <slot name="suggestions"></slot>
-                </div>
-            </div>`,
-          }),
-        },
-      });
+      createWrapper();
     });
 
     it('shows the label', () => {
-      expect(findViewSlot().text()).toBe('All tools');
+      expect(findFilteredSearchToken().props('value')).toEqual({
+        data: ['ALL'],
+        operator: '||',
+      });
+      expect(wrapper.findByTestId('tool-token-value').text()).toBe('All tools');
     });
 
     it('shows the dropdown with correct options', () => {
-      // All options are rendered in the #suggestions slot of GlFilteredSearchToken
-      const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
+      const findDropdownOptions = () =>
+        wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
 
-      expect(
-        findDropdownOptions()
-          .text()
-          .split('\n')
-          .map((s) => s.trim())
-          .filter((i) => i),
-      ).toEqual([
-        'Tool', // group header
+      const findDropdownGroupHeaders = () =>
+        wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
+
+      expect(findDropdownOptions()).toEqual([
         'All tools',
         'Manually added',
-        'API Fuzzing', // group header
         'GitLab API Fuzzing',
-        'Container Scanning', // group header
         'Trivy',
-        'Coverage Fuzzing', // group header
         'libfuzzer',
-        'DAST', // group header
         'OWASP Zed Attack Proxy (ZAP)',
-        'Dependency Scanning', // group header
         'Gemnasium',
-        'SAST', // group header
         'ESLint',
         'Find Security Bugs',
         'A Custom Scanner (SamScan)',
-        'Secret Detection', // group header
         'GitLeaks',
+      ]);
+
+      expect(findDropdownGroupHeaders()).toEqual([
+        'Tool',
+        'API Fuzzing',
+        'Container Scanning',
+        'Coverage Fuzzing',
+        'DAST',
+        'Dependency Scanning',
+        'SAST',
+        'Secret Detection',
       ]);
     });
   });
