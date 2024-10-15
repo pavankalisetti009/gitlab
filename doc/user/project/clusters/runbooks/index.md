@@ -27,7 +27,7 @@ pre-written code blocks or database queries against a given environment.
 
 ## Executable Runbooks
 
-The JupyterHub app offered via the GitLab Kubernetes integration now ships
+The JupyterHub app offered with the GitLab Kubernetes integration now ships
 with Nurtch's Rubix library, providing a simple way to create DevOps
 runbooks. A sample runbook is provided, showcasing common operations. While
 Rubix makes it simple to create common Kubernetes and AWS workflows, you can
