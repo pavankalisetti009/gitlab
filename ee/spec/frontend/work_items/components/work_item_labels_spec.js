@@ -40,7 +40,7 @@ describe('WorkItemLabels component', () => {
     });
   };
 
-  const findScopedLabel = () =>
+  const findScopedLabels = () =>
     wrapper.findAllComponents(GlLabel).filter((label) => label.props('scoped'));
 
   describe('allows scoped labels', () => {
@@ -51,7 +51,7 @@ describe('WorkItemLabels component', () => {
       createComponent({ workItemQueryHandler });
       await waitForPromises();
 
-      expect(findScopedLabel().exists()).toBe(allowsScopedLabels);
+      expect(findScopedLabels()).toHaveLength(allowsScopedLabels ? 1 : 0);
     });
   });
 });
