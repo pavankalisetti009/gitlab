@@ -2,7 +2,7 @@
 data_category: optional
 key_path: usage_activity_by_stage.monitor.projects_incident_sla_enabled
 description: Projects where Incident SLA is enabled
-product_group: respond
+product_group: platform_insights
 value_type: number
 status: active
 time_frame: all

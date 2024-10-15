@@ -2,7 +2,7 @@
 data_category: optional
 key_path: redis_hll_counters.quickactions.i_quickactions_publish_weekly
 description: Count of WAU using the `/publish` quick action
-product_group: respond
+product_group: platform_insights
 value_type: number
 status: active
 time_frame: 7d
