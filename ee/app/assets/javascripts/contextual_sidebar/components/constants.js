@@ -3,21 +3,11 @@ import { __, s__ } from '~/locale';
 const ACTIVE_TRIAL_POPOVER = 'trial_status_popover';
 const TRIAL_ENDED_POPOVER = 'trial_ended_popover';
 const CLICK_BUTTON_ACTION = 'click_button';
+const DUO_PRO = 'duo_pro';
+const DUO_ENTERPRISE = 'duo_enterprise';
 
 export const RESIZE_EVENT_DEBOUNCE_MS = 150;
 export const RESIZE_EVENT = 'resize';
-export const POPOVER_HIDE_DELAY = 400;
-export const DISMISS = __('Dismiss');
-
-export const DUO_PRO_TRIAL_WIDGET_TITLE = s__('DuoProTrial|GitLab Duo Pro Trial');
-
-export const DUO_PRO_TRIAL_EXPIRED_WIDGET_TITLE = s__(
-  'DuoProTrial|Your %{duration}-day trial has ended',
-);
-
-export const DUO_PRO_TRIAL_EXPIRED_WIDGET_BODY = s__('DuoProTrial|Looking to do more with AI?');
-export const DUO_PRO_TRIAL_LEARN_ABOUT_BUTTON_TITLE = s__('DuoProTrial|Learn about GitLab Duo');
-export const DUO_PRO_TRIAL_WIDGET_DAYS_TEXT = s__('DuoProTrial|Day %{daysUsed}/%{duration}');
 
 export const WIDGET = {
   i18n: {
@@ -79,25 +69,6 @@ export const POPOVER = {
 
 export const WIDGET_CONTAINER_ID = 'trial-status-sidebar-widget';
 
-export const DUO_PRO_TRIAL_POPOVER_CONTENT = s__(`DuoProTrial|Your trial ends on
-  %{strongStart}%{trialEndDate}%{strongEnd}. To continue using features in
-  GitLab Duo Pro, purchase a subscription add-on.`);
-
-export const DUO_PRO_TRIAL_EXPIRED_POPOVER_TITLE = s__(
-  'DuoProTrial|You no longer have access to GitLab Duo Pro features',
-);
-
-export const DUO_PRO_TRIAL_EXPIRED_POPOVER_CONTENT = s__(`DuoProTrial|To regain
-  access to features like Code Suggestions and Chat, purchase the subscription
-  add-on for GitLab Duo Pro.`);
-
-export const DUO_PRO_TRIAL_POPOVER_LEARN_TITLE = s__('DuoProTrial|Learn about features');
-export const DUO_PRO_TRIAL_POPOVER_PURCHASE_TITLE = s__('DuoProTrial|Purchase now');
-export const DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY = 'duo_pro_trial_status_popover';
-export const DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY = 'duo_pro_trial_ended_popover';
-
-const DUO_ENTERPRISE = 'duo_enterprise';
-
 export const TRIAL_WIDGET = {
   i18n: {
     widgetRemainingDays: s__('TrialWidget|%{daysLeft} days left in trial'),
@@ -117,6 +88,11 @@ export const TRIAL_WIDGET = {
     },
   },
   trialTypes: {
+    [DUO_PRO]: {
+      name: s__('TrialWidget|GitLab Duo Pro'),
+      widgetTitle: s__('TrialWidget|GitLab Duo Pro Trial'),
+      widgetTitleExpiredTrial: s__('TrialWidget|Your trial of GitLab Duo Pro has ended'),
+    },
     [DUO_ENTERPRISE]: {
       name: s__('TrialWidget|GitLab Duo Enterprise'),
       widgetTitle: s__('TrialWidget|GitLab Duo Enterprise Trial'),

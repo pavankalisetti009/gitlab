@@ -1,18 +1,19 @@
 import { GlProgressBar } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
-import { TRIAL_WIDGET } from 'ee/contextual_sidebar/components/constants';
 
 describe('TrialWidget component', () => {
   let wrapper;
 
   const findRootElement = () => wrapper.findByTestId('trial-widget-root-element');
+  const findWidgetTitle = () => wrapper.findByTestId('widget-title');
   const findCtaButton = () => wrapper.findByTestId('learn-about-features-btn');
+  const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
 
   const createComponent = (providers = {}) => {
-    return shallowMountExtended(TrialWidget, {
+    wrapper = shallowMountExtended(TrialWidget, {
       provide: {
         trialType: 'duo_enterprise',
         daysRemaining: 40,
@@ -28,32 +29,31 @@ describe('TrialWidget component', () => {
   };
 
   describe('rendered content', () => {
-    beforeEach(() => {
-      wrapper = createComponent();
-    });
-
     it('renders with the correct id', () => {
-      expect(findRootElement().attributes('id')).toBe(TRIAL_WIDGET.containerId);
+      createComponent();
+      expect(findRootElement().attributes('id')).toBe('trial-sidebar-widget');
     });
 
-    it('shows the expected days remaining text', () => {
-      wrapper = createComponent({ daysRemaining: 20 });
+    it('shows the expected days remaining text when trial is active', () => {
+      createComponent({ daysRemaining: 20, percentageComplete: 50 });
       expect(wrapper.text()).toContain('20 days left in trial');
     });
 
     it('does not render the dismiss button during active trial', () => {
+      createComponent({ percentageComplete: 50 });
       expect(findDismissButton().exists()).toBe(false);
     });
 
     describe('dismissible class', () => {
       it('adds the class when all required props are present', () => {
+        createComponent();
         expect(findRootElement().classes()).toContain('js-expired-trial-widget');
       });
 
       it.each(['groupId', 'featureId', 'dismissEndpoint'])(
         'does not add the class when %s is missing',
         (prop) => {
-          wrapper = createComponent({ [prop]: null });
+          createComponent({ [prop]: null });
           expect(findRootElement().classes()).not.toContain('js-expired-trial-widget');
         },
       );
@@ -61,7 +61,7 @@ describe('TrialWidget component', () => {
 
     describe('when trial is active', () => {
       beforeEach(() => {
-        wrapper = createComponent({ daysRemaining: 30, percentageComplete: 50 });
+        createComponent({ daysRemaining: 30, percentageComplete: 50 });
       });
 
       it('renders the progress bar', () => {
@@ -71,20 +71,18 @@ describe('TrialWidget component', () => {
       it('renders the CTA button with correct text', () => {
         const ctaButton = findCtaButton();
         expect(ctaButton.exists()).toBe(true);
-        expect(ctaButton.text()).toBe(TRIAL_WIDGET.i18n.learnMore);
+        expect(ctaButton.text()).toBe('Learn more');
       });
     });
 
     describe('when trial has expired', () => {
       beforeEach(() => {
-        wrapper = createComponent({ daysRemaining: 0, percentageComplete: 100 });
+        createComponent({ daysRemaining: 0, percentageComplete: 100 });
       });
 
       it('shows correct title and body', () => {
-        expect(wrapper.text()).toContain(
-          TRIAL_WIDGET.trialTypes.duo_enterprise.widgetTitleExpiredTrial,
-        );
-        expect(wrapper.text()).toContain(TRIAL_WIDGET.i18n.seeUpgradeOptionsText);
+        expect(wrapper.text()).toContain('Your trial of GitLab Duo Enterprise has ended');
+        expect(wrapper.text()).toContain('See upgrade options');
       });
 
       it('renders the progress bar', () => {
@@ -92,14 +90,65 @@ describe('TrialWidget component', () => {
       });
 
       it('renders the upgrade options text', () => {
-        const ctaButton = findCtaButton();
-        expect(ctaButton.exists()).toBe(true);
-        expect(ctaButton.text()).toBe(TRIAL_WIDGET.i18n.seeUpgradeOptionsText);
+        expect(findUpgradeButton().text()).toBe('See upgrade options');
       });
 
       it('renders the dismiss button', () => {
         expect(findDismissButton().exists()).toBe(true);
       });
+    });
+  });
+
+  describe('widget title', () => {
+    it.each([
+      ['duo_pro', 'GitLab Duo Pro Trial', 'Your trial of GitLab Duo Pro has ended'],
+      [
+        'duo_enterprise',
+        'GitLab Duo Enterprise Trial',
+        'Your trial of GitLab Duo Enterprise has ended',
+      ],
+    ])('renders correctly for %s', (trialType, activeTitle, expiredTitle) => {
+      createComponent({ trialType, daysRemaining: 30, percentageComplete: 50 });
+      expect(findWidgetTitle().text()).toBe(activeTitle);
+
+      createComponent({ trialType, daysRemaining: 0, percentageComplete: 100 });
+      expect(findWidgetTitle().text()).toBe(expiredTitle);
+    });
+  });
+
+  describe('when trial is active', () => {
+    beforeEach(() => {
+      createComponent({ daysRemaining: 30, percentageComplete: 50 });
+    });
+
+    it('renders the progress bar', () => {
+      expect(findProgressBar().exists()).toBe(true);
+    });
+
+    it('renders the CTA button with correct text', () => {
+      expect(findCtaButton().text()).toBe('Learn more');
+    });
+  });
+
+  describe('when trial has expired', () => {
+    it.each([
+      ['duo_pro', 'Your trial of GitLab Duo Pro has ended'],
+      ['duo_enterprise', 'Your trial of GitLab Duo Enterprise has ended'],
+    ])('shows correct title and upgrade text for %s', (trialType, expiredTitle) => {
+      createComponent({ trialType, daysRemaining: 0, percentageComplete: 100 });
+
+      expect(findWidgetTitle().text()).toBe(expiredTitle);
+      expect(findUpgradeButton().text()).toBe('See upgrade options');
+    });
+
+    it('renders the progress bar', () => {
+      createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      expect(findProgressBar().exists()).toBe(true);
+    });
+
+    it('renders the dismiss button', () => {
+      createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      expect(findDismissButton().exists()).toBe(true);
     });
   });
 });

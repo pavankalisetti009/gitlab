@@ -29,28 +29,19 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
         add_on_purchase.started_at = Time.current
         add_on_purchase.expires_on = trial_duration.days.from_now
 
-        duo_pro_trial_status_widget_data_attrs = {
-          trial_days_used: 1,
-          trial_duration: trial_duration,
-          percentage_complete: 1.67,
-          group_id: group.id,
-          feature_id: described_class::EXPIRED_DUO_PRO_TRIAL_WIDGET,
-          dismiss_endpoint: group_callouts_path
-        }
-        duo_pro_trial_status_popover_data_attrs = {
-          days_remaining: trial_duration,
-          trial_end_date: trial_duration.days.from_now.to_date,
-          purchase_now_url:
-            ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_seat_utilization_index_path(group),
-          learn_about_button_url:
-            ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group)
-        }
-        result = {
-          duo_pro_trial_status_widget_data_attrs: duo_pro_trial_status_widget_data_attrs,
-          duo_pro_trial_status_popover_data_attrs: duo_pro_trial_status_popover_data_attrs
-        }
-
-        is_expected.to eq(result)
+        is_expected.to eq(
+          trial_widget_data_attrs: {
+            trial_type: 'duo_pro',
+            trial_days_used: 1,
+            days_remaining: trial_duration,
+            percentage_complete: 1.67,
+            group_id: group.id,
+            trial_discover_page_path: group_add_ons_discover_duo_pro_path(group),
+            purchase_now_url: group_settings_gitlab_duo_seat_utilization_index_path(group),
+            feature_id: described_class::EXPIRED_TRIAL_WIDGET,
+            dismiss_endpoint: group_callouts_path
+          }
+        )
       end
     end
   end

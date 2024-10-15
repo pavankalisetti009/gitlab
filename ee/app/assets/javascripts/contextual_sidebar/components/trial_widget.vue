@@ -51,9 +51,9 @@ export default {
 
       return {
         ...baseOptions,
-        label: this.formatTrackingLabel(
-          this.isTrialActive ? this.currentTrialType.name : baseOptions.label,
-        ),
+        label: this.isTrialActive
+          ? this.formatTrackingLabel(this.currentTrialType.name)
+          : baseOptions.label,
         property: this.currentTrialType.name,
       };
     },
@@ -88,7 +88,10 @@ export default {
     <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
       <div v-if="isTrialActive">
         <div class="gl-flex-column gl-w-full">
-          <div class="gl-text-md gl-text-neutral-700 gl-mb-4 gl-font-bold">
+          <div
+            data-testid="widget-title"
+            class="gl-text-md gl-text-neutral-700 gl-mb-4 gl-font-bold"
+          >
             {{ widgetTitle }}
           </div>
           <gl-progress-bar
@@ -115,7 +118,7 @@ export default {
       </div>
       <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
         <div class="gl-w-full">
-          <div class="gl-w-9/10 gl-text-sm gl-text-gray-600">
+          <div data-testid="widget-title" class="gl-w-9/10 gl-text-sm gl-text-gray-600">
             {{ expiredWidgetTitleText }}
           </div>
           <div class="gl-mt-4 gl-text-center">
@@ -127,7 +130,7 @@ export default {
             <gl-link
               :href="purchaseNowUrl"
               class="gl-center gl-mb-1 gl-text-sm gl-font-bold gl-text-blue-700 gl-no-underline hover:gl-no-underline"
-              data-testid="learn-about-features-btn"
+              data-testid="upgrade-options-btn"
               :title="ctaText"
               @click.stop="onCtaClick"
             >
