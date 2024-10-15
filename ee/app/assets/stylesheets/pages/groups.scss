@@ -46,9 +46,8 @@
 
 $max-invite-modal-height: 600px;
 
-// Custom styles for invite-modal-transition
-// Used by Vue Transition API
-
+// These are composite classes for use with Vue Transition
+// https://vuejs.org/guide/built-ins/transition
 .invite-modal-transition-enter-active,
 .invite-modal-transition-leave-active {
   transition-property: max-height, opacity;
