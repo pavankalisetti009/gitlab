@@ -1,14 +1,18 @@
+import { GlProgressBar } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
 import { TRIAL_WIDGET } from 'ee/contextual_sidebar/components/constants';
-import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
-import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 
-describe('TrialWidget', () => {
+describe('TrialWidget component', () => {
   let wrapper;
 
-  const createComponent = ({ provide = {}, ...options } = {}) => {
-    wrapper = shallowMountExtended(TrialWidget, {
+  const findRootElement = () => wrapper.findByTestId('trial-widget-root-element');
+  const findCtaButton = () => wrapper.findByTestId('learn-about-features-btn');
+  const findProgressBar = () => wrapper.findComponent(GlProgressBar);
+  const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
+
+  const createComponent = (providers = {}) => {
+    return shallowMountExtended(TrialWidget, {
       provide: {
         trialType: 'duo_enterprise',
         daysRemaining: 40,
@@ -18,78 +22,84 @@ describe('TrialWidget', () => {
         featureId: '2',
         dismissEndpoint: '/dismiss',
         purchaseNowUrl: '/purchase',
-        ...provide,
+        ...providers,
       },
-      ...options,
     });
   };
 
-  const findProgressBar = () => wrapper.findComponent({ name: 'GlProgressBar' });
-  const findCtaButton = () => wrapper.findComponent({ name: 'GlLink' });
-
-  beforeEach(() => {
-    useMockLocationHelper();
-    mockTracking(undefined, undefined, jest.spyOn);
-  });
-
-  afterEach(() => {
-    unmockTracking();
-  });
-
-  it('mounts', () => {
-    createComponent();
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it('renders with the correct id', () => {
-    createComponent();
-    expect(wrapper.attributes('id')).toBe(TRIAL_WIDGET.containerId);
-  });
-
-  describe('computed properties', () => {
-    it('computes widgetRemainingDays correctly', () => {
-      createComponent({ provide: { daysRemaining: 20 } });
-      expect(wrapper.vm.widgetRemainingDays).toBe('20 days left in trial');
-    });
-
-    it('computes widgetTitle correctly', () => {
-      expect(wrapper.vm.widgetTitle).toBe('GitLab Duo Enterprise Trial');
-    });
-
-    it.each`
-      daysRemaining | expected
-      ${30}         | ${TRIAL_WIDGET.i18n.learnMore}
-      ${10}         | ${TRIAL_WIDGET.i18n.upgradeText}
-    `(
-      'computes ctaText correctly when daysRemaining is $daysRemaining',
-      ({ daysRemaining, expected }) => {
-        createComponent({ provide: { daysRemaining } });
-        expect(wrapper.vm.ctaText).toBe(expected);
-      },
-    );
-  });
-
   describe('rendered content', () => {
-    it('renders the correct days remaining when active', () => {
-      createComponent({ provide: { daysRemaining: 20, percentageComplete: 50 } });
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('renders with the correct id', () => {
+      expect(findRootElement().attributes('id')).toBe(TRIAL_WIDGET.containerId);
+    });
+
+    it('shows the expected days remaining text', () => {
+      wrapper = createComponent({ daysRemaining: 20 });
       expect(wrapper.text()).toContain('20 days left in trial');
     });
 
-    it('renders the progress bar when active', () => {
-      createComponent({ provide: { percentageComplete: 50 } });
-      expect(findProgressBar().exists()).toBe(true);
+    it('does not render the dismiss button during active trial', () => {
+      expect(findDismissButton().exists()).toBe(false);
     });
 
-    it('renders the progress bar when expired', () => {
-      createComponent({ provide: { percentageComplete: 101 } });
-      expect(findProgressBar().exists()).toBe(true);
+    describe('dismissible class', () => {
+      it('adds the class when all required props are present', () => {
+        expect(findRootElement().classes()).toContain('js-expired-trial-widget');
+      });
+
+      it.each(['groupId', 'featureId', 'dismissEndpoint'])(
+        'does not add the class when %s is missing',
+        (prop) => {
+          wrapper = createComponent({ [prop]: null });
+          expect(findRootElement().classes()).not.toContain('js-expired-trial-widget');
+        },
+      );
     });
 
-    it('renders the CTA button with correct text when active', () => {
-      createComponent({ provide: { percentageComplete: 50 } });
-      const ctaButton = findCtaButton();
-      expect(ctaButton.exists()).toBe(true);
-      expect(ctaButton.text()).toBe(TRIAL_WIDGET.i18n.learnMore);
+    describe('when trial is active', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ daysRemaining: 30, percentageComplete: 50 });
+      });
+
+      it('renders the progress bar', () => {
+        expect(findProgressBar().exists()).toBe(true);
+      });
+
+      it('renders the CTA button with correct text', () => {
+        const ctaButton = findCtaButton();
+        expect(ctaButton.exists()).toBe(true);
+        expect(ctaButton.text()).toBe(TRIAL_WIDGET.i18n.learnMore);
+      });
+    });
+
+    describe('when trial has expired', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      });
+
+      it('shows correct title and body', () => {
+        expect(wrapper.text()).toContain(
+          TRIAL_WIDGET.trialTypes.duo_enterprise.widgetTitleExpiredTrial,
+        );
+        expect(wrapper.text()).toContain(TRIAL_WIDGET.i18n.seeUpgradeOptionsText);
+      });
+
+      it('renders the progress bar', () => {
+        expect(findProgressBar().exists()).toBe(true);
+      });
+
+      it('renders the upgrade options text', () => {
+        const ctaButton = findCtaButton();
+        expect(ctaButton.exists()).toBe(true);
+        expect(ctaButton.text()).toBe(TRIAL_WIDGET.i18n.seeUpgradeOptionsText);
+      });
+
+      it('renders the dismiss button', () => {
+        expect(findDismissButton().exists()).toBe(true);
+      });
     });
   });
 });
