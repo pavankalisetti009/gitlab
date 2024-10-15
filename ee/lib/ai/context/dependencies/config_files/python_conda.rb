@@ -34,6 +34,8 @@ module Ai
             end
           rescue Psych::SyntaxError
             raise ParsingError, 'content is not valid YAML'
+          rescue Psych::Exception => e
+            raise ParsingError, "YAML exception - #{e.message}"
           end
         end
       end
