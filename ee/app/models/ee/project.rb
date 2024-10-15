@@ -363,6 +363,11 @@ module EE
           .where(project_states: { verification_state: verification_state_value(state) })
       }
 
+      scope :with_sbom_component_version, ->(id) do
+        where(id: Sbom::Occurrence.select(:project_id).where(component_version_id: id))
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
+      end
+
       scope :not_indexed_in_elasticsearch, -> {
         joins('LEFT JOIN index_statuses ON projects.id = index_statuses.project_id')
            .where(index_statuses: { project_id: nil })
