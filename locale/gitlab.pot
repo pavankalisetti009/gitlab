@@ -7754,6 +7754,12 @@ msgstr ""
 msgid "Attempted to update the pipeline trigger token but failed"
 msgstr ""
 
+msgid "Attribute 'container-overrides' is not yet supported"
+msgstr ""
+
+msgid "Attribute 'pod-overrides' is not yet supported"
+msgstr ""
+
 msgid "Audit events"
 msgstr ""
 
