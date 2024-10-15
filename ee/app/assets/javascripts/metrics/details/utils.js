@@ -68,3 +68,19 @@ export function isHistogram(metricType) {
     metricType.toLowerCase(),
   );
 }
+
+export function metricHasRelatedTraces(metricData = [], metricType) {
+  // Check ee/spec/frontend/metrics/mock_data.js to see how metric data looks like
+  if (isHistogram(metricType)) {
+    const data = metricData[0]?.data?.[0] || {
+      distribution: [],
+      buckets: [],
+    };
+    return data.distribution.some((distribution) =>
+      distribution.some(([, , relatedTraces]) => relatedTraces?.length > 0),
+    );
+  }
+  return metricData.some((data) =>
+    data.values?.some(([, , relatedTraces]) => relatedTraces?.length > 0),
+  );
+}

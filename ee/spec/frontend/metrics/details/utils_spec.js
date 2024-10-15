@@ -4,9 +4,17 @@ import {
   createIssueUrlWithMetricDetails,
   viewTracesUrlWithMetric,
   isHistogram,
+  metricHasRelatedTraces,
 } from 'ee/metrics/details/utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { useFakeDate } from 'helpers/fake_date';
+import { METRIC_TYPE } from 'ee/metrics//constants';
+import {
+  mockSumMetricWithNoTracesResponse,
+  mockSumMetricWithTracesResponse,
+  mockHistogramMetricWithNoTracesResponse,
+  mockHistogramMetricWithTracesResponse,
+} from '../mock_data';
 
 describe('getAbsoluteDateRange', () => {
   useFakeDate('2024-08-01 11:00:00');
@@ -162,5 +170,34 @@ describe('isHistogram', () => {
     ${'Gauge'}                | ${false}
   `('returns $expected when metric type is $metricType', ({ metricType, expected }) => {
     expect(isHistogram(metricType)).toBe(expected);
+  });
+});
+
+describe('metricHasRelatedTraces', () => {
+  it('returns true if non-histogram metric has traces', () => {
+    expect(metricHasRelatedTraces(mockSumMetricWithTracesResponse.results, METRIC_TYPE.Sum)).toBe(
+      true,
+    );
+  });
+
+  it('returns false if non-histogram metric data has no traces', () => {
+    expect(metricHasRelatedTraces(mockSumMetricWithNoTracesResponse.results, METRIC_TYPE.Sum)).toBe(
+      false,
+    );
+  });
+
+  it('returns true if histogram metric has traces', () => {
+    expect(
+      metricHasRelatedTraces(mockHistogramMetricWithTracesResponse.results, METRIC_TYPE.Histogram),
+    ).toBe(true);
+  });
+
+  it('returns false if histogram metric data has no traces', () => {
+    expect(
+      metricHasRelatedTraces(
+        mockHistogramMetricWithNoTracesResponse.results,
+        METRIC_TYPE.Histogram,
+      ),
+    ).toBe(false);
   });
 });

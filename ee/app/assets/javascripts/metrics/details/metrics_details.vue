@@ -25,7 +25,7 @@ import MetricsLineChart from './metrics_line_chart.vue';
 import FilteredSearch from './filter_bar/metrics_filtered_search.vue';
 import { filterObjToQuery, queryToFilterObj } from './filters';
 import MetricsHeatMap from './metrics_heatmap.vue';
-import { createIssueUrlWithMetricDetails, isHistogram } from './utils';
+import { createIssueUrlWithMetricDetails, isHistogram, metricHasRelatedTraces } from './utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 import RelatedTraces from './related_traces.vue';
 import { uploadMetricsSnapshot } from './metrics_snapshot';
@@ -139,6 +139,9 @@ export default {
     },
     noMetric() {
       return !this.metricData || !this.metricData.length;
+    },
+    shouldShowRelatedTraces() {
+      return metricHasRelatedTraces(this.metricData, this.metricType);
     },
   },
   created() {
@@ -353,6 +356,7 @@ export default {
             <component
               :is="getChartComponent()"
               ref="chartComponent"
+              :chart-interactive="shouldShowRelatedTraces"
               :metric-data="metricData"
               :loading="loading"
               :cancelled="queryCancelled"
@@ -362,6 +366,7 @@ export default {
             />
 
             <related-traces
+              v-if="shouldShowRelatedTraces"
               class="gl-mb-5 gl-ml-11"
               :data-points="selectedDatapoints"
               :tracing-index-url="tracingIndexUrl"

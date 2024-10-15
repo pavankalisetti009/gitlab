@@ -31,12 +31,18 @@ describe('MetricsLineChart', () => {
 
   let wrapper;
 
-  const mountComponent = ({ data = mockData, loading = false, cancelled = false } = {}) => {
+  const mountComponent = ({
+    data = mockData,
+    loading = false,
+    cancelled = false,
+    chartInteractive = true,
+  } = {}) => {
     wrapper = shallowMountExtended(MetricsLineChart, {
       propsData: {
         metricData: data,
         loading,
         cancelled,
+        chartInteractive,
       },
     });
   };
@@ -236,6 +242,21 @@ describe('MetricsLineChart', () => {
       findChart().vm.$emit('chartItemClicked', {
         chart: {},
         params: { data: { name: 'annotations' } },
+      });
+      expect(wrapper.emitted('selected')).toBeUndefined();
+    });
+
+    it('does not emit selected events if the chart is not interactive', async () => {
+      mountComponent({ chartInteractive: false });
+
+      await chartItemClicked({
+        series: [
+          mockSeries('color-1', 'series-1', [
+            [1234, 'val-1', {}, { traceIds: ['trace-1'] }],
+            [5678, 'val-2', {}, { traceIds: ['trace-2'] }],
+          ]),
+        ],
+        timestamp: 1234,
       });
       expect(wrapper.emitted('selected')).toBeUndefined();
     });

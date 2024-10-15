@@ -14,7 +14,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { useFakeDate } from 'helpers/fake_date';
-import { mockMetrics } from './mock_data';
+import { mockMetricsListResponse } from '../mock_data';
 
 jest.mock('~/alert');
 
@@ -22,12 +22,8 @@ describe('MetricsComponent', () => {
   let wrapper;
   let observabilityClientMock;
 
-  const mockAvailableAttributes = ['attr-1', 'attr-2', 'attr-3'];
-
-  const mockResponse = {
-    metrics: [...mockMetrics],
-    all_available_attributes: mockAvailableAttributes,
-  };
+  const mockResponse = { ...mockMetricsListResponse };
+  const mockAvailableAttributes = [...mockMetricsListResponse.all_available_attributes];
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findFilteredSearch = () => wrapper.findComponent(FilteredSearch);
@@ -151,11 +147,9 @@ describe('MetricsComponent', () => {
         .find(({ type }) => type === 'attribute');
 
       expect(token).toBeDefined();
-      expect(token.options).toEqual([
-        { title: 'attr-1', value: 'attr-1' },
-        { title: 'attr-2', value: 'attr-2' },
-        { title: 'attr-3', value: 'attr-3' },
-      ]);
+      expect(token.options).toEqual(
+        mockAvailableAttributes.map((attribute) => ({ title: attribute, value: attribute })),
+      );
     });
 
     it('renders FilteredSeach with TraceId token', () => {
@@ -251,6 +245,7 @@ describe('MetricsComponent', () => {
   describe('on metric-clicked', () => {
     let visitUrlMock;
 
+    const mockMetrics = mockMetricsListResponse.metrics;
     const mockMetricSelected = mockMetrics[0];
 
     beforeEach(async () => {
