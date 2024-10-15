@@ -25,11 +25,8 @@ module QA
 
       context 'when editing' do
         it 'can be generated using GitLab Duo and merged', :external_ai_provider, only:
-          { pipeline: %i[staging staging-canary canary production] }, quarantine: {
-            type: :stale,
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/496560',
-            only: { pipeline: %i[canary production] }
-          }, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/495408' do
+          { pipeline: %i[staging staging-canary canary production] },
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/495408' do
           Page::MergeRequest::Show.perform do |merge_request|
             merge_request.edit_commit_message
             merge_request.generate_commit
