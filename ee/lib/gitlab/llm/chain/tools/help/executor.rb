@@ -28,9 +28,9 @@ GitLab Duo Chat is your personal AI-powered assistant for boosting productivity.
   * `Summarize this issue in 5 bullet points.`
   * `Rewrite the description of this epic to make to be more concise.`
 * Questions about merge requests, for example:
-  * `Summarize this merge request in one sentence`
-  * `Summarize the comments in this merge request: <merge request URL>.`
-  * _Note: GitLab Duo Chat does not yet have the context of the diff or the files in an MR._
+  * `Which files and changes in this merge request should I review first?`
+  * `Why was the .vue file changed in <merge request URL>?`
+  * _Note: GitLab Duo Chat does not yet have the context of pipelines or commits in an MR._
 * Explaining or generating code, for example:
   * `Create a regular expression for parsing IPv4 and IPv6 addresses in Python.`
   * `Create a CI/CD configuration to build and test Rust code.`
