@@ -106,6 +106,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       it 'checks access_code_suggestions ability for user and return 401 unauthorized' do
         expect(response).to have_gitlab_http_status(:unauthorized)
+        expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
       end
     end
   end
@@ -121,6 +122,23 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       expect(Gitlab::InternalEvents)
         .to have_received(:track_event)
         .with(event_name, user: current_user)
+    end
+  end
+
+  shared_examples 'code suggestions feature disabled' do
+    let(:access_token) { tokens[:api] }
+
+    before do
+      stub_feature_flags(ai_duo_code_suggestions_switch: false)
+      headers["Authorization"] = "Bearer #{access_token.token}"
+
+      post_api
+    end
+
+    it 'returns 404' do
+      post_api
+
+      expect(response).to have_gitlab_http_status(:not_found)
     end
   end
 
@@ -222,6 +240,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     shared_examples 'code completions endpoint' do
+      context 'when feature is disabled' do
+        include_examples 'code suggestions feature disabled'
+      end
+
       context 'when user is not logged in' do
         let(:current_user) { nil }
 
@@ -763,6 +785,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             post_api
 
             expect(response).to have_gitlab_http_status(:unauthorized)
+            expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
           end
 
           context 'when self_hosted_models_beta_ended is disabled' do

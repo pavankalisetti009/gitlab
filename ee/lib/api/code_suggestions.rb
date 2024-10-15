@@ -15,8 +15,9 @@ module API
     before do
       authenticate!
 
-      not_found! unless Feature.enabled?(:ai_duo_code_suggestions_switch, type: :ops)
-      unauthorized! unless current_user.can?(:access_code_suggestions)
+      not_found_with_origin_header! unless Feature.enabled?(:ai_duo_code_suggestions_switch, type: :ops)
+
+      unauthorized_with_origin_header! unless current_user.can?(:access_code_suggestions)
     end
 
     helpers do
@@ -44,6 +45,21 @@ module API
                                                      .duo_pro_add_on_available_namespace_ids
                                                      .join(',')
         }
+      end
+
+      def not_found_with_origin_header!
+        header('X-GitLab-Error-Origin', 'monolith')
+        not_found!
+      end
+
+      def unauthorized_with_origin_header!
+        header('X-GitLab-Error-Origin', 'monolith')
+        unauthorized!
+      end
+
+      def file_too_large_with_origin_header!
+        header('X-GitLab-Error-Origin', 'monolith')
+        file_too_large!
       end
     end
 
@@ -85,6 +101,7 @@ module API
               user: current_user
             )
 
+            header('X-GitLab-Error-Origin', 'monolith')
             render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
           end
 
@@ -96,13 +113,15 @@ module API
 
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
 
-          unauthorized! unless current_user.allowed_to_use?(:code_suggestions, service_name: task.feature_name)
+          unless current_user.allowed_to_use?(:code_suggestions, service_name: task.feature_name)
+            unauthorized_with_origin_header!
+          end
 
           token = service.access_token(current_user)
-          unauthorized! if token.nil?
+          unauthorized_with_origin_header! if token.nil?
 
           body = task.body
-          file_too_large! if body.size > MAX_BODY_SIZE
+          file_too_large_with_origin_header! if body.size > MAX_BODY_SIZE
 
           workhorse_headers =
             Gitlab::Workhorse.send_url(
