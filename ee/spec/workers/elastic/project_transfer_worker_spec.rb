@@ -84,24 +84,6 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
 
             worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
           end
-
-          context 'when the reindex_projects_to_apply_routing migration is not finished' do
-            before do
-              set_elasticsearch_migration_to(:reindex_projects_to_apply_routing, including: false)
-            end
-
-            it 'tracks with a document reference and deletes without namespace_routing_id' do
-              expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!)
-                .with(an_instance_of(Gitlab::Elastic::DocumentReference))
-              expect(Elastic::ProcessInitialBookkeepingService).not_to receive(:backfill_projects!)
-              expect(ElasticDeleteProjectWorker).to receive(:perform_async).with(project.id, project.es_id)
-              expect(::Gitlab::CurrentSettings)
-                .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
-                  .with(project.id).and_call_original
-
-              worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
-            end
-          end
         end
 
         context 'when both namespaces are indexed' do
@@ -124,23 +106,6 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
                 { project_only: true, namespace_routing_id: another_indexed_namespace.id })
 
             worker.perform(project.id, another_indexed_namespace.id, indexed_namespace.id)
-          end
-
-          context 'when the reindex_projects_to_apply_routing migration is not finished' do
-            before do
-              set_elasticsearch_migration_to(:reindex_projects_to_apply_routing, including: false)
-            end
-
-            it 'does not set namespace_routing_id' do
-              expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!).once
-              expect(Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!)
-                .with(project, skip_projects: true)
-              expect(::Gitlab::CurrentSettings).not_to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
-              expect(ElasticDeleteProjectWorker).to receive(:perform_async)
-                .with(project.id, "project_#{project.id}", { project_only: true })
-
-              worker.perform(project.id, another_indexed_namespace.id, indexed_namespace.id)
-            end
           end
         end
       end
