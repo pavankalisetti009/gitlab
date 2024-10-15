@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getClusterAgentsQuery from 'ee/security_dashboard/graphql/queries/cluster_agents.query.graphql';
 import ClusterToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/cluster_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -53,14 +54,16 @@ describe('Cluster Token component', () => {
         termsAsTokens: () => false,
         projectFullPath,
       },
-      stubs,
+      stubs: {
+        SearchSuggestion,
+        ...stubs,
+      },
     });
   };
 
   const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
-  const findCheckedIcon = (value) => wrapper.findByTestId(`cluster-icon-${value}`);
-  const isOptionChecked = (v) => !findCheckedIcon(v).classes('gl-invisible');
+  const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
   const clickDropdownItem = async (...ids) => {
     await Promise.all(
