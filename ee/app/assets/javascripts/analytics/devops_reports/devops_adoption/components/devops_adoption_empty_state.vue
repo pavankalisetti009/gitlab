@@ -15,12 +15,6 @@ export default {
     title: I18N_EMPTY_STATE_TITLE,
     description: I18N_EMPTY_STATE_DESCRIPTION,
   },
-  props: {
-    hasGroupsData: {
-      type: Boolean,
-      required: true,
-    },
-  },
 };
 </script>
 <template>
