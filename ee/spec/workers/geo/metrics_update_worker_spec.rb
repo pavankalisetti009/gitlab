@@ -17,13 +17,31 @@ RSpec.describe Geo::MetricsUpdateWorker, :geo, feature_category: :geo_replicatio
     end
 
     include_examples 'an idempotent worker' do
-      it 'delegates to MetricsUpdateService' do
-        service = Geo::MetricsUpdateService.new
-        allow(Geo::MetricsUpdateService).to receive(:new).and_return(service).at_least(1).time
+      context 'with geo_metrics_update_worker feature flag enabled' do
+        before do
+          stub_feature_flags(geo_metrics_update_worker: true)
+        end
 
-        expect(service).to receive(:execute).and_call_original.at_least(1).time
+        it 'delegates to Geo::MetricsUpdateService' do
+          service = Geo::MetricsUpdateService.new
+          allow(Geo::MetricsUpdateService).to receive(:new).and_return(service).at_least(1).time
 
-        perform_multiple
+          expect(service).to receive(:execute).and_call_original.at_least(1).time
+
+          perform_multiple
+        end
+      end
+
+      context 'with geo_metrics_update_worker feature flag disabled' do
+        before do
+          stub_feature_flags(geo_metrics_update_worker: false)
+        end
+
+        it 'does not delegate to Geo::MetricsUpdateService' do
+          expect(Geo::MetricsUpdateService).not_to receive(:new)
+
+          perform_multiple
+        end
       end
     end
   end

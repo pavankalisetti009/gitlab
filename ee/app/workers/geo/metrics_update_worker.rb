@@ -18,6 +18,8 @@ module Geo
     feature_category :geo_replication
 
     def perform
+      return unless Feature.enabled?(:geo_metrics_update_worker, type: :ops) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Metrics collection is instance wide
+
       Geo::MetricsUpdateService.new.execute
     end
   end
