@@ -39,12 +39,18 @@ export default {
       required: false,
       default: false,
     },
+    chartInteractive: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   data() {
     return {
       tooltipTitle: '',
       tooltipContent: [],
       selectedTimestamp: null,
+      chart: null,
     };
   },
   computed: {
@@ -110,7 +116,18 @@ export default {
       return [];
     },
   },
+  beforeDestroy() {
+    this.chart?.off('mousemove', this.onMouseMove);
+  },
   methods: {
+    chartCreated(chart) {
+      this.chart = chart;
+
+      chart.on('mousemove', this.onMouseMove);
+    },
+    onMouseMove() {
+      this.chart?.getZr().setCursorStyle(this.chartInteractive ? 'pointer' : 'default');
+    },
     formatTooltipText({ seriesData }) {
       // reset the tooltip
       this.tooltipTitle = '';
@@ -135,7 +152,7 @@ export default {
       });
     },
     chartItemClicked({ chart, params: { data } }) {
-      if (data.name === 'annotations') return;
+      if (!this.chartInteractive || data.name === 'annotations') return;
 
       const xValue = data[0];
       const visibleSeriesIndices = chart.getModel().getCurrentSeriesIndices();
@@ -176,6 +193,7 @@ export default {
       :annotations="chartAnnotations"
       :format-tooltip-text="formatTooltipText"
       @chartItemClicked="chartItemClicked"
+      @created="chartCreated"
     >
       <template #tooltip-title>
         <div data-testid="metric-tooltip-title">{{ tooltipTitle }}</div>

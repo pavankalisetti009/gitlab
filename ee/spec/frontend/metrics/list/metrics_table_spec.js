@@ -2,10 +2,15 @@ import { GlTable, GlLabel } from '@gitlab/ui';
 import MetricsTable from 'ee/metrics/list/metrics_table.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { mockMetrics } from './mock_data';
+import { ingestedAtTimeAgo } from 'ee/metrics/utils';
+import { mockMetricsListResponse } from '../mock_data';
+
+jest.mock('ee/metrics/utils');
 
 describe('MetricsTable', () => {
   let wrapper;
+
+  const mockMetrics = mockMetricsListResponse.metrics;
 
   const mountComponent = ({ metrics = mockMetrics } = {}) => {
     wrapper = mountExtended(MetricsTable, {
@@ -24,6 +29,8 @@ describe('MetricsTable', () => {
   const clickRow = (idx) => getRow(idx).trigger('click');
 
   it('renders metrics as table', () => {
+    ingestedAtTimeAgo.mockReturnValue('3 days ago');
+
     mountComponent();
 
     const rows = getRows();
@@ -33,7 +40,7 @@ describe('MetricsTable', () => {
       expect(row.find(`[data-testid="metric-name"]`).text()).toBe(m.name);
       expect(row.find(`[data-testid="metric-description"]`).text()).toBe(m.description);
       expect(row.find(`[data-testid="metric-type"]`).text()).toBe(m.type);
-      expect(row.find(`[data-testid="metric-last-ingested"]`).text()).toBe('in 3 years');
+      expect(row.find(`[data-testid="metric-last-ingested"]`).text()).toBe('3 days ago');
     });
   });
 

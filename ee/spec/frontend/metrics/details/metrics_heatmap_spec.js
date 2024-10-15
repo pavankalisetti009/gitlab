@@ -37,12 +37,18 @@ describe('MetricsHeatmap', () => {
 
   let wrapper;
 
-  const mountComponent = ({ metricData = mockData, loading = false, cancelled = false } = {}) => {
+  const mountComponent = ({
+    metricData = mockData,
+    loading = false,
+    cancelled = false,
+    chartInteractive = true,
+  } = {}) => {
     wrapper = shallowMountExtended(MetricsHeatmap, {
       propsData: {
         metricData,
         loading,
         cancelled,
+        chartInteractive,
       },
     });
   };
@@ -112,6 +118,16 @@ describe('MetricsHeatmap', () => {
           },
         ],
       ]);
+    });
+
+    it('does not emit selected if chart is not interactive', () => {
+      mountComponent({ chartInteractive: false });
+
+      findHeatmap().vm.$emit('chartItemClicked', {
+        params: { data: [1, 2, 3], color: 'color-1' },
+      });
+
+      expect(wrapper.emitted('selected')).toBeUndefined();
     });
   });
 

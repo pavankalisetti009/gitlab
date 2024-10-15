@@ -27,6 +27,11 @@ export default {
       required: false,
       default: false,
     },
+    chartInteractive: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     heatmapData() {
@@ -88,8 +93,21 @@ export default {
       };
     },
   },
+  beforeDestroy() {
+    this.chart?.off('mousemove', this.onMouseMove);
+  },
   methods: {
+    chartCreated(chart) {
+      this.chart = chart;
+
+      chart.on('mousemove', this.onMouseMove);
+    },
+    onMouseMove() {
+      this.chart?.getZr().setCursorStyle(this.chartInteractive ? 'pointer' : 'default');
+    },
     chartItemClicked({ params: { data, color } }) {
+      if (!this.chartInteractive) return;
+
       const [timeIndex, bucketIndex, value] = data;
       const timestampNano = this.heatmapData.distribution[0]?.[timeIndex]?.[0] || 0;
       const prevBucket = this.heatmapData.buckets[bucketIndex - 1] || DEFAULT_MIN_BUCKET;
@@ -124,6 +142,7 @@ export default {
       :show-tooltip="false"
       responsive
       @chartItemClicked="chartItemClicked"
+      @created="chartCreated"
     />
     <div
       v-if="cancelled"

@@ -11,6 +11,7 @@ import MetricsHeatmap from 'ee/metrics/details/metrics_heatmap.vue';
 import FilteredSearch from 'ee/metrics/details/filter_bar/metrics_filtered_search.vue';
 import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
 import { ingestedAtTimeAgo } from 'ee/metrics/utils';
+import * as metricsDetailsUtils from 'ee/metrics/details/utils';
 import { prepareTokens } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import axios from '~/lib/utils/axios_utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
@@ -114,6 +115,8 @@ describe('MetricsDetails', () => {
     jest.spyOn(urlUtility, 'isValidURL').mockReturnValue(true);
 
     ingestedAtTimeAgo.mockReturnValue('3 days ago');
+
+    jest.spyOn(metricsDetailsUtils, 'metricHasRelatedTraces').mockReturnValue(true);
 
     observabilityClientMock = createMockClient();
   });
@@ -524,6 +527,7 @@ describe('MetricsDetails', () => {
     expect(chart.props('metricData')).toEqual(mockMetricData);
     expect(chart.props('cancelled')).toBe(false);
     expect(chart.props('loading')).toBe(false);
+    expect(findChart().props('chartInteractive')).toBe(true);
   });
 
   it('sets the datapoints when the chart emits selected', async () => {
@@ -699,6 +703,22 @@ describe('MetricsDetails', () => {
     expect(findRelatedTraces().props()).toStrictEqual({
       dataPoints: [],
       tracingIndexUrl,
+    });
+  });
+
+  describe('when metric has no related traces', () => {
+    beforeEach(async () => {
+      metricsDetailsUtils.metricHasRelatedTraces.mockReturnValue(false);
+
+      await mountComponent();
+    });
+
+    it('does not render the related traces', () => {
+      expect(findRelatedTraces().exists()).toBe(false);
+    });
+
+    it('disable chart interactivity', () => {
+      expect(findChart().props('chartInteractive')).toBe(false);
     });
   });
 
