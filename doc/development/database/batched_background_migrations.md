@@ -344,7 +344,15 @@ migration code should be.
 
 Once a batched background migration has been finalized, the migration code in `lib/gitlab/background_migration/`
 and its associated tests can be deleted after the next required stop following the finalization.
-For example, if a migration is introduced in 17.0 and 17.2 and 17.5 are required stops, then the migration may be finalzied in 17.3, and its code may be deleted in 17.6.
+
+Here is an example scenario:
+
+- 17.2 and 17.5 are required stops.
+- In 17.0 the batched background migration is queued.
+- In 17.3 the migration may be finalized, provided that it's completed in GitLab.com.
+- In 17.6 the code relation to the migration may be deleted.
+
+Batched background migration code is routinely deleted when migrations are squashed.
 
 ### Use job arguments
 
