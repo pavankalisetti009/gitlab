@@ -22,7 +22,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
     [
       # column is missing NOT NULL constraint, but `belongs_to` association has `optional: false`, so we are good.
       'vulnerability_findings_remediations.vulnerability_occurrence_id',
-      'design_management_versions.issue_id' # https://gitlab.com/gitlab-org/gitlab/-/issues/461330
+      'design_management_versions.issue_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/461330
+      # We nullify the FK once the parent is deleted and remove entries using a cleanup worker.
+      'packages_nuget_symbols.package_id'
     ]
   end
 
