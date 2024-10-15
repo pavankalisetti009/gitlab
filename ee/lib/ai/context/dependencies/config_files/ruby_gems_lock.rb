@@ -29,6 +29,8 @@ module Ai
             parser.specs.map do |spec|
               Lib.new(name: spec.name, version: spec.version.to_s)
             end
+          rescue Bundler::LockfileError => e
+            raise ParsingError, e.message.split("\n").first
           end
         end
       end

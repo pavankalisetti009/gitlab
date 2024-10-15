@@ -33,6 +33,29 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::RubyGemsLock, feature_cat
 
   it_behaves_like 'parsing an invalid dependency config file'
 
+  context 'when the content contains a merge conflict' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) do
+        <<~CONTENT
+          GEM
+            remote: https://rubygems.org/
+            specs:
+              bcrypt (3.1.20)
+              logger (1.5.3)
+          <<<<<<< HEAD
+          =======
+              solargraph (1.2.3)
+          >>>>>>> 83d186c9a3ca327b4c1aea18936043ded82ceb2e
+
+          BUNDLED WITH
+            2.5.16
+        CONTENT
+      end
+
+      let(:expected_parsing_error_message) { 'Your Gemfile.lock contains merge conflicts.' }
+    end
+  end
+
   describe '.matches?' do
     using RSpec::Parameterized::TableSyntax
 
