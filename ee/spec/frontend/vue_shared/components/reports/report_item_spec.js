@@ -1,9 +1,14 @@
-import { mount } from '@vue/test-utils';
+import { GlButton } from '@gitlab/ui';
+import { mount, shallowMount } from '@vue/test-utils';
 import { componentNames, iconComponentNames } from 'ee/ci/reports/components/issue_body';
 import { codequalityParsedIssues } from 'ee_jest/vue_merge_request_widget/mock_data';
 import LicenseIssueBody from 'ee/vue_shared/license_compliance/components/license_issue_body.vue';
 import LicenseStatusIcon from 'ee/vue_shared/license_compliance/components/license_status_icon.vue';
 import SecurityIssueBody from 'ee/vue_shared/security_reports/components/security_issue_body.vue';
+import CodequalityIssueBody from '~/ci/reports/codequality_report/components/codequality_issue_body.vue';
+import ModalOpenName from 'ee/ci/reports/components/modal_open_name.vue';
+import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
+import ReportLink from '~/ci/reports/components/report_link.vue';
 import {
   sastParsedIssues,
   dockerReportParsed,
@@ -20,11 +25,15 @@ describe('Report issue', () => {
   describe('for codequality issue', () => {
     describe('resolved issue', () => {
       beforeEach(() => {
-        wrapper = mount(ReportIssue, {
+        wrapper = shallowMount(ReportIssue, {
           propsData: {
             issue: codequalityParsedIssues[0],
             component: componentNames.CodequalityIssueBody,
             status: STATUS_SUCCESS,
+          },
+          stubs: {
+            CodequalityIssueBody,
+            ReportLink,
           },
         });
       });
@@ -39,7 +48,7 @@ describe('Report issue', () => {
 
     describe('unresolved issue', () => {
       beforeEach(() => {
-        wrapper = mount(ReportIssue, {
+        wrapper = shallowMount(ReportIssue, {
           propsData: {
             issue: codequalityParsedIssues[0],
             component: componentNames.CodequalityIssueBody,
@@ -94,11 +103,16 @@ describe('Report issue', () => {
 
   describe('for container scanning issue', () => {
     beforeEach(() => {
-      wrapper = mount(ReportIssue, {
+      wrapper = shallowMount(ReportIssue, {
         propsData: {
           issue: dockerReportParsed.unapproved[0],
           component: componentNames.SecurityIssueBody,
           status: STATUS_FAILED,
+        },
+        stubs: {
+          SecurityIssueBody,
+          SeverityBadge,
+          ModalOpenName,
         },
       });
     });
@@ -108,17 +122,24 @@ describe('Report issue', () => {
     });
 
     it('renders CVE name', () => {
-      expect(wrapper.find('button').text()).toEqual(dockerReportParsed.unapproved[0].title);
+      expect(wrapper.findComponent(GlButton).text()).toEqual(
+        dockerReportParsed.unapproved[0].title,
+      );
     });
   });
 
   describe('for dast issue', () => {
     beforeEach(() => {
-      wrapper = mount(ReportIssue, {
+      wrapper = shallowMount(ReportIssue, {
         propsData: {
           issue: parsedDast[0],
           component: componentNames.SecurityIssueBody,
           status: STATUS_FAILED,
+        },
+        stubs: {
+          SecurityIssueBody,
+          SeverityBadge,
+          ModalOpenName,
         },
       });
     });
@@ -131,11 +152,16 @@ describe('Report issue', () => {
 
   describe('for secret Description issue', () => {
     beforeEach(() => {
-      wrapper = mount(ReportIssue, {
+      wrapper = shallowMount(ReportIssue, {
         propsData: {
           issue: secretDetectionParsedIssues[0],
           component: componentNames.SecurityIssueBody,
           status: STATUS_FAILED,
+        },
+        stubs: {
+          SecurityIssueBody,
+          SeverityBadge,
+          ModalOpenName,
         },
       });
     });
@@ -145,13 +171,13 @@ describe('Report issue', () => {
     });
 
     it('renders CVE name', () => {
-      expect(wrapper.find('button').text()).toEqual(secretDetectionParsedIssues[0].title);
+      expect(wrapper.findComponent(GlButton).text()).toEqual(secretDetectionParsedIssues[0].title);
     });
   });
 
   describe('for license compliance issue', () => {
     it('renders LicenseIssueBody & LicenseStatusIcon', () => {
-      wrapper = mount(ReportIssue, {
+      wrapper = shallowMount(ReportIssue, {
         propsData: {
           issue: licenseComplianceParsedIssues[0],
           component: componentNames.LicenseIssueBody,
