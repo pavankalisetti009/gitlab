@@ -329,6 +329,7 @@ module Search
         ::Search::Zoekt::Node.online.find_each do |node|
           log_data = build_structured_payload(
             meta: node.metadata_json,
+            enabled_namespaces_count: node.enabled_namespaces.count,
             indices_count: node.indices.count,
             task_count_pending: node.tasks.pending.count,
             task_count_failed: node.tasks.failed.count,
