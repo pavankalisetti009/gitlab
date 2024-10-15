@@ -1,25 +1,20 @@
 <script>
-import {
-  GlIcon,
-  GlFilteredSearchToken,
-  GlFilteredSearchSuggestion,
-  GlLoadingIcon,
-} from '@gitlab/ui';
+import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import getClusterAgentsQuery from 'ee/security_dashboard/graphql/queries/cluster_agents.query.graphql';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_CLUSTER_VALUE } from '../../filters/constants';
 import eventHub from '../event_hub';
 
 export default {
   components: {
-    GlIcon,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
     GlLoadingIcon,
     QuerystringSync,
+    SearchSuggestion,
   },
   inject: ['projectFullPath'],
   props: {
@@ -164,22 +159,15 @@ export default {
       </template>
       <template #suggestions>
         <gl-loading-icon v-if="isLoading" size="sm" />
-        <gl-filtered-search-suggestion
+        <search-suggestion
           v-for="cluster in items"
           v-else
           :key="cluster.value"
           :value="cluster.value"
-        >
-          <div class="gl-flex gl-items-center">
-            <gl-icon
-              name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-              :class="{ 'gl-invisible': !isClusterSelected(cluster.value) }"
-              :data-testid="`cluster-icon-${cluster.value}`"
-            />
-            {{ cluster.text }}
-          </div>
-        </gl-filtered-search-suggestion>
+          :text="cluster.text"
+          :selected="isClusterSelected(cluster.value)"
+          :data-testid="`suggestion-${cluster.value}`"
+        />
       </template>
     </gl-filtered-search-token>
   </querystring-sync>
