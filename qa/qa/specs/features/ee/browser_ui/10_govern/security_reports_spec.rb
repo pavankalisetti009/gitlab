@@ -191,6 +191,10 @@ module QA
       end
 
       it 'displays false positives for the vulnerabilities',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494049',
+          type: :flaky
+        },
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350412' do
         push_security_reports
         project.visit!
