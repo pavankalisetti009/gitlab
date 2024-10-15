@@ -366,44 +366,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
     subject(:by_label_ids) { described_class.by_label_ids(query_hash: query_hash, options: options) }
 
-    context 'when options[:labels] is provided' do
-      let(:options) { { labels: [project_label.id] } }
-
-      it 'adds the label_ids filter to query_hash' do
-        expected_filter = [
-          {
-            terms_set: {
-              label_ids: {
-                _name: 'filters:label_ids',
-                terms: [project_label.id],
-                minimum_should_match_script: {
-                  source: 'params.num_terms'
-                }
-              }
-            }
-          }
-        ]
-
-        expect(by_label_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
-        expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
-        expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
-      end
-
-      context 'when options[:count_only] is true' do
-        let(:options) { { labels: [1], count_only: true } }
-
-        it_behaves_like 'does not modify the query_hash'
-      end
-
-      context 'when options[:aggregation] is true' do
-        let(:options) { { labels: [project.id], aggregation: true } }
-
-        it_behaves_like 'does not modify the query_hash'
-      end
-    end
-
-    context 'when neither label option is provided' do
+    context 'when options[:label_name] is not provided' do
       let(:options) { {} }
 
       it_behaves_like 'does not modify the query_hash'

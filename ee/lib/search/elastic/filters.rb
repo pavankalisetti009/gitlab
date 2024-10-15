@@ -192,48 +192,28 @@ module Search
           end
         end
 
-        # uses `label_name` if provided, falls back to `labels`
         def by_label_ids(query_hash:, options:)
           return query_hash if options[:count_only] || options[:aggregation]
 
-          return query_hash unless [options[:label_name], options[:labels]].flatten.any?
+          return query_hash unless [options[:label_name]].flatten.any?
 
-          if options[:label_name]
-            label_names_hash = find_labels_by_name([options[:label_name]].flatten, options)
-            return query_hash unless label_names_hash.any?
+          label_names_hash = find_labels_by_name([options[:label_name]].flatten, options)
+          return query_hash unless label_names_hash.any?
 
-            must_query = { must: [] }
-            context.name(:filters) do
-              label_names_hash.each_value do |label_ids|
-                must_query[:must] << {
-                  terms: {
-                    _name: context.name(:label_ids),
-                    label_ids: label_ids
-                  }
+          must_query = { must: [] }
+          context.name(:filters) do
+            label_names_hash.each_value do |label_ids|
+              must_query[:must] << {
+                terms: {
+                  _name: context.name(:label_ids),
+                  label_ids: label_ids
                 }
-              end
+              }
             end
+          end
 
-            add_filter(query_hash, :query, :bool, :filter) do
-              { bool: must_query }
-            end
-          else
-            labels = [options[:labels]].flatten
-            context.name(:filters) do
-              add_filter(query_hash, :query, :bool, :filter) do
-                {
-                  terms_set: {
-                    label_ids: {
-                      _name: context.name(:label_ids),
-                      terms: labels,
-                      minimum_should_match_script: {
-                        source: 'params.num_terms'
-                      }
-                    }
-                  }
-                }
-              end
-            end
+          add_filter(query_hash, :query, :bool, :filter) do
+            { bool: must_query }
           end
         end
 

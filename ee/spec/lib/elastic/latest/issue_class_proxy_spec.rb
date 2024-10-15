@@ -215,28 +215,8 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, feature_category: :gl
             assert_named_queries(without: ['filters:label_ids'])
           end
 
-          context 'when labels option is provided' do
-            let(:options) { base_options.merge(labels: [label.id]) }
-
-            it 'filters the labels in the query' do
-              result.response
-
-              assert_named_queries('filters:label_ids')
-            end
-          end
-
           context 'when label_name option is provided' do
             let(:options) { base_options.merge(label_name: [label.name]) }
-
-            it 'filters the labels in the query' do
-              result.response
-
-              assert_named_queries('filters:label_ids')
-            end
-          end
-
-          context 'when label and label_name option is provided' do
-            let(:options) { base_options.merge(label: [label.id], label_name: [label.name]) }
 
             it 'filters the labels in the query' do
               result.response
