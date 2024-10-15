@@ -325,8 +325,7 @@ module Gitlab
           base_options.merge(merge_request_scope_options)
         when :issues
           base_options.merge(
-            filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived),
-            klass: Issue)
+            filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived), klass: Issue)
         when :milestones
           # Must pass 'issues' and 'merge_requests' to check
           # if any of the features is available for projects in ApplicationClassProxy#project_ids_query
@@ -361,7 +360,7 @@ module Gitlab
             index_name: ::Search::Elastic::References::WorkItem.index,
             not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
           },
-          filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived)
+          filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived)
         )
       end
 

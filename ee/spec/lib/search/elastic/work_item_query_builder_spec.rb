@@ -108,24 +108,8 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         assert_names_in_query(build, without: %w[filters:label_ids])
       end
 
-      context 'when labels option is provided' do
-        let(:options) { base_options.merge(labels: [label.id]) }
-
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
-        end
-      end
-
       context 'when label_name option is provided' do
         let(:options) { base_options.merge(label_name: [label.name]) }
-
-        it 'applies label filters' do
-          assert_names_in_query(build, with: %w[filters:label_ids])
-        end
-      end
-
-      context 'when both labels and label_name options are provided' do
-        let(:options) { base_options.merge(labels: [label.id], label_name: [label.name]) }
 
         it 'applies label filters' do
           assert_names_in_query(build, with: %w[filters:label_ids])
