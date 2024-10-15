@@ -33,58 +33,19 @@ RSpec.describe "User creates merge request approval policy", :js, feature_catego
     end
   end
 
-  context 'when policy is invalid' do
-    it "fails to create a policy without name" do
-      click_button _('Configure with a merge request')
+  it "fails to create a policy when user has an incompatible role" do
+    fill_in _('Name'), with: 'Missing approvers'
 
-      expect(page).to have_content('Empty policy name')
-      expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
+    page.within(find_by_testid('actions-section')) do
+      select_from_listbox 'Roles', from: 'Choose approver type'
+      select_from_listbox 'Developer', from: 'Choose specific role'
     end
 
-    it "fails to create a policy without approvers" do
-      fill_in _('Name'), with: 'Missing approvers'
-      click_button _('Configure with a merge request')
+    click_button _('Configure with a merge request')
 
-      expect(page).to have_content('Required approvals exceed eligible approvers.')
-      expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
-    end
-
-    it "fails to create a policy when user has an incompatible role" do
-      fill_in _('Name'), with: 'Missing approvers'
-
-      page.within(find_by_testid('actions-section')) do
-        select_from_listbox 'Roles', from: 'Choose approver type'
-        select_from_listbox 'Developer', from: 'Choose specific role'
-      end
-
-      click_button _('Configure with a merge request')
-
-      expect(page).to have_content('Required approvals exceed eligible approvers.')
-      expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
-    end
-
-    it "fails to create a policy without rules" do
-      fill_in _('Name'), with: 'Missing rules'
-
-      page.within(find_by_testid('actions-section')) do
-        select_from_listbox 'Roles', from: 'Choose approver type'
-        select_from_listbox 'Owner', from: 'Choose specific role'
-      end
-
-      click_button _('Configure with a merge request')
-
-      expect(page).to have_content("Invalid policy YAML")
-      expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
-    end
-
-    it "fails to create policy with exceeding number of rules" do
-      click_button _('.yaml mode')
-      editor_set_value(merge_request_approval_policy_with_exceeding_number_of_rules.to_s)
-
-      click_button _('Configure with a merge request')
-
-      expect(page).to have_content("Invalid policy YAML")
-      expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
-    end
+    expect(page).to have_content('Required approvals exceed eligible approvers.')
+    expect(page).to have_current_path(path_to_merge_request_approval_policy_editor)
   end
+
+  it_behaves_like 'merge request approval policy invalid policy properties'
 end
