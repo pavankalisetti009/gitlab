@@ -8,7 +8,7 @@ module TargetBranchRules
       if target_branch_rule.save
         success(payload: { target_branch_rule: target_branch_rule })
       else
-        error(target_branch_rule&.errors&.full_messages || _('Failed to create branch target'))
+        error(target_branch_rule&.errors&.full_messages || [_('Failed to create branch target')])
       end
     end
 
