@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings do
+RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type: :model,
+  feature_category: :compliance_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:sub_group) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, group: sub_group) }
@@ -18,6 +19,36 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings do
   describe 'Validations' do
     it 'confirms the presence of project' do
       expect(subject).to validate_presence_of(:project)
+    end
+
+    describe '#frameworks_count_per_project' do
+      context 'when frameworks count is one less than max count' do
+        before do
+          19.times do |i|
+            create(:compliance_framework_project_setting, project: project,
+              compliance_management_framework: create(:compliance_framework, namespace: group, name: "Test#{i}"))
+          end
+        end
+
+        it 'creates setting with no error' do
+          expect(subject.valid?).to eq(true)
+          expect(subject.errors).to be_empty
+        end
+      end
+
+      context 'when frameworks count is equal to max count' do
+        before do
+          20.times do |i|
+            create(:compliance_framework_project_setting, project: project,
+              compliance_management_framework: create(:compliance_framework, namespace: group, name: "Test#{i}"))
+          end
+        end
+
+        it 'returns error' do
+          expect(subject.valid?).to eq(false)
+          expect(subject.errors.full_messages).to contain_exactly("Project cannot have more than 20 frameworks")
+        end
+      end
     end
   end
 

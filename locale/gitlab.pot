@@ -64435,6 +64435,12 @@ msgstr ""
 msgid "cannot contain HTML/XML tags, including any word between angle brackets (&lt;,&gt;)."
 msgstr ""
 
+msgid "cannot have more than %{count} frameworks"
+msgstr ""
+
+msgid "cannot have more than %{count} requirements"
+msgstr ""
+
 msgid "cannot include leading slash or directory traversal."
 msgstr ""
 
