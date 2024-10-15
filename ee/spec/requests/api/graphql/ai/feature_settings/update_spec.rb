@@ -70,7 +70,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           {
             feature: 'CODE_GENERATIONS',
             provider: 'SELF_HOSTED',
-            self_hosted_model_id: self_hosted_model_id
+            ai_self_hosted_model_id: self_hosted_model_id
           }
         end
 

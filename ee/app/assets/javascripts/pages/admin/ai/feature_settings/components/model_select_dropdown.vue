@@ -90,7 +90,7 @@ export default {
             input: {
               feature: this.aiFeatureSetting.feature.toUpperCase(),
               provider: selectedOption.provider.toUpperCase(),
-              selfHostedModelId: selectedOption.selfHostedModelId,
+              aiSelfHostedModelId: selectedOption.selfHostedModelId,
             },
           },
         });

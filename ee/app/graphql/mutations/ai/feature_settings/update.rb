@@ -15,7 +15,7 @@ module Mutations
           required: true,
           description: 'Provider for AI setting.'
 
-        argument :self_hosted_model_id,
+        argument :ai_self_hosted_model_id,
           ::Types::GlobalIDType[::Ai::SelfHostedModel],
           required: false,
           description: 'Global ID of the self-hosted model provide the AI setting.'
@@ -41,7 +41,7 @@ module Mutations
           feature_setting = find_or_initialize_object(feature: args[:feature])
           feature_settings_params = args.dup
 
-          self_hosted_model_gid = feature_settings_params.delete(:self_hosted_model_id)
+          self_hosted_model_gid = feature_settings_params[:ai_self_hosted_model_id]
 
           if self_hosted_model_gid.present?
             feature_settings_params[:ai_self_hosted_model_id] = GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
