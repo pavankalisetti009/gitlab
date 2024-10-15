@@ -15,6 +15,8 @@ module SystemCheck
       end
 
       def show_error
+        return if Gitlab::Geo.postgresql_replication_agnostic_enabled?
+
         try_fixing_it(
           'Follow Geo setup instructions to configure primary and secondary nodes for replication'
         )
