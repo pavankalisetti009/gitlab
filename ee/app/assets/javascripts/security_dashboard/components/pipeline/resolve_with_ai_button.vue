@@ -68,6 +68,7 @@ export default {
             this.handleError(errors[0]);
           } else if (content) {
             this.stopResolveWithAISubscription();
+            this.$emit('success');
             visitUrl(content);
           }
         },
