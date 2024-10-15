@@ -1,7 +1,6 @@
 import {
   getHttpString,
   getDismissalNoteEventText,
-  getCreatedIssueForVulnerability,
 } from 'ee/vue_shared/security_reports/components/helpers';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
@@ -66,47 +65,4 @@ describe('getDismissalNoteEventText', () => {
       );
     },
   );
-});
-
-describe('getCreatedIssueForVulnerability', () => {
-  it('returns the first Jira issue if Jira issue-creation is enabled', () => {
-    const vulnerability = {
-      create_jira_issue_url: 'http://jira-issue-creation-url',
-      external_issue_links: [
-        {
-          external_issue_details: {
-            external_tracker: 'jira',
-          },
-        },
-      ],
-    };
-
-    expect(getCreatedIssueForVulnerability(vulnerability)).toBe(
-      vulnerability.external_issue_links[0],
-    );
-  });
-
-  it('returns the first created issue if Jira issue-creation is not enabled', () => {
-    const vulnerability = {
-      create_jira_issue_url: null,
-      external_issue_links: [],
-      issue_links: [
-        {
-          link_type: 'created',
-        },
-      ],
-    };
-
-    expect(getCreatedIssueForVulnerability(vulnerability)).toBe(vulnerability.issue_links[0]);
-  });
-
-  it('returns "undefined" if there are no created issues', () => {
-    const vulnerability = {
-      create_jira_issue_url: null,
-      external_issue_links: [],
-      issue_links: [],
-    };
-
-    expect(getCreatedIssueForVulnerability(vulnerability)).toBe(undefined);
-  });
 });
