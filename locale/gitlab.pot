@@ -29459,9 +29459,6 @@ msgstr ""
 msgid "Introducing Your DevOps Reports"
 msgstr ""
 
-msgid "Introducing: Summarize code changes"
-msgstr ""
-
 msgid "Invalid 'schemaVersion' '%{schema_version}'"
 msgstr ""
 
@@ -50595,9 +50592,6 @@ msgid "SecurityTxt|Content for security.txt"
 msgstr ""
 
 msgid "SecurityTxt|When present, this will be publicly available at %{codeOpen}https://gitlab.example.com/.well-known/security.txt%{codeClose}. Maximum 2048 characters."
-msgstr ""
-
-msgid "See an AI-generated summary of your code changes."
 msgstr ""
 
 msgid "See example DevOps Score page in our documentation."
