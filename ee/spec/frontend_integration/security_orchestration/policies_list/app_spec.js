@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { mount } from '@vue/test-utils';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import {
   projectScanExecutionPolicies,
   groupScanExecutionPolicies,
@@ -66,7 +67,7 @@ describe('Policies List', () => {
       ...handlers,
     };
 
-    wrapper = mount(App, {
+    wrapper = mountExtended(App, {
       provide: {
         ...DEFAULT_PROVIDE,
         ...provide,
@@ -82,6 +83,8 @@ describe('Policies List', () => {
       ]),
     });
   };
+
+  const findEmptyListState = () => wrapper.findByTestId('empty-list-state');
 
   describe('project level', () => {
     beforeEach(() => {
@@ -121,6 +124,18 @@ describe('Policies List', () => {
       expect(requestHandlers.projectScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('network errors', () => {
+    it('shows the empty list state', async () => {
+      const errorHandlers = Object.keys(defaultRequestHandlers).reduce((acc, curr) => {
+        acc[curr] = jest.fn().mockRejectedValue();
+        return acc;
+      }, {});
+      createWrapper({ handlers: errorHandlers });
+      await waitForPromises();
+      expect(findEmptyListState().exists()).toBe(true);
     });
   });
 });

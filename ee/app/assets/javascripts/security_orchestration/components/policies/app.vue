@@ -75,6 +75,7 @@ export default {
       skip() {
         return isGroup(this.namespaceType);
       },
+      error: createPolicyFetchError,
     },
     scanExecutionPolicies: {
       query() {
