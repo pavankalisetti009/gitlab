@@ -12643,6 +12643,9 @@ msgstr ""
 msgid "ClusterAgents|Are you sure you want to revoke this token? You cannot undo this action."
 msgstr ""
 
+msgid "ClusterAgents|Bootstrap the agent with Flux"
+msgstr ""
+
 msgid "ClusterAgents|CI/CD workflow with restricted access"
 msgstr ""
 
@@ -12763,6 +12766,12 @@ msgstr ""
 msgid "ClusterAgents|How do I update an agent?"
 msgstr ""
 
+msgid "ClusterAgents|If Flux is installed in the cluster, you can install and register the agent from the command line:"
+msgstr ""
+
+msgid "ClusterAgents|If you're %{linkStart}bootstrapping the agent with Flux%{linkEnd}, you can close this dialog."
+msgstr ""
+
 msgid "ClusterAgents|Install using Helm (recommended)"
 msgstr ""
 
@@ -12823,6 +12832,9 @@ msgid "ClusterAgents|Recommended"
 msgstr ""
 
 msgid "ClusterAgents|Register"
+msgstr ""
+
+msgid "ClusterAgents|Register agent with the UI"
 msgstr ""
 
 msgid "ClusterAgents|Registering agent"
@@ -12919,6 +12931,9 @@ msgid "ClusterAgents|You can connect to your cluster from the command line. Conf
 msgstr ""
 
 msgid "ClusterAgents|You can connect to your cluster from the command line. To use this feature, configure %{monotypeStart}user_access%{monotypeEnd} in the agent configuration project."
+msgstr ""
+
+msgid "ClusterAgents|You can view a list of options with %{codeStart}--help%{codeEnd}."
 msgstr ""
 
 msgid "ClusterAgents|You cannot see this token again after you close this window."
