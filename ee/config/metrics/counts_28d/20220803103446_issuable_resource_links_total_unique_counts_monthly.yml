@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.incident_management.issuable_resource_links_total_unique_counts_monthly
 description: Counts unique users for linked resources create and delete events per month
-product_group: respond
+product_group: platform_insights
 value_type: number
 status: active
 milestone: "15.3"
