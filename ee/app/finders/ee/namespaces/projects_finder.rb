@@ -92,7 +92,26 @@ module EE
       def with_sbom_component_version(items)
         return items unless params[:sbom_component_id].present?
 
-        items.with_sbom_component_version(params[:sbom_component_id].to_i)
+        project_ids_with_component = ::Gitlab::Database::NamespaceProjectIdsEachBatch.new(
+          group_id: namespace.id,
+          resolver: method(:project_ids_with_sbom_component)
+        ).execute
+
+        items.id_in(project_ids_with_component)
+      end
+
+      # Given a batch of projects, filter to only return project IDs that have sbom occurrences with
+      def project_ids_with_sbom_component(batch)
+        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Limit of 100 max per batch definition
+        id_list = Arel::Nodes::ValuesList.new(batch.pluck_primary_key.map { |v| [v] }).to_sql
+        filter_query = Sbom::Occurrence.where(
+          'component_id = ? AND project_ids.id = project_id', params[:sbom_component_id]
+        ).limit(1).select(1)
+
+        Sbom::Occurrence.from(
+          "(#{id_list}) AS project_ids(id), LATERAL (#{filter_query.to_sql}) AS #{Sbom::Occurrence.table_name}"
+        ).pluck("project_ids.id")
+        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
       end
     end
   end
