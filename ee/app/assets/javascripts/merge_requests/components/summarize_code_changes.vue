@@ -83,10 +83,15 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-4 gl-ml-auto">
-    <gl-button icon="tanuki-ai" :loading="loading" data-testid="summarize-button" @click="onClick">
-      {{ __('Summarize code changes') }}
-      <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
-    </gl-button>
-  </div>
+  <gl-button
+    icon="tanuki-ai"
+    category="tertiary"
+    size="small"
+    :loading="loading"
+    data-testid="summarize-button"
+    @click="onClick"
+  >
+    {{ __('Summarize code changes') }}
+    <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
+  </gl-button>
 </template>
