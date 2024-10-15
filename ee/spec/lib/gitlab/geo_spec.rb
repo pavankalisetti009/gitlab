@@ -911,4 +911,12 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
       expect(described_class.primary_pipeline_refs(project_id)).to eq([])
     end
   end
+
+  describe '.postgresql_replication_agnostic_enabled?' do
+    it 'returns false when the feature flag is disabled' do
+      stub_feature_flags(geo_postgresql_replication_agnostic: false)
+
+      expect(described_class.postgresql_replication_agnostic_enabled?).to be_falsey
+    end
+  end
 end

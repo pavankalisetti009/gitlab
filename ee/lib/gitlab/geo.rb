@@ -344,5 +344,11 @@ module Gitlab
 
       results['pipeline_refs']
     end
+
+    # Checks if the Feature flag `geo_postgresql_replication_agnostic` is enabled.
+    # @return [Boolean] whether the feature flag is enabled or not.
+    def self.postgresql_replication_agnostic_enabled?
+      Feature.enabled?(:geo_postgresql_replication_agnostic, :instance, type: :wip)
+    end
   end
 end
