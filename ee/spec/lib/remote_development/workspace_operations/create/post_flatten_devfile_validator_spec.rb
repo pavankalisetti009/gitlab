@@ -56,6 +56,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
       'example.invalid-unsupported-event-type-poststart-devfile.yaml' | "Event type 'postStart' is not yet supported"
       'example.invalid-unsupported-event-type-prestop-devfile.yaml' | "Event type 'preStop' is not yet supported"
       'example.invalid-unsupported-event-type-poststop-devfile.yaml' | "Event type 'postStop' is not yet supported"
+      'example.invalid-root-attributes-pod-overrides-devfile.yaml' | "Attribute 'pod-overrides' is not yet supported"
+      'example.invalid-components-attributes-pod-overrides-devfile.yaml' | "Attribute 'pod-overrides' is not yet supported"
+      'example.invalid-components-attributes-container-overrides-devfile.yaml' | "Attribute 'container-overrides' is not yet supported"
     end
     # rubocop:enable Layout/LineLength
 

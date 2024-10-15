@@ -29,6 +29,7 @@ module RemoteDevelopment
         def self.validate(context)
           Gitlab::Fp::Result.ok(context)
                 .and_then(method(:validate_projects))
+                .and_then(method(:validate_root_attributes))
                 .and_then(method(:validate_components))
                 .and_then(method(:validate_containers))
                 .and_then(method(:validate_endpoints))
@@ -44,6 +45,17 @@ module RemoteDevelopment
 
           return err(_("'starterProjects' is not yet supported")) if processed_devfile['starterProjects']
           return err(_("'projects' is not yet supported")) if processed_devfile['projects']
+
+          Gitlab::Fp::Result.ok(context)
+        end
+
+        # @param [Hash] context
+        # @return [Gitlab::Fp::Result]
+        def self.validate_root_attributes(context)
+          context => { processed_devfile: Hash => processed_devfile }
+
+          return err(_("Attribute 'pod-overrides' is not yet supported")) if processed_devfile.dig('attributes',
+            'pod-overrides')
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -91,6 +103,12 @@ module RemoteDevelopment
                 return err(format(_("Component type '%{type}' is not yet supported"), type: unsupported_component_type))
               end
             end
+
+            return err(_("Attribute 'container-overrides' is not yet supported")) if component.dig(
+              'attributes', 'container-overrides')
+
+            return err(_("Attribute 'pod-overrides' is not yet supported")) if component.dig('attributes',
+              'pod-overrides')
           end
 
           Gitlab::Fp::Result.ok(context)
@@ -264,7 +282,7 @@ module RemoteDevelopment
         end
         private_class_method :validate_projects, :validate_components, :validate_containers,
           :validate_endpoints, :validate_commands, :validate_events,
-          :validate_variables, :err
+          :validate_variables, :err, :validate_root_attributes
       end
     end
   end
