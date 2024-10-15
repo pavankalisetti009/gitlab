@@ -40,7 +40,7 @@ export default {
       return this.currentTrialType.widgetTitleExpiredTrial;
     },
     ctaText() {
-      return this.daysRemaining < 30
+      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
         ? this.$options.trialWidget.i18n.upgradeText
         : this.$options.trialWidget.i18n.learnMore;
     },
@@ -78,7 +78,7 @@ export default {
 <template>
   <div
     :id="$options.trialWidget.containerId"
-    class="!gl-items-start gl-rounded-tl-base gl-bg-gray-10 gl-pt-4 gl-shadow"
+    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-gray-10 gl-pt-4 gl-shadow"
     :class="{ 'js-expired-trial-widget': isDismissable }"
     :data-group-id="groupId"
     :data-feature-id="featureId"
@@ -127,6 +127,7 @@ export default {
             <gl-link
               :href="purchaseNowUrl"
               class="gl-center gl-mb-1 gl-text-sm gl-font-bold gl-text-blue-700 gl-no-underline hover:gl-no-underline"
+              data-testid="learn-about-features-btn"
               :title="ctaText"
               @click.stop="onCtaClick"
             >

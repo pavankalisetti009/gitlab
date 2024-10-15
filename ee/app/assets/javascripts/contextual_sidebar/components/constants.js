@@ -124,4 +124,5 @@ export const TRIAL_WIDGET = {
     },
   },
   containerId: 'trial-sidebar-widget',
+  trialUpgradeThresholdDays: 30,
 };
