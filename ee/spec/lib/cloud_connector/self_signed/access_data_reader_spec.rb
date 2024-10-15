@@ -21,7 +21,11 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
         :ask_commit,
         :ask_epic,
         :ask_issue,
-        :ask_merge_request
+        :ask_merge_request,
+        :explain_code,
+        :refactor_code,
+        :fix_code,
+        :write_tests
       ]
     end
 
