@@ -35,7 +35,7 @@ RSpec.describe ProjectImportData do
   end
 
   describe '#ssh_known_hosts_verified_by' do
-    subject { import_data.ssh_known_hosts_verified_by }
+    subject(:ssh_known_hosts_verified_by) { import_data.ssh_known_hosts_verified_by }
 
     it 'is a user when ssh_known_hosts_verified_by_id is a valid id' do
       import_data.ssh_known_hosts_verified_by_id = user.id
@@ -49,8 +49,15 @@ RSpec.describe ProjectImportData do
       is_expected.to be_nil
     end
 
-    it 'is nil when ssh_known_hosts_verified_by_id is nil' do
-      is_expected.to be_nil
+    context 'when ssh_known_hosts_verified_by_id is nil' do
+      it { is_expected.to be_nil }
+
+      it 'does not try to fetch a user' do
+        # warm-up
+        project
+
+        expect { ssh_known_hosts_verified_by }.not_to exceed_query_limit(0)
+      end
     end
   end
 
