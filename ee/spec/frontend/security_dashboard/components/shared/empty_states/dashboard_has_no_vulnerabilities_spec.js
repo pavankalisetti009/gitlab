@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlSprintf } from '@gitlab/ui';
 import DashboardHasNoVulnerabilities from 'ee/security_dashboard/components/shared/empty_states/dashboard_has_no_vulnerabilities.vue';
 import { DOC_PATH_SECURITY_CONFIGURATION } from 'ee/security_dashboard/constants';
 
@@ -11,6 +11,9 @@ describe('dashboard has no vulnerabilities empty state', () => {
     shallowMount(DashboardHasNoVulnerabilities, {
       provide: {
         emptyStateSvgPath,
+      },
+      stubs: {
+        GlSprintf,
       },
     });
 
@@ -24,7 +27,12 @@ describe('dashboard has no vulnerabilities empty state', () => {
       svgPath: emptyStateSvgPath,
       primaryButtonLink: DOC_PATH_SECURITY_CONFIGURATION,
       primaryButtonText: DashboardHasNoVulnerabilities.i18n.primaryButtonText,
-      description: DashboardHasNoVulnerabilities.i18n.description,
     });
+  });
+
+  it('Renders the description', () => {
+    expect(wrapper.findComponent(GlSprintf).text()).toContain(
+      'If you were expecting vulnerabilities to be shown here',
+    );
   });
 });
