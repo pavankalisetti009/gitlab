@@ -7983,7 +7983,8 @@ CREATE TABLE bulk_import_exports (
     user_id bigint,
     CONSTRAINT check_24cb010672 CHECK ((char_length(relation) <= 255)),
     CONSTRAINT check_8f0f357334 CHECK ((char_length(error) <= 255)),
-    CONSTRAINT check_9ee6d14d33 CHECK ((char_length(jid) <= 255))
+    CONSTRAINT check_9ee6d14d33 CHECK ((char_length(jid) <= 255)),
+    CONSTRAINT check_e84b7c0730 CHECK ((num_nonnulls(group_id, project_id) = 1))
 );
 
 CREATE SEQUENCE bulk_import_exports_id_seq
