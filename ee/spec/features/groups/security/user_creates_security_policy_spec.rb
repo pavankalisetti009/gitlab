@@ -17,7 +17,7 @@ RSpec.describe "User creates security policy", :js, feature_category: :security_
     )
   end
 
-  it_behaves_like 'policy editor' do
+  it_behaves_like 'merge request approval policy editor' do
     let(:path_to_policy_editor) { new_group_security_policy_path(group) }
   end
 end
