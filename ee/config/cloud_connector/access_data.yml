@@ -36,6 +36,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - documentation_search
           - include_file_context
           - include_snippet_context
+          - explain_code
+          - refactor_code
+          - fix_code
+          - write_tests
       duo_enterprise:
         unit_primitives:
           - duo_chat
