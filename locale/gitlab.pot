@@ -36448,9 +36448,6 @@ msgstr ""
 msgid "Not adopted"
 msgstr ""
 
-msgid "Not all browsers support WebAuthn. Therefore, we require that you set up a two-factor authentication app first. That way you'll always be able to sign in, even from an unsupported browser."
-msgstr ""
-
 msgid "Not all browsers support WebAuthn. You must save your recovery codes after you first register a two-factor authenticator to be able to sign in, even from an unsupported browser."
 msgstr ""
 
@@ -39804,9 +39801,6 @@ msgid "PhoneVerification|You've reached the maximum number of tries. Wait %{inte
 msgstr ""
 
 msgid "Pick a group or project"
-msgstr ""
-
-msgid "Pick a name"
 msgstr ""
 
 msgid "Pipeline"
@@ -63537,9 +63531,6 @@ msgid "You need git-lfs version %{min_git_lfs_version} (or greater) to continue.
 msgstr ""
 
 msgid "You need permission."
-msgstr ""
-
-msgid "You need to register a two-factor authentication app before you can set up a device."
 msgstr ""
 
 msgid "You need to set terms to be enforced"
