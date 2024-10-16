@@ -11,6 +11,11 @@ RSpec.describe EpicIssue, feature_category: :portfolio_management do
 
   describe "associations" do
     it { is_expected.to belong_to(:work_item) }
+
+    it do
+      is_expected.to belong_to(:work_item_parent_link).class_name('WorkItems::ParentLink')
+        .optional(true).inverse_of(:epic_issue)
+    end
   end
 
   describe 'validations' do

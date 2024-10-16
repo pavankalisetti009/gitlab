@@ -5,6 +5,11 @@ require 'spec_helper'
 RSpec.describe Epic::RelatedEpicLink, feature_category: :portfolio_management do
   let_it_be(:group) { create(:group) }
 
+  it do
+    is_expected.to belong_to(:related_work_item_link).class_name('WorkItems::RelatedWorkItemLink')
+      .optional(true).with_foreign_key('issue_link_id').inverse_of(:related_epic_link)
+  end
+
   it_behaves_like 'issuable link' do
     let_it_be_with_reload(:issuable_link) { create(:related_epic_link) }
     let_it_be(:issuable) { create(:epic, group: group) }

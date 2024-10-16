@@ -7,6 +7,11 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
 
+      prepended do
+        has_one :related_epic_link, class_name: '::Epic::RelatedEpicLink', foreign_key: 'issue_link_id',
+          inverse_of: :related_work_item_link
+      end
+
       override :validate_related_link_restrictions
       def validate_related_link_restrictions
         return super if link_type == ::IssuableLink::TYPE_RELATES_TO

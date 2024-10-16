@@ -10,6 +10,12 @@ module EE
         alias_method :work_item_syncing?, :work_item_syncing
         validate :validate_legacy_hierarchy, unless: :work_item_syncing?
 
+        has_one :epic_issue, class_name: 'EpicIssue', foreign_key: 'work_item_parent_link_id',
+          inverse_of: :work_item_parent_link
+
+        has_one :epic, class_name: 'Epic', foreign_key: 'work_item_parent_link_id',
+          inverse_of: :work_item_parent_link
+
         private
 
         def validate_legacy_hierarchy
