@@ -3,7 +3,9 @@
 module EE
   module ProjectMemberPresenter
     def group_sso?
-      false
+      return false unless member.user.present? && source.root_ancestor.group_namespace?
+
+      member.user.group_sso?(source.root_ancestor)
     end
 
     def group_managed_account?
