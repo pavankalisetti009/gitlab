@@ -235,6 +235,29 @@ RSpec.shared_examples 'ee protected ref access' do
     end
   end
 
+  describe 'scopes' do
+    describe '::for_role' do
+      subject(:for_role) { described_class.for_role }
+
+      let_it_be(:developer_access) { create(described_factory, :developer_access) }
+      let_it_be(:maintainer_access) { create(described_factory, :maintainer_access) }
+      let_it_be(:user_access) do
+        create(described_factory, protected_ref_name => protected_ref, user: create(:user, developer_of: project))
+      end
+
+      let_it_be(:group_access) do
+        group = create(:project_group_link, :developer, project: project).group
+        create(described_factory, protected_ref_name => protected_ref, group: group)
+      end
+
+      it 'includes all role based access levels' do
+        expect(described_class.all).to contain_exactly(developer_access, maintainer_access, user_access, group_access)
+
+        expect(for_role).to contain_exactly(developer_access, maintainer_access)
+      end
+    end
+  end
+
   describe '#type' do
     using RSpec::Parameterized::TableSyntax
 
