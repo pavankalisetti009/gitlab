@@ -4,10 +4,11 @@ require 'spec_helper'
 
 RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_category: :duo_workflow do
   describe '#execute' do
-    let_it_be(:user) { create(:user) }
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:user) { create(:user, organizations: [organization]) }
 
     subject(:execute) do
-      described_class.new(current_user: user).execute
+      described_class.new(current_user: user, organization: organization).execute
     end
 
     before do
@@ -53,7 +54,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
 
       context 'when the user already has an oauth access token' do
         it 'creates a new oauth access token' do
-          described_class.new(current_user: user).execute
+          described_class.new(current_user: user, organization: organization).execute
 
           expect { execute }.to change { OauthAccessToken.count }.by(1)
         end
@@ -81,11 +82,12 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
     end
 
     def create_expired_token
-      Doorkeeper::AccessToken.create!(
+      OauthAccessToken.create!(
         application_id: oauth_application.id,
         expires_in: -2.seconds,
         resource_owner_id: user.id,
         token: Doorkeeper::OAuth::Helpers::UniqueToken.generate,
+        organization: organization,
         scopes: oauth_application.scopes.to_s
       )
     end

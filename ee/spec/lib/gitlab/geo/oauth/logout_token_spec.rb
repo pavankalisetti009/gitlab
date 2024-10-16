@@ -3,9 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replication do
-  let(:user) { create(:user) }
+  let(:organization) { create(:organization) }
+  let(:user) { create(:user, organizations: [organization]) }
   let(:node) { create(:geo_node) }
-  let(:access_token) { create(:doorkeeper_access_token, resource_owner_id: user.id, application_id: node.oauth_application_id) }
+  let(:access_token) { create(:oauth_access_token, resource_owner_id: user.id, application_id: node.oauth_application_id) }
   let(:return_to) { '/project/test' }
   let(:state) { Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: return_to).encode }
 

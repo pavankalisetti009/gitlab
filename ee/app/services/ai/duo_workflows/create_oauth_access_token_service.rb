@@ -5,8 +5,9 @@ module Ai
     class CreateOauthAccessTokenService
       include ::Services::ReturnServiceResponses
 
-      def initialize(current_user:)
+      def initialize(current_user:, organization: nil)
         @current_user = current_user
+        @organization = organization || ::Organizations::Organization.default_organization
       end
 
       def execute
@@ -26,10 +27,11 @@ module Ai
         # OAuth tokens are hashed before being saved in the database, so we must
         # re-create them each time to retrieve the plaintext value
         # see https://gitlab.com/gitlab-org/gitlab/-/merge_requests/91501
-        Doorkeeper::AccessToken.create!(
+        OauthAccessToken.create!(
           application_id: oauth_application.id,
           expires_in: 2.hours,
           resource_owner_id: current_user.id,
+          organization: @organization,
           scopes: oauth_application.scopes.to_s
         )
       end

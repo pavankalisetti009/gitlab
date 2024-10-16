@@ -9,7 +9,7 @@ RSpec.describe Gitlab::Geo::Oauth::Session, :geo, feature_category: :geo_replica
   let!(:primary_node) { create(:geo_node, :primary, url: 'http://primary') }
   let(:secondary_node) { create(:geo_node) }
   let(:oauth_application) { secondary_node.oauth_application }
-  let(:access_token) { create(:doorkeeper_access_token, application: oauth_application) }
+  let(:access_token) { create(:oauth_access_token, application: oauth_application) }
 
   before do
     stub_current_geo_node(secondary_node)
