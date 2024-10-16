@@ -19,7 +19,7 @@ module QA
             end
 
             def fill_description(description)
-              fill_element('iteration-description-field', description)
+              fill_editor_element('iteration-description-field', description)
             end
 
             def fill_due_date(due_date)
