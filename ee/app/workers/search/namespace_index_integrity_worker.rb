@@ -3,13 +3,13 @@
 module Search
   class NamespaceIndexIntegrityWorker
     include ApplicationWorker
+    include Search::Worker
     include Gitlab::ExclusiveLeaseHelpers
     prepend ::Elastic::IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed
 
-    feature_category :global_search
     deduplicate :until_executed
     idempotent!
     urgency :throttled

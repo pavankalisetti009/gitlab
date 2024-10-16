@@ -2,6 +2,7 @@
 
 module Search
   INDEX_PARTITIONING_HASHING_MODULO = 1024
+  DEFAULT_CONCURRENCY_LIMIT = 100
 
   def self.table_name_prefix
     'search_'
@@ -11,5 +12,11 @@ module Search
     return unless namespace_id.present?
 
     namespace_id.to_s.hash % maximum
+  end
+
+  def self.default_concurrency_limit
+    return if Feature.disabled?(:search_sidekiq_default_concurrency_limit, Feature.current_request)
+
+    DEFAULT_CONCURRENCY_LIMIT
   end
 end

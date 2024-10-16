@@ -5,11 +5,11 @@ module Search
     class MetricsUpdateCronWorker
       include Gitlab::Utils::StrongMemoize
       include ApplicationWorker
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
       include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- cronjob does not schedule other work
 
-      feature_category :global_search
       data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- cronjob
       urgency :throttled
       idempotent!

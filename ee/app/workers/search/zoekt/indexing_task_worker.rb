@@ -4,9 +4,9 @@ module Search
   module Zoekt
     class IndexingTaskWorker
       include ApplicationWorker
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      feature_category :global_search
       data_consistency :delayed
       idempotent!
       pause_control :deprecated

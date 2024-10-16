@@ -3,6 +3,7 @@
 module Search
   class IndexCurationWorker
     include ApplicationWorker
+    include Search::Worker
     include Gitlab::ExclusiveLeaseHelpers
     prepend ::Geo::SkipSecondary
     prepend ::Elastic::IndexingControl
@@ -14,7 +15,6 @@ module Search
     include CronjobQueue # rubocop:disable Scalability/CronWorkerContext
     include ActionView::Helpers::NumberHelper
 
-    feature_category :global_search
     idempotent!
     urgency :throttled
 

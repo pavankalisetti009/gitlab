@@ -7,12 +7,12 @@ module Search
       MAX_JOBS_PER_HOUR = 3600
 
       include ApplicationWorker
+      include Search::Worker
 
       data_consistency :delayed
       prepend ::Elastic::IndexingControl
       prepend ::Geo::SkipSecondary
 
-      feature_category :global_search
       urgency :throttled
       idempotent!
 

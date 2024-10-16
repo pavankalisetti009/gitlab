@@ -4,6 +4,7 @@ module Search
   module Zoekt
     class DeleteProjectWorker
       include ApplicationWorker
+      include Search::Worker
       include Gitlab::ExclusiveLeaseHelpers
       prepend ::Geo::SkipSecondary
 
@@ -12,7 +13,6 @@ module Search
 
       data_consistency :delayed
 
-      feature_category :global_search
       urgency :throttled
       idempotent!
       pause_control :zoekt

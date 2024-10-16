@@ -5,7 +5,6 @@ module Search
     include ::Elastic::BulkCronWorker
     include Search::Elastic::Concerns::RateLimiter
 
-    feature_category :global_search
     urgency :low
     data_consistency :sticky
 

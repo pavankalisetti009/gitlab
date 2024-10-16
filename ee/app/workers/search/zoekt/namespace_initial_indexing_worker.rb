@@ -4,9 +4,9 @@ module Search
   module Zoekt
     class NamespaceInitialIndexingWorker
       include ApplicationWorker
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      feature_category :global_search
       data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- always otherwise we risk race condition where it doesn't think that indexing is enabled yet for the namespace.
       idempotent!
       pause_control :zoekt

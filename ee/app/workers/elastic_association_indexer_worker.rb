@@ -2,12 +2,12 @@
 
 class ElasticAssociationIndexerWorker
   include ApplicationWorker
+  include Search::Worker
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
 
-  feature_category :global_search
   sidekiq_options retry: 3
   idempotent!
   worker_resource_boundary :cpu

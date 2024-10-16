@@ -19,4 +19,20 @@ RSpec.describe ::Search, feature_category: :global_search do
       end
     end
   end
+
+  describe '.default_concurrency_limit' do
+    it 'returns the default concurrency limit' do
+      expect(described_class.default_concurrency_limit).to eq(described_class::DEFAULT_CONCURRENCY_LIMIT)
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(search_sidekiq_default_concurrency_limit: false)
+      end
+
+      it 'returns nil' do
+        expect(described_class.default_concurrency_limit).to be_nil
+      end
+    end
+  end
 end

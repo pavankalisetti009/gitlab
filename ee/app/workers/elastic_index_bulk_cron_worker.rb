@@ -3,7 +3,6 @@
 class ElasticIndexBulkCronWorker # rubocop:disable Scalability/IdempotentWorker
   include Elastic::BulkCronWorker
 
-  feature_category :global_search
   worker_resource_boundary :cpu
   urgency :low
   data_consistency :sticky

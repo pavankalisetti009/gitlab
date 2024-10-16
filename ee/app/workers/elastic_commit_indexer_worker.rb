@@ -2,13 +2,13 @@
 
 class ElasticCommitIndexerWorker
   include ApplicationWorker
+  include Search::Worker
   include Gitlab::ExclusiveLeaseHelpers
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
 
-  feature_category :global_search
   sidekiq_options retry: 2
   urgency :throttled
   idempotent!

@@ -4,11 +4,11 @@ module Search
   module Zoekt
     class SchedulingWorker
       include ApplicationWorker
+      include Search::Worker
       include CronjobQueue
       prepend ::Geo::SkipSecondary
 
       data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- It is a Cronjob
-      feature_category :global_search
       idempotent!
       urgency :low
 

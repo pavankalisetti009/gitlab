@@ -2,12 +2,12 @@
 
 class ElasticIndexingControlWorker
   include ApplicationWorker
+  include Search::Worker
   prepend ::Geo::SkipSecondary
   data_consistency :always
 
   sidekiq_options retry: 3
 
-  feature_category :global_search
   idempotent!
 
   def perform

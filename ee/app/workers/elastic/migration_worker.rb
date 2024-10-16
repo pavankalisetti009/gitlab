@@ -3,6 +3,7 @@
 module Elastic
   class MigrationWorker
     include ApplicationWorker
+    include Search::Worker
     include Gitlab::ExclusiveLeaseHelpers
     # There is no onward scheduling and this cron handles work from across the
     # application, so there's no useful context to add.
@@ -12,7 +13,6 @@ module Elastic
 
     data_consistency :sticky
 
-    feature_category :global_search
     idempotent!
     urgency :low
 

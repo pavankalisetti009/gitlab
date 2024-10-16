@@ -4,11 +4,11 @@ module Search
   module Zoekt
     class DefaultBranchChangedWorker
       include ApplicationWorker
+      include Search::Worker
       include Gitlab::EventStore::Subscriber
       prepend ::Geo::SkipSecondary
 
       data_consistency :delayed
-      feature_category :global_search
       urgency :low
       idempotent!
 

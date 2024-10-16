@@ -4,6 +4,7 @@ module Search
   module Elastic
     class TriggerIndexingWorker
       include ApplicationWorker
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
       INITIAL_TASK = :initiate
@@ -11,7 +12,6 @@ module Search
 
       data_consistency :delayed
 
-      feature_category :global_search
       worker_resource_boundary :cpu
       idempotent!
       urgency :throttled
