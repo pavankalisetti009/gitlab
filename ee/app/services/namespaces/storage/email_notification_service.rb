@@ -36,11 +36,7 @@ module Namespaces
 
       def owners_emails(namespace)
         if namespace.is_a?(::Group)
-          emails = []
-          namespace.all_owner_members.non_invite.preload_users.each_batch do |relation|
-            emails.concat(relation.map(&:user).map(&:email))
-          end
-          emails
+          namespace.pluck_member_user(:email, filters: { access_level: GroupMember::OWNER })
         else
           namespace.owners.map(&:email)
         end

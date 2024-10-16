@@ -154,11 +154,7 @@ module EE
       def active_owner_ids
         return [] unless namespace&.group_namespace?
 
-        owner_ids = []
-        namespace.all_owner_members.non_invite.each_batch do |relation|
-          owner_ids.concat(::User.active.id_in(relation.pluck_user_ids).pluck_primary_key)
-        end
-        owner_ids
+        namespace.non_invite_owner_members.where(user: ::User.active).distinct(:user_id).pluck_user_ids
       end
 
       def experiment_features_allowed

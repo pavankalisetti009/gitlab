@@ -749,11 +749,7 @@ module EE
     end
 
     def owners_emails
-      emails = []
-      self.all_owner_members.non_invite.each_batch do |relation|
-        emails.concat(::User.id_in(relation.pluck_user_ids).pluck(:email))
-      end
-      emails
+      self.pluck_member_user(:email, filters: { access_level: ::GroupMember::OWNER })
     end
 
     # this method will be delegated to namespace_settings, but as we need to wait till

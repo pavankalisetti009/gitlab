@@ -14,7 +14,7 @@ RSpec.describe Namespaces::FreeUserCap::NotifyOverLimitService, feature_category
     subject(:execute) { described_class.new(group).execute }
 
     it 'records the time of notification in free_user_cap_over_limit_notified_at' do
-      group.all_owner_members.preload_users.map(&:user).each do |owner|
+      group.each_member_user(access_level: Gitlab::Access::OWNER) do |owner|
         expect(::Namespaces::FreeUserCapMailer).to receive(:over_limit_email).with(owner, group).once.and_call_original
       end
 
@@ -47,7 +47,7 @@ RSpec.describe Namespaces::FreeUserCap::NotifyOverLimitService, feature_category
 
   describe '.execute' do
     it 'emails the owner(s) of the group' do
-      group.all_owner_members.preload_users.map(&:user).each do |owner|
+      group.each_member_user(access_level: GroupMember::OWNER) do |owner|
         expect(::Namespaces::FreeUserCapMailer).to receive(:over_limit_email).with(owner, group).once.and_call_original
       end
 

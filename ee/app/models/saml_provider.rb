@@ -58,7 +58,7 @@ class SamlProvider < ApplicationRecord
     return false unless identities.for_user(user).exists?
 
     identities
-      .for_user_ids(group.all_owner_members.non_invite.select(:user_id))
+      .for_user_ids(group.non_invite_owner_members.pluck_user_ids)
       .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/436659")
       .count == 1
   end
