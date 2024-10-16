@@ -20125,6 +20125,7 @@ Code Quality report for a pipeline.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="codesuggestioneventevent"></a>`event` | [`AiUsageCodeSuggestionEvent!`](#aiusagecodesuggestionevent) | Type of the event. |
+| <a id="codesuggestioneventid"></a>`id` | [`ID!`](#id) | ID of the code suggestion event. |
 | <a id="codesuggestioneventlanguage"></a>`language` | [`String`](#string) | Programming language in the context of the suggestion. |
 | <a id="codesuggestioneventsuggestionsize"></a>`suggestionSize` | [`String`](#string) | Size of the code suggestion. |
 | <a id="codesuggestioneventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
