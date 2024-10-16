@@ -4,11 +4,8 @@ import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findin
 
 export const getPipelineReportOptions = (data) => {
   const {
-    commitPathTemplate,
     projectFullPath,
     emptyStateSvgPath,
-    vulnerabilitiesEndpoint,
-    projectId,
     canAdminVulnerability,
     pipelineId,
     pipelineIid,
@@ -19,12 +16,9 @@ export const getPipelineReportOptions = (data) => {
   } = data;
 
   return {
-    commitPathTemplate,
     projectFullPath,
     emptyStateSvgPath,
-    vulnerabilitiesEndpoint,
     dashboardType: DASHBOARD_TYPES.PIPELINE,
-    projectId: Number(projectId),
     // fullPath is needed even though projectFullPath is already provided because
     // vulnerability_list_graphql.vue expects the property name to be 'fullPath'
     fullPath: projectFullPath,

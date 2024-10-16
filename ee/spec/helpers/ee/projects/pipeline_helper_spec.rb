@@ -45,13 +45,10 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         "empty_state_svg_path" => match_asset_path("illustrations/user-not-logged-in.svg"),
         "pipeline_id" => pipeline.id,
         "pipeline_iid" => pipeline.iid,
-        "project_id" => project.id,
         "source_branch" => pipeline.source_ref,
         "pipeline_jobs_path" => "/api/v4/projects/#{project.id}/pipelines/#{pipeline.id}/jobs",
-        "vulnerabilities_endpoint" => "/api/v4/projects/#{project.id}/vulnerability_findings?pipeline_id=#{pipeline.id}",
         "vulnerability_exports_endpoint" => "/api/v4/security/projects/#{project.id}/vulnerability_exports",
         "project_full_path" => project.path_with_namespace,
-        "commit_path_template" => "/#{project.path_with_namespace}/-/commit/$COMMIT_SHA",
         "can_admin_vulnerability" => 'false',
         "can_view_false_positive" => 'false'
       })
@@ -240,13 +237,10 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         empty_state_svg_path: match_asset_path("illustrations/user-not-logged-in.svg"),
         pipeline_id: pipeline.id,
         pipeline_iid: pipeline.iid,
-        project_id: project.id,
         source_branch: pipeline.source_ref,
         pipeline_jobs_path: "/api/v4/projects/#{project.id}/pipelines/#{pipeline.id}/jobs",
-        vulnerabilities_endpoint: "/api/v4/projects/#{project.id}/vulnerability_findings?pipeline_id=#{pipeline.id}",
         vulnerability_exports_endpoint: "/api/v4/security/projects/#{project.id}/vulnerability_exports",
         project_full_path: project.path_with_namespace,
-        commit_path_template: "/#{project.path_with_namespace}/-/commit/$COMMIT_SHA",
         can_admin_vulnerability: 'false',
         can_view_false_positive: 'false'
       })

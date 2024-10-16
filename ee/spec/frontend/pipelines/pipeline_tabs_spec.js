@@ -39,12 +39,9 @@ describe('createAppOptions', () => {
     expect(options).toMatchObject({
       ...mockCeOptions,
       provide: {
-        commitPathTemplate: dataset.commitPathTemplate,
         projectFullPath: dataset.projectFullPath,
         emptyStateSvgPath: dataset.emptyStateSvgPath,
-        vulnerabilitiesEndpoint: dataset.vulnerabilitiesEndpoint,
         dashboardType: DASHBOARD_TYPES.PIPELINE,
-        projectId: 123,
         fullPath: dataset.projectFullPath,
         canAdminVulnerability: true,
         pipeline: {
