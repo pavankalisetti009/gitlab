@@ -33,9 +33,7 @@ export default {
     BasicInformationSection,
     PoliciesSection,
     ProjectsSection,
-
     DeleteModal,
-
     GlAlert,
     GlButton,
     GlForm,
@@ -105,6 +103,10 @@ export default {
       return !this.$route.params.id;
     },
 
+    isDefaultFramework() {
+      return this.formData.default;
+    },
+
     hasLinkedPolicies() {
       return Boolean(
         this.formData.scanResultPolicies?.pageInfo.startCursor ||
@@ -114,11 +116,13 @@ export default {
     },
 
     deleteBtnDisabled() {
-      return this.hasLinkedPolicies;
+      return this.hasLinkedPolicies || this.isDefaultFramework;
     },
 
     deleteBtnDisabledTooltip() {
-      return i18n.deleteButtonDisabledTooltip;
+      return this.isDefaultFramework
+        ? i18n.deleteButtonDefaultFrameworkDisabledTooltip
+        : i18n.deleteButtonLinkedPoliciesDisabledTooltip;
     },
 
     refetchConfig() {

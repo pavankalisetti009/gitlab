@@ -6,7 +6,6 @@ import {
   GlModal,
   GlAlert,
   GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
 } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
@@ -14,7 +13,10 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
-import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_dashboard/mock_data';
+import {
+  createComplianceFrameworksReportResponse,
+  createFramework,
+} from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
@@ -55,11 +57,11 @@ describe('FrameworksTable component', () => {
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByClick);
   const findNoFrameworksAlert = () => wrapper.findComponent(GlAlert);
   const findActionsDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
-  const findActionsDropdownItems = () =>
-    findActionsDropdowns().at(0).findAllComponents(GlDisclosureDropdownItem);
-  const findEditAction = () => wrapper.findByTestId('edit-action');
-  const findDeleteAction = () => wrapper.findByTestId('delete-action');
-  const findCopyIdAction = () => wrapper.findByTestId('copy-id-action');
+  const findActionsDropdownItems = () => findActionsDropdowns().at(0).findAll('.gl-mx-2');
+  const findEditAction = () => wrapper.findByTestId('action-edit');
+  const findDeleteAction = () => wrapper.findByTestId('action-delete');
+  const findCopyIdAction = () => wrapper.findByTestId('action-copy-id');
+  const findDeleteActionTooltip = () => wrapper.findByTestId('delete-tooltip');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
 
   const toggleSidebar = async () => {
@@ -321,7 +323,7 @@ describe('FrameworksTable component', () => {
       });
 
       it('redirects to edit framework page on action', () => {
-        findEditAction().vm.$emit('action');
+        findEditAction().vm.$emit('click');
         expect($router.push).toHaveBeenCalledWith({
           name: ROUTE_EDIT_FRAMEWORK,
           params: { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
@@ -335,10 +337,60 @@ describe('FrameworksTable component', () => {
       });
 
       it('shows delete modal on action', () => {
-        findDeleteAction().vm.$emit('action');
+        findDeleteAction().vm.$emit('click');
         expect(modalStub.show).toHaveBeenCalled();
         findDeleteModal().vm.$emit('delete');
         expect(wrapper.emitted('delete-framework')).toEqual([[frameworks[rowCheckIndex].id]]);
+      });
+
+      it('disables delete action and shows correct tooltip when framework is default', async () => {
+        const defaultFramework = createFramework({ default: true });
+        wrapper = createComponent({
+          frameworks: [defaultFramework],
+          isLoading: false,
+        });
+
+        await nextTick();
+        expect(findDeleteAction().props('disabled')).toBe(true);
+
+        const tooltip = getBinding(findDeleteActionTooltip().element, 'gl-tooltip');
+        expect(tooltip).toBeDefined();
+        expect(findDeleteActionTooltip().attributes('title')).toBe(
+          "Compliance frameworks that are linked to an active policy can't be deleted",
+        );
+      });
+
+      it('disables delete action and shows correct tooltip when framework has linked policies', async () => {
+        const frameworkWithPolicies = createFramework();
+        wrapper = createComponent({
+          frameworks: [frameworkWithPolicies],
+          isLoading: false,
+        });
+
+        await nextTick();
+
+        expect(findDeleteAction().props('disabled')).toBe(true);
+
+        const tooltip = getBinding(findDeleteActionTooltip().element, 'gl-tooltip');
+        expect(tooltip).toBeDefined();
+        expect(findDeleteActionTooltip().attributes('title')).toBe(
+          "Compliance frameworks that are linked to an active policy can't be deleted",
+        );
+      });
+
+      it('enables delete action when framework is not default and has no linked policies', async () => {
+        const frameworkWithoutPolicies = createFramework({
+          options: { scanResultPolicies: { nodes: [] } },
+        });
+        wrapper = createComponent({
+          frameworks: [frameworkWithoutPolicies],
+          isLoading: false,
+        });
+
+        await nextTick();
+
+        expect(findDeleteAction().props('disabled')).toBe(false);
+        expect(findDeleteActionTooltip().attributes('title')).toBe('');
       });
     });
 
@@ -357,7 +409,7 @@ describe('FrameworksTable component', () => {
 
       it('copies id to clipboard on action', () => {
         jest.spyOn(navigator.clipboard, 'writeText');
-        findCopyIdAction().vm.$emit('action');
+        findCopyIdAction().vm.$emit('click');
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(1);
         expect($toast.show).toHaveBeenCalledWith('Framework ID copied to clipboard.');
       });
