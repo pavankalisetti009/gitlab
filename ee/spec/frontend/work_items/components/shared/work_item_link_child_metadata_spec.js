@@ -134,7 +134,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
       expect(datesEl.exists()).toBe(true);
       expect(datesEl.findComponent(GlIcon).props('name')).toBe('calendar');
-      expect(wrapper.findByTestId('dates-value').text().trim()).toBe('Jan 1 – Jun 27, 2024');
+      expect(wrapper.findByTestId('dates-value').text().trim()).toBe('Jan 1 – Jun 27, 2024');
     });
 
     it('renders item with no start date', () => {
