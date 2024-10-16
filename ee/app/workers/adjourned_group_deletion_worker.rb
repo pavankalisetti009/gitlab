@@ -24,8 +24,7 @@ class AdjournedGroupDeletionWorker # rubocop:disable Scalability/IdempotentWorke
       user = deletion_schedule.deleting_user
 
       with_context(namespace: group, user: user) do
-        admin_mode = Gitlab::CurrentSettings.admin_mode && user.admin? # rubocop:disable Cop/UserAdmin -- policy checks are enforced further down the stack
-        GroupDestroyWorker.perform_in(delay, group.id, deletion_schedule.user_id, admin_mode: admin_mode)
+        GroupDestroyWorker.perform_in(delay, group.id, deletion_schedule.user_id)
       end
     end
   end
