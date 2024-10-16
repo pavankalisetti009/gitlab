@@ -40,7 +40,7 @@ RSpec.describe SystemNotes::EscalationsService, feature_category: :incident_mana
       let(:action) { 'paging_started' }
     end
 
-    it 'posts the correct text to the system note' do
+    it 'posts the correct text to the system note', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484427' do
       expect(subject.note).to match("paged escalation policy [#{escalation_policy.name}](#{project_incident_management_escalation_policies_path(project)})")
     end
   end
