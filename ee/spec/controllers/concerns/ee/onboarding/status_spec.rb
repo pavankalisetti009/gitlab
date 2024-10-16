@@ -17,10 +17,8 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     it { is_expected.to delegate_method(:setup_for_company_help_text).to(:registration_type) }
     it { is_expected.to delegate_method(:redirect_to_company_form?).to(:registration_type) }
     it { is_expected.to delegate_method(:eligible_for_iterable_trigger?).to(:registration_type) }
-    it { is_expected.to delegate_method(:show_opt_in_to_email?).to(:registration_type) }
     it { is_expected.to delegate_method(:show_joining_project?).to(:registration_type) }
     it { is_expected.to delegate_method(:hide_setup_for_company_field?).to(:registration_type) }
-    it { is_expected.to delegate_method(:pre_parsed_email_opt_in?).to(:registration_type) }
     it { is_expected.to delegate_method(:apply_trial?).to(:registration_type) }
     it { is_expected.to delegate_method(:read_from_stored_user_location?).to(:registration_type) }
     it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
@@ -68,7 +66,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     subject { described_class.new(params, {}, nil).registration_omniauth_params }
 
     context 'when onboarding is enabled' do
-      it { is_expected.to eq({ glm_source: 'source', glm_content: 'content' }) }
+      it { is_expected.to eq({ glm_source: 'source', glm_content: 'content', onboarding_status_email_opt_in: true }) }
     end
 
     context 'when onboarding is disabled' do
@@ -89,7 +87,10 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     subject { described_class.new(params, {}, nil).trial_registration_omniauth_params }
 
     context 'when onboarding is enabled' do
-      it { is_expected.to eq({ glm_source: 'source', glm_content: 'content', trial: true }) }
+      it 'has the glm, onboarding and trial params' do
+        is_expected
+          .to eq({ glm_source: 'source', glm_content: 'content', onboarding_status_email_opt_in: true, trial: true })
+      end
     end
 
     context 'when onboarding is disabled' do

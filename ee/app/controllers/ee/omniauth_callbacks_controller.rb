@@ -93,10 +93,10 @@ module EE
       end
 
       data = super
-      # We want to say that if for some reason the param is nil, then we can't
+      # We want to say that if for some reason the param is nil or not present, then we can't
       # be certain the user was ever shown this option so we should default to false to follow opt in guidelines.
-      data[:onboarding_status_email_opt_in] =
-        ::Gitlab::Utils.to_boolean(omniauth_params[:onboarding_status_email_opt_in], default: false)
+      opt_in = request.env.fetch('omniauth.params', {}).deep_symbolize_keys[:onboarding_status_email_opt_in]
+      data[:onboarding_status_email_opt_in] = ::Gitlab::Utils.to_boolean(opt_in, default: false)
       data
     end
 

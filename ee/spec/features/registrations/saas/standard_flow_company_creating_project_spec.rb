@@ -88,7 +88,6 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
       expect(page)
         .to have_content(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
       expect(page).to have_content('What would you like to do?')
-      expect(page).not_to have_content(_("I'd like to receive updates about GitLab via email"))
     end
   end
 end

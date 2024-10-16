@@ -12,6 +12,7 @@ import initPasswordValidator from 'ee/password/password_validator';
 import { initPasswordInput } from '~/authentication/password';
 import { initLanguageSwitcher } from '~/language_switcher';
 import FormErrorTracker from '~/pages/shared/form_error_tracker';
+import { initOnboardingEmailOptIn } from 'ee/registrations/onboarding_email_opt_in';
 
 new UsernameValidator(); // eslint-disable-line no-new
 new LengthValidator(); // eslint-disable-line no-new
@@ -34,3 +35,5 @@ initLanguageSwitcher();
 // Warning: run after all input initializations
 // eslint-disable-next-line no-new
 new FormErrorTracker();
+
+initOnboardingEmailOptIn();
