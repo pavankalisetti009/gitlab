@@ -51,7 +51,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to eq(
-              { 'id' => nil, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+              { 'id' => nil, 'tasks' => [], 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
                 'truncate' => true }
             )
           end
@@ -67,7 +67,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to eq(
-              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
                 'truncate' => false }
             )
           end
@@ -91,7 +91,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to eq(
-            { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+            { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
               'truncate' => true }
           )
         end
@@ -110,7 +110,8 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks, 'truncate' => true })
+            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks, 'truncate' => true,
+                                          'pull_frequency' =>  Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT })
           end
         end
 
