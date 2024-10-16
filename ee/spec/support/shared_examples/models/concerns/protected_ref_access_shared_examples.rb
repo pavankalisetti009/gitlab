@@ -1,18 +1,12 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'ee protected ref access' do |association|
-  let_it_be(:described_instance) { described_class.model_name.singular }
-  let_it_be(:project) { create(:project) }
-  let_it_be(:group) { create(:group) }
+RSpec.shared_examples 'ee protected ref access' do
+  include_context 'for protected ref access'
+
+  let_it_be(:group) { project.group }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let_it_be(:protected_ref) { create(association, project: project) }
-  let_it_be(:protected_ref_fk) { "#{association}_id" }
   let_it_be(:test_group) { create(:group) }
   let_it_be(:test_user) { create(:user) }
-
-  before_all do
-    create(:project_group_link, group: group, project: project)
-  end
 
   describe 'Validations:' do
     let(:access_user_id) { nil }
@@ -23,8 +17,8 @@ RSpec.shared_examples 'ee protected ref access' do |association|
 
     subject do
       build(
-        described_class.model_name.singular.to_sym,
-        association => protected_ref,
+        described_factory,
+        protected_ref_name => protected_ref,
         user_id: access_user_id,
         group_id: access_group_id,
         importing: importing
@@ -255,7 +249,7 @@ RSpec.shared_examples 'ee protected ref access' do |association|
 
     with_them do
       let(:access_level) do
-        build(described_instance, group_id: group_id, user_id: user_id).tap do |access_level|
+        build(described_factory, group_id: group_id, user_id: user_id).tap do |access_level|
           access_level.group = group if group
           access_level.user = user if user
         end
@@ -281,7 +275,7 @@ RSpec.shared_examples 'ee protected ref access' do |association|
 
     with_them do
       let(:access_level) do
-        build(described_instance, group_id: group_id, user_id: user_id).tap do |access_level|
+        build(described_factory, group_id: group_id, user_id: user_id).tap do |access_level|
           access_level.group = group if group
           access_level.user = user if user
         end
@@ -294,25 +288,16 @@ RSpec.shared_examples 'ee protected ref access' do |association|
   end
 
   describe '#check_access(current_user, current_project)' do
-    let_it_be(:current_user) { create(:user) }
+    let_it_be(:current_user) { create(:user, maintainer_of: project) }
 
     let(:user) { nil }
     let(:group) { nil }
     let(:current_project) { project }
-    let(:described_instance) do
-      described_class.new(
-        association => protected_ref,
-        user: user,
-        group: group
-      )
-    end
-
-    before_all do
-      project.add_maintainer(current_user)
-    end
 
     subject do
-      described_instance.check_access(current_user, current_project)
+      described_class.new(
+        protected_ref_name => protected_ref, user: user, group: group
+      ).check_access(current_user, current_project)
     end
 
     context 'when user is assigned' do
