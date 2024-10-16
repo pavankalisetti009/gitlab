@@ -9,6 +9,8 @@
 # calculate which report artifact to download and parse.
 module Security
   class Finding < ::Gitlab::Database::SecApplicationRecord
+    extend SuppressCompositePrimaryKeyWarning
+
     include EachBatch
     include Presentable
     include PartitionedTable
