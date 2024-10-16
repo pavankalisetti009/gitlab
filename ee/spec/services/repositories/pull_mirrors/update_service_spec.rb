@@ -65,6 +65,23 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       end
     end
 
+    context 'when only url is provided' do
+      let(:params) { { import_url: 'https://example.com' } }
+
+      it 'creates a disabled mirror' do
+        is_expected.to be_success
+
+        expect(updated_project).to have_attributes(
+          import_url: "https://example.com",
+          mirror: false,
+          id: project.id
+        )
+
+        expect(updated_project.import_state).to be_present
+        expect(updated_project.import_data).to be_present
+      end
+    end
+
     context 'when mirror is disabled' do
       let(:enabled) { false }
 
@@ -82,6 +99,26 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       it 'cleans up the previous error' do
         is_expected.to be_success
         expect(updated_project.reload.import_state.last_error).to be_nil
+      end
+    end
+
+    context 'when parameters were not provided' do
+      let(:params) { {} }
+
+      it 'returns an error' do
+        is_expected.to be_error
+        expect(execute.message.full_messages).to include(/Url is missing/)
+      end
+
+      context 'when import state already existed' do
+        before do
+          create(:import_state, project: project)
+        end
+
+        it 'allows empty parameters input' do
+          is_expected.to be_success
+          expect(updated_project.reload.import_state).to be_present
+        end
       end
     end
 
