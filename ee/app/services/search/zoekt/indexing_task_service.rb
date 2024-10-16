@@ -28,13 +28,7 @@ module Search
 
         current_task_type = random_force_reindexing? ? :force_index_repo : task_type
         Router.fetch_indices_for_indexing(project_id, root_namespace_id: root_namespace_id).find_each do |idx|
-          # Note: we skip indexing tasks depending on storage watermark levels.
-          #
-          # If the low watermark is exceeded, we don't allow any new initial indexing tasks through,
-          # but we permit incremental indexing or force reindexing for existing repos.
-          #
-          # If the high watermark is exceeded, we don't allow any indexing tasks at all anymore.
-          if idx.high_watermark_exceeded? || (idx.low_watermark_exceeded? && initial_indexing?)
+          if index_circuit_breaker_enabled? && index_circuit_broken?(idx)
             IndexingTaskWorker.perform_in(WATERMARK_RESCHEDULE_INTERVAL, project_id, task_type, { index_id: idx.id })
             logger.info(
               build_structured_payload(
@@ -91,6 +85,20 @@ module Search
 
       def eligible_for_force_reindexing?
         task_type == :index_repo && Feature.enabled?(:zoekt_random_force_reindexing, project, type: :ops)
+      end
+
+      def index_circuit_broken?(idx)
+        # Note: we skip indexing tasks depending on storage watermark levels.
+        #
+        # If the low watermark is exceeded, we don't allow any new initial indexing tasks through,
+        # but we permit incremental indexing or force reindexing for existing repos.
+        #
+        # If the high watermark is exceeded, we don't allow any indexing tasks at all anymore.
+        idx.high_watermark_exceeded? || (idx.low_watermark_exceeded? && initial_indexing?)
+      end
+
+      def index_circuit_breaker_enabled?
+        Feature.enabled?(:zoekt_index_circuit_breaker, ::Project.actor_from_id(project_id), type: :ops)
       end
     end
   end

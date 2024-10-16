@@ -20,6 +20,18 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
   end
 
   describe '#execute' do
+    RSpec.shared_examples 'creates a task when circuit breaker is disabled' do
+      context 'with index circuit breaker feature flag disabled' do
+        before do
+          stub_feature_flags(zoekt_index_circuit_breaker: false)
+        end
+
+        it 'creates Search::Zoekt::Task record' do
+          expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
+        end
+      end
+    end
+
     context 'when a watermark is exceeded' do
       let(:service) { described_class.new(project.id, task_type) }
       let(:task_type) { :index_repo }
@@ -49,6 +61,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
             service.execute
           end
+
+          it_behaves_like 'creates a task when circuit breaker is disabled'
         end
 
         context 'with force reindexing' do
@@ -67,6 +81,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
               service.execute
             end
+
+            it_behaves_like 'creates a task when circuit breaker is disabled'
           end
 
           context 'when a repo already exists' do
@@ -74,6 +90,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
             let_it_be(:zoekt_repo) do
               create(:zoekt_repository, project: project, zoekt_index: zoekt_index, state: repo_state)
             end
+
+            it_behaves_like 'creates a task when circuit breaker is disabled'
 
             context 'and is ready' do
               let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:ready) }
@@ -90,6 +108,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
                 service.execute
               end
+
+              it_behaves_like 'creates a task when circuit breaker is disabled'
             end
 
             context 'and is not ready' do
@@ -107,6 +127,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
                 service.execute
               end
+
+              it_behaves_like 'creates a task when circuit breaker is disabled'
             end
           end
         end
@@ -131,6 +153,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
         it 'does not create Search::Zoekt::Task record' do
           expect { service.execute }.not_to change { Search::Zoekt::Task.count }
         end
+
+        it_behaves_like 'creates a task when circuit breaker is disabled'
       end
     end
 
