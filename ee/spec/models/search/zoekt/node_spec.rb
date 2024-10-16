@@ -3,16 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
-  let_it_be(:indexed_namespace1) { create(:namespace) }
-  let_it_be(:indexed_namespace2) { create(:namespace) }
-  let_it_be(:unindexed_namespace) { create(:namespace) }
   let_it_be_with_reload(:node) do
     create(:zoekt_node, index_base_url: 'http://example.com:1234/', search_base_url: 'http://example.com:4567/')
   end
 
+  let_it_be(:indexed_namespace1) { create(:namespace) }
+  let_it_be(:indexed_namespace2) { create(:namespace) }
+  let_it_be(:unindexed_namespace) { create(:namespace) }
+  let_it_be(:enabled_namespace1) { create(:zoekt_enabled_namespace, namespace: indexed_namespace1) }
+  let_it_be(:zoekt_index) { create(:zoekt_index, :ready, node: node, zoekt_enabled_namespace: enabled_namespace1) }
+
   before do
-    enabled_namespace1 = create(:zoekt_enabled_namespace, namespace: indexed_namespace1)
-    create(:zoekt_index, :ready, node: node, zoekt_enabled_namespace: enabled_namespace1)
     enabled_namespace2 = create(:zoekt_enabled_namespace, namespace: indexed_namespace2)
     create(:zoekt_index, :ready, node: node, zoekt_enabled_namespace: enabled_namespace2)
   end
@@ -21,6 +22,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to have_many(:indices).inverse_of(:node) }
     it { is_expected.to have_many(:tasks).inverse_of(:node) }
     it { is_expected.to have_many(:enabled_namespaces).through(:indices) }
+    it { is_expected.to have_many(:zoekt_repositories).through(:indices) }
   end
 
   describe 'scopes' do
@@ -42,6 +44,16 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
     end
 
+    describe '.searchable', :freeze_time do
+      let_it_be(:searchable_node) { create(:zoekt_node) }
+      let_it_be(:non_searchable_node) { create(:zoekt_node, :offline) }
+
+      it 'returns nodes considered to be searchable' do
+        expect(described_class.searchable).to include searchable_node
+        expect(described_class.searchable).not_to include non_searchable_node
+      end
+    end
+
     describe '.by_name' do
       let_it_be(:node1) { create(:zoekt_node, metadata: { name: 'node1' }) }
       let_it_be(:node2) { create(:zoekt_node, metadata: { name: 'node2' }) }
@@ -51,6 +63,49 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(described_class.by_name('node1')).to contain_exactly(node1)
         expect(described_class.by_name('node1', 'node2')).to contain_exactly(node1, node2)
         expect(described_class.by_name('non_existent')).to be_empty
+      end
+    end
+
+    describe '.searchable_for_project' do
+      let_it_be(:project) { create(:project, namespace: indexed_namespace1) }
+      let_it_be(:zoekt_index) { create(:zoekt_index) }
+
+      context 'when zoekt_repository for the given project does not exists' do
+        it 'is empty' do
+          expect(described_class.searchable_for_project(project)).to be_empty
+        end
+      end
+
+      context 'when zoekt_repository for the given project exists' do
+        let_it_be_with_reload(:zoekt_repository) do
+          create(:zoekt_repository, project: project, zoekt_index: zoekt_index)
+        end
+
+        context 'when there is no ready repository' do
+          it 'is empty' do
+            expect(described_class.searchable_for_project(project)).to be_empty
+          end
+        end
+
+        context 'when there is a ready repository' do
+          before do
+            zoekt_repository.ready!
+          end
+
+          it 'returns the nodes' do
+            expect(described_class.searchable_for_project(project)).not_to be_empty
+          end
+
+          context 'when there is no online nodes' do
+            before do
+              Search::Zoekt::Node.update_all(last_seen_at: Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD.ago - 1.hour)
+            end
+
+            it 'is empty' do
+              expect(described_class.searchable_for_project(project)).to be_empty
+            end
+          end
+        end
       end
     end
   end

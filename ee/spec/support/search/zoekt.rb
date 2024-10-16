@@ -11,6 +11,7 @@ module Search
           search_base_url: search_base_url
         ) do |node|
           node.uuid = SecureRandom.uuid
+          node.last_seen_at = Time.zone.now
         end
       end
       module_function :ensure_zoekt_node!
@@ -39,15 +40,53 @@ module Search
         index.update!(state: :ready)
       end
 
+      # Since in the test setup it is complicated to achieve indexing via pulling tasks,
+      # we are sending the HTTP post request to the indexer for indexing.
+      # At the end if indexed files exists(success callback), we are moving task to done and zoekt_repository to ready
       def zoekt_ensure_project_indexed!(project)
         zoekt_ensure_namespace_indexed!(project.namespace)
+        ::Search::Zoekt::IndexingTaskService.new(project.id, :index_repo).execute
+        repository_storage = project.repository_storage
+        connection_info = Gitlab::GitalyClient.connection_data(repository_storage)
+        repository_path = "#{project.repository.disk_path}.git"
+        address = connection_info['address']
+        if address.match?(%r{\Aunix:[^/.]})
+          path = address.split('unix:').last
+          address = "unix:#{Rails.root.join(path)}"
+        end
 
-        project.repository.update_zoekt_index!
-        # Add delay to allow Zoekt wbeserver to finish the indexing
+        payload = {
+          GitalyConnectionInfo: {
+            Address: address,
+            Token: connection_info['token'],
+            Storage: repository_storage,
+            Path: repository_path
+          },
+          Callback: { name: 'index' },
+          RepoId: project.id,
+          FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
+          Timeout: '10s',
+          Force: true
+        }
+        defaults = {
+          headers: { 'Content-Type' => 'application/json' },
+          body: payload.to_json,
+          allow_local_requests: true,
+          timeout: 10.seconds.to_i
+        }
+        node = zoekt_node
+        url = ::Gitlab::Search::Zoekt::Client.new.send(:join_url, node.index_base_url, '/indexer/index')
+        ::Gitlab::HTTP.post(url, defaults)
+        # Add delay to allow Zoekt webserver to finish the indexing
         10.times do
           results = Gitlab::Search::Zoekt::Client.new.search('.*', num: 1, project_ids: [project.id],
-            node_id: zoekt_node.id, search_mode: :regex)
-          break if results.file_count > 0
+            node_id: node.id, search_mode: :regex)
+
+          if results.file_count > 0
+            Search::Zoekt::Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
+            project.zoekt_repositories.update_all(state: :ready)
+            break
+          end
 
           sleep 0.01
         end

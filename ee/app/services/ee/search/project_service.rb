@@ -76,6 +76,11 @@ module EE
       def zoekt_projects
         @zoekt_projects ||= ::Project.id_in(project)
       end
+
+      override :zoekt_nodes
+      def zoekt_nodes
+        @zoekt_nodes ||= ::Search::Zoekt::Node.searchable_for_project(zoekt_searchable_scope)
+      end
     end
   end
 end

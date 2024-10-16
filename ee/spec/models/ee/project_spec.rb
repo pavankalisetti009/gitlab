@@ -71,7 +71,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:approval_policy_rules).through(:approval_policy_rule_project_links) }
 
     it { is_expected.to have_one(:github_integration) }
-    it { is_expected.to have_one(:zoekt_repository) }
+    it { is_expected.to have_many(:zoekt_repositories) }
     it { is_expected.to have_one(:google_cloud_platform_artifact_registry_integration) }
     it { is_expected.to have_one(:google_cloud_platform_workload_identity_federation_integration) }
     it { is_expected.to have_one(:git_guardian_integration) }

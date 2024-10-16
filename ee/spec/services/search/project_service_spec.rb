@@ -610,4 +610,13 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
   end
+
+  describe '#zoekt_nodes' do
+    subject(:service) { described_class.new(user, project, scope: 'blobs') }
+
+    it 'calls on Node.searchable_for_project' do
+      expect(Search::Zoekt::Node).to receive(:searchable_for_project).with(project).and_return(:result)
+      expect(service.zoekt_nodes).to eq(:result)
+    end
+  end
 end

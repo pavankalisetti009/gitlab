@@ -7,7 +7,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
 
   describe 'relations' do
     it { is_expected.to belong_to(:zoekt_index).inverse_of(:zoekt_repositories) }
-    it { is_expected.to belong_to(:project).inverse_of(:zoekt_repository) }
+    it { is_expected.to belong_to(:project).inverse_of(:zoekt_repositories) }
   end
 
   describe 'before_validation' do
@@ -58,6 +58,22 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         create(:zoekt_repository, zoekt_index: zoekt_index3)
         expect(described_class.for_zoekt_indices([zoekt_index, zoekt_index2])).to contain_exactly zoekt_repository,
           zoekt_repository2, zoekt_repository3
+      end
+    end
+
+    describe '.searchable' do
+      let_it_be(:ready) { create(:zoekt_repository, state: :ready) }
+      let_it_be(:pending) { create(:zoekt_repository, state: :pending) }
+      let_it_be(:initializing) { create(:zoekt_repository, state: :initializing) }
+      let_it_be(:orphaned) { create(:zoekt_repository, state: :orphaned) }
+      let_it_be(:pending_deletion) { create(:zoekt_repository, state: :pending_deletion) }
+      let_it_be(:failed) { create(:zoekt_repository, state: :failed) }
+
+      subject(:records) { described_class.searchable }
+
+      it 'returns all repositories with state includes in SEARCHABLE_STATES' do
+        expect(records).to include ready
+        expect(records).not_to include pending, initializing, orphaned, pending_deletion, failed
       end
     end
   end

@@ -19,6 +19,8 @@ module Search
         through: :indices, source: :zoekt_enabled_namespace, class_name: '::Search::Zoekt::EnabledNamespace'
       has_many :tasks,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Task'
+      has_many :zoekt_repositories,
+        through: :indices, source: :zoekt_repositories, class_name: '::Search::Zoekt::Repository'
 
       validates :index_base_url, presence: true
       validates :search_base_url, presence: true
@@ -33,6 +35,12 @@ module Search
       scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
       scope :lost, -> { where(last_seen_at: ..LOST_DURATION_THRESHOLD.ago) }
       scope :online, -> { where(last_seen_at: ONLINE_DURATION_THRESHOLD.ago..) }
+      scope :searchable, -> { online }
+      scope :searchable_for_project, ->(project) do
+        searchable.joins(:zoekt_repositories)
+                  .merge(Repository.searchable)
+                  .where(zoekt_repositories: { project: project })
+      end
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
