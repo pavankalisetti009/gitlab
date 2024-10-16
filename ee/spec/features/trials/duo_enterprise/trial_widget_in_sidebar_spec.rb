@@ -29,7 +29,7 @@ RSpec.describe 'Duo Enterprise Trial Widget in Sidebar', :saas, :js, feature_cat
     end
 
     context 'on the first day of trial' do
-      it 'shows the correct days used' do
+      it 'shows the correct days remaining' do
         freeze_time do
           visit group_path(group)
 
@@ -39,11 +39,11 @@ RSpec.describe 'Duo Enterprise Trial Widget in Sidebar', :saas, :js, feature_cat
     end
 
     context 'on the last day of trial' do
-      it 'shows days used and remaining as the same' do
+      it 'shows the correct days remaining' do
         travel_to(60.days.from_now) do
           visit group_path(group)
 
-          expect(page).to have_content('See upgrade options')
+          expect(page).to have_content('0 days left in trial')
         end
       end
     end

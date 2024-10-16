@@ -75,9 +75,23 @@ describe('TrialWidget component', () => {
       });
     });
 
-    describe('when trial has expired', () => {
+    describe('when on the last day of the trial', () => {
       beforeEach(() => {
         createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      });
+
+      it('renders the progress bar', () => {
+        expect(findProgressBar().exists()).toBe(true);
+      });
+
+      it('renders the upgrade options text', () => {
+        expect(findCtaButton().text()).toBe('Upgrade');
+      });
+    });
+
+    describe('when trial has expired', () => {
+      beforeEach(() => {
+        createComponent({ daysRemaining: -1, percentageComplete: 110 });
       });
 
       it('shows correct title and body', () => {
@@ -111,7 +125,7 @@ describe('TrialWidget component', () => {
       createComponent({ trialType, daysRemaining: 30, percentageComplete: 50 });
       expect(findWidgetTitle().text()).toBe(activeTitle);
 
-      createComponent({ trialType, daysRemaining: 0, percentageComplete: 100 });
+      createComponent({ trialType, daysRemaining: -1, percentageComplete: 110 });
       expect(findWidgetTitle().text()).toBe(expiredTitle);
     });
   });
@@ -135,19 +149,19 @@ describe('TrialWidget component', () => {
       ['duo_pro', 'Your trial of GitLab Duo Pro has ended'],
       ['duo_enterprise', 'Your trial of GitLab Duo Enterprise has ended'],
     ])('shows correct title and upgrade text for %s', (trialType, expiredTitle) => {
-      createComponent({ trialType, daysRemaining: 0, percentageComplete: 100 });
+      createComponent({ trialType, daysRemaining: -1, percentageComplete: 110 });
 
       expect(findWidgetTitle().text()).toBe(expiredTitle);
       expect(findUpgradeButton().text()).toBe('See upgrade options');
     });
 
     it('renders the progress bar', () => {
-      createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      createComponent({ daysRemaining: -1, percentageComplete: 110 });
       expect(findProgressBar().exists()).toBe(true);
     });
 
     it('renders the dismiss button', () => {
-      createComponent({ daysRemaining: 0, percentageComplete: 100 });
+      createComponent({ daysRemaining: -1, percentageComplete: 110 });
       expect(findDismissButton().exists()).toBe(true);
     });
   });
