@@ -114,6 +114,7 @@ module EE
 
         configurations.each do |configuration|
           ::Security::ProcessScanResultPolicyWorker.perform_async(project.id, configuration.id)
+          ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id) if configuration.persist_policies?
         end
       end
 

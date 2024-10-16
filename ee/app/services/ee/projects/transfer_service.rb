@@ -63,7 +63,15 @@ module EE
       end
 
       def sync_new_group_policies
+        return unless project.licensed_feature_available?(:security_orchestration_policies)
+
         ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
+
+        project.all_security_orchestration_policy_configurations.each do |configuration|
+          if configuration.persist_policies?
+            ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
+          end
+        end
       end
 
       def delete_compliance_framework_setting(old_group)

@@ -27,6 +27,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
       end
 
       context 'when policy is enabled' do
+        context 'when policy_scope is not applicable' do
+          before do
+            allow_next_found_instance_of(Security::Policy) do |instance|
+              allow(instance).to receive(:scope_applicable?).and_return(false)
+            end
+          end
+
+          it 'does not link the policy and rules' do
+            expect { service.execute }.to not_change { Security::PolicyProjectLink.count }
+              .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+          end
+        end
+
         it 'links policy and rules toproject' do
           expect { service.execute }.to change { Security::PolicyProjectLink.count }.from(0).to(1)
             .and change { Security::ApprovalPolicyRuleProjectLink.count }.from(0).to(1)

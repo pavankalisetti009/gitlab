@@ -644,8 +644,21 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           end
         end
 
-        it 'invokes ProcessScanResultPolicyWorker', :sidekiq_inline do
+        context 'when security_policies_sync is disabled' do
+          before do
+            stub_feature_flags(security_policies_sync_group: false)
+          end
+
+          it 'does not invoke SyncProjectPoliciesWorker' do
+            expect(::Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
+
+            response
+          end
+        end
+
+        it 'invokes workers', :sidekiq_inline do
           expect(::Security::ProcessScanResultPolicyWorker).to receive(:perform_async).twice.and_call_original
+          expect(::Security::SyncProjectPoliciesWorker).to receive(:perform_async).twice.and_call_original
 
           expect(created_project.approval_rules.count).to eq(2)
           expect(created_project.approval_rules.map(&:security_orchestration_policy_configuration_id)).to match_array([
@@ -655,8 +668,9 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
       end
 
       context 'when group does not have security_orchestration_policy_configuration' do
-        it 'does not invoke ProcessScanResultPolicyWorker' do
+        it 'does not invoke workers' do
           expect(::Security::ProcessScanResultPolicyWorker).not_to receive(:perform_async)
+          expect(::Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
 
           response
         end

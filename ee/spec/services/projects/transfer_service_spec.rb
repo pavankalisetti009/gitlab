@@ -154,6 +154,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       let!(:sub_group_approval_rule) { create(:approval_project_rule, :scan_finding, :requires_approval, project: project, security_orchestration_policy_configuration: sub_group_configuration) }
 
       before do
+        stub_licensed_features(security_orchestration_policies: true)
         allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
           allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
         end
@@ -170,6 +171,25 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
           expect(project.approval_rules).to be_empty
           expect { group_approval_rule.reload }.to raise_exception(ActiveRecord::RecordNotFound)
           expect { sub_group_approval_rule.reload }.to raise_exception(ActiveRecord::RecordNotFound)
+        end
+
+        it 'triggers Security::SyncProjectPoliciesWorker for all configurations' do
+          expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id, group_configuration.id)
+          expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id, sub_group_configuration.id)
+
+          subject.execute(sub_group)
+        end
+
+        context 'when security_policies_sync is disabled' do
+          before do
+            stub_feature_flags(security_policies_sync_group: false)
+          end
+
+          it 'does not invoke SyncProjectPoliciesWorker', :sidekiq_inline do
+            expect(::Security::SyncProjectPoliciesWorker).not_to receive(:perform_async)
+
+            subject.execute(sub_group)
+          end
         end
       end
 

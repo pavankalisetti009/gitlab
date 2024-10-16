@@ -36,6 +36,7 @@ module Security
 
       def link_project_policy
         return unless security_policy.enabled
+        return unless security_policy.scope_applicable?(project)
 
         security_policy.link_project!(project)
       end
