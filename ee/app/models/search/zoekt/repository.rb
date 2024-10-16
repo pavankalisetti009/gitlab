@@ -5,11 +5,13 @@ module Search
     class Repository < ApplicationRecord
       include EachBatch
 
+      SEARCHABLE_STATES = %i[ready].freeze
+
       self.table_name = 'zoekt_repositories'
 
       belongs_to :zoekt_index, inverse_of: :zoekt_repositories, class_name: '::Search::Zoekt::Index'
 
-      belongs_to :project, inverse_of: :zoekt_repository, class_name: 'Project'
+      belongs_to :project, inverse_of: :zoekt_repositories, class_name: 'Project'
 
       has_many :tasks,
         foreign_key: :zoekt_repository_id, inverse_of: :zoekt_repository, class_name: '::Search::Zoekt::Task'
@@ -46,6 +48,8 @@ module Search
       end
 
       scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }
+
+      scope :searchable, -> { where(state: SEARCHABLE_STATES) }
 
       def self.create_tasks(project_id:, zoekt_index:, task_type:, perform_at:)
         project = Project.find_by_id(project_id)

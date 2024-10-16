@@ -6,7 +6,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
   include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :public, :repository, name: 'awesome project', group: group) }
+  let_it_be_with_reload(:project) { create(:project, :public, :repository, name: 'awesome project', group: group) }
   let(:fields) { all_graphql_fields_for(Types::Search::Blob::BlobSearchType, max_depth: 4) }
 
   let(:query) { graphql_query_for(:blobSearch, { search: 'test', group_id: "gid://gitlab/Group/#{group.id}" }, fields) }
