@@ -6,7 +6,7 @@ module Geo
 
     idempotent!
     worker_has_external_dependencies!
-    data_consistency :always
+    data_consistency :sticky
     deduplicate :until_executed, ttl: 20.minutes
 
     include Gitlab::Geo::LogHelpers
