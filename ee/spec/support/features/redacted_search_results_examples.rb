@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'a redacted search results page' do |include_anonymous: true, document_type: :issue|
+RSpec.shared_examples 'a redacted search results page' do |include_anonymous: true|
   let(:public_group) { create(:group, :public) }
   let(:public_restricted_project) { create(:project, :repository, :public, :wiki_repo, namespace: public_group, name: 'The Project searchabletext') }
   let(:issue_access_level) { ProjectFeature::PRIVATE }
@@ -12,10 +12,10 @@ RSpec.shared_examples 'a redacted search results page' do |include_anonymous: tr
     Sidekiq::Testing.inline! do
       # Create a public project that the user is not member of.
       # And add some content to it.
-      issue = create(document_type, project: public_restricted_project, title: 'The Issue searchabletext')
-      create(:note, project: public_restricted_project, noteable: issue, note: 'A note on issue searchabletext')
-      confidential_issue = create(document_type, :confidential, project: public_restricted_project, title: 'The Confidential Issue searchabletext')
-      create(:note, project: public_restricted_project, noteable: confidential_issue, note: 'A note on confidential issue searchabletext')
+      work_item = create(:work_item, project: public_restricted_project, title: 'The Issue searchabletext')
+      create(:note, project: public_restricted_project, noteable: work_item, note: 'A note on work_item searchabletext')
+      confidential_work_item = create(:work_item, :confidential, project: public_restricted_project, title: 'The Confidential Issue searchabletext')
+      create(:note, project: public_restricted_project, noteable: confidential_work_item, note: 'A note on confidential work_item searchabletext')
       create(:milestone, project: public_restricted_project, title: 'The Milestone searchabletext')
       create(:note_on_commit, project: public_restricted_project, note: 'A note on commit searchabletext')
       create(:diff_note_on_commit, project: public_restricted_project, note: 'A note on diff on commit searchabletext')
@@ -65,12 +65,12 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
         expect(page).to have_content('The Project')
       end
       # Issues scope is not available for search within a project when
-      # issues are restricted
+      # work_items are restricted
       if has_search_scope?('Issues')
         select_search_scope('Issues')
-        # Project issues are restricted
+        # Project work_items are restricted
         expect(page).not_to have_content('The Issue')
-        expect(page).not_to have_content('The Confidential issue')
+        expect(page).not_to have_content('The Confidential work_item')
       end
 
       # Merge requests scope is not available for search within a project when
@@ -82,10 +82,10 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
       end
 
       # Milestones scope is not available for search within a project when
-      # issues are restricted
+      # work_items are restricted
       if has_search_scope?('Milestones')
         select_search_scope('Milestones')
-        # Project issues are restricted
+        # Project work_items are restricted
         expect(page).not_to have_content('The Milestone')
       end
 
@@ -96,7 +96,7 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
       end
     end
 
-    context 'when issues are public', :elastic, :js, :disable_rate_limiter do
+    context 'when work_items are public', :elastic, :js, :disable_rate_limiter do
       let(:issue_access_level) { ProjectFeature::ENABLED }
 
       it 'redacts other private features' do
@@ -114,9 +114,9 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
         end
 
         select_search_scope('Issues')
-        # Project issues are still public
+        # Project work_items are still public
         expect(page).to have_content('The Issue')
-        expect(page).not_to have_content('The Confidential issue')
+        expect(page).not_to have_content('The Confidential work_item')
 
         # Merge requests scope is not available for search within a project when
         # code is restricted
@@ -127,12 +127,12 @@ RSpec.shared_examples 'redacted search results page assertions' do |logged_in|
         end
 
         select_search_scope('Milestones')
-        # Project issues are still public
+        # Project work_items are still public
         expect(page).to have_content('The Milestone')
 
         select_search_scope('Comments')
         # All places where notes are posted are restricted
-        expect(page).to have_content('A note on issue')
+        expect(page).to have_content('A note on work_item')
         expect(page).to have_content('A note on', count: 1)
       end
     end

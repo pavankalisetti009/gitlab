@@ -8,7 +8,7 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :repository, :wiki_repo, namespace: group) }
+  let_it_be(:project) { create(:project, :repository, :wiki_repo, group: group) }
   let_it_be(:group_wiki) { create(:group_wiki, group: group) }
   let_it_be(:wiki) { create(:project_wiki, project: project) }
 
@@ -66,6 +66,11 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
   end
 
   context 'when searching for issues and epics' do
+    let_it_be(:issue) { create(:work_item, project: project, title: 'chosen issue title') }
+    let_it_be(:epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
+    end
+
     before_all do
       project.add_maintainer(user)
     end
@@ -81,34 +86,7 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
       choose_group(group)
     end
 
-    context 'when we do not use work_items index for search' do
-      let_it_be(:issue) { create(:issue, project: project, title: 'chosen issue title') }
-      let_it_be(:epic) { create(:epic, group: group, title: 'chosen epic title') }
-
-      before do
-        stub_feature_flags(search_issues_uses_work_items_index: false)
-        stub_feature_flags(search_epics_uses_work_items_index: false)
-      end
-
-      it 'finds issues and epics' do
-        # issues
-        submit_search('chosen')
-        select_search_scope('Issues')
-        expect(page).to have_content('chosen issue title')
-
-        # epics
-        submit_search('chosen')
-        select_search_scope('Epics')
-        expect(page).to have_content('chosen epic title')
-      end
-    end
-
     context 'when we use work_items index for search' do
-      let(:issue) { create(:work_item, project: project, title: 'chosen issue title') }
-      let(:epic) do
-        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
-      end
-
       it 'finds issues and epics' do
         # issues
         submit_search('chosen')
@@ -125,15 +103,7 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
 end
 
 RSpec.describe 'Group elastic search redactions', feature_category: :global_search do
-  [:work_item, :issue].each do |document_type|
-    context "when we have document_type as #{document_type}" do
-      before do
-        stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-      end
-
-      it_behaves_like 'a redacted search results page', document_type: document_type do
-        let(:search_path) { group_path(public_group) }
-      end
-    end
+  it_behaves_like 'a redacted search results page' do
+    let(:search_path) { group_path(public_group) }
   end
 end

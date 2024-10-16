@@ -426,8 +426,7 @@ module Gitlab
       end
 
       def work_item_index_available_for_searching_issues?
-        ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
-          ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
+        ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
 
       def milestones(count_only: false)
