@@ -7,6 +7,7 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
 
   let_it_be(:user1) { create(:user, name: 'John Doe') }
   let_it_be(:user2) { create(:user, name: 'Mary Jane') }
+  let_it_be(:user3) { create(:user, name: 'Wally West') }
   let_it_be(:group) { create(:group) }
 
   context 'with Group SAML identity linked for a user' do
@@ -16,18 +17,23 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
 
     before do
       sign_in(user1)
-      group.add_developer(user1)
+
+      group.add_owner(user1)
       group.add_guest(user2)
       create(:identity, saml_provider: saml_provider, user: user2)
+
+      group.add_guest(user3)
+      create(:identity, saml_provider: saml_provider, user: user3)
     end
 
-    it 'shows user with SSO status badge', :js do
+    it 'shows user with a SSO status badge', :js do
       visit group_group_members_path(group)
 
       expect(second_row).to have_content('SAML')
+      expect(third_row).to have_content('SAML')
     end
 
-    context 'when group is a sub group and member is a direct member' do
+    context 'when group is in a sub group' do
       let(:sub_group) { create(:group, parent: group) }
 
       before do
@@ -35,10 +41,31 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
         sub_group.add_developer(user2)
       end
 
-      it 'shows user with SSO status badge for direct member', :js do
+      it 'shows user2 with a SSO status badge & a direct membership type', :js do
         visit group_group_members_path(sub_group)
 
-        expect(second_row).to have_content('SAML')
+        expect(second_row).to have_content('SAML').and have_content('Direct')
+      end
+
+      it 'shows user3 with a SSO status badge & an inherited membership type', :js do
+        visit group_group_members_path(sub_group)
+
+        expect(third_row).to have_content('SAML').and have_content('Inherited')
+      end
+
+      context 'when a project is in the subgroup' do
+        let(:project) { create(:project, namespace: sub_group) }
+
+        before do
+          project.add_developer(user3)
+        end
+
+        it 'retains the SSO status badges & direct membership types from its group', :js do
+          visit group_group_members_path(project.namespace)
+
+          expect(second_row).to have_content('SAML').and have_content('Direct')
+          expect(third_row).to have_content('SAML').and have_content('Inherited')
+        end
       end
     end
   end
