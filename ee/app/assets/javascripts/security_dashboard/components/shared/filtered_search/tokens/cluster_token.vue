@@ -155,7 +155,7 @@ export default {
       @complete="emitFiltersChanged"
     >
       <template #view>
-        {{ toggleText }}
+        <span data-testid="cluster-token-placeholder">{{ toggleText }}</span>
       </template>
       <template #suggestions>
         <gl-loading-icon v-if="isLoading" size="sm" />

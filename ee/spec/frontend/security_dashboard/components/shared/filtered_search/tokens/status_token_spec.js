@@ -6,7 +6,6 @@ import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_s
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
-import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 Vue.use(VueRouter);
@@ -74,45 +73,29 @@ describe('Status Token component', () => {
   };
 
   describe('default view', () => {
-    const findSlotView = () => wrapper.findByTestId('slot-view');
-    const findSlotSuggestions = () => wrapper.findByTestId('slot-suggestions');
+    const findDropdownOptions = () =>
+      wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.props('text'));
 
     beforeEach(() => {
-      createWrapper({
-        stubs: {
-          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
-            template: `
-            <div>
-                <div data-testid="slot-view">
-                    <slot name="view"></slot>
-                </div>
-                <div data-testid="slot-suggestions">
-                    <slot name="suggestions"></slot>
-                </div>
-            </div>`,
-          }),
-        },
-      });
+      createWrapper();
     });
 
     it('shows the label', () => {
-      expect(findSlotView().text()).toBe('Needs triage, Confirmed');
+      expect(findFilteredSearchToken().props('value')).toEqual({
+        data: ['DETECTED', 'CONFIRMED'],
+        operator: '=',
+      });
+      expect(wrapper.findByTestId('status-token-placeholder').text()).toBe(
+        'Needs triage, Confirmed',
+      );
     });
 
     it('shows the dropdown with correct options', () => {
-      expect(
-        findSlotSuggestions()
-          .text()
-          .split('\n')
-          .map((s) => s.trim())
-          .filter((i) => i),
-      ).toEqual([
-        'Status', // subheader
+      expect(findDropdownOptions()).toEqual([
         'All statuses',
         'Needs triage',
         'Confirmed',
         'Resolved',
-        'Dismissed as...', // subheader
         'All dismissal reasons',
         'Acceptable risk',
         'False positive',

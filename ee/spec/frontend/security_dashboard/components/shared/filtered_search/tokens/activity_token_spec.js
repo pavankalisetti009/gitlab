@@ -1,4 +1,4 @@
-import { GlFilteredSearchToken, GlBadge } from '@gitlab/ui';
+import { GlFilteredSearchToken, GlDropdownSectionHeader, GlBadge } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ActivityToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/activity_token.vue';
@@ -76,23 +76,9 @@ describe('ActivityToken', () => {
   };
 
   describe('default view', () => {
-    const findViewSlot = () => wrapper.findByTestId('slot-view');
     const findAllBadges = () => wrapper.findAllComponents(GlBadge);
     const createWrapperWithAbility = ({ resolveVulnerabilityWithAi } = {}) => {
       createWrapper({
-        stubs: {
-          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
-            template: `
-            <div>
-              <div data-testid="slot-view">
-                <slot name="view"></slot>
-              </div>
-              <div data-testid="slot-suggestions">
-                <slot name="suggestions"></slot>
-              </div>
-            </div>`,
-          }),
-        },
         provide: {
           glFeatures: {
             vulnerabilityReportVrFilter: true,
@@ -106,30 +92,33 @@ describe('ActivityToken', () => {
 
     it('shows the label', () => {
       createWrapperWithAbility();
-      expect(findViewSlot().text()).toBe('Still detected');
+      expect(findFilteredSearchToken().props('value')).toEqual({
+        data: ['STILL_DETECTED'],
+        operator: '||',
+      });
+      expect(wrapper.findByTestId('activity-token-placeholder').text()).toBe('Still detected');
     });
 
     const baseOptions = [
       'All activity',
-      'Detection', // group header
       'Still detected',
       'No longer detected',
-      'Issue', // group header
       'Has issue',
       'Does not have issue',
-      'Merge Request', // group header
       'Has merge request',
       'Does not have merge request',
-      'Solution available', // group header
       'Has a solution',
       'Does not have a solution',
     ];
 
     const aiOptions = [
-      'GitLab Duo (AI)', // group header
       'Vulnerability Resolution available',
       'Vulnerability Resolution unavailable',
     ];
+
+    const baseGroupHeaders = ['Detection', 'Issue', 'Merge Request', 'Solution available'];
+
+    const aiGroupHeaders = ['GitLab Duo (AI)'];
 
     it.each`
       resolveVulnerabilityWithAi | expectedOptions
@@ -140,16 +129,26 @@ describe('ActivityToken', () => {
       ({ resolveVulnerabilityWithAi, expectedOptions }) => {
         createWrapperWithAbility({ resolveVulnerabilityWithAi });
 
-        // All options are rendered in the #suggestions slot of GlFilteredSearchToken
-        const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
+        const findDropdownOptions = () =>
+          wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
 
-        expect(
-          findDropdownOptions()
-            .text()
-            .split('\n')
-            .map((s) => s.trim())
-            .filter((i) => i),
-        ).toEqual(expectedOptions);
+        expect(findDropdownOptions()).toEqual(expectedOptions);
+      },
+    );
+
+    it.each`
+      resolveVulnerabilityWithAi | expectedGroups
+      ${true}                    | ${[...baseGroupHeaders, ...aiGroupHeaders]}
+      ${false}                   | ${baseGroupHeaders}
+    `(
+      'shows the group headers correctly resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
+      ({ resolveVulnerabilityWithAi, expectedGroups }) => {
+        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+
+        const findDropdownGroupHeaders = () =>
+          wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
+
+        expect(findDropdownGroupHeaders()).toEqual(expectedGroups);
       },
     );
 

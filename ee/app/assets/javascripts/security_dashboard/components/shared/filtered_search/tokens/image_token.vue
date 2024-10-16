@@ -1,28 +1,21 @@
 <script>
-import {
-  GlIcon,
-  GlFilteredSearchToken,
-  GlFilteredSearchSuggestion,
-  GlLoadingIcon,
-  GlTruncate,
-} from '@gitlab/ui';
+import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images.query.graphql';
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_IMAGES_VALUE } from '../../filters/constants';
 import eventHub from '../event_hub';
 
 export default {
   components: {
-    GlIcon,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
     GlLoadingIcon,
-    GlTruncate,
     QuerystringSync,
+    SearchSuggestion,
   },
   inject: {
     agentName: { default: '' },
@@ -163,22 +156,16 @@ export default {
       </template>
       <template #suggestions>
         <gl-loading-icon v-if="isLoading" size="sm" />
-        <gl-filtered-search-suggestion
+        <search-suggestion
           v-for="image in items"
           v-else
           :key="image.value"
           :value="image.value"
-        >
-          <div class="gl-flex gl-items-center">
-            <gl-icon
-              name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-              :class="{ 'gl-invisible': !isImageSelected(image.value) }"
-              :data-testid="`image-icon-${image.value}`"
-            />
-            <gl-truncate position="middle" :text="image.text" data-testid="truncate-image" />
-          </div>
-        </gl-filtered-search-suggestion>
+          :text="image.text"
+          :selected="isImageSelected(image.value)"
+          :data-testid="`suggestion-${image.value}`"
+          truncate
+        />
       </template>
     </gl-filtered-search-token>
   </querystring-sync>

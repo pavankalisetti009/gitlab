@@ -11,7 +11,6 @@ import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_s
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { projectClusters } from 'ee_jest/security_dashboard/components/mock_data';
 
@@ -78,44 +77,29 @@ describe('Cluster Token component', () => {
   };
 
   describe('default view', () => {
-    const findViewSlot = () => wrapper.findByTestId('slot-view');
-    const findSuggestionsSlot = () => wrapper.findByTestId('slot-suggestions');
     const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
-    const stubs = {
-      GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
-        template: `
-          <div>
-            <div data-testid="slot-view">
-              <slot name="view"></slot>
-            </div>
-            <div data-testid="slot-suggestions">
-              <slot name="suggestions"></slot>
-            </div>
-          </div>`,
-      }),
-    };
-
     beforeEach(() => {
-      createWrapper({
-        stubs,
-      });
+      createWrapper();
     });
 
     it('shows the label', () => {
-      expect(findViewSlot().text()).toBe('All clusters');
+      expect(findFilteredSearchToken().props('value')).toEqual({ data: ['ALL'] });
+      expect(wrapper.findByTestId('cluster-token-placeholder').text()).toBe('All clusters');
     });
 
     it('shows the dropdown with correct options', async () => {
       await waitForPromises();
 
-      expect(
-        findSuggestionsSlot()
-          .text()
-          .split('\n')
-          .map((s) => s.trim())
-          .filter((i) => i),
-      ).toEqual(['All clusters', 'primary-agent', 'james-bond-agent', 'jason-bourne-agent']);
+      const findDropdownOptions = () =>
+        wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
+
+      expect(findDropdownOptions()).toEqual([
+        'All clusters',
+        'primary-agent',
+        'james-bond-agent',
+        'jason-bourne-agent',
+      ]);
     });
 
     it('shows the loading icon when cluster agents are not yet loaded', async () => {

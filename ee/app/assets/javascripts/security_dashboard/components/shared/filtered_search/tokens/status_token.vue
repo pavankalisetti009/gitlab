@@ -186,7 +186,7 @@ export default {
       @complete="emitFiltersChanged"
     >
       <template #view>
-        {{ toggleText }}
+        <span data-testid="status-token-placeholder">{{ toggleText }}</span>
       </template>
       <template #suggestions>
         <gl-dropdown-section-header>{{ $options.i18n.statusLabel }}</gl-dropdown-section-header>

@@ -1,10 +1,11 @@
 <script>
-import { GlFilteredSearchSuggestion, GlIcon } from '@gitlab/ui';
+import { GlFilteredSearchSuggestion, GlIcon, GlTruncate } from '@gitlab/ui';
 
 export default {
   components: {
     GlFilteredSearchSuggestion,
     GlIcon,
+    GlTruncate,
   },
   props: {
     /**
@@ -31,6 +32,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    truncate: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
 };
 </script>
@@ -43,7 +49,8 @@ export default {
         :class="{ 'gl-invisible': !selected }"
         :data-testid="`${name}-icon-${value}`"
       />
-      {{ text }}
+      <gl-truncate v-if="truncate" position="middle" :text="text" />
+      <template v-else>{{ text }}</template>
     </div>
   </gl-filtered-search-suggestion>
 </template>
