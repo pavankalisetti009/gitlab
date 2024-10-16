@@ -36,11 +36,11 @@ export const PRESET_TYPES = {
 };
 
 export const emptyStateDefault = s__(
-  'GroupRoadmap|To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from %{startDate} to %{endDate}.',
+  'GroupRoadmap|To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from %{dateRange}.',
 );
 
 export const emptyStateWithFilters = s__(
-  'GroupRoadmap|To widen your search, change or remove filters; from %{startDate} to %{endDate}.',
+  'GroupRoadmap|To widen your search, change or remove filters; from %{dateRange}.',
 );
 
 export const emptyStateWithEpicIidFiltered = s__(

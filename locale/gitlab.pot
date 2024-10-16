@@ -26313,9 +26313,6 @@ msgstr ""
 msgid "GroupRoadmap|%{dateWord} – No end date"
 msgstr ""
 
-msgid "GroupRoadmap|%{startDateInWords} – %{endDateInWords}"
-msgstr ""
-
 msgid "GroupRoadmap|Loading epics"
 msgstr ""
 
@@ -26352,10 +26349,10 @@ msgstr ""
 msgid "GroupRoadmap|To view the roadmap, add a start or due date to one of the %{linkStart}child epics%{linkEnd}."
 msgstr ""
 
-msgid "GroupRoadmap|To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from %{startDate} to %{endDate}."
+msgid "GroupRoadmap|To view the roadmap, add a start or due date to one of your epics in this group or its subgroups; from %{dateRange}."
 msgstr ""
 
-msgid "GroupRoadmap|To widen your search, change or remove filters; from %{startDate} to %{endDate}."
+msgid "GroupRoadmap|To widen your search, change or remove filters; from %{dateRange}."
 msgstr ""
 
 msgid "GroupRoadmap|View epics list"

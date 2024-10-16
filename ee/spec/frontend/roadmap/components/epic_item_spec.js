@@ -108,7 +108,7 @@ describe('EpicItemComponent', () => {
     it('returns timeframe string correctly when both start and end dates are defined', () => {
       createComponent();
 
-      expect(findEpicItemDetails().props('timeframeString')).toBe('Nov 10, 2017 – Jun 2, 2018');
+      expect(findEpicItemDetails().props('timeframeString')).toBe('Nov 10, 2017 – Jun 2, 2018');
     });
 
     it('returns timeframe string correctly when no dates are defined', () => {
@@ -140,7 +140,7 @@ describe('EpicItemComponent', () => {
       };
       createComponent({ epic });
 
-      expect(findEpicItemDetails().props('timeframeString')).toBe('Jan 1 – Apr 1, 2018');
+      expect(findEpicItemDetails().props('timeframeString')).toBe('Jan 1 – Apr 1, 2018');
     });
   });
 

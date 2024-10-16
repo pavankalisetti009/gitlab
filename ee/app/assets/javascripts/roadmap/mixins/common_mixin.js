@@ -1,7 +1,7 @@
 import {
-  dateInWords,
-  totalDaysInMonth,
   dayInQuarter,
+  localeDateFormat,
+  totalDaysInMonth,
   totalDaysInQuarter,
 } from '~/lib/utils/datetime_utility';
 import { s__, sprintf } from '~/locale';
@@ -137,28 +137,15 @@ export default {
       }
       if (roadmapItem.startDateUndefined) {
         return sprintf(s__('GroupRoadmap|No start date – %{dateWord}'), {
-          dateWord: dateInWords(this.endDate, true),
+          dateWord: localeDateFormat.asDate.format(this.endDate),
         });
       }
       if (roadmapItem.endDateUndefined) {
         return sprintf(s__('GroupRoadmap|%{dateWord} – No end date'), {
-          dateWord: dateInWords(this.startDate, true),
+          dateWord: localeDateFormat.asDate.format(this.startDate),
         });
       }
-
-      // In case both start and end date fall in same year
-      // We should hide year from start date
-      const startDateInWords = dateInWords(
-        this.startDate,
-        true,
-        this.startDate.getFullYear() === this.endDate.getFullYear(),
-      );
-
-      const endDateInWords = dateInWords(this.endDate, true);
-      return sprintf(s__('GroupRoadmap|%{startDateInWords} – %{endDateInWords}'), {
-        startDateInWords,
-        endDateInWords,
-      });
+      return localeDateFormat.asDate.formatRange(this.startDate, this.endDate);
     },
     timelineBarStyles(roadmapItem) {
       let barStyles = {};
