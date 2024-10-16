@@ -6,9 +6,9 @@ import {
   GlTable,
   GlToast,
   GlLink,
+  GlButton,
   GlAlert,
   GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
@@ -24,16 +24,16 @@ Vue.use(GlToast);
 export default {
   name: 'FrameworksTable',
   components: {
+    DeleteModal,
+    FrameworkInfoDrawer,
+    FrameworkBadge,
     GlLoadingIcon,
     GlSearchBoxByClick,
     GlTable,
     GlLink,
     GlAlert,
-    FrameworkInfoDrawer,
-    FrameworkBadge,
     GlDisclosureDropdown,
-    GlDisclosureDropdownItem,
-    DeleteModal,
+    GlButton,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -124,6 +124,17 @@ export default {
     filterProjects(projects) {
       return projects.filter((p) => p.fullPath.startsWith(this.groupPath));
     },
+    shouldDisableDeleteAction(framework) {
+      return framework.default || Boolean(this.getPoliciesList(framework).length);
+    },
+    getDeleteActionTooltipTitle(framework) {
+      if (this.shouldDisableDeleteAction(framework)) {
+        return framework.default
+          ? this.$options.i18n.deleteButtonDefaultFrameworkDisabledTooltip
+          : this.$options.i18n.deleteButtonLinkedPoliciesDisabledTooltip;
+      }
+      return '';
+    },
   },
   fields: [
     {
@@ -170,6 +181,12 @@ export default {
     actionEdit: __('Edit'),
     actionDelete: __('Delete'),
     toggleText: __('Actions for'),
+    deleteButtonLinkedPoliciesDisabledTooltip: s__(
+      "ComplianceFrameworks|Compliance frameworks that are linked to an active policy can't be deleted",
+    ),
+    deleteButtonDefaultFrameworkDisabledTooltip: s__(
+      "ComplianceFrameworks|The default framework can't be deleted",
+    ),
   },
   CREATE_FRAMEWORKS_DOCS_URL,
 };
@@ -243,33 +260,48 @@ export default {
           no-caret
         >
           <template v-if="isTopLevelGroup">
-            <gl-disclosure-dropdown-item
-              data-testid="edit-action"
-              @action="editFramework({ id: item.id })"
-            >
-              <template #list-item>
+            <div class="gl-mx-2">
+              <gl-button
+                data-testid="action-edit"
+                class="!gl-justify-start"
+                category="tertiary"
+                :block="true"
+                @click="editFramework({ id: item.id })"
+              >
                 {{ $options.i18n.actionEdit }}
-              </template>
-            </gl-disclosure-dropdown-item>
-            <gl-disclosure-dropdown-item
-              data-testid="delete-action"
-              @action="showDeleteModal(item)"
+              </gl-button>
+            </div>
+            <div
+              v-gl-tooltip.left.viewport
+              class="gl-mx-2"
+              data-testid="delete-tooltip"
+              :title="getDeleteActionTooltipTitle(item)"
             >
-              <template #list-item>
+              <gl-button
+                data-testid="action-delete"
+                class="!gl-justify-start"
+                category="tertiary"
+                :block="true"
+                :disabled="shouldDisableDeleteAction(item)"
+                @click="showDeleteModal(item)"
+              >
                 {{ $options.i18n.actionDelete }}
-              </template>
-            </gl-disclosure-dropdown-item>
+              </gl-button>
+            </div>
           </template>
-          <gl-disclosure-dropdown-item
-            v-gl-tooltip.left.viewport
-            data-testid="copy-id-action"
-            :title="$options.i18n.copyIdExplanation"
-            @action="copyFrameworkId(item.id)"
-          >
-            <template #list-item>
+          <div class="gl-mx-2">
+            <gl-button
+              v-gl-tooltip.left.viewport
+              data-testid="action-copy-id"
+              :title="$options.i18n.copyIdExplanation"
+              class="!gl-justify-start"
+              category="tertiary"
+              :block="true"
+              @click="copyFrameworkId(item.id)"
+            >
               {{ $options.i18n.actionCopyId }}: {{ getIdFromGraphQLId(item.id) }}
-            </template>
-          </gl-disclosure-dropdown-item>
+            </gl-button>
+          </div>
         </gl-disclosure-dropdown>
       </template>
       <template #empty>

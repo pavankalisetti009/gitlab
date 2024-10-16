@@ -271,6 +271,7 @@ export const createFramework = ({
   isDefault = false,
   projects = 0,
   groupPath = 'foo',
+  options,
 } = {}) => ({
   id: `gid://gitlab/ComplianceManagement::Framework/${id}`,
   name: `Some framework ${id}`,
@@ -323,6 +324,7 @@ export const createFramework = ({
   },
   pipelineConfigurationFullPath: null,
   __typename: 'ComplianceFramework',
+  ...options,
 });
 
 export const createComplianceFrameworksTokenResponse = () => {

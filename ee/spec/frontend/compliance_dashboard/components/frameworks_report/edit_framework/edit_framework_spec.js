@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 import getComplianceFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/get_compliance_framework.query.graphql';
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
 import EditFramework from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/edit_framework.vue';
@@ -49,6 +49,7 @@ describe('Edit Framework Form', () => {
   const findError = () => wrapper.findComponent(GlAlert);
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
+  const findDeleteButtonTooltip = () => wrapper.findComponent(GlTooltip);
 
   const invalidFeedback = (input) =>
     input.closest('[role=group]').querySelector('.invalid-feedback')?.textContent ?? '';
@@ -249,7 +250,7 @@ describe('Edit Framework Form', () => {
       ${'scanExecutionPolicies'}     | ${'MQ'}      | ${true}
       ${'scanExecutionPolicies'}     | ${null}      | ${false}
     `(
-      'is $buttonState when $policyType has cursor $policyCursor',
+      'sets disabled attribute to $buttonState when $policyType has cursor $policyCursor and renders correct tooltip',
       async ({ policyType, policyCursor, buttonState }) => {
         const response = createComplianceFrameworksReportResponse();
         response.data.namespace.complianceFrameworks.nodes[0][policyType].pageInfo.startCursor =
@@ -262,8 +263,37 @@ describe('Edit Framework Form', () => {
         await waitForPromises();
 
         expect(findDeleteButton().props('disabled')).toBe(buttonState);
+
+        const tooltip = findDeleteButtonTooltip();
+
+        if (buttonState) {
+          expect(tooltip.exists()).toBe(true);
+          expect(tooltip.attributes('title')).toBe(
+            "Compliance frameworks that are linked to an active policy can't be deleted",
+          );
+        } else {
+          expect(tooltip.exists()).toBe(false);
+        }
       },
     );
+
+    it('disables the delete button and shows correct tooltip when framework is default', async () => {
+      const response = createComplianceFrameworksReportResponse();
+      response.data.namespace.complianceFrameworks.nodes[0].default = true;
+
+      wrapper = createComponent(shallowMountExtended, {
+        requestHandlers: [[getComplianceFrameworkQuery, () => response]],
+      });
+
+      await waitForPromises();
+
+      const deleteButton = findDeleteButton();
+      expect(deleteButton.props('disabled')).toBe(true);
+
+      const tooltip = findDeleteButtonTooltip();
+      expect(tooltip.exists()).toBe(true);
+      expect(tooltip.attributes('title')).toBe("The default framework can't be deleted");
+    });
 
     it('renders delete button if editing existing framework', async () => {
       wrapper = createComponent();
