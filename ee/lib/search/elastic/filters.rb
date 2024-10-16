@@ -678,7 +678,7 @@ module Search
                 {
                   terms: {
                     _name: context.name(:membership, :id),
-                    id_field => filter_ids_by_feature(project_ids, user, feature)
+                    id_field => filter_project_ids_by_feature(project_ids, user, feature)
                   }
                 }
               end
@@ -776,7 +776,7 @@ module Search
 
           project_ids = []
           Array.wrap(options[:features]).each do |feature|
-            project_ids.concat(filter_ids_by_feature(scoped_project_ids, current_user, feature))
+            project_ids.concat(filter_project_ids_by_feature(scoped_project_ids, current_user, feature))
           end
 
           rejected_ids = namespaces.flat_map do |namespace|
@@ -822,7 +822,7 @@ module Search
           end
         end
 
-        def filter_ids_by_feature(project_ids, user, feature)
+        def filter_project_ids_by_feature(project_ids, user, feature)
           Project
             .id_in(project_ids)
             .filter_by_feature_visibility(feature, user)
@@ -832,20 +832,25 @@ module Search
         def project_ids_for_features(projects, user, features)
           project_ids = projects.pluck_primary_key
 
-          [].tap do |allowed_ids|
-            features.each do |feature|
-              allowed_ids.concat(filter_ids_by_feature(project_ids, user, feature))
-              allowed_ids.concat(filter_project_ids_by_ability(projects, user, ability_to_access_feature(feature)))
-            end
-          end.uniq
+          allowed_ids = []
+          features.each do |feature|
+            allowed_ids.concat(filter_project_ids_by_feature(project_ids, user, feature))
+          end
+
+          abilities = features.map { |feature| ability_to_access_feature(feature) }
+
+          allowed_ids.concat(filter_project_ids_by_abilities(projects, user, abilities))
+          allowed_ids.uniq
         end
 
-        def filter_project_ids_by_ability(projects, user, ability)
-          return [] if ability.nil? || user.blank?
+        def filter_project_ids_by_abilities(projects, user, target_abilities)
+          return [] if target_abilities.empty? || user.blank?
 
-          projects.select do |project|
-            ::Authz::CustomAbility.allowed?(user, ability, project)
-          end.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord relation
+          actual_abilities = ::Authz::Project.new(user, scope: projects).permitted
+
+          projects.filter_map do |project|
+            project.id if (actual_abilities[project.id] || []).intersection(target_abilities).any?
+          end
         end
 
         def ability_to_access_feature(feature)

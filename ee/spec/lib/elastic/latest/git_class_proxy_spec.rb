@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, feature_category: :global_search do
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :public, :repository, group: group) }
+  let_it_be_with_reload(:group) { create(:group) }
+  let_it_be_with_reload(:project) { create(:project, :public, :repository, group: group) }
+  let_it_be_with_reload(:user) { create(:user) }
 
   let(:included_class) { Elastic::Latest::RepositoryClassProxy }
 
@@ -16,18 +17,63 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
     ensure_elasticsearch_index!
   end
 
-  subject { included_class.new(project.repository.class) }
+  subject(:proxy) { included_class.new(project.repository.class) }
 
   describe '#elastic_search' do
-    let_it_be(:user) { create(:user) }
-
     context 'when type is blob' do
+      shared_examples 'a search that respects custom roles' do |search_level:|
+        before_all do
+          role = create(:member_role, :guest, :read_code, namespace: group)
+          create(:group_member, :guest, member_role: role, user: user, source: group)
+        end
+
+        subject(:search_results) do
+          proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+        end
+
+        it 'returns matching search results' do
+          expect(search_results[:blobs][:results].count).to eq(1)
+          expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
+            'files/markdown/ruby-style-guide.md'
+          )
+        end
+
+        if search_level.to_sym != :project
+          it 'avoids N+1 queries' do
+            control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+              proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+            end
+
+            project_ids = [project.id]
+            project_2 = create(:project, :private, :repository, developers: user,
+              group: create(:group, :private, parent: project.group))
+            project_ids << project_2.id
+
+            if search_level.to_sym == :group
+              project_3 = create(:project, :private, :repository, guests: user)
+              project_ids << project_3.id
+            end
+
+            options = search_options.merge(project_ids: project_ids)
+
+            # for global search, user does not have direct access to all project's namespaces
+            # so one extra call is made
+            threshold = search_level.to_sym == :global ? 1 : 0
+
+            expect do
+              proxy.elastic_search('Mailer.deliver', type: 'blob', options: options)
+            end.not_to exceed_query_limit(control).with_threshold(threshold)
+          end
+        end
+      end
+
       context 'when performing a global search' do
         let(:search_options) do
           {
             search_level: 'global',
             current_user: user,
             public_and_internal_projects: true,
+            project_ids: [project.id],
             order_by: nil,
             sort: nil
           }
@@ -39,15 +85,19 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           end
 
           it 'uses the correct elasticsearch query' do
-            subject.elastic_search('*', type: 'blob', options: search_options)
+            proxy.elastic_search('*', type: 'blob', options: search_options)
             assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
           end
+
+          it_behaves_like 'a search that respects custom roles', search_level: :global
         end
 
         it 'uses the correct elasticsearch query' do
-          subject.elastic_search('*', type: 'blob', options: search_options)
+          proxy.elastic_search('*', type: 'blob', options: search_options)
           assert_named_queries('doc:is_a:blob', 'filters:permissions:global', 'blob:match:search_terms')
         end
+
+        it_behaves_like 'a search that respects custom roles', search_level: :global
       end
 
       context 'when performing a group search' do
@@ -55,7 +105,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           {
             current_user: user,
             project_ids: [project.id],
-            group_ids: [project.namespace.id],
+            group_ids: [group.id],
             public_and_internal_projects: false,
             search_level: 'group',
             order_by: nil,
@@ -69,7 +119,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           end
 
           it 'uses the correct elasticsearch query' do
-            subject.elastic_search('*', type: 'blob', options: search_options)
+            proxy.elastic_search('*', type: 'blob', options: search_options)
             assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
           end
 
@@ -77,19 +127,20 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
             it 'uses the correct elasticsearch query' do
               group.add_reporter(user)
 
-              subject.elastic_search('*', type: 'blob', options: search_options)
+              proxy.elastic_search('*', type: 'blob', options: search_options)
               assert_named_queries('doc:is_a:blob', 'blob:match:search_terms', 'blob:authorized:reject_projects',
                 'blob:authorized:namespace:ancestry_filter:descendants')
             end
           end
 
           context 'when the project is private' do
-            let_it_be_with_reload(:project) { create(:project, :private, :repository, :in_group) }
+            before do
+              project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
+              ensure_elasticsearch_index!
+            end
 
             subject(:search_results) do
-              included_class
-                .new(project.repository.class)
-                .elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+              proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
             end
 
             context 'when the user is not authorized' do
@@ -112,70 +163,19 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
               with_them do
                 before do
                   project.add_member(user, role)
+                  ensure_elasticsearch_index!
                 end
 
                 it { expect(search_results[:blobs][:results].count).to eq(expected_count) }
               end
             end
-
-            context 'with the `read_code` permission on a custom role' do
-              let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: project.group) }
-              let_it_be(:member) { create(:group_member, :guest, member_role: role, user: user, source: project.group) }
-
-              before do
-                stub_licensed_features(custom_roles: true)
-              end
-
-              it 'returns matching search results' do
-                expect(search_results[:blobs][:results].count).to eq(1)
-                expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-                  'files/markdown/ruby-style-guide.md'
-                )
-              end
-
-              context 'with saas', :saas do
-                let_it_be(:subscription) do
-                  create(:gitlab_subscription, namespace: project.group, hosted_plan: create(:ultimate_plan))
-                end
-
-                before do
-                  stub_ee_application_setting(should_check_namespace_plan: true)
-                end
-
-                it 'returns matching search results' do
-                  expect(search_results[:blobs][:results].count).to eq(1)
-                  expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-                    'files/markdown/ruby-style-guide.md'
-                  )
-                end
-
-                it 'avoids N+1 queries' do
-                  control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-                    included_class
-                      .new(project.repository.class)
-                      .elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-                  end
-
-                  projects = [
-                    project,
-                    create(:project, :private, :repository, group: create(:group, parent: project.group))
-                  ]
-
-                  expect do
-                    included_class
-                      .new(project.repository.class)
-                      .elastic_search('Mailer.deliver', type: 'blob', options: search_options.merge(
-                        project_ids: projects.map(&:id)
-                      ))
-                  end.to issue_same_number_of_queries_as(control).or_fewer
-                end
-              end
-            end
           end
+
+          it_behaves_like 'a search that respects custom roles', search_level: :group
         end
 
         it 'uses the correct elasticsearch query' do
-          subject.elastic_search('*', type: 'blob', options: search_options)
+          proxy.elastic_search('*', type: 'blob', options: search_options)
           assert_named_queries('doc:is_a:blob', 'filters:permissions:group', 'blob:match:search_terms')
         end
 
@@ -183,19 +183,20 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           it 'uses the correct elasticsearch query' do
             group.add_reporter(user)
 
-            subject.elastic_search('*', type: 'blob', options: search_options)
+            proxy.elastic_search('*', type: 'blob', options: search_options)
             assert_named_queries('doc:is_a:blob', 'blob:match:search_terms', 'filters:level:group',
               'filters:permissions:group')
           end
         end
 
         context 'when the project is private' do
-          let_it_be_with_reload(:project) { create(:project, :private, :repository, :in_group) }
+          before do
+            project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
+            ensure_elasticsearch_index!
+          end
 
           subject(:search_results) do
-            included_class
-              .new(project.repository.class)
-              .elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+            proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
           end
 
           context 'when the user is not authorized' do
@@ -223,61 +224,9 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
               it { expect(search_results[:blobs][:results].count).to eq(expected_count) }
             end
           end
-
-          context 'with the `read_code` permission on a custom role' do
-            let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: project.group) }
-            let_it_be(:member) { create(:group_member, :guest, member_role: role, user: user, source: project.group) }
-
-            before do
-              stub_licensed_features(custom_roles: true)
-            end
-
-            it 'returns matching search results' do
-              expect(search_results[:blobs][:results].count).to eq(1)
-              expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-                'files/markdown/ruby-style-guide.md'
-              )
-            end
-
-            context 'with saas', :saas do
-              let_it_be(:subscription) do
-                create(:gitlab_subscription, namespace: project.group, hosted_plan: create(:ultimate_plan))
-              end
-
-              before do
-                stub_ee_application_setting(should_check_namespace_plan: true)
-              end
-
-              it 'returns matching search results' do
-                expect(search_results[:blobs][:results].count).to eq(1)
-                expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-                  'files/markdown/ruby-style-guide.md'
-                )
-              end
-
-              it 'avoids N+1 queries' do
-                control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-                  included_class
-                    .new(project.repository.class)
-                    .elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-                end
-
-                projects = [
-                  project,
-                  create(:project, :private, :repository, group: create(:group, parent: project.group))
-                ]
-
-                expect do
-                  included_class
-                    .new(project.repository.class)
-                    .elastic_search('Mailer.deliver', type: 'blob', options: search_options.merge(
-                      project_ids: projects.map(&:id)
-                    ))
-                end.to issue_same_number_of_queries_as(control).or_fewer
-              end
-            end
-          end
         end
+
+        it_behaves_like 'a search that respects custom roles', search_level: :group
       end
 
       context 'when performing a project search' do
@@ -299,71 +248,44 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           end
 
           it 'uses the correct elasticsearch query' do
-            subject.elastic_search('*', type: 'blob', options: search_options)
+            proxy.elastic_search('*', type: 'blob', options: search_options)
+
             assert_named_queries('doc:is_a:blob', 'blob:authorized:project',
               'blob:match:search_terms', 'blob:related:repositories')
           end
 
-          context 'with the `read_code` permission on a custom role' do
-            let_it_be(:project) { create(:project, :private, :repository, :in_group) }
-            let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: project.group) }
-            let_it_be(:member) { create(:project_member, :guest, member_role: role, user: user, source: project) }
-
-            before do
-              stub_licensed_features(custom_roles: true)
-            end
-
-            it 'returns matching search results' do
-              search_results = subject.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-
-              expect(search_results[:blobs][:results].count).to eq(1)
-              expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-                'files/markdown/ruby-style-guide.md'
-              )
-            end
-          end
-
           context 'when the user is not authorized' do
-            let_it_be(:project) { create(:project, :private, :repository, :in_group) }
+            before do
+              project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
+              ensure_elasticsearch_index!
+            end
 
             it 'returns no search results' do
-              search_results = subject.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+              search_results = proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
 
               expect(search_results[:blobs][:results]).to be_empty
             end
           end
+
+          it_behaves_like 'a search that respects custom roles', search_level: :project
         end
 
         it 'uses the correct elasticsearch query' do
-          subject.elastic_search('*', type: 'blob', options: search_options)
+          proxy.elastic_search('*', type: 'blob', options: search_options)
           assert_named_queries('doc:is_a:blob', 'filters:level:project', 'filters:permissions:project',
             'blob:match:search_terms', 'blob:related:repositories')
         end
 
-        context 'with the `read_code` permission on a custom role' do
-          let_it_be(:project) { create(:project, :private, :repository, :in_group) }
-          let_it_be(:role) { create(:member_role, :guest, :read_code, namespace: project.group) }
-          let_it_be(:member) { create(:project_member, :guest, member_role: role, user: user, source: project) }
-
-          before do
-            stub_licensed_features(custom_roles: true)
-          end
-
-          it 'returns matching search results' do
-            search_results = subject.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-
-            expect(search_results[:blobs][:results].count).to eq(1)
-            expect(search_results[:blobs][:results][0][:_source][:blob][:path]).to eq(
-              'files/markdown/ruby-style-guide.md'
-            )
-          end
-        end
+        it_behaves_like 'a search that respects custom roles', search_level: :project
 
         context 'when the user is not authorized' do
-          let_it_be(:project) { create(:project, :private, :repository, :in_group) }
+          before do
+            project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
+            ensure_elasticsearch_index!
+          end
 
           it 'returns no search results' do
-            search_results = subject.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
+            search_results = proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
 
             expect(search_results[:blobs][:results]).to be_empty
           end
@@ -383,7 +305,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         end
 
         it 'uses the correct elasticsearch query' do
-          subject.elastic_search('*', type: 'commit', options: search_options)
+          proxy.elastic_search('*', type: 'commit', options: search_options)
           assert_named_queries('doc:is_a:commit', 'commit:authorized:project', 'commit:match:search_terms')
         end
       end
@@ -401,7 +323,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         end
 
         it 'uses the correct elasticsearch query' do
-          subject.elastic_search('*', type: 'commit', options: search_options)
+          proxy.elastic_search('*', type: 'commit', options: search_options)
           assert_named_queries('doc:is_a:commit', 'commit:authorized:project', 'commit:match:search_terms')
         end
 
@@ -409,7 +331,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           it 'uses the correct elasticsearch query' do
             group.add_reporter(user)
 
-            subject.elastic_search('*', type: 'commit', options: search_options)
+            proxy.elastic_search('*', type: 'commit', options: search_options)
             assert_named_queries('doc:is_a:commit', 'commit:authorized:project', 'commit:match:search_terms')
           end
         end
@@ -427,7 +349,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           end
 
           it 'uses the correct elasticsearch query' do
-            subject.elastic_search('*', type: 'commit', options: search_options)
+            proxy.elastic_search('*', type: 'commit', options: search_options)
             assert_named_queries('doc:is_a:commit', 'commit:authorized:project',
               'commit:match:search_terms', 'commit:related:repositories')
           end
@@ -447,7 +369,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           end
 
           it 'returns highlight in the results' do
-            results = subject.elastic_search('Add', type: 'commit', options: search_options)
+            results = proxy.elastic_search('Add', type: 'commit', options: search_options)
             expect(results[:commits][:results].results.first.keys).to include('highlight')
           end
         end
@@ -457,7 +379,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
 
   describe '#elastic_search_as_found_blob', :aggregate_failures do
     it 'returns FoundBlob' do
-      results = subject.elastic_search_as_found_blob('def popen', options: { search_level: 'global' })
+      results = proxy.elastic_search_as_found_blob('def popen', options: { search_level: 'global' })
 
       expect(results).not_to be_empty
       expect(results).to all(be_a(Gitlab::Search::FoundBlob))
@@ -475,7 +397,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       let(:query) { 'def extension:rb path:files/ruby' }
 
       it 'returns matching results' do
-        results = subject.elastic_search_as_found_blob(query, options: { search_level: 'global' })
+        results = proxy.elastic_search_as_found_blob(query, options: { search_level: 'global' })
         paths = results.map(&:path)
 
         expect(paths).to contain_exactly('files/ruby/regex.rb',
@@ -487,7 +409,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         let(:query) { 'def extension:rb path:files' }
 
         it 'returns the same results as when the full path is used' do
-          results = subject.elastic_search_as_found_blob(query, options: { search_level: 'global' })
+          results = proxy.elastic_search_as_found_blob(query, options: { search_level: 'global' })
           paths = results.map(&:path)
 
           expect(paths).to contain_exactly('files/ruby/regex.rb',
@@ -499,7 +421,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           let(:query) { 'def extension:rb path:ruby' }
 
           it 'returns the same results as when the full path is used' do
-            results = subject.elastic_search_as_found_blob(query, options: { search_level: 'global' })
+            results = proxy.elastic_search_as_found_blob(query, options: { search_level: 'global' })
             paths = results.map(&:path)
 
             expect(paths).to contain_exactly('files/ruby/regex.rb',
@@ -525,12 +447,12 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       }
     end
 
-    before do
+    before_all do
       project.add_developer(user)
     end
 
     it 'returns aggregations' do
-      result = subject.blob_aggregations('This guide details how contribute to GitLab', options)
+      result = proxy.blob_aggregations('This guide details how contribute to GitLab', options)
 
       expect(result.first.name).to eq('language')
       expect(result.first.buckets.first[:key]).to eq('Markdown')
@@ -550,7 +472,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           order_by: nil,
           sort: nil
         }
-        subject.blob_aggregations('*', search_options)
+        proxy.blob_aggregations('*', search_options)
         assert_named_queries('doc:is_a:blob', 'blob:authorized:project',
           'blob:match:search_terms')
       end
@@ -565,7 +487,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           order_by: nil,
           sort: nil
         }
-        subject.blob_aggregations('*', group_search_options)
+        proxy.blob_aggregations('*', group_search_options)
         assert_named_queries('doc:is_a:blob', 'blob:authorized:reject_projects', 'blob:match:search_terms',
           'blob:authorized:namespace:ancestry_filter:descendants')
       end
@@ -579,7 +501,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           order_by: nil,
           sort: nil
         }
-        subject.blob_aggregations('*', project_search_options)
+        proxy.blob_aggregations('*', project_search_options)
         assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
       end
     end
@@ -592,7 +514,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         order_by: nil,
         sort: nil
       }
-      subject.blob_aggregations('*', search_options)
+      proxy.blob_aggregations('*', search_options)
       assert_named_queries('doc:is_a:blob', 'filters:permissions:global',
         'blob:match:search_terms')
     end
@@ -607,7 +529,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         order_by: nil,
         sort: nil
       }
-      subject.blob_aggregations('*', group_search_options)
+      proxy.blob_aggregations('*', group_search_options)
       assert_named_queries('doc:is_a:blob', 'filters:level:group',
         'filters:permissions:group', 'blob:match:search_terms')
     end
@@ -621,16 +543,10 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
         order_by: nil,
         sort: nil
       }
-      subject.blob_aggregations('*', project_search_options)
+      proxy.blob_aggregations('*', project_search_options)
       assert_named_queries('doc:is_a:blob', 'filters:level:project',
         'filters:permissions:project', 'blob:match:search_terms')
     end
-  end
-
-  it "names elasticsearch queries" do
-    subject.elastic_search_as_found_blob('*', options: { search_level: 'global', public_and_internal_projects: true })
-
-    assert_named_queries('doc:is_a:blob', 'blob:match:search_terms')
   end
 
   # these specs are not needed with the code behind the feature flag and will be removed with it
@@ -640,22 +556,20 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
     end
 
     context 'when backfilling migration is complete' do
-      let_it_be(:user) { create(:user) }
-
       it 'does not use the traversal_id filter when project_ids are passed' do
         expect(Namespace).not_to receive(:find)
-        subject.elastic_search_as_found_blob('*',
+        proxy.elastic_search_as_found_blob('*',
           options: { search_level: 'project', current_user: user, project_ids: [1, 2] })
       end
 
       it 'does not use the traversal_id filter when group_ids are not passed' do
         expect(Namespace).not_to receive(:find)
-        subject.elastic_search_as_found_blob('*', options: { search_level: 'global', current_user: user })
+        proxy.elastic_search_as_found_blob('*', options: { search_level: 'global', current_user: user })
       end
 
       it 'uses the traversal_id filter' do
         expect(Namespace).to receive(:find).once.and_call_original
-        subject.elastic_search_as_found_blob('*',
+        proxy.elastic_search_as_found_blob('*',
           options: { search_level: 'group', current_user: user, group_ids: [1] })
       end
     end
