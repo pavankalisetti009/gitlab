@@ -307,6 +307,44 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
     end
   end
 
+  describe '#supports_unprotection_restrictions?' do
+    subject(:supports_unprotection_restrictions) { protected_branch.supports_unprotection_restrictions? }
+
+    context 'when the `namespace_id` is nil' do
+      before do
+        protected_branch.assign_attributes(namespace_id: nil)
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(unprotection_restrictions: false)
+        end
+
+        it { is_expected.to be_falsey }
+
+        it 'does not load group without a reason' do
+          expect { subject }.not_to exceed_query_limit(0)
+        end
+      end
+
+      context 'when feature is licensed' do
+        before do
+          stub_licensed_features(unprotection_restrictions: true)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+    end
+
+    context 'when the `namespace_id` is present' do
+      before do
+        protected_branch.assign_attributes(namespace_id: 123)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '#allow_force_push' do
     context 'when is not protected from push by security policy' do
       context 'when the `allow_force_push` is true' do
