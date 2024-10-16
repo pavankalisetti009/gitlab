@@ -18,28 +18,29 @@ module EE
             return error(_('Blocked work items are not available for the current subscription tier'), 403)
           end
 
-          response =
-            if sync_related_epic_link?
-              ApplicationRecord.transaction do
-                result = super
+          result = if sync_related_epic_link?
+                     ApplicationRecord.transaction do
+                       response = super
+                       raise ::WorkItems::SyncAsEpic::SyncAsEpicError, response[:message] if response[:status] == :error
 
-                create_synced_related_epic_link! if result[:status] == :success
+                       create_synced_related_epic_link!
+                       response
+                     end
+                   else
+                     super
+                   end
 
-                result
-              end
-            else
-              super
-            end
+          if result[:status] == :success && new_links.any?
+            # Needs to be called outside of transaction
+            # because it spawns sidekiq jobs.
+            create_notes_async
+          end
 
-          # Needs to be called outside of transaction
-          # because it spawns sidekiq jobs.
-          create_notes_async if new_links.any?
-
-          response
+          result
         rescue ::WorkItems::SyncAsEpic::SyncAsEpicError => error
           ::Gitlab::ErrorTracking.track_exception(error, work_item_id: issuable.id)
 
-          error(_("Couldn't create link due to an internal error."), 422)
+          error(error.message, 422)
         end
 
         private

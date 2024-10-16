@@ -139,6 +139,26 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
           expect(synced_links.map(&:target)).to match_array([epic_a, epic_b])
         end
 
+        context 'when there is only a partial success' do
+          # Using work_item as target_issuable will let the link creation fail as it's a reference to itself.
+          let(:params) do
+            {
+              target_issuable: [work_item, another_work_item],
+              synced_work_item: synced_work_item,
+              link_type: 'blocks'
+            }
+          end
+
+          it 'does not create any links or system notes' do
+            expect(Issuable::RelatedLinksCreateWorker).not_to receive(:perform_async)
+            expect { link_items }.to not_change { Epic::RelatedEpicLink.count }
+              .and not_change { link_class.count }
+              .and not_change { Note.count }
+
+            expect(link_items[:status]).to eq(:error)
+          end
+        end
+
         it 'calls this service once' do
           allow(described_class).to receive(:new).and_call_original
           expect(described_class).to receive(:new).once
@@ -250,7 +270,7 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
 
           it 'returns an error' do
             expect(link_items)
-              .to eq({ status: :error, message: "Couldn't create link due to an internal error.", http_status: 422 })
+              .to eq({ status: :error, message: "Some error", http_status: 422 })
           end
         end
       end

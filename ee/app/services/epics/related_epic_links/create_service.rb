@@ -9,12 +9,13 @@ module Epics
         return error(issuables_no_permission_error_message, 403) unless can_admin_epic_links?
 
         ApplicationRecord.transaction do
-          result = super
+          @result = super
+          raise ActiveRecord::Rollback if @result[:status] == :error
 
-          create_synced_work_item_links! if result[:status] == :success
-
-          result
+          create_synced_work_item_links!
         end
+
+        @result
 
       rescue Epics::SyncAsWorkItem::SyncAsWorkItemError => error
         Gitlab::ErrorTracking.track_exception(error, epic_id: issuable.id)
