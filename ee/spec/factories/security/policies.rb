@@ -37,6 +37,10 @@ FactoryBot.define do
     end
     require_approval
 
+    trait :deleted do
+      policy_index { -1 }
+    end
+
     trait :require_approval do
       content { { actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] } }
     end
