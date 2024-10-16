@@ -191,6 +191,19 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
         expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
       });
 
+      it('emits a "success" event when the subscription response returns the correct content', async () => {
+        createWrapperWithApollo();
+
+        clickButton();
+
+        expect(wrapper.emitted('success')).toBeUndefined();
+
+        sendSubscriptionMessage(getAiSubscriptionResponse());
+        await waitForPromises();
+
+        expect(wrapper.emitted('success')).toHaveLength(1);
+      });
+
       it('redirects to the given URL when the subscription response returns the correct content', async () => {
         createWrapperWithApollo();
 
