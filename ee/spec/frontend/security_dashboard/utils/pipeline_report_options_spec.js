@@ -6,12 +6,9 @@ import { dataset } from '../mock_data/pipeline_report_dataset';
 describe('getPipelineReportOptions', () => {
   it('returns pipeline report options', () => {
     expect(getPipelineReportOptions(dataset)).toEqual({
-      commitPathTemplate: dataset.commitPathTemplate,
       projectFullPath: dataset.projectFullPath,
       emptyStateSvgPath: dataset.emptyStateSvgPath,
-      vulnerabilitiesEndpoint: dataset.vulnerabilitiesEndpoint,
       dashboardType: DASHBOARD_TYPES.PIPELINE,
-      projectId: 123,
       fullPath: dataset.projectFullPath,
       canAdminVulnerability: true,
       pipeline: {

@@ -1,9 +1,6 @@
 export const dataset = {
-  commitPathTemplate: 'commitPathTemplate',
   projectFullPath: '/projectFullPath',
   emptyStateSvgPath: '/emptyStateSvgPath',
-  vulnerabilitiesEndpoint: 'vulnerabilitiesEndpoint',
-  projectId: '123',
   canAdminVulnerability: 'true',
   pipelineId: '500',
   pipelineIid: '43',
