@@ -60,24 +60,6 @@ module EE
       super
     end
 
-    override :humanize
-    def humanize
-      return humanize_user if user?
-      return humanize_group if group?
-
-      super
-    end
-
-    override :check_access
-    def check_access(current_user, current_project = project)
-      super do
-        break user_access_allowed?(current_user) if user?
-        break group_access_allowed?(current_user) if group?
-
-        yield if block_given?
-      end
-    end
-
     private
 
     def humanize_user
@@ -88,21 +70,26 @@ module EE
       group&.name || 'Group'
     end
 
-    def user_access_allowed?(current_user)
-      current_user.id == user_id && project.member?(current_user)
+    # current_project is only available when evaluating a group-level protected
+    # branch. We only allow role based access levels at the group-level so we
+    # can ignore it here.
+    def user_access_allowed?(current_user, _current_project)
+      current_user.id == user_id && protected_ref_project.member?(current_user)
     end
 
-    def group_access_allowed?(current_user)
-      # For protected branches, only groups that are invited to the project
-      # can granted push and merge access. This feature does not work for groups
-      # that are ancestors of the project.
-      # See https://gitlab.com/gitlab-org/gitlab/-/issues/427486.
-      # Hence, we only consider the role of the user in the group limited by
-      # the max role of the project_group_link.
+    def group_access_allowed?(current_user, _current_project)
+      # For protected branches, only groups that are invited to the
+      # protected_ref_project can granted push and merge access. This feature
+      # does not work for groups that are ancestors of the
+      # protected_ref_project.  See
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/427486.  Hence, we only
+      # consider the role of the user in the group limited by the max role of
+      # the project_group_link.
       #
-      # We do not use the access level provided by direct membership to the project
-      # or inherited through ancestor groups of the project.
-      # See https://gitlab.com/gitlab-org/gitlab/-/issues/423835
+      # We do not use the access level provided by direct membership to the
+      # protected_ref_project or inherited through ancestor groups of the
+      # protected_ref_project.  See
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/423835
 
       return false unless group_has_developer_access_to_project?
 
@@ -119,10 +106,10 @@ module EE
 
     # We don't need to validate the license if this access applies to a role.
     #
-    # If it applies to a user/group we can only skip validation `nil`-validation
-    # if the feature is available
+    # If it applies to a user/group we can only skip validation
+    # `nil`-validation if the feature is available
     def user_or_group_assignable?
-      !role? && project&.feature_available?(:protected_refs_for_users)
+      !role? && protected_ref_project&.feature_available?(:protected_refs_for_users)
     end
 
     def user_and_group_not_assignable?
@@ -136,13 +123,13 @@ module EE
     end
 
     def validate_user_membership
-      return if project.member?(user)
+      return if protected_ref_project.member?(user)
 
       errors.add(:user, 'is not a member of the project')
     end
 
     def group_has_developer_access_to_project?
-      project.project_group_links.exists?(group: group, group_access: DEVELOPER_OWNER_ACCESS)
+      protected_ref_project.project_group_links.exists?(group: group, group_access: DEVELOPER_OWNER_ACCESS)
     end
   end
 end
