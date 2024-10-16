@@ -1574,26 +1574,6 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
 
-    context 'when user is provisioned by group' do
-      before do
-        user.user_detail.provisioned_by_group = build(:group)
-      end
-
-      it 'is false' do
-        expect(user.allow_password_authentication_for_web?).to eq false
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is true' do
-          expect(user.allow_password_authentication_for_web?).to eq true
-        end
-      end
-    end
-
     context 'when password authentication disabled by enterprise group' do
       let_it_be(:enterprise_group) { create(:group) }
       let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
@@ -1614,26 +1594,6 @@ RSpec.describe User, feature_category: :system_access do
 
       it 'is false' do
         expect(user.allow_password_authentication_for_git?).to eq false
-      end
-    end
-
-    context 'when user is provisioned by group' do
-      before do
-        user.user_detail.provisioned_by_group = build(:group)
-      end
-
-      it 'is false' do
-        expect(user.allow_password_authentication_for_git?).to eq false
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is true' do
-          expect(user.allow_password_authentication_for_git?).to eq true
-        end
       end
     end
 
@@ -1700,110 +1660,6 @@ RSpec.describe User, feature_category: :system_access do
         let_it_be(:user) { smartcard_identity.user }
 
         it_behaves_like 'password expired not applicable'
-      end
-    end
-  end
-
-  describe '#user_authorized_by_provisioning_group?' do
-    context 'when user is provisioned by group' do
-      let(:group) { build(:group) }
-
-      before do
-        user.user_detail.provisioned_by_group = group
-      end
-
-      it 'is true' do
-        expect(user.user_authorized_by_provisioning_group?).to eq true
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.user_authorized_by_provisioning_group?).to eq false
-        end
-      end
-
-      context 'with feature flag switched on for particular groups' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false when provisioned by group without feature flag' do
-          stub_feature_flags(block_password_auth_for_saml_users: create(:group))
-
-          expect(user.user_authorized_by_provisioning_group?).to eq false
-        end
-
-        it 'is true when provisioned by group with feature flag' do
-          stub_feature_flags(block_password_auth_for_saml_users: group)
-
-          expect(user.user_authorized_by_provisioning_group?).to eq true
-        end
-      end
-    end
-
-    context 'when user is not provisioned by group' do
-      it 'is false' do
-        expect(user.user_authorized_by_provisioning_group?).to eq false
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.user_authorized_by_provisioning_group?).to eq false
-        end
-      end
-    end
-  end
-
-  describe '#authorized_by_provisioning_group?' do
-    let_it_be(:group) { create(:group) }
-
-    context 'when user is provisioned by group' do
-      before do
-        user.user_detail.provisioned_by_group = group
-      end
-
-      it 'is true' do
-        expect(user.authorized_by_provisioning_group?(group)).to eq true
-      end
-
-      context 'when other group is provided' do
-        it 'is false' do
-          expect(user.authorized_by_provisioning_group?(create(:group))).to eq false
-        end
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.authorized_by_provisioning_group?(group)).to eq false
-        end
-      end
-    end
-
-    context 'when user is not provisioned by group' do
-      it 'is false' do
-        expect(user.authorized_by_provisioning_group?(group)).to eq false
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.authorized_by_provisioning_group?(group)).to eq false
-        end
       end
     end
   end
@@ -1910,44 +1766,6 @@ RSpec.describe User, feature_category: :system_access do
 
         it 'returns false' do
           expect(user.reload.enterprise_user?).to eq false
-        end
-      end
-    end
-  end
-
-  describe '#password_based_login_forbidden?' do
-    context 'when user is provisioned by group' do
-      before do
-        user.user_detail.provisioned_by_group = build(:group)
-      end
-
-      it 'is true' do
-        expect(user.password_based_login_forbidden?).to eq true
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.password_based_login_forbidden?).to eq false
-        end
-      end
-    end
-
-    context 'when user is not provisioned by group' do
-      it 'is false' do
-        expect(user.password_based_login_forbidden?).to eq false
-      end
-
-      context 'with feature flag switched off' do
-        before do
-          stub_feature_flags(block_password_auth_for_saml_users: false)
-        end
-
-        it 'is false' do
-          expect(user.password_based_login_forbidden?).to eq false
         end
       end
     end
