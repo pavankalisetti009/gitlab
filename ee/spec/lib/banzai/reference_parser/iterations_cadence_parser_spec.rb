@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Banzai::ReferenceParser::IterationsCadenceParser, feature_category: :team_planning do
+RSpec.describe Banzai::ReferenceParser::IterationsCadenceParser, feature_category: :markdown do
   include ReferenceParserHelpers
 
   def link_node(cadence_id)

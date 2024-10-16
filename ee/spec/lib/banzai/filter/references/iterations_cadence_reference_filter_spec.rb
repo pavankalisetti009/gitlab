@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Banzai::Filter::References::IterationsCadenceReferenceFilter, :aggregate_failures, feature_category: :team_planning do
+RSpec.describe Banzai::Filter::References::IterationsCadenceReferenceFilter, :aggregate_failures, feature_category: :markdown do
   include FilterSpecHelper
 
   shared_examples 'reference parsing' do
