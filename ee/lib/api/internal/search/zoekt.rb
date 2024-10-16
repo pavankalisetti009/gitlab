@@ -4,7 +4,6 @@ module API
   module Internal
     module Search
       class Zoekt < ::API::Base
-        TASK_PULL_FREQUENCY = '500ms'
         before { authenticate_by_gitlab_shell_token! }
 
         feature_category :global_search
@@ -36,11 +35,11 @@ module API
                   new_node = node.new_record?
 
                   # We don't want to register (save) the node if the feature flag is disabled
-                  if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save
+                  if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save_debounce
                     { id: node.id, truncate: new_node }.tap do |resp|
                       if Feature.enabled?(:zoekt_send_tasks)
                         resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
-                        resp[:pull_frequency] = TASK_PULL_FREQUENCY if Feature.enabled?(:zoekt_reduced_pull_frequency)
+                        resp[:pull_frequency] = node.task_pull_frequency
                       end
                     end
                   else

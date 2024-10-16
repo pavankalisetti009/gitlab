@@ -363,4 +363,83 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       expect(node).to be_watermark_exceeded_critical
     end
   end
+
+  describe '#task_pull_frequency' do
+    before do
+      node.metadata['concurrency_override'] = 1
+      node.save!
+    end
+
+    context 'when feature flag zoekt_reduced_pull_frequency is disabled' do
+      before do
+        stub_feature_flags(zoekt_reduced_pull_frequency: false)
+        create_list(:zoekt_task, 2, node: node)
+      end
+
+      it 'returns default pull frequency' do
+        expect(node.task_pull_frequency).to eq described_class::TASK_PULL_FREQUENCY_DEFAULT
+      end
+    end
+
+    context 'when pending tasks is more than the concurrency_limit of a node' do
+      before do
+        create_list(:zoekt_task, 2, node: node)
+      end
+
+      it 'returns increased pull frequency' do
+        expect(node.task_pull_frequency).to eq described_class::TASK_PULL_FREQUENCY_INCREASED
+      end
+    end
+
+    context 'when pending tasks is equal to the concurrency_limit of a node' do
+      before do
+        create(:zoekt_task, node: node)
+      end
+
+      it 'returns increased pull frequency' do
+        expect(node.task_pull_frequency).to eq described_class::TASK_PULL_FREQUENCY_INCREASED
+      end
+    end
+
+    context 'when pending tasks is less than the concurrency_limit of a node' do
+      it 'returns default pull frequency' do
+        expect(node.task_pull_frequency).to eq described_class::TASK_PULL_FREQUENCY_DEFAULT
+      end
+    end
+  end
+
+  describe '#save_debounce', :freeze_time do
+    context 'when record is persisted' do
+      context 'when difference between updated_at and current time is more than DEBOUNCE_DELAY' do
+        before do
+          node.update_column :updated_at, (described_class::DEBOUNCE_DELAY + 1.second).ago
+        end
+
+        it 'calls save' do
+          expect(node).to receive(:save)
+          node.save_debounce
+        end
+      end
+
+      context 'when difference between updated_at and current time is less than DEBOUNCE_DELAY' do
+        before do
+          node.update_column :updated_at, (described_class::DEBOUNCE_DELAY - 1.second).ago
+        end
+
+        it 'does not calls save' do
+          expect(node).not_to receive(:save)
+          node.save_debounce
+        end
+      end
+    end
+
+    context 'when record is not persisted' do
+      let(:new_node) { build(:zoekt_node) }
+
+      it 'calls save' do
+        expect(new_node).to receive(:save)
+        new_node.save_debounce
+      end
+    end
+  end
 end

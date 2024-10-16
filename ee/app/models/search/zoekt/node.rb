@@ -12,6 +12,9 @@ module Search
       WATERMARK_LIMIT_LOW = 0.6
       WATERMARK_LIMIT_HIGH = 0.7
       WATERMARK_LIMIT_CRITICAL = 0.85
+      TASK_PULL_FREQUENCY_DEFAULT = '10s'
+      TASK_PULL_FREQUENCY_INCREASED = '500ms'
+      DEBOUNCE_DELAY = 5.seconds
 
       has_many :indices,
         foreign_key: :zoekt_node_id, inverse_of: :node, class_name: '::Search::Zoekt::Index'
@@ -118,6 +121,19 @@ module Search
 
       def lost?
         last_seen_at <= LOST_DURATION_THRESHOLD.ago
+      end
+
+      def task_pull_frequency
+        return TASK_PULL_FREQUENCY_DEFAULT if Feature.disabled?(:zoekt_reduced_pull_frequency, Feature.current_request)
+        return TASK_PULL_FREQUENCY_DEFAULT if tasks.pending.limit(concurrency_limit).count < concurrency_limit
+
+        TASK_PULL_FREQUENCY_INCREASED
+      end
+
+      def save_debounce
+        return if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
+
+        save
       end
     end
   end
