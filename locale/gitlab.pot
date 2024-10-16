@@ -57258,6 +57258,9 @@ msgstr ""
 msgid "Todos|SSH key expired"
 msgstr ""
 
+msgid "Todos|SSH key expiring soon"
+msgstr ""
+
 msgid "Todos|Something went wrong. Please try again."
 msgstr ""
 
@@ -57295,6 +57298,9 @@ msgid "Todos|You're all done!"
 msgstr ""
 
 msgid "Todos|Your SSH key has expired"
+msgstr ""
+
+msgid "Todos|Your SSH key is expiring soon"
 msgstr ""
 
 msgid "Todos|Your To-Do List shows what to work on next"
