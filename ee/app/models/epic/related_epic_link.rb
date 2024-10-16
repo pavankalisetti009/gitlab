@@ -9,6 +9,8 @@ class Epic::RelatedEpicLink < ApplicationRecord
 
   belongs_to :source, class_name: 'Epic'
   belongs_to :target, class_name: 'Epic'
+  belongs_to :related_work_item_link, class_name: 'WorkItems::RelatedWorkItemLink', optional: true,
+    foreign_key: :issue_link_id, inverse_of: :related_epic_link
 
   scope :with_api_entity_associations, -> do
     preload(

@@ -6,6 +6,20 @@ RSpec.describe ::WorkItems::ParentLink, feature_category: :portfolio_management 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
+  describe 'associations' do
+    it do
+      is_expected.to have_one(:epic_issue).class_name('EpicIssue')
+        .with_foreign_key('work_item_parent_link_id')
+        .inverse_of(:work_item_parent_link)
+    end
+
+    it do
+      is_expected.to have_one(:epic).class_name('Epic')
+        .with_foreign_key('work_item_parent_link_id')
+        .inverse_of(:work_item_parent_link)
+    end
+  end
+
   describe 'validations' do
     describe 'validate_hierarchy_restrictions' do
       context 'when assigning parent from a different resource parent' do

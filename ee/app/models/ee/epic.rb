@@ -37,6 +37,7 @@ module EE
       validates :color, color: true, presence: true
 
       belongs_to :closed_by, class_name: 'User'
+      belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', inverse_of: :epic, optional: true
 
       state_machine :state_id, initial: :opened, initialize: false do
         event :close do

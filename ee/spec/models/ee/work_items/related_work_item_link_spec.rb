@@ -9,6 +9,13 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
     let_it_be(:link_class) { described_class }
   end
 
+  describe 'associations' do
+    it do
+      is_expected.to have_one(:related_epic_link).class_name('::Epic::RelatedEpicLink')
+        .with_foreign_key('issue_link_id').inverse_of(:related_work_item_link)
+    end
+  end
+
   describe 'validations' do
     describe '#validate_related_link_restrictions' do
       using RSpec::Parameterized::TableSyntax

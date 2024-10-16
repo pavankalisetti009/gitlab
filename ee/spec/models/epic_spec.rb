@@ -18,6 +18,12 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     it { is_expected.to belong_to(:group) }
     it { is_expected.to belong_to(:parent) }
     it { is_expected.to belong_to(:work_item).with_foreign_key('issue_id').inverse_of(:synced_epic) }
+
+    it do
+      is_expected.to belong_to(:work_item_parent_link).class_name('WorkItems::ParentLink')
+        .optional(true).inverse_of(:epic)
+    end
+
     it { is_expected.to have_many(:epic_issues) }
     it { is_expected.to have_many(:children) }
     it { is_expected.to have_many(:user_mentions).class_name('EpicUserMention') }
