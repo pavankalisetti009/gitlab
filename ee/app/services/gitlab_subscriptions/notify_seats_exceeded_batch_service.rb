@@ -57,11 +57,7 @@ module GitlabSubscriptions
 
       def build_owners(namespace)
         if namespace.is_a?(::Group)
-          owners_data = []
-          namespace.all_owner_members.non_invite.preload_users.each_batch do |relation|
-            owners_data.concat(relation.map { |member| owner_data(member.user, namespace) })
-          end
-          owners_data
+          namespace.map_member_user(access_level: GroupMember::OWNER) { |user| owner_data(user, namespace) }
         else
           namespace.owners.map { |owner| owner_data(owner, namespace) }
         end

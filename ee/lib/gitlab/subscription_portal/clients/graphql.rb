@@ -240,11 +240,8 @@ module Gitlab
               }
             GQL
 
-            owners_data = []
-            group.all_owner_members.non_invite.preload_users.each_batch do |members_relation|
-              members_relation.map(&:user).each do |owner|
-                owners_data << { id: owner.id, email: owner.notification_email_for(group), fullName: owner.name }
-              end
+            owners_data = group.map_member_user(access_level: GroupMember::OWNER) do |owner|
+              { id: owner.id, email: owner.notification_email_for(group), fullName: owner.name }
             end
 
             response = execute_graphql_query(
