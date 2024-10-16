@@ -2,7 +2,7 @@
 
 module CloudConnector
   class BaseAvailableServiceData
-    attr_accessor :name, :cut_off_date
+    attr_reader :name, :cut_off_date, :add_on_names
 
     def initialize(name, cut_off_date, add_on_names)
       @name = name

@@ -4,35 +4,61 @@ require 'spec_helper'
 
 RSpec.describe CloudConnector::SelfManaged::AccessDataReader, feature_category: :cloud_connector do
   describe '#read_available_services' do
-    let_it_be(:cs_cut_off_date) { Time.zone.parse("2024-02-15 00:00:00 UTC").utc }
-    let_it_be(:cs_bundled_with) { %w[duo_pro] }
-    let_it_be(:duo_chat_bundled_with) { %w[duo_pro duo_extra] }
-    let_it_be(:data) do
-      {
-        available_services: [
-          {
-            "name" => "code_suggestions",
-            "serviceStartTime" => cs_cut_off_date.to_s,
-            "bundledWith" => cs_bundled_with
-          },
-          {
-            "name" => "duo_chat",
-            "serviceStartTime" => nil,
-            "bundledWith" => duo_chat_bundled_with
-          }
-        ]
-      }
+    subject(:available_services) { described_class.new.read_available_services }
+
+    let(:service_start_time) { Time.zone.parse("2024-02-15 00:00:00 UTC") }
+
+    context 'when available_services element exists' do
+      let(:data) do
+        {
+          available_services: [
+            {
+              "name" => "duo_chat",
+              "serviceStartTime" => service_start_time,
+              "bundledWith" => %w[add_on_1 add_on_2]
+            }
+          ]
+        }
+      end
+
+      before do
+        create(:cloud_connector_access, data: data)
+      end
+
+      it 'parses the data hash into AvailableServiceData objects' do
+        expect(available_services).to match({
+          duo_chat: be_instance_of(CloudConnector::SelfManaged::AvailableServiceData)
+        })
+      end
+
+      it 'configures AvailableServiceData objects correctly' do
+        expect(available_services[:duo_chat].name).to eq(:duo_chat)
+        expect(available_services[:duo_chat].cut_off_date).to eq(Time.zone.parse("2024-02-15 00:00:00 UTC"))
+        expect(available_services[:duo_chat].add_on_names).to match_array(%w[add_on_1 add_on_2])
+      end
+
+      context 'when cut-off date is not set' do
+        let(:service_start_time) { nil }
+
+        it 'sets cut-off-date to nil' do
+          expect(available_services[:duo_chat].cut_off_date).to be_nil
+        end
+      end
     end
 
-    let_it_be(:cloud_connector_access) { create(:cloud_connector_access, data: data) }
+    context 'when available_services element does not exist' do
+      let(:data) { {} }
 
-    include_examples 'access data reader' do
-      let_it_be(:available_service_data_class) { CloudConnector::SelfManaged::AvailableServiceData }
-      let_it_be(:arguments_map) do
-        {
-          code_suggestions: [cs_cut_off_date, cs_bundled_with],
-          duo_chat: [nil, duo_chat_bundled_with]
-        }
+      it 'returns an empty hash' do
+        expect(available_services).to eq({})
+      end
+    end
+
+    context 'when available_services element is empty' do
+      let(:data) { { available_services: nil } }
+
+      it 'returns an empty hash' do
+        expect(available_services).to eq({})
       end
     end
   end
