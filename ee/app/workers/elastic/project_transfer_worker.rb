@@ -3,12 +3,12 @@
 module Elastic
   class ProjectTransferWorker
     include ApplicationWorker
+    include Search::Worker
     prepend IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed
 
-    feature_category :global_search
     idempotent!
     urgency :throttled
 

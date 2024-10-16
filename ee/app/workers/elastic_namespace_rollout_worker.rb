@@ -2,11 +2,11 @@
 
 class ElasticNamespaceRolloutWorker # rubocop:disable Scalability/IdempotentWorker
   include ApplicationWorker
+  include Search::Worker
   prepend ::Geo::SkipSecondary
 
   data_consistency :always
 
-  feature_category :global_search
   sidekiq_options retry: 2
   loggable_arguments 0, 2
 

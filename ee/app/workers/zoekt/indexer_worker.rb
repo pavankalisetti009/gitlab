@@ -11,12 +11,12 @@ module Zoekt
     REINDEXING_CHANCE_PERCENTAGE = 0.5
 
     include ApplicationWorker
+    include Search::Worker
     prepend ::Geo::SkipSecondary
 
     data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- This worker updates data
     include Gitlab::ExclusiveLeaseHelpers
 
-    feature_category :global_search
     urgency :throttled
     sidekiq_options retry: 2
     idempotent!

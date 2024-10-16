@@ -4,11 +4,11 @@ module Search
   module Zoekt
     class ProjectTransferWorker
       include ApplicationWorker
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
       pause_control :zoekt
 
-      feature_category :global_search
       idempotent!
       data_consistency :delayed
       urgency :throttled

@@ -6,13 +6,13 @@
 # Intended for full site indexing.
 class ElasticFullIndexWorker # rubocop:disable Scalability/IdempotentWorker
   include ApplicationWorker
+  include Search::Worker
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :always
 
   sidekiq_options retry: 2
-  feature_category :global_search
 
   def perform(start_id, end_id)
     return true unless Gitlab::CurrentSettings.elasticsearch_indexing?

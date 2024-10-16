@@ -4,11 +4,11 @@ module Search
   module Zoekt
     class IndexMarkedAsToDeleteEventWorker
       include Gitlab::EventStore::Subscriber
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
       BATCH_SIZE = 10_000
 
-      feature_category :global_search
       idempotent!
 
       def handle_event(event)

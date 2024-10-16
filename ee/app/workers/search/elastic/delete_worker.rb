@@ -4,12 +4,12 @@ module Search
   module Elastic
     class DeleteWorker
       include ApplicationWorker
+      include Search::Worker
       prepend ::Elastic::IndexingControl
       prepend ::Geo::SkipSecondary
 
       sidekiq_options retry: 3
       data_consistency :delayed
-      feature_category :global_search
       urgency :throttled
       idempotent!
 

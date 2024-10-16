@@ -2,12 +2,12 @@
 
 class ElasticNamespaceIndexerWorker
   include ApplicationWorker
+  include Search::Worker
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
 
-  feature_category :global_search
   worker_resource_boundary :cpu
   deduplicate :until_executed
   idempotent!

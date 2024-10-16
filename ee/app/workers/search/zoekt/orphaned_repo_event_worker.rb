@@ -4,9 +4,9 @@ module Search
   module Zoekt
     class OrphanedRepoEventWorker
       include Gitlab::EventStore::Subscriber
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      feature_category :global_search
       idempotent!
 
       def handle_event(event)

@@ -3,6 +3,7 @@
 module Search
   class ElasticGroupAssociationDeletionWorker
     include ApplicationWorker
+    include Search::Worker
     prepend ::Elastic::IndexingControl
     prepend ::Geo::SkipSecondary
 
@@ -10,7 +11,6 @@ module Search
 
     sidekiq_options retry: 3
     data_consistency :delayed
-    feature_category :global_search
     urgency :throttled
     idempotent!
 

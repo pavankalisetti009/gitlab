@@ -2,6 +2,7 @@
 
 class ElasticClusterReindexingCronWorker
   include ApplicationWorker
+  include Search::Worker
 
   data_consistency :always
   include CronjobQueue # rubocop:disable Scalability/CronWorkerContext
@@ -10,7 +11,6 @@ class ElasticClusterReindexingCronWorker
 
   sidekiq_options retry: false
 
-  feature_category :global_search
   urgency :throttled
   idempotent!
 

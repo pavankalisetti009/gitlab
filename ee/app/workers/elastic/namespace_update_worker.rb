@@ -3,11 +3,11 @@
 module Elastic
   class NamespaceUpdateWorker # rubocop:disable Scalability/IdempotentWorker
     include ApplicationWorker
+    include Search::Worker
     prepend IndexingControl
     prepend ::Geo::SkipSecondary
 
     data_consistency :sticky
-    feature_category :global_search
 
     def perform(id)
       return unless Gitlab::CurrentSettings.elasticsearch_indexing?

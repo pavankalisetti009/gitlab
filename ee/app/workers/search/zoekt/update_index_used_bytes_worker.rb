@@ -4,9 +4,9 @@ module Search
   module Zoekt
     class UpdateIndexUsedBytesWorker
       include Gitlab::EventStore::Subscriber
+      include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      feature_category :global_search
       urgency :low
       idempotent!
 

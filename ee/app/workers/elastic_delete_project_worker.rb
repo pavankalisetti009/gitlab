@@ -2,13 +2,13 @@
 
 class ElasticDeleteProjectWorker
   include ApplicationWorker
+  include Search::Worker
 
   data_consistency :always
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   sidekiq_options retry: 2
-  feature_category :global_search
   urgency :throttled
   idempotent!
 
