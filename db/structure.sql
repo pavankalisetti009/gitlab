@@ -2635,6 +2635,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_fd4a1be98713() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "container_repositories"
+  WHERE "container_repositories"."id" = NEW."container_repository_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_ff16c1fd43ea() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -9893,6 +9909,7 @@ CREATE TABLE container_repository_states (
     verification_retry_count smallint DEFAULT 0 NOT NULL,
     verification_checksum bytea,
     verification_failure text,
+    project_id bigint,
     CONSTRAINT check_c96417dbc5 CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -28735,6 +28752,8 @@ CREATE INDEX index_container_repository_states_failed_verification ON container_
 
 CREATE INDEX index_container_repository_states_needs_verification ON container_repository_states USING btree (verification_state) WHERE ((verification_state = 0) OR (verification_state = 3));
 
+CREATE INDEX index_container_repository_states_on_project_id ON container_repository_states USING btree (project_id);
+
 CREATE INDEX index_container_repository_states_on_verification_state ON container_repository_states USING btree (verification_state);
 
 CREATE INDEX index_container_repository_states_pending_verification ON container_repository_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
@@ -34023,6 +34042,8 @@ CREATE TRIGGER trigger_fbd42ed69453 BEFORE INSERT OR UPDATE ON external_status_c
 
 CREATE TRIGGER trigger_fbd8825b3057 BEFORE INSERT OR UPDATE ON boards_epic_board_labels FOR EACH ROW EXECUTE FUNCTION trigger_fbd8825b3057();
 
+CREATE TRIGGER trigger_fd4a1be98713 BEFORE INSERT OR UPDATE ON container_repository_states FOR EACH ROW EXECUTE FUNCTION trigger_fd4a1be98713();
+
 CREATE TRIGGER trigger_ff16c1fd43ea BEFORE INSERT OR UPDATE ON geo_event_log FOR EACH ROW EXECUTE FUNCTION trigger_ff16c1fd43ea();
 
 CREATE TRIGGER trigger_fff8735b6b9a BEFORE INSERT OR UPDATE ON vulnerability_finding_signatures FOR EACH ROW EXECUTE FUNCTION trigger_fff8735b6b9a();
@@ -34688,6 +34709,9 @@ ALTER TABLE ONLY ci_pipeline_chat_data
 
 ALTER TABLE ONLY cluster_agent_tokens
     ADD CONSTRAINT fk_64f741f626 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY container_repository_states
+    ADD CONSTRAINT fk_6591698505 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY import_placeholder_memberships
     ADD CONSTRAINT fk_66286fb5e6 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
