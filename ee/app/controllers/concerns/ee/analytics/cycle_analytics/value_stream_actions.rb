@@ -15,6 +15,8 @@ module EE
         end
 
         def new
+          data_attributes
+
           render :new
         end
 
@@ -24,6 +26,7 @@ module EE
 
         def edit
           value_stream
+          data_attributes
 
           render :edit
         end
@@ -69,9 +72,43 @@ module EE
 
         private
 
+        def project?
+          namespace.is_a?(::Namespaces::ProjectNamespace)
+        end
+
+        def vsa_path
+          if project?
+            namespace_project_cycle_analytics_path(
+              namespace_id: namespace.namespace.full_path,
+              project_id: namespace.path
+            )
+          else
+            group_analytics_cycle_analytics_path(namespace)
+          end
+        end
+
+        def data_attributes
+          is_edit_page = action_name == 'edit'
+
+          request_params = { namespace: namespace, current_user: current_user }
+          slice_attrs = [:default_stages, :namespace]
+
+          if is_edit_page
+            request_params[:value_stream] = value_stream
+            slice_attrs << :value_stream
+          end
+
+          # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Required by the view
+          @data_attributes = ::Gitlab::Analytics::CycleAnalytics::RequestParams.new(request_params)
+            .to_data_attributes
+            .slice(*slice_attrs)
+            .merge(vsa_path: vsa_path, is_edit_page: is_edit_page.to_s)
+          # rubocop:enable Gitlab/ModuleWithInstanceVariables
+        end
+
         def authorize
           # Special case, project-level index action is allowed without license
-          return super if action_name.eql?("index") && namespace.is_a?(::Namespaces::ProjectNamespace)
+          return super if action_name.eql?("index") && project?
 
           render_404 unless ::Gitlab::Analytics::CycleAnalytics.licensed?(namespace) &&
             ::Gitlab::Analytics::CycleAnalytics.allowed?(current_user, namespace)

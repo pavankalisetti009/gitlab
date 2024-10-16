@@ -65,7 +65,9 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
 
       it 'allows to create a custom value stream' do
         visit project_cycle_analytics_path(project)
-        click_button('New value stream')
+        find_by_testid('create-value-stream-button').click
+        wait_for_requests
+
         fill_in('Value Stream name', with: 'foo stream')
         click_button('New value stream')
         # otherwise we get the "Data is collecting and loading"

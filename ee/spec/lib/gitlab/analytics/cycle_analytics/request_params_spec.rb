@@ -72,6 +72,45 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::RequestParams, feature_categor
       end
     end
 
+    describe '#resource_paths' do
+      context 'for a group' do
+        it 'contains the paths for the namespace' do
+          paths = described_class.new(params).resource_paths
+          base_path = "/groups/#{root_group.path}/-"
+
+          expect(paths).to match(a_hash_including(
+            milestones_path: "#{base_path}/milestones.json",
+            labels_path: "#{base_path}/labels.json",
+            new_value_stream_path: "#{base_path}/analytics/value_stream_analytics/value_streams/new",
+            edit_value_stream_path: "#{base_path}/analytics/value_stream_analytics/value_streams/:id/edit"
+          ))
+        end
+      end
+
+      context 'for a project' do
+        let(:params) do
+          {
+            created_after: '2019-01-01',
+            created_before: '2019-03-01',
+            namespace: root_group_projects.first.project_namespace,
+            current_user: user
+          }
+        end
+
+        it 'contains the paths for the namespace' do
+          paths = described_class.new(params).resource_paths
+          base_path = "/#{root_group.path}/#{root_group_projects.first.path}/-"
+
+          expect(paths).to match(a_hash_including(
+            milestones_path: "#{base_path}/milestones.json",
+            labels_path: "#{base_path}/labels.json",
+            new_value_stream_path: "#{base_path}/analytics/value_stream_analytics/value_streams/new",
+            edit_value_stream_path: "#{base_path}/analytics/value_stream_analytics/value_streams/:id/edit"
+          ))
+        end
+      end
+    end
+
     describe 'optional `project_ids`' do
       context 'when `project_ids` is not empty' do
         def json_project(project)
