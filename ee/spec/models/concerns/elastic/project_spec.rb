@@ -211,19 +211,6 @@ RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_sear
       expect(project.__elasticsearch__.as_indexed_json).to eq(expected_hash)
     end
 
-    context 'when add_count_fields_to_projects is not finished' do
-      before do
-        set_elasticsearch_migration_to(:add_count_fields_to_projects, including: false)
-      end
-
-      it 'does not include the ci_catalog field' do
-        as_indexed_json = project.__elasticsearch__.as_indexed_json
-
-        expect(as_indexed_json).not_to have_key('star_count')
-        expect(as_indexed_json).not_to have_key('last_repository_updated_date')
-      end
-    end
-
     context 'when add_fields_to_projects_index is not finished' do
       before do
         set_elasticsearch_migration_to(:add_fields_to_projects_index, including: false)

@@ -72,19 +72,6 @@ RSpec.describe Elastic::Latest::ProjectInstanceProxy, :elastic_helpers, feature_
         expect(result.keys).not_to include(:repository_languages)
       end
     end
-
-    context 'when add_count_fields_to_projects migration is not completed' do
-      before do
-        set_elasticsearch_migration_to(:add_count_fields_to_projects, including: false)
-      end
-
-      it 'does not include the gated fields' do
-        result = proxy.as_indexed_json.with_indifferent_access
-
-        expect(result.keys).not_to include(:star_count)
-        expect(result.keys).not_to include(:last_repository_updated_date)
-      end
-    end
   end
 
   describe '#es_parent' do

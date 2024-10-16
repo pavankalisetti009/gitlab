@@ -32,7 +32,8 @@ module Elastic
           :visibility_level,
           :last_activity_at,
           :name_with_namespace,
-          :path_with_namespace
+          :path_with_namespace,
+          :star_count
         ].each do |attr|
           data[attr.to_s] = safely_read_attribute_for_elasticsearch(attr)
         end
@@ -48,6 +49,8 @@ module Elastic
 
         data['ci_catalog'] = target.catalog_resource.present?
 
+        data['last_repository_updated_date'] = target.last_repository_updated_at
+
         if ::Elastic::DataMigrationService.migration_has_finished?(:add_fields_to_projects_index)
           data['mirror'] = target.mirror?
           data['forked'] = target.forked? || false
@@ -55,26 +58,12 @@ module Elastic
           data['repository_languages'] = target.repository_languages.map(&:name)
         end
 
-        data.merge!(add_count_fields(target))
-
         data
       end
 
       override :es_parent
       def es_parent
         "n_#{target.root_ancestor.id}"
-      end
-
-      private
-
-      def add_count_fields(target)
-        data = {}
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_count_fields_to_projects)
-          data['star_count'] = target.star_count
-          data['last_repository_updated_date'] = target.last_repository_updated_at
-        end
-
-        data
       end
     end
   end
