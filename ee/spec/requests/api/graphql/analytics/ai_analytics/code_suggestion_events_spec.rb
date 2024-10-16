@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house, feature_category: :duo_chat do
+RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house, feature_category: :code_suggestions do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group, name: 'my-group') }
@@ -21,6 +21,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         user {
           id
         }
+        id
         event
         language
         suggestionSize
@@ -41,7 +42,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
   let_it_be(:code_suggestion_event_1) { create(:code_suggestion_event, :shown, user: user_1) }
   let_it_be(:code_suggestion_event_2) { create(:code_suggestion_event, :accepted, user: user_1) }
   let_it_be(:code_suggestion_event_3) { create(:code_suggestion_event, :accepted, user: user_2) }
-  let_it_be(:code_suggestion_event_4) { create(:code_suggestion_event, :rejected, user: user_3) }
+  let_it_be(:code_suggestion_event_4) { create(:code_suggestion_event, :accepted, user: user_3) }
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
@@ -75,11 +76,11 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       it 'returns code suggestion events from contributors' do
         post_graphql(query, current_user: current_user)
 
-        user_ids =
-          code_suggestion_events.map { |event| event['user']['id'] }.uniq
+        event_ids = code_suggestion_events.pluck('id')
 
         expect(code_suggestion_events.count).to eq(3)
-        expect(user_ids).to match_array([user_1.to_global_id.to_s, user_2.to_global_id.to_s])
+        expect(event_ids).to match_array([code_suggestion_event_1.to_global_id.to_s,
+          code_suggestion_event_2.to_global_id.to_s, code_suggestion_event_3.to_global_id.to_s])
       end
     end
   end

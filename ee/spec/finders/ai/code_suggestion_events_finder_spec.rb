@@ -53,11 +53,17 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
 
       shared_examples 'fetch code suggestion events' do
         it 'returns correct results' do
+          if Gitlab::ClickHouse.enabled_for_analytics?
+            expect(ClickHouse::Client).to receive(:select).and_call_original
+          else
+            expect(ClickHouse::Client).not_to receive(:select)
+          end
+
           expect(results).to match_array(expected_suggestion_events)
         end
       end
 
-      context 'when CH is enabled', :click_house do
+      context 'and CH is enabled', :click_house do
         before do
           allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
           insert_events_into_click_house
@@ -70,7 +76,7 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
         end
       end
 
-      context 'when CH is disabled' do
+      context 'and CH is disabled' do
         it_behaves_like 'fetch code suggestion events' do
           let(:expected_suggestion_events) do
             [code_suggestion_event_1, code_suggestion_event_2]

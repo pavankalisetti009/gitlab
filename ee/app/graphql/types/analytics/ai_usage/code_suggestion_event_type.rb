@@ -7,6 +7,9 @@ module Types
       class CodeSuggestionEventType < BaseObject
         graphql_name 'CodeSuggestionEvent'
 
+        field :id, GraphQL::Types::ID,
+          null: false, description: "ID of the code suggestion event."
+
         field :timestamp,
           Types::TimeType,
           null: false,
