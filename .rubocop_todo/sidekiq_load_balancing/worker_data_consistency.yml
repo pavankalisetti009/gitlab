@@ -2,7 +2,6 @@
 SidekiqLoadBalancing/WorkerDataConsistency:
   Exclude:
     - 'app/workers/admin_email_worker.rb'
-    - 'app/workers/approve_blocked_pending_approval_users_worker.rb'
     - 'app/workers/authorized_keys_worker.rb'
     - 'app/workers/authorized_project_update/periodic_recalculate_worker.rb'
     - 'app/workers/authorized_project_update/project_recalculate_worker.rb'
@@ -218,7 +217,6 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/propagate_integration_inherit_worker.rb'
     - 'app/workers/propagate_integration_project_worker.rb'
     - 'app/workers/propagate_integration_worker.rb'
-    - 'app/workers/prune_old_events_worker.rb'
     - 'app/workers/purge_dependency_proxy_cache_worker.rb'
     - 'app/workers/rebase_worker.rb'
     - 'app/workers/releases/create_evidence_worker.rb'
@@ -265,10 +263,7 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/update_merge_requests_worker.rb'
     - 'app/workers/update_project_statistics_worker.rb'
     - 'app/workers/upload_checksum_worker.rb'
-    - 'app/workers/user_status_cleanup/batch_worker.rb'
-    - 'app/workers/users/create_statistics_worker.rb'
     - 'app/workers/users/deactivate_dormant_users_worker.rb'
-    - 'app/workers/users/migrate_records_to_ghost_user_in_batches_worker.rb'
     - 'app/workers/wait_for_cluster_creation_worker.rb'
     - 'app/workers/web_hooks/log_destroy_worker.rb'
     - 'app/workers/web_hooks/log_execution_worker.rb'
