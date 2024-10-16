@@ -2,6 +2,7 @@ import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { createAlert } from '~/alert';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import App from 'ee/security_orchestration/components/policies/app.vue';
@@ -39,6 +40,8 @@ import {
   mockScanResultPoliciesResponse,
   mockProjectScanResultPolicy,
 } from '../../mocks/mock_scan_result_policy_data';
+
+jest.mock('~/alert');
 
 const projectScanExecutionPoliciesSpy = projectScanExecutionPolicies(
   mockScanExecutionPoliciesResponse,
@@ -176,6 +179,33 @@ describe('App', () => {
     await nextTick();
 
     expect(findPoliciesList().props('hasPolicyProject')).toBe(true);
+  });
+
+  describe('network errors', () => {
+    beforeEach(async () => {
+      const errorHandlers = Object.keys(defaultRequestHandlers).reduce((acc, curr) => {
+        acc[curr] = jest.fn().mockRejectedValue();
+        return acc;
+      }, {});
+      createWrapper({ handlers: errorHandlers });
+      await waitForPromises();
+    });
+
+    it('shows an alert', () => {
+      expect(createAlert).toHaveBeenCalledTimes(4);
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Something went wrong, unable to fetch policies',
+      });
+    });
+
+    it('uses an empty array as the default value', () => {
+      expect(findPoliciesList().props()).toEqual(
+        expect.objectContaining({
+          linkedSppItems: [],
+          policiesByType: { APPROVAL: [], PIPELINE_EXECUTION: [], SCAN_EXECUTION: [] },
+        }),
+      );
+    });
   });
 
   describe('group-level policies', () => {
