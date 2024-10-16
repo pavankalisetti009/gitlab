@@ -263,34 +263,29 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
     end
 
     context 'for issues scope' do
-      [:work_item, :issue].each do |document_type|
-        context "when we have document_type as #{document_type}" do
-          before do
-            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-            create_list(:issue, 2, project: project)
-            ensure_elasticsearch_index!
-          end
-
-          it 'avoids N+1 queries', :use_sql_query_cache do
-            control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-              get api(endpoint, user), params: { scope: 'issues', search: '*' }
-            end
-
-            create_list(:issue, 2, project: project)
-            create_list(:issue, 2, project: create(:project, group: group))
-            create_list(:issue, 2)
-
-            ensure_elasticsearch_index!
-
-            expect do
-              get api(endpoint, user), params: { scope: 'issues', search: '*' }
-            end.not_to exceed_query_limit(control)
-          end
-
-          it_behaves_like 'pagination', scope: 'issues'
-          it_behaves_like 'orderable by created_at', scope: 'issues'
-        end
+      before do
+        create_list(:issue, 2, project: project)
+        ensure_elasticsearch_index!
       end
+
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          get api(endpoint, user), params: { scope: 'issues', search: '*' }
+        end
+
+        create_list(:issue, 2, project: project)
+        create_list(:issue, 2, project: create(:project, group: group))
+        create_list(:issue, 2)
+
+        ensure_elasticsearch_index!
+
+        expect do
+          get api(endpoint, user), params: { scope: 'issues', search: '*' }
+        end.not_to exceed_query_limit(control)
+      end
+
+      it_behaves_like 'pagination', scope: 'issues'
+      it_behaves_like 'orderable by created_at', scope: 'issues'
     end
 
     unless level == :project

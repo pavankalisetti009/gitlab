@@ -442,27 +442,21 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     context 'for issues' do
       let(:scope) { 'issues' }
 
-      [:work_item, :issue].each do |document_type|
-        context "when we have document_type as #{document_type}" do
-          let_it_be(:issue) { create(document_type, project: project) }
-          let_it_be(:issue2) { create(document_type, project: project2, title: issue.title) }
-          let(:search) { issue.title }
+      let_it_be(:work_item) { create(:work_item, project: project) }
+      let_it_be(:work_item2) { create(:work_item, project: project2, title: work_item.title) }
+      let(:search) { work_item.title }
 
-          where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-            permission_table_for_guest_feature_access
-          end
+      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_guest_feature_access
+      end
 
-          with_them do
-            before do
-              stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-
-              Elastic::ProcessInitialBookkeepingService.track!(issue, issue2)
-              ensure_elasticsearch_index!
-            end
-
-            it_behaves_like 'search respects visibility'
-          end
+      with_them do
+        before do
+          Elastic::ProcessInitialBookkeepingService.track!(work_item, work_item2)
+          ensure_elasticsearch_index!
         end
+
+        it_behaves_like 'search respects visibility'
       end
     end
 
@@ -529,35 +523,29 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     context 'for issues' do
       let_it_be(:project) { create(:project, :public, group: group) }
 
-      let_it_be(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
-      let_it_be(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
+      let_it_be(:old_result) { create(:work_item, project: project, title: 'sorted old', created_at: 1.month.ago) }
+      let_it_be(:new_result) { create(:work_item, project: project, title: 'sorted recent', created_at: 1.day.ago) }
       let_it_be(:very_old_result) do
-        create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago)
+        create(:work_item, project: project, title: 'sorted very old', created_at: 1.year.ago)
       end
 
-      let_it_be(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
-      let_it_be(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
+      let_it_be(:old_updated) { create(:work_item, project: project, title: 'updated old', updated_at: 1.month.ago) }
+      let_it_be(:new_updated) { create(:work_item, project: project, title: 'updated recent', updated_at: 1.day.ago) }
       let_it_be(:very_old_updated) do
-        create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago)
+        create(:work_item, project: project, title: 'updated very old', updated_at: 1.year.ago)
       end
 
       let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
       let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
 
-      [:work_item, :issue].each do |document_type|
-        context "when we have document_type as #{document_type}" do
-          let(:scope) { 'issues' }
+      let(:scope) { 'issues' }
 
-          before do
-            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
-
-            Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
-            ensure_elasticsearch_index!
-          end
-
-          include_examples 'search results sorted'
-        end
+      before do
+        Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+        ensure_elasticsearch_index!
       end
+
+      include_examples 'search results sorted'
     end
 
     context 'for merge requests' do
