@@ -1,16 +1,16 @@
 <script>
-import ModelCreate from '../components/model_create.vue';
+import ModelVersionCreate from '../components/model_version_create.vue';
 
 export default {
-  name: 'NewMlModel',
+  name: 'NewMlModelVersion',
   components: {
-    ModelCreate,
+    ModelVersionCreate,
   },
   provide() {
     return {
-      projectPath: this.projectPath,
       maxAllowedFileSize: this.maxAllowedFileSize,
-      markdownPreviewPath: this.markdownPreviewPath,
+      latestVersion: this.latestVersion,
+      modelGid: this.modelGid,
     };
   },
   props: {
@@ -31,10 +31,23 @@ export default {
       type: String,
       required: true,
     },
+    latestVersion: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    modelGid: {
+      type: String,
+      required: true,
+    },
   },
 };
 </script>
 
 <template>
-  <model-create v-if="canWriteModelRegistry" />
+  <model-version-create
+    v-if="canWriteModelRegistry"
+    :project-path="projectPath"
+    :markdown-preview-path="markdownPreviewPath"
+  />
 </template>
