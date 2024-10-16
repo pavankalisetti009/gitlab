@@ -280,7 +280,7 @@ module EE
       actors << self if root_ancestor != self
 
       actors.any? do |actor|
-        ::Feature.enabled?(:epic_and_work_item_associations_unification, actor, type: :wip)
+        ::Feature.enabled?(:epic_and_work_item_associations_unification, actor, type: :beta)
       end
     end
 
