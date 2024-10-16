@@ -4,7 +4,14 @@ module EE
   module Projects
     module CycleAnalyticsController
       include ::Gitlab::Utils::StrongMemoize
+      extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
+
+      prepended do
+        before_action do
+          push_frontend_feature_flag(:vsa_standalone_settings_page, project.namespace)
+        end
+      end
 
       override :value_stream
       def value_stream

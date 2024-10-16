@@ -36,17 +36,32 @@ module EE
           override :resource_paths
           def resource_paths
             paths = super
-            return paths unless group.present?
 
-            paths.merge({
-              milestones_path: url_helpers.group_milestones_path(group, format: :json),
-              labels_path: url_helpers.group_labels_path(group, format: :json),
-              new_value_stream_path: url_helpers.new_group_analytics_cycle_analytics_value_stream_path(group),
-              edit_value_stream_path: url_helpers.edit_group_analytics_cycle_analytics_value_stream_path(
-                group,
-                ':id'
-              )
-            })
+            if group.present?
+              paths.merge({
+                milestones_path: url_helpers.group_milestones_path(group, format: :json),
+                labels_path: url_helpers.group_labels_path(group, format: :json),
+                new_value_stream_path: url_helpers.new_group_analytics_cycle_analytics_value_stream_path(group),
+                edit_value_stream_path: url_helpers.edit_group_analytics_cycle_analytics_value_stream_path(
+                  group,
+                  ':id'
+                )
+              })
+            elsif project.present?
+              paths.merge({
+                new_value_stream_path: url_helpers.new_namespace_project_analytics_cycle_analytics_value_stream_path(
+                  project.namespace.full_path,
+                  project.path
+                ),
+                edit_value_stream_path: url_helpers.edit_namespace_project_analytics_cycle_analytics_value_stream_path(
+                  project.namespace.full_path,
+                  project.path,
+                  ':id'
+                )
+              })
+            else
+              paths
+            end
           end
 
           private

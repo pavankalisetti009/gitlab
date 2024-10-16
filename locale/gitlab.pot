@@ -60199,7 +60199,7 @@ msgstr ""
 msgid "ValueStreamAnalytics|Dashboard"
 msgstr ""
 
-msgid "ValueStreamAnalytics|Edit Value Stream: %{name}"
+msgid "ValueStreamAnalytics|Edit value stream: %{name}"
 msgstr ""
 
 msgid "ValueStreamAnalytics|Failed to load usage overview data"
@@ -60232,7 +60232,7 @@ msgstr ""
 msgid "ValueStreamAnalytics|Merge request analytics"
 msgstr ""
 
-msgid "ValueStreamAnalytics|New Value Stream"
+msgid "ValueStreamAnalytics|New value stream"
 msgstr ""
 
 msgid "ValueStreamAnalytics|Number of commits pushed to the default branch"
