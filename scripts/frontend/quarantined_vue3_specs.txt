@@ -19,7 +19,6 @@ ee/spec/frontend/analytics/dashboards/ai_impact/components/metric_table_spec.js
 ee/spec/frontend/analytics/devops_reports/devops_adoption/components/devops_adoption_app_spec.js
 ee/spec/frontend/analytics/devops_reports/devops_adoption/components/devops_adoption_overview_spec.js
 ee/spec/frontend/analytics/devops_reports/devops_adoption/components/devops_adoption_overview_table_spec.js
-ee/spec/frontend/analytics/devops_reports/devops_adoption/components/devops_adoption_table_spec.js
 ee/spec/frontend/analytics/group_ci_cd_analytics/components/release_stats_card_spec.js
 ee/spec/frontend/analytics/merge_request_analytics/components/filter_bar_spec.js
 ee/spec/frontend/analytics/merge_request_analytics/components/throughput_chart_spec.js
@@ -57,7 +56,6 @@ ee/spec/frontend/compliance_dashboard/components/frameworks_report/report_spec.j
 ee/spec/frontend/compliance_dashboard/components/projects_report/report_spec.js
 ee/spec/frontend/compliance_dashboard/components/standards_adherence_report/base_table_spec.js
 ee/spec/frontend/compliance_dashboard/components/standards_adherence_report/standards_adherence_table_spec.js
-ee/spec/frontend/contextual_sidebar/components/duo_pro_trial_status_widget_spec.js
 ee/spec/frontend/contextual_sidebar/components/trial_status_widget_spec.js
 ee/spec/frontend/dependencies/components/app_spec.js
 ee/spec/frontend/dependencies/components/dependency_location_spec.js
@@ -66,7 +64,6 @@ ee/spec/frontend/dependencies/components/filtered_search/tokens/component_token_
 ee/spec/frontend/dependencies/components/filtered_search/tokens/license_token_spec.js
 ee/spec/frontend/dependencies/components/filtered_search/tokens/package_manager_token_spec.js
 ee/spec/frontend/dependencies/components/filtered_search/tokens/project_token_spec.js
-ee/spec/frontend/dora/components/deployment_frequency_charts_spec.js
 ee/spec/frontend/environments_dashboard/components/project_header_spec.js
 ee/spec/frontend/external_issues_list/components/external_issues_list_root_spec.js
 ee/spec/frontend/geo_sites/components/details/secondary_site/geo_site_replication_details_responsive_spec.js
@@ -125,6 +122,7 @@ ee/spec/frontend/security_configuration/dast_pre_scan_verification/components/pr
 ee/spec/frontend/security_configuration/dast_profiles/components/dast_profiles_list_spec.js
 ee/spec/frontend/security_configuration/dast_profiles/dast_scanner_profiles_form/components/dast_scanner_profiles_form_spec.js
 ee/spec/frontend/security_dashboard/components/project/security_scanner_alert_spec.js
+ee/spec/frontend/security_dashboard/components/shared/empty_states/dashboard_has_no_vulnerabilities_spec.js
 ee/spec/frontend/security_dashboard/components/shared/filtered_search/tokens/activity_token_spec.js
 ee/spec/frontend/security_dashboard/components/shared/filtered_search/tokens/cluster_token_spec.js
 ee/spec/frontend/security_dashboard/components/shared/filtered_search/tokens/severity_token_spec.js
@@ -183,8 +181,6 @@ ee/spec/frontend/vulnerabilities/generic_report/types/list_graphql_spec.js
 ee/spec/frontend/vulnerabilities/related_issues_spec.js
 ee/spec/frontend/vulnerabilities/vulnerability_file_content_viewer_spec.js
 ee/spec/frontend/vulnerabilities/vulnerability_file_contents_spec.js
-ee/spec/frontend/work_items/components/work_item_attributes_wrapper_spec.js
-ee/spec/frontend/work_items/components/work_item_labels_spec.js
 ee/spec/frontend/workspaces/common/components/workspaces_list/workspaces_table_spec.js
 ee/spec/frontend/workspaces/user/init_user_workspaces_app_spec.js
 ee/spec/frontend/workspaces/user/router/index_spec.js
@@ -235,7 +231,6 @@ spec/frontend/ci/pipeline_editor/components/job_assistant_drawer/accordion_items
 spec/frontend/ci/pipeline_editor/components/lint/ci_lint_warnings_spec.js
 spec/frontend/ci/pipeline_editor/components/pipeline_editor_tabs_spec.js
 spec/frontend/ci/pipeline_editor/pipeline_editor_app_spec.js
-spec/frontend/ci/pipeline_mini_graph/legacy_pipeline_mini_graph/legacy_linked_pipelines_mini_list_spec.js
 spec/frontend/ci/pipeline_mini_graph/legacy_pipeline_mini_graph/legacy_pipeline_stage_spec.js
 spec/frontend/ci/pipeline_mini_graph/pipeline_mini_graph_spec.js
 spec/frontend/ci/pipelines_page/components/pipeline_multi_actions_spec.js
@@ -252,7 +247,6 @@ spec/frontend/ci/runner/components/runner_managers_detail_spec.js
 spec/frontend/ci/runner/components/runner_managers_table_spec.js
 spec/frontend/ci/runner/components/runner_platforms_radio_spec.js
 spec/frontend/ci/runner/components/runner_tags_spec.js
-spec/frontend/ci/runner/components/runner_type_tabs_spec.js
 spec/frontend/ci/runner/components/stat/runner_stats_spec.js
 spec/frontend/ci/runner/group_runner_show/group_runner_show_app_spec.js
 spec/frontend/ci/runner/group_runners/group_runners_app_spec.js
@@ -264,7 +258,6 @@ spec/frontend/clusters/components/new_cluster_spec.js
 spec/frontend/clusters_list/components/delete_agent_button_spec.js
 spec/frontend/comment_templates/components/list_item_spec.js
 spec/frontend/content_editor/components/bubble_menus/media_bubble_menu_spec.js
-spec/frontend/content_editor/components/content_editor_spec.js
 spec/frontend/content_editor/components/toolbar_button_spec.js
 spec/frontend/content_editor/components/wrappers/code_block_spec.js
 spec/frontend/content_editor/components/wrappers/html_comment_spec.js
@@ -436,7 +429,6 @@ spec/frontend/snippets/components/snippet_header_spec.js
 spec/frontend/super_sidebar/components/flyout_menu_spec.js
 spec/frontend/super_sidebar/components/global_search/components/frequent_items_spec.js
 spec/frontend/super_sidebar/components/nav_item_router_link_spec.js
-spec/frontend/super_sidebar/components/nav_item_spec.js
 spec/frontend/super_sidebar/components/organization_switcher_spec.js
 spec/frontend/super_sidebar/components/sidebar_hover_peek_behavior_spec.js
 spec/frontend/super_sidebar/components/sidebar_peek_behavior_spec.js
@@ -475,7 +467,6 @@ spec/frontend/vue_shared/components/filtered_search_bar/tokens/date_token_spec.j
 spec/frontend/vue_shared/components/filtered_search_bar/tokens/user_token_spec.js
 spec/frontend/vue_shared/components/gl_modal_vuex_spec.js
 spec/frontend/vue_shared/components/list_selector/group_item_spec.js
-spec/frontend/vue_shared/components/list_selector/project_item_spec.js
 spec/frontend/vue_shared/components/list_selector/user_item_spec.js
 spec/frontend/vue_shared/components/markdown/header_spec.js
 spec/frontend/vue_shared/components/markdown/markdown_editor_spec.js
@@ -484,7 +475,6 @@ spec/frontend/vue_shared/components/markdown_drawer/markdown_drawer_spec.js
 spec/frontend/vue_shared/components/metric_images/metric_image_details_modal_spec.js
 spec/frontend/vue_shared/components/notes/noteable_warning_spec.js
 spec/frontend/vue_shared/components/page_heading_spec.js
-spec/frontend/vue_shared/components/paginated_list_spec.js
 spec/frontend/vue_shared/components/paginated_table_with_search_and_tabs/paginated_table_with_search_and_tabs_spec.js
 spec/frontend/vue_shared/components/project_selector/project_selector_spec.js
 spec/frontend/vue_shared/components/registry/registry_search_spec.js
@@ -503,11 +493,5 @@ spec/frontend/vue_shared/issuable/sidebar/components/issuable_sidebar_root_spec.
 spec/frontend/webhooks/components/form_custom_headers_spec.js
 spec/frontend/webhooks/components/form_url_app_spec.js
 spec/frontend/work_items/components/design_management/design_preview/design_overlay_spec.js
-spec/frontend/work_items/components/notes/work_item_note_spec.js
-spec/frontend/work_items/components/shared/todos_toggle_spec.js
 spec/frontend/work_items/components/work_item_description_rendered_spec.js
-spec/frontend/work_items/components/work_item_detail_modal_spec.js
-spec/frontend/work_items/components/work_item_development/work_item_development_ff_item_spec.js
-spec/frontend/work_items/components/work_item_drawer_spec.js
-spec/frontend/work_items/components/work_item_time_tracking_spec.js
 spec/frontend/work_items/router_spec.js
