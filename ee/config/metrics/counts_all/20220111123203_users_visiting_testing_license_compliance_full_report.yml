@@ -1,7 +1,7 @@
 data_category: optional
 key_path: counts.users_visiting_testing_license_compliance_full_report
 description: Total number of clicks on testing_license_compliance_full_report button
-product_group: static_analysis
+product_group: composition_analysis
 value_type: number
 status: removed
 removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/152166
