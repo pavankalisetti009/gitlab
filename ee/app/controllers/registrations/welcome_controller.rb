@@ -57,19 +57,16 @@ module Registrations
       # There likely isn't any perf impact, but should we look to memoize in a
       # future step in https://gitlab.com/gitlab-org/gitlab/-/issues/465532?
       params.require(:user)
-            .permit(:role, :setup_for_company, :registration_objective, :onboarding_status_email_opt_in)
-            .merge(onboarding_status_params)
+            .permit(:role, :setup_for_company, :registration_objective)
+            .merge(user_onboarding_status_params)
     end
 
-    def onboarding_status_params
-      status_params = { onboarding_status_email_opt_in: parsed_opt_in }
-
-      return status_params unless onboarding_status.convert_to_automatic_trial?
+    def user_onboarding_status_params
+      return {} unless onboarding_status.convert_to_automatic_trial?
 
       # Now we are in automatic trial and we'll update our status as such, initial_registration_type
       # will be how we know if they weren't a trial originally from here on out.
-      status_params
-        .merge(onboarding_status_registration_type: ::Onboarding::REGISTRATION_TYPE[:trial])
+      { onboarding_status_registration_type: ::Onboarding::REGISTRATION_TYPE[:trial] }
     end
 
     def passed_through_params
@@ -123,16 +120,6 @@ module Registrations
       else
         Onboarding::StatusStepUpdateService.new(current_user, new_users_sign_up_group_path).execute[:step_url]
       end
-    end
-
-    def parsed_opt_in
-      # order matters here registration types are treated differently
-      return false if onboarding_status.pre_parsed_email_opt_in?
-      # The below would override DOM setting, but DOM is interwoven with JS to hide the opt in checkbox if
-      # setup for company is toggled, so this is where this is a bit complex to think about
-      return true if onboarding_status.setup_for_company?
-
-      ::Gitlab::Utils.to_boolean(params.dig(:user, :onboarding_status_email_opt_in), default: false)
     end
 
     def track_joining_a_project_event

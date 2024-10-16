@@ -23,8 +23,7 @@ module EE
       delegate :setup_for_company_help_text, to: :registration_type
       # predicate delegations
       delegate :redirect_to_company_form?, :eligible_for_iterable_trigger?, to: :registration_type
-      delegate :show_opt_in_to_email?, :show_joining_project?, :apply_trial?, to: :registration_type
-      delegate :hide_setup_for_company_field?, :pre_parsed_email_opt_in?, to: :registration_type
+      delegate :show_joining_project?, :apply_trial?, :hide_setup_for_company_field?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
 
       module ClassMethods
@@ -70,6 +69,10 @@ module EE
         ::Gitlab::Utils.to_boolean(params[:joining_project], default: false)
       end
 
+      def email_opt_in?
+        ::Gitlab::Utils.to_boolean(params.dig(:user, :onboarding_status_email_opt_in), default: true)
+      end
+
       def convert_to_automatic_trial?
         return false unless registration_type.convert_to_automatic_trial?
 
@@ -112,7 +115,9 @@ module EE
         return super unless ::Onboarding.enabled?
 
         # We don't have controller params here, so we need to slice instead of permit
-        super.merge(params.slice(*GLM_PARAMS)) # rubocop:disable Rails/StrongParams -- false positive due to unique placement of this class in the controller area
+        super
+          .merge(params.slice(*GLM_PARAMS)) # rubocop:disable Rails/StrongParams -- false positive due to unique placement of this class in the controller area
+          .merge(onboarding_status_email_opt_in: email_opt_in?)
       end
 
       def trial_registration_omniauth_params

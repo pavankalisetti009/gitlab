@@ -58,7 +58,7 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
         controller.params.merge(glm_content: '_glm_content_', glm_source: '_glm_source_')
       end
 
-      let(:action_params) { 'glm_content=_glm_content_&glm_source=_glm_source_' }
+      let(:action_params) { 'glm_content=_glm_content_&glm_source=_glm_source_&onboarding_status_email_opt_in=true' }
 
       before do
         stub_saas_features(onboarding: true)

@@ -352,7 +352,6 @@ module SaasRegistrationHelpers
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using this GitLab subscription?')
       expect(page).to have_content('What would you like to do?')
-      expect(page).not_to have_content(_("I'd like to receive updates about GitLab via email"))
     end
   end
 

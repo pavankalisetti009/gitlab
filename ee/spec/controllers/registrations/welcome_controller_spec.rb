@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Registrations::WelcomeController, feature_category: :onboarding do
-  let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
+  let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true, onboarding_status_email_opt_in: false) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project) }
 
@@ -260,7 +260,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               {
                 comment: '_jobs_to_be_done_other_',
                 jtbd: 'code_storage',
-                opt_in: false,
+                opt_in: user.onboarding_status_email_opt_in,
                 preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
                 product_interaction: 'Personal SaaS Registration',
                 provider: 'gitlab',
@@ -299,65 +299,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             end
           end
 
-          context 'for email opt_in' do
-            using RSpec::Parameterized::TableSyntax
-
-            let(:pre_parsed_email_opt_in?) { true }
-            let(:setup_for_company?) { false }
-
-            before do
-              allow_next_instance_of(::Onboarding::Status) do |instance|
-                allow(instance).to receive(:pre_parsed_email_opt_in?).and_return(pre_parsed_email_opt_in?)
-                allow(instance).to receive(:setup_for_company?).and_return(setup_for_company?)
-              end
-            end
-
-            where(:extra_user_params, :opt_in) do
-              { onboarding_status_email_opt_in: 'true' }  | true
-              { onboarding_status_email_opt_in: 'false' } | false
-              { onboarding_status_email_opt_in: nil }     | false
-              { onboarding_status_email_opt_in: '1' }     | true
-              { onboarding_status_email_opt_in: '0' }     | false
-              { onboarding_status_email_opt_in: '' }      | false
-              {}                                          | false
-            end
-
-            with_them do
-              context 'for pre-parsing the email opt in' do
-                specify do
-                  patch_update
-                  user.reset
-
-                  expect(user.onboarding_status_email_opt_in).to eq(false)
-                end
-              end
-
-              context 'for not pre-parsing the email opt in' do
-                let(:pre_parsed_email_opt_in?) { false }
-
-                context 'when setup_for_company is true' do
-                  let(:setup_for_company?) { true }
-
-                  specify do
-                    patch_update
-                    user.reset
-
-                    expect(user.onboarding_status_email_opt_in).to eq(true)
-                  end
-                end
-
-                context 'when setup_for_company is false' do
-                  specify do
-                    patch_update
-                    user.reset
-
-                    expect(user.onboarding_status_email_opt_in).to eq(opt_in)
-                  end
-                end
-              end
-            end
-          end
-
           context 'when setup_for_company is "true"' do
             let(:setup_for_company) { 'true' }
             let(:trial_concerns) { {} }
@@ -385,7 +326,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
                 expect(user.onboarding_in_progress).to be(true)
                 expect(user.onboarding_status_step_url).to eq(redirect_path)
-                expect(user.onboarding_status_email_opt_in).to eq(true)
                 expect(user.onboarding_status_registration_type)
                   .to eq(::Onboarding::REGISTRATION_TYPE[:trial])
                 expect(response).to redirect_to redirect_path
@@ -403,7 +343,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
                 expect(user.onboarding_in_progress).to be(true)
                 expect(user.onboarding_status_step_url).to eq(redirect_path)
-                expect(user.onboarding_status_email_opt_in).to eq(true)
                 expect(user.onboarding_status_registration_type)
                   .to eq(::Onboarding::REGISTRATION_TYPE[:trial])
                 expect(response).to redirect_to redirect_path
@@ -464,35 +403,22 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                   )
                 end
 
-                where(:extra_user_params, :opt_in) do
-                  { onboarding_status_email_opt_in: 'true' }  | true
-                  { onboarding_status_email_opt_in: 'false' } | false
-                  { onboarding_status_email_opt_in: nil }     | false
-                  { onboarding_status_email_opt_in: '1' }     | true
-                  { onboarding_status_email_opt_in: '0' }     | false
-                  { onboarding_status_email_opt_in: '' }      | false
-                  {}                                          | false
-                end
+                it 'redirects to the company path with expected db values' do
+                  expected_params = {
+                    registration_objective: 'code_storage',
+                    role: 'software_developer',
+                    jobs_to_be_done_other: '_jobs_to_be_done_other_',
+                    glm_source: 'some_source',
+                    glm_content: 'some_content'
+                  }
 
-                with_them do
-                  specify do
-                    expected_params = {
-                      registration_objective: 'code_storage',
-                      role: 'software_developer',
-                      jobs_to_be_done_other: '_jobs_to_be_done_other_',
-                      glm_source: 'some_source',
-                      glm_content: 'some_content'
-                    }
+                  patch_update
+                  user.reset
+                  path = new_users_sign_up_company_path(expected_params)
 
-                    patch_update
-                    user.reset
-                    path = new_users_sign_up_company_path(expected_params)
-
-                    expect(user.onboarding_in_progress).to be(true)
-                    expect(user.onboarding_status_step_url).to eq(path)
-                    expect(user.onboarding_status_email_opt_in).to eq(opt_in)
-                    expect(response).to redirect_to path
-                  end
+                  expect(user.onboarding_in_progress).to be(true)
+                  expect(user.onboarding_status_step_url).to eq(path)
+                  expect(response).to redirect_to path
                 end
               end
             end

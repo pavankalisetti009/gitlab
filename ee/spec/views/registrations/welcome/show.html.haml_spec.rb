@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   let(:hide_setup_for_company_field?) { false }
   let(:show_joining_project?) { true }
-  let(:show_opt_in_to_email?) { true }
   let(:onboarding_status) do
     instance_double(
       ::Onboarding::Status,
@@ -13,7 +12,6 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       setup_for_company_label_text: '_text_',
       setup_for_company_help_text: '_help_text_',
       show_joining_project?: show_joining_project?,
-      show_opt_in_to_email?: show_opt_in_to_email?,
       welcome_submit_button_text: '_button_text_',
       tracking_label: 'free_registration'
     )
@@ -47,10 +45,6 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       is_expected.to have_selector('#joining_project_true')
     end
 
-    it 'has the hidden opt in to email field' do
-      is_expected.to have_selector('input[name="user[onboarding_status_email_opt_in]"]')
-    end
-
     it 'renders a select and text field for additional information' do
       is_expected.to have_selector('select[name="user[registration_objective]"]')
       is_expected.to have_selector('input[name="jobs_to_be_done_other"]', visible: false)
@@ -78,14 +72,6 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
 
     it 'does not have the joining_project fields' do
       is_expected.not_to have_selector('#joining_project_true')
-    end
-  end
-
-  context 'when not showing opt in to email' do
-    let(:show_opt_in_to_email?) { false }
-
-    it 'does not have opt in to email field' do
-      is_expected.not_to have_selector('input[name="user[onboarding_status_email_opt_in]"]')
     end
   end
 

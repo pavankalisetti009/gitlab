@@ -67,16 +67,8 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
     it { is_expected.to be_show_joining_project }
   end
 
-  describe '.show_opt_in_to_email?' do
-    it { is_expected.to be_show_opt_in_to_email }
-  end
-
   describe '.hide_setup_for_company_field?' do
     it { is_expected.not_to be_hide_setup_for_company_field }
-  end
-
-  describe '.pre_parsed_email_opt_in?' do
-    it { is_expected.not_to be_pre_parsed_email_opt_in }
   end
 
   describe '.apply_trial?' do

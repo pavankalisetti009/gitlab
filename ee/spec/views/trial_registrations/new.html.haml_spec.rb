@@ -53,7 +53,7 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     end
 
     let(:action_params) do
-      'glm_content=_glm_content_&glm_source=_glm_source_&trial=true'
+      'glm_content=_glm_content_&glm_source=_glm_source_&onboarding_status_email_opt_in=true&trial=true'
     end
 
     before do
