@@ -13,7 +13,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
   let(:secondary_node) { create(:geo_node) }
   let(:user) { create(:user) }
   let(:oauth_application) { secondary_node.oauth_application }
-  let(:access_token) { create(:doorkeeper_access_token, application: oauth_application, resource_owner_id: user.id) }
+  let(:access_token) { create(:oauth_access_token, application: oauth_application, resource_owner_id: user.id) }
   let(:login_state) { Gitlab::Geo::Oauth::LoginState.new(return_to: secondary_node.url).encode }
 
   describe 'GET auth' do
