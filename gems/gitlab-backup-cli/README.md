@@ -10,16 +10,20 @@ Some relied on rake tasks shipped along with the main codebase. Extra functional
 
 In this new implementation, we have a Unified approach:
 
-1. All the Backup logic is implemented in a single tool
-2. The same tool works across the different installation types
-3. It provides a similar UX no matter which installation type it is running from
+- All the Backup logic is implemented in a single tool.
+- The same tool works across the different installation types.
+- It provides a similar UX no matter which installation type it is running from.
 
-It aims to replace the previous backup mechanisms.
+It aims to eventually supersede the previous backup mechanisms:
 
-In addition, the new tool will add a new way of performing Backups when using with supported Cloud providers:
+- [gitlab-backup](https://docs.gitlab.com/ee/administration/backup_restore/backup_gitlab.html#command-line-interface)
+- [backup-utility](https://docs.gitlab.com/charts/backup-restore/backup.html)
+- [alternative strategies](https://docs.gitlab.com/ee/administration/backup_restore/backup_gitlab.html#alternative-backup-strategies)
 
-1. It will rely on Cloud providers' APIs to perform Backups at scale
-2. It will provide a Unified UX across different Cloud providers' backup capability
+In addition, the new tool will add a new way of performing Backups when used with supported Cloud providers:
+
+- It will rely on Cloud providers' APIs to perform Backups at scale.
+- It will provide a Unified UX across different Cloud providers' backup capability.
 
 Please check the Blueprint for additional information:
 https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/backup_and_restore/
