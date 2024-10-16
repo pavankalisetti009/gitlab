@@ -176,11 +176,19 @@ RSpec.describe Epics::RelatedEpicLinks::CreateService, feature_category: :portfo
           it 'creates a link for the epics and the synced work item' do
             expect { execute }.to change { Epic::RelatedEpicLink.count }.by(2)
               .and change { WorkItems::RelatedWorkItemLink.count }.by(2)
+              .and change { Note.count }.by(4) # 2 for each epic
+          end
+        end
 
-            expect(WorkItems::RelatedWorkItemLink.where(source: epic_a.work_item)).to include(
-              an_object_having_attributes(target: epic_b.work_item, link_type: IssuableLink::TYPE_RELATES_TO),
-              an_object_having_attributes(target: epic_c.work_item, link_type: IssuableLink::TYPE_RELATES_TO)
-            )
+        context 'when related epic links succeeded partially' do
+          # Using the `issuable` as a reference let's the service respond with a failure, although we created
+          # the relate link to epic_b.
+          let(:params) { { issuable_references: [epic_a.to_reference(full: true), epic_b.to_reference(full: true)] } }
+
+          it 'does not create a link on either epics or work items' do
+            expect { execute }.to not_change { Epic::RelatedEpicLink.count }
+              .and not_change { WorkItems::RelatedWorkItemLink.count }
+              .and not_change { Note.count }
           end
         end
 
