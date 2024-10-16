@@ -137,7 +137,12 @@ export default {
 <template>
   <div class="gl-mb-4">
     <div class="gl-mb-4 gl-grid gl-gap-6 md:gl-grid-cols-2" data-testid="policy-selection-wizard">
-      <gl-card v-for="option in policies" :key="option.title" body-class="gl-p-6 gl-flex gl-grow">
+      <gl-card
+        v-for="option in policies"
+        :key="option.title"
+        body-class="gl-p-6 gl-flex gl-grow"
+        :data-testid="`${option.urlParameter}-card`"
+      >
         <div class="gl-mr-6 gl-text-white">
           <img :alt="option.title" aria-hidden="true" :src="option.imageSrc" />
         </div>
