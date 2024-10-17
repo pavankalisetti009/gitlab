@@ -28,8 +28,7 @@ module Gitlab
 
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::CiEditorAssistant::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::CiEditorAssistant::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::CiEditorAssistant::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::CiEditorAssistant::Prompts::Anthropic
             }.freeze
 
             USER_TEMPLATE = Utils::Prompt.as_user("Question: %<input>s")
