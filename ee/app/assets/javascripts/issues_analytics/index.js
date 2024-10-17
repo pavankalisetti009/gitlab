@@ -36,6 +36,14 @@ export default () => {
     filtersEmptyStateSvgPath,
     issuesPageEndpoint,
     hasIssuesCompletedFeature,
+    canCreateProjects,
+    isSignedIn,
+    newIssuePath,
+    newProjectPath,
+    showNewIssueDropdown,
+    signInPath,
+    groupId,
+    isProject,
   } = el.dataset;
 
   // Set default filters from URL
@@ -55,6 +63,15 @@ export default () => {
       issuesPageEndpoint,
       noDataEmptyStateSvgPath,
       filtersEmptyStateSvgPath,
+      canCreateProjects: parseBoolean(canCreateProjects),
+      isSignedIn: parseBoolean(isSignedIn),
+      newIssuePath,
+      newProjectPath,
+      showNewIssueDropdown: parseBoolean(showNewIssueDropdown),
+      showNewIssueLink: false,
+      signInPath,
+      groupId,
+      isProject: parseBoolean(isProject),
     },
     render: (createElement) =>
       createElement(IssuesAnalytics, {
