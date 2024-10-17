@@ -66,7 +66,7 @@ module QA
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
         context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
           type: :investigating,
-          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/471172",
+          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/499657",
           only: { job: /gdk-qa-.*/ }
         } do
           let(:key) do
@@ -116,7 +116,7 @@ module QA
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
         context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
           type: :investigating,
-          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/471172",
+          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/499657",
           only: { job: /gdk-qa-.*/ }
         } do
           let(:key) do
