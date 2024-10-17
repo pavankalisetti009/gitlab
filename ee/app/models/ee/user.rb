@@ -596,16 +596,6 @@ module EE
       !password_automatically_set?
     end
 
-    def has_required_credit_card_to_run_pipelines?(project)
-      has_valid_credit_card? || !requires_credit_card_to_run_pipelines?(project)
-    end
-
-    # This is like has_required_credit_card_to_run_pipelines? except that
-    # former checks whether shared runners are enabled, and this method does not.
-    def has_required_credit_card_to_enable_shared_runners?(project)
-      has_valid_credit_card? || !requires_credit_card_to_enable_shared_runners?(project)
-    end
-
     def activate_based_on_user_cap?
       !blocked_auto_created_oauth_ldap_user? &&
         blocked_pending_approval? &&
@@ -614,10 +604,6 @@ module EE
 
     def blocked_auto_created_oauth_ldap_user?
       identities.any? && block_auto_created_users?
-    end
-
-    def has_valid_credit_card?
-      credit_card_validated_at.present?
     end
 
     def privatized_by_abuse_automation?
@@ -741,37 +727,6 @@ module EE
         ::Gitlab::Auth::Ldap::Config.new(provider).block_auto_created_users
       else
         ::Gitlab.config.omniauth.block_auto_created_users
-      end
-    end
-
-    def created_after_credit_card_release_day?(project)
-      created_at >= ::Users::CreditCardValidation::RELEASE_DAY ||
-        ::Feature.enabled?(:ci_require_credit_card_for_old_users, project)
-    end
-
-    def requires_credit_card_to_run_pipelines?(project)
-      return false unless project.shared_runners_enabled
-
-      requires_credit_card?(project)
-    end
-
-    def requires_credit_card_to_enable_shared_runners?(project)
-      requires_credit_card?(project)
-    end
-
-    def requires_credit_card?(project)
-      return false unless ::Gitlab.com?
-      return false unless created_after_credit_card_release_day?(project)
-
-      root_namespace = project.root_namespace
-      ci_usage = root_namespace.ci_minutes_usage
-
-      return false if ci_usage.quota_enabled? && ci_usage.quota.any_purchased?
-
-      if root_namespace.trial?
-        ::Feature.enabled?(:ci_require_credit_card_on_trial_plan, project)
-      else
-        false
       end
     end
 

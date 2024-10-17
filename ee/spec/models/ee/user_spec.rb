@@ -2569,98 +2569,6 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
-  describe '#has_required_credit_card_to_run_pipelines?' do
-    let_it_be(:project) { create(:project) }
-
-    subject { user.has_required_credit_card_to_run_pipelines?(project) }
-
-    using RSpec::Parameterized::TableSyntax
-
-    where(:saas, :cc_present, :shared_runners, :addon_mins, :plan, :feature_flags, :days_from_release, :result, :description) do
-      # self-hosted
-      nil   | false | :enabled | 0 | :paid  | %i[trial]           | 0  | true  | 'self-hosted paid plan'
-      nil   | false | :enabled | 0 | :trial | %i[trial]           | 0  | true  | 'self-hosted missing CC on trial plan'
-
-      # saas
-      :saas | false | :enabled | 0 | :paid  | %i[trial old_users] | 0  | true  | 'missing CC on paid plan'
-
-      :saas | false | :enabled | 0 | :trial | %i[trial]           | 0  | false | 'missing CC on trial plan'
-      :saas | false | nil      | 0 | :trial | %i[trial]           | 0  | true  | 'missing CC on trial plan and shared runners disabled'
-      :saas | false | :enabled | 0 | :trial | %i[trial]           | -1 | true  | 'missing CC on trial plan but old user'
-      :saas | false | :enabled | 0 | :trial | %i[trial old_users] | -1 | false | 'missing CC on trial plan but old user and FF enabled'
-      :saas | false | nil      | 0 | :trial | %i[trial old_users] | -1 | true  | 'missing CC on trial plan but old user and FF enabled and shared runners disabled'
-      :saas | false | :enabled | 0 | :trial | %i[]                | 0  | true  | 'missing CC on trial plan - FF off'
-      :saas | true  | :enabled | 0 | :trial | %i[trial]           | 0  | true  | 'present CC on trial plan'
-
-      :saas | false | :enabled | 100 | :trial | %i[trial]         | 0  | true  | 'missing CC on trial plan with purchased minutes'
-    end
-
-    let(:shared_runners_enabled) { shared_runners == :enabled }
-
-    with_them do
-      before do
-        allow(::Gitlab).to receive(:com?).and_return(saas == :saas)
-        user.created_at = ::Users::CreditCardValidation::RELEASE_DAY + days_from_release.days
-        allow(user).to receive(:credit_card_validated_at).and_return(Time.current) if cc_present
-        allow(project.namespace).to receive(:trial?).and_return(plan == :trial)
-        project.namespace.update!(extra_shared_runners_minutes_limit: addon_mins)
-        project.namespace.clear_memoization(:ci_minutes_usage)
-        project.update!(shared_runners_enabled: shared_runners_enabled)
-
-        stub_feature_flags(
-          ci_require_credit_card_on_trial_plan: feature_flags.include?(:trial),
-          ci_require_credit_card_for_old_users: feature_flags.include?(:old_users))
-      end
-
-      it description do
-        expect(subject).to eq(result)
-      end
-    end
-  end
-
-  describe '#has_required_credit_card_to_enable_shared_runners?' do
-    let_it_be(:project) { create(:project) }
-
-    subject { user.has_required_credit_card_to_enable_shared_runners?(project) }
-
-    using RSpec::Parameterized::TableSyntax
-
-    where(:saas, :cc_present, :addon_mins, :plan, :feature_flags, :days_from_release, :result, :description) do
-      # self-hosted
-      nil   | false | 0 | :paid  | %i[trial]           | 0  | true  | 'self-hosted paid plan'
-      nil   | false | 0 | :trial | %i[trial]           | 0  | true  | 'self-hosted missing CC on trial plan'
-
-      # saas
-      :saas | false | 0 | :paid  | %i[trial old_users] | 0  | true  | 'missing CC on paid plan'
-
-      :saas | false | 0 | :trial | %i[trial]           | 0  | false | 'missing CC on trial plan'
-      :saas | false | 0 | :trial | %i[trial]           | -1 | true  | 'missing CC on trial plan but old user'
-      :saas | false | 0 | :trial | %i[trial old_users] | -1 | false | 'missing CC on trial plan but old user and FF enabled'
-      :saas | false | 0 | :trial | %i[]                | 0  | true  | 'missing CC on trial plan - FF off'
-      :saas | true  | 0 | :trial | %i[trial]           | 0  | true  | 'present CC on trial plan'
-
-      :saas | false | 100 | :trial | %i[trial]         | 0  | true  | 'missing CC on trial plan with purchased minutes'
-    end
-
-    with_them do
-      before do
-        allow(::Gitlab).to receive(:com?).and_return(saas == :saas)
-        user.created_at = ::Users::CreditCardValidation::RELEASE_DAY + days_from_release.days
-        allow(user).to receive(:credit_card_validated_at).and_return(Time.current) if cc_present
-        allow(project.namespace).to receive(:trial?).and_return(plan == :trial)
-        project.namespace.update!(extra_shared_runners_minutes_limit: addon_mins)
-        project.namespace.clear_memoization(:ci_minutes_usage)
-        stub_feature_flags(
-          ci_require_credit_card_on_trial_plan: feature_flags.include?(:trial),
-          ci_require_credit_card_for_old_users: feature_flags.include?(:old_users))
-      end
-
-      it description do
-        expect(subject).to eq(result)
-      end
-    end
-  end
-
   describe "#owns_group_without_trial" do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
@@ -2922,28 +2830,6 @@ RSpec.describe User, feature_category: :system_access do
       it 'returns false' do
         expect(user.managed_by_user?(nil, group: nil)).to eq false
       end
-    end
-  end
-
-  describe '#has_valid_credit_card?' do
-    it 'returns true when a credit card validation is present' do
-      credit_card_validation = build(:credit_card_validation, credit_card_validated_at: Time.current)
-      user = build(:user, credit_card_validation: credit_card_validation)
-
-      expect(user.has_valid_credit_card?).to be_truthy
-    end
-
-    it 'returns false when a credit card validation is present, but the credit_card_validated_at attribute is blank' do
-      credit_card_validation = build(:credit_card_validation, credit_card_validated_at: nil)
-      user = build(:user, credit_card_validation: credit_card_validation)
-
-      expect(user.has_valid_credit_card?).to be_falsey
-    end
-
-    it 'returns false when a credit card validation is missing' do
-      user = build(:user, credit_card_validation: nil)
-
-      expect(user.has_valid_credit_card?).to be_falsey
     end
   end
 

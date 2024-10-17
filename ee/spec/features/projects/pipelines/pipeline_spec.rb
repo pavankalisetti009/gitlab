@@ -97,8 +97,6 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
 
       before do
         stub_saas_features(identity_verification: true)
-
-        stub_feature_flags(ci_require_credit_card_on_trial_plan: false)
       end
 
       shared_examples 'does not show an alert prompting the user to verify their account' do

@@ -175,12 +175,9 @@ module EE
       def shared_runners_setting
         return unless params[:shared_runners_enabled]
         return if project.shared_runners_enabled
+        return if user_can_enable_shared_runners?
 
-        if !current_user.has_required_credit_card_to_enable_shared_runners?(project)
-          project.errors.add(:shared_runners_enabled, _('cannot be enabled until a valid credit card is on file'))
-        elsif !user_can_enable_shared_runners?
-          project.errors.add(:shared_runners_enabled, _('cannot be enabled until identity verification is completed'))
-        end
+        project.errors.add(:shared_runners_enabled, _('cannot be enabled until identity verification is completed'))
       end
 
       def user_can_enable_shared_runners?
