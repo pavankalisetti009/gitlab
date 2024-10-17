@@ -1,10 +1,11 @@
 <script>
-import { GlIcon, GlFilteredSearchToken, GlFilteredSearchSuggestion } from '@gitlab/ui';
+import { GlFilteredSearchToken } from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_SEVERITIES_VALUE } from '../../filters/constants';
+import SearchSuggestion from '../components/search_suggestion.vue';
 import eventHub from '../event_hub';
 
 const VALID_IDS = Object.entries(SEVERITY_LEVELS).map(([id]) => id.toUpperCase());
@@ -13,10 +14,9 @@ export default {
   VALID_IDS,
 
   components: {
-    GlIcon,
     GlFilteredSearchToken,
-    GlFilteredSearchSuggestion,
     QuerystringSync,
+    SearchSuggestion,
   },
   props: {
     config: {
@@ -129,24 +129,17 @@ export default {
       @complete="emitFiltersChanged"
     >
       <template #view>
-        {{ toggleText }}
+        <span data-testid="severity-token-placeholder">{{ toggleText }}</span>
       </template>
       <template #suggestions>
-        <gl-filtered-search-suggestion
+        <search-suggestion
           v-for="severity in $options.items"
           :key="severity.value"
           :value="severity.value"
-        >
-          <div class="gl-flex gl-items-center">
-            <gl-icon
-              name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
-              :class="{ 'gl-invisible': !isSeveritySelected(severity.value) }"
-              :data-testid="`severity-icon-${severity.value}`"
-            />
-            {{ severity.text }}
-          </div>
-        </gl-filtered-search-suggestion>
+          :text="severity.text"
+          :selected="isSeveritySelected(severity.value)"
+          :data-testid="`suggestion-${severity.value}`"
+        />
       </template>
     </gl-filtered-search-token>
   </querystring-sync>
