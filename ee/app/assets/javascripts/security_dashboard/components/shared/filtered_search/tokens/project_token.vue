@@ -189,7 +189,7 @@ export default {
             :value="project.rawId"
             :text="project.name"
             :selected="isProjectSelected(project.rawId)"
-            name="project"
+            :data-testid="`suggestion-${project.rawId}`"
           />
         </template>
       </template>

@@ -1,4 +1,4 @@
-import { GlFilteredSearchSuggestion, GlTruncate } from '@gitlab/ui';
+import { GlFilteredSearchSuggestion, GlTruncate, GlIcon } from '@gitlab/ui';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -27,14 +27,13 @@ describe('Search Suggestion', () => {
     createWrapper({
       text: 'My text',
       value: 'my_value',
-      name: 'test',
       selected,
     });
 
     expect(wrapper.findComponent(SearchSuggestion).exists()).toBe(true);
     expect(wrapper.findByText('My text').exists()).toBe(true);
     expect(findGlSearchSuggestion().props('value')).toBe('my_value');
-    expect(wrapper.findByTestId('test-icon-my_value').classes('gl-invisible')).toBe(!selected);
+    expect(wrapper.findComponent(GlIcon).classes('gl-invisible')).toBe(!selected);
   });
 
   it.each`
