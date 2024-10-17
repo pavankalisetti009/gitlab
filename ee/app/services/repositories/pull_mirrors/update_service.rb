@@ -23,6 +23,11 @@ module Repositories
         update_project_import_relations
 
         project.save
+
+        # It's possible that import state is not created, when user doesn't set an import_url
+        # Treat it as an error
+        project.errors.add(:url, 'is missing') if mirror_import_state_missing?
+        project.errors.none?
       end
 
       def update_project_import_relations
@@ -34,6 +39,10 @@ module Repositories
 
       def mirror_disabled?
         allowed_attributes[:mirror] == false
+      end
+
+      def mirror_import_state_missing?
+        project.import_state.blank?
       end
 
       def allowed_attributes
