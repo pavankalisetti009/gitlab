@@ -4,22 +4,9 @@ require 'spec_helper'
 
 RSpec.describe AbuseReport, feature_category: :insider_threat do
   describe '.create' do
-    context 'when the rename_abuse_workers feature is enabled' do
-      it 'calls the new abuse report worker' do
-        expect(AntiAbuse::NewAbuseReportWorker).to receive(:perform_async)
-        create(:abuse_report)
-      end
-    end
-
-    context 'when the rename_abuse_workers feature is not enabled' do
-      before do
-        stub_feature_flags(rename_abuse_workers: false)
-      end
-
-      it 'calls the new abuse report worker' do
-        expect(Abuse::NewAbuseReportWorker).to receive(:perform_async)
-        create(:abuse_report)
-      end
+    it 'calls the new abuse report worker' do
+      expect(AntiAbuse::NewAbuseReportWorker).to receive(:perform_async)
+      create(:abuse_report)
     end
   end
 
