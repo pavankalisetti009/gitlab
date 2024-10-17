@@ -159,28 +159,57 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       end
 
       context 'when successful' do
-        before do
-          expect_create_success(group_for_trial)
+        context 'when add_on_purchase exists' do
+          before do
+            expect_create_success(group_for_trial)
+          end
+
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
+
+          it 'shows valid flash message', :freeze_time do
+            post_create
+
+            message = format(
+              s_(
+                'DuoProTrial|You have successfully started a Duo Pro trial that will expire on %{exp_date}.'
+              ),
+              exp_date: I18n.l(61.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(message)
+          end
         end
 
-        it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
+        context 'when add_on_purchase is not found upon success for expiration date' do
+          it 'shows valid flash message', :freeze_time do
+            service_params = {
+              step: step,
+              lead_params: lead_params,
+              trial_params: trial_params,
+              user: user
+            }
 
-        it 'shows valid flash message', :freeze_time do
-          post_create
+            expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoProService, service_params) do |instance|
+              expect(instance)
+                .to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: group_for_trial }))
+            end
 
-          message = format(
-            s_(
-              'DuoProTrial|You have successfully started a Duo Pro trial that will expire on %{exp_date}.'
-            ),
-            exp_date: I18n.l(60.days.from_now.to_date, format: :long)
-          )
-          expect(flash[:success]).to have_content(message)
+            post_create
+
+            message = format(
+              s_(
+                'DuoProTrial|You have successfully started a Duo Pro trial that will expire on %{exp_date}.'
+              ),
+              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(message)
+          end
         end
 
         context 'when feature flag duo_enterprise_trials is disabled' do
           let(:group_for_trial) { ineligible_paid_group }
 
           before do
+            expect_create_success(group_for_trial)
             stub_feature_flags(duo_enterprise_trials: false)
           end
 
@@ -197,7 +226,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
 
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoProService, service_params) do |instance|
             expect(instance).to receive(:execute) do
-              create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+              create(
+                :gitlab_subscription_add_on_purchase,
+                :trial, add_on: add_on, expires_on: 61.days.from_now, namespace: namespace
+              )
             end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
         end
