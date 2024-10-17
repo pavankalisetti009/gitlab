@@ -269,7 +269,7 @@ describe('Edit Framework Form', () => {
         if (buttonState) {
           expect(tooltip.exists()).toBe(true);
           expect(tooltip.attributes('title')).toBe(
-            "Compliance frameworks that are linked to an active policy can't be deleted",
+            "Compliance frameworks that have a scoped policy can't be deleted",
           );
         } else {
           expect(tooltip.exists()).toBe(false);
