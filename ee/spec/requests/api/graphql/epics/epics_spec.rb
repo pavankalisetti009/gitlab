@@ -231,11 +231,11 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
       create(:epic, group: group) do |epic|
         create(:award_emoji, name: 'rocket', awardable: epic)
         create(:award_emoji, name: 'eyes', awardable: epic.sync_object)
-        create(:award_emoji, name: 'thumbsup', awardable: epic)
-        create(:award_emoji, name: 'thumbsup', awardable: epic.sync_object)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic.sync_object)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic.sync_object)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic.sync_object)
       end
     end
 
@@ -269,7 +269,8 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
       expect(response.map do |emoji|
                emoji['user']['username']
              end.uniq).to match_array(epic.award_emoji.map(&:user).map(&:username).uniq)
-      expect(response.pluck('name').uniq).to match_array(%w[eyes rocket thumbsup thumbsdown])
+      expect(response.pluck('name').uniq)
+        .to match_array(%W[eyes rocket #{AwardEmoji::THUMBS_UP} #{AwardEmoji::THUMBS_DOWN}])
     end
 
     it 'includes unified upvotes and downvotes' do
@@ -307,10 +308,10 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
       before do
         create(:award_emoji, awardable: epic_a, user: user)
         create(:award_emoji, awardable: epic_b, user: user)
-        create(:award_emoji, name: 'thumbsup', awardable: epic_a)
-        create(:award_emoji, name: 'thumbsup', awardable: epic_a.sync_object)
-        create(:award_emoji, name: 'thumbsup', awardable: epic_b)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic_b.sync_object)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic_a)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic_a.sync_object)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic_b)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic_b.sync_object)
       end
 
       include_examples 'N+1 query check', threshold: 1

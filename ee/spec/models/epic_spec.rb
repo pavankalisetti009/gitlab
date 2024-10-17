@@ -37,8 +37,8 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       let_it_be(:emoji_2) { create(:award_emoji, :downvote, awardable: epic, user: create(:user)) }
 
       it 'returns union of award emoji from epic and its associated work item', :aggregate_failures do
-        expect(epic.award_emoji.pluck(:name)).to match_array(%w[thumbsup thumbsdown])
-        expect(work_item.award_emoji.pluck(:name)).to match_array(%w[thumbsup thumbsdown])
+        expect(epic.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP, AwardEmoji::THUMBS_DOWN])
+        expect(work_item.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP, AwardEmoji::THUMBS_DOWN])
       end
 
       it 'reads participants from award emoji on epic and its associated work item' do
@@ -90,8 +90,8 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         end
 
         it 'reads emojis only from epic' do
-          expect(epic.award_emoji.pluck(:name)).to match_array(%w[thumbsdown])
-          expect(work_item.award_emoji.pluck(:name)).to match_array(%w[thumbsup])
+          expect(epic.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_DOWN])
+          expect(work_item.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP])
         end
       end
 
@@ -102,8 +102,8 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         end
 
         it 'returns award emoji only from epic' do
-          expect(epic.award_emoji.pluck(:name)).to match_array(%w[thumbsdown])
-          expect(work_item.award_emoji.pluck(:name)).to match_array(%w[thumbsup])
+          expect(epic.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_DOWN])
+          expect(work_item.award_emoji.pluck(:name)).to match_array([AwardEmoji::THUMBS_UP])
         end
       end
     end

@@ -29,7 +29,7 @@ RSpec.describe Notes::UpdateService, feature_category: :team_planning do
         include_examples 'trigger status page publish'
 
         context 'without recognized emoji' do
-          let(:emoji_name) { 'thumbsup' }
+          let(:emoji_name) { AwardEmoji::THUMBS_UP }
 
           include_examples 'no trigger status page publish'
         end

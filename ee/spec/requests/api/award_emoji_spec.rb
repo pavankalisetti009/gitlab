@@ -93,7 +93,7 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       end
 
       it "returns a 404 if the user is not authenticated" do
-        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji"), params: { name: 'thumbsup' }
+        post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji"), params: { name: AwardEmoji::THUMBS_UP }
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -101,13 +101,13 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       it "normalizes +1 as thumbsup award" do
         post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: '+1' }
 
-        expect(epic.award_emoji.last.name).to eq("thumbsup")
+        expect(epic.award_emoji.last.name).to eq(AwardEmoji::THUMBS_UP)
       end
 
       context 'when the emoji already has been awarded' do
         it 'returns a 404 status code' do
-          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: 'thumbsup' }
-          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: 'thumbsup' }
+          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: AwardEmoji::THUMBS_UP }
+          post api("/groups/#{group.id}/epics/#{epic.iid}/award_emoji", user), params: { name: AwardEmoji::THUMBS_UP }
 
           expect(response).to have_gitlab_http_status(:not_found)
           expect(json_response["message"]).to match("has already been taken")
@@ -136,10 +136,10 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       expect(todo.reload).to be_done
     end
 
-    it "normalizes +1 as thumbsup award" do
+    it "normalizes +1 as thumbs_up award" do
       post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: '+1' }
 
-      expect(note.award_emoji.last.name).to eq("thumbsup")
+      expect(note.award_emoji.last.name).to eq(AwardEmoji::THUMBS_UP)
     end
 
     context 'when the emoji already has been awarded' do

@@ -45,7 +45,7 @@ RSpec.describe Resolvers::Boards::BoardListEpicsResolver do
       let_it_be(:production_label) { create(:group_label, group: group, name: 'production') }
       let_it_be(:list1_epic3) { create(:labeled_epic, group: group, labels: [development, production_label], title: 'filter_this 1') }
       let_it_be(:list1_epic4) { create(:labeled_epic, group: group, labels: [development], description: 'filter_this 2') }
-      let_it_be(:awarded_emoji) { create(:award_emoji, name: 'thumbsup', awardable: list1_epic1, user: user) }
+      let_it_be(:awarded_emoji) { create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: list1_epic1, user: user) }
 
       subject(:results) { resolve(described_class, ctx: { current_user: user }, obj: list1, args: args) }
 

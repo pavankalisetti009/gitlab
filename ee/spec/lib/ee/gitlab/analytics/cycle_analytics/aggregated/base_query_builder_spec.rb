@@ -35,7 +35,9 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
 
     let_it_be(:issue_with_iteration) { create(:issue, project: project_1, assignees: [other_user]) }
     let_it_be(:issue_with_epic) { create(:issue, project: project_2, labels: [label], milestone: milestone) }
-    let_it_be(:award_emoji) { create(:award_emoji, name: 'thumbsup', user: user, awardable: issue_with_epic) }
+    let_it_be(:award_emoji) do
+      create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: user, awardable: issue_with_epic)
+    end
 
     let_it_be(:stage) do
       create(:cycle_analytics_stage,
@@ -213,7 +215,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
 
     context 'when filtering by my_reaction_emoji' do
       it 'filters by my_reaction_emoji' do
-        params[:my_reaction_emoji] = 'thumbsup'
+        params[:my_reaction_emoji] = AwardEmoji::THUMBS_UP
 
         expect(issue_ids).to eq([stage_event_2.issue_id])
       end
@@ -228,7 +230,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
 
       context 'when the filter is negated' do
         it 'returns items without the given rection emoji' do
-          params[:not] = { my_reaction_emoji: 'thumbsup' }
+          params[:not] = { my_reaction_emoji: AwardEmoji::THUMBS_UP }
 
           expect(issue_ids).to eq([stage_event_1.issue_id])
         end
@@ -270,7 +272,9 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
       create(:merge_request, :unique_branches, source_project: project_1, target_project: project_1, labels: [label])
     end
 
-    let_it_be(:award_emoji) { create(:award_emoji, name: 'thumbsup', user: user, awardable: merge_request_with_label) }
+    let_it_be(:award_emoji) do
+      create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: user, awardable: merge_request_with_label)
+    end
 
     let_it_be(:stage) do
       create(:cycle_analytics_stage,
@@ -327,7 +331,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
 
     context 'when filtering by my_reaction_emoji' do
       it 'filters by my_reaction_emoji' do
-        params[:my_reaction_emoji] = 'thumbsup'
+        params[:my_reaction_emoji] = AwardEmoji::THUMBS_UP
 
         expect(merge_request_ids).to eq([stage_event_2.merge_request_id])
       end
@@ -342,7 +346,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder, 
 
       context 'when the filter is negated' do
         it 'returns items without the given rection emoji' do
-          params[:not] = { my_reaction_emoji: 'thumbsup' }
+          params[:not] = { my_reaction_emoji: AwardEmoji::THUMBS_UP }
 
           expect(merge_request_ids).to eq([stage_event_1.merge_request_id])
         end

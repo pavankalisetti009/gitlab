@@ -10,7 +10,7 @@ RSpec.shared_examples 'filter by unified emoji association' do
   end
 
   before_all do
-    create(:award_emoji, name: 'thumbsup', awardable: object1, user: user)
+    create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: object1, user: user)
     create(:award_emoji, name: 'eyes', awardable: object1.sync_object, user: user)
     create(:award_emoji, name: 'rocket', awardable: object2.sync_object, user: user)
     create(:award_emoji, name: 'eyes', awardable: object3, user: user)

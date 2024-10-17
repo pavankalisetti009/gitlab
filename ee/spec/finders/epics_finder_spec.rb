@@ -95,7 +95,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
         context 'by user reaction emoji' do
           it 'returns epics reacted to by user' do
-            create(:award_emoji, name: 'thumbsup', awardable: epic1, user: search_user)
+            create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic1, user: search_user)
             create(:award_emoji, name: 'star', awardable: epic3, user: search_user)
 
             expect(epics(my_reaction_emoji: 'star')).to contain_exactly(epic3)
@@ -1022,7 +1022,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
         end
 
         context 'with negated reaction emoji' do
-          let_it_be(:awarded_emoji) { create(:award_emoji, name: 'thumbsup', awardable: epic3, user: search_user) }
+          let_it_be(:awarded_emoji) { create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic3, user: search_user) }
           let_it_be(:params) { { not: { my_reaction_emoji: awarded_emoji.name } } }
 
           it 'returns all epics without given emoji name' do

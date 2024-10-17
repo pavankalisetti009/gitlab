@@ -8,7 +8,7 @@ RSpec.describe AwardEmojis::DestroyService do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:awardable) { create(:note_on_issue, project: project) }
 
-  let(:name) { 'thumbsup' }
+  let(:name) { AwardEmoji::THUMBS_UP }
 
   let(:service) { described_class.new(awardable, name, user) }
 

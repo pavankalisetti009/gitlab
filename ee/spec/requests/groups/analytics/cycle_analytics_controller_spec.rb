@@ -15,7 +15,7 @@ RSpec.describe Groups::Analytics::CycleAnalyticsController, feature_category: :v
   it 'exposes the query params in data attributes' do
     stub_licensed_features(cycle_analytics_for_groups: true)
 
-    extra_query_params = { weight: '3', epic_id: '1', iteration_id: '2', my_reaction_emoji: 'thumbsup' }
+    extra_query_params = { weight: '3', epic_id: '1', iteration_id: '2', my_reaction_emoji: AwardEmoji::THUMBS_UP }
 
     expect_next_instance_of(Gitlab::Analytics::CycleAnalytics::RequestParams) do |instance|
       expect(instance).to have_attributes(**extra_query_params)
@@ -26,6 +26,6 @@ RSpec.describe Groups::Analytics::CycleAnalyticsController, feature_category: :v
     expect(body).to include('data-weight="3"')
     expect(body).to include('data-epic-id="1"')
     expect(body).to include('data-iteration-id="2"')
-    expect(body).to include('data-my-reaction-emoji="thumbsup"')
+    expect(body).to include(%(data-my-reaction-emoji="#{AwardEmoji::THUMBS_UP}"))
   end
 end

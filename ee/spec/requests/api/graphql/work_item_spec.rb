@@ -1488,9 +1488,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           users = create_list(:user, 6)
 
           # Add 3 participant to the legacy epic
-          create(:award_emoji, name: 'thumbsup', awardable: work_item, user: users[0])
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: work_item, user: users[0])
           note = create(:note, noteable: work_item.synced_epic, author: users[1], project: project)
-          create(:award_emoji, name: 'thumbsup', awardable: note, user: users[2])
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: note, user: users[2])
 
           post_graphql(query, current_user: current_user) # warm-up
 
@@ -1499,9 +1499,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           # Add 3 more participants to the legacy epic
-          create(:award_emoji, name: 'thumbsup', awardable: work_item.synced_epic, user: users[3])
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: work_item.synced_epic, user: users[3])
           note = create(:note, noteable: work_item.synced_epic, author: users[4], project: project)
-          create(:award_emoji, name: 'thumbsup', awardable: note, user: users[5])
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: note, user: users[5])
 
           expect do
             post_graphql(query, current_user: current_user)
