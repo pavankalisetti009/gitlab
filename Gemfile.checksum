@@ -531,7 +531,7 @@
 {"name":"raabro","version":"1.4.0","platform":"ruby","checksum":"d4fa9ff5172391edb92b242eed8be802d1934b1464061ae5e70d80962c5da882"},
 {"name":"racc","version":"1.6.2","platform":"java","checksum":"0880781e7dfde09e665d0b6160b583e01ed52fcc2955d7891447d33c2d1d2cf1"},
 {"name":"racc","version":"1.6.2","platform":"ruby","checksum":"58d26b3666382396fea84d33dc0639b7ee8d704156a52f8f22681f07b2f94f26"},
-{"name":"rack","version":"2.2.9","platform":"ruby","checksum":"fd6301a97a1c1e955e68f85c861fcb1cde6145a32c532e1ea321a72ff8cc4042"},
+{"name":"rack","version":"2.2.10","platform":"ruby","checksum":"e4a5ee3f8f2ba45614a4498114d6dc7da1c51a0f0dd810d891906ea71d3aa72b"},
 {"name":"rack-accept","version":"0.4.5","platform":"ruby","checksum":"66247b5449db64ebb93ae2ec4af4764b87d1ae8a7463c7c68893ac13fa8d4da2"},
 {"name":"rack-attack","version":"6.7.0","platform":"ruby","checksum":"3ca47e8f66cd33b2c96af53ea4754525cd928ed3fa8da10ee6dad0277791d77c"},
 {"name":"rack-cors","version":"2.0.2","platform":"ruby","checksum":"415d4e1599891760c5dc9ef0349c7fecdf94f7c6a03e75b2e7c2b54b82adda1b"},
