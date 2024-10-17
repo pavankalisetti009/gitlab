@@ -41,7 +41,7 @@ module Llm
           group.members_with_descendants.select(:user_id)
         ],
         remove_duplicates: true
-      )
+      ).select(:user_id)
     end
   end
 end

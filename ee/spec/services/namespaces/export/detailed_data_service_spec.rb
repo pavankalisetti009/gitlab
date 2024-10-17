@@ -170,7 +170,7 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
         end
 
         def member_data(member)
-          [member.created_at.to_fs(:csv), nil, member.reload.last_activity_on.to_fs(:csv)]
+          [member.created_at.to_fs(:csv), nil, member.reload.user_last_activity_on&.to_fs(:csv)]
         end
 
         context 'when members_permissions_detailed_export feature flag is disabled' do

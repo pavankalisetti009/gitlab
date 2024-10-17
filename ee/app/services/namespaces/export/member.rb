@@ -50,7 +50,7 @@ module Namespaces
           membership_source: member.source.full_path,
           access_granted: member.created_at.to_fs(:csv),
           access_expired: member.expires_at,
-          last_activity: member.last_activity_on
+          last_activity: member.user_last_activity_on
         )
       end
     end
