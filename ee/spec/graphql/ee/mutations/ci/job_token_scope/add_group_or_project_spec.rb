@@ -6,44 +6,48 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
   include GraphqlHelpers
 
   describe '#resolve' do
-    let(:project) do
-      create(:project, ci_outbound_job_token_scope_enabled: true)
-    end
+    let_it_be(:project) { create(:project, ci_outbound_job_token_scope_enabled: true) }
+    let_it_be(:project_path) { project.full_path }
 
-    let(:target_group) { create(:group) }
+    let_it_be(:target_group) { create(:group) }
+    let_it_be(:target_group_path) { target_group.full_path }
 
-    let(:target_group_path) { target_group.full_path }
-    let(:project_path) { project.full_path }
-    let(:input) do
-      {
-        project_path: project.full_path,
-        target_path: target_group_path
-      }
-    end
+    let_it_be(:target_project) { create(:project) }
+    let_it_be(:target_project_path) { target_project.full_path }
 
-    let(:current_user) { create(:user) }
+    let_it_be(:policies) { %w[read_project read_package] }
+
+    let_it_be(:current_user) { create(:user) }
 
     let(:expected_audit_context) do
       {
         name: event_name,
         author: current_user,
         scope: project,
-        target: target_group,
+        target: target,
         message: expected_audit_message
       }
     end
 
-    let(:call_add_group) do
-      ctx = { current_user: current_user }
-      mutation = graphql_mutation(described_class, input)
-      GitlabSchema.execute(mutation.query, context: ctx, variables: mutation.variables).to_h
+    let(:mutation_args) do
+      {
+        project_path: project.full_path,
+        target_path: target.full_path,
+        job_token_policies: policies,
+        direction: :inbound
+      }
     end
 
-    context 'when adding group validate it triggers audits' do
-      before do
-        project.add_maintainer(current_user)
-        target_group.add_guest(current_user)
-      end
+    let(:mutation) do
+      described_class.new(object: nil, context: query_context, field: nil)
+    end
+
+    subject(:resolver) do
+      mutation.resolve(**mutation_args)
+    end
+
+    context 'when user adds target group to the job token scope' do
+      let(:target) { target_group }
 
       let(:expected_audit_message) do
         "Group #{target_group_path} was added to list of allowed groups for #{project_path}"
@@ -51,27 +55,51 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
 
       let(:event_name) { 'secure_ci_job_token_group_added' }
 
-      context 'when user adds target group to the job token scope' do
-        it 'logs an audit event' do
-          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+      before_all do
+        project.add_maintainer(current_user)
+        target_group.add_guest(current_user)
+      end
 
-          call_add_group
-        end
+      it 'logs an audit event' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
-        context 'and service returns an error' do
-          it 'does not log an audit event' do
-            expect_next_instance_of(::Ci::JobTokenScope::AddGroupService) do |service|
-              expect(service)
-                .to receive(:validate_group_add!)
-              .with(project, target_group, current_user)
-              .and_raise(ActiveRecord::RecordNotUnique)
-            end
+        resolver
+      end
 
-            expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
-
-            call_add_group
+      context 'when service returns an error' do
+        it 'does not log an audit event' do
+          expect_next_instance_of(::Ci::JobTokenScope::AddGroupService) do |service|
+            expect(service)
+              .to receive(:validate_group_add!)
+            .with(project, target_group, current_user)
+            .and_raise(ActiveRecord::RecordNotUnique)
           end
+
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          resolver
         end
+      end
+    end
+
+    context 'when user adds target project to the inbound job token scope' do
+      let(:target) { target_project }
+
+      let(:expected_audit_message) do
+        "Project #{target_project_path} was added to inbound list of allowed projects for #{project_path}"
+      end
+
+      let(:event_name) { 'secure_ci_job_token_project_added' }
+
+      before_all do
+        project.add_maintainer(current_user)
+        target_project.add_guest(current_user)
+      end
+
+      it 'logs an audit event' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
+        resolver
       end
     end
   end
