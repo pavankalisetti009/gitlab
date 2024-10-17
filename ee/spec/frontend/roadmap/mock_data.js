@@ -234,6 +234,7 @@ export const mockRawEpic = {
   dueDate: '2018-03-10',
   webUrl: 'http://gdk.test:3000/groups/gitlab-org/marketing/-/epics/1',
   hasChildren: false,
+  hasChildrenWithinTimeframe: false,
   hasParent: false,
   confidential: false,
   descendantWeightSum: {
@@ -656,6 +657,7 @@ export const mockAncestorEpicNode = {
   webUrl: 'http://gdk.test:3000/groups/gitlab-org/marketing/-/epics/3',
   hasChildren: true,
   hasParent: false,
+  hasChildrenWithinTimeframe: true,
   confidential: false,
   descendantWeightSum: {
     closedIssues: 3,
@@ -688,6 +690,7 @@ export const mockEpicNode1 = {
   dueDate: '2018-02-15',
   webUrl: 'http://gdk.test:3000/groups/gitlab-org/marketing/-/epics/1',
   hasChildren: false,
+  hasChildrenWithinTimeframe: false,
   hasParent: false,
   confidential: false,
   color: '#ff0000',
@@ -724,6 +727,7 @@ export const mockEpicNode2 = {
   dueDate: '2018-03-10',
   state: 'opened',
   hasChildren: false,
+  hasChildrenWithinTimeframe: false,
   hasParent: false,
   confidential: false,
   webUrl: 'http://gdk.test:3000/groups/gitlab-org/marketing/-/epics/2',
@@ -805,6 +809,7 @@ export const mockChildEpicNode1 = {
   startDate: null,
   dueDate: null,
   hasChildren: false,
+  hasChildrenWithinTimeframe: false,
   hasParent: true,
   confidential: false,
   blocked: false,
@@ -843,6 +848,7 @@ export const mockEpicChildEpicsQueryResponse = {
         id: 'gid://gitlab/Epic/1',
         title: 'Error omnis quos consequatur',
         hasChildren: true,
+        hasChildrenWithinTimeframe: true,
         children: {
           nodes: [mockChildEpicNode1],
           __typename: 'EpicConnection',
@@ -863,6 +869,7 @@ export const mockEpicChildEpicsWithColorQueryResponse = {
         id: 'gid://gitlab/Epic/1',
         title: 'Error omnis quos consequatur',
         hasChildren: true,
+        hasChildrenWithinTimeframe: true,
         children: {
           nodes: [
             {

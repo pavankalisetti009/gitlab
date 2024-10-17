@@ -73,7 +73,7 @@ export default {
       return this.currentGroupId !== this.epicGroupId;
     },
     isExpandIconHidden() {
-      return !this.epic.hasChildren;
+      return !this.epic.hasChildrenWithinTimeframe;
     },
     isEmptyChildrenWithFilter() {
       return this.isExpanded && this.hasFiltersApplied && this.isChildrenEmpty;

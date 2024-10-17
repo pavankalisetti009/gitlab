@@ -8,6 +8,7 @@ fragment BaseEpic on Epic {
   startDate
   dueDate
   hasChildren
+  hasChildrenWithinTimeframe
   hasParent
   confidential
   blocked
