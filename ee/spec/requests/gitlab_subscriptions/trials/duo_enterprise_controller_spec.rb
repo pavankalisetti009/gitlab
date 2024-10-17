@@ -178,22 +178,52 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
       end
 
       context 'when successful' do
-        before do
-          expect_create_success(group_for_trial)
+        context 'when add_on_purchase exists' do
+          before do
+            expect_create_success(group_for_trial)
+          end
+
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
+
+          it 'shows valid flash message', :freeze_time do
+            post_create
+
+            message = s_(
+              'DuoEnterpriseTrial|You have successfully started a Duo Enterprise trial that will expire on %{exp_date}.'
+            )
+            formatted_message = format(
+              message,
+              exp_date: I18n.l(61.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(formatted_message)
+          end
         end
 
-        it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
+        context 'when add_on_purchase is not found upon success for expiration date' do
+          it 'shows valid flash message', :freeze_time do
+            service_params = {
+              step: step,
+              lead_params: lead_params,
+              trial_params: trial_params,
+              user: user
+            }
 
-        it 'shows valid flash message', :freeze_time do
-          post_create
+            expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |inst|
+              expect(inst)
+                .to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: group_for_trial }))
+            end
 
-          message = format(
-            s_(
+            post_create
+
+            message = s_(
               'DuoEnterpriseTrial|You have successfully started a Duo Enterprise trial that will expire on %{exp_date}.'
-            ),
-            exp_date: I18n.l(60.days.from_now.to_date, format: :long)
-          )
-          expect(flash[:success]).to have_content(message)
+            )
+            formatted_message = format(
+              message,
+              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+            )
+            expect(flash[:success]).to have_content(formatted_message)
+          end
         end
 
         def expect_create_success(namespace)
@@ -206,7 +236,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
 
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |instance|
             expect(instance).to receive(:execute) do
-              create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+              create(
+                :gitlab_subscription_add_on_purchase,
+                :trial, add_on: add_on, expires_on: 61.days.from_now, namespace: namespace
+              )
             end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
         end

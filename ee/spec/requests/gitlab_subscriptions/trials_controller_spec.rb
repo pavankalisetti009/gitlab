@@ -166,21 +166,50 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
           let_it_be(:ultimate_trial_paid_customer_plan) { create(:ultimate_trial_paid_customer_plan) }
 
-          before do
-            expect_create_with_premium_success(namespace)
+          context 'when add_on_purchase exists' do
+            before do
+              expect_create_with_premium_success(namespace)
+            end
+
+            it 'shows valid flash message', :freeze_time do
+              post_create
+
+              message = format(
+                s_(
+                  'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
+                    'expire on %{exp_date}.'
+                ),
+                exp_date: I18n.l(61.days.from_now.to_date, format: :long)
+              )
+              expect(flash[:success]).to have_content(message)
+            end
           end
 
-          it 'shows valid flash message', :freeze_time do
-            post_create
+          context 'when add_on_purchase is not found upon success for expiration date' do
+            it 'shows valid flash message', :freeze_time do
+              service_params = {
+                step: step,
+                lead_params: lead_params.merge(glm_params),
+                trial_params: trial_params.merge(glm_params),
+                user: user
+              }
 
-            message = format(
-              s_(
-                'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
-                  'expire on %{exp_date}.'
-              ),
-              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
-            )
-            expect(flash[:success]).to have_content(message)
+              expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
+                expect(instance)
+                  .to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: namespace }))
+              end
+
+              post_create
+
+              message = format(
+                s_(
+                  'BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will ' \
+                    'expire on %{exp_date}.'
+                ),
+                exp_date: I18n.l(60.days.from_now.to_date, format: :long)
+              )
+              expect(flash[:success]).to have_content(message)
+            end
           end
         end
 
@@ -217,7 +246,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
           expect_next_instance_of(GitlabSubscriptions::Trials::CreateService, service_params) do |instance|
             expect(instance).to receive(:execute) do
-              create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+              create(
+                :gitlab_subscription_add_on_purchase,
+                :trial, add_on: add_on, expires_on: 61.days.from_now, namespace: namespace
+              )
               namespace.gitlab_subscription.update!(hosted_plan: ultimate_trial_paid_customer_plan)
             end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
