@@ -1,19 +1,13 @@
 import { GlEmptyState } from '@gitlab/ui';
 import IssuesAnalyticsEmptyState from 'ee/issues_analytics/components/issues_analytics_empty_state.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
 
 describe('IssuesAnalyticsEmptyState', () => {
   let wrapper;
 
   const svgHeight = 150;
-  const mockNoDataSvgPath = 'no-data.svg';
   const mockNoDataWithFiltersSvgPath = 'no-data-with-filters.svg';
-  const mockNoDataEmptyState = {
-    title: 'Get started with issue analytics',
-    description: 'Create issues for projects in your group to track and see metrics for them.',
-    svgPath: mockNoDataSvgPath,
-    svgHeight,
-  };
   const mockNoDataWithFiltersEmptyState = {
     title: 'Sorry, your filter produced no results',
     description: 'To widen your search, change or remove filters in the filter bar above.',
@@ -21,7 +15,7 @@ describe('IssuesAnalyticsEmptyState', () => {
     svgHeight,
   };
   const defaultProvide = {
-    noDataEmptyStateSvgPath: mockNoDataSvgPath,
+    showNewIssueDropdown: true,
     filtersEmptyStateSvgPath: mockNoDataWithFiltersSvgPath,
   };
 
@@ -35,18 +29,33 @@ describe('IssuesAnalyticsEmptyState', () => {
   };
 
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
+  const findEmptyStateWithoutAnyIssues = () => wrapper.findComponent(EmptyStateWithoutAnyIssues);
 
-  describe.each`
-    description               | emptyStateType         | expectedEmptyStateProps
-    ${'No data'}              | ${'noData'}            | ${mockNoDataEmptyState}
-    ${'No data with filters'} | ${'noDataWithFilters'} | ${mockNoDataWithFiltersEmptyState}
-  `('$description empty state', ({ emptyStateType, expectedEmptyStateProps }) => {
+  describe('No data with filters', () => {
     beforeEach(() => {
-      createComponent({ props: { emptyStateType } });
+      createComponent({ props: { emptyStateType: 'noDataWithFilters' } });
     });
 
     it('should render the correct empty state type', () => {
-      expect(findEmptyState().props()).toMatchObject(expectedEmptyStateProps);
+      expect(findEmptyState().props()).toMatchObject(mockNoDataWithFiltersEmptyState);
+    });
+
+    it('should not render the EmptyStateWithoutAnyIssues component', () => {
+      expect(findEmptyStateWithoutAnyIssues().exists()).toBe(false);
+    });
+  });
+
+  describe('No data', () => {
+    beforeEach(() => {
+      createComponent({ props: { emptyStateType: 'noData' } });
+    });
+
+    it('should render the empty state without any issues', () => {
+      expect(findEmptyStateWithoutAnyIssues().exists()).toBe(true);
+    });
+
+    it('should not render the generic empty state component', () => {
+      expect(findEmptyState().exists()).toBe(false);
     });
   });
 });

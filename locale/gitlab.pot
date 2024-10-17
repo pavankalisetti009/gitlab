@@ -30101,13 +30101,7 @@ msgstr ""
 msgid "IssuesAnalytics|Closed"
 msgstr ""
 
-msgid "IssuesAnalytics|Create issues for projects in your group to track and see metrics for them."
-msgstr ""
-
 msgid "IssuesAnalytics|Failed to load chart. Please try again."
-msgstr ""
-
-msgid "IssuesAnalytics|Get started with issue analytics"
 msgstr ""
 
 msgid "IssuesAnalytics|Issues Opened vs Closed"
