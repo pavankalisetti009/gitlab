@@ -127,7 +127,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - generate_commit_message
           - generate_cube_query
           - glab_ask_git_command
-          - resolve_vulnerability
           - semantic_search_issue
           - summarize_issue_discussions
           - summarize_merge_request
