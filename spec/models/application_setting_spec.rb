@@ -1719,4 +1719,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
   end
+
+  it_behaves_like 'TokenAuthenticatable' do
+    let(:token_field) { :runners_registration_token }
+  end
 end
