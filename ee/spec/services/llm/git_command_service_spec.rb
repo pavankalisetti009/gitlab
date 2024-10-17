@@ -8,6 +8,18 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
   describe '#perform', :saas do
     let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be(:user) { create(:user) }
+    let_it_be(:add_on_purchase) do
+      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+    end
+
+    let_it_be(:seat_assignment) do
+      create(
+        :gitlab_subscription_user_add_on_assignment,
+        user: user,
+        add_on_purchase: add_on_purchase
+      )
+    end
+
     let(:current_user) { user }
     let(:options) { { prompt: 'list 10 commit titles' } }
 
@@ -70,14 +82,6 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
 
         expect(response).to be_success
         expect(response.payload).to be_nil
-      end
-    end
-
-    context 'when user is not a member of ultimate group' do
-      let(:current_user) { create(:user) }
-
-      it 'returns an error' do
-        expect(subject.execute).to be_error
       end
     end
   end

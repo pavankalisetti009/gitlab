@@ -50,6 +50,17 @@ RSpec.describe Gitlab::Llm::Chain::Tools::BuildReader::Executor, feature_categor
     let_it_be(:user) { create(:user) }
     let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be_with_reload(:project) { create(:project, group: group) }
+    let_it_be(:add_on_purchase) do
+      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+    end
+
+    let_it_be(:seat_assignment) do
+      create(
+        :gitlab_subscription_user_add_on_assignment,
+        user: user,
+        add_on_purchase: add_on_purchase
+      )
+    end
 
     before_all do
       project.add_developer(user)
@@ -235,7 +246,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::BuildReader::Executor, feature_categor
 
         context 'with invalid build url' do
           let(:ai_response) { "url\", \"ResourceIdentifier\": \"#{url}\"}" }
-          let(:url) { "https://example.com/some/path/-/builds/1fd11" }
+          let(:url) { "https://example.com/some/path/-/builds/999999999999dfd11" }
 
           it "returns success response with an explanatory message" do
             allow(tool).to receive(:request).and_return(ai_response)

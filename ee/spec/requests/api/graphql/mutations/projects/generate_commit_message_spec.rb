@@ -10,6 +10,17 @@ RSpec.describe 'AiAction for Generate Commit Message', :saas, feature_category: 
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:current_user) { create(:user, developer_of: [project, group]) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+  end
+
+  let_it_be(:seat_assignment) do
+    create(
+      :gitlab_subscription_user_add_on_assignment,
+      user: current_user,
+      add_on_purchase: add_on_purchase
+    )
+  end
 
   let(:mutation) do
     params = { generate_commit_message: { resource_id: merge_request.to_gid } }
