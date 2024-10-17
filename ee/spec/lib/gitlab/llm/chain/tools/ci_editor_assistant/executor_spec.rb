@@ -68,6 +68,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CiEditorAssistant::Executor, feature_c
           expect(answer.error_code).to include("M4002")
         end
       end
+
+      it_behaves_like 'uses ai gateway agent prompt' do
+        let(:prompt_class) { Gitlab::Llm::Chain::Tools::CiEditorAssistant::Prompts::Anthropic }
+        let(:unit_primitive) { 'ci_editor_assistant' }
+      end
     end
 
     context 'when code tool was already used' do

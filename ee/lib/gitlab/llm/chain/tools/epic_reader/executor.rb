@@ -7,6 +7,7 @@ module Gitlab
         module EpicReader
           class Executor < Identifier
             include Concerns::ReaderTooling
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             RESOURCE_NAME = 'epic'
             NAME = 'EpicReader'

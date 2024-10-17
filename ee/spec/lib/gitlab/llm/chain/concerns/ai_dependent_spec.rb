@@ -77,24 +77,24 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
   end
 
   describe '#request' do
+    let(:tool) { ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options) }
+    let(:prompt_options) { tool.prompt.deep_merge({ options: { inputs: options, use_ai_gateway_agent_prompt: true } }) }
+
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
       allow(logger).to receive(:conditional_info)
     end
 
     it 'passes prompt and unit primitive to the ai_client' do
-      tool = ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options)
-
-      expect(ai_request).to receive(:request).with(tool.prompt, unit_primitive: nil)
+      expect(ai_request).to receive(:request).with(prompt_options, unit_primitive: 'issue_reader')
 
       tool.request
     end
 
     it 'passes blocks forward to the ai_client' do
       b = proc { "something" }
-      tool = ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options)
 
-      expect(ai_request).to receive(:request).with(tool.prompt, unit_primitive: nil, &b)
+      expect(ai_request).to receive(:request).with(prompt_options, unit_primitive: 'issue_reader', &b)
 
       tool.request(&b)
     end
@@ -136,13 +136,24 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
     end
 
     it 'logs the request', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463465' do
-      tool = ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options)
       expected_prompt = tool.prompt[:prompt]
 
       tool.request
 
       expect(logger).to have_received(:conditional_info).with(context.current_user, a_hash_including(
         message: "Content of the prompt from chat request", klass: tool.class.to_s, prompt: expected_prompt))
+    end
+
+    context 'when prompt_migration_issue_reader feature flag is disabled' do
+      before do
+        stub_feature_flags(prompt_migration_issue_reader: false)
+      end
+
+      it 'does not send params to use ai gateway prompt' do
+        expect(ai_request).to receive(:request).with(tool.prompt, unit_primitive: nil)
+
+        tool.request
+      end
     end
   end
 end
