@@ -415,9 +415,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           node.update_column :updated_at, (described_class::DEBOUNCE_DELAY + 1.second).ago
         end
 
-        it 'calls save' do
-          expect(node).to receive(:save)
-          node.save_debounce
+        it 'returns true and calls save' do
+          expect(node).to receive(:save).and_call_original
+          expect(node.save_debounce).to be true
         end
       end
 
@@ -426,9 +426,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           node.update_column :updated_at, (described_class::DEBOUNCE_DELAY - 1.second).ago
         end
 
-        it 'does not calls save' do
+        it 'returns true and does not calls save' do
           expect(node).not_to receive(:save)
-          node.save_debounce
+          expect(node.save_debounce).to be true
         end
       end
     end
