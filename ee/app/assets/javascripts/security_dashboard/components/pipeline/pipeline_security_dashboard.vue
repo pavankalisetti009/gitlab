@@ -9,6 +9,7 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import ScanAlerts, { TYPE_ERRORS, TYPE_WARNINGS } from './scan_alerts.vue';
 import ReportStatusAlert, { STATUS_PURGED } from './report_status_alert.vue';
 import SecurityReportsSummary from './security_reports_summary.vue';
+import PipelineVulnerabilityReport from './pipeline_vulnerability_report.vue';
 
 export default {
   name: 'PipelineSecurityDashboard',
@@ -19,7 +20,7 @@ export default {
     ReportStatusAlert,
     ScanAlerts,
     SecurityReportsSummary,
-    PipelineVulnerabilityReport: () => import('./pipeline_vulnerability_report.vue'),
+    PipelineVulnerabilityReport,
     GlSprintf,
     GlLink,
     SbomReportsErrorsAlert,
