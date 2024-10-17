@@ -131,7 +131,7 @@ module Search
       end
 
       def save_debounce
-        return if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
+        return true if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
 
         save
       end
