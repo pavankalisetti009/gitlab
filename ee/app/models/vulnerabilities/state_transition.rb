@@ -4,11 +4,8 @@ module Vulnerabilities
   class StateTransition < Gitlab::Database::SecApplicationRecord
     include EachBatch
     include BulkInsertSafe
-    include IgnorableColumns
 
     self.table_name = 'vulnerability_state_transitions'
-
-    ignore_column :state_changed_at_pipeline_id, remove_with: '17.6', remove_after: '2024-11-21'
 
     belongs_to :author, class_name: 'User', inverse_of: :vulnerability_state_transitions
     belongs_to :vulnerability, class_name: 'Vulnerability', inverse_of: :state_transitions
