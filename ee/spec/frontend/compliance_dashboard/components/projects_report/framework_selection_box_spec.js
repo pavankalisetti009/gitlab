@@ -58,6 +58,7 @@ describe('FrameworkSelectionBox component', () => {
 
   it('sets toggle-text as default one when selection is not provided', () => {
     createComponent();
+
     expect(wrapper.findComponent(GlCollapsibleListbox).props('toggleText')).toBe(
       FrameworkSelectionBox.i18n.frameworksDropdownPlaceholder,
     );
@@ -75,6 +76,7 @@ describe('FrameworkSelectionBox component', () => {
 
   it('sets toggle-text to placeholder when no framework is selected', async () => {
     createComponent({ selected: [] });
+
     await waitForPromises();
 
     expect(wrapper.findComponent(GlCollapsibleListbox).props('toggleText')).toBe(
@@ -89,8 +91,24 @@ describe('FrameworkSelectionBox component', () => {
     expect(wrapper.emitted('select').at(-1)).toStrictEqual(['framework-id']);
   });
 
+  it('emits update evenet with selected frameworks when the selection changed and user clicks outside', () => {
+    createComponent();
+
+    wrapper.findComponent(GlCollapsibleListbox).vm.$emit('select', 'framework-id-1');
+    wrapper.findComponent(GlCollapsibleListbox).vm.$emit('hidden');
+    expect(wrapper.emitted('update').at(-1)).toStrictEqual(['framework-id-1']);
+  });
+  it('does not emit update event when the selection have not changed', () => {
+    createComponent();
+
+    wrapper.findComponent(GlCollapsibleListbox).vm.$emit('select', []);
+    wrapper.findComponent(GlCollapsibleListbox).vm.$emit('hidden');
+    expect(wrapper.emitted('update')).toBeUndefined();
+  });
+
   it('filters framework list for underlying listbox', async () => {
     createComponent();
+
     await waitForPromises();
 
     wrapper.findComponent(GlCollapsibleListbox).vm.$emit('search', 'PCI');
@@ -102,13 +120,16 @@ describe('FrameworkSelectionBox component', () => {
 
   it('sets listbox to loading while loading list of elements', () => {
     createComponent();
+
     expect(wrapper.findComponent(GlCollapsibleListbox).props('loading')).toBe(true);
   });
 
   it('reports error to sentry', async () => {
     const ERROR = new Error('Network error');
     getComplianceFrameworkQueryResponse.mockRejectedValue(ERROR);
+
     createComponent();
+
     await waitForPromises();
 
     expect(captureException).toHaveBeenCalledWith(ERROR);
@@ -123,6 +144,7 @@ describe('FrameworkSelectionBox component', () => {
 
   it('clicking new framework button emits create event', () => {
     createComponent();
+
     findNewFrameworkButton().vm.$emit('click');
 
     expect(wrapper.emitted('create')).toHaveLength(1);

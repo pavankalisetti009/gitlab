@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlCollapsibleListbox } from '@gitlab/ui';
+import { isEqual } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
@@ -10,9 +11,9 @@ const frameworksDropdownPlaceholder = s__('ComplianceReport|Select frameworks');
 
 export default {
   components: {
+    FrameworkBadge,
     GlButton,
     GlCollapsibleListbox,
-    FrameworkBadge,
   },
   model: {
     prop: 'selected',
@@ -47,6 +48,7 @@ export default {
   data() {
     return {
       frameworkSearchQuery: '',
+      currentSelectedFrameworks: [...this.selected],
     };
   },
   apollo: {
@@ -109,6 +111,15 @@ export default {
     getFrameworkById(id) {
       return this.frameworks?.find((f) => f.id === id) || null;
     },
+    updateFrameworks() {
+      if (isEqual(this.selected, this.currentSelectedFrameworks)) return;
+      this.$emit('update', this.currentSelectedFrameworks);
+    },
+    handleSelect(frameworkIds) {
+      this.currentSelectedFrameworks = frameworkIds;
+      // we still want to emit selection for the selection_operations.vue
+      this.$emit('select', frameworkIds);
+    },
   },
   i18n: {
     frameworksDropdownPlaceholder,
@@ -119,7 +130,7 @@ export default {
 <template>
   <gl-collapsible-listbox
     ref="listbox"
-    :selected="selected"
+    :selected="currentSelectedFrameworks"
     :loading="$apollo.queries.frameworks.loading"
     :toggle-text="toggleText"
     :disabled="disabled"
@@ -130,7 +141,8 @@ export default {
     role="button"
     tabindex="0"
     fluid-width
-    @select="$emit('select', $event)"
+    @select="handleSelect"
+    @hidden="updateFrameworks"
     @search="frameworkSearchQuery = $event"
   >
     <template v-if="$scopedSlots.toggle" #toggle><slot name="toggle"></slot></template>

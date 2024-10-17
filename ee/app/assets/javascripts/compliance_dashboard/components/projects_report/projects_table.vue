@@ -430,7 +430,7 @@ export default {
           :is-framework-creating-enabled="isFrameworkEditingEnabled"
           :selected="complianceFrameworks.map((f) => f.id)"
           :group-path="groupPath"
-          @select="
+          @update="
             applySingleItemOperation({
               projectId: id,
               frameworkIds: $event,

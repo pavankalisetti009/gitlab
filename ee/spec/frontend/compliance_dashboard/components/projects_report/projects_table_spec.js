@@ -416,7 +416,7 @@ describe('ProjectsTable component', () => {
         findTableRowData(ROW_WITHOUT_FRAMEWORK_IDX)
           .at(ACTION_COLUMN_IDX)
           .findComponent(FrameworkSelectionBox)
-          .vm.$emit('select', [NEW_FRAMEWORK_ID]);
+          .vm.$emit('update', [NEW_FRAMEWORK_ID]);
       });
 
       itCallsUpdateFrameworksMutation([
