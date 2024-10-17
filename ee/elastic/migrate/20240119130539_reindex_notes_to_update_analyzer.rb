@@ -9,3 +9,5 @@ class ReindexNotesToUpdateAnalyzer < Elastic::Migration
     true
   end
 end
+
+ReindexNotesToUpdateAnalyzer.prepend ::Elastic::MigrationObsolete
