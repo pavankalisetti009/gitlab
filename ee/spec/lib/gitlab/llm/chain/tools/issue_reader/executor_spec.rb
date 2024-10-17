@@ -69,12 +69,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
     context 'when issue is identified' do
       let_it_be(:issue1) { create(:issue, project: project) }
       let_it_be(:issue2) { create(:issue, project: project) }
+
+      let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
           container: project,
           resource: issue1,
           current_user: user,
-          ai_request: double
+          ai_request: ai_request_double
         )
       end
 
@@ -290,6 +293,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             response = "You already have identified the issue #{context.resource.to_global_id}, read carefully."
             expect(tool.execute.content).to eq(response)
           end
+        end
+
+        it_behaves_like 'uses ai gateway agent prompt' do
+          let(:prompt_class) { Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic }
+          let(:unit_primitive) { 'issue_reader' }
         end
       end
     end

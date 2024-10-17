@@ -68,12 +68,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
     context 'when epic is identified' do
       let_it_be(:epic1) { create(:epic, group: group) }
       let_it_be(:epic2) { create(:epic, group: group) }
+
+      let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
           container: group,
           resource: epic1,
           current_user: user,
-          ai_request: double
+          ai_request: ai_request_double
         )
       end
 
@@ -308,6 +311,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
               expect(tool.execute.content).to eq(response)
             end
           end
+        end
+
+        it_behaves_like 'uses ai gateway agent prompt' do
+          let(:prompt_class) { Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic }
+          let(:unit_primitive) { 'epic_reader' }
         end
       end
 

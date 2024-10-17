@@ -7,6 +7,7 @@ module Gitlab
         module CiEditorAssistant
           class Executor < Tool
             include Concerns::AiDependent
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = 'CiEditorAssistant'
             HUMAN_NAME = 'CI Assistant'
