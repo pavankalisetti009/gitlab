@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOccurrences, schema: 20230815140656, feature_category: :dependency_management do # rubocop:disable Layout/LineLength
+RSpec.describe Gitlab::BackgroundMigration::PopulateDenormalizedColumnsForSbomOccurrences, schema: 20230721095222, feature_category: :dependency_management do # rubocop:disable Layout/LineLength
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:users) { table(:users) }
