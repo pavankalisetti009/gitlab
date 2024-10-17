@@ -39,8 +39,9 @@ describe('workspaces/agent_mapping/components/agent_mapping_status_toggle', () =
   });
 
   it.each`
-    agent                   | modalActionPrimary                            | modalTitle
-    ${MAPPED_CLUSTER_AGENT} | ${{ text: 'Block agent', variant: 'danger' }} | ${'Block this agent for all group members'}
+    agent                     | modalActionPrimary                             | modalTitle
+    ${MAPPED_CLUSTER_AGENT}   | ${{ text: 'Block agent', variant: 'danger' }}  | ${'Block this agent for all group members'}
+    ${UNMAPPED_CLUSTER_AGENT} | ${{ text: 'Allow agent', variant: 'confirm' }} | ${'Allow this agent for all group members?'}
   `(
     'customizes confirmation modal based on agent status',
     ({ agent, modalActionPrimary, modalTitle }) => {

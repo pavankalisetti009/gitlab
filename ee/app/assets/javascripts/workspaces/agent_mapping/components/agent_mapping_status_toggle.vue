@@ -35,7 +35,7 @@ const CONFIRMATION_MODALS = {
     actionPrimary: {
       text: s__('Workspaces|Allow agent'),
       attributes: {
-        variant: 'primary',
+        variant: 'confirm',
       },
     },
     actionCancel: {

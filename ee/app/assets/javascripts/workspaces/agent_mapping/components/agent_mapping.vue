@@ -73,7 +73,7 @@ export default {
     @error="onErrorResult"
   >
     <template #default="{ loading }">
-      <div>
+      <div class="gl-pt-4">
         <div :class="$options.ALERT_CONTAINER_CLASSNAME"></div>
         <gl-tabs lazy>
           <gl-tab data-testid="allowed-agents-tab">
