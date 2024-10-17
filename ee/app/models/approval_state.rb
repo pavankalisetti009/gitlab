@@ -98,7 +98,31 @@ class ApprovalState
 
   def approvals_required
     strong_memoize(:approvals_required) do
-      wrapped_approval_rules.sum(&:approvals_required)
+      [regular_rules_required + code_owner_rules_required + report_approver_rules_required, any_approver_rules_required].max
+    end
+  end
+
+  def code_owner_rules_required
+    strong_memoize(:code_owner_rules_required) do
+      code_owner_rules.sum(&:approvals_required)
+    end
+  end
+
+  def report_approver_rules_required
+    strong_memoize(:report_approver_rules_required) do
+      report_approver_rules.sum(&:approvals_required)
+    end
+  end
+
+  def regular_rules_required
+    strong_memoize(:regular_rules_required) do
+      regular_approval_rules.sum(&:approvals_required)
+    end
+  end
+
+  def any_approver_rules_required
+    strong_memoize(:any_approver_rules_required) do
+      any_approver_approval_rules.sum(&:approvals_required)
     end
   end
 
