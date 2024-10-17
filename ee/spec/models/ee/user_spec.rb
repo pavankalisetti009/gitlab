@@ -3643,4 +3643,78 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
   end
+
+  context 'normalized email reuse check' do
+    let(:error_message) { 'Email is not allowed. Please enter a different email address and try again.' }
+    let(:tumbled_email) { 'user+inbox1@test.com' }
+    let(:normalized_email) { 'user@test.com' }
+
+    subject(:new_user) { build(:user, email: tumbled_email).tap(&:valid?) }
+
+    before do
+      stub_const("::AntiAbuse::UniqueDetumbledEmailValidator::NORMALIZED_EMAIL_ACCOUNT_LIMIT", 1)
+      create(:user, email: normalized_email)
+    end
+
+    context 'when the user has a gitlab.com email address' do
+      let(:tumbled_email) { 'user+inbox1@gitlab.com' }
+      let(:normalized_email) { 'user@gitlab.com' }
+
+      context 'when running in saas', :saas do
+        it 'does not add an error' do
+          expect(new_user.errors).to be_empty
+        end
+      end
+
+      context 'when not running in saas' do
+        it 'adds a validation error' do
+          expect(new_user.errors.full_messages).to include(error_message)
+        end
+      end
+    end
+
+    context 'when a saas user has a an email associated with a verified domain', :saas do
+      let(:verified_domain) { 'verified.com' }
+      let(:tumbled_email) { "user+inbox1@#{verified_domain}" }
+      let(:normalized_email) { "user@#{verified_domain}" }
+
+      context 'when the group is paid' do
+        let_it_be(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+        let_it_be(:ultimate_project) { create(:project, group: ultimate_group) }
+
+        it 'does not add an error' do
+          create(:pages_domain, domain: verified_domain, project: ultimate_project)
+
+          expect(new_user.errors).to be_empty
+        end
+      end
+
+      context 'when the root group is not paid' do
+        let_it_be(:free_group) { create(:group) }
+        let_it_be(:free_project) { create(:project, group: free_group) }
+
+        it 'adds a validation error' do
+          create(:pages_domain, domain: verified_domain, project: free_project)
+
+          expect(new_user.errors.full_messages).to include(error_message)
+        end
+      end
+
+      context 'when the root group does not exist' do
+        let_it_be(:project) { create(:project) }
+
+        it 'adds a validation error' do
+          create(:pages_domain, domain: verified_domain, project: project)
+
+          expect(new_user.errors.full_messages).to include(error_message)
+        end
+      end
+    end
+
+    context 'when user is on a self-managed instance' do
+      it 'does not check domain verification' do
+        expect(::PagesDomain).not_to receive(:verified)
+      end
+    end
+  end
 end
