@@ -39,8 +39,8 @@ module QA
             labels: 'label1,label2',
             parent_id: parent_epic.id)
 
-          child_epic.award_emoji('thumbsup')
-          child_epic.award_emoji('thumbsdown')
+          child_epic.award_emoji(AwardEmoji::THUMBS_UP)
+          child_epic.award_emoji(AwardEmoji::THUMBS_DOWN)
 
           source_iteration
         end

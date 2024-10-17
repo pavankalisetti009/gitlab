@@ -85,7 +85,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         ) do |work_item|
           create(:award_emoji, name: 'eyes', awardable: work_item)
           create(:award_emoji, name: 'rocket', awardable: work_item.sync_object)
-          create(:award_emoji, name: 'thumbsup', awardable: work_item.sync_object)
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: work_item.sync_object)
         end
 
         expect do
@@ -169,10 +169,10 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         end
 
         it 'fetches unified upvotes and downvotes' do
-          create(:award_emoji, name: 'thumbsup', awardable: group_work_item)
-          create(:award_emoji, name: 'thumbsup', awardable: group_work_item.sync_object)
-          create(:award_emoji, name: 'thumbsup', awardable: group_work_item.sync_object)
-          create(:award_emoji, name: 'thumbsdown', awardable: group_work_item.sync_object)
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: group_work_item)
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: group_work_item.sync_object)
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: group_work_item.sync_object)
+          create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: group_work_item.sync_object)
 
           post_graphql(query, current_user: current_user)
 

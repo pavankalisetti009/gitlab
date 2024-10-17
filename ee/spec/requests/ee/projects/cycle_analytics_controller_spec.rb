@@ -23,7 +23,9 @@ RSpec.describe Projects::CycleAnalyticsController, feature_category: :product_an
   end
 
   context 'when extra query params are given' do
-    let(:extra_query_params) { { weight: '3', epic_id: '1', iteration_id: '2', my_reaction_emoji: 'thumbsup' } }
+    let(:extra_query_params) do
+      { weight: '3', epic_id: '1', iteration_id: '2', my_reaction_emoji: AwardEmoji::THUMBS_UP }
+    end
 
     context 'when not licensed' do
       it 'does not expose unsupported query params' do
@@ -47,7 +49,7 @@ RSpec.describe Projects::CycleAnalyticsController, feature_category: :product_an
         expect(body).to include('data-weight="3"')
         expect(body).to include('data-epic-id="1"')
         expect(body).to include('data-iteration-id="2"')
-        expect(body).to include('data-my-reaction-emoji="thumbsup"')
+        expect(body).to include(%(data-my-reaction-emoji="#{AwardEmoji::THUMBS_UP}"))
       end
     end
   end

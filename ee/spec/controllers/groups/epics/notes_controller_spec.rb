@@ -217,17 +217,17 @@ RSpec.describe Groups::Epics::NotesController, feature_category: :portfolio_mana
 
     it "toggles the award emoji" do
       expect do
-        post(:toggle_award_emoji, params: request_params.merge(name: "thumbsup"))
+        post(:toggle_award_emoji, params: request_params.merge(name: AwardEmoji::THUMBS_UP))
       end.to change { note.award_emoji.count }.by(1)
 
       expect(response).to have_gitlab_http_status(:ok)
     end
 
     it "removes the already awarded emoji" do
-      post(:toggle_award_emoji, params: request_params.merge(name: "thumbsup"))
+      post(:toggle_award_emoji, params: request_params.merge(name: AwardEmoji::THUMBS_UP))
 
       expect do
-        post(:toggle_award_emoji, params: request_params.merge(name: "thumbsup"))
+        post(:toggle_award_emoji, params: request_params.merge(name: AwardEmoji::THUMBS_UP))
       end.to change { AwardEmoji.count }.by(-1)
 
       expect(response).to have_gitlab_http_status(:ok)

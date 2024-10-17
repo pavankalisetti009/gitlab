@@ -252,7 +252,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
   end
 
   describe 'POST toggle_award_emoji' do
-    let(:emoji_name) { 'thumbsup' }
+    let(:emoji_name) { AwardEmoji::THUMBS_UP }
     let(:request_params) do
       {
         id: note,

@@ -146,7 +146,7 @@ RSpec.describe Resolvers::EpicsResolver, feature_category: :portfolio_management
       context 'with my_reaction_emoji' do
         it 'filters epics by reaction emoji' do
           create(:award_emoji, name: 'man_in_business_suit_levitating', user: current_user, awardable: epic1)
-          create(:award_emoji, name: 'thumbsdown', user: current_user, awardable: epic2)
+          create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: current_user, awardable: epic2)
 
           epics = resolve_epics(my_reaction_emoji: 'man_in_business_suit_levitating')
 
@@ -319,7 +319,7 @@ RSpec.describe Resolvers::EpicsResolver, feature_category: :portfolio_management
       let_it_be(:epic_1) { create(:labeled_epic, group: group, labels: [label]) }
       let_it_be(:epic_2) { create(:epic, group: group, author: author) }
       let_it_be(:epic_3) { create(:epic, group: group) }
-      let_it_be(:awarded_emoji) { create(:award_emoji, name: 'thumbsup', awardable: epic_3, user: current_user) }
+      let_it_be(:awarded_emoji) { create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic_3, user: current_user) }
 
       subject(:results) { resolve_epics(args) }
 

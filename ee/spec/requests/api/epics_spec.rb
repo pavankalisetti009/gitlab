@@ -275,8 +275,8 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       end
 
       it 'has upvote/downvote information' do
-        create(:award_emoji, name: 'thumbsup', awardable: epic, user: user)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic2, user: user)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic, user: user)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic2, user: user)
 
         get api(url)
 

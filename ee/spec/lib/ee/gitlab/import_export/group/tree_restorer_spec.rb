@@ -36,7 +36,7 @@ RSpec.describe Gitlab::ImportExport::Group::TreeRestorer, feature_category: :imp
       end
 
       it 'has award emoji' do
-        expect(group.epics.find_by_iid(1).award_emoji.first.name).to eq('thumbsup')
+        expect(group.epics.find_by_iid(1).award_emoji.first.name).to eq(AwardEmoji::THUMBS_UP)
       end
 
       it 'preserves epic state' do

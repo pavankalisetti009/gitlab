@@ -166,8 +166,8 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
       end
 
       it 'has upvote/downvote information' do
-        create(:award_emoji, name: 'thumbsup', awardable: epic, user: user)
-        create(:award_emoji, name: 'thumbsdown', awardable: epic2, user: user)
+        create(:award_emoji, name: AwardEmoji::THUMBS_UP, awardable: epic, user: user)
+        create(:award_emoji, name: AwardEmoji::THUMBS_DOWN, awardable: epic2, user: user)
 
         post_graphql(query, current_user: user)
 
@@ -491,8 +491,8 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
       let(:requested_fields) { [:upvotes, :downvotes] }
 
       before do
-        create_list(:award_emoji, 2, name: 'thumbsup', awardable: epic_a)
-        create_list(:award_emoji, 2, name: 'thumbsdown', awardable: epic_b)
+        create_list(:award_emoji, 2, name: AwardEmoji::THUMBS_UP, awardable: epic_a)
+        create_list(:award_emoji, 2, name: AwardEmoji::THUMBS_DOWN, awardable: epic_b)
       end
 
       include_examples 'N+1 query check'

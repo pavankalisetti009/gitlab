@@ -147,7 +147,7 @@ RSpec.describe StatusPage::TriggerPublishService, feature_category: :incident_ma
         end
 
         context 'without recognized emoji' do
-          let(:emoji_name) { 'thumbsup' }
+          let(:emoji_name) { AwardEmoji::THUMBS_UP }
 
           context 'when changed' do
             include_examples 'no trigger status page publish' do
@@ -196,7 +196,7 @@ RSpec.describe StatusPage::TriggerPublishService, feature_category: :incident_ma
         include_examples 'trigger status page publish'
 
         context 'without recognized emoji' do
-          let(:emoji_name) { 'thumbsup' }
+          let(:emoji_name) { AwardEmoji::THUMBS_UP }
 
           include_examples 'no trigger status page publish'
         end

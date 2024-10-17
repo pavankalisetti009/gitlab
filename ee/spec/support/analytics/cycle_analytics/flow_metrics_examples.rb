@@ -309,9 +309,9 @@ RSpec.shared_examples 'value stream analytics flow metrics issuesCompleted examp
   let_it_be(:epic_issue) { create(:epic_issue, epic: epic, issue: issue3) }
 
   before_all do
-    create(:award_emoji, name: 'thumbsup', user: current_user, awardable: issue2)
-    create(:award_emoji, name: 'thumbsup', user: current_user, awardable: issue3)
-    create(:award_emoji, name: 'thumbsup', user: current_user, awardable: issue4)
+    create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: current_user, awardable: issue2)
+    create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: current_user, awardable: issue3)
+    create(:award_emoji, name: AwardEmoji::THUMBS_UP, user: current_user, awardable: issue4)
   end
 
   let(:query) do
@@ -421,7 +421,7 @@ RSpec.shared_examples 'value stream analytics flow metrics issuesCompleted examp
         path: full_path,
         from: 21.days.ago.iso8601,
         to: 10.days.ago.iso8601,
-        notMyReactionEmoji: 'thumbsup'
+        notMyReactionEmoji: AwardEmoji::THUMBS_UP
       }
     end
 

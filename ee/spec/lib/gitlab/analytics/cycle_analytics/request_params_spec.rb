@@ -185,7 +185,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::RequestParams, feature_categor
           value_stream: stage.value_stream,
           epic_id: 1,
           iteration_id: 2,
-          my_reaction_emoji: 'thumbsup',
+          my_reaction_emoji: AwardEmoji::THUMBS_UP,
           weight: 5
         )
       end
@@ -200,7 +200,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::RequestParams, feature_categor
         expect(subject[:stage]).to eq(%({"id":#{stage.id},"title":"#{stage.name}"}))
         expect(subject[:epic_id]).to eq(1)
         expect(subject[:iteration_id]).to eq(2)
-        expect(subject[:my_reaction_emoji]).to eq('thumbsup')
+        expect(subject[:my_reaction_emoji]).to eq(AwardEmoji::THUMBS_UP)
         expect(subject[:weight]).to eq(5)
         expect(subject[:enable_vsd_link]).to eq('true')
       end
