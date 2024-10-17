@@ -1,5 +1,12 @@
 <script>
-import { GlTableLite, GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
+import {
+  GlTable,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+  GlIcon,
+  GlLink,
+  GlSprintf,
+} from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
@@ -7,18 +14,25 @@ import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disc
 export default {
   name: 'SelfHostedModelsTable',
   components: {
-    GlTableLite,
+    GlTable,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlIcon,
+    GlLink,
+    GlSprintf,
     DeleteSelfHostedModelDisclosureItem,
   },
-  inject: ['basePath'],
+  inject: ['basePath', 'newSelfHostedModelPath'],
   props: {
     models: {
       type: Array,
       required: true,
     },
+  },
+  i18n: {
+    emptyStateText: s__(
+      'AdminSelfHostedModels|You do not currently have any self-hosted models. %{linkStart}Add a self-hosted model%{linkEnd} to get started.',
+    ),
   },
   fields: [
     {
@@ -69,14 +83,24 @@ export default {
 };
 </script>
 <template>
-  <gl-table-lite
+  <gl-table
     data-testid="self-hosted-model-table"
     :fields="$options.fields"
     :items="models"
     stacked="md"
     :hover="true"
     :selectable="false"
+    :show-empty="true"
   >
+    <template #empty>
+      <p class="gl-m-0 gl-py-4">
+        <gl-sprintf :message="$options.i18n.emptyStateText">
+          <template #link="{ content }">
+            <gl-link :href="newSelfHostedModelPath">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </p>
+    </template>
     <template #cell(has_api_key)="{ item }">
       <gl-icon
         v-if="item.hasApiToken"
@@ -96,5 +120,5 @@ export default {
         <delete-self-hosted-model-disclosure-item :model="item" />
       </gl-disclosure-dropdown>
     </template>
-  </gl-table-lite>
+  </gl-table>
 </template>
