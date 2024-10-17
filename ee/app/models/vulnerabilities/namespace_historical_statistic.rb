@@ -20,6 +20,7 @@ module Vulnerabilities
 
     enum letter_grade: Vulnerabilities::Statistic.letter_grades
 
+    scope :by_direct_group, ->(group) { where(namespace: group) }
     scope :older_than, ->(days:) {
       where('"vulnerability_namespace_historical_statistics"."date" < (now() - interval ?)', "#{days} days")
     }
