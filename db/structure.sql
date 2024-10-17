@@ -20305,6 +20305,8 @@ CREATE TABLE virtual_registries_packages_maven_cached_responses (
     content_type text DEFAULT 'application/octet-stream'::text NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
     file_final_path text,
+    file_md5 bytea,
+    file_sha1 bytea NOT NULL,
     CONSTRAINT check_28c64d513d CHECK ((char_length(object_storage_key) <= 255)),
     CONSTRAINT check_30b7e853d9 CHECK ((char_length(upstream_etag) <= 255)),
     CONSTRAINT check_3f121b03fd CHECK ((char_length(file_final_path) <= 1024)),
