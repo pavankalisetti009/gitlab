@@ -22,7 +22,9 @@ import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/qu
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
+import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
 import { mockPipelineExecutionPoliciesResponse } from '../../mocks/mock_pipeline_execution_policy_data';
+import { mockVulnerabilityManagementPoliciesResponse } from '../../mocks/mock_vulnerability_management_policy_data';
 import {
   projectScanExecutionPolicies,
   groupScanExecutionPolicies,
@@ -30,6 +32,7 @@ import {
   groupScanResultPolicies,
   groupPipelineResultPolicies,
   projectPipelineResultPolicies,
+  projectVulnerabilityManagementPolicies,
   mockLinkedSppItemsResponse,
 } from '../../mocks/mock_apollo';
 import {
@@ -55,6 +58,9 @@ const projectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies(
 const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
   mockPipelineExecutionPoliciesResponse,
 );
+const projectVulnerabilityManagementPoliciesSpy = projectVulnerabilityManagementPolicies(
+  mockVulnerabilityManagementPoliciesResponse,
+);
 
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 const defaultRequestHandlers = {
@@ -64,6 +70,7 @@ const defaultRequestHandlers = {
   groupScanResultPolicies: groupScanResultPoliciesSpy,
   projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
   groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
+  projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
 };
 
@@ -94,6 +101,10 @@ describe('App', () => {
         [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+        [
+          projectVulnerabilityManagementPoliciesQuery,
+          requestHandlers.projectVulnerabilityManagementPolicies,
+        ],
       ]),
     });
   };
@@ -106,8 +117,13 @@ describe('App', () => {
   });
 
   describe('loading', () => {
-    it('renders the policies list correctly', () => {
+    it('renders the policies list correctly when vulnerabilityManagementPolicyType is false', () => {
       createWrapper();
+      expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
+    });
+
+    it('renders the policies list correctly when vulnerabilityManagementPolicyType is true', () => {
+      createWrapper({ provide: { glFeatures: { vulnerabilityManagementPolicyType: true } } });
       expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
     });
   });
@@ -132,6 +148,36 @@ describe('App', () => {
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
           mockPipelineExecutionPoliciesResponse,
+      });
+    });
+
+    describe('when vulnerabilityManagementPolicyType is false', () => {
+      it.each`
+        type                          | projectHandler
+        ${'vulnerability management'} | ${'projectVulnerabilityManagementPolicies'}
+      `('does not fetch project-level $type policies', ({ projectHandler }) => {
+        expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when vulnerabilityManagementPolicyType is true', () => {
+      beforeEach(async () => {
+        gon.features = { vulnerabilityManagementPolicyType: true };
+
+        createWrapper({
+          provide: { glFeatures: { vulnerabilityManagementPolicyType: true } },
+        });
+        await waitForPromises();
+      });
+
+      it.each`
+        type                          | projectHandler
+        ${'vulnerability management'} | ${'projectVulnerabilityManagementPolicies'}
+      `('fetches project-level $type policies', ({ projectHandler }) => {
+        expect(requestHandlers[projectHandler]).toHaveBeenCalledWith({
+          fullPath: namespacePath,
+          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
+        });
       });
     });
 

@@ -31,6 +31,7 @@ import OverloadWarningModal from '../overload_warning_modal.vue';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
+  VULNERABILITY_MANAGEMENT_FILTER_OPTION,
   BREAKING_CHANGES_POPOVER_CONTENTS,
 } from './constants';
 import BreakingChangesIcon from './breaking_changes_icon.vue';
@@ -142,6 +143,14 @@ export default {
     };
   },
   computed: {
+    policyTypeFilterOptions() {
+      return this.glFeatures.vulnerabilityManagementPolicyType
+        ? {
+            ...POLICY_TYPE_FILTER_OPTIONS,
+            ...VULNERABILITY_MANAGEMENT_FILTER_OPTION,
+          }
+        : POLICY_TYPE_FILTER_OPTIONS;
+    },
     hasExceedLimitActions() {
       return Boolean(
         this.glFeatures.scanExecutionPolicyActionLimitGroup ||
@@ -161,7 +170,7 @@ export default {
           : [this.selectedPolicyType];
 
       const policies = policyTypes.map((type) =>
-        getPoliciesWithType(this.policiesByType[type], POLICY_TYPE_FILTER_OPTIONS[type].text),
+        getPoliciesWithType(this.policiesByType[type], this.policyTypeFilterOptions[type].text),
       );
 
       return policies.flat();

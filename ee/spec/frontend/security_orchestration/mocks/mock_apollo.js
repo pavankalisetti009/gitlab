@@ -37,6 +37,13 @@ export const projectPipelineResultPolicies = (nodes) =>
 export const groupPipelineResultPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Group', policyType: 'pipelineExecutionPolicies' });
 
+export const projectVulnerabilityManagementPolicies = (nodes) =>
+  mockPolicyResponse({
+    nodes,
+    namespaceType: 'Project',
+    policyType: 'vulnerabilityManagementPolicies',
+  });
+
 export const mockLinkSecurityPolicyProjectResponses = {
   success: jest.fn().mockResolvedValue({
     data: {
