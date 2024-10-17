@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
+RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:duo_buy_now_url) { group_settings_gitlab_duo_seat_utilization_index_path(namespace) }
+  let(:buy_now_url) { group_settings_gitlab_duo_seat_utilization_index_path(namespace) }
 
   subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
 
@@ -13,14 +13,14 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
     let(:page_scope) { find_by_testid('hero-section') }
 
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Ship software faster')) }
-    it { is_expected.to have_link(_('Buy now'), href: duo_buy_now_url) }
+    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
     it { is_expected.to have_link(href: 'https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479') }
   end
 
   context 'when rendering the why section' do
     let(:page_scope) { find_by_testid('why-section') }
 
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Why GitLab Duo Enterprise?')) }
+    it { is_expected.to have_content(s_('TrialDiscover|Why Ultimate & GitLab Duo Enterprise?')) }
 
     it { has_testid?('why-entry', context: component, count: 4) } # rubocop:disable RSpec/NoExpectationExample -- Expectation in matcher
 
@@ -29,34 +29,37 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Improve developer experience')) }
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Transparent AI')) }
 
-    it { is_expected.to have_link(_('AI Transparency Center'), href: 'https://about.gitlab.com/ai-transparency-center/') }
+    it "correct link is rendered" do
+      is_expected.to have_link(_('AI Transparency Center'), href: 'https://about.gitlab.com/ai-transparency-center/')
+    end
   end
 
   context 'when rendering the first core feature section' do
     let(:page_scope) { find_by_testid('core-feature-1') }
 
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Boost productivity with smart code assistance')) }
+    it { has_testid?('core-1-entry', context: component, count: 4) } # rubocop:disable RSpec/NoExpectationExample -- Expectation in matcher
 
-    it { has_testid?('core-1-entry', context: component, count: 3) } # rubocop:disable RSpec/NoExpectationExample -- Expectation in matcher
-
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Fortify your code')) }
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|GitLab Duo Vulnerability explanation')) }
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Advanced troubleshooting')) }
+    it { is_expected.to have_content(s_('TrialDiscover|Increase security')) }
+    it { is_expected.to have_content(s_('TrialDiscover|Improve collaboration')) }
+    it { is_expected.to have_content(s_('TrialDiscover|Gain actionable insights')) }
+    it { is_expected.to have_content(s_('TrialDiscover|Enhance productivity')) }
   end
 
   context 'when rendering the second core feature section' do
     let(:page_scope) { find_by_testid('core-feature-2') }
 
-    it { has_testid?('core-2-entry', context: component, count: 2) } # rubocop:disable RSpec/NoExpectationExample -- Expectation in matcher
+    it { has_testid?('core-2-entry', context: component, count: 4) } # rubocop:disable RSpec/NoExpectationExample -- Expectation in matcher
 
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Summarization and templating')) }
-    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Measure the ROI of AI')) }
+    it { is_expected.to have_content(s_('DuoProDiscover|Boost productivity with smart code assistance')) }
+    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Fortify your code')) }
+    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|GitLab Duo Vulnerability explanation')) }
+    it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Advanced troubleshooting')) }
   end
 
   context 'when rendering the footer actions' do
     let(:page_scope) { find_by_testid('discover-footer-actions') }
 
-    it { is_expected.to have_link(_('Buy now'), href: duo_buy_now_url) }
+    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
   end
 
   context 'with trial active and expired concerns' do
@@ -64,7 +67,7 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
     let(:trial_active?) { true }
     let(:expected_data_attributes) do
       {
-        glm_content: 'discover-duo-enterprise',
+        glm_content: 'trial_discover_page',
         cta_tracking: {
           action: 'click_contact_sales',
           label: cta_tracking_label
@@ -96,7 +99,7 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
       end
 
       it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{duo_buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
+        is_expected.to have_selector("a[href='#{buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
       end
     end
 
@@ -116,7 +119,7 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
       end
 
       it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{duo_buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
+        is_expected.to have_selector("a[href='#{buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
       end
     end
 

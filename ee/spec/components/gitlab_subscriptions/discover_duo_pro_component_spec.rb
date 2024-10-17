@@ -68,7 +68,8 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures
         button_attributes: {
           category: 'secondary',
           variant: 'confirm',
-          class: 'gl-w-full sm:gl-w-auto'
+          class: 'gl-w-full sm:gl-w-auto',
+          'data-testid': 'trial-discover-hand-raise-lead-button'
         }.to_json
       }
     end

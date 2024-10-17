@@ -18,7 +18,7 @@
 
 .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
   .container.gl-mt-5{ data: { testid: 'why-section' } }
-    %h3.gl-text-lg.gl-mb-6
+    %h3.gl-heading-4.gl-mb-6.gl-mt-5
       = why_section_header_text
     .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-2
       = render Pajamas::CardComponent.with_collection(discover_card_collection,
@@ -28,7 +28,7 @@
 
 .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
   .container.gl-mt-5{ data: { testid: 'core-feature-1' } }
-    %h3.gl-text-lg.gl-mb-6
+    %h3.gl-heading-4.gl-mb-6.gl-mt-5
       = core_feature_one_header_text
     .gl-grid.gl-gap-6.gl-grid-cols-1{ class: core_feature_one_grid_class }
       = render Pajamas::CardComponent.with_collection(core_section_one_card_collection,
@@ -40,6 +40,9 @@
 - if core_section_two_card_collection.present?
   .gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
     .container.gl-mt-5{ data: { testid: 'core-feature-2' } }
+      - if core_feature_two_header_text.present?
+        %h3.gl-heading-4.gl-mb-6.gl-mt-5
+          = core_feature_two_header_text
       .gl-grid.gl-gap-6.gl-grid-cols-1{ class: core_feature_two_grid_class }
         = render Pajamas::CardComponent.with_collection(core_section_two_card_collection,
             card_options: { class: 'gl-rounded-lg gl-p-2 gl-h-full gl-flex gl-flex-col', data: { testid: 'core-2-entry' } },
