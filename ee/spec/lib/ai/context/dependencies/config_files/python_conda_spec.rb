@@ -21,17 +21,30 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonConda, feature_cate
     let(:expected_formatted_lib_names) { ['ipython', 'scikit-learn (0.22)'] }
   end
 
-  context 'when config file content is an array' do
+  context 'when the content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
       let(:expected_parsing_error_message) { 'encountered invalid node' }
     end
   end
 
-  context 'when config file content is an invalid string' do
+  context 'when the content is an invalid string' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '*' }
       let(:expected_parsing_error_message) { 'content is not valid YAML' }
+    end
+  end
+
+  context 'when the content contains a YAML Date value' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) do
+        <<~YAML
+          name: machine-learning-env
+          my_date: 2024-01-01
+        YAML
+      end
+
+      let(:expected_parsing_error_message) { 'YAML exception - Tried to load unspecified class: Date' }
     end
   end
 
