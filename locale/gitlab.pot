@@ -45909,9 +45909,6 @@ msgstr ""
 msgid "Reports|Tool"
 msgstr ""
 
-msgid "Reports|Vulnerability Name"
-msgstr ""
-
 msgid "Reports|metrics report"
 msgstr ""
 
