@@ -98,7 +98,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         stream_response_handler: stream_response_handler
       ]
 
-      expect_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor, *expected_params) do |instance|
+      expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
         expect(instance).to receive(:execute).and_return(answer)
       end
 
@@ -145,7 +145,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
           stream_response_handler: stream_response_handler
         ]
 
-        expect_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor, *expected_params) do |instance|
+        expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
           expect(instance).to receive(:execute).and_return(answer)
         end
 
@@ -176,7 +176,7 @@ client_subscription_id: 'someid' }
       end
 
       it 'sends process_gitlab_duo_question snowplow event with value eql 0' do
-        allow_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor) do |instance|
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
           expect(instance).to receive(:execute).and_return(answer)
         end
 
@@ -249,7 +249,7 @@ client_subscription_id: 'someid' }
           stream_response_handler: stream_response_handler
         ]
 
-        expect_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor, *expected_params) do |instance|
+        expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
           expect(instance).to receive(:execute).and_return(answer)
         end
         expect(response_handler).to receive(:execute)
@@ -346,7 +346,7 @@ client_subscription_id: 'someid' }
             command: an_instance_of(::Gitlab::Llm::Chain::SlashCommand)
           }
 
-          expect(::Gitlab::Llm::Chain::Agents::SingleActionExecutor).not_to receive(:new)
+          expect(::Gitlab::Duo::Chat::ReactExecutor).not_to receive(:new)
           expect(expected_tool)
             .to receive(:new).with(expected_params).and_return(executor)
 
@@ -416,7 +416,7 @@ client_subscription_id: 'someid' }
         let(:command) { '/explain2' }
 
         it 'process the message with zero shot agent' do
-          expect_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor) do |instance|
+          expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
             expect(instance).to receive(:execute).and_return(answer)
           end
           expect(::Gitlab::Llm::Chain::Tools::ExplainCode::Executor).not_to receive(:new)
@@ -440,7 +440,7 @@ client_subscription_id: 'someid' }
           stream_response_handler: stream_response_handler
         ]
 
-        allow_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor, *expected_params) do |instance|
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
           allow(instance).to receive(:execute).and_return(answer)
         end
 

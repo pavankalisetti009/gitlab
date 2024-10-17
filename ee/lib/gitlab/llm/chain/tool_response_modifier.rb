@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Deprecation: SingleActionExecutor doesn't use this modifier
+# Deprecation: ReactExecutor doesn't use this modifier
 # as picked_tool_action method isn't used anymore.
 # This class will be removed alongside ZeroShot::Executor
 # see https://gitlab.com/gitlab-org/gitlab/-/issues/469087
