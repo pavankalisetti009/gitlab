@@ -32,6 +32,7 @@ module EE
           gitlab_duo_saas_only
           pipl_compliance
           ci_runners_allowed_plans
+          limit_normalized_email_reuse
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
