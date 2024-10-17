@@ -13,7 +13,7 @@ export const LABEL_PREFIX = 'label_';
  */
 export default (labelNames, isProject) => {
   const labels = labelNames.map((label, index) => {
-    let args = `searchTerm: "${label}", searchIn: [TITLE], includeAncestorGroups: true`;
+    let args = `title: "${label}", includeAncestorGroups: true`;
     if (!isProject) {
       args += ', includeDescendantGroups: true';
     }
