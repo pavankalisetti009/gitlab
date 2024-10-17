@@ -26,8 +26,7 @@ module Gitlab
             TEXT
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::RefactorCode::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::RefactorCode::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::RefactorCode::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::RefactorCode::Prompts::Anthropic
             }.freeze
 
             PROMPT_TEMPLATE = [

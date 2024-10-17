@@ -41,8 +41,7 @@ module Gitlab
 
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::EpicReader::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic
             }.freeze
 
             SYSTEM_PROMPT = Utils::Prompt.as_system(

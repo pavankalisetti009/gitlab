@@ -41,8 +41,7 @@ module Gitlab
 
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic
             }.freeze
 
             PROJECT_REGEX = {

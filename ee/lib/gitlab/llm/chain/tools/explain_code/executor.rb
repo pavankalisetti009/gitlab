@@ -21,8 +21,7 @@ module Gitlab
                       'can process this question.'
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::ExplainCode::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::ExplainCode::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::ExplainCode::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::ExplainCode::Prompts::Anthropic
             }.freeze
 
             PROMPT_TEMPLATE = [
