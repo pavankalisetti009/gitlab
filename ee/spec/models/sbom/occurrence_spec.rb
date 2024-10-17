@@ -455,6 +455,19 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.for_namespace_and_descendants' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project1) { create(:project, namespace: group) }
+    let_it_be(:project2) { create(:project, namespace: group) }
+    let_it_be(:occurrence_npm1) { create(:sbom_occurrence, project: project1) }
+    let_it_be(:occurrence_npm2) { create(:sbom_occurrence, project: project2) }
+
+    it 'returns records' do
+      result = described_class.for_namespace_and_descendants(group)
+      expect(result).to match_array([occurrence_npm1, occurrence_npm2])
+    end
+  end
+
   describe '.filter_by_search_with_component_and_group' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, namespace: group) }
