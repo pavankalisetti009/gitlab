@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :js, feature_category: :merge_trains do
-  let_it_be_with_refind(:project) { create(:project, :repository) }
-  let(:user) { project.owner }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:user) { project.owner }
 
   let!(:merge_request) do
     create(:merge_request, :with_merge_request_pipeline,
@@ -19,8 +19,11 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
   before do
     allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(200)
     stub_licensed_features(merge_pipelines: true, merge_trains: true)
-    project.update!(merge_pipelines_enabled: true, merge_trains_enabled: true)
     stub_ci_pipeline_yaml_file(YAML.dump(ci_yaml))
+
+    allow_next_found_instance_of(ProjectCiCdSetting) do |setting|
+      allow(setting).to receive_messages(merge_pipelines_enabled: true, merge_trains_enabled: true)
+    end
 
     sign_in(user)
   end
@@ -67,6 +70,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
 
       context 'when pipeline for merge train succeeds' do
         let(:project) { create(:project, :repository) }
+        let(:user) { project.owner }
 
         before do
           visit project_merge_request_path(project, merge_request)
@@ -191,6 +195,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
 
         context 'when the merge train pipeline passes' do
           let(:project) { create(:project, :repository) }
+          let(:user) { project.owner }
 
           it 'merges the MR' do
             merge_request.merge_train_car.pipeline.builds.map(&:success!)
@@ -279,6 +284,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
 
           context 'when the merge train pipeline passes' do
             let(:project) { create(:project, :repository) }
+            let(:user) { project.owner }
 
             it 'merges the MR' do
               merge_request.merge_train_car.pipeline.builds.map(&:success!)
