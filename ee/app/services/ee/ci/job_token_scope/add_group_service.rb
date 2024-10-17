@@ -7,7 +7,7 @@ module EE
         extend ::Gitlab::Utils::Override
 
         override :execute
-        def execute(target_group)
+        def execute(target_group, policies: [])
           super.tap do |response|
             audit(project, target_group, current_user) if response.success?
           end

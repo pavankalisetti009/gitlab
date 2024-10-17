@@ -7,7 +7,7 @@ module EE
         extend ::Gitlab::Utils::Override
 
         override :execute
-        def execute(target_project, direction: :inbound)
+        def execute(target_project, policies: [], direction: :inbound)
           super.tap do |response|
             audit(project, target_project, current_user) if direction == :inbound && response.success?
           end
