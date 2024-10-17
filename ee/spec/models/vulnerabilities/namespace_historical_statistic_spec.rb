@@ -27,4 +27,18 @@ RSpec.describe Vulnerabilities::NamespaceHistoricalStatistic, feature_category: 
       let_it_be(:model) { create(:vulnerability_namespace_historical_statistic, namespace: parent) }
     end
   end
+
+  describe '.by_direct_group' do
+    let(:parent_group) { create(:group) }
+    let(:child_group) { create(:group, parent: parent_group) }
+    let!(:historical_statistic) { create(:vulnerability_namespace_historical_statistic, namespace: parent_group) }
+
+    before do
+      create(:vulnerability_namespace_historical_statistic, namespace: child_group)
+    end
+
+    subject { described_class.by_direct_group(parent_group) }
+
+    it { is_expected.to contain_exactly(historical_statistic) }
+  end
 end

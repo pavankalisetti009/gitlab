@@ -2649,6 +2649,24 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: vulnerabilities_namespace_historical_statistics_process_transfer_events
+  :worker_name: Vulnerabilities::NamespaceHistoricalStatistics::ProcessTransferEventsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: vulnerabilities_namespace_historical_statistics_update_traversal_ids
+  :worker_name: Vulnerabilities::NamespaceHistoricalStatistics::UpdateTraversalIdsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: vulnerabilities_process_archived_events
   :worker_name: Vulnerabilities::ProcessArchivedEventsWorker
   :feature_category: :vulnerability_management
