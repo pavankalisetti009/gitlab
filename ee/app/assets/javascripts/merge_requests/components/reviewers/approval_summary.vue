@@ -114,7 +114,7 @@ export default {
   <div class="gl-flex gl-items-center">
     <div v-if="isLoading" class="gl-animate-skeleton-loader gl-h-4 gl-w-full gl-rounded-base"></div>
     <template v-else-if="mergeRequest && multipleApprovalRulesAvailable">
-      <p :class="{ 'text-muted': approvalsOptional }" class="gl-mb-0 gl-inline-block">
+      <p class="gl-mb-0 gl-inline-block gl-text-sm gl-text-subtle">
         {{ approvalsLeftMessage }}
       </p>
       <slot></slot>
