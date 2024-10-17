@@ -9,8 +9,6 @@ import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import HtmlTableCell from './table_cells/html_table_cell.vue';
 import UrlTableCell from './table_cells/url_table_cell.vue';
 
-const TABLE_HEADER_CLASSES = 'bg-transparent border-bottom p-3';
-
 export default {
   components: {
     HtmlTableCell,
@@ -57,32 +55,26 @@ export default {
     {
       key: 'author',
       label: s__('AuditLogs|Author'),
-      thClass: TABLE_HEADER_CLASSES,
     },
     {
       key: 'object',
       label: s__('AuditLogs|Object'),
-      thClass: TABLE_HEADER_CLASSES,
     },
     {
       key: 'action',
       label: s__('AuditLogs|Action'),
-      thClass: TABLE_HEADER_CLASSES,
     },
     {
       key: 'target',
       label: s__('AuditLogs|Target'),
-      thClass: TABLE_HEADER_CLASSES,
     },
     {
       key: 'ip_address',
       label: s__('AuditLogs|IP Address'),
-      thClass: TABLE_HEADER_CLASSES,
     },
     {
       key: 'date',
       label: s__('AuditLogs|Date'),
-      thClass: TABLE_HEADER_CLASSES,
     },
   ],
   dateTimeFormat: LONG_DATE_FORMAT_WITH_TZ,
