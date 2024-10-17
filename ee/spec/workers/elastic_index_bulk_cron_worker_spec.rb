@@ -18,9 +18,9 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
   end
 
   describe '.perform' do
-    context 'indexing is not paused' do
+    context 'when indexing is not paused' do
       before do
-        expect(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(false)
+        allow(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(false)
       end
 
       it 'queues all shards for execution' do
@@ -31,7 +31,7 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
         worker.perform
       end
 
-      context 'legacy lease is detected' do
+      context 'when legacy lease is detected' do
         before do
           allow(Gitlab::ExclusiveLease).to receive(:get_uuid).with(lease_key).and_return('lease_uuid')
         end
@@ -73,9 +73,9 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
       end
     end
 
-    context 'indexing is paused' do
+    context 'when indexing is paused' do
       before do
-        expect(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(true)
+        allow(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(true)
       end
 
       it 'does nothing if indexing is paused' do
@@ -100,8 +100,8 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
 
     context 'when service returns non-zero counter' do
       before do
-        expect_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
-          expect(service).to receive(:execute).and_return([15, 0])
+        allow_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
+          allow(service).to receive(:execute).and_return([15, 0])
         end
       end
 
@@ -155,8 +155,8 @@ RSpec.describe ElasticIndexBulkCronWorker, feature_category: :global_search do
 
     context 'when indexing failures occur in the queue' do
       before do
-        expect_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
-          expect(service).to receive(:execute).and_return([15, 5])
+        allow_next_instance_of(::Elastic::ProcessBookkeepingService) do |service|
+          allow(service).to receive(:execute).and_return([15, 5])
         end
       end
 
