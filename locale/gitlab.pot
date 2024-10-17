@@ -22939,6 +22939,9 @@ msgstr ""
 msgid "Failed to generate description"
 msgstr ""
 
+msgid "Failed to generate export"
+msgstr ""
+
 msgid "Failed to generate export, please try again later."
 msgstr ""
 
