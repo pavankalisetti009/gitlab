@@ -303,4 +303,41 @@ RSpec.describe Vulnerabilities::Feedback, feature_category: :vulnerability_manag
       let!(:model) { create(:vulnerability_feedback, project: parent.project, pipeline: parent) }
     end
   end
+
+  context 'with loose foreign key on vulnerability_feedback.merge_request_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:merge_request) }
+      let_it_be(:model) { create(:vulnerability_feedback, merge_request: parent) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_feedback.comment_author_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:vulnerability_feedback, comment_author: parent) }
+      let_it_be(:lfk_column) { :comment_author_id }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_feedback.author_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:vulnerability_feedback, author: parent) }
+      let_it_be(:lfk_column) { :author_id }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_feedback.issue_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:issue) }
+      let_it_be(:model) { create(:vulnerability_feedback, issue: parent) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_feedback.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerability_feedback, project: parent) }
+    end
+  end
 end
