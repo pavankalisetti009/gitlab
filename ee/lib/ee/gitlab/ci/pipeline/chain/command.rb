@@ -20,6 +20,10 @@ module EE
                 command: self
               )
             end
+
+            def increment_duplicate_job_name_errors_counter(suffix_strategy)
+              metrics.duplicate_job_name_errors_counter.increment(suffix_strategy: suffix_strategy)
+            end
           end
         end
       end

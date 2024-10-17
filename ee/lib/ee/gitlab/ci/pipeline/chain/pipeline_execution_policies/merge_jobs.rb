@@ -69,6 +69,9 @@ module EE
                         project: project,
                         namespace: project.namespace)
                     end
+                  rescue ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError
+                    command.increment_duplicate_job_name_errors_counter(policy.suffix_strategy)
+                    raise
                   end
                 end
               end

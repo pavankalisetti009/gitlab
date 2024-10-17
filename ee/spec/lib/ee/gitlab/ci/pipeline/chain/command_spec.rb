@@ -19,4 +19,16 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Command, feature_category: :continuo
       it { is_expected.to eq(false) }
     end
   end
+
+  describe '#increment_duplicate_job_name_errors_counter' do
+    let(:command) { described_class.new }
+    let(:suffix_strategy) { 'never' }
+
+    subject(:increment) { command.increment_duplicate_job_name_errors_counter(suffix_strategy) }
+
+    it 'increments the error metric' do
+      counter = Gitlab::Metrics.counter(:gitlab_ci_duplicate_job_name_errors_counter, 'desc')
+      expect { increment }.to change { counter.get(suffix_strategy: suffix_strategy) }.by(1)
+    end
+  end
 end
