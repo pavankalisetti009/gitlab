@@ -199,7 +199,7 @@ export default {
     </template>
 
     <template #actions-first>
-      <dim-disable-container :disabled="hasParsingError">
+      <dim-disable-container data-testid="actions-section" :disabled="hasParsingError">
         <template #title>
           <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
         </template>
