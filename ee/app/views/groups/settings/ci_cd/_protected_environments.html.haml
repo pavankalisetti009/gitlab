@@ -1,5 +1,4 @@
 - expanded = expanded_by_default?
-- add_page_specific_style 'page_bundles/ci_cd_settings'
 
 - if @group.licensed_feature_available?(:protected_environments)
   = render ::Layouts::SettingsBlockComponent.new(_('Protected environments'),
