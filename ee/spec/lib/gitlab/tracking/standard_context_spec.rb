@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
   let(:snowplow_context) { subject.to_context }
 
   describe '#to_context' do
-    let(:user_id) { 1 }
+    let(:user) { build_stubbed(:user) }
     let(:instance_id) { SecureRandom.uuid }
 
     before do
@@ -14,7 +14,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
     end
 
     subject do
-      described_class.new(user_id: user_id)
+      described_class.new(user: user)
     end
 
     it 'includes the instance_id' do
@@ -30,8 +30,8 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
         expect(snowplow_context.to_json[:data][:realm]).to eq('saas')
       end
 
-      context 'when user_id is nil' do
-        let(:user_id) { nil }
+      context 'when user is nil' do
+        let(:user) { nil }
 
         it 'sets is_gitlab_team_member to nil' do
           expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(nil)
@@ -40,7 +40,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
 
       context 'with GitLab team member' do
         before do
-          allow(Gitlab::Com).to receive(:gitlab_com_group_member?).with(user_id).and_return(true)
+          allow(Gitlab::Com).to receive(:gitlab_com_group_member?).with(user.id).and_return(true)
         end
 
         it 'sets is_gitlab_team_member to true' do
@@ -50,7 +50,7 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
 
       context 'with non GitLab team member' do
         before do
-          allow(Gitlab::Com).to receive(:gitlab_com_group_member?).with(user_id).and_return(false)
+          allow(Gitlab::Com).to receive(:gitlab_com_group_member?).with(user.id).and_return(false)
         end
 
         it 'sets is_gitlab_team_member to false' do
