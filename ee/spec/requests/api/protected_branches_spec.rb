@@ -190,9 +190,7 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
       end
 
       context 'with deploy key' do
-        let(:deploy_key) do
-          create(:deploy_key, deploy_keys_projects: [create(:deploy_keys_project, :write_access, project: project)])
-        end
+        let(:deploy_key) { create(:deploy_key, write_access_to: project, user: user) }
 
         it 'adds a deploy key for allowed to push option' do
           patch api(route, user), params: { allowed_to_push: [{ deploy_key_id: deploy_key.id }] }
@@ -396,9 +394,7 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
       end
 
       context 'with deploy key' do
-        let(:deploy_key) do
-          create(:deploy_key, deploy_keys_projects: [create(:deploy_keys_project, :write_access, project: project)])
-        end
+        let(:deploy_key) { create(:deploy_key, write_access_to: project, user: user) }
 
         it 'adds a deploy key for allowed to push option' do
           post post_endpoint, params: { name: branch_name, allowed_to_push: [{ deploy_key_id: deploy_key.id }] }

@@ -10,8 +10,11 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
 
   let_it_be_with_refind(:project) { create(:project, :repository, namespace: group) }
 
-  before do
+  before_all do
     project.add_owner(user)
+  end
+
+  before do
     sign_in(user)
   end
 
@@ -198,7 +201,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
         stub_licensed_features(protected_refs_for_users: true)
       end
 
-      include_examples 'protected branches > access control > EE'
+      it_behaves_like 'protected branches > access control > EE'
     end
 
     describe 'with ref permissions for users disabled' do
@@ -206,7 +209,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
         stub_licensed_features(protected_refs_for_users: false)
       end
 
-      include_examples 'protected branches > access control > CE'
+      it_behaves_like 'protected branches > access control > CE'
 
       context 'with existing access levels' do
         let(:protected_branch) { create(:protected_branch, project: project) }
@@ -263,7 +266,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
       stub_licensed_features(protected_refs_for_users: true)
     end
 
-    include_examples 'Deploy keys with protected branches' do
+    it_behaves_like 'deploy keys with protected branches' do
       let(:all_dropdown_sections) { ['Roles', 'Users', 'Deploy keys'] }
     end
   end
