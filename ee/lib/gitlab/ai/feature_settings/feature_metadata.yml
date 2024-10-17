@@ -22,6 +22,7 @@ code_completions:
     - deepseekcoder
     - mistral
     - llama3
+    - claude_3
 duo_chat:
   title: Duo Chat
   release_state: BETA
