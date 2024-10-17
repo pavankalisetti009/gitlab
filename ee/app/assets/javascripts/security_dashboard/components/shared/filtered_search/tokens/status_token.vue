@@ -198,7 +198,6 @@ export default {
           :value="status.value"
           :selected="isStatusSelected(status.value)"
           :data-testid="`suggestion-${status.value}`"
-          name="status"
         />
         <gl-dropdown-divider />
         <gl-dropdown-section-header>{{
@@ -211,7 +210,6 @@ export default {
           :value="status.value"
           :selected="isStatusSelected(status.value)"
           :data-testid="`suggestion-${status.value}`"
-          name="status"
         />
       </template>
     </gl-filtered-search-token>

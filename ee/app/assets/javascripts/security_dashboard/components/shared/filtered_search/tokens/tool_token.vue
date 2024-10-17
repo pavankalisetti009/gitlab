@@ -229,7 +229,6 @@ export default {
             :value="tool.value"
             :selected="isToolSelected(tool.value)"
             :data-testid="`suggestion-${tool.value}`"
-            name="tool"
           />
         </template>
         <template v-for="(group, index) in items" v-else>
@@ -244,7 +243,6 @@ export default {
             :value="tool.value"
             :selected="isToolSelected(tool.value)"
             :data-testid="`suggestion-${tool.value}`"
-            name="tool"
           />
         </template>
       </template>

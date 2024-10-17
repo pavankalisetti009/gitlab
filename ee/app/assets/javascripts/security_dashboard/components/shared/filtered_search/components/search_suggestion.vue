@@ -20,14 +20,6 @@ export default {
       type: String,
       required: true,
     },
-    /**
-     * The name of the token. Used for data test ids.
-     */
-    name: {
-      type: String,
-      default: '',
-      required: false,
-    },
     selected: {
       type: Boolean,
       required: true,
@@ -42,12 +34,11 @@ export default {
 </script>
 <template>
   <gl-filtered-search-suggestion :value="value">
-    <div :data-testid="`${name}-search-token-suggestion-${value}`" class="gl-flex gl-items-center">
+    <div class="gl-flex gl-items-center">
       <gl-icon
         name="check"
         class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
         :class="{ 'gl-invisible': !selected }"
-        :data-testid="`${name}-icon-${value}`"
       />
       <gl-truncate v-if="truncate" position="middle" :text="text" />
       <template v-else>{{ text }}</template>
