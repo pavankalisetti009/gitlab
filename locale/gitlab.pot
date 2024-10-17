@@ -14194,6 +14194,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Compliance frameworks that are linked to an active policy can't be deleted"
 msgstr ""
 
+msgid "ComplianceFrameworks|Compliance frameworks that have a scoped policy can't be deleted"
+msgstr ""
+
 msgid "ComplianceFrameworks|Compliance pipeline configuration (optional)"
 msgstr ""
 

@@ -41,7 +41,7 @@ export const i18n = {
 
   deleteButtonText: s__('ComplianceFrameworks|Delete framework'),
   deleteButtonLinkedPoliciesDisabledTooltip: s__(
-    "ComplianceFrameworks|Compliance frameworks that are linked to an active policy can't be deleted",
+    "ComplianceFrameworks|Compliance frameworks that have a scoped policy can't be deleted",
   ),
   deleteButtonDefaultFrameworkDisabledTooltip: s__(
     "ComplianceFrameworks|The default framework can't be deleted",
