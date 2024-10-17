@@ -1,15 +1,13 @@
 - page_title s_('AdminSelfHostedModels|Self-hosted models')
-- terms_link_start = '<a href="https://about.gitlab.com/handbook/legal/testing-agreement/" target="_blank" rel="noopener noreferrer">'.html_safe
 
-%h4
-  = s_('AdminSelfHostedModels|Self-hosted models')
+.gl-flex.gl-flex-col.gl-items-center
+  = render Pajamas::EmptyStateComponent.new(svg_path: 'illustrations/empty-state/empty-environment-md',
+    title: s_('AdminSelfHostedModels|Get started with self-hosted models')) do |c|
+    - c.with_description do
+      - terms_link_start = '<a href="https://about.gitlab.com/handbook/legal/testing-agreement/" target="_blank" rel="noopener noreferrer">'.html_safe
+      = s_('AdminSelfHostedModels|Configure GitLab Duo by adding and managing your own self-hosted models.')
+      = link_to _('Learn more.'), help_page_path('administration/self_hosted_models/install_infrastructure.md'), target: '_blank', rel: 'noopener noreferrer'
+      = s_('AdminSelfHostedModels|By enabling self-hosted models, you accept the %{link_start}GitLab Testing Agreement%{link_end}.').html_safe % { link_start: terms_link_start, link_end: '</a>'.html_safe }
 
-%p.gl-text-secondary
-  = s_('AdminSelfHostedModels|Self-hosted models are an experimental feature.')
-  = link_to _('Learn more.'), help_page_path('administration/self_hosted_models/install_infrastructure.md')
-
-= render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_ai_terms_and_conditions_url, method: :post) do
-  = s_('AdminSelfHostedModels|Enable self-hosted models')
-
-%p.gl-text-secondary.gl-mt-4
-  = s_('AdminSelfHostedModels|By enabling self-hosted models, you accept the %{link_start}GitLab Testing Agreement%{link_end}.').html_safe % { link_start: terms_link_start, link_end: '</a>'.html_safe }
+  = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_ai_terms_and_conditions_url, method: :post) do
+    = s_('AdminSelfHostedModels|Enable self-hosted models')
