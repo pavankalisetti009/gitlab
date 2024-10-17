@@ -15,7 +15,6 @@ module QA
             end
 
             view "ee/app/assets/javascripts/analytics/cycle_analytics/components/value_stream_form_content.vue" do
-              element 'value-stream-form-modal'
               element 'create-value-stream-name-input'
               element 'vsa-preset-selector'
             end
@@ -144,17 +143,19 @@ module QA
         #
         # @return [void]
         def create_value_stream
-          within_element('value-stream-form-modal') do
-            # footer buttons are generic UI components from gitlab/ui
-            find_button("New value stream").click
-          end
+          # footer buttons are generic UI components from gitlab/ui
+          find_button("New value stream").click
         end
 
         # Add another stage to custom vsa template
         #
         # @return [void]
         def add_another_stage
-          within_element('value-stream-form-modal') do
+          # footer buttons are generic UI components from gitlab/ui
+          # Remove else once vsa_standalone_settings_page feature flag is removed
+          if has_button?("Add a stage")
+            find_button("Add a stage").click
+          else
             find_button("Add another stage").click
           end
         end
