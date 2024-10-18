@@ -12,7 +12,7 @@ RSpec.describe 'Issues', :js, feature_category: :team_planning do
 
       expect(page).to have_content('Use issues to collaborate on ideas, solve problems, and plan work')
       expect(page).to have_content('Learn more about issues.')
-      expect(page.has_link?('New issue')).to be(expect_button)
+      expect(page.has_link?('New issue', exact: true)).to be(expect_button)
     end
   end
 
