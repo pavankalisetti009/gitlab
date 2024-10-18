@@ -23,6 +23,7 @@ code_completions:
     - mistral
     - llama3
     - claude_3
+    - gpt
 duo_chat:
   title: Duo Chat
   release_state: BETA
