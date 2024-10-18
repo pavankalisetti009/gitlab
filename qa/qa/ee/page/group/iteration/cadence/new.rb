@@ -26,7 +26,7 @@ module QA
               end
 
               def fill_description(description)
-                fill_element('iteration-cadence-description-field', description)
+                fill_editor_element('iteration-cadence-description-field', description)
               end
 
               def fill_duration(duration)
