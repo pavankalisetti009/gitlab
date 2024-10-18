@@ -12,6 +12,17 @@ module ElasticsearchHelpers
     expect(names).not_to include(*without) unless without.empty?
   end
 
+  def assert_fields_in_query(query, with: [], without: [])
+    with = Array.wrap(with)
+    without = Array.wrap(without)
+
+    query.extend(Hashie::Extensions::DeepFind)
+    fields = query.deep_find(:fields)
+
+    expect(fields).to include(*with) unless with.empty?
+    expect(fields).not_to include(*without) unless without.empty?
+  end
+
   def assert_named_queries(*expected_names, without: [])
     es_host = Gitlab::CurrentSettings.elasticsearch_url.first
     search_uri = %r{#{es_host}/[\w-]+/_search}

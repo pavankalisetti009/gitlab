@@ -360,7 +360,7 @@ module Gitlab
               not_work_item_type_ids: nil,
               klass: WorkItem,
               work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
-            )
+            ).except(:fields)
           else
             base_options
           end
@@ -382,7 +382,7 @@ module Gitlab
             index_name: ::Search::Elastic::References::WorkItem.index,
             not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
           },
-          filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived)
+          filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived, :fields)
         )
       end
 

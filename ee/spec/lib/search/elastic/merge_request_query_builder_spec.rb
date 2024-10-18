@@ -75,7 +75,23 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
       let(:options) { base_options.merge(fields: ['title']) }
 
       it 'returns the expected query' do
-        assert_names_in_query(build, with: %w[merge_request:match:search_terms])
+        assert_names_in_query(build,
+          with: %w[merge_request:multi_match:or:search_terms
+            merge_request:multi_match:and:search_terms
+            merge_request:multi_match_phrase:search_terms],
+          without: %w[merge_request:match:search_terms])
+        assert_fields_in_query(build, with: %w[title])
+      end
+
+      context 'when search_uses_match_queries is false' do
+        before do
+          stub_feature_flags(search_uses_match_queries: false)
+        end
+
+        it 'returns the expected query' do
+          assert_names_in_query(build, with: %w[merge_request:match:search_terms])
+          assert_fields_in_query(build, with: %w[title], without: %w[iid description])
+        end
       end
     end
   end

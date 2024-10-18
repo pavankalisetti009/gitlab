@@ -53,9 +53,8 @@ module Search
         if query =~ /#(\d+)\z/
           ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
         else
-          # iid field can be added here as lenient option will
-          # pardon format errors, like integer out of range.
-          fields = %w[iid^3 title^2 description]
+          # iid field can be added here as lenient option will pardon format errors, like integer out of range.
+          fields = options[:fields].presence || %w[iid^3 title^2 description]
 
           if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
               Feature.enabled?(:search_uses_match_queries, options[:current_user])
