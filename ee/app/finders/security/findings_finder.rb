@@ -2,7 +2,8 @@
 
 # Security::FindingsFinder
 #
-# Used to find Ci::Builds associated with requested findings.
+# This finder returns an `ActiveRecord::Relation` of the
+# `Security::Finding`s associated with a pipeline.
 #
 # Arguments:
 #   pipeline - object to filter findings
@@ -15,13 +16,6 @@
 
 module Security
   class FindingsFinder
-    include ::VulnerabilityFindingHelpers
-
-    ResultSet = Struct.new(:relation, :findings) do
-      delegate :current_page, :limit_value, :total_pages, :total_count,
-        :next_page, :prev_page, :page, :empty?, :without_count, to: :relation
-    end
-
     DEFAULT_LIMIT = 20
 
     def initialize(pipeline, params: {})
@@ -30,59 +24,6 @@ module Security
     end
 
     def execute
-      return ResultSet.new(Security::Finding.none, []) unless has_security_findings?
-
-      ResultSet.new(security_findings, findings)
-    end
-
-    private
-
-    attr_reader :pipeline, :params
-
-    delegate :project, :has_security_findings?, :security_findings_partition_number, to: :pipeline, private: true
-
-    def findings
-      security_findings.map { |finding| build_vulnerability_finding(finding) }
-    end
-
-    def report_finding_for(security_finding)
-      lookup_uuid = security_finding.overridden_uuid || security_finding.uuid
-
-      report_findings.dig(security_finding.build.id, lookup_uuid)
-    end
-
-    def vulnerability_for(finding_uuid)
-      existing_vulnerabilities[finding_uuid]
-    end
-
-    def existing_vulnerabilities
-      @existing_vulnerabilities ||= project.vulnerabilities
-               .with_findings_by_uuid(loaded_uuids)
-               .index_by(&:finding_uuid)
-    end
-
-    def loaded_uuids
-      security_findings.map(&:uuid)
-    end
-
-    def report_findings
-      @report_findings ||= builds.each_with_object({}) do |build, memo|
-        reports = build.job_artifacts.map(&:security_report).compact
-        next unless reports.present?
-
-        memo[build.id] = reports.flat_map(&:findings).index_by(&:uuid)
-      end
-    end
-
-    def builds
-      security_findings.map(&:build).uniq
-    end
-
-    def security_findings
-      @security_findings ||= load_security_findings
-    end
-
-    def load_security_findings
       # This method generates a query of the general form
       #
       #   SELECT security_findings.*
@@ -137,11 +78,19 @@ module Security
         .with_issue_links
         .with_external_issue_links
         .with_merge_request_links
+        .with_feedbacks
+        .with_vulnerability
         .merge(::Security::Scan.by_pipeline_ids(pipeline.id))
         .merge(::Security::Scan.latest_successful)
         .ordered(params[:sort])
         .then { |relation| by_report_types(relation) }
     end
+
+    private
+
+    attr_reader :pipeline, :params
+
+    delegate :project, :security_findings_partition_number, to: :pipeline, private: true
 
     def limit
       @limit ||= params[:limit] || DEFAULT_LIMIT
@@ -179,12 +128,6 @@ module Security
       return relation unless params[:report_type]
 
       relation.merge(::Security::Scan.by_scan_types(params[:report_type]))
-    end
-
-    def by_severity_levels(relation)
-      return relation unless params[:severity]
-
-      relation.by_severity_levels(params[:severity])
     end
 
     def severities

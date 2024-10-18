@@ -225,10 +225,6 @@ module EE
         @security_findings_partition_number ||= security_scans.first&.findings_partition_number || Security::Finding.active_partition_number
       end
 
-      def has_security_findings?
-        security_findings.exists?
-      end
-
       def has_security_findings_in_self_and_descendants?
         Security::Finding.by_project_id_and_pipeline_ids(project_id, self_and_project_descendants.pluck(:id)).exists?
       end
