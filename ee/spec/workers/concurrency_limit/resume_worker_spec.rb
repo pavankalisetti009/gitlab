@@ -51,6 +51,12 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
         worker.perform
       end
 
+      it 'does not log worker concurrency limit stats' do
+        expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).not_to receive(:worker_stats_log)
+
+        worker.perform
+      end
+
       it_behaves_like 'report prometheus metrics', 10, 0
     end
 
@@ -61,6 +67,13 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
         allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
           .with(worker_with_concurrency_limit.name).and_return(100)
         stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
+      end
+
+      it 'logs worker concurrency limit stats' do
+        # note that we stub all workers limit to 0 except worker_with_concurrency_limit
+        expect(Gitlab::SidekiqLogging::ConcurrencyLimitLogger.instance).to receive(:worker_stats_log).once
+
+        worker.perform
       end
 
       it 'resumes processing' do
