@@ -7,6 +7,8 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
 
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
+    it { is_expected.to belong_to(:created_by) }
+    it { is_expected.to belong_to(:updated_by) }
     it { is_expected.to have_many(:select_options) }
     it { is_expected.to have_many(:work_item_type_custom_fields) }
     it { is_expected.to have_many(:work_item_types) }
