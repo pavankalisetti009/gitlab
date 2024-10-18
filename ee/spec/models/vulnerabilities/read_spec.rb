@@ -368,6 +368,31 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe 'avoid N+1 sql queries' do
+    let!(:scanner) { create(:vulnerabilities_scanner, project: project) }
+    let!(:identifier) { create(:vulnerabilities_identifier, project: project) }
+    let!(:vulnerability) { create(:vulnerability, project: project) }
+    let!(:finding) { create_finding(vulnerability: vulnerability, primary_identifier: identifier) }
+
+    subject { described_class.new }
+
+    it '.with_findings_scanner_and_identifiers' do
+      recorder = ActiveRecord::QueryRecorder.new do
+        described_class.with_findings_scanner_and_identifiers.to_a
+      end
+
+      expect(recorder.count).to eq(5)
+    end
+
+    it '.with_export_entities' do
+      recorder = ActiveRecord::QueryRecorder.new do
+        described_class.with_export_entities.to_a
+      end
+
+      expect(recorder.count).to eq(9)
+    end
+  end
+
   describe '.with_container_image' do
     let_it_be(:vulnerability) { create(:vulnerability, project: project, report_type: 'cluster_image_scanning') }
     let_it_be(:finding) { create(:vulnerabilities_finding, :with_cluster_image_scanning_scanning_metadata, project: project, vulnerability: vulnerability) }
