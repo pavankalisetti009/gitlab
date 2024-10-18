@@ -38,42 +38,32 @@ module Preloaders
 
       value_list = Arel::Nodes::ValuesList.new(sql_values_array)
 
-      permission_select = permissions.map { |p| "bool_or(custom_permissions.#{p}) AS #{p}" }.join(', ')
-
       sql = <<~SQL
-      SELECT namespace_ids.namespace_id, #{permission_select}
+      SELECT namespace_ids.namespace_id, custom_permissions.permissions
         FROM (#{value_list.to_sql}) AS namespace_ids (namespace_id, namespace_ids),
         LATERAL (
           #{union_query}
         ) AS custom_permissions
-        GROUP BY namespace_ids.namespace_id;
       SQL
 
       grouped_by_group = ApplicationRecord.connection.execute(sql).to_a.group_by do |h|
         h['namespace_id']
       end
 
-      grouped_by_group.transform_values do |value|
-        permissions.filter_map do |permission|
-          permission if value.find { |custom_role| custom_role[permission.to_s] == true }
+      grouped_by_group.transform_values do |values|
+        group_permissions = values.map do |value|
+          Gitlab::Json.parse(value['permissions']).select { |_, v| v }
         end
+
+        group_permissions.inject(&:merge).keys.map(&:to_sym) & permissions
       end
     end
 
     def union_query
       union_queries = []
 
-      permission_condition = permissions.map do |permission|
-        "member_roles.permissions @> ('{\"#{permission}\":true}')::jsonb"
-      end.join(' OR ')
-
-      permission_columns = permissions.map { |p| "(member_roles.permissions -> '#{p}')::BOOLEAN as #{p}" }.join(', ')
-
-      permissions_as_false = permissions.map { |p| "false AS #{p}" }.join(', ')
-
-      member = Member.select(permission_columns)
+      member = Member.select('member_roles.permissions')
         .with_user(user)
-        .where(permission_condition)
 
       group_member = member
         .joins(:member_role)
@@ -102,7 +92,7 @@ module Preloaders
         union_queries.push(invited_member_role, source_member_role)
       end
 
-      reset_default = "SELECT #{permissions_as_false}"
+      reset_default = "SELECT '{}'::jsonb AS permissions"
 
       union_queries.push(group_member, reset_default)
 
