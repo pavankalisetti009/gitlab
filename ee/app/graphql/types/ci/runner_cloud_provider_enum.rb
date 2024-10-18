@@ -7,6 +7,7 @@ module Types
       description 'Runner cloud provider.'
 
       value 'GOOGLE_CLOUD', value: :google_cloud, description: 'Google Cloud.'
+      value 'GKE', value: :gke, description: 'Google Kubernetes Engine.'
     end
   end
 end

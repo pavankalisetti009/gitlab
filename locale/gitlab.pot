@@ -47473,6 +47473,9 @@ msgstr ""
 msgid "Runners|The user is not allowed to create a runner"
 msgstr ""
 
+msgid "Runners|The user is not allowed to provision a GKE runner"
+msgstr ""
+
 msgid "Runners|The user is not allowed to provision a cloud runner"
 msgstr ""
 

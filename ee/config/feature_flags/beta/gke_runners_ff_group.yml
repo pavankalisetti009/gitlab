@@ -1,0 +1,9 @@
+---
+name: gke_runners_ff_group
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/458452
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167246
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/499155
+milestone: '17.5'
+group: group::runner
+type: beta
+default_enabled: false

@@ -766,7 +766,9 @@ module EE
 
       rule { google_cloud_support_available & can?(:maintainer_access) }.policy do
         enable :read_runner_cloud_provisioning_info
+        enable :read_runner_gke_provisioning_info
         enable :provision_cloud_runner
+        enable :provision_gke_runner
       end
       rule { google_cloud_support_available & can?(:reporter_access) }.enable :read_google_cloud_artifact_registry
       rule { google_cloud_support_available & can?(:maintainer_access) }.enable :admin_google_cloud_artifact_registry

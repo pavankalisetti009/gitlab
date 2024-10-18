@@ -4046,6 +4046,30 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'read_runner_gke_provisioning_info policy' do
+    let(:current_user) { maintainer }
+
+    it { is_expected.to be_disallowed(:read_runner_gke_provisioning_info) }
+
+    context 'when SaaS-only feature is available' do
+      before do
+        stub_saas_features(google_cloud_support: true)
+      end
+
+      context 'when the user is a maintainer' do
+        let(:current_user) { maintainer }
+
+        it { is_expected.to be_allowed(:read_runner_gke_provisioning_info) }
+      end
+
+      context 'the user is a guest' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_disallowed(:read_runner_gke_provisioning_info) }
+      end
+    end
+  end
+
   describe 'provision_cloud_runner policy' do
     let(:current_user) { maintainer }
 
@@ -4066,6 +4090,30 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:current_user) { guest }
 
         it { is_expected.to be_disallowed(:provision_cloud_runner) }
+      end
+    end
+  end
+
+  describe 'provision_gke_runner policy' do
+    let(:current_user) { maintainer }
+
+    it { is_expected.to be_disallowed(:provision_gke_runner) }
+
+    context 'when SaaS-only feature is available' do
+      before do
+        stub_saas_features(google_cloud_support: true)
+      end
+
+      context 'the user is a maintainer' do
+        let(:current_user) { maintainer }
+
+        it { is_expected.to be_allowed(:provision_gke_runner) }
+      end
+
+      context 'the user is a guest' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_disallowed(:provision_gke_runner) }
       end
     end
   end
