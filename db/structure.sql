@@ -15723,6 +15723,7 @@ CREATE TABLE packages_npm_metadata_caches (
     object_storage_key text NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_57aa07a4b2 CHECK ((char_length(file) <= 255)),
+    CONSTRAINT check_734454a615 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_f97c15aa60 CHECK ((char_length(object_storage_key) <= 255))
 );
 
