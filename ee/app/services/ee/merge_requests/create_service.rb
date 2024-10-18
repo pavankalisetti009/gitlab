@@ -19,16 +19,10 @@ module EE
 
       override :after_create
       def after_create(issuable)
-        if ::Feature.enabled?(:temp_unapprove_mr_create, issuable.project)
-          issuable.approval_state.temporarily_unapprove!
+        issuable.approval_state.temporarily_unapprove!
 
-          issuable.run_after_commit do
-            ::MergeRequests::SyncCodeOwnerApprovalRulesWorker.perform_async(issuable.id, expire_unapproved_key: true)
-          end
-        else
-          issuable.run_after_commit do
-            ::MergeRequests::SyncCodeOwnerApprovalRulesWorker.perform_async(issuable.id)
-          end
+        issuable.run_after_commit do
+          ::MergeRequests::SyncCodeOwnerApprovalRulesWorker.perform_async(issuable.id, expire_unapproved_key: true)
         end
 
         super
