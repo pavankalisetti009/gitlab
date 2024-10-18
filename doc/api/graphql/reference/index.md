@@ -19806,6 +19806,45 @@ Step used to provision the runner to Google Cloud.
 | <a id="cirunnercloudprovisioningsteplanguageidentifier"></a>`languageIdentifier` | [`String`](#string) | Identifier of the language used for the instructions field. This identifier can be any of the identifiers specified in the [list of supported languages and lexers](https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers). |
 | <a id="cirunnercloudprovisioningsteptitle"></a>`title` | [`String`](#string) | Title of the step. |
 
+### `CiRunnerGkeProvisioning`
+
+Information used for GKE runner provisioning.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cirunnergkeprovisioningprojectsetupshellscript"></a>`projectSetupShellScript` | [`String`](#string) | Instructions for setting up a Google Cloud project. |
+
+#### Fields with arguments
+
+##### `CiRunnerGkeProvisioning.provisioningSteps`
+
+Steps used to provision a runner in GKE.
+
+Returns [`[CiRunnerGkeProvisioningStep!]`](#cirunnergkeprovisioningstep).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cirunnergkeprovisioningprovisioningstepsnodepools"></a>`nodePools` | [`[GoogleCloudNodePool!]`](#googlecloudnodepool) | Configuration for the node pools of the runner. |
+| <a id="cirunnergkeprovisioningprovisioningstepsregion"></a>`region` | [`GoogleCloudRegion!`](#googlecloudregion) | Name of the region to provision the runner in. |
+| <a id="cirunnergkeprovisioningprovisioningstepsrunnertoken"></a>`runnerToken` | [`String!`](#string) | Authentication token of the runner. |
+| <a id="cirunnergkeprovisioningprovisioningstepszone"></a>`zone` | [`GoogleCloudZone!`](#googlecloudzone) | Name of the zone to provision the runner in. |
+
+### `CiRunnerGkeProvisioningStep`
+
+Step used to provision the runner to GKE.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cirunnergkeprovisioningstepinstructions"></a>`instructions` | [`String`](#string) | Instructions to provision the runner. |
+| <a id="cirunnergkeprovisioningsteplanguageidentifier"></a>`languageIdentifier` | [`String`](#string) | Identifier of the language used for the instructions field. This identifier can be any of the identifiers specified in the [list of supported languages and lexers](https://github.com/rouge-ruby/rouge/wiki/List-of-supported-languages-and-lexers). |
+| <a id="cirunnergkeprovisioningsteptitle"></a>`title` | [`String`](#string) | Title of the step. |
+
 ### `CiRunnerGoogleCloudProvisioning`
 
 Information used for runner Google Cloud provisioning.
@@ -36972,6 +37011,7 @@ Runner cloud provider.
 
 | Value | Description |
 | ----- | ----------- |
+| <a id="cirunnercloudprovidergke"></a>`GKE` | Google Kubernetes Engine. |
 | <a id="cirunnercloudprovidergoogle_cloud"></a>`GOOGLE_CLOUD` | Google Cloud. |
 
 ### `CiRunnerCreationMethod`
@@ -40466,6 +40506,10 @@ An example of a global identifier is `"gid://gitlab/User/1"`.
 
 Global identifiers are encoded as strings.
 
+### `GoogleCloudImage`
+
+Represents a Google Cloud Image for GKE.
+
 ### `GoogleCloudMachineType`
 
 Represents a Google Cloud Compute machine type.
@@ -41054,6 +41098,7 @@ Information used in runner cloud provisioning.
 
 One of:
 
+- [`CiRunnerGkeProvisioning`](#cirunnergkeprovisioning)
 - [`CiRunnerGoogleCloudProvisioning`](#cirunnergooglecloudprovisioning)
 
 #### `DependencyLinkMetadata`
@@ -42583,6 +42628,31 @@ Represents an escalation rule.
 | <a id="escalationruleinputoncallscheduleiid"></a>`oncallScheduleIid` | [`ID`](#id) | On-call schedule to notify. |
 | <a id="escalationruleinputstatus"></a>`status` | [`EscalationRuleStatus!`](#escalationrulestatus) | Status required to prevent the rule from activating. |
 | <a id="escalationruleinputusername"></a>`username` | [`String`](#string) | Username of the user to notify. |
+
+### `GoogleCloudNodePool`
+
+Attributes for defining Node Pool in GKE.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="googlecloudnodepoolimagetype"></a>`imageType` | [`GoogleCloudImage!`](#googlecloudimage) | Image to use on the pool. |
+| <a id="googlecloudnodepoollabels"></a>`labels` | [`[GoogleCloudNodePoolLabel!]`](#googlecloudnodepoollabel) | Labels for the node pool of the runner. |
+| <a id="googlecloudnodepoolmachinetype"></a>`machineType` | [`GoogleCloudMachineType!`](#googlecloudmachinetype) | Machine type to use. |
+| <a id="googlecloudnodepoolname"></a>`name` | [`String!`](#string) | Name of the node pool. |
+| <a id="googlecloudnodepoolnodecount"></a>`nodeCount` | [`Int!`](#int) | Node count of the pool. |
+
+### `GoogleCloudNodePoolLabel`
+
+Labels for the Node Pool of a GKE cluster.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="googlecloudnodepoollabelkey"></a>`key` | [`String!`](#string) | Key of the label. |
+| <a id="googlecloudnodepoollabelvalue"></a>`value` | [`String!`](#string) | Value of the label. |
 
 ### `JiraUsersMappingInputType`
 

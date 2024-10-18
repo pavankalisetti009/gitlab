@@ -14,6 +14,7 @@ RSpec.describe GitlabSchema.types['CiRunnerCloudProvisioning'], feature_category
 
     where(:provider, :expected_type) do
       :google_cloud | ::Types::Ci::RunnerGoogleCloudProvisioningType
+      :gke | ::Types::Ci::RunnerGkeProvisioningType
     end
 
     subject(:resolved_type) do
