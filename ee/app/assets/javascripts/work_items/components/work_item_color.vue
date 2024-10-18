@@ -1,6 +1,9 @@
 <script>
 import {
   GlForm,
+  GlIcon,
+  GlPopover,
+  GlLink,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlButton,
@@ -8,6 +11,7 @@ import {
 } from '@gitlab/ui';
 import { validateHexColor } from '~/lib/utils/color_utils';
 import { __, s__ } from '~/locale';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
@@ -26,11 +30,17 @@ import Tracking from '~/tracking';
 export default {
   i18n: {
     colorLabel: __('Color'),
+    helpIconLabel: __('Learn more'),
+    helpIconText: __('An epic’s color is shown in roadmaps and epic boards.'),
   },
+  helpIconLink: helpPagePath('/user/group/epics/manage_epics', { anchor: 'epic-color' }),
   inputId: 'color-widget-input',
   suggestedColors: EPIC_COLORS,
   components: {
     GlForm,
+    GlIcon,
+    GlLink,
+    GlPopover,
     SidebarColorPicker,
     SidebarColorView,
     GlDisclosureDropdown,
@@ -102,6 +112,9 @@ export default {
       return this.$options.suggestedColors.map((item) => {
         return Object.keys(item).pop();
       });
+    },
+    helpIconId() {
+      return `help-icon-icon-${this.workItem?.iid}`;
     },
   },
   watch: {
@@ -201,13 +214,29 @@ export default {
 </script>
 <template>
   <div class="work-item-color">
-    <div class="gl-flex gl-items-center gl-justify-between">
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
+    <div v-if="!isEditing" class="gl-flex gl-items-center gl-gap-2">
+      <h3 class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.colorLabel }}
       </h3>
+      <gl-link
+        :id="helpIconId"
+        class="gl-leading-0"
+        :href="$options.helpIconLink"
+        :aria-label="$options.i18n.helpIconLabel"
+        data-testid="info-icon"
+      >
+        <gl-icon name="information-o" />
+      </gl-link>
+      <gl-popover :target="helpIconId">
+        {{ $options.i18n.helpIconText }}
+        <gl-link :href="$options.helpIconLink">
+          {{ __('See examples.') }}
+        </gl-link>
+      </gl-popover>
       <gl-button
-        v-if="canUpdate && !isEditing"
+        v-if="canUpdate"
         data-testid="edit-color"
+        class="gl-ml-auto"
         category="tertiary"
         size="small"
         @click="isEditing = true"
@@ -215,8 +244,23 @@ export default {
       >
     </div>
     <gl-form v-if="isEditing">
-      <div class="gl-flex gl-items-center">
+      <div class="gl-flex gl-items-center gl-gap-2">
         <label :for="$options.inputId" class="gl-mb-0">{{ $options.i18n.colorLabel }}</label>
+        <gl-link
+          :id="helpIconId"
+          class="gl-leading-0"
+          :href="$options.helpIconLink"
+          :aria-label="$options.i18n.helpIconLabel"
+          data-testid="info-icon"
+        >
+          <gl-icon name="information-o" />
+        </gl-link>
+        <gl-popover :target="helpIconId">
+          {{ $options.i18n.helpIconText }}
+          <gl-link :href="$options.helpIconLink">
+            {{ __('See examples.') }}
+          </gl-link>
+        </gl-popover>
         <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
         <gl-button
           data-testid="apply-color"

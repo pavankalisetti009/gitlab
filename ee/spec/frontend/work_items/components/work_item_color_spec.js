@@ -1,4 +1,4 @@
-import { GlDisclosureDropdown } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlPopover, GlLink } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -16,6 +16,9 @@ import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
 import { DEFAULT_COLOR } from '~/vue_shared/components/color_select_dropdown/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { workItemColorWidget } from '../mock_data';
+
+const infoPopoverText = 'An epic’s color is shown in roadmaps and epic boards.';
+const infoPopoverLink = '/help/user/group/epics/manage_epics#epic-color';
 
 describe('WorkItemColor component', () => {
   Vue.use(VueApollo);
@@ -60,6 +63,9 @@ describe('WorkItemColor component', () => {
   const findSidebarColorView = () => wrapper.findComponent(SidebarColorView);
   const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findSidebarColorPicker = () => wrapper.findComponent(SidebarColorPicker);
+  const findInfoPopover = () => wrapper.findComponent(GlPopover);
+  const findInfoPopoverLink = () => wrapper.findComponent(GlLink);
+  const findInfoIcon = () => wrapper.findByTestId('info-icon');
   const findColorHeaderTitle = () => wrapper.findByTestId('color-header-title');
   const findEditButton = () => wrapper.findByTestId('edit-color');
   const findApplyButton = () => wrapper.findByTestId('apply-color');
@@ -191,5 +197,15 @@ describe('WorkItemColor component', () => {
     createComponent();
 
     expect(findSidebarColorView().props('colorName')).toBe('Blue');
+  });
+
+  it('renders info icon and popover with text', () => {
+    createComponent();
+
+    expect(findInfoPopover().exists()).toBe(true);
+    expect(findInfoIcon().exists()).toBe(true);
+    expect(findInfoPopover().text()).toContain(infoPopoverText);
+
+    expect(findInfoPopoverLink().attributes('href')).toBe(infoPopoverLink);
   });
 });
