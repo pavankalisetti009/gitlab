@@ -23,12 +23,16 @@ module Resolvers
         prepare: ->(global_ids, _ctx) { global_ids.map(&:model_id) }
 
       def resolve_with_lookahead(active: nil, search: nil, work_item_type_ids: nil)
+        unless work_item_type_ids.nil?
+          correct_work_item_type_ids = ::WorkItems::Type.id_in(work_item_type_ids).map(&:correct_id)
+        end
+
         custom_fields = ::Issuables::CustomFieldsFinder.new(
           current_user,
           group: object,
           active: active,
           search: search,
-          work_item_type_ids: work_item_type_ids
+          work_item_type_ids: correct_work_item_type_ids
         ).execute
 
         offset_pagination(
