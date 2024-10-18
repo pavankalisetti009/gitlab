@@ -1,6 +1,6 @@
 # Geo Developer Console
 
-This console is not user-facing, and it is not covered by tests. It is a place for Geo engineers and
+This console is not user-facing. It is a place for Geo engineers and
 Support engineers to store snippets with little overhead, to save time and reduce copy-paste errors
 in Rails console. Remember, entering commands in Rails console is considered
 [unacceptably complex](https://gitlab.com/gitlab-com/content-sites/handbook/-/merge_requests/4412)
