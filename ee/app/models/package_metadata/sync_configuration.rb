@@ -21,7 +21,8 @@ module PackageMetadata
       deb: "deb",
       'cbl-mariner': "cbl-mariner",
       wolfi: "wolfi",
-      cargo: "cargo"
+      cargo: "cargo",
+      swift: "swift"
     }.with_indifferent_access.freeze
 
     def self.configs_for(data_type)
