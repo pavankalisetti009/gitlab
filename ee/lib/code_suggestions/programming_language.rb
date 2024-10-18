@@ -216,13 +216,14 @@ module CodeSuggestions
       examples.select { |example| example['trigger_type'] == type }
     end
 
-    def cursor_inside_empty_function?(content, suffix)
-      return false unless content
+    def cursor_inside_empty_function?(content_above_cursor, content_below_cursor)
+      return false unless content_above_cursor
 
       return false unless LANGUAGE_METHOD_PATTERNS.has_key?(@name)
 
-      LANGUAGE_METHOD_PATTERNS[@name]['empty_function'].match?(content.strip.lines.last) &&
-        (suffix.blank? || LANGUAGE_METHOD_PATTERNS[@name]['function'].match?(suffix.strip.lines.first))
+      LANGUAGE_METHOD_PATTERNS[@name]['empty_function'].match?(content_above_cursor.strip.lines.last) &&
+        (content_below_cursor.blank? || LANGUAGE_METHOD_PATTERNS[@name]['function'].match?(content_below_cursor
+          .strip.lines.first))
     end
 
     private

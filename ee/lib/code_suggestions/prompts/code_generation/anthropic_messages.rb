@@ -69,7 +69,7 @@ module CodeSuggestions
         end
 
         def existing_code_instruction
-          return unless params[:prefix].present?
+          return unless params[:content_above_cursor].present?
 
           "The existing code is provided in <existing_code></existing_code> tags."
         end
@@ -117,14 +117,15 @@ module CodeSuggestions
         end
 
         def existing_code_block
-          return unless params[:prefix].present?
+          return unless params[:content_above_cursor].present?
 
-          trimmed_prefix = prefix.to_s.last(MAX_INPUT_CHARS)
-          trimmed_suffix = suffix.to_s.first(MAX_INPUT_CHARS - trimmed_prefix.size)
+          trimmed_content_above_cursor = content_above_cursor.to_s.last(MAX_INPUT_CHARS)
+          trimmed_content_below_cursor = content_below_cursor.to_s.first(MAX_INPUT_CHARS -
+           trimmed_content_above_cursor.size)
 
           <<~CODE
           <existing_code>
-          #{trimmed_prefix}{{cursor}}#{trimmed_suffix}
+          #{trimmed_content_above_cursor}{{cursor}}#{trimmed_content_below_cursor}
           </existing_code>
           CODE
         end

@@ -25,8 +25,8 @@ RSpec.shared_examples 'zero shot prompt' do
       {
         file_name: 'test.py',
         selected_text: 'code selection',
-        cotent_above_cursor: 'prefix',
-        content_below_cursor: 'suffix'
+        cotent_above_cursor: 'content_above_cursor',
+        content_below_cursor: 'content_below_cursor'
       }
     end
 

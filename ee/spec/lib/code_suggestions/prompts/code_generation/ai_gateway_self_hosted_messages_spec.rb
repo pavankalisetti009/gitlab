@@ -7,11 +7,18 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMess
 
   let(:prompt_version) { 2 }
 
-  let(:suffix) do
-    <<~SUFFIX
+  let(:content_above_cursor) do
+    <<~CONTENT_ABOVE_CURSOR
+      "binary search desc that ends in lots of random #{'a' * 1000}"
+    CONTENT_ABOVE_CURSOR
+  end
+
+  let(:content_below_cursor) do
+    <<~CONTENT_BELOW_CURSOR
       def use_binary_search
+        // this is a random comment with lots of random letter #{'b' * 1000}
       end
-    SUFFIX
+    CONTENT_BELOW_CURSOR
   end
 
   let(:comment) { 'Generate a binary search method.' }
@@ -50,6 +57,41 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMess
           request_params.merge(prompt: "")
         )
       end
+    end
+  end
+
+  describe '#pick_content_above_cursor' do
+    let(:params) do
+      {
+        current_file: {
+          content_above_cursor: content_above_cursor
+        }
+      }
+    end
+
+    it 'returns the last 500 characters of the content' do
+      expected_output = "#{'a' * 498}\"\n"
+
+      expect(prompt.send(:pick_content_above_cursor)).to eq(expected_output)
+    end
+  end
+
+  describe '#pick_content_below_cursor' do
+    let(:params) do
+      {
+        current_file: {
+          content_below_cursor: content_below_cursor
+        }
+      }
+    end
+
+    it 'returns the first 500 characters of the content' do
+      expected_output = <<~EXPECTED.chomp
+        def use_binary_search
+          // this is a random comment with lots of random letter #{'b' * 421}
+      EXPECTED
+
+      expect(prompt.send(:pick_content_below_cursor)).to eq(expected_output)
     end
   end
 end

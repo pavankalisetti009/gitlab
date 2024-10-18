@@ -31,11 +31,11 @@ module CodeSuggestions
       end
       strong_memoize_attr :language
 
-      def prefix
+      def content_above_cursor
         params.dig(:current_file, :content_above_cursor)
       end
 
-      def suffix
+      def content_below_cursor
         params.dig(:current_file, :content_below_cursor)
       end
     end

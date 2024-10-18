@@ -10,15 +10,16 @@ module CodeSuggestions
       @params = params.except(:user_instruction, :context) if Feature.disabled?(:code_suggestions_context, current_user)
       @unsafe_passthrough_params = unsafe_passthrough_params
 
-      @prefix = params.dig(:current_file, :content_above_cursor)
-      @suffix = params.dig(:current_file, :content_below_cursor)
+      @content_above_cursor = params.dig(:current_file, :content_above_cursor)
+      @content_below_cursor = params.dig(:current_file, :content_below_cursor)
       @intent = params[:intent]
     end
 
     def task
       trim_context!
 
-      instruction = extract_instruction(CodeSuggestions::FileContent.new(language, prefix, suffix))
+      instruction = extract_instruction(CodeSuggestions::FileContent.new(language, content_above_cursor,
+        content_below_cursor))
 
       return code_completion_task unless instruction
 
@@ -27,7 +28,8 @@ module CodeSuggestions
 
     private
 
-    attr_reader :current_user, :params, :unsafe_passthrough_params, :prefix, :suffix, :intent
+    attr_reader :current_user, :params, :unsafe_passthrough_params, :content_above_cursor, :content_below_cursor,
+      :intent
 
     def extract_instruction(file_content)
       CodeSuggestions::InstructionsExtractor
@@ -58,7 +60,7 @@ module CodeSuggestions
 
     def code_generation_params(instruction)
       params.merge(
-        prefix: prefix,
+        content_above_cursor: content_above_cursor,
         instruction: instruction,
         project: project,
         current_user: current_user

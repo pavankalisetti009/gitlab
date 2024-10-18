@@ -64,20 +64,20 @@ RSpec.describe CodeSuggestions::ProgrammingLanguage, feature_category: :code_sug
     context 'when single_regexp is specified' do
       let(:language) { described_class.new('VBScript') }
 
-      it 'will prefer regexp to string' do
+      it 'prefers regexp to string' do
         is_expected.to be_a(Regexp)
       end
     end
   end
 
   describe '#single_line_comment?' do
-    include_context 'with comment prefixes'
+    include_context 'with comment contents_above_cursor'
 
     subject { described_class.new(language).single_line_comment?(content) }
 
     shared_examples 'single line comment for supported language' do
       context "when it is a comment" do
-        let(:content) { "#{prefix} this is a comment " }
+        let(:content) { "#{content_above_cursor} this is a comment " }
 
         it { is_expected.to be_truthy }
       end
@@ -89,29 +89,29 @@ RSpec.describe CodeSuggestions::ProgrammingLanguage, feature_category: :code_sug
       end
 
       context "when line doesn't start with comment" do
-        let(:content) { "def something() { #{prefix} this is a comment " }
+        let(:content) { "def something() { #{content_above_cursor} this is a comment " }
 
         it { is_expected.to be_falsey }
       end
 
       context "when there is whitespace before the comment" do
-        let(:content) { "      #{prefix} this is a comment " }
+        let(:content) { "      #{content_above_cursor} this is a comment " }
 
         it { is_expected.to be_truthy }
       end
 
       context "when it is a comment for different language" do
-        let(:non_comment_prefix) { prefix == '#' ? '//' : '#' }
-        let(:content) { "#{non_comment_prefix} this is a comment " }
+        let(:non_comment_content_above_cursor) { content_above_cursor == '#' ? '//' : '#' }
+        let(:content) { "#{non_comment_content_above_cursor} this is a comment " }
 
         it { is_expected.to be_falsey }
       end
     end
 
-    languages_with_single_line_comment_prefix.each do |lang, pref|
-      context "with language #{lang} and prefix #{pref}" do
+    languages_with_single_line_comment_content_above_cursor.each do |lang, content_above_cursor|
+      context "with language #{lang} and content_above_cursor #{content_above_cursor}" do
         let(:language) { lang }
-        let(:prefix) { pref }
+        let(:content_above_cursor) { content_above_cursor }
 
         it_behaves_like 'single line comment for supported language'
       end
@@ -132,13 +132,13 @@ RSpec.describe CodeSuggestions::ProgrammingLanguage, feature_category: :code_sug
     context "when the language is not supported" do
       let(:language) { 'foo' }
 
-      context "when a common comment prefix is used" do
+      context "when a common comment content_above_cursor is used" do
         let(:content) { "// this is a comment " }
 
         it { is_expected.to be_truthy }
       end
 
-      context "when a special comment prefix is used" do
+      context "when a special comment content_above_cursor is used" do
         let(:content) { "; this is a comment" }
 
         it { is_expected.to be_falsey }

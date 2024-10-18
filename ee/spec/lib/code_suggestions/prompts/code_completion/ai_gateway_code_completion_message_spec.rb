@@ -23,8 +23,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
   let(:current_file) do
     {
       'file_name' => 'test.py',
-      'content_above_cursor' => 'some prefix',
-      'content_below_cursor' => 'some suffix'
+      'content_above_cursor' => "some content_above_cursor that ends in lots of #{'a' * 1000}",
+      'content_below_cursor' => "#{'b' * 1000} is the letter that leads some content_below_cursor"
     }.with_indifferent_access
   end
 
@@ -60,6 +60,18 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
         feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions),
         params: params
       ).prompt).to be_nil
+    end
+  end
+
+  describe '#pick_content_above_cursor' do
+    it 'returns the last 500 characters of the content' do
+      expect(dummy_message.send(:pick_content_above_cursor)).to eq('a' * 500)
+    end
+  end
+
+  describe '#pick_content_below_cursor' do
+    it 'returns the first 500 characters of the content' do
+      expect(dummy_message.send(:pick_content_below_cursor)).to eq('b' * 500)
     end
   end
 end

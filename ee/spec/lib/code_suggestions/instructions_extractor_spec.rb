@@ -22,8 +22,8 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       PROMPT
     end
 
-    let(:suffix) { '' }
-    let(:file_content) { CodeSuggestions::FileContent.new(language, content, suffix) }
+    let(:content_below_cursor) { '' }
+    let(:file_content) { CodeSuggestions::FileContent.new(language, content_above_cursor, content_below_cursor) }
     let(:intent) { nil }
     let(:generation_type) { nil }
     let(:user_instruction) { nil }
@@ -32,8 +32,8 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       described_class.new(file_content, intent, generation_type, user_instruction).extract
     end
 
-    context 'when content is nil' do
-      let(:content) { nil }
+    context 'when content_above_cursor is nil' do
+      let(:content_above_cursor) { nil }
 
       it_behaves_like 'extracted instruction' do
         let(:trigger_type) { 'small_file' }
@@ -42,7 +42,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
 
     context 'when language is not supported' do
       let(:language) { CodeSuggestions::ProgrammingLanguage.new('foo') }
-      let(:content) do
+      let(:content_above_cursor) do
         <<~CODE
           full_name()
           address()
@@ -56,7 +56,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
         CODE
       end
 
-      context 'when content uses generic prefix sign' do
+      context 'when content_above_cursor uses generic prefix sign' do
         let(:comment_sign) { '#' }
 
         it_behaves_like 'extracted instruction' do
@@ -65,7 +65,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
         end
       end
 
-      context 'when content uses special prefix sign' do
+      context 'when content_above_cursor uses special prefix sign' do
         let(:comment_sign) { '!' }
 
         it { is_expected.to be_nil }
@@ -73,7 +73,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
     end
 
     context 'when there is instruction' do
-      let(:content) do
+      let(:content_above_cursor) do
         <<~CODE
           # Generate me a function
         CODE
@@ -92,7 +92,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
     end
 
     context 'when there is no instruction' do
-      let(:content) do
+      let(:content_above_cursor) do
         <<~CODE
           full_name()
           address()
@@ -125,7 +125,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
     end
 
     context 'when there is a user instruction' do
-      let(:content) { '' }
+      let(:content_above_cursor) { '' }
       let(:user_instruction) { 'Generate me a hello world function' }
 
       it_behaves_like 'extracted instruction' do
@@ -136,7 +136,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
 
     shared_examples_for 'detects comments correctly' do
       context 'when there is only one comment line' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             #{comment_sign}Generate me a function
           CODE
@@ -149,7 +149,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when the comment is too short' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             #{comment_sign}Generate
           CODE
@@ -161,7 +161,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when the last line is not a comment but code is less than 5 lines' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             #{comment_sign}A function that outputs the first 20 fibonacci numbers
 
@@ -176,7 +176,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when there are some lines above the comment' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -192,7 +192,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when there are several comment in a row' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -210,7 +210,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when there are several comments in a row followed by empty line' do
-        let(:content) do
+        let(:content_above_cursor) do
           # rubocop:disable Layout/TrailingWhitespace
           <<~CODE
             full_name()
@@ -230,7 +230,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when there are several comments in a row followed by empty lines' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -251,7 +251,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when there are several comments in a row followed by other code' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -271,7 +271,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when the first line of multiline comment does not meet requirements' do
-        let(:content) do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -287,7 +287,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
           CODE
         end
 
-        let(:expected_prefix) do
+        let(:expected_content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -303,8 +303,8 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
         end
       end
 
-      context 'when there is content between comment lines' do
-        let(:content) do
+      context 'when there is content_above_cursor between comment lines' do
+        let(:content_above_cursor) do
           <<~CODE
             full_name()
             address()
@@ -327,13 +327,13 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
     end
 
-    context 'when content is a supported language' do
-      include_context 'with comment prefixes'
+    context 'when content_above_cursor is a supported language' do
+      include_context 'with comment contents_above_cursor'
 
-      languages_with_single_line_comment_prefix.each do |lang, pref|
-        context "when using language #{lang} and prefix #{pref}" do
+      languages_with_single_line_comment_content_above_cursor.each do |lang, content_above_cursor|
+        context "when using language #{lang} and content_above_cursor #{content_above_cursor}" do
           let(:language) { CodeSuggestions::ProgrammingLanguage.new(lang) }
-          let(:comment_sign) { pref }
+          let(:comment_sign) { content_above_cursor }
 
           it_behaves_like 'detects comments correctly'
         end
@@ -352,8 +352,8 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
         INSTRUCTION
       end
 
-      let(:content) do
-        <<~CONTENT
+      let(:content_above_cursor) do
+        <<~CONTENT_ABOVE_CURSOR
           def func0():
             return 0
 
@@ -365,11 +365,11 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
 
           def index(arg1, arg2):
 
-        CONTENT
+        CONTENT_ABOVE_CURSOR
       end
 
       context 'when it is at the end of the file' do
-        let(:suffix) { '' }
+        let(:content_below_cursor) { '' }
 
         it_behaves_like 'extracted instruction' do
           let(:trigger_type) { 'empty_function' }
@@ -377,7 +377,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when cursor is inside an empty method but middle of the file' do
-        let(:suffix) do
+        let(:content_below_cursor) do
           <<~SUFFIX
             def index2():
               return 0
@@ -393,7 +393,7 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
       end
 
       context 'when cursor in inside a non-empty method' do
-        let(:suffix) do
+        let(:content_below_cursor) do
           <<~SUFFIX
               return 0
 

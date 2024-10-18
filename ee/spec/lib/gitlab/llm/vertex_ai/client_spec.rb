@@ -253,7 +253,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Client, feature_category: :ai_abstraction_
   end
 
   describe '#code_completion' do
-    subject(:response) { client.code_completion(content: { prefix: "any", suffix: "thing" }, **options) }
+    subject(:response) do
+      client.code_completion(content: { content_above_cursor: "any", content_below_cursor: "thing" }, **options)
+    end
 
     it_behaves_like 'forwarding the request correctly'
 

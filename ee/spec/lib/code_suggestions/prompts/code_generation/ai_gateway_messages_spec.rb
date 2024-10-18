@@ -21,8 +21,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages, feat
               stream: expected_stream,
               prompt_enhancer: {
                 examples_array: expected_examples_array,
-                trimmed_prefix: expected_trimmed_prefix,
-                trimmed_suffix: expected_trimmed_suffix,
+                trimmed_content_above_cursor: expected_trimmed_content_above_cursor,
+                trimmed_content_below_cursor: expected_trimmed_content_below_cursor,
                 related_files: expected_related_files,
                 related_snippets: expected_related_snippets,
                 libraries: expected_libraries,

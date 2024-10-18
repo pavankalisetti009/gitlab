@@ -145,8 +145,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   describe 'POST /code_suggestions/completions' do
     let(:access_code_suggestions) { true }
 
-    let(:prefix) do
-      <<~PREFIX
+    let(:content_above_cursor) do
+      <<~CONTENT_ABOVE_CURSOR
         def add(x, y):
           return x + y
 
@@ -160,7 +160,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           return x / y
 
         def is_even(n: int) ->
-      PREFIX
+      CONTENT_ABOVE_CURSOR
     end
 
     let(:file_name) { 'test.py' }
@@ -172,7 +172,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         project_id: 33191677, # not removed given we still might get it but we will not use it
         current_file: {
           file_name: file_name,
-          content_above_cursor: prefix,
+          content_above_cursor: content_above_cursor,
           content_below_cursor: ''
         },
         stream: false,
@@ -210,9 +210,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                     "trigger_type" => "comment"
                   }
                 ],
-                'trimmed_prefix' => "def is_even(n: int) ->\n# A " \
+                'trimmed_content_above_cursor' => "def is_even(n: int) ->\n# A " \
                   "function that outputs the first 20 fibonacci numbers\n",
-                'trimmed_suffix' => '',
+                'trimmed_content_below_cursor' => '',
                 'related_files' => [],
                 'related_snippets' => [],
                 'libraries' => [],
@@ -575,11 +575,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           context 'when the task is code generation' do
             let(:current_user) { authorized_user }
-            let(:prefix) do
-              <<~PREFIX
+            let(:content_above_cursor) do
+              <<~CONTENT_ABOVE_CURSOR
                 def is_even(n: int) ->
                 # A function that outputs the first 20 fibonacci numbers
-              PREFIX
+              CONTENT_ABOVE_CURSOR
             end
 
             let(:system_prompt) do
@@ -625,7 +625,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
                 </examples>
                 <existing_code>
-                #{prefix}{{cursor}}
+                #{content_above_cursor}{{cursor}}
                 </existing_code>
                 The existing code is provided in <existing_code></existing_code> tags.
 
@@ -670,7 +670,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                   prompt: prompt,
                   current_file: {
                     file_name: file_name,
-                    content_above_cursor: prefix,
+                    content_above_cursor: content_above_cursor,
                     content_below_cursor: ''
                   }
                 )
