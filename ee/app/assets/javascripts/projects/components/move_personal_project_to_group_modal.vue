@@ -44,7 +44,7 @@ export default {
     modalTitle: s__('PersonalProject|Your project %{projectName} is not in a group'),
     buttonLabel: s__('PersonalProject|Learn to move a project to a group'),
   },
-  moveProjectDocsPath: helpPagePath('tutorials/move_personal_project_to_group/index'),
+  moveProjectDocsPath: helpPagePath('tutorials/move_personal_project_to_group/index.md'),
   modalId: MOVE_PERSONAL_PROJECT_TO_GROUP_MODAL,
 };
 </script>

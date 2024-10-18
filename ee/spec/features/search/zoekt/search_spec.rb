@@ -78,6 +78,6 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
     submit_search('test')
     select_search_scope('Code')
     expect(page).to have_link('Exact code search (powered by Zoekt)',
-      href: help_page_path('user/search/exact_code_search'))
+      href: help_page_path('user/search/exact_code_search.md'))
   end
 end

@@ -9,7 +9,7 @@ module EE
     include ::Nav::GitlabDuoSettingsPage
 
     def size_limit_message_for_group(group)
-      repository_size_limit_link = link_to _('Learn more'), help_page_path('administration/settings/account_and_limit_settings.html', anchor: 'repository-size-limit')
+      repository_size_limit_link = link_to _('Learn more'), help_page_path('administration/settings/account_and_limit_settings.md', anchor: 'repository-size-limit')
       message = group.lfs_enabled? ? _("Max size for repositories within this group, including LFS files. %{repository_size_limit_link}.") : _("Max size for repositories within this group. %{repository_size_limit_link}.")
 
       safe_format(message, repository_size_limit_link: repository_size_limit_link)

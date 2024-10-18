@@ -52,7 +52,7 @@ module MergeRequests
             .routes
             .url_helpers
             .help_page_url(
-              'user/project/merge_requests/dependencies.html',
+              'user/project/merge_requests/dependencies.md',
               anchor: 'complex-merge-order-dependencies-are-unsupported'
             )
 
