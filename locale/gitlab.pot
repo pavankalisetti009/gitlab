@@ -31468,6 +31468,9 @@ msgstr ""
 msgid "KubernetesDashboard|Failed"
 msgstr ""
 
+msgid "KubernetesDashboard|Failed to establish WebSocket connection"
+msgstr ""
+
 msgid "KubernetesDashboard|Job"
 msgstr ""
 
