@@ -161,17 +161,15 @@ module Security
     end
 
     def delete_approval_policy_rules
-      relation_in_batch(approval_policy_rules) do |batch|
-        delete_approval_rules(batch)
-        delete_policy_violations(batch)
-        delete_software_license_policies(batch)
-      end
+      delete_approval_rules
+      delete_policy_violations
+      delete_software_license_policies
 
-      delete_in_batches(approval_policy_rules)
+      approval_policy_rules.delete_all(:delete_all)
     end
 
     def delete_scan_execution_policy_rules
-      delete_in_batches(scan_execution_policy_rules)
+      scan_execution_policy_rules.delete_all(:delete_all)
     end
 
     private
@@ -191,30 +189,33 @@ module Security
       Security::ApprovalPolicyRuleProjectLink.for_project(project).for_policy_rules(policy_rules).delete_all
     end
 
-    def delete_approval_rules(rules_batch)
-      delete_in_batches(ApprovalProjectRule.where(approval_policy_rule_id: rules_batch.select(:id)))
-      delete_in_batches(
-        ApprovalMergeRequestRule
+    def delete_approval_rules
+      policy_configuration = security_orchestration_policy_configuration
+      policy_configuration.approval_project_rules.each_batch do |project_rules_batch|
+        project_rules_batch.where(approval_policy_rule_id: approval_policy_rules.select(:id)).delete_all
+      end
+
+      policy_configuration.approval_merge_request_rules.each_batch(order_hint: :updated_at) do |mr_rules_batch|
+        mr_rules_batch
           .for_unmerged_merge_requests
-          .where(approval_policy_rule_id: rules_batch.select(:id))
+          .where(approval_policy_rules: approval_policy_rules.select(:id))
+          .delete_all
+      end
+    end
+
+    def delete_policy_violations
+      delete_in_batches(
+        Security::ScanResultPolicyViolation.where(approval_policy_rule_id: approval_policy_rules.select(:id))
       )
     end
 
-    def delete_policy_violations(rules_batch)
-      delete_in_batches(Security::ScanResultPolicyViolation.where(approval_policy_rule_id: rules_batch.select(:id)))
-    end
-
-    def delete_software_license_policies(rules_batch)
-      delete_in_batches(SoftwareLicensePolicy.where(approval_policy_rule_id: rules_batch.select(:id)))
+    def delete_software_license_policies
+      delete_in_batches(SoftwareLicensePolicy.where(approval_policy_rule_id: approval_policy_rules.select(:id)))
     end
 
     def delete_in_batches(relation)
-      relation_in_batch(relation, &:delete_all)
-    end
-
-    def relation_in_batch(relation)
-      relation.each_batch(order_hint: :updated_at) do |batch|
-        yield batch
+      relation.each_batch do |batch|
+        batch.delete_all
       end
     end
   end

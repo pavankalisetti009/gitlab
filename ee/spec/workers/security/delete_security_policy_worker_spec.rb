@@ -10,11 +10,17 @@ RSpec.describe Security::DeleteSecurityPolicyWorker, feature_category: :security
     let_it_be(:violation) { create(:scan_result_policy_violation, approval_policy_rule: approval_policy_rule) }
 
     let_it_be(:approval_project_rule) do
-      create(:approval_project_rule, approval_policy_rule_id: approval_policy_rule.id)
+      create(:approval_project_rule,
+        security_orchestration_policy_configuration: policy.security_orchestration_policy_configuration,
+        approval_policy_rule_id: approval_policy_rule.id
+      )
     end
 
     let_it_be(:approval_merge_request_rule) do
-      create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
+      create(:approval_merge_request_rule,
+        security_orchestration_policy_configuration: policy.security_orchestration_policy_configuration,
+        approval_policy_rule_id: approval_policy_rule.id
+      )
     end
 
     it_behaves_like 'an idempotent worker' do
