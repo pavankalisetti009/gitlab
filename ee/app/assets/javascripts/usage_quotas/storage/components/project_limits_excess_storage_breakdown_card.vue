@@ -68,11 +68,9 @@ export default {
       );
       return Math.min(usedRatio, 100);
     },
-    percentageRemaining() {
-      const percentageRemaining = Math.max(100 - this.percentageUsed, 0);
-
-      return sprintf(s__('UsageQuota|%{percentageRemaining}%% purchased storage remaining.'), {
-        percentageRemaining,
+    percentageUsedSubtitle() {
+      return sprintf(s__('UsageQuota|You have used %{percentageUsed}%% of your total storage.'), {
+        percentageUsed: this.percentageUsed,
       });
     },
     planStorageDescription() {
@@ -86,7 +84,7 @@ export default {
     },
   },
   i18n: {
-    PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE: s__('UsageQuota|Total excess storage'),
+    PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE: s__('UsageQuota|Excess storage usage'),
     STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
     PROJECT_ENFORCEMENT_PURCHASE_CARD_SUBTITLE: s__(
       'UsageQuota|This namespace is under project-level limits, so only repository and LFS storage usage above the limit included in the plan is counted as excess storage. You can increase excess storage limit by purchasing storage packages.',
@@ -158,8 +156,8 @@ export default {
       </div>
       <template v-if="showPercentageInfo">
         <gl-progress-bar :value="percentageUsed" class="gl-my-4" />
-        <div data-testid="purchased-storage-percentage-remaining">
-          {{ percentageRemaining }}
+        <div data-testid="purchased-storage-percentage-used">
+          {{ percentageUsedSubtitle }}
         </div>
       </template>
       <hr class="gl-my-4" />

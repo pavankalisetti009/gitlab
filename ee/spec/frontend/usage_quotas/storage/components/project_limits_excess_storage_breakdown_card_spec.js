@@ -31,8 +31,8 @@ describe('ProjectLimitsExcessStorageBreakdownCard', () => {
   };
 
   const findCardTitle = () => wrapper.findByTestId('purchased-storage-card-title');
-  const findPercentageRemaining = () =>
-    wrapper.findByTestId('purchased-storage-percentage-remaining');
+  const findPercentageUsedSubtitle = () =>
+    wrapper.findByTestId('purchased-storage-percentage-used');
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findGlButton = () => wrapper.findComponent(GlButton);
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
@@ -94,7 +94,7 @@ describe('ProjectLimitsExcessStorageBreakdownCard', () => {
     });
 
     it('renders the card title', () => {
-      expect(findCardTitle().text()).toBe('Total excess storage');
+      expect(findCardTitle().text()).toBe('Excess storage usage');
     });
 
     it('renders the help link with the proper attributes', () => {
@@ -137,21 +137,21 @@ describe('ProjectLimitsExcessStorageBreakdownCard', () => {
           expect(findProgressBar().exists()).toBe(false);
         });
 
-        it('does not render percentage remaining block', () => {
-          expect(findPercentageRemaining().exists()).toBe(false);
+        it('does not render percentage used subtitle', () => {
+          expect(findPercentageUsedSubtitle().exists()).toBe(false);
         });
       },
     );
 
     describe.each`
-      excessStorage | purchasedStorage | percentageUsage | percentageRemaining
-      ${3}          | ${10}            | ${30}           | ${70}
-      ${-1}         | ${10}            | ${0}            | ${100}
-      ${10}         | ${3}             | ${100}          | ${0}
-      ${10}         | ${-1}            | ${0}            | ${100}
+      excessStorage | purchasedStorage | percentageUsage
+      ${3}          | ${10}            | ${30}
+      ${-1}         | ${10}            | ${0}
+      ${10}         | ${3}             | ${100}
+      ${10}         | ${-1}            | ${0}
     `(
       'UI behavior when excessStorage: $excessStorage, purchasedStorage: $purchasedStorage',
-      ({ excessStorage, purchasedStorage, percentageUsage, percentageRemaining }) => {
+      ({ excessStorage, purchasedStorage, percentageUsage }) => {
         beforeEach(() => {
           createComponent({
             props: { purchasedStorage },
@@ -171,8 +171,8 @@ describe('ProjectLimitsExcessStorageBreakdownCard', () => {
           expect(findProgressBar().attributes('value')).toBe(String(percentageUsage));
         });
 
-        it(`renders the percentage remaining as ${percentageRemaining}`, () => {
-          expect(findPercentageRemaining().text()).toContain(String(percentageRemaining));
+        it(`renders the percentage used subtitle with ${percentageUsage}`, () => {
+          expect(findPercentageUsedSubtitle().text()).toContain(String(percentageUsage));
         });
       },
     );
