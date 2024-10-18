@@ -6,6 +6,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ModelSelectDropdown from 'ee/pages/admin/ai/feature_settings/components/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
+import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
+import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { createAlert } from '~/alert';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
 
@@ -20,7 +22,23 @@ describe('ModelSelectDropdown', () => {
   const newSelfHostedModelPath = '/admin/ai/self_hosted_models/new';
   const mockAiFeatureSetting = mockAiFeatureSettings[0];
 
-  const updateMutationSuccessHandler = jest.fn().mockResolvedValue({
+  const updateFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiFeatureSettingUpdate: {
+        errors: [],
+      },
+    },
+  });
+
+  const getFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiFeatureSettings: {
+        errors: [],
+      },
+    },
+  });
+
+  const getSelfHostedModelsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiFeatureSettingUpdate: {
         errors: [],
@@ -29,7 +47,11 @@ describe('ModelSelectDropdown', () => {
   });
 
   const createComponent = ({
-    apolloHandlers = [[updateAiFeatureSetting, updateMutationSuccessHandler]],
+    apolloHandlers = [
+      [updateAiFeatureSetting, updateFeatureSettingsSuccessHandler],
+      [getAiFeatureSettingsQuery, getFeatureSettingsSuccessHandler],
+      [getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler],
+    ],
     props = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
@@ -51,19 +73,19 @@ describe('ModelSelectDropdown', () => {
     });
   };
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   const findSelectDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findSelectDropdownButtonText = () => wrapper.find('[class="gl-new-dropdown-button-text"]');
   const findButton = () => wrapper.find('[data-testid="add-self-hosted-model-button"]');
 
   it('renders the dropdown component', () => {
+    createComponent();
+
     expect(findSelectDropdown().exists()).toBe(true);
   });
 
   it('renders a list of select options', () => {
+    createComponent();
+
     const modelOptions = findSelectDropdown().props('items');
 
     expect(modelOptions.map((model) => model.text)).toEqual([
@@ -75,17 +97,23 @@ describe('ModelSelectDropdown', () => {
   });
 
   it('renders a button to add a self-hosted model', () => {
+    createComponent();
+
     expect(findButton().text()).toBe('Add self-hosted model');
   });
 
   describe('when no model is selected and the feature is not disabled', () => {
     it('displays the correct text on the dropdown button', () => {
+      createComponent();
+
       expect(findSelectDropdownButtonText().text()).toBe('Select a self-hosted model');
     });
   });
 
   describe('when an update is saving', () => {
     it('renders the loading state', async () => {
+      createComponent();
+
       await findSelectDropdownButtonText().trigger('click');
       await findSelectDropdown().vm.$emit('select', 'DISABLED');
 
@@ -94,15 +122,29 @@ describe('ModelSelectDropdown', () => {
   });
 
   describe('when an update succeeds', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('displays a success toast', async () => {
       await findSelectDropdownButtonText().trigger('click');
-      await findSelectDropdown().vm.$emit('select', 'DISABLED');
+      await findSelectDropdown().vm.$emit('select', 1);
 
       await waitForPromises();
 
       expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
         'Successfully updated Code Suggestions / Code Generation',
       );
+    });
+
+    it('refreshes self-hosted models and feature settings data', async () => {
+      await findSelectDropdownButtonText().trigger('click');
+      await findSelectDropdown().vm.$emit('select', 1);
+
+      await waitForPromises();
+
+      expect(getSelfHostedModelsSuccessHandler).toHaveBeenCalled();
+      expect(getFeatureSettingsSuccessHandler).toHaveBeenCalled();
     });
 
     describe('when the feature has been disabled', () => {
@@ -134,7 +176,7 @@ describe('ModelSelectDropdown', () => {
 
   describe('when an update fails', () => {
     const selectedModel = mockSelfHostedModels[0];
-    const updateMutationErrorHandler = jest.fn().mockResolvedValue({
+    const updateFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
       data: {
         aiFeatureSettingUpdate: {
           aiFeatureSetting: null,
@@ -145,7 +187,11 @@ describe('ModelSelectDropdown', () => {
 
     beforeEach(async () => {
       createComponent({
-        apolloHandlers: [[updateAiFeatureSetting, updateMutationErrorHandler]],
+        apolloHandlers: [
+          [updateAiFeatureSetting, updateFeatureSettingsErrorHandler],
+          [getAiFeatureSettingsQuery, getFeatureSettingsSuccessHandler],
+          [getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler],
+        ],
       });
 
       await findSelectDropdownButtonText().trigger('click');
