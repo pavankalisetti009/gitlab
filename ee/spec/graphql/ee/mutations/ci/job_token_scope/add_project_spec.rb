@@ -10,23 +10,15 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddProject, feature_category: :cont
   end
 
   describe '#resolve' do
-    let_it_be(:project) do
-      create(:project, ci_outbound_job_token_scope_enabled: true)
-    end
+    let_it_be(:project) { create(:project, ci_outbound_job_token_scope_enabled: true) }
+    let_it_be(:project_path) { project.full_path }
 
     let_it_be(:target_project) { create(:project) }
+    let_it_be(:target_project_path) { target_project.full_path }
 
-    let(:target_project_path) { target_project.full_path }
-    let(:project_path) { project.full_path }
-    let(:mutation_args) do
-      {
-        project_path: project.full_path,
-        target_project_path: target_project_path,
-        direction: :inbound
-      }
-    end
+    let_it_be(:policies) { %w[read_project read_package] }
 
-    let(:current_user) { create(:user) }
+    let_it_be(:current_user) { create(:user, maintainer_of: project, guest_of: target_project) }
 
     let(:expected_audit_context) do
       {
@@ -38,13 +30,16 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddProject, feature_category: :cont
       }
     end
 
-    subject do
-      mutation.resolve(**mutation_args)
+    let(:mutation_args) do
+      {
+        project_path: project.full_path,
+        target_project_path: target_project_path,
+        direction: :inbound
+      }
     end
 
-    before do
-      project.add_maintainer(current_user)
-      target_project.add_guest(current_user)
+    subject(:resolver) do
+      mutation.resolve(**mutation_args)
     end
 
     context 'when user adds target project to the inbound job token scope' do

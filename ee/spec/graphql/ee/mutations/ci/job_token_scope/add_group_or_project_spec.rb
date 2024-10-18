@@ -50,7 +50,8 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
       let(:target) { target_group }
 
       let(:expected_audit_message) do
-        "Group #{target_group_path} was added to list of allowed groups for #{project_path}"
+        "Group #{target_group_path} was added to list of allowed groups for #{project_path}, " \
+          "with job token permissions: read_project, read_package"
       end
 
       let(:event_name) { 'secure_ci_job_token_group_added' }
@@ -64,6 +65,22 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
         resolver
+      end
+
+      context 'when feature-flag `add_policies_to_ci_job_token` is disabled' do
+        let(:expected_audit_message) do
+          "Group #{target_group_path} was added to list of allowed groups for #{project_path}"
+        end
+
+        before do
+          stub_feature_flags(add_policies_to_ci_job_token: false)
+        end
+
+        it 'logs an audit event without job token policies' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
+          resolver
+        end
       end
 
       context 'when service returns an error' do
@@ -86,7 +103,8 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
       let(:target) { target_project }
 
       let(:expected_audit_message) do
-        "Project #{target_project_path} was added to inbound list of allowed projects for #{project_path}"
+        "Project #{target_project_path} was added to inbound list of allowed projects for #{project_path}, " \
+          "with job token permissions: read_project, read_package"
       end
 
       let(:event_name) { 'secure_ci_job_token_project_added' }
@@ -100,6 +118,22 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
         resolver
+      end
+
+      context 'when feature-flag `add_policies_to_ci_job_token` is disabled' do
+        let(:expected_audit_message) do
+          "Project #{target_project_path} was added to inbound list of allowed projects for #{project_path}"
+        end
+
+        before do
+          stub_feature_flags(add_policies_to_ci_job_token: false)
+        end
+
+        it 'logs an audit event without job token policies' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
+          resolver
+        end
       end
     end
   end
