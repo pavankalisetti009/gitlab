@@ -2,6 +2,7 @@ subscription approvalSummarySubscription($issuableId: IssuableID!) {
   mergeRequestApprovalStateUpdated(issuableId: $issuableId) {
     ... on MergeRequest {
       id
+      approved
       approvalsLeft
       approvalsRequired
       approvedBy {
