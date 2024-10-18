@@ -20,6 +20,13 @@ module CodeSuggestions
         feature_setting&.self_hosted?
       end
 
+      def feature_disabled?
+        # In case the code suggestions feature is being used via self-hosted models,
+        # it can also be disabled completely. In such cases, this check
+        # can be used to prevent exposing the feature via UI/API.
+        !!feature_setting&.disabled?
+      end
+
       def feature_name
         if self_hosted?
           :self_hosted_models

@@ -111,6 +111,8 @@ module API
             unsafe_passthrough_params: params.except(:private_token)
           ).task
 
+          unauthorized_with_origin_header! if task.feature_disabled?
+
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
 
           unless current_user.allowed_to_use?(:code_suggestions, service_name: task.feature_name)
@@ -164,9 +166,13 @@ module API
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
           service_unavailable!(token[:message]) if token[:status] == :error
 
-          model_details = ::CodeSuggestions::CompletionsModelDetails.new(
+          completion_model_details = ::CodeSuggestions::CompletionsModelDetails.new(
             current_user: current_user
-          ).current_model
+          )
+
+          unauthorized! if completion_model_details.feature_disabled?
+
+          details_hash = completion_model_details.current_model
 
           access = {
             base_url: ::Gitlab::AiGateway.url,
@@ -177,7 +183,7 @@ module API
             expires_at: token[:expires_at],
             headers: connector_public_headers
           }.tap do |a|
-            a[:model_details] = model_details unless model_details.blank?
+            a[:model_details] = details_hash unless details_hash.blank?
           end
 
           present access, with: Grape::Presenters::Presenter

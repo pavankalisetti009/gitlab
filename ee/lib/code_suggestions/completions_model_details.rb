@@ -19,6 +19,10 @@ module CodeSuggestions
       {}
     end
 
+    def feature_disabled?
+      !!feature_setting&.disabled?
+    end
+
     private
 
     attr_reader :current_user

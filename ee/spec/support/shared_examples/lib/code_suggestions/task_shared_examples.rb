@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'code suggestion task' do
-  let(:base_url) { 'https://cloud.gitlab.com/ai' }
+  let(:base_url) { ::Gitlab::AiGateway.url }
   let(:endpoint) { "#{base_url}/#{endpoint_path}" }
 
   it 'returns valid endpoint' do
@@ -14,5 +14,9 @@ RSpec.shared_examples 'code suggestion task' do
 
   it 'has correct feature_name' do
     expect(task.feature_name).to eq expected_feature_name
+  end
+
+  it 'is not disabled' do
+    expect(task.feature_disabled?).to eq false
   end
 end
