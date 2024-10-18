@@ -41,20 +41,12 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-flex gl-w-full gl-bg-gray-50 gl-p-5 gl-font-bold">
-      <slot name="card-header"></slot>
-    </div>
-    <div v-if="!rules.length" data-testid="empty-state" class="gl-border-t gl-bg-white gl-p-5">
+    <slot name="table"></slot>
+
+    <div v-if="!rules.length" data-testid="empty-state" class="gl-bg-white gl-p-5">
       <slot name="empty-state"></slot>
     </div>
-    <div
-      v-for="rule in rules"
-      :key="rule.id"
-      :data-testid="`${ruleKey}-${rule.id}`"
-      class="gl-border-t gl-flex gl-w-full gl-items-center gl-bg-white gl-p-5"
-    >
-      <slot name="rule" :rule="rule" :rule-key="ruleKey"></slot>
-    </div>
+
     <div class="gl-border-t gl-flex gl-items-center gl-p-5">
       <gl-button
         category="secondary"

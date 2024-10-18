@@ -19,7 +19,12 @@ import { getUser } from '~/rest_api';
 import { s__ } from '~/locale';
 import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
-import { ACCESS_LEVELS, INHERITED_GROUPS, NON_INHERITED_GROUPS } from './constants';
+import {
+  ACCESS_LEVELS,
+  INHERITED_GROUPS,
+  NON_INHERITED_GROUPS,
+  APPROVER_FIELDS,
+} from './constants';
 
 const mapUserToApprover = (user) => ({
   name: user.name,
@@ -54,6 +59,8 @@ const ID_FOR_TYPE = {
 const MIN_APPROVALS_COUNT = 1;
 
 const MAX_APPROVALS_COUNT = 5;
+
+const USERS = 'users';
 
 export default {
   ACCESS_LEVELS,
@@ -239,25 +246,7 @@ export default {
     ),
     invalidFeedback: s__('ProtectedEnvironments|This rule already exists.'),
   },
-  fields: [
-    {
-      key: 'approvers',
-      label: s__('ProtectedEnvironments|Approvers'),
-    },
-    {
-      key: 'approvals',
-      label: s__('ProtectedEnvironments|Approvals required'),
-    },
-    {
-      key: 'inheritance',
-      label: s__('ProtectedEnvironments|Enable group inheritance'),
-    },
-    {
-      key: 'remove',
-      label: '',
-      tdClass: 'gl-text-right',
-    },
-  ],
+  approverFields: APPROVER_FIELDS.filter(({ key }) => key !== USERS),
 };
 </script>
 <template>
@@ -304,7 +293,7 @@ export default {
     <gl-collapse :visible="hasSelectedApprovers">
       <div class="gl-mb-5 gl-font-bold">{{ $options.i18n.approvalRulesLabel }}</div>
       <gl-table-lite
-        :fields="$options.fields"
+        :fields="$options.approverFields"
         :items="approverInfo"
         data-testid="approval-rules"
         stacked="md"
@@ -374,13 +363,12 @@ export default {
             :name="`approval-inheritance-${approver.name}`"
             :value="approver.groupInheritanceType"
             label-position="hidden"
-            class="gl-items-center"
             @change="updateApproverInheritance(approver, $event)"
           />
           <span v-else :key="`${index}-inheritance`"></span>
         </template>
 
-        <template #cell(remove)="{ item: approver, index }">
+        <template #cell(actions)="{ item: approver, index }">
           <gl-button
             :key="`${index}-remove`"
             v-gl-tooltip

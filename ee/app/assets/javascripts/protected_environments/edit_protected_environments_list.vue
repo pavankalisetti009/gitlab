@@ -8,6 +8,7 @@ import {
   GlTooltipDirective as GlTooltip,
   GlToggle,
   GlSprintf,
+  GlTableLite,
 } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions, mapGetters } from 'vuex';
@@ -16,7 +17,14 @@ import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
 import ShowMore from '~/vue_shared/components/show_more.vue';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import { ACCESS_LEVELS, DEPLOYER_RULE_KEY, APPROVER_RULE_KEY, INHERITED_GROUPS } from './constants';
+import {
+  ACCESS_LEVELS,
+  DEPLOYER_RULE_KEY,
+  APPROVER_RULE_KEY,
+  INHERITED_GROUPS,
+  APPROVER_FIELDS,
+  DEPLOYER_FIELDS,
+} from './constants';
 import EditProtectedEnvironmentRulesCard from './edit_protected_environment_rules_card.vue';
 import AddRuleModal from './add_rule_modal.vue';
 import AddApprovers from './add_approvers.vue';
@@ -30,6 +38,7 @@ export default {
     GlFormInput,
     GlIcon,
     GlToggle,
+    GlTableLite,
     AccessDropdown,
     GroupsAccessDropdown,
     ProtectedEnvironments,
@@ -79,6 +88,7 @@ export default {
       'updateRule',
       'unprotectEnvironment',
       'updateApproverInheritance',
+      'updateRequiredApprovals',
     ]),
     canDeleteDeployerRules(env) {
       return env[DEPLOYER_RULE_KEY].length > 1;
@@ -97,12 +107,29 @@ export default {
     isUsingGroupInheritance({ group_inheritance_type: type }) {
       return type === INHERITED_GROUPS;
     },
+    isEditingRules({ id }) {
+      return Boolean(this.editingRules[id]);
+    },
+    getApprovalInheritanceToggleId(rule) {
+      return this.isEditingRules(rule) ? `approval-inheritance-${rule.id}` : null;
+    },
+    getApprovalInheritanceToggleValue(rule) {
+      return this.isUsingGroupInheritance(
+        this.isEditingRules(rule) ? this.editingRules[rule.id] : rule,
+      );
+    },
+    onApprovalInheritanceToggleChange(rule, value) {
+      if (this.isEditingRules(rule)) {
+        this.updateApproverInheritance({ rule: this.editingRules[rule.id], value });
+      }
+    },
+    onApprovalsInputChange(rule, value) {
+      if (this.isEditingRules(rule) && value) {
+        this.updateRequiredApprovals({ rule: this.editingRules[rule.id], value });
+      }
+    },
   },
   i18n: {
-    deployersHeader: s__('ProtectedEnvironments|Allowed to deploy'),
-    approversHeader: s__('ProtectedEnvironments|Allowed to approve'),
-    approvalsHeader: s__('ProtectedEnvironments|Approvals required'),
-    usersHeader: s__('ProtectedEnvironments|Users'),
     addDeployerText: s__('ProtectedEnvironments|Add deployment rules'),
     addApproverText: s__('ProtectedEnvironments|Add approval rules'),
     deployerDeleteButtonTitle: s__('ProtectedEnvironments|Delete deployer rule'),
@@ -127,6 +154,8 @@ export default {
   DEPLOYER_RULE_KEY,
   APPROVER_RULE_KEY,
   AVATAR_LIMIT: 5,
+  APPROVER_FIELDS,
+  DEPLOYER_FIELDS,
 };
 </script>
 <template>
@@ -181,47 +210,55 @@ export default {
           :environment="environment"
           :rule-key="$options.DEPLOYER_RULE_KEY"
           :data-testid="`protected-environment-${environment.name}-deployers`"
-          class="gl-border gl-rounded-t-base gl-border-b-initial"
+          class="gl-border-t"
           @addRule="addRule"
         >
-          <template #card-header>
-            <span class="gl-w-3/10">{{ $options.i18n.deployersHeader }}</span>
-            <span class="">{{ $options.i18n.usersHeader }}</span>
-          </template>
-          <template #rule="{ rule, ruleKey }">
-            <span class="gl-w-3/10" data-testid="rule-description">
-              {{ rule.access_level_description }}
-            </span>
+          <template #table>
+            <gl-table-lite
+              :fields="$options.DEPLOYER_FIELDS"
+              :items="environment[$options.DEPLOYER_RULE_KEY]"
+              stacked="md"
+            >
+              <template #cell(deployers)="{ item: rule }">
+                <span data-testid="rule-description">
+                  {{ rule.access_level_description }}
+                </span>
+              </template>
 
-            <div class="gl-w-1/2">
-              <show-more
-                #default="{ item }"
-                :limit="$options.AVATAR_LIMIT"
-                :items="getUsersForRule(rule, ruleKey)"
-              >
-                <gl-avatar
-                  :key="item.id"
-                  v-gl-tooltip
-                  :src="item.avatar_url"
-                  :title="item.name"
-                  :size="24"
-                  class="gl-mr-2"
-                />
-              </show-more>
-            </div>
+              <template #cell(users)="{ item: rule }">
+                <show-more
+                  #default="{ item }"
+                  :limit="$options.AVATAR_LIMIT"
+                  :items="getUsersForRule(rule, $options.DEPLOYER_RULE_KEY)"
+                >
+                  <gl-avatar
+                    :key="item.id"
+                    v-gl-tooltip
+                    :src="item.avatar_url"
+                    :title="item.name"
+                    :size="24"
+                    class="gl-mr-2"
+                  />
+                </show-more>
+              </template>
 
-            <gl-button
-              v-if="canDeleteDeployerRules(environment)"
-              v-gl-tooltip
-              category="secondary"
-              variant="danger"
-              icon="remove"
-              :loading="loading"
-              :title="$options.i18n.deployerDeleteButtonTitle"
-              :aria-label="$options.i18n.deployerDeleteButtonTitle"
-              class="gl-ml-auto"
-              @click="deleteRule({ environment, rule, ruleKey })"
-            />
+              <template #cell(actions)="{ item: rule }">
+                <div class="gl-flex gl-justify-end">
+                  <gl-button
+                    v-if="canDeleteDeployerRules(environment)"
+                    v-gl-tooltip
+                    category="secondary"
+                    variant="danger"
+                    icon="remove"
+                    :loading="loading"
+                    :title="$options.i18n.deployerDeleteButtonTitle"
+                    :aria-label="$options.i18n.deployerDeleteButtonTitle"
+                    class="gl-ml-auto"
+                    @click="deleteRule({ environment, rule, ruleKey: $options.DEPLOYER_RULE_KEY })"
+                  />
+                </div>
+              </template>
+            </gl-table-lite>
           </template>
         </edit-protected-environment-rules-card>
         <edit-protected-environment-rules-card
@@ -230,24 +267,121 @@ export default {
           :environment="environment"
           :rule-key="$options.APPROVER_RULE_KEY"
           :data-testid="`protected-environment-${environment.name}-approvers`"
-          class="gl-border gl-rounded-bl-base gl-rounded-br-base"
+          class="gl-border-t"
           @addRule="addRule"
         >
-          <template #card-header>
-            <span class="gl-w-3/10">{{ $options.i18n.approversHeader }}</span>
-            <span class="gl-w-2/10">{{ $options.i18n.usersHeader }}</span>
-            <span class="gl-w-2/10">{{ $options.i18n.approvalsHeader }}</span>
-            <div class="gl-w-3/10">
-              <span>{{ $options.i18n.inheritanceLabel }}</span>
-              <gl-icon
-                v-gl-tooltip
-                :title="$options.i18n.inheritanceTooltip"
-                :aria-label="$options.i18n.inheritanceTooltip"
-                name="question-o"
-                class="gl-ml-2"
-              />
-            </div>
+          <template #table>
+            <gl-table-lite
+              :fields="$options.APPROVER_FIELDS"
+              :items="environment[$options.APPROVER_RULE_KEY]"
+              stacked="md"
+              show-empty
+            >
+              <template #cell(approvers)="{ item: rule }">
+                <span data-testid="rule-description">
+                  {{ rule.access_level_description }}
+                </span>
+              </template>
+
+              <template #cell(users)="{ item: rule }">
+                <show-more
+                  #default="{ item }"
+                  :limit="$options.AVATAR_LIMIT"
+                  :items="getUsersForRule(rule, $options.APPROVER_RULE_KEY)"
+                >
+                  <gl-avatar
+                    :key="item.id"
+                    v-gl-tooltip
+                    :src="item.avatar_url"
+                    :title="item.name"
+                    :size="24"
+                    class="gl-mr-2"
+                  />
+                </show-more>
+              </template>
+
+              <template #cell(approvals)="{ item: rule }">
+                <template v-if="isEditingRules(rule)">
+                  <gl-form-group
+                    :label-for="`approval-count-${rule.id}`"
+                    :label="$options.i18n.approvalCount"
+                    label-sr-only
+                    class="gl-mb-0"
+                  >
+                    <gl-form-input
+                      :id="`approval-count-${rule.id}`"
+                      :name="`approval-count-${rule.id}`"
+                      :value="editingRules[rule.id].required_approvals"
+                      class="gl-text-center"
+                      @input="onApprovalsInputChange(rule, $event)"
+                    />
+                  </gl-form-group>
+                </template>
+
+                <template v-else>
+                  <span class="gl-text-center">{{ rule.required_approvals }}</span>
+                </template>
+              </template>
+
+              <template #head(inheritance)="{ label }">
+                <span>{{ label }}</span>
+                <gl-icon
+                  v-gl-tooltip
+                  :title="$options.i18n.inheritanceTooltip"
+                  :aria-label="$options.i18n.inheritanceTooltip"
+                  name="question-o"
+                  class="gl-ml-2"
+                />
+              </template>
+              <template #cell(inheritance)="{ item: rule }">
+                <gl-toggle
+                  v-if="isGroupRule(rule)"
+                  :id="getApprovalInheritanceToggleId(rule)"
+                  :label="$options.i18n.inheritanceLabel"
+                  :name="`approval-inheritance-${rule.id}`"
+                  :data-testid="`approval-inheritance-toggle-${rule.id}`"
+                  :value="getApprovalInheritanceToggleValue(rule)"
+                  label-position="hidden"
+                  :disabled="!isEditingRules(rule)"
+                  @change="onApprovalInheritanceToggleChange(rule, $event)"
+                />
+              </template>
+
+              <template #cell(actions)="{ item: rule }">
+                <div class="gl-flex gl-justify-end">
+                  <gl-button
+                    v-if="isEditingRules(rule)"
+                    class="gl-ml-auto gl-mr-4"
+                    @click="updateRule({ rule, environment, ruleKey: $options.APPROVER_RULE_KEY })"
+                  >
+                    {{ $options.i18n.saveApproverButton }}
+                  </gl-button>
+
+                  <gl-button
+                    v-else-if="!isUserRule(rule)"
+                    class="gl-ml-auto gl-mr-4"
+                    :data-testid="`edit-approver-button-${rule.id}`"
+                    @click="editRule(rule)"
+                  >
+                    {{ $options.i18n.editApproverButton }}
+                  </gl-button>
+
+                  <gl-button
+                    v-gl-tooltip
+                    category="secondary"
+                    variant="danger"
+                    icon="remove"
+                    :class="{ 'gl-ml-auto': isUserRule(rule) }"
+                    :loading="loading"
+                    :title="$options.i18n.approverDeleteButtonTitle"
+                    :aria-label="$options.i18n.approverDeleteButtonTitle"
+                    @click="deleteRule({ environment, rule, ruleKey: $options.APPROVER_RULE_KEY })"
+                  />
+                </div>
+              </template>
+            </gl-table-lite>
           </template>
+
           <template #empty-state>
             <gl-sprintf :message="$options.i18n.approvalRulesEmptyStateMessage">
               <template #link="{ content }">
@@ -256,96 +390,6 @@ export default {
                 }}</help-page-link>
               </template>
             </gl-sprintf>
-          </template>
-          <template #rule="{ rule, ruleKey }">
-            <span class="gl-w-3/10" data-testid="rule-description">
-              {{ rule.access_level_description }}
-            </span>
-
-            <div class="gl-w-2/10">
-              <show-more
-                #default="{ item }"
-                :limit="$options.AVATAR_LIMIT"
-                :items="getUsersForRule(rule, ruleKey)"
-              >
-                <gl-avatar
-                  :key="item.id"
-                  v-gl-tooltip
-                  :src="item.avatar_url"
-                  :title="item.name"
-                  :size="24"
-                  class="gl-mr-2"
-                />
-              </show-more>
-            </div>
-
-            <template v-if="editingRules[rule.id]">
-              <gl-form-group
-                :label-for="`approval-count-${rule.id}`"
-                :label="$options.i18n.approvalCount"
-                label-sr-only
-                class="gl-mb-0 gl-w-2/10"
-              >
-                <gl-form-input
-                  :id="`approval-count-${rule.id}`"
-                  v-model="editingRules[rule.id].required_approvals"
-                  :name="`approval-count-${rule.id}`"
-                  class="gl-text-center"
-                />
-              </gl-form-group>
-
-              <gl-toggle
-                v-if="isGroupRule(rule)"
-                :id="`approval-inheritance-${rule.id}`"
-                :label="$options.i18n.inheritanceLabel"
-                :name="`approval-inheritance-${rule.id}`"
-                :value="isUsingGroupInheritance(editingRules[rule.id])"
-                label-position="hidden"
-                class="gl-ml-11 gl-items-center"
-                @change="updateApproverInheritance({ rule, value: $event })"
-              />
-              <span v-else></span>
-              <gl-button
-                class="gl-ml-auto gl-mr-4"
-                @click="updateRule({ rule, environment, ruleKey })"
-              >
-                {{ $options.i18n.saveApproverButton }}
-              </gl-button>
-            </template>
-            <template v-else>
-              <span class="gl-w-2/10 gl-text-center">{{ rule.required_approvals }}</span>
-
-              <gl-toggle
-                v-if="isGroupRule(rule)"
-                :label="$options.i18n.inheritanceLabel"
-                :name="`approval-inheritance-${rule.id}`"
-                :value="isUsingGroupInheritance(rule)"
-                class="gl-ml-11 gl-items-center"
-                label-position="hidden"
-                disabled
-              />
-              <span v-else></span>
-
-              <gl-button
-                v-if="!isUserRule(rule)"
-                class="gl-ml-auto gl-mr-4"
-                @click="editRule(rule)"
-              >
-                {{ $options.i18n.editApproverButton }}
-              </gl-button>
-            </template>
-
-            <gl-button
-              v-gl-tooltip
-              category="secondary"
-              variant="danger"
-              icon="remove"
-              :class="{ 'gl-ml-auto': isUserRule(rule) }"
-              :loading="loading"
-              :title="$options.i18n.approverDeleteButtonTitle"
-              :aria-label="$options.i18n.approverDeleteButtonTitle"
-              @click="deleteRule({ environment, rule, ruleKey })"
-            />
           </template>
         </edit-protected-environment-rules-card>
       </template>

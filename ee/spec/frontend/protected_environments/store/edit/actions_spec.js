@@ -13,6 +13,7 @@ import {
   updateEnvironment,
   unprotectEnvironment,
   updateApproverInheritance,
+  updateRequiredApprovals,
 } from 'ee/protected_environments/store/edit/actions';
 import * as types from 'ee/protected_environments/store/edit/mutation_types';
 import { state } from 'ee/protected_environments/store/edit/state';
@@ -384,6 +385,23 @@ describe('ee/protected_environments/store/edit/actions', () => {
         payload: { rule, value },
         expectedMutations: [
           { type: types.EDIT_RULE, payload: { ...rule, group_inheritance_type: result } },
+        ],
+      });
+    });
+  });
+  describe('updateRequiredApprovals', () => {
+    const rule = {
+      group_id: 5,
+      required_approvals: '1',
+    };
+
+    it('sets approval rule required approvals', () => {
+      return testAction({
+        action: updateRequiredApprovals,
+        mockedState,
+        payload: { rule, value: '2' },
+        expectedMutations: [
+          { type: types.EDIT_RULE, payload: { ...rule, required_approvals: '2' } },
         ],
       });
     });

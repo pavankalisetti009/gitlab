@@ -117,7 +117,7 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
         click_button('Save')
         wait_for_requests
 
-        within("[data-testid='protected-environment-production-deployers'] > div:nth-child(2)") do
+        within("[data-testid='protected-environment-production-deployers'] > table > tbody > tr:nth-child(1)") do
           click_button('Delete deployer rule') # Unselect operator-group
           wait_for_requests
         end
