@@ -125,6 +125,10 @@ module QA
           end
         end
 
+        def collecting_data?
+          has_element?('.gl-alert-title', text: 'Data is collecting and loading.')
+        end
+
         private
 
         # Select type of value stream
