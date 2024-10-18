@@ -28,11 +28,10 @@ module Resolvers
       description: 'List vulnerability findings by sort order.'
 
     def resolve(**args)
-      pure_finder = ::Security::PureFindingsFinder.new(
-        pipeline, params: args.merge(limit: limit(args))
-      )
+      params = args.merge(limit: limit(args))
 
-      pure_finder.execute
+      ::Security::FindingsFinder.new(pipeline, params: params)
+        .execute
         .tap { |findings| findings.each(&:remediations) } # initiates Batchloader
         .then { |findings| offset_pagination(findings) }
     end

@@ -918,23 +918,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
-  describe '#has_security_findings?' do
-    subject { pipeline.has_security_findings? }
-
-    context 'when the pipeline has security_findings' do
-      before do
-        scan = create(:security_scan, pipeline: pipeline)
-        create(:security_finding, scan: scan)
-      end
-
-      it { is_expected.to be_truthy }
-    end
-
-    context 'when the pipeline does not have security_findings' do
-      it { is_expected.to be_falsey }
-    end
-  end
-
   describe '#has_security_findings_in_self_and_descendants?' do
     subject { pipeline.has_security_findings_in_self_and_descendants? }
 
