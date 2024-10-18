@@ -11,7 +11,12 @@ module QA
           it "shows vsa dashboard" do
             EE::Page::Group::ValueStreamAnalytics.perform do |vsa_page|
               expect(vsa_page).to have_stages(stage_names)
-              expect(vsa_page).to have_text("'#{vsa_name}' is collecting the data. This can take a few minutes.")
+
+              if vsa_page.collecting_data?
+                expect(vsa_page).to have_text("'#{vsa_name}' is collecting the data. This can take a few minutes.")
+              else
+                expect(vsa_page).to have_text("'#{vsa_name}' Value Stream has been successfully created.")
+              end
             end
           end
         end
