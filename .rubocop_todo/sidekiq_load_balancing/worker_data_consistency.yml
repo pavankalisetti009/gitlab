@@ -1,8 +1,6 @@
 ---
 SidekiqLoadBalancing/WorkerDataConsistency:
   Exclude:
-    - 'app/workers/admin_email_worker.rb'
-    - 'app/workers/authorized_keys_worker.rb'
     - 'app/workers/authorized_project_update/periodic_recalculate_worker.rb'
     - 'app/workers/authorized_project_update/project_recalculate_worker.rb'
     - 'app/workers/authorized_project_update/user_refresh_from_replica_worker.rb'
@@ -67,12 +65,10 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/container_registry/cleanup_worker.rb'
     - 'app/workers/container_registry/delete_container_repository_worker.rb'
     - 'app/workers/counters/cleanup_refresh_worker.rb'
-    - 'app/workers/create_commit_signature_worker.rb'
     - 'app/workers/create_note_diff_file_worker.rb'
     - 'app/workers/database/drop_detached_partitions_worker.rb'
     - 'app/workers/database/partition_management_worker.rb'
     - 'app/workers/delete_diff_files_worker.rb'
-    - 'app/workers/delete_merged_branches_worker.rb'
     - 'app/workers/delete_stored_files_worker.rb'
     - 'app/workers/delete_user_worker.rb'
     - 'app/workers/dependency_proxy/cleanup_blob_worker.rb'
@@ -84,7 +80,6 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'app/workers/design_management/copy_design_collection_worker.rb'
     - 'app/workers/design_management/new_version_worker.rb'
     - 'app/workers/destroy_pages_deployments_worker.rb'
-    - 'app/workers/detect_repository_languages_worker.rb'
     - 'app/workers/disallow_two_factor_for_group_worker.rb'
     - 'app/workers/disallow_two_factor_for_subgroups_worker.rb'
     - 'app/workers/email_receiver_worker.rb'
