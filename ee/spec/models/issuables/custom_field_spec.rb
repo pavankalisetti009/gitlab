@@ -42,6 +42,93 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_uniqueness_of(:name).scoped_to(:namespace_id).case_insensitive }
+
+    describe '#namespace_is_root_group' do
+      subject(:custom_field) { build(:custom_field, namespace: namespace) }
+
+      context 'when namespace is a root group' do
+        let(:namespace) { build(:group) }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when namespace is a subgroup' do
+        let(:namespace) { build(:group, parent: build(:group)) }
+
+        it 'returns a validation error' do
+          expect(custom_field).not_to be_valid
+          expect(custom_field.errors[:namespace]).to include('must be a root group.')
+        end
+      end
+
+      context 'when namespace is a personal namespace' do
+        let(:namespace) { build(:namespace) }
+
+        it 'returns a validation error' do
+          expect(custom_field).not_to be_valid
+          expect(custom_field.errors[:namespace]).to include('must be a root group.')
+        end
+      end
+    end
+
+    describe '#number_of_active_fields_per_namespace' do
+      let_it_be(:group) { create(:group) }
+
+      before do
+        stub_const("#{described_class}::MAX_ACTIVE_FIELDS", 2)
+      end
+
+      subject(:custom_field) { build(:custom_field, namespace: group) }
+
+      context 'when group is not at the limit' do
+        before_all do
+          create(:custom_field, namespace: group)
+          create(:custom_field, :archived, namespace: group)
+        end
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when group is over the limit' do
+        before_all do
+          create_list(:custom_field, 2, namespace: group)
+          create(:custom_field, :archived, namespace: group)
+        end
+
+        it 'is valid for an archived field' do
+          custom_field.archived_at = Time.current
+
+          expect(custom_field).to be_valid
+        end
+
+        it 'is valid for an existing active field' do
+          existing_field = described_class.active.first
+
+          expect(existing_field).to be_valid
+        end
+
+        shared_examples 'an invalid record' do
+          it 'returns a validation error' do
+            expect(custom_field).not_to be_valid
+            expect(custom_field.errors[:namespace]).to include('can only have a maximum of 2 active custom fields.')
+          end
+        end
+
+        context 'with a new active field' do
+          it_behaves_like 'an invalid record'
+        end
+
+        context 'when making an existing archived field active' do
+          subject(:custom_field) { described_class.archived.first }
+
+          before do
+            custom_field.archived_at = nil
+          end
+
+          it_behaves_like 'an invalid record'
+        end
+      end
+    end
   end
 
   describe 'scopes' do

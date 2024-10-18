@@ -455,6 +455,10 @@ module EE
         enable :read_custom_field
       end
 
+      rule { maintainer & custom_fields_available }.policy do
+        enable :admin_custom_field
+      end
+
       rule { ~can?(:read_cross_project) }.policy do
         prevent :read_group_contribution_analytics
         prevent :read_epic

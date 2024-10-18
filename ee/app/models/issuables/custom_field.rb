@@ -4,11 +4,13 @@ module Issuables
   class CustomField < ApplicationRecord
     include Gitlab::SQL::Pattern
 
+    MAX_ACTIVE_FIELDS = 50
+
     enum field_type: { single_select: 0, multi_select: 1, number: 2, text: 3 }, _prefix: true
 
     belongs_to :namespace
-    belongs_to :created_by, class_name: 'User'
-    belongs_to :updated_by, class_name: 'User'
+    belongs_to :created_by, class_name: 'User', optional: true
+    belongs_to :updated_by, class_name: 'User', optional: true
     has_many :select_options, -> { order(:position) },
       class_name: 'Issuables::CustomFieldSelectOption', inverse_of: :custom_field
     has_many :work_item_type_custom_fields, class_name: 'WorkItems::TypeCustomField'
@@ -18,6 +20,9 @@ module Issuables
     validates :namespace, :field_type, presence: true
     validates :name, presence: true, length: { maximum: 255 },
       uniqueness: { scope: [:namespace_id], case_sensitive: false }
+
+    validate :namespace_is_root_group
+    validate :number_of_active_fields_per_namespace
 
     scope :of_namespace, ->(namespace) { where(namespace_id: namespace) }
     scope :active, -> { where(archived_at: nil) }
@@ -54,6 +59,25 @@ module Issuables
 
     def active?
       archived_at.nil?
+    end
+
+    private
+
+    def namespace_is_root_group
+      return if namespace.nil?
+      return if namespace.group_namespace? && namespace.root?
+
+      errors.add(:namespace, _('must be a root group.'))
+    end
+
+    def number_of_active_fields_per_namespace
+      return if namespace.nil? || !active?
+      return unless self.class.active.of_namespace(namespace).where.not(id: id).count >= MAX_ACTIVE_FIELDS
+
+      errors.add(
+        :namespace,
+        format(_('can only have a maximum of %{limit} active custom fields.'), limit: MAX_ACTIVE_FIELDS)
+      )
     end
   end
 end
