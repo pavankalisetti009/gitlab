@@ -402,11 +402,17 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
     let_it_be(:approval_project_rule) do
-      create(:approval_project_rule, approval_policy_rule_id: approval_policy_rule.id)
+      create(:approval_project_rule,
+        security_orchestration_policy_configuration: policy.security_orchestration_policy_configuration,
+        approval_policy_rule_id: approval_policy_rule.id
+      )
     end
 
     let_it_be(:approval_merge_request_rule) do
-      create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
+      create(:approval_merge_request_rule,
+        security_orchestration_policy_configuration: policy.security_orchestration_policy_configuration,
+        approval_policy_rule_id: approval_policy_rule.id
+      )
     end
 
     let_it_be(:violation) { create(:scan_result_policy_violation, approval_policy_rule: approval_policy_rule) }
@@ -426,7 +432,10 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     context 'with merged mr rules' do
       let_it_be(:merged_rule) do
-        create(:approval_merge_request_rule, approval_policy_rule_id: approval_policy_rule.id)
+        create(:approval_merge_request_rule,
+          security_orchestration_policy_configuration: policy.security_orchestration_policy_configuration,
+          approval_policy_rule_id: approval_policy_rule.id
+        )
       end
 
       before do
