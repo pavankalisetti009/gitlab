@@ -590,3 +590,17 @@ sequenceDiagram
       W->>C: 401 Unauthorized
     end
 ```
+
+## `413 Request Entity Too Large` error
+
+If the artifacts are too large, the job might fail with the following error:
+
+```plaintext
+Uploading artifacts as "archive" to coordinator... too large archive <job-id> responseStatus=413 Request Entity Too Large status=413" at end of a build job on pipeline when trying to store artifacts to <object-storage>.
+```
+
+You might need to:
+
+- Increase the [maximum artifacts size](../settings/continuous_integration.md#maximum-artifacts-size).
+- If you are using NGINX as a proxy server, increase the file upload size limit which is limited to 1 MB by default.
+  Set a higher value for `client-max-body-size` in the NGINX configuration file.
