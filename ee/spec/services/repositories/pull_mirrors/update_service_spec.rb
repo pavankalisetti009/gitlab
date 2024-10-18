@@ -82,6 +82,22 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       end
     end
 
+    context 'when credentials are passed separately' do
+      let(:params) { super().merge(credentials: { user: credentials_user, password: credentials_password }) }
+      let(:credentials_user) { 'u$/r' }
+      let(:credentials_password) { 'p@$$/ord' }
+
+      it 'prefers these credentials' do
+        is_expected.to be_success
+
+        expect(updated_project.import_data).to have_attributes(
+          auth_method: auth_method,
+          user: credentials_user,
+          password: credentials_password
+        )
+      end
+    end
+
     context 'when mirror is disabled' do
       let(:enabled) { false }
 

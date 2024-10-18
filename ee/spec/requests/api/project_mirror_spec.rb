@@ -444,4 +444,181 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
       end
     end
   end
+
+  describe 'PUT /projects/:id/mirror/pull' do
+    let_it_be(:user) { create(:user) }
+
+    let(:route) { "/projects/#{project.id}/mirror/pull" }
+    let(:request) { put api(route, current_user), params: params }
+    let(:current_user) { user }
+    let(:params) { { enabled: true, url: mirror_url } }
+    let(:mirror_url) { 'http://example.com' }
+
+    shared_examples 'pull mirror configuration' do
+      context 'when user is missing' do
+        let(:current_user) { nil }
+
+        it 'returns Unauthorized' do
+          request
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+
+      context 'when user has no admin permissions' do
+        before do
+          project.add_developer(user)
+        end
+
+        it 'returns forbidden error' do
+          request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when user has admin permissions' do
+        before do
+          project.add_maintainer(user)
+        end
+
+        it 'returns pull mirror details' do
+          request
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(response).to match_response_schema('project_mirror')
+        end
+
+        context 'when pull mirroring is not available' do
+          before do
+            stub_ee_application_setting(mirror_available: false)
+          end
+
+          it 'does not allow to update pull mirror' do
+            request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+
+        context 'when mirror url is not a valid URL' do
+          let(:mirror_url) { 'wrong' }
+
+          it 'does not allow to update pull mirror' do
+            request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']['import_url']).to eq(
+              ['is blocked: Only allowed schemes are http, https, ssh, git']
+            )
+          end
+        end
+
+        context 'when allowed parameters are provided' do
+          let(:params) do
+            {
+              url: mirror_url,
+              enabled: false,
+              mirror_trigger_builds: true,
+              only_mirror_protected_branches: true
+            }
+          end
+
+          it 'updates a pull mirror' do
+            request
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(response).to match_response_schema('project_mirror')
+
+            expect(json_response).to include(
+              'enabled' => false,
+              'url' => 'http://example.com',
+              'mirror_trigger_builds' => true,
+              'only_mirror_protected_branches' => true
+            )
+          end
+
+          context 'when user and password include special characters' do
+            let(:params) do
+              {
+                url: mirror_url,
+                auth_user: auth_user,
+                auth_password: auth_password
+              }
+            end
+
+            let(:auth_user) { 'u$/ser' }
+            let(:auth_password) { 'pa$$w/o/rd' }
+
+            it 'updates a pull mirror credentials' do
+              request
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(json_response['url']).to eq('http://*****:*****@example.com')
+
+              updated_project = project.reload
+              expect(updated_project.import_data.reload.credentials).to eq(user: auth_user, password: auth_password)
+              expect(updated_project.import_data.auth_method).to eq('password')
+            end
+          end
+
+          context 'without parameters' do
+            let(:params) { {} }
+
+            it 'returns 400 response' do
+              request
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+            end
+          end
+        end
+      end
+    end
+
+    context 'when project does not have a configured pull mirror' do
+      let_it_be(:project) { create(:project, :repository) }
+
+      it_behaves_like 'pull mirror configuration'
+    end
+
+    context 'when project already has a configured pull mirror' do
+      let_it_be(:project) { create(:project, :repository, :mirror) }
+
+      it_behaves_like 'pull mirror configuration'
+
+      context 'when only new user and password were provided' do
+        before do
+          project.add_maintainer(user)
+
+          project.build_or_assign_import_data(credentials: old_credentials)
+          project.import_data.save!
+        end
+
+        let(:old_credentials) { { user: 'user', password: 'pass' } }
+
+        let(:params) do
+          {
+            auth_user: auth_user,
+            auth_password: auth_password
+          }
+        end
+
+        let(:auth_user) { 'new_user' }
+        let(:auth_password) { 'new_user' }
+
+        it 'changes previous pull mirror credentials' do
+          expect(project.import_data.reload.credentials).to eq(old_credentials)
+
+          request
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(json_response['url']).to include('http://*****:*****@')
+
+          updated_project = project.reload
+          expect(updated_project.import_data.reload.credentials).to eq(user: auth_user, password: auth_password)
+          expect(updated_project.import_data.auth_method).to eq('password')
+        end
+      end
+    end
+  end
 end

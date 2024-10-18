@@ -71,6 +71,22 @@ module API
       def mirror_user
         current_user || project.mirror_user
       end
+
+      # Convert keys to make them compatible with PullMirror::UpdateService
+      def pull_mirror_update_attributes(attrs)
+        attrs
+          .dup
+          .transform_keys(enabled: :mirror)
+          .transform_keys(url: :import_url)
+          .then { |hash| extract_credentials!(hash) }
+      end
+
+      def extract_credentials!(attrs)
+        credentials = { user: attrs.delete(:auth_user), password: attrs.delete(:auth_password) }.compact
+        return attrs.merge(credentials: credentials) if credentials.present?
+
+        attrs
+      end
     end
 
     params do
@@ -107,6 +123,43 @@ module API
         end
 
         status 200
+      end
+
+      desc 'Update a pull mirror' do
+        detail 'This feature was introduced in GitLab 17.5. \
+                    This feature is currently in an experimental state.'
+        success code: 200, model: Entities::PullMirror
+        failure [
+          { code: 400, message: 'Url is blocked: Only allowed schemes are http, https, ssh, git' }
+        ]
+      end
+      params do
+        optional :enabled, type: Grape::API::Boolean, desc: 'Enables pull mirroring in a project'
+        optional :url, type: String, desc: 'URL of the project to pull mirror'
+        optional :auth_user, type: String, desc: 'The username used for authentication of a project to pull mirror'
+        optional :auth_password, type: String, desc: 'The password used for authentication of a project to pull mirror or a personal access token with the api scope enabled.'
+        optional :mirror_trigger_builds, type: Grape::API::Boolean, desc: 'Pull mirroring triggers builds'
+        optional :only_mirror_protected_branches, type: Grape::API::Boolean, desc: 'Only mirror protected branches'
+        optional :mirror_branch_regex, type: String, desc: 'Only mirror branches with names that match this regex'
+        mutually_exclusive :only_protected_branches, :mirror_branch_regex
+        at_least_one_of :enabled, :url, :auth_user, :auth_password,
+          :mirror_trigger_builds, :only_mirror_protected_branches, :mirror_branch_regex
+      end
+      put ':id/mirror/pull' do
+        authenticate!
+        authorize_admin_project
+
+        pull_mirror_params = pull_mirror_update_attributes(declared_params(include_missing: false))
+
+        result = ::Repositories::PullMirrors::UpdateService.new(
+          project,
+          current_user,
+          pull_mirror_params
+        ).execute
+
+        render_api_error!(result.message, 400) if result.error?
+
+        present result.payload[:project].import_state, with: Entities::PullMirror
       end
 
       desc 'Get a pull mirror' do

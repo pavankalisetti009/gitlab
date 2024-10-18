@@ -31,8 +31,12 @@ module Repositories
       end
 
       def update_project_import_relations
-        # Import data includes credentials that should be removed, when mirror is disabled.
-        project.remove_import_data if mirror_disabled?
+        if mirror_disabled?
+          # Import data includes credentials that should be removed, when mirror is disabled.
+          project.remove_import_data
+        else
+          project.build_or_assign_import_data(credentials: params[:credentials])
+        end
 
         project.import_state&.assign_attributes(last_error: nil)
       end
