@@ -24190,6 +24190,9 @@ ALTER TABLE ci_job_variables
 ALTER TABLE p_ci_pipeline_variables
     ADD CONSTRAINT check_6e932dbabf CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE p_ci_stages
+    ADD CONSTRAINT check_74835fc631 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
 
