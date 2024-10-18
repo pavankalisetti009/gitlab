@@ -7,7 +7,7 @@ module Gitlab
         class Registry < Task
           def self.id = 'registry'
 
-          def enabled = Gitlab.config.registry.enabled
+          def enabled = context.registry_enabled?
 
           def human_name = 'Container Registry Images'
 
