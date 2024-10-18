@@ -3,6 +3,8 @@ import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
+import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
+import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 
 const PROVIDERS = {
   DISABLED: 'disabled',
@@ -63,14 +65,14 @@ export default {
       return this.compatibleModels.find((m) => m.id === this.selfHostedModelId);
     },
     dropdownToggleText() {
-      if (this.provider === PROVIDERS.VENDORED) {
-        return s__('AdminAIPoweredFeatures|Select a self-hosted model');
-      }
       if (this.provider === PROVIDERS.DISABLED) {
         return s__('AdminAIPoweredFeatures|Disabled');
       }
+      if (this.selectedModel) {
+        return `${this.selectedModel?.name} (${this.selectedModel?.model})`;
+      }
 
-      return `${this.selectedModel.name} (${this.selectedModel.model})`;
+      return s__('AdminAIPoweredFeatures|Select a self-hosted model');
     },
   },
   methods: {
@@ -93,6 +95,10 @@ export default {
               aiSelfHostedModelId: selectedOption.selfHostedModelId,
             },
           },
+          refetchQueries: [
+            { query: getSelfHostedModelsQuery },
+            { query: getAiFeatureSettingsQuery },
+          ],
         });
 
         if (data) {
