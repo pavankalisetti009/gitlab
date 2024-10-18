@@ -32,7 +32,7 @@ require (
 	gitlab.com/gitlab-org/gitaly/v16 v16.11.10
 	gitlab.com/gitlab-org/labkit v1.21.2
 	go.uber.org/goleak v1.3.0
-	gocloud.dev v0.39.0
+	gocloud.dev v0.40.0
 	golang.org/x/image v0.20.0
 	golang.org/x/net v0.29.0
 	golang.org/x/oauth2 v0.23.0
