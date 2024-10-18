@@ -3,10 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::CompletionsModelDetails, feature_category: :code_suggestions do
-  describe '#current_model' do
-    let(:user) { create(:user) }
-    let(:completions_model_details) { described_class.new(current_user: user) }
+  let(:user) { create(:user) }
+  let(:completions_model_details) { described_class.new(current_user: user) }
 
+  describe '#current_model' do
     subject(:model_details) { completions_model_details.current_model }
 
     it 'returns the current code completions model metadata' do
@@ -37,6 +37,24 @@ RSpec.describe CodeSuggestions::CompletionsModelDetails, feature_category: :code
 
       it 'returns an empty hash' do
         expect(model_details).to eq({})
+      end
+    end
+  end
+
+  describe '#feature_disabled?' do
+    subject(:feature_disabled?) { completions_model_details.feature_disabled? }
+
+    it 'returns false' do
+      expect(feature_disabled?).to eq(false)
+    end
+
+    context 'when code_completions is self-hosted, but set to disabled' do
+      let_it_be(:feature_setting) do
+        create(:ai_feature_setting, provider: :disabled, feature: :code_completions)
+      end
+
+      it 'returns true' do
+        expect(feature_disabled?).to eq(true)
       end
     end
   end

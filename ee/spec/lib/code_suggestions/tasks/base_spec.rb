@@ -33,4 +33,32 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
       expect { klass.new.endpoint }.to raise_error(NotImplementedError)
     end
   end
+
+  describe '#feature_disabled?' do
+    subject(:feature_disabled?) { klass.new.feature_disabled? }
+
+    it 'returns false' do
+      expect(feature_disabled?).to eq(false)
+    end
+
+    context 'when the feature is self-hosted' do
+      include RSpec::Parameterized::TableSyntax
+
+      where(:provider, :expected_result) do
+        [
+          [:self_hosted, false],
+          [:vendored, false],
+          [:disabled, true]
+        ]
+      end
+
+      with_them do
+        let!(:feature_setting) { create(:ai_feature_setting, provider: provider) }
+
+        it 'returns the expected result' do
+          expect(feature_disabled?).to eq(expected_result)
+        end
+      end
+    end
+  end
 end

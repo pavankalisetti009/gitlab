@@ -275,7 +275,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           command, params = workhorse_send_data
           expect(command).to eq('send-url')
           expect(params).to include(
-            'URL' => 'https://cloud.gitlab.com/ai/v2/code/completions',
+            'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
             'AllowRedirects' => false,
             'Body' => body.merge(prompt_version: 1).to_json,
             'Method' => 'POST',
@@ -677,7 +677,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 expect(Gitlab::Workhorse)
                   .to receive(:send_url)
                         .with(
-                          'https://cloud.gitlab.com/ai/v2/code/generations',
+                          "#{::Gitlab::AiGateway.url}/v2/code/generations",
                           hash_including(body: expected_body.to_json)
                         )
 
@@ -690,7 +690,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               expect(Gitlab::Workhorse)
                 .to receive(:send_url)
                 .with(
-                  'https://cloud.gitlab.com/ai/v3/code/completions',
+                  "#{::Gitlab::AiGateway.url}/v3/code/completions",
                   hash_including(body: expected_body.to_json)
                 )
 
@@ -769,34 +769,51 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           expect(params['Header']).to include('X-Gitlab-Rails-Send-Start' => [Time.now.to_f.to_s])
         end
 
-        context 'when code suggestions feature is self hosted and requested before cut off date without seats' do
-          let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_completions) }
-
+        context 'when code suggestions feature is self hosted' do
           let(:service_name) { :self_hosted_models }
 
           before do
             stub_licensed_features(ai_features: true)
-
-            allow(service).to receive_messages(free_access?: true)
-            allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(false)
           end
 
-          it 'is unauthorized' do
-            post_api
+          context 'when requested before cut off date without seats' do
+            let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_completions) }
 
-            expect(response).to have_gitlab_http_status(:unauthorized)
-            expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
-          end
-
-          context 'when self_hosted_models_beta_ended is disabled' do
             before do
-              stub_feature_flags(self_hosted_models_beta_ended: false)
+              allow(service).to receive_messages(free_access?: true)
+              allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(false)
             end
 
-            it 'is authorized' do
+            it 'is unauthorized' do
               post_api
 
-              expect(response).to have_gitlab_http_status(:ok)
+              expect(response).to have_gitlab_http_status(:unauthorized)
+              expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
+            end
+
+            context 'when self_hosted_models_beta_ended is disabled' do
+              before do
+                stub_feature_flags(self_hosted_models_beta_ended: false)
+              end
+
+              it 'is authorized' do
+                post_api
+
+                expect(response).to have_gitlab_http_status(:ok)
+              end
+            end
+          end
+
+          context 'when the feature is set to `disabled` state' do
+            let_it_be(:feature_setting) do
+              create(:ai_feature_setting, feature: :code_completions, provider: :disabled)
+            end
+
+            it 'is unauthorized' do
+              post_api
+
+              expect(response).to have_gitlab_http_status(:unauthorized)
+              expect(response.headers['X-GitLab-Error-Origin']).to eq('monolith')
             end
           end
         end
@@ -872,16 +889,22 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           context 'when code completions is self-hosted' do
-            before do
-              feature_setting_double = instance_double(::Ai::FeatureSetting, self_hosted?: true)
-              allow(::Ai::FeatureSetting).to receive(:find_by_feature).with('code_completions')
-                .and_return(feature_setting_double)
-            end
-
             it 'does not include the model metadata in the direct access details' do
+              create(:ai_feature_setting, provider: :self_hosted, feature: :code_completions)
+
               post_api
 
               expect(json_response['model_details']).to be_nil
+            end
+
+            context 'when code completions is disabled' do
+              it 'returns unauthorized' do
+                create(:ai_feature_setting, provider: :disabled, feature: :code_completions)
+
+                post_api
+
+                expect(response).to have_gitlab_http_status(:unauthorized)
+              end
             end
           end
         end

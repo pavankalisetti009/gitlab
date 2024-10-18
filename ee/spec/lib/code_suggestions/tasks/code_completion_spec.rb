@@ -113,39 +113,57 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       )
     end
 
-    it_behaves_like 'code suggestion task' do
-      let_it_be(:ai_self_hosted_model) do
-        create(:ai_self_hosted_model, model: :codellama, name: 'whatever')
-      end
+    let_it_be(:ai_self_hosted_model) do
+      create(:ai_self_hosted_model, model: :codellama, name: 'whatever')
+    end
 
+    context 'on setting the provider as `self_hosted`' do
       let_it_be(:ai_feature_setting) do
         create(
           :ai_feature_setting,
           feature: :code_completions,
-          self_hosted_model: ai_self_hosted_model
+          self_hosted_model: ai_self_hosted_model,
+          provider: :self_hosted
         )
       end
 
-      let(:expected_body) do
-        {
-          "current_file" => {
-            "file_name" => "test.py",
-            "content_above_cursor" => "sor",
-            "content_below_cursor" => "som"
-          },
-          "telemetry" => [],
-          "stream" => false,
-          "model_provider" => "litellm",
-          "prompt_version" => 2,
-          "prompt" => nil,
-          "model_endpoint" => "http://localhost:11434/v1",
-          "model_identifier" => "provider/some-model",
-          "model_name" => "codellama",
-          "model_api_key" => "token"
-        }
+      it_behaves_like 'code suggestion task' do
+        let(:expected_body) do
+          {
+            "current_file" => {
+              "file_name" => "test.py",
+              "content_above_cursor" => "sor",
+              "content_below_cursor" => "som"
+            },
+            "telemetry" => [],
+            "stream" => false,
+            "model_provider" => "litellm",
+            "prompt_version" => 2,
+            "prompt" => nil,
+            "model_endpoint" => "http://localhost:11434/v1",
+            "model_identifier" => "provider/some-model",
+            "model_name" => "codellama",
+            "model_api_key" => "token"
+          }
+        end
+
+        let(:expected_feature_name) { :self_hosted_models }
+      end
+    end
+
+    context 'on setting the provider as `disabled`' do
+      let_it_be(:ai_feature_setting) do
+        create(
+          :ai_feature_setting,
+          feature: :code_completions,
+          self_hosted_model: ai_self_hosted_model,
+          provider: :disabled
+        )
       end
 
-      let(:expected_feature_name) { :self_hosted_models }
+      it 'is a disabled task' do
+        expect(task.feature_disabled?).to eq(true)
+      end
     end
   end
 end

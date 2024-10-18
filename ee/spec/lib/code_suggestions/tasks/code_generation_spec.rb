@@ -185,8 +185,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
   end
 
   context 'when using self hosted model' do
-    let_it_be(:feature_setting) { create(:ai_feature_setting) }
-
     let(:unsafe_params) do
       {
         'current_file' => current_file,
@@ -206,29 +204,41 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
       described_class.new(params: params, unsafe_passthrough_params: unsafe_params)
     end
 
-    it_behaves_like 'code suggestion task' do
-      let(:endpoint_path) { 'v2/code/generations' }
-      let(:expected_body) do
-        {
-          "telemetry" => [],
-          "prompt_id" => "code_suggestions/generations",
-          "current_file" => {
-            "content_above_cursor" => "some content_above_cursor",
-            "content_below_cursor" => "some content_below_cursor",
-            "file_name" => "test.py"
-          },
-          "model_api_key" => "token",
-          "model_endpoint" => "http://localhost:11434/v1",
-          "model_identifier" => "provider/some-model",
-          "model_name" => "mistral",
-          "model_provider" => "litellm",
-          "prompt" => "",
-          "prompt_version" => 2,
-          "stream" => false
-        }
-      end
+    context 'on setting the provider as `self_hosted`' do
+      let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
 
-      let(:expected_feature_name) { :self_hosted_models }
+      it_behaves_like 'code suggestion task' do
+        let(:endpoint_path) { 'v2/code/generations' }
+        let(:expected_body) do
+          {
+            "telemetry" => [],
+            "prompt_id" => "code_suggestions/generations",
+            "current_file" => {
+              "content_above_cursor" => "some content_above_cursor",
+              "content_below_cursor" => "some content_below_cursor",
+              "file_name" => "test.py"
+            },
+            "model_api_key" => "token",
+            "model_endpoint" => "http://localhost:11434/v1",
+            "model_identifier" => "provider/some-model",
+            "model_name" => "mistral",
+            "model_provider" => "litellm",
+            "prompt" => "",
+            "prompt_version" => 2,
+            "stream" => false
+          }
+        end
+
+        let(:expected_feature_name) { :self_hosted_models }
+      end
+    end
+
+    context 'on setting the provider as `disabled`' do
+      let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :disabled) }
+
+      it 'is a disabled task' do
+        expect(task.feature_disabled?).to eq(true)
+      end
     end
   end
 end
