@@ -8,8 +8,8 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
   describe '.task' do
     let_it_be(:current_user) { create(:user) }
     let(:file_name) { 'python.py' }
-    let(:prefix) { 'some prefix' }
-    let(:suffix) { 'some suffix' }
+    let(:content_above_cursor) { 'some content_above_cursor' }
+    let(:content_below_cursor) { 'some content_below_cursor' }
     let(:user_instruction) { nil }
     let(:expected_project) { nil }
 
@@ -21,8 +21,8 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       {
         current_file: {
           file_name: file_name,
-          content_above_cursor: prefix,
-          content_below_cursor: suffix
+          content_above_cursor: content_above_cursor,
+          content_below_cursor: content_below_cursor
         },
         generation_type: 'empty_function',
         user_instruction: user_instruction,
@@ -30,7 +30,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
           { type: 'file', name: 'main.go', content: 'package main' }
         ],
         instruction: instruction,
-        prefix: prefix,
+        content_above_cursor: content_above_cursor,
         project: expected_project,
         current_user: current_user
       }
@@ -123,8 +123,8 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
           {
             current_file: {
               file_name: file_name,
-              content_above_cursor: prefix,
-              content_below_cursor: suffix
+              content_above_cursor: content_above_cursor,
+              content_below_cursor: content_below_cursor
             },
             project_path: expected_project.full_path
           }
@@ -176,7 +176,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
             current_user: current_user,
             params: params.except(:user_instruction, :context).merge(
               instruction: instruction,
-              prefix: prefix,
+              content_above_cursor: content_above_cursor,
               project: expected_project,
               current_user: current_user
             ),

@@ -20,8 +20,8 @@ module CodeSuggestions
                 type: PROMPT_COMPONENT_TYPE,
                 payload: {
                   file_name: file_name,
-                  content_above_cursor: prefix,
-                  content_below_cursor: suffix,
+                  content_above_cursor: content_above_cursor,
+                  content_below_cursor: content_below_cursor,
                   language_identifier: language.name,
                   prompt_id: PROMPT_ID,
                   stream: params.fetch(:stream, false),
@@ -53,12 +53,13 @@ module CodeSuggestions
         end
 
         def existing_code_block_params
-          trimmed_prefix = prefix.to_s.last(MAX_INPUT_CHARS)
-          trimmed_suffix = suffix.to_s.first(MAX_INPUT_CHARS - trimmed_prefix.size)
+          trimmed_content_above_cursor = content_above_cursor.to_s.last(MAX_INPUT_CHARS)
+          trimmed_content_below_cursor = content_below_cursor.to_s.first(MAX_INPUT_CHARS -
+           trimmed_content_above_cursor.size)
 
           {
-            trimmed_prefix: trimmed_prefix,
-            trimmed_suffix: trimmed_suffix
+            trimmed_content_above_cursor: trimmed_content_above_cursor,
+            trimmed_content_below_cursor: trimmed_content_below_cursor
           }
         end
 

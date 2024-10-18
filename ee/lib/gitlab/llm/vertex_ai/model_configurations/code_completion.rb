@@ -12,8 +12,8 @@ module Gitlab
             {
               instances: [
                 {
-                  prefix: content[:prefix],
-                  suffix: content[:suffix]
+                  content_above_cursor: content[:content_above_cursor],
+                  content_below_cursor: content[:content_below_cursor]
                 }
               ],
               parameters: Configuration.payload_parameters(maxOutputTokens: MAX_OUTPUT_TOKENS)

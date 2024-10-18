@@ -11,7 +11,7 @@ module CodeSuggestions
     # It searches for the last instance of a match by looking for the end
     # of a text block and an optional line break.
     FIRST_COMMENT_REGEX = "(?<comment>%{comment_format})[ \\t]*(?<instruction>[^\\r\\n]{10,})\\s*\\Z"
-    ALWAYS_GENERATE_PREFIX = %r{.*?}
+    ALWAYS_GENERATE_CONTENT_ABOVE_CURSOR = %r{.*?}
 
     EMPTY_LINES_LIMIT = 1
 
@@ -71,7 +71,7 @@ module CodeSuggestions
     end
 
     def first_line_regex
-      return ALWAYS_GENERATE_PREFIX if intent == INTENT_GENERATION
+      return ALWAYS_GENERATE_CONTENT_ABOVE_CURSOR if intent == INTENT_GENERATION
 
       comment_format = language.single_line_comment_format
       Regexp.new(

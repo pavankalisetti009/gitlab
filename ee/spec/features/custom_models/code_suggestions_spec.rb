@@ -9,8 +9,8 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, fea
   let(:api_path) { "/code_suggestions/completions" }
   let(:url) { capybara_url(api(api_path)) }
 
-  let(:prefix) do
-    <<~PREFIX
+  let(:content_above_cursor) do
+    <<~CONTENT_ABOVE_CURSOR
       def add(x, y):
         return x + y
 
@@ -24,14 +24,14 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, fea
         return x / y
 
       def is_even(n: int) ->
-    PREFIX
+    CONTENT_ABOVE_CURSOR
   end
 
   let(:body) do
     {
       current_file: {
         file_name: 'test.py',
-        content_above_cursor: prefix,
+        content_above_cursor: content_above_cursor,
         content_below_cursor: ''
       },
       stream: false

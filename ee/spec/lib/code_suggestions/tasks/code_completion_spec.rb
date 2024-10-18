@@ -8,13 +8,13 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
   let(:current_file) do
     {
       'file_name' => 'test.py',
-      'content_above_cursor' => 'some prefix',
-      'content_below_cursor' => 'some suffix'
+      'content_above_cursor' => 'some content_above_cursor',
+      'content_below_cursor' => 'some content_below_cursor'
     }.with_indifferent_access
   end
 
   let(:expected_current_file) do
-    { current_file: { file_name: 'test.py', content_above_cursor: 'fix', content_below_cursor: 'som' } }
+    { current_file: { file_name: 'test.py', content_above_cursor: 'sor', content_below_cursor: 'som' } }
   end
 
   before do
@@ -54,7 +54,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           {
             "current_file" => {
               "file_name" => "test.py",
-              "content_above_cursor" => "fix",
+              "content_above_cursor" => "sor",
               "content_below_cursor" => "som"
             },
             "telemetry" => [{ "model_engine" => "vertex-ai" }],
@@ -78,7 +78,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
             "model_provider" => "vertex-ai",
             "current_file" => {
               "file_name" => "test.py",
-              "content_above_cursor" => "fix",
+              "content_above_cursor" => "sor",
               "content_below_cursor" => "som"
             },
             "telemetry" => [{ "model_engine" => "vertex-ai" }],
@@ -130,7 +130,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         {
           "current_file" => {
             "file_name" => "test.py",
-            "content_above_cursor" => "fix",
+            "content_above_cursor" => "sor",
             "content_below_cursor" => "som"
           },
           "telemetry" => [],

@@ -3,19 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_suggestions do
-  let(:prefix) { 'some prefix' }
-  let(:suffix) { 'some suffix' }
+  let(:content_above_cursor) { 'some content_above_cursor' }
+  let(:content_below_cursor) { 'some content_below_cursor' }
   let(:instruction) { CodeSuggestions::Instruction.from_trigger_type('comment') }
   let(:current_file) do
     {
       'file_name' => 'test.py',
-      'content_above_cursor' => prefix,
-      'content_below_cursor' => suffix
+      'content_above_cursor' => content_above_cursor,
+      'content_below_cursor' => content_below_cursor
     }.with_indifferent_access
   end
 
   let(:expected_current_file) do
-    { current_file: { file_name: 'test.py', content_above_cursor: 'fix', content_below_cursor: 'som' } }
+    { current_file: { file_name: 'test.py', content_above_cursor: 'sor', content_below_cursor: 'som' } }
   end
 
   context 'when using saas anthropic model' do
@@ -35,7 +35,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     let(:params) do
       {
         code_generation_model_family: :anthropic,
-        prefix: prefix,
+        content_above_cursor: content_above_cursor,
         instruction: instruction,
         current_file: current_file,
         model_name: 'claude-3-5-sonnet-20240620'
@@ -49,8 +49,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
             'type' => 'code_editor_generation',
             'payload' => {
               'file_name' => 'test.py',
-              'content_above_cursor' => 'some prefix',
-              'content_below_cursor' => 'some suffix',
+              'content_above_cursor' => 'some content_above_cursor',
+              'content_below_cursor' => 'some content_below_cursor',
               'language_identifier' => 'Python',
               'prompt_id' => 'code_suggestions/generations',
               'prompt_enhancer' => {
@@ -66,8 +66,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                     'trigger_type' => 'comment'
                   }
                 ],
-                'trimmed_prefix' => 'some prefix',
-                'trimmed_suffix' => 'some suffix',
+                'trimmed_content_above_cursor' => 'some content_above_cursor',
+                'trimmed_content_below_cursor' => 'some content_below_cursor',
                 'related_files' => '',
                 'related_snippets' => '',
                 'libraries' => '',
@@ -99,15 +99,15 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
       let(:expected_body) do
         {
           'current_file' => {
-            'content_above_cursor' => 'fix',
+            'content_above_cursor' => 'sor',
             'content_below_cursor' => 'som',
             'file_name' => 'test.py'
           },
           'prompt_components' => [
             {
               'payload' => {
-                'content_above_cursor' => 'some prefix',
-                'content_below_cursor' => 'some suffix',
+                'content_above_cursor' => 'some content_above_cursor',
+                'content_below_cursor' => 'some content_below_cursor',
                 'file_name' => 'test.py',
                 'language_identifier' => 'Python',
                 'prompt_enhancer' => {
@@ -123,8 +123,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                       'trigger_type' => 'comment'
                     }
                   ],
-                  'trimmed_prefix' => 'some prefix',
-                  'trimmed_suffix' => 'some suffix',
+                  'trimmed_content_above_cursor' => 'some content_above_cursor',
+                  'trimmed_content_below_cursor' => 'some content_below_cursor',
                   'related_files' => '',
                   'related_snippets' => '',
                   'libraries' => '',
@@ -170,7 +170,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
           {
             "current_file" => {
               "file_name" => "test.py",
-              "content_above_cursor" => "fix",
+              "content_above_cursor" => "sor",
               "content_below_cursor" => "som"
             },
             "telemetry" => [{ "model_engine" => "anthropic" }],
@@ -213,8 +213,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
           "telemetry" => [],
           "prompt_id" => "code_suggestions/generations",
           "current_file" => {
-            "content_above_cursor" => "some prefix",
-            "content_below_cursor" => "some suffix",
+            "content_above_cursor" => "some content_above_cursor",
+            "content_below_cursor" => "some content_below_cursor",
             "file_name" => "test.py"
           },
           "model_api_key" => "token",

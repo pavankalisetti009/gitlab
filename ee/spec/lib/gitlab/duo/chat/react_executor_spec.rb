@@ -297,8 +297,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         {
           file_name: 'test.py',
           selected_text: selected_text,
-          cotent_above_cursor: 'prefix',
-          content_below_cursor: 'suffix'
+          cotent_above_cursor: 'content_above_cursor',
+          content_below_cursor: 'content_below_cursor'
         }
       end
 

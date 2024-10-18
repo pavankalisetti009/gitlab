@@ -5,7 +5,9 @@ RSpec.shared_examples 'go language' do
 
   let(:language_name) { 'Go' }
 
-  subject { described_class.new(language_name).cursor_inside_empty_function?(content, suffix) }
+  subject do
+    described_class.new(language_name).cursor_inside_empty_function?(content_above_cursor, content_below_cursor)
+  end
 
   context 'when various variations of empty functions are used' do
     where(example: [
@@ -181,8 +183,8 @@ RSpec.shared_examples 'go language' do
     ])
 
     with_them do
-      let(:content) { example.split("<CURSOR>").first }
-      let(:suffix) { example.split("<CURSOR>").last }
+      let(:content_above_cursor) { example.split("<CURSOR>").first }
+      let(:content_below_cursor) { example.split("<CURSOR>").last }
 
       it { is_expected.to be_truthy }
     end
@@ -202,8 +204,8 @@ RSpec.shared_examples 'go language' do
       CONTENT
     end
 
-    let(:content) { example.split("<CURSOR>").first }
-    let(:suffix) { example.split("<CURSOR>").last }
+    let(:content_above_cursor) { example.split("<CURSOR>").first }
+    let(:content_below_cursor) { example.split("<CURSOR>").last }
 
     it { is_expected.to be_falsey }
   end
@@ -223,8 +225,8 @@ RSpec.shared_examples 'go language' do
       CONTENT
     end
 
-    let(:content) { example.split("<CURSOR>").first }
-    let(:suffix) { example.split("<CURSOR>").last }
+    let(:content_above_cursor) { example.split("<CURSOR>").first }
+    let(:content_below_cursor) { example.split("<CURSOR>").last }
 
     it { is_expected.to be_falsey }
   end
@@ -246,8 +248,8 @@ RSpec.shared_examples 'go language' do
       CONTENT
     end
 
-    let(:content) { example.split("<CURSOR>").first }
-    let(:suffix) { example.split("<CURSOR>").last }
+    let(:content_above_cursor) { example.split("<CURSOR>").first }
+    let(:content_below_cursor) { example.split("<CURSOR>").last }
 
     it { is_expected.to be_falsey }
   end

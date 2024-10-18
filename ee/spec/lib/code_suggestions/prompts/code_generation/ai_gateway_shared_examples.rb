@@ -12,14 +12,14 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
     ]
   end
 
-  let(:prefix) do
-    <<~PREFIX
+  let(:content_above_cursor) do
+    <<~CONTENT_ABOVE_CURSOR
       package main
 
       import "fmt"
 
       func main() {
-    PREFIX
+    CONTENT_ABOVE_CURSOR
   end
 
   let(:file_name) { 'main.go' }
@@ -32,7 +32,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
     {
       'current_file' => {
         'file_name' => file_name,
-        'content_above_cursor' => prefix
+        'content_above_cursor' => content_above_cursor
       },
       'telemetry' => [{ 'model_engine' => 'anthropic' }]
     }
@@ -40,7 +40,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
 
   let(:params) do
     {
-      prefix: prefix,
+      content_above_cursor: content_above_cursor,
       instruction: instruction,
       current_file: unsafe_params['current_file'].with_indifferent_access,
       context: context
@@ -124,7 +124,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
       end
     end
 
-    context 'when prefix is present' do
+    context 'when content_above_cursor is present' do
       let(:system_prompt) do
         <<~PROMPT.chomp
           You are a tremendously accurate and skilled coding autocomplete agent. We want to generate new Go code inside the
@@ -206,7 +206,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
           {
             project: xray.project,
             current_user: current_user,
-            prefix: prefix,
+            content_above_cursor: content_above_cursor,
             instruction: instruction,
             current_file: unsafe_params['current_file'].with_indifferent_access
           }
@@ -426,9 +426,9 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
       end
     end
 
-    context 'when prefix is blank' do
+    context 'when content_above_cursor is blank' do
       let(:examples) { [] }
-      let(:prefix) { '' }
+      let(:content_above_cursor) { '' }
       let(:system_prompt) do
         <<~PROMPT.chomp
           You are a tremendously accurate and skilled coding autocomplete agent. We want to generate new Go code inside the
@@ -467,7 +467,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
       end
     end
 
-    context 'when prefix is bigger than prompt limit' do
+    context 'when content_above_cursor is bigger than prompt limit' do
       let(:examples) { [] }
       let(:system_prompt) do
         <<~PROMPT.chomp
@@ -684,8 +684,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_content_below_cursor) { content_below_cursor }
       let(:expected_language_identifier) { 'Go' }
       let(:expected_examples_array) { examples }
-      let(:expected_trimmed_prefix) { content_above_cursor }
-      let(:expected_trimmed_suffix) { content_below_cursor }
+      let(:expected_trimmed_content_above_cursor) { content_above_cursor }
+      let(:expected_trimmed_content_below_cursor) { content_below_cursor }
       let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)'] }
       let(:expected_user_instruction) { comment }
       let(:expected_stream) { true }
@@ -725,10 +725,10 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
         subject.request_params
       end
 
-      context 'when the prefix length exceeds the prompt limit' do
+      context 'when the content_above_cursor length exceeds the prompt limit' do
         let(:limit) { 10 }
-        let(:expected_trimmed_prefix) { content_above_cursor.last(limit) }
-        let(:expected_trimmed_suffix) { '' }
+        let(:expected_trimmed_content_above_cursor) { content_above_cursor.last(limit) }
+        let(:expected_trimmed_content_below_cursor) { '' }
 
         before do
           stub_const('CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages::MAX_INPUT_CHARS', limit)
@@ -738,10 +738,10 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
           expect(subject.request_params).to eq(expected_request_params)
         end
 
-        context 'when the combined prefix and suffix length exceeds the prompt limit' do
+        context 'when the combined content_above_cursor and content_below_cursor length exceeds the prompt limit' do
           let(:limit) { content_above_cursor.size + 5 }
-          let(:expected_trimmed_prefix) { content_above_cursor }
-          let(:expected_trimmed_suffix) { content_below_cursor.first(5) }
+          let(:expected_trimmed_content_above_cursor) { content_above_cursor }
+          let(:expected_trimmed_content_below_cursor) { content_below_cursor.first(5) }
 
           it 'returns expected request params' do
             expect(subject.request_params).to eq(expected_request_params)
@@ -761,8 +761,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_content_below_cursor) { nil }
       let(:expected_language_identifier) { '' }
       let(:expected_examples_array) { [] }
-      let(:expected_trimmed_prefix) { '' }
-      let(:expected_trimmed_suffix) { '' }
+      let(:expected_trimmed_content_above_cursor) { '' }
+      let(:expected_trimmed_content_below_cursor) { '' }
       let(:expected_libraries) { [] }
       let(:expected_user_instruction) { 'Generate the best possible code based on instructions.' }
       let(:expected_related_files) { [] }

@@ -16,14 +16,14 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::CodeCompletion, featu
 
   describe '#payload' do
     it 'returns default payload' do
-      messages = { prefix: 'foo', suffix: 'bar' }
+      messages = { content_above_cursor: 'foo', content_below_cursor: 'bar' }
 
       expect(subject.payload(messages)).to eq(
         {
           instances: [
             {
-              prefix: 'foo',
-              suffix: 'bar'
+              content_above_cursor: 'foo',
+              content_below_cursor: 'bar'
             }
           ],
           parameters: Gitlab::Llm::VertexAi::Configuration.payload_parameters(

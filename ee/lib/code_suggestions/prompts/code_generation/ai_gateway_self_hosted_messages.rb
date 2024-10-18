@@ -42,12 +42,12 @@ module CodeSuggestions
           params[:instruction]&.instruction.presence || ""
         end
 
-        def pick_prefix
-          prefix.last(500)
+        def pick_content_above_cursor
+          content_above_cursor.last(500)
         end
 
-        def pick_suffix
-          suffix.first(500)
+        def pick_content_below_cursor
+          content_below_cursor.first(500)
         end
       end
     end

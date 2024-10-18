@@ -21,8 +21,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
     {
       file_name: 'test.py',
       selected_text: 'selected',
-      content_above_cursor: 'prefix',
-      content_below_cursor: 'suffix'
+      content_above_cursor: 'content_above_cursor',
+      content_below_cursor: 'content_below_cursor'
     }
   end
 
