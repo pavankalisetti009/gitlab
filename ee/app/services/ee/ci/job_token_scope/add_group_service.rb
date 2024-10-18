@@ -9,16 +9,20 @@ module EE
         override :execute
         def execute(target_group, policies: [])
           super.tap do |response|
-            audit(project, target_group, current_user) if response.success?
+            audit(project, target_group, current_user, policies) if response.success?
           end
         end
 
         private
 
-        def audit(scope, target, author)
+        def audit(scope, target, author, policies)
           audit_message =
             "Group #{target.full_path} was added to list of allowed groups for #{scope.full_path}"
           event_name = 'secure_ci_job_token_group_added'
+
+          if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
+            audit_message += ", with job token permissions: #{policies.join(', ')}"
+          end
 
           audit_context = {
             name: event_name,

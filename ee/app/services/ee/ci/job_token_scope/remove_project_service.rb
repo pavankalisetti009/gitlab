@@ -9,16 +9,22 @@ module EE
         override :execute
         def execute(target_project, direction)
           super.tap do |response|
-            audit(project, target_project, current_user) if direction == :inbound && response.success?
+            if direction == :inbound && response.success?
+              audit(project, target_project, current_user, response.payload.job_token_policies)
+            end
           end
         end
 
         private
 
-        def audit(scope, target, author)
+        def audit(scope, target, author, policies)
           audit_message =
             "Project #{target.full_path} was removed from inbound list of allowed projects for #{scope.full_path}"
           event_name = 'secure_ci_job_token_project_removed'
+
+          if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
+            audit_message += ", with job token permissions: #{policies.join(', ')}"
+          end
 
           audit_context = {
             name: event_name,
