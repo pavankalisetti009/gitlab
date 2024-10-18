@@ -7,9 +7,11 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, :private, group: subgroup) }
+  let_it_be(:other_project) { create(:project, :private, group: subgroup) }
   let_it_be(:project_member) { create(:project_member, :guest, user: user, source: project) }
+  let_it_be(:other_project_member) { create(:project_member, :guest, user: user, source: other_project) }
 
-  let(:project_list) { [project] }
+  let(:project_list) { [project, other_project] }
 
   subject(:result) { described_class.new(projects: project_list, user: user).execute }
 
@@ -35,14 +37,19 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
   end
 
   shared_examples 'custom roles' do |ability|
+    let_it_be(:other_ability) do
+      (MemberRole.all_customizable_project_permissions - [ability]).sample
+    end
+
     let(:expected_abilities) { [ability, *ability_requirements(ability)].compact }
+    let(:expected_abilities_other_project) { [other_ability, *ability_requirements(other_ability)].compact }
 
     context 'when custom_roles license is not enabled on project root ancestor' do
       it 'returns project id with nil ability value' do
         stub_licensed_features(custom_roles: false)
         create_member_role(ability, project_member)
 
-        expect(result).to eq(project.id => nil)
+        expect(result).to eq(project.id => nil, other_project.id => nil)
       end
     end
 
@@ -52,10 +59,15 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
           create_member_role(ability, project_member)
         end
 
+        let_it_be(:other_project_member_role) do
+          create_member_role(other_ability, other_project_member)
+        end
+
         context "when custom role has #{ability}: true" do
           context 'when Array of project passed' do
-            it 'returns the project_id with a value array that includes the ability' do
+            it 'returns all requested project IDs with their respective abilities' do
               expect(result[project.id]).to match_array(expected_abilities)
+              expect(result[other_project.id]).to match_array(expected_abilities_other_project)
             end
 
             context "when the `#{ability}` is disabled" do
@@ -142,7 +154,7 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
         let_it_be(:project) { create(:project, :private, :in_group) }
 
         it 'returns project id with empty value array' do
-          expect(result).to eq(project.id => [])
+          expect(result).to eq(project.id => [], other_project.id => [])
         end
       end
 
@@ -153,7 +165,7 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
           subgroup_member = create(:group_member, :guest, user: user, source: subgroup)
           create_member_role(ability, subgroup_member)
 
-          expect(result).to eq({ project.id => [] })
+          expect(result).to eq({ project.id => [], other_project.id => [] })
         end
       end
     end

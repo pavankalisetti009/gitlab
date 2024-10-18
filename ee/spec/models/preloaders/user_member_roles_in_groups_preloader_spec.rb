@@ -6,12 +6,14 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
   let_it_be(:user) { create(:user) }
   let_it_be(:root_group) { create(:group, :private) }
   let_it_be(:group) { create(:group, :private, parent: root_group) }
+  let_it_be(:other_group) { create(:group, :private, parent: root_group) }
   let_it_be(:group_member) { create(:group_member, :guest, user: user, source: group) }
+  let_it_be(:other_group_member) { create(:group_member, :guest, user: user, source: other_group) }
   let_it_be(:root_group_member) do
     create(:group_member, :guest, user: user, source: root_group)
   end
 
-  let(:group_list) { [group] }
+  let(:group_list) { [group, other_group] }
 
   subject(:result) { described_class.new(groups: group_list, user: user).execute }
 
@@ -37,14 +39,19 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
   end
 
   shared_examples 'custom roles' do |ability|
+    let_it_be(:other_ability) do
+      (MemberRole.all_customizable_group_permissions - [ability]).sample
+    end
+
     let(:expected_abilities) { [ability, *ability_requirements(ability)].compact }
+    let(:expected_abilities_other_group) { [other_ability, *ability_requirements(other_ability)].compact }
 
     context 'when custom_roles license is not enabled on group root ancestor' do
       it 'returns group id with nil ability value' do
         stub_licensed_features(custom_roles: false)
         create_member_role(ability, group_member)
 
-        expect(result).to eq(group.id => nil)
+        expect(result).to eq(group.id => nil, other_group.id => nil)
       end
     end
 
@@ -54,11 +61,16 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           create_member_role(ability, group_member)
         end
 
-        context 'when custom role has ability: true' do
-          let(:group_list) { Group.where(id: group.id) }
+        let_it_be(:other_member_role) do
+          create_member_role(other_ability, other_group_member)
+        end
 
-          it 'returns the group_id with a value array that includes the ability' do
+        context 'when custom role has ability: true' do
+          let(:group_list) { Group.where(id: [group.id, other_group.id]) }
+
+          it 'returns all requested group IDs with their respective abilities' do
             expect(result[group.id]).to match_array(expected_abilities)
+            expect(result[other_group.id]).to match_array(expected_abilities_other_group)
           end
 
           context "when `#{ability}` is disabled" do
@@ -100,7 +112,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         let_it_be(:group) { create(:group, :private) }
 
         it 'returns group id with empty value array' do
-          expect(result).to eq(group.id => [])
+          expect(result).to eq(group.id => [], other_group.id => [])
         end
       end
 
@@ -120,7 +132,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
             record.members << group_without_custom_permission_member
           end
 
-          expect(result).to eq(group.id => [])
+          expect(result).to eq(group.id => [], other_group.id => [])
         end
       end
 
@@ -131,7 +143,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           subgroup_member = create(:group_member, :guest, user: user, source: subgroup)
           create_member_role(ability, subgroup_member)
 
-          expect(result).to eq({ group.id => [] })
+          expect(result).to eq({ group.id => [], other_group.id => [] })
         end
       end
     end
