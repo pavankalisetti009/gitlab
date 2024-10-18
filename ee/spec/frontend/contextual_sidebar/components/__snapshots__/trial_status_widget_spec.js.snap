@@ -36,8 +36,11 @@ exports[`TrialStatusWidget component rendered content matches the snapshot for n
     >
       <gl-progress-bar-stub
         aria-hidden="true"
+        arialabel="Progress bar"
         class="gl-grow"
+        max="100"
         value="10"
+        variant="primary"
       />
     </div>
     <b-button-stub

@@ -42404,6 +42404,9 @@ msgstr ""
 msgid "Progress"
 msgstr ""
 
+msgid "Progress bar"
+msgstr ""
+
 msgid "Progress tracking"
 msgstr ""
 

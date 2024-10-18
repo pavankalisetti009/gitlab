@@ -296,7 +296,8 @@ html.group-epics-roadmap-html {
   border: 2px solid var(--epic-text-color, $white);
   height: 7px;
 
-  .progress-bar {
+  // stylelint-disable-next-line gitlab/no-gl-class
+  .gl-progress {
     background-color: var(--epic-color, $blue-600);
   }
 }
