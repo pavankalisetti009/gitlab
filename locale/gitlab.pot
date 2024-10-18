@@ -34730,9 +34730,6 @@ msgstr[1] ""
 msgid "MlModelRegistry|(Optional)"
 msgstr ""
 
-msgid "MlModelRegistry|Add a model"
-msgstr ""
-
 msgid "MlModelRegistry|All artifact uploads failed or were canceled."
 msgstr ""
 
@@ -34767,9 +34764,6 @@ msgid "MlModelRegistry|Create"
 msgstr ""
 
 msgid "MlModelRegistry|Create & import"
-msgstr ""
-
-msgid "MlModelRegistry|Create a model version"
 msgstr ""
 
 msgid "MlModelRegistry|Create model"
@@ -34985,13 +34979,7 @@ msgstr ""
 msgid "MlModelRegistry|Setting up the client"
 msgstr ""
 
-msgid "MlModelRegistry|Start tracking your machine learning models"
-msgstr ""
-
 msgid "MlModelRegistry|Status"
-msgstr ""
-
-msgid "MlModelRegistry|Store and manage your machine learning models and versions"
 msgstr ""
 
 msgid "MlModelRegistry|Subfolder"
