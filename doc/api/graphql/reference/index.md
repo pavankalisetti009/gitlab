@@ -28385,6 +28385,7 @@ Machine learning model in the model registry.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mlmodel_links"></a>`_links` | [`MLModelLinks!`](#mlmodellinks) | Map of links to perform actions on the model. |
+| <a id="mlmodelauthor"></a>`author` | [`UserCore`](#usercore) | User that created the model. |
 | <a id="mlmodelcandidatecount"></a>`candidateCount` | [`Int`](#int) | Count of candidates in the model. |
 | <a id="mlmodelcandidates"></a>`candidates` | [`MlCandidateConnection`](#mlcandidateconnection) | Version candidates of the model. (see [Connections](#connections)) |
 | <a id="mlmodelcreatedat"></a>`createdAt` | [`Time!`](#time) | Date of creation. |
@@ -28436,6 +28437,7 @@ Version of a machine learning model.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mlmodelversion_links"></a>`_links` | [`MLModelVersionLinks!`](#mlmodelversionlinks) | Map of links to perform actions on the model version. |
+| <a id="mlmodelversionauthor"></a>`author` | [`UserCore!`](#usercore) | User that created the model version. |
 | <a id="mlmodelversioncandidate"></a>`candidate` | [`MlCandidate!`](#mlcandidate) | Metrics, params and metadata for the model version. |
 | <a id="mlmodelversioncreatedat"></a>`createdAt` | [`Time!`](#time) | Date of creation. |
 | <a id="mlmodelversiondescription"></a>`description` | [`String`](#string) | Description of the version. |
