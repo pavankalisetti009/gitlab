@@ -25,13 +25,17 @@ module Gitlab
 
           # Registry does not use consolidated object storage config.
           def config
-            settings = {
-              object_store: {
-                connection: context.gitlab_config('object_store').connection.to_hash,
+            unless context
+              Output.warning("No context passed to derive configuration from.")
+              return nil
+            end
+
+            {
+              object_storage: {
+                connection: context.object_storage_connection,
                 remote_directory: registry_bucket
               }
             }
-            GitlabSettings::Options.build(settings)
           end
 
           private

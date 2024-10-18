@@ -1,19 +1,21 @@
 # frozen_string_literal: true
 
 RSpec.describe Gitlab::Backup::Cli::Targets::ObjectStorage::Google do
-  let(:gitlab_config) { class_double("GitlabSettings::Settings") }
-
-  let(:supported_config) { instance_double("GitlabSettings::Options", object_store: supported_object_store) }
+  let(:supported_config) { { object_store: supported_object_store } }
   let(:supported_provider) do
-    instance_double(
-      "GitlabSettings::Options", provider: "Google", google_application_default: true, google_project: "fake_project"
-    )
+    {
+      provider: "Google",
+      google_application_default: true,
+      google_project: "fake_project"
+    }
   end
 
   let(:supported_object_store) do
-    instance_double(
-      "GitlabSettings::Options", enabled: true, connection: supported_provider, remote_directory: "fake_source_bucket"
-    )
+    {
+      enabled: true,
+      connection: supported_provider,
+      remote_directory: "fake_source_bucket"
+    }
   end
 
   let(:client) { instance_double("::Google::Cloud::StorageTransfer::V1::StorageTransferService::Client") }
@@ -56,9 +58,7 @@ RSpec.describe Gitlab::Backup::Cli::Targets::ObjectStorage::Google do
   end
 
   before do
-    allow(Gitlab).to receive(:config).and_return(gitlab_config)
     allow(::Google::Cloud::StorageTransfer).to receive(:storage_transfer_service).and_return(client)
-    allow(gitlab_config).to receive(:[]).with('fake_object').and_return(supported_config)
   end
 
   subject(:object_storage) { described_class.new("fake_object", 'fake_backup_bucket', supported_config) }

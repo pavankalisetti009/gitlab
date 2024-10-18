@@ -97,7 +97,7 @@ module Gitlab
             return @target unless @target.nil?
 
             @target = if object_storage?
-                        ::Gitlab::Backup::Cli::Targets::ObjectStorage.find_task(id, options, config)
+                        ::Gitlab::Backup::Cli::Targets::ObjectStorage.find_task(id, remote_directory, config)
                       else
                         local
                       end
