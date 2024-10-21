@@ -83,6 +83,95 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+  end
+
+  describe 'hybrid search' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:project) { create(:project) }
+    let(:project_ids) { [project.id] }
+    let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
+    let(:mock_embedding) { [1, 2, 3] }
+    let(:hybrid_similarity) { 0.5 }
+    let(:hybrid_boost) { 0.5 }
+    let(:options) { base_options.merge(hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost) }
+
+    before do
+      allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
+      allow(user).to receive(:any_group_with_ai_available?).and_return(true)
+      allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
+      allow(embedding_service).to receive(:execute).and_return(mock_embedding)
+      allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+        .with(:add_embedding_to_work_items).and_return(true)
+    end
+
+    shared_examples 'without hybrid search query' do
+      it 'does not add a knn query' do
+        expect(build).not_to have_key(:knn)
+      end
+    end
+
+    it 'adds a knn query with the same filters as the bool filters' do
+      query = build
+
+      expect(query).to have_key(:knn)
+      expect(query[:knn][:query_vector]).to eq(mock_embedding)
+      expect(query[:knn][:similarity]).to eq(hybrid_similarity)
+      expect(query[:knn][:boost]).to eq(hybrid_boost)
+
+      expected_filters = %w[
+        filters:project
+        filters:non_confidential
+        filters:confidential
+        filters:confidential:as_author
+        filters:confidential:as_assignee
+        filters:confidential:project:membership:id
+      ]
+
+      knn_filter = query[:knn][:filter]
+      query_without_knn = query.except(:knn)
+
+      assert_names_in_query(knn_filter, with: expected_filters)
+      assert_names_in_query(query_without_knn, with: expected_filters)
+    end
+
+    context 'if project_ids is not specified' do
+      let(:project_ids) { [] }
+
+      it_behaves_like 'without hybrid search query'
+    end
+
+    context 'if user is not authorized to perform ai actions' do
+      before do
+        allow(user).to receive(:any_group_with_ai_available?).and_return(false)
+      end
+
+      it_behaves_like 'without hybrid search query'
+    end
+
+    context 'with embeddings not available' do
+      where(:hybrid_work_item_search, :ai_global_switch, :work_item_embedding, :ai_available, :migration_done) do
+        false | false | false | false | false
+        true  | false | false | false | false
+        false | true  | false | false | false
+        false | false | true  | false | false
+        false | false | false | true  | false
+        false | false | false | false | true
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(search_work_items_hybrid_search: hybrid_work_item_search)
+          stub_feature_flags(ai_global_switch: ai_global_switch)
+          stub_feature_flags(elasticsearch_work_item_embedding: work_item_embedding)
+          allow(Gitlab::Saas).to receive(:feature_available?).and_return(ai_available)
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+            .with(:add_embedding_to_work_items).and_return(migration_done)
+        end
+
+        it_behaves_like 'without hybrid search query'
+      end
+    end
 
     context 'when the query is with fields' do
       let(:options) { base_options.merge(fields: ['title']) }

@@ -7,6 +7,11 @@ module Search
 
       private
 
+      override :hybrid_work_item_search?
+      def hybrid_work_item_search?
+        false
+      end
+
       override :extra_options
       def extra_options
         super.merge({
