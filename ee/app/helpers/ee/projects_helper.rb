@@ -29,6 +29,7 @@ module EE
     override :project_permissions_panel_data
     def project_permissions_panel_data(project)
       super.merge({
+        canManageSecretManager: ::Feature.enabled?(:secrets_manager, project, type: :wip),
         requirementsAvailable: project.feature_available?(:requirements),
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
