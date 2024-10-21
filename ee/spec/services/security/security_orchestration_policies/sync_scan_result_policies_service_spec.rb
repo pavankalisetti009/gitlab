@@ -8,7 +8,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
   let(:service) { described_class.new(configuration) }
 
   describe '#execute' do
-    subject { service.execute }
+    subject(:execute) { service.execute }
 
     context 'with delay' do
       let_it_be(:project1) { create(:project) }
@@ -46,7 +46,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
         expect(sync_service).to receive(:execute).with(configuration.project_id, { delay: 0 })
       end
 
-      subject
+      execute
     end
 
     context 'with namespace association' do
@@ -64,7 +64,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
           expect(sync_service).to receive(:execute).with(project.id, { delay: 0 })
         end
 
-        subject
+        execute
       end
 
       context 'with multiple projects in the namespace' do
@@ -75,8 +75,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
 
           expect(worker).to receive(:perform_in).and_call_original.exactly(3).times
 
-          subject
+          execute
         end
+      end
+    end
+
+    describe 'metrics' do
+      specify do
+        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService
+          .histogram(:gitlab_security_policies_update_configuration_duration_seconds)
+
+        expect(hist)
+          .to receive(:observe).with({}, kind_of(Float)).and_call_original
+
+        execute
       end
     end
   end
