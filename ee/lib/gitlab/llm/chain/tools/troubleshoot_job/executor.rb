@@ -8,6 +8,7 @@ module Gitlab
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
             include ::Gitlab::Utils::StrongMemoize
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             # We use 1 Charater per 1 Token because we can't copy the tokenizer logic easily
             # So we go lower the characters per token to compensate for that.
