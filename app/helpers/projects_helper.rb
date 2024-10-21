@@ -114,7 +114,7 @@ module ProjectsHelper
   end
 
   def link_to_data_loss_doc
-    link_to _('data loss'), help_page_path('user/project/repository/index.md', anchor: 'what-happens-when-a-repository-path-changes'), target: '_blank', rel: 'noopener'
+    link_to _('data loss'), help_page_path('user/project/repository/index.md', anchor: 'repository-path-changes'), target: '_blank', rel: 'noopener'
   end
 
   def transfer_project_message(project)
