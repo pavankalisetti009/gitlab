@@ -31141,9 +31141,6 @@ msgstr ""
 msgid "Job|Full screen mode is not available"
 msgstr ""
 
-msgid "Job|Give feedback"
-msgstr ""
-
 msgid "Job|Job artifacts"
 msgstr ""
 
