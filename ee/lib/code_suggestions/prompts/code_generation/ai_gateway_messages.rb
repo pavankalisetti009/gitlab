@@ -35,6 +35,9 @@ module CodeSuggestions
         private
 
         def code_generation_enhancer
+          # the fields here are used in AIGW to populate prompt template
+          # updating the key names here will break the template rendering
+          # please reach out to @code-creation-team in case of updating the hash
           {
             **examples_section_params,
             **existing_code_block_params,
