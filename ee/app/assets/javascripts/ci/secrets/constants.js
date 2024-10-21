@@ -17,6 +17,11 @@ export const PAGE_SIZE = 10;
 export const ENTITY_GROUP = 'group';
 export const ENTITY_PROJECT = 'project';
 
+export const ACTION_ENABLE_SECRET_MANAGER = 'ENABLE_SECRET_MANAGER';
+export const SECRET_MANAGER_STATUS_ACTIVE = 'ACTIVE';
+export const SECRET_MANAGER_STATUS_INACTIVE = 'INACTIVE';
+export const SECRET_MANAGER_STATUS_PROVISIONING = 'PROVISIONING';
+
 // Dummy values for now. They may change when API is available
 export const ROTATION_PERIOD_TWO_WEEKS = {
   value: '14',

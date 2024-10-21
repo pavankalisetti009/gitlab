@@ -48719,6 +48719,9 @@ msgstr ""
 msgid "Secrets|Edit secret"
 msgstr ""
 
+msgid "Secrets|Enable the Secrets Manager to securely store and manage sensitive information for this project."
+msgstr ""
+
 msgid "Secrets|Enter a value for the secret"
 msgstr ""
 
@@ -48753,6 +48756,12 @@ msgid "Secrets|Rotation reminder"
 msgstr ""
 
 msgid "Secrets|Secrets"
+msgstr ""
+
+msgid "Secrets|Secrets Manager"
+msgstr ""
+
+msgid "Secrets|Secrets Manager has been provisioned for this project."
 msgstr ""
 
 msgid "Secrets|Secrets represent sensitive information your CI job needs to complete work. This sensitive information can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, which are always presented to a job, secrets must be explicitly required by a job."

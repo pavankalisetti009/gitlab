@@ -696,6 +696,18 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         it { is_expected.to include(sppRepositoryPipelineAccessLocked: true) }
       end
     end
+
+    describe 'Secret Manager settings' do
+      it { is_expected.to include(canManageSecretManager: true) }
+
+      context 'returns false for canManageSecretManager when FF secrets_manager is disabled' do
+        before do
+          stub_feature_flags(secrets_manager: false)
+        end
+
+        it { is_expected.to include(canManageSecretManager: false) }
+      end
+    end
   end
 
   describe '#approvals_app_data' do
