@@ -6,7 +6,6 @@ import {
   WIDGET_TYPE_COLOR,
   WIDGET_TYPE_ROLLEDUP_DATES,
   WIDGET_TYPE_HEALTH_STATUS,
-  CLEAR_VALUE,
 } from '~/work_items/constants';
 import { createWorkItemQueryResponse } from 'jest/work_items/mock_data';
 
@@ -67,7 +66,7 @@ describe('work items graphql resolvers', () => {
       });
 
       it('clears health status', async () => {
-        await mutate({ healthStatus: CLEAR_VALUE });
+        await mutate({ healthStatus: null });
 
         const queryResult = await query(WIDGET_TYPE_HEALTH_STATUS);
         expect(queryResult).toMatchObject({ healthStatus: null });

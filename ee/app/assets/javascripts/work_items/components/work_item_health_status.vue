@@ -12,7 +12,6 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
-  CLEAR_VALUE,
   WIDGET_TYPE_HEALTH_STATUS,
   i18n,
 } from '~/work_items/constants';
@@ -129,7 +128,7 @@ export default {
           variables: {
             input: {
               fullPath: this.fullPath,
-              healthStatus: healthStatus || CLEAR_VALUE,
+              healthStatus,
               workItemType: this.workItemType,
             },
           },
