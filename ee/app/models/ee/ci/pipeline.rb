@@ -288,8 +288,8 @@ module EE
       end
 
       def merge_requests_as_base_pipeline
-        merge_request_diffs = ::MergeRequestDiff.where(project_id: project_id, base_commit_sha: sha)
-        project.merge_requests.opened.where(id: merge_request_diffs.select(:merge_request_id))
+        merge_request_diffs = ::MergeRequestDiff.where(project_id: project_id, base_commit_sha: sha).regular
+        project.merge_requests.opened.by_latest_merge_request_diffs(merge_request_diffs)
       end
 
       private
