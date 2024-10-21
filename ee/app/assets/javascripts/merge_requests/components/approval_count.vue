@@ -64,6 +64,7 @@ export default {
     v-if="mergeRequest.approvalsRequired"
     v-gl-tooltip.viewport.top="tooltipTitle"
     :icon="badgeIcon"
+    icon-optically-aligned
     :variant="badgeVariant"
   >
     {{ approvalText }}
