@@ -30,20 +30,32 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
     context 'when user cannot read original work item' do
       let(:current_user) { target_namespace_member }
 
-      it 'raises error' do
-        expect { service.execute }.to raise_error(
-          described_class::CloneError, 'Cannot clone work item due to insufficient permissions!'
-        )
+      it 'does not raise error' do
+        expect { service.execute }.not_to raise_error
+      end
+
+      it 'returns error response' do
+        response = service.execute
+
+        expect(response.success?).to be false
+        expect(response.error?).to be true
+        expect(response.message).to eq('Cannot clone work item due to insufficient permissions!')
       end
     end
 
     context 'when user cannot create work items in target namespace' do
       let(:current_user) { source_namespace_member }
 
-      it 'raises error' do
-        expect { service.execute }.to raise_error(
-          described_class::CloneError, 'Cannot clone work item due to insufficient permissions!'
-        )
+      it 'does not raise error' do
+        expect { service.execute }.not_to raise_error
+      end
+
+      it 'returns error response' do
+        response = service.execute
+
+        expect(response.success?).to be false
+        expect(response.error?).to be true
+        expect(response.message).to eq('Cannot clone work item due to insufficient permissions!')
       end
     end
   end
@@ -56,10 +68,16 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
         stub_licensed_features(epics: false)
       end
 
-      it 'raises error' do
-        expect { service.execute }.to raise_error(
-          described_class::CloneError, 'Cannot clone work item due to insufficient permissions!'
-        )
+      it 'does not raise error' do
+        expect { service.execute }.not_to raise_error
+      end
+
+      it 'returns error response' do
+        response = service.execute
+
+        expect(response.success?).to be false
+        expect(response.error?).to be true
+        expect(response.message).to eq('Cannot clone work item due to insufficient permissions!')
       end
     end
 
@@ -76,10 +94,16 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
         target_namespace.deletion_schedule.destroy!
       end
 
-      it 'raises error' do
-        expect { service.execute }.to raise_error(
-          described_class::CloneError, 'Cannot clone work item to target namespace as it is pending deletion.'
-        )
+      it 'does not raise error' do
+        expect { service.execute }.not_to raise_error
+      end
+
+      it 'returns error response' do
+        response = service.execute
+
+        expect(response.success?).to be false
+        expect(response.error?).to be true
+        expect(response.message).to eq('Cannot clone work item to target namespace as it is pending deletion.')
       end
     end
 
