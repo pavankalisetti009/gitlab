@@ -24,7 +24,20 @@ RSpec.describe MergeRequests::Mergeability::CheckApprovedService, feature_catego
       let(:approval_feature_available?) { true }
 
       before do
-        expect(merge_request).to receive(:approved?).and_return(approved)
+        allow(merge_request).to receive(:approved?).and_return(approved)
+      end
+
+      context 'when the merge request is temporarily unapproved' do
+        let(:approved) { true }
+
+        before do
+          allow(merge_request).to receive(:temporarily_unapproved?).and_return(true)
+        end
+
+        it "returns a check result with status checking" do
+          expect(result.status)
+            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::CHECKING_STATUS
+        end
       end
 
       context "when the merge request is approved" do
