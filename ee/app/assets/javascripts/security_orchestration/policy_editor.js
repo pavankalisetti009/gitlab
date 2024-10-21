@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from 'ee/vue_shared/security_configuration/graphql/provider';
 import App from './components/policy_editor/app.vue';
-import { DEFAULT_ASSIGNED_POLICY_PROJECT } from './constants';
+import { DEFAULT_ASSIGNED_POLICY_PROJECT, MAX_SCAN_EXECUTION_ACTION_COUNT } from './constants';
 import { decomposeApprovers } from './utils';
 
 export default (el, namespaceType) => {
@@ -31,6 +31,7 @@ export default (el, namespaceType) => {
     scanResultApprovers,
     softwareLicenses,
     timezones,
+    maxScanExecutionPolicyActions,
   } = el.dataset;
 
   let parsedAssignedPolicyProject;
@@ -70,6 +71,11 @@ export default (el, namespaceType) => {
     parsedTimezones = [];
   }
 
+  const count = parseInt(maxScanExecutionPolicyActions, 10);
+  const parsedMaxScanExecutionPolicyActions = Number.isNaN(count)
+    ? MAX_SCAN_EXECUTION_ACTION_COUNT
+    : count;
+
   return new Vue({
     el,
     apolloProvider,
@@ -99,6 +105,7 @@ export default (el, namespaceType) => {
       timezones: parsedTimezones,
       existingPolicy: policy ? { type: policyType, ...JSON.parse(policy) } : undefined,
       assignedPolicyProject: parsedAssignedPolicyProject,
+      maxScanExecutionPolicyActions: parsedMaxScanExecutionPolicyActions,
     },
     render(createElement) {
       return createElement(App);

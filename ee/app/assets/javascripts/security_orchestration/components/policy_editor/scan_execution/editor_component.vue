@@ -1,7 +1,8 @@
 <script>
-import { GlEmptyState, GlButton } from '@gitlab/ui';
+import { GlEmptyState, GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { setUrlFragment } from '~/lib/utils/url_utility';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf, n__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import {
   checkForPerformanceRisk,
@@ -57,6 +58,9 @@ export default {
     notOwnerDescription: s__(
       'SecurityOrchestration|Scan execution policies can only be created by project owners.',
     ),
+    exceedingActionsMessage: s__(
+      'SecurityOrchestration|Policy has reached the maximum of %{actionsCount} %{actions}',
+    ),
   },
   apollo: {
     projectsCount: {
@@ -86,12 +90,17 @@ export default {
     OverloadWarningModal,
     RuleSection,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
     'namespacePath',
     'namespaceType',
     'scanPolicyDocumentationPath',
+    'maxScanExecutionPolicyActions',
   ],
   props: {
     assignedPolicyProject: {
@@ -151,11 +160,49 @@ export default {
     actionSectionError() {
       return this.specificActionSectionError || this.$options.i18n.ACTION_SECTION_DISABLE_ERROR;
     },
+    actions() {
+      /**
+       * Even though button to add new actions is disabled when limit is reached
+       * User can add unlimited number of actions in yaml mode
+       * 1000+ actions would hit browser performance and make page slow and unresponsive
+       * slicing it to allowed limit would prevent it
+       */
+      const { actions = [] } = this.policy || {};
+      if (this.scanExecutionActionsLimitEnabled) {
+        return actions.slice(0, this.maxScanExecutionPolicyActions);
+      }
+
+      return actions;
+    },
+    scanExecutionActionsLimitEnabled() {
+      return Boolean(
+        this.glFeatures.scanExecutionPolicyActionLimitGroup ||
+          this.glFeatures.scanExecutionPolicyActionLimit,
+      );
+    },
+    addActionButtonDisabled() {
+      return (
+        this.scanExecutionActionsLimitEnabled &&
+        this.policy.actions?.length > this.maxScanExecutionPolicyActions
+      );
+    },
+    addActionButtonTitle() {
+      const actions = n__('action', 'actions', this.actions?.length);
+      return this.addActionButtonDisabled
+        ? sprintf(this.$options.i18n.exceedingActionsMessage, {
+            actionsCount: this.maxScanExecutionPolicyActions,
+            actions,
+          })
+        : '';
+    },
   },
   methods: {
     addAction() {
       if (!this.policy.actions?.length) {
-        this.policy.actions = [];
+        this.policy = {
+          ...this.policy,
+          actions: [],
+        };
       }
 
       this.policy.actions.push(buildScannerAction({ scanner: DEFAULT_SCANNER }));
@@ -291,7 +338,7 @@ export default {
         </template>
 
         <scan-action
-          v-for="(action, index) in policy.actions"
+          v-for="(action, index) in actions"
           :key="action.id"
           :data-testid="`action-${index}`"
           class="gl-mb-4"
@@ -304,9 +351,16 @@ export default {
         />
 
         <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
-          <gl-button variant="link" data-testid="add-action" @click="addAction">
-            {{ $options.i18n.ADD_ACTION_LABEL }}
-          </gl-button>
+          <span v-gl-tooltip :title="addActionButtonTitle" data-testid="add-action-wrapper">
+            <gl-button
+              :disabled="addActionButtonDisabled"
+              variant="link"
+              data-testid="add-action"
+              @click="addAction"
+            >
+              {{ $options.i18n.ADD_ACTION_LABEL }}
+            </gl-button>
+          </span>
         </div>
       </disabled-section>
     </template>

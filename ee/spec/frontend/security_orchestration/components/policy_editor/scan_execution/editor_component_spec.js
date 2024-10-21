@@ -87,6 +87,7 @@ describe('EditorComponent', () => {
         ...propsData,
       },
       provide: {
+        maxScanExecutionPolicyActions: 10,
         disableScanPolicyUpdate: false,
         policyEditorEmptyStateSvgPath,
         namespacePath: defaultProjectPath,
@@ -109,6 +110,7 @@ describe('EditorComponent', () => {
   };
 
   const findAddActionButton = () => wrapper.findByTestId('add-action');
+  const findAddActionButtonWrapper = () => wrapper.findByTestId('add-action-wrapper');
   const findAddRuleButton = () => wrapper.findByTestId('add-rule');
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
@@ -345,6 +347,7 @@ enabled: true`;
       expect(findAllActionBuilders()).toHaveLength(0);
       findAddActionButton().vm.$emit('click');
       await nextTick();
+      expect(findAddActionButtonWrapper().attributes('title')).toBe('');
       expect(findAllActionBuilders()).toHaveLength(1);
     });
 
@@ -385,6 +388,30 @@ enabled: true`;
       expect(
         fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toHaveLength(1);
+    });
+
+    it('should limit number of actions', async () => {
+      factory({
+        provide: {
+          maxScanExecutionPolicyActions: 3,
+          glFeatures: {
+            scanExecutionPolicyActionLimitGroup: true,
+          },
+        },
+      });
+
+      expect(findAddActionButton().attributes().disabled).toBeUndefined();
+      expect(findAllActionBuilders()).toHaveLength(1);
+
+      await findAddActionButton().vm.$emit('click');
+      await findAddActionButton().vm.$emit('click');
+      await findAddActionButton().vm.$emit('click');
+
+      expect(findAddActionButton().attributes().disabled).toBe('true');
+      expect(findAddActionButtonWrapper().attributes('title')).toBe(
+        'Policy has reached the maximum of 3 actions',
+      );
+      expect(findAllActionBuilders()).toHaveLength(3);
     });
   });
 
@@ -598,6 +625,32 @@ enabled: true`;
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
         expect(wrapper.emitted('save')[0]).toHaveLength(1);
+      });
+    });
+
+    describe('project actions', () => {
+      it('should limit number of actions for a project', async () => {
+        factory({
+          provide: {
+            namespaceType: NAMESPACE_TYPES.PROJECT,
+            maxScanExecutionPolicyActions: 1,
+            glFeatures: {
+              scanExecutionPolicyActionLimit: true,
+            },
+          },
+        });
+
+        expect(findAddActionButton().attributes().disabled).toBeUndefined();
+        expect(findAllActionBuilders()).toHaveLength(1);
+
+        findAddActionButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findAddActionButton().attributes().disabled).toBe('true');
+        expect(findAddActionButtonWrapper().attributes('title')).toBe(
+          'Policy has reached the maximum of 1 action',
+        );
+        expect(findAllActionBuilders()).toHaveLength(1);
       });
     });
   });
