@@ -7,6 +7,7 @@ module Gitlab
         module MergeRequestReader
           class Executor < Identifier
             include Concerns::ReaderTooling
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             RESOURCE_NAME = 'merge request'
             NAME = "MergeRequestReader"
