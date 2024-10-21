@@ -63,7 +63,7 @@ export default {
       };
     },
     isTrialActive() {
-      return this.percentageComplete < 100;
+      return this.percentageComplete <= 100;
     },
     isDismissable() {
       return this.groupId && this.featureId && this.dismissEndpoint;
