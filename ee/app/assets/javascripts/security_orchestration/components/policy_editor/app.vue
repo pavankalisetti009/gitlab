@@ -4,6 +4,7 @@ import { s__ } from '~/locale';
 import { getParameterByName, removeParams, visitUrl } from '~/lib/utils/url_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import EditorWrapper from './editor_wrapper.vue';
 import PolicyTypeSelector from './policy_type_selector.vue';
 
@@ -12,6 +13,7 @@ export default {
     GlPath,
     EditorWrapper,
     PolicyTypeSelector,
+    PageHeading,
   },
   mixins: [glFeatureFlagMixin()],
   inject: {
@@ -96,10 +98,12 @@ export default {
 </script>
 <template>
   <div>
-    <header class="gl-border-b-none gl-mb-4">
-      <h3 data-testid="title">{{ title }}</h3>
-      <gl-path v-if="enableWizard" :items="glPathItems" @selected="handlePathSelection" />
-    </header>
+    <page-heading :heading="title">
+      <template #description>
+        <gl-path v-if="enableWizard" :items="glPathItems" @selected="handlePathSelection" />
+      </template>
+    </page-heading>
+
     <policy-type-selector v-if="!selectedPolicy" />
     <editor-wrapper v-else :selected-policy-type="selectedPolicy.value" />
   </div>

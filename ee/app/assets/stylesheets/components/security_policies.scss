@@ -3,10 +3,6 @@
   z-index: 1;
 }
 
-.security-policies-pre-min-width {
-  min-width: 285px;
-}
-
 .security-policies-popover-content-height {
   height: 12rem;
 }
@@ -19,11 +15,26 @@
   max-width: 330px;
 }
 
-.security-policies-bg-gray-10 {
-  background-color: $gray-10;
+.security-policies-bg-subtle {
+  @apply gl-bg-subtle;
+}
 
-  // stylelint-disable-next-line gitlab/no-gl-class
-  .gl-dark & {
-    background-color: $white;
+.security-policies {
+  grid-template-areas: 'content sidebar';
+  grid-template-columns: 1fr $right-sidebar-width;
+  grid-gap: $gl-spacing-scale-5;
+
+  @include media-breakpoint-up(lg) {
+    grid-gap: 0 $gl-spacing-scale-7;
   }
+}
+
+.security-policies-content,
+.security-policies-actions {
+  grid-area: content;
+  grid-row: auto;
+}
+
+.security-policies-sidebar {
+  grid-area: sidebar;
 }

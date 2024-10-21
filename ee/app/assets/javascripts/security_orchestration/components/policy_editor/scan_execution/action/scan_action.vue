@@ -273,7 +273,7 @@ export default {
         </section-layout>
       </div>
 
-      <div class="security-policies-bg-gray-10">
+      <div class="security-policies-bg-subtle gl-p-3">
         <gl-button
           icon="remove"
           category="tertiary"

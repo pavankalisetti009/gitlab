@@ -233,13 +233,13 @@ export default {
 </script>
 
 <template>
-  <section class="gl-mt-6">
+  <section class="security-policies gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
     <div class="gl-mb-5">
       <div class="gl-mb-6 gl-border-b-1 gl-border-gray-100 gl-pb-6 gl-border-b-solid">
         <segmented-control-button-group v-model="selectedEditorMode" :options="editorModes" />
       </div>
       <div class="gl-flex gl-flex-col lg:gl-flex-row">
-        <section class="gl-mr-7 gl-w-full">
+        <section class="gl-w-full">
           <slot name="modal"></slot>
           <div v-if="shouldShowRuleEditor" data-testid="rule-editor">
             <gl-alert v-if="hasParsingError" class="gl-mb-5" variant="warning" :dismissible="false">
@@ -323,47 +323,53 @@ export default {
             @input="updateYaml"
           />
         </section>
-        <section
-          v-if="shouldShowRuleEditor"
-          class="security-policies-bg-gray-10 gl-w-full gl-self-start gl-px-5 gl-pb-5 lg:gl-ml-10 lg:gl-w-3/10"
-          data-testid="rule-editor-preview"
-        >
-          <h5>{{ $options.i18n.yamlPreview }}</h5>
-          <pre
-            class="security-policies-bg-gray-10 security-policies-pre-min-width gl-whitespace-pre-wrap gl-border-none gl-p-0"
-            :class="{ 'gl-opacity-5': hasParsingError }"
-            data-testid="rule-editor-preview-content"
-            >{{ yamlEditorValue }}</pre
-          >
-        </section>
       </div>
-    </div>
-    <div
-      class="gl-flex gl-flex-col gl-items-baseline"
-      :class="{
-        'md:gl-block': !shouldShowRuntimeMessage,
-        'lg:gl-block': shouldShowRuntimeMessage,
-      }"
-    >
-      <gl-button
-        v-gl-tooltip
-        type="submit"
-        variant="confirm"
-        data-testid="save-policy"
-        :title="saveTooltipText"
-        :loading="isUpdatingPolicy"
-        @click="savePolicy"
+
+      <p
+        v-if="shouldShowRuntimeMessage"
+        class="gl-mb-0 gl-mt-5"
+        data-testid="scan-result-policy-run-time-info"
       >
-        {{ saveButtonText }}
-      </gl-button>
+        <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
+        {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
+      </p>
+    </div>
+    <aside class="security-policies-sidebar">
+      <section
+        v-if="shouldShowRuleEditor"
+        class="security-policies-preview security-policies-bg-subtle gl-p-5"
+        data-testid="rule-editor-preview"
+      >
+        <h5>{{ $options.i18n.yamlPreview }}</h5>
+        <pre
+          class="security-policies-bg-subtle gl-whitespace-pre-wrap gl-border-none gl-p-0"
+          :class="{ 'gl-opacity-5': hasParsingError }"
+          data-testid="rule-editor-preview-content"
+          >{{ yamlEditorValue }}</pre
+        >
+      </section>
+    </aside>
+    <div class="security-policies-actions gl-flex gl-flex-wrap gl-items-baseline gl-gap-3">
+      <div class="gl-flex gl-grow gl-flex-wrap gl-gap-3">
+        <gl-button
+          v-gl-tooltip
+          type="submit"
+          variant="confirm"
+          data-testid="save-policy"
+          :title="saveTooltipText"
+          :loading="isUpdatingPolicy"
+          @click="savePolicy"
+        >
+          {{ saveButtonText }}
+        </gl-button>
+        <gl-button category="secondary" :href="policiesPath">
+          {{ __('Cancel') }}
+        </gl-button>
+      </div>
       <gl-button
         v-if="isEditing"
         v-gl-modal="'delete-modal'"
-        class="gl-mr-3 gl-mt-5"
-        :class="{
-          'md:gl-mt-0': !shouldShowRuntimeMessage,
-          'lg:gl-mt-0': shouldShowRuntimeMessage,
-        }"
+        class="gl-self-end"
         category="secondary"
         variant="danger"
         data-testid="delete-policy"
@@ -371,29 +377,6 @@ export default {
       >
         {{ s__('SecurityOrchestration|Delete policy') }}
       </gl-button>
-      <gl-button
-        class="gl-mt-5"
-        :class="{
-          'md:gl-mt-0': !shouldShowRuntimeMessage,
-          'lg:gl-mt-0': shouldShowRuntimeMessage,
-        }"
-        category="secondary"
-        :href="policiesPath"
-      >
-        {{ __('Cancel') }}
-      </gl-button>
-      <span
-        v-if="shouldShowRuntimeMessage"
-        class="gl-mt-5 lg:gl-ml-10"
-        :class="{
-          'md:gl-mt-0': !shouldShowRuntimeMessage,
-          'lg:gl-mt-0': shouldShowRuntimeMessage,
-        }"
-        data-testid="scan-result-policy-run-time-info"
-      >
-        <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
-        {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
-      </span>
     </div>
     <gl-modal
       modal-id="delete-modal"

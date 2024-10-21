@@ -430,7 +430,7 @@ export default {
 
         <div
           v-if="isWithinLimit"
-          class="security-policies-bg-gray-10 gl-mb-5 gl-rounded-base gl-p-5"
+          class="security-policies-bg-subtle gl-mb-5 gl-rounded-base gl-p-5"
         >
           <gl-button variant="link" data-testid="add-rule" @click="addRule">
             {{ $options.ADD_RULE_LABEL }}

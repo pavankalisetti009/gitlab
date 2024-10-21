@@ -256,7 +256,7 @@ describe('EditorLayout component', () => {
       expect(policyRunTimeInfo.text()).toBe(POLICY_RUN_TIME_MESSAGE);
       const policyRunTimeTooltip = findScanResultPolicyRunTimeTooltip();
       expect(policyRunTimeTooltip.exists()).toBe(true);
-      expect(glTooltipDirectiveMock.mock.calls[2][1].value).toBe(POLICY_RUN_TIME_TOOLTIP);
+      expect(glTooltipDirectiveMock.mock.calls[1][1].value).toBe(POLICY_RUN_TIME_TOOLTIP);
     });
   });
 
