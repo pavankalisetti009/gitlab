@@ -45,7 +45,7 @@ module ProductAnalyticsHelpers
   def ai_impact_dashboard_available_for?(user)
     return false unless Gitlab::ClickHouse.globally_enabled_for_analytics?
 
-    Ability.allowed?(user, :read_ai_analytics, self)
+    Ability.allowed?(user, :read_enterprise_ai_analytics, self)
   end
 
   def product_analytics_dashboards(user)

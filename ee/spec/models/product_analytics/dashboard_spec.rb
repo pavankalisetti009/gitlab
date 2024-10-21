@@ -298,7 +298,7 @@ description: with missing properties
       context 'when user can read ai impact analytics' do
         before do
           allow(Ability).to receive(:allowed?)
-                        .with(user, :read_ai_analytics, anything)
+                        .with(user, :read_enterprise_ai_analytics, anything)
                         .and_return(true)
         end
 

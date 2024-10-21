@@ -45,7 +45,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
 
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
-        .with(current_user, :read_ai_analytics, anything)
+        .with(current_user, :read_pro_ai_analytics, anything)
         .and_return(true)
 
       post_graphql(query, current_user: current_user)

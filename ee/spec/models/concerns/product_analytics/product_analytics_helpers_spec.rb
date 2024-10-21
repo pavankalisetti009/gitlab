@@ -86,7 +86,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
     with_them do
       before do
         allow(Ability).to receive(:allowed?)
-                      .with(user, :read_ai_analytics, anything)
+                      .with(user, :read_enterprise_ai_analytics, anything)
                       .and_return(true)
         allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(enabled)
       end

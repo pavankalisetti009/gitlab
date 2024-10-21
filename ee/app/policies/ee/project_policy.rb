@@ -720,13 +720,20 @@ module EE
       rule { (admin | reporter) & project_merge_request_analytics_available }
         .enable :read_project_merge_request_analytics
 
-      condition(:ai_analytics_available) do
+      condition(:assigned_to_duo_enterprise) do
         next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
 
         @user.assigned_to_duo_enterprise?(@subject)
       end
 
-      rule { can?(:read_product_analytics) & ai_analytics_available }.enable :read_ai_analytics
+      condition(:assigned_to_duo_pro) do
+        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
+
+        @user.assigned_to_duo_pro?(@subject)
+      end
+
+      rule { can?(:read_product_analytics) & assigned_to_duo_pro }.enable :read_pro_ai_analytics
+      rule { can?(:read_product_analytics) & assigned_to_duo_enterprise }.enable :read_enterprise_ai_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 
