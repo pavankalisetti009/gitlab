@@ -6,7 +6,7 @@
     &:focus,
     &:focus:active {
       background-color: transparent;
-      @include gl-focus;
+      @apply gl-focus;
     }
 
     &:first-of-type:last-of-type {
