@@ -8700,7 +8700,8 @@ CREATE TABLE ci_job_variables (
     source smallint DEFAULT 0 NOT NULL,
     raw boolean DEFAULT false NOT NULL,
     partition_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_567d1ccb72 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_job_variables_id_seq
@@ -24183,9 +24184,6 @@ ALTER TABLE workspaces
 
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
-
-ALTER TABLE ci_job_variables
-    ADD CONSTRAINT check_567d1ccb72 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE p_ci_pipeline_variables
     ADD CONSTRAINT check_6e932dbabf CHECK ((project_id IS NOT NULL)) NOT VALID;
