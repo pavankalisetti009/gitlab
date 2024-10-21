@@ -516,6 +516,10 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'A single security exclusion of a project.',
           resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver.single
+
+        field :target_branch_rules, ::Types::Projects::TargetBranchRuleType.connection_type,
+          null: true,
+          description: 'Target branch rules of the project.'
       end
 
       def tracking_key

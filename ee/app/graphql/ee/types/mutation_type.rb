@@ -246,6 +246,8 @@ module EE
         mount_mutation ::Mutations::MergeTrains::Cars::Delete, alpha: { milestone: '17.2' }
         mount_mutation ::Mutations::Projects::UpdateComplianceFrameworks
         mount_mutation ::Mutations::Ai::FeatureSettings::Update, alpha: { milestone: '17.4' }
+        mount_mutation ::Mutations::Projects::TargetBranchRules::Create
+        mount_mutation ::Mutations::Projects::TargetBranchRules::Destroy
 
         prepend(Types::DeprecatedMutations)
       end
