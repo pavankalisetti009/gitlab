@@ -31,15 +31,6 @@ module API
             forbidden!
           end
 
-          def start_workflow_params(workflow_id)
-            {
-              goal: params[:goal],
-              workflow_id: workflow_id,
-              workflow_oauth_token: gitlab_oauth_token,
-              workflow_service_token: duo_workflow_token
-            }
-          end
-
           def gitlab_oauth_token
             gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
               current_user: current_user).execute
@@ -63,7 +54,7 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(:start_workflow)
+            declared_params(include_missing: false)
           end
 
           def render_response(response)
@@ -78,8 +69,6 @@ module API
           params :workflow_params do
             requires :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
-            optional :start_workflow, type: Boolean, desc: 'Optional parameter to start workflow in a CI pipeline',
-              documentation: { example: true }
             optional :goal, type: String, desc: 'Goal of the workflow',
               documentation: { example: 'Fix pipeline for merge request 1 in project 1' }
           end
@@ -151,16 +140,7 @@ module API
 
                 bad_request!(result[:message]) if result[:status] == :error
 
-                if params[:start_workflow].present?
-                  workflow = find_workflow!(result[:workflow].id)
-                  response = ::Ai::DuoWorkflows::StartWorkflowService.new(
-                    workflow: workflow,
-                    params: start_workflow_params(workflow.id)
-                  ).execute
-                  pipeline_id = response.payload && response.payload[:pipeline]
-                end
-
-                present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow, pipeline_id: pipeline_id
+                present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow
               end
 
               get '/:id' do
@@ -260,30 +240,6 @@ module API
                 bad_request!(result[:message]) if result[:status] == :error
 
                 present result[:event], with: ::API::Entities::Ai::DuoWorkflows::Event
-              end
-
-              desc 'Starts Duo Workflow execution in ci pipeline' do
-                success code: 200, message: 'Pipeline execution started'
-                failure [
-                  { code: 400, message: 'Pipeline creation failed' },
-                  { code: 401, message: 'Unauthorized' },
-                  { code: 404, message: 'Not found' }
-                ]
-              end
-              params do
-                requires :id, type: Integer, desc: 'The ID of the workflow', documentation: { example: '1' }
-                requires :goal, type: String, desc: 'Goal of the workflow',
-                  documentation: { example: 'Fix pipeline for merge request 1 in project 1' }
-              end
-              post '/:id/start' do
-                workflow = find_workflow!(params[:id])
-                authorize_run_workflows!(workflow.project)
-
-                response = ::Ai::DuoWorkflows::StartWorkflowService.new(
-                  workflow: workflow,
-                  params: start_workflow_params(workflow.id)
-                ).execute
-                render_response(response)
               end
             end
           end
