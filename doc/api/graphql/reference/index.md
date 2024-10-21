@@ -38477,10 +38477,11 @@ Representation of mergeability check identifier.
 
 ### `MergeabilityCheckStatus`
 
-Representation of whether a mergeability check passed, failed or is inactive.
+Representation of whether a mergeability check passed, checking, failed or is inactive.
 
 | Value | Description |
 | ----- | ----------- |
+| <a id="mergeabilitycheckstatuschecking"></a>`CHECKING` | Mergeability check is being checked. |
 | <a id="mergeabilitycheckstatusfailed"></a>`FAILED` | Mergeability check has failed. The merge request cannot be merged. |
 | <a id="mergeabilitycheckstatusinactive"></a>`INACTIVE` | Mergeability check is disabled via settings. |
 | <a id="mergeabilitycheckstatussuccess"></a>`SUCCESS` | Mergeability check has passed. |

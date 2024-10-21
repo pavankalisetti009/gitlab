@@ -7,23 +7,25 @@ RSpec.describe ::MergeRequests::Mergeability::DetailedMergeStatusService, featur
 
   let(:merge_request) { create(:merge_request) }
 
-  context 'when the MR is unapproved but not temporarily unapproved' do
-    before do
-      create(:any_approver_rule, merge_request: merge_request, approvals_required: 2)
-    end
-
-    it 'returns approvals_syncing status' do
-      expect(detailed_merge_status).to eq(:not_approved)
-    end
+  before do
+    create(:any_approver_rule, merge_request: merge_request, approvals_required: 2)
   end
 
-  context 'when the MR is temporarily unapproved' do
-    before do
-      merge_request.approval_state.temporarily_unapprove!
+  context 'when the MR is not approved' do
+    context 'when the MR is not temporarily unapproved' do
+      it 'returns not_approved status' do
+        expect(detailed_merge_status).to eq(:not_approved)
+      end
     end
 
-    it 'returns approvals_syncing status' do
-      expect(detailed_merge_status).to eq(:approvals_syncing)
+    context 'when the MR is temporarily unapproved' do
+      before do
+        merge_request.approval_state.temporarily_unapprove!
+      end
+
+      it 'returns approvals_syncing status' do
+        expect(detailed_merge_status).to eq(:approvals_syncing)
+      end
     end
   end
 end
