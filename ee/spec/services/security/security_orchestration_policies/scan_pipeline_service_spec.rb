@@ -166,7 +166,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
 
     describe 'metrics' do
       let(:actions) { [{ scan: 'container_scanning' }] }
-      let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
 
       specify do
         hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)

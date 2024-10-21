@@ -11,6 +11,26 @@ module Security
         gitlab_security_policies_scan_result_process_duration_seconds: {
           description: 'The amount of time to process scan result policies',
           buckets: [120, 240, 360, 480, 600, 720, 840, 960].freeze
+        },
+        gitlab_security_policies_update_configuration_duration_seconds: {
+          description: 'The amount of time to schedule sync for a policy configuration change',
+          buckets: [5, 120, 600].freeze
+        },
+        gitlab_security_policies_policy_sync_duration_seconds: {
+          description: 'The amount of time to sync policy changes for a policy configuration',
+          buckets: [1, 3, 5, 10, 20, 50].freeze
+        },
+        gitlab_security_policies_policy_deletion_duration_seconds: {
+          description: 'The amount of time to delete policy-related configuration',
+          buckets: [5, 20, 40, 80, 120, 240].freeze
+        },
+        gitlab_security_policies_policy_creation_duration_seconds: {
+          description: 'The amount of time to create policy-related configuration',
+          buckets: [1, 3, 5, 10, 20, 50].freeze
+        },
+        gitlab_security_policies_sync_opened_merge_requests_duration_seconds: {
+          description: 'The amount of time to sync opened merge requests after policy changes',
+          buckets: [5, 10, 20, 40, 80, 120, 240, 360].freeze
         }
       }.freeze
 
