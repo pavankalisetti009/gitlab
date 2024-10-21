@@ -29,7 +29,7 @@ module Security
 
     def handle_create_event(policy)
       all_projects(policy) do |project|
-        next unless policy.enabled && policy.scope_applicable?(project)
+        next unless policy.enabled
 
         ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, {})
       end
