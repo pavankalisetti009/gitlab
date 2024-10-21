@@ -81,10 +81,12 @@ module GitlabSubscriptions
     def trial_selection_intro_text
       if any_trial_eligible_namespaces?
         if Feature.enabled?(:duo_enterprise_trials, current_user)
-          s_('Trials|You can apply your Ultimate and GitLab Duo Enterprise trial to a group.')
+          s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
         else
           s_('Trials|You can apply your trial to a new group or an existing group.')
         end
+      elsif Feature.enabled?(:duo_enterprise_trials, current_user)
+        s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
       else
         s_('Trials|Create a new group to start your GitLab Ultimate trial.')
       end

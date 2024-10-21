@@ -380,7 +380,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
   RSpec::Matchers.define :render_select_namespace do
     match do |response|
       expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to include(_('Apply your combined trial to an existing group'))
+      expect(response.body).to include(_('Apply your trial to a new group'))
       expect(response.body).to include(_('Activate my trial'))
     end
   end
