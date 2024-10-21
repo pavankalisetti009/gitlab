@@ -8,8 +8,7 @@ module EE
     end
 
     def allow_protected_branches_for_group?(group)
-      ::Feature.enabled?(:group_protected_branches, group) ||
-        ::Feature.enabled?(:allow_protected_branches_for_group, group)
+      ::Feature.enabled?(:group_protected_branches, group)
     end
 
     def can_admin_group_protected_branches?(group)

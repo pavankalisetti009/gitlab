@@ -59,7 +59,7 @@ module Geo
         end
 
         event :verification_started do
-          transition [:verification_pending, :verification_started, :verification_succeeded, :verification_failed, :verification_disabled] => :verification_started
+          transition any => :verification_started
         end
 
         event :verification_succeeded do
@@ -67,15 +67,15 @@ module Geo
         end
 
         event :verification_failed do
-          transition [:verification_pending, :verification_started, :verification_succeeded, :verification_failed, :verification_disabled] => :verification_failed
+          transition any => :verification_failed
         end
 
         event :verification_disabled do
-          transition [:verification_pending, :verification_started, :verification_succeeded, :verification_failed, :verification_disabled] => :verification_disabled
+          transition any => :verification_disabled
         end
 
         event :verification_pending do
-          transition [:verification_pending, :verification_started, :verification_succeeded, :verification_failed, :verification_disabled] => :verification_pending
+          transition any => :verification_pending
         end
       end
     end

@@ -152,7 +152,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       it 'creates a config record and returns an ok Result containing the agent config' do
         expect { result }.to change { RemoteDevelopment::WorkspacesAgentConfig.count }.by(expected_configs_created)
 
-        config_instance = agent.reload.workspaces_agent_config
+        config_instance = agent.reload.unversioned_latest_workspaces_agent_config
         expect(config_instance.enabled).to eq(enabled)
         expect(config_instance.project_id).to eq(agent.project_id)
         expect(config_instance.dns_zone).to eq(expected_dns_zone)
@@ -198,7 +198,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
           it 'creates a config record with a default context of enabled as false' do
             expect { result }.to change { RemoteDevelopment::WorkspacesAgentConfig.count }
             expect(result).to be_ok_result
-            expect(agent.reload.workspaces_agent_config.enabled).to eq(false)
+            expect(agent.reload.unversioned_latest_workspaces_agent_config.enabled).to eq(false)
           end
         end
 
@@ -357,7 +357,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
         it 'does not create the record and returns error' do
           expect { result }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
-          expect(agent.reload.workspaces_agent_config).to be_nil
+          expect(agent.reload.unversioned_latest_workspaces_agent_config).to be_nil
 
           expect(result).to be_err_result do |message|
             expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)
@@ -372,7 +372,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
         it 'does not create the record and returns error' do
           expect { result }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
-          expect(agent.reload.workspaces_agent_config).to be_nil
+          expect(agent.reload.unversioned_latest_workspaces_agent_config).to be_nil
 
           expect(result).to be_err_result do |message|
             expect(message).to be_a(RemoteDevelopment::Messages::AgentConfigUpdateFailed)

@@ -28,7 +28,8 @@ module RemoteDevelopment
     validates :personal_access_token, presence: true
     # TODO: uncomment this line with below issue in 17.6
     # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
-    # validates :workspaces_agent_config_version, presence: true, if: -> { agent&.workspaces_agent_config }
+    # validates :workspaces_agent_config_version, presence: true,
+    # if: -> { agent&.unversioned_latest_workspaces_agent_config }
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
@@ -83,9 +84,9 @@ module RemoteDevelopment
 
     def workspaces_agent_config
       # If no agent or workspaces_agent_configs record exists, return nil
-      return unless agent&.workspaces_agent_config
+      return unless agent&.unversioned_latest_workspaces_agent_config
 
-      actual_workspaces_agent_configs_table_record = agent.workspaces_agent_config
+      actual_workspaces_agent_configs_table_record = agent.unversioned_latest_workspaces_agent_config
 
       # TODO: This is only temporary until we make the workspaces_agent_config_version field NOT NULL.
       #       After 17.5, we will replace this line with an exception.
@@ -160,11 +161,12 @@ module RemoteDevelopment
     def set_workspaces_agent_config_version
       # If no versions for this workspace exist yet in the `workspaces_agent_config_versions` table, then
       # the `workspace.workspaces_agent_config_version` field will be set to `0`.
-      # This indicates that the actual associated `agent.workspaces_agent_config` should be used directly.
+      # This indicates the actual associated `agent.unversioned_latest_workspaces_agent_config` should be used directly.
       # Otherwise, if a version exists in the `workspaces_agent_config_versions` table, then
       # the `workspace.workspaces_agent_config_version` field will be set to `1` or greater, which
       # indicates that the corresponding PaperTrail reified version of the model should be used.
-      self.workspaces_agent_config_version = agent.workspaces_agent_config.versions.size
+      # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+      self.workspaces_agent_config_version = agent.unversioned_latest_workspaces_agent_config.versions.size
     end
 
     def validate_max_hours_before_termination
@@ -181,7 +183,7 @@ module RemoteDevelopment
         return false
       end
 
-      if workspaces_agent_config_version > agent.workspaces_agent_config.versions.size
+      if workspaces_agent_config_version > agent.unversioned_latest_workspaces_agent_config.versions.size
         errors.add(:workspaces_agent_config_version, _('must be no greater than the number of agent config versions'))
         return false
       end
@@ -197,7 +199,7 @@ module RemoteDevelopment
     end
 
     def validate_workspaces_agent_config_present
-      return true if agent.workspaces_agent_config.present?
+      return true if agent.unversioned_latest_workspaces_agent_config.present?
 
       errors.add(:agent, _("must have an associated workspaces agent config"))
       false

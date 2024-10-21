@@ -373,17 +373,47 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe ':read_ai_analytics' do
+  describe ':read_enterprise_ai_analytics' do
     context 'when on SAAS', :saas do
       let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
 
-      it_behaves_like 'permission to :read_ai_analytics'
+      it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
     end
 
     context 'when on self-managed' do
       let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
 
-      it_behaves_like 'permission to :read_ai_analytics'
+      it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
+    end
+  end
+
+  describe ':read_pro_ai_analytics' do
+    context 'when on SAAS', :saas do
+      context 'with pro subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+
+      context 'with enterprise subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'with pro subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :self_managed) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+
+      context 'with enterprise subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
     end
   end
 

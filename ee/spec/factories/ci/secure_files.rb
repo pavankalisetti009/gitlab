@@ -13,14 +13,13 @@ FactoryBot.modify do
       verification_failure { 'Could not calculate the checksum' }
       verification_state { ::Ci::SecureFile.verification_state_value(:verification_failed) }
 
+      # Geo::VerifiableReplicator#after_verifiable_update tries to verify the replicable async and
+      # marks it as verification pending when the model record is created/updated.
       #
-      # Geo::VerifiableReplicator#after_verifiable_update tries to verify
-      # the replicable async and marks it as verification pending when the
-      # model record is created/updated.
-      #
-      after(:create) do |instance, _|
-        instance.verification_failure = 'Could not calculate the checksum'
-        instance.verification_state = ::Ci::SecureFile.verification_state_value(:verification_started)
+      # Tip: You must set current node to primary, or else you can get a PG::ForeignKeyViolation
+      # because save_verification_details is returning early.
+      after(:create) do |instance, evaluator|
+        instance.verification_failure = evaluator.verification_failure
         instance.verification_failed!
       end
     end

@@ -89,12 +89,11 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
     end
 
     # Flags `group_protected_branches` and `allow_protected_branches_for_group` represent the same feature.
-    # Group protected branches are enabled when either are enabled so test for both here.
+    # Group protected branches are enabled when `group_protected_branches` is enabled.
     # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/116779 for more detail.
-    context 'when feature flags `group_protected_branches` and `allow_protected_branches_for_group` are disabled' do
+    context 'when feature flags `group_protected_branches` is disabled' do
       before do
         stub_feature_flags(group_protected_branches: false)
-        stub_feature_flags(allow_protected_branches_for_group: false)
       end
 
       it 'returns a collection of all protected branches belonging to group projects' do
@@ -111,16 +110,7 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
       it_behaves_like 'return protected branches'
     end
 
-    context 'when only feature flag `allow_protected_branches_for_group` is disabled',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470291' do
-      before do
-        stub_feature_flags(allow_protected_branches_for_group: false)
-      end
-
-      it_behaves_like 'return protected branches'
-    end
-
-    context 'when feature flags `group_protected_branches` and `allow_protected_branches_for_group` are enabled',
+    context 'when feature flags `group_protected_branches` is enabled',
       quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470293' do
       it_behaves_like 'return protected branches'
 

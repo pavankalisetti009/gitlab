@@ -52,10 +52,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent)
   end
 
-  let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
-  let(:max_resources_per_workspace) { agent.workspaces_agent_config.max_resources_per_workspace }
+  let(:egress_ip_rules) { agent.unversioned_latest_workspaces_agent_config.network_policy_egress }
+  let(:max_resources_per_workspace) { agent.unversioned_latest_workspaces_agent_config.max_resources_per_workspace }
   let(:default_resources_per_workspace_container) do
-    agent.workspaces_agent_config.default_resources_per_workspace_container
+    agent.unversioned_latest_workspaces_agent_config.default_resources_per_workspace_container
   end
 
   let(:full_reconciliation_interval_seconds) { 3600 }

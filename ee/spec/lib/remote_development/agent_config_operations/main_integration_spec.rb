@@ -47,7 +47,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
 
         expect(response).to eq({
           status: :success,
-          payload: { workspaces_agent_config: agent.reload.workspaces_agent_config }
+          payload: { workspaces_agent_config: agent.reload.unversioned_latest_workspaces_agent_config }
         })
       end
     end
@@ -64,7 +64,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
           reason: :bad_request
         })
 
-        config_instance = agent.reload.workspaces_agent_config
+        config_instance = agent.reload.unversioned_latest_workspaces_agent_config
         expect(config_instance).to be_nil
       end
     end
@@ -77,7 +77,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       let(:config) { {} }
 
       it 'does not create a config record' do
-        expect { response }.to not_change { agent.reload.workspaces_agent_config.attributes }
+        expect { response }.to not_change { agent.reload.unversioned_latest_workspaces_agent_config.attributes }
 
         expect(response).to eq({
           status: :success,
@@ -90,10 +90,10 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       it 'updates the config record' do
         expect(response).to eq({
           status: :success,
-          payload: { workspaces_agent_config: agent.reload.workspaces_agent_config }
+          payload: { workspaces_agent_config: agent.reload.unversioned_latest_workspaces_agent_config }
         })
 
-        expect(agent.reload.workspaces_agent_config.dns_zone).to eq(dns_zone)
+        expect(agent.reload.unversioned_latest_workspaces_agent_config.dns_zone).to eq(dns_zone)
       end
     end
 
@@ -101,7 +101,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       let(:dns_zone) { "invalid dns zone" }
 
       it 'does not update the record and returns error' do
-        expect { response }.to not_change { agent.reload.workspaces_agent_config.attributes }
+        expect { response }.to not_change { agent.reload.unversioned_latest_workspaces_agent_config.attributes }
 
         expect(response).to eq({
           status: :error,

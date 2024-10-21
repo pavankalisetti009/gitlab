@@ -67,7 +67,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       # this field should be auto-fill when selecting agent
       expect(page).to have_field(
         'Workspace automatically terminates after',
-        with: agent.workspaces_agent_config.default_max_hours_before_termination
+        with: agent.unversioned_latest_workspaces_agent_config.default_max_hours_before_termination
       )
       fill_in 'Workspace automatically terminates after', with: '20'
       click_button 'Add variable'
@@ -97,7 +97,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply(
           network_policy_enabled: true,
-          dns_zone: agent.workspaces_agent_config.dns_zone,
+          dns_zone: agent.unversioned_latest_workspaces_agent_config.dns_zone,
           namespace_path: group.path,
           project_name: project.path
         )

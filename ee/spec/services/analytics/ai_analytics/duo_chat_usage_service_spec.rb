@@ -57,7 +57,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
             namespace: container,
             from: from,
             to: to,
-            fields: %i[duo_chat_contributors_count]).execute
+            fields: %i[duo_chat_contributors_count foo]).execute
 
           expect(response.payload).to match(duo_chat_contributors_count: 0)
         end

@@ -140,7 +140,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
       context 'with versioned workspaces_agent_configs behavior' do
         before do
-          agent.workspaces_agent_config.touch
+          agent.unversioned_latest_workspaces_agent_config.touch
         end
 
         let(:expected_workspaces_agent_config_version) { 2 }
@@ -194,7 +194,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
       it 'does not create the workspace and returns error' do
         # sanity check on fixture
-        expect(agent.workspaces_agent_config).to be_nil
+        expect(agent.unversioned_latest_workspaces_agent_config).to be_nil
 
         expect { response }.not_to change { RemoteDevelopment::Workspace.count }
 

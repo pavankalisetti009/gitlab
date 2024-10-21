@@ -116,7 +116,7 @@ RSpec.shared_examples 'can search by title for miscellaneous cases' do |type|
   def create_records!(type)
     case type
     when 'epics'
-      create_list(:epic, records_count, group: searched_group)
+      create_list(:work_item, records_count, :group_level, :epic_with_legacy_epic, namespace: searched_group)
     when 'issues'
       create_list(:issue, records_count, project: searched_project)
     when 'merge_requests'

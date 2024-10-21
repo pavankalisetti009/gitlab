@@ -59,7 +59,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             namespace: container,
             from: from,
             to: to,
-            fields: %i[code_contributors_count]).execute
+            fields: %i[code_contributors_count foo]).execute
 
           expect(response.payload).to match(code_contributors_count: 0)
         end

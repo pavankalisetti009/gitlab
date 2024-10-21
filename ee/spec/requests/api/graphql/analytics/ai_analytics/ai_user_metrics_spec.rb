@@ -44,7 +44,7 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
     before do
       allow(Ability).to receive(:allowed?).and_call_original
       allow(Ability).to receive(:allowed?)
-                          .with(current_user, :read_ai_analytics, anything)
+                          .with(current_user, :read_enterprise_ai_analytics, anything)
                           .and_return(true)
 
       allow_next_instance_of(Analytics::AiAnalytics::AiUserMetricsService, current_user,

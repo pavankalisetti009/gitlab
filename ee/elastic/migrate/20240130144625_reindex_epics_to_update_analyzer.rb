@@ -9,3 +9,5 @@ class ReindexEpicsToUpdateAnalyzer < Elastic::Migration
     true
   end
 end
+
+ReindexEpicsToUpdateAnalyzer.prepend ::Elastic::MigrationObsolete
