@@ -19264,6 +19264,7 @@ Check user's permission for the car.
 | <a id="cicatalogresourcestarcount"></a>`starCount` | [`Int!`](#int) | Number of times the catalog resource has been starred. |
 | <a id="cicatalogresourcestarrerspath"></a>`starrersPath` | [`String`](#string) | Relative path to the starrers page for the catalog resource project. |
 | <a id="cicatalogresourceverificationlevel"></a>`verificationLevel` | [`CiCatalogResourceVerificationLevel`](#cicatalogresourceverificationlevel) | Verification level of the catalog resource. |
+| <a id="cicatalogresourcevisibilitylevel"></a>`visibilityLevel` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Visibility level of the catalog resource. |
 | <a id="cicatalogresourcewebpath"></a>`webPath` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 16.1. **Status**: Experiment. Web path of the catalog resource. |
 
 #### Fields with arguments
