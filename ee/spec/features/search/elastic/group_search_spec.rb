@@ -65,7 +65,7 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
     end
   end
 
-  context 'when searching for issues and epics' do
+  context 'when we use work_items index for searching issues and epics' do
     let_it_be(:issue) { create(:work_item, project: project, title: 'chosen issue title') }
     let_it_be(:epic) do
       create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
@@ -86,18 +86,18 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
       choose_group(group)
     end
 
-    context 'when we use work_items index for search' do
-      it 'finds issues and epics' do
-        # issues
-        submit_search('chosen')
-        select_search_scope('Issues')
-        expect(page).to have_content('chosen issue title')
+    it 'finds epics' do
+      # issues
+      submit_search('chosen')
+      select_search_scope('Epics')
+      expect(page).to have_content('chosen epic title')
+    end
 
-        # epics
-        submit_search('chosen')
-        select_search_scope('Epics')
-        expect(page).to have_content('chosen epic title')
-      end
+    it 'finds issues' do
+      # issues
+      submit_search('chosen')
+      select_search_scope('Issues')
+      expect(page).to have_content('chosen issue title')
     end
   end
 end
