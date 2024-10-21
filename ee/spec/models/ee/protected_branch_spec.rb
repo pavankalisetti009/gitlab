@@ -255,7 +255,6 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       with_them do
         before do
           stub_feature_flags(group_protected_branches: feature_available)
-          stub_feature_flags(allow_protected_branches_for_group: feature_available)
 
           params = object.is_a?(Project) ? { project: object } : { project: nil, group: object }
 
@@ -277,7 +276,6 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       with_them do
         before do
           stub_feature_flags(group_protected_branches: feature_available)
-          stub_feature_flags(allow_protected_branches_for_group: feature_available)
 
           params = object.is_a?(Project) ? { project: object } : { project: nil, group: object }
 

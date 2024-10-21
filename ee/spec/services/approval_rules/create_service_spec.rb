@@ -393,7 +393,6 @@ RSpec.describe ApprovalRules::CreateService, feature_category: :source_code_mana
         context 'when feature `group_protected_branches` enabled' do
           before do
             stub_feature_flags(group_protected_branches: true)
-            stub_feature_flags(allow_protected_branches_for_group: true)
           end
 
           context 'when the root_namespace of project is not a group' do
