@@ -211,30 +211,6 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
           end
         end
       end
-
-      context "when we have ff disabled" do
-        let!(:epic) { create(:epic, group: group, title: 'chosen epic title') }
-
-        before do
-          stub_feature_flags(search_epics_uses_work_items_index: false)
-        end
-
-        where(:group_level, :membership, :admin_mode, :expected_count) do
-          permission_table_for_epics_access
-        end
-
-        with_them do
-          it 'respects visibility' do
-            enable_admin_mode!(user_in_group) if admin_mode
-
-            group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
-            ensure_elasticsearch_index!
-            expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
-              described_class.new(user, search: search).execute
-            end
-          end
-        end
-      end
     end
 
     context 'on wiki', :sidekiq_inline do

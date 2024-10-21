@@ -894,6 +894,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it 'shows the expected filter' do
         expected_filter = [
           bool: { should: [
+            { term: { confidential: { value: false, _name: 'filters:non_confidential:groups' } } },
             {
               bool: {
                 must: [
@@ -902,8 +903,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                              _name: "filters:confidential:groups:can_read_confidential_work_items" } }
                 ]
               }
-            },
-            { term: { confidential: { value: false, _name: "filters:non_confidential:groups" } } }
+            }
           ] }
         ]
 

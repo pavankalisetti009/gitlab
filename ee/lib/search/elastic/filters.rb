@@ -226,22 +226,23 @@ module Search
             access_level: ::Gitlab::Access::REPORTER, user: options[:current_user], group_ids: options[:group_ids]
           )
 
-          return query_hash if confidential_group_ids.empty?
-
           context.name(:filters) do
+            should = [{ term: { confidential: { value: false, _name: context.name(:non_confidential, :groups) } } }]
+
+            unless confidential_group_ids.empty?
+              should << {
+                bool: {
+                  must: [
+                    { term: { confidential: { value: true, _name: context.name(:confidential, :groups) } } },
+                    { terms: { namespace_id: confidential_group_ids,
+                               _name: context.name(:confidential, :groups, "can_read_confidential_work_items") } }
+                  ]
+                }
+              }
+            end
+
             add_filter(query_hash, :query, :bool, :filter) do
-              { bool: { should: [
-                {
-                  bool: {
-                    must: [
-                      { term: { confidential: { value: true, _name: context.name(:confidential, :groups) } } },
-                      { terms: { namespace_id: confidential_group_ids,
-                                 _name: context.name(:confidential, :groups, "can_read_confidential_work_items") } }
-                    ]
-                  }
-                },
-                { term: { confidential: { value: false, _name: context.name(:non_confidential, :groups) } } }
-              ] } }
+              { bool: { should: should } }
             end
           end
         end

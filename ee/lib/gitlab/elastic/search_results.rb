@@ -421,8 +421,7 @@ module Gitlab
       end
 
       def work_item_index_available_for_searching_epics?
-        ::Feature.enabled?(:search_epics_uses_work_items_index, current_user) &&
-          ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
+        ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
 
       def work_item_index_available_for_searching_issues?
