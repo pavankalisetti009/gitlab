@@ -7,6 +7,8 @@ module Search
       UNIT_PRIMITIVE = 'semantic_search_issue'
       KNN_K = 25
       KNN_NUM_CANDIDATES = 100
+      DEFAULT_HYBRID_SIMILARITY = 0.6
+      DEFAULT_HYBRID_BOOST = 5
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
@@ -110,11 +112,12 @@ module Search
 
           knn_query = {
             knn: {
-              field: 'embedding',
+              field: 'embedding_0',
               query_vector: embedding,
+              boost: options[:hybrid_boost] || DEFAULT_HYBRID_BOOST,
               k: KNN_K,
               num_candidates: KNN_NUM_CANDIDATES,
-              similarity: options[:hybrid_similarity],
+              similarity: options[:hybrid_similarity] || DEFAULT_HYBRID_SIMILARITY,
               filter: filters
             }
           }

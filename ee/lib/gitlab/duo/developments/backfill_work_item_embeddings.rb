@@ -3,15 +3,15 @@
 module Gitlab
   module Duo
     module Developments
-      class BackfillIssueEmbeddings
+      class BackfillWorkItemEmbeddings
         def self.execute(project_id:)
-          issues_to_backfill = Project.find(project_id).issues
+          work_items_to_backfill = Project.find(project_id).work_items
 
-          puts "Adding #{issues_to_backfill.count} issue embeddings to the queue"
+          puts "Adding #{work_items_to_backfill.count} work item embeddings to the queue"
 
-          issues_to_backfill.each_batch do |batch|
-            batch.each do |issue|
-              ::Search::Elastic::ProcessEmbeddingBookkeepingService.track_embedding!(issue)
+          work_items_to_backfill.each_batch do |batch|
+            batch.each do |work_item|
+              ::Search::Elastic::ProcessEmbeddingBookkeepingService.track_embedding!(work_item)
             end
           end
 
@@ -26,7 +26,8 @@ module Gitlab
             end
           end
 
-          puts "Finished processing the queue.\nAll issues for project (#{project_id}) now have embeddings."
+          puts "Finished processing the queue.
+All work items for project (#{project_id}) now have embeddings."
         end
       end
     end

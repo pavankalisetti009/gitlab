@@ -230,7 +230,8 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
     let(:query_hash) { { query: { bool: { filter: filter } } } }
     let(:filter) { { foo: 'bar' } }
     let(:hybrid_similarity) { 0.5 }
-    let(:options) { { current_user: user, hybrid_similarity: hybrid_similarity } }
+    let(:hybrid_boost) { 0.9 }
+    let(:options) { { current_user: user, hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost } }
     let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
     let(:mock_embedding) { [1, 2, 3] }
 
@@ -245,7 +246,20 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       expect(by_knn).to have_key(:knn)
       expect(by_knn[:knn][:query_vector]).to eq(mock_embedding)
       expect(by_knn[:knn][:similarity]).to eq(hybrid_similarity)
+      expect(by_knn[:knn][:boost]).to eq(hybrid_boost)
       expect(by_knn[:knn][:filter]).to eq(filter)
+    end
+
+    context 'if we do not pass hybrid_similarity and hybrid_boost' do
+      let(:options) { { current_user: user } }
+
+      it 'uses default value' do
+        expect(by_knn).to have_key(:knn)
+        expect(by_knn[:knn][:query_vector]).to eq(mock_embedding)
+        expect(by_knn[:knn][:similarity]).to eq(described_class::DEFAULT_HYBRID_SIMILARITY)
+        expect(by_knn[:knn][:boost]).to eq(described_class::DEFAULT_HYBRID_BOOST)
+        expect(by_knn[:knn][:filter]).to eq(filter)
+      end
     end
 
     context 'if the embedding endpoint is throttled' do

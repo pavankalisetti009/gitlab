@@ -9,18 +9,12 @@ module Search
 
       def build
         query_hash = build_query_hash(query: query, options: options)
-        query_hash = if options[:group_level_authorization]
-                       ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash, options: options)
-                     else
-                       ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
-                     end
+        query_hash = get_authorization_filter(query_hash: query_hash, options: options)
+        query_hash = get_confidentiality_filter(query_hash: query_hash, options: options)
 
-        query_hash = if options[:group_level_confidentiality]
-                       ::Search::Elastic::Filters.by_group_level_confidentiality(query_hash: query_hash,
-                         options: options)
-                     else
-                       ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash, options: options)
-                     end
+        if hybrid_work_item_search?
+          query_hash = ::Search::Elastic::Queries.by_knn(query_hash: query_hash, query: query, options: options)
+        end
 
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_not_hidden(query_hash: query_hash, options: options)
@@ -38,6 +32,43 @@ module Search
       end
 
       private
+
+      def get_authorization_filter(query_hash:, options:)
+        if options[:group_level_authorization]
+          return ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash,
+            options: options)
+        end
+
+        ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash,
+          options: options)
+      end
+
+      def get_confidentiality_filter(query_hash:, options:)
+        if options[:group_level_confidentiality]
+          return ::Search::Elastic::Filters.by_group_level_confidentiality(query_hash: query_hash,
+            options: options)
+        end
+
+        ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash,
+          options: options)
+      end
+
+      # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
+      def hybrid_work_item_search?
+        return false unless Feature.enabled?(:search_work_items_hybrid_search)
+        return false unless Feature.enabled?(:ai_global_switch, type: :ops)
+        return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
+        return false unless ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items)
+
+        project = Project.find_by_id(options[:project_ids])
+        user = options[:current_user]
+
+        return false unless project && user
+
+        Feature.enabled?(:elasticsearch_work_item_embedding, project, type: :ops) &&
+          user.any_group_with_ai_available?
+      end
+      # rubocop: enable Gitlab/FeatureFlagWithoutActor
 
       override :extra_options
       def extra_options
