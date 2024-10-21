@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::MergeRequestAiEntity, feature_category: :ai_abstraction_layer do # rubocop:disable RSpec/FilePath -- path is correct
+RSpec.describe EE::MergeRequestAiEntity, feature_category: :ai_abstraction_layer do # rubocop:disable RSpec/SpecFilePathFormat -- path is correct
   let_it_be(:user) { create(:user) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need create it
   let_it_be(:merge_request) { create(:merge_request) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need create it
   let(:notes_limit) { 1000 }

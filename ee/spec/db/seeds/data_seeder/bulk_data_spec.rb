@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative '../../../../db/seeds/data_seeder/bulk_data'
 
-RSpec.describe DataSeeder, feature_category: :scalability do # rubocop:disable RSpec/FilePath -- This is the current structure for this file
+RSpec.describe DataSeeder, feature_category: :scalability do # rubocop:disable RSpec/SpecFilePathFormat -- This is the current structure for this file
   it 'does not create records from the excluded factories', :aggregate_failures do
     # Creating them all takes time and this spec only cares about excluding some factories from the process,
     # so not calling original here
