@@ -115,23 +115,6 @@ RSpec.describe "Converts a work item to a new type", feature_category: :team_pla
           'Work item type cannot be changed to objective when the work item is a legacy epic synced work item'
         )
       end
-
-      context 'when lock_work_item_epics feature flag is enabled' do
-        before do
-          stub_feature_flags(lock_work_item_epics: true)
-        end
-
-        it 'does not convert the work item type', :aggregate_failures do
-          expect do
-            post_graphql_mutation(mutation, current_user: current_user)
-          end.not_to change { work_item.reload.work_item_type }
-
-          expect_graphql_errors_to_include(
-            "The resource that you are attempting to access does not exist or " \
-              "you don't have permission to perform this action"
-          )
-        end
-      end
     end
   end
 end

@@ -108,21 +108,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           'confidential' => true
         )
       end
-
-      context 'when lock_work_item_epics feature flag is enabled' do
-        before do
-          stub_feature_flags(lock_work_item_epics: true)
-        end
-
-        it 'does not change confidentiality' do
-          work_item.reload
-
-          expect do
-            post_graphql_mutation(mutation, current_user: current_user)
-            work_item.reload
-          end.to not_change(work_item, :confidential)
-        end
-      end
     end
   end
 
@@ -528,16 +513,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           let_it_be(:work_item) { synced_epic.work_item }
 
           it_behaves_like 'updates the color widget'
-
-          context 'when lock_work_item_epics feature flag is enabled' do
-            before do
-              stub_feature_flags(lock_work_item_epics: true)
-            end
-
-            it_behaves_like 'work item is not updated' do
-              let(:work_item_change) { -> { work_item_color } }
-            end
-          end
         end
       end
 
@@ -656,16 +631,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             let_it_be(:work_item) { synced_epic.work_item }
 
             it_behaves_like "updates the work item's start and due date"
-
-            context 'when lock_work_item_epics feature flag is enabled' do
-              before do
-                stub_feature_flags(lock_work_item_epics: true)
-              end
-
-              it_behaves_like 'work item is not updated' do
-                let(:work_item_change) { -> { work_item.dates_source&.start_date } }
-              end
-            end
           end
         end
 
@@ -992,16 +957,6 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
                 'type' => 'HEALTH_STATUS'
               }
             )
-          end
-
-          context 'when lock_work_item_epics feature flag is enabled' do
-            before do
-              stub_feature_flags(lock_work_item_epics: true)
-            end
-
-            it_behaves_like 'work item is not updated' do
-              let(:work_item_change) { -> { work_item.health_status } }
-            end
           end
         end
       end

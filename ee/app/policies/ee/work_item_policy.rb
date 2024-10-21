@@ -17,10 +17,6 @@ module EE
         @subject.namespace.licensed_feature_available?(:related_epics)
       end
 
-      rule { ~can_edit_synced_epic_work_item }.policy do
-        prevent(*synced_work_item_disallowed_abilities)
-      end
-
       rule { is_epic & ~related_epics_available }.prevent :admin_work_item_link
     end
   end

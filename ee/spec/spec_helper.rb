@@ -33,10 +33,6 @@ RSpec.configure do |config|
     if example.metadata.fetch(:stub_feature_flags, true)
       # Specs should not require cut_off_date to be expired by default for cloud connector features.
       stub_feature_flags(cloud_connector_cut_off_date_expired: false)
-
-      # We do not want to lock work item epics by default in tests as it should be the default experience.
-      # This feature flag is only used to prevent changes through work items in case of a problem in production.
-      stub_feature_flags(lock_work_item_epics: false)
     end
   end
 

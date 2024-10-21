@@ -104,17 +104,6 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
         stub_licensed_features(epics: true, related_epics: true)
       end
 
-      context 'when lock_work_item_epics is enabled' do
-        before do
-          stub_feature_flags(lock_work_item_epics: true)
-        end
-
-        it 'does not create the links' do
-          expect { link_items }.to not_change { link_class.count }
-            .and not_change { Epic::RelatedEpicLink.count }
-        end
-      end
-
       context 'when synced_work_item: true' do
         let(:synced_work_item) { true }
 

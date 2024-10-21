@@ -41,15 +41,6 @@ module EE
         (is_project_member? && can?(:read_issue)) || (support_bot? && service_desk_enabled?)
       end
 
-      condition(:can_edit_synced_epic_work_item, scope: :subject) do
-        next true unless @subject.work_item_type&.epic?
-        next true unless @subject.sync_object.present?
-
-        scope = group_issue? ? subject_container : subject_container.group
-
-        ::Feature.disabled?(:lock_work_item_epics, scope.root_ancestor)
-      end
-
       rule { can_be_promoted_to_epic }.policy do
         enable :promote_to_epic
       end
@@ -60,12 +51,6 @@ module EE
 
       rule { relations_for_non_members_available & ~member_or_support_bot }.policy do
         prevent :admin_issue_relation
-      end
-
-      # IMPORTANT: keep the prevent rules as last rules defined in the policy, as these are based on
-      # all abilities defined up to this point.
-      rule { ~can_edit_synced_epic_work_item }.policy do
-        prevent(*synced_work_item_disallowed_abilities)
       end
 
       # This rule is already defined in FOSS IssuePolicy, but EE::IssuePolicy may be adding EE specific abilities
