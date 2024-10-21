@@ -1,6 +1,13 @@
 import { GlProgressBar } from '@gitlab/ui';
+import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import axios from '~/lib/utils/axios_utils';
+import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
+import waitForPromises from 'helpers/wait_for_promises';
+
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('TrialWidget component', () => {
   let wrapper;
@@ -11,18 +18,21 @@ describe('TrialWidget component', () => {
   const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
+  const provide = {
+    trialType: 'duo_enterprise',
+    daysRemaining: 40,
+    percentageComplete: 33,
+    trialDiscoverPagePath: 'help_page_url',
+    groupId: '1',
+    featureId: '2',
+    dismissEndpoint: '/dismiss',
+    purchaseNowUrl: '/purchase',
+  };
 
   const createComponent = (providers = {}) => {
     wrapper = shallowMountExtended(TrialWidget, {
       provide: {
-        trialType: 'duo_enterprise',
-        daysRemaining: 40,
-        percentageComplete: 33,
-        trialDiscoverPagePath: 'help_page_url',
-        groupId: '1',
-        featureId: '2',
-        dismissEndpoint: '/dismiss',
-        purchaseNowUrl: '/purchase',
+        ...provide,
         ...providers,
       },
     });
@@ -42,21 +52,6 @@ describe('TrialWidget component', () => {
     it('does not render the dismiss button during active trial', () => {
       createComponent({ percentageComplete: 50 });
       expect(findDismissButton().exists()).toBe(false);
-    });
-
-    describe('dismissible class', () => {
-      it('adds the class when all required props are present', () => {
-        createComponent();
-        expect(findRootElement().classes()).toContain('js-expired-trial-widget');
-      });
-
-      it.each(['groupId', 'featureId', 'dismissEndpoint'])(
-        'does not add the class when %s is missing',
-        (prop) => {
-          createComponent({ [prop]: null });
-          expect(findRootElement().classes()).not.toContain('js-expired-trial-widget');
-        },
-      );
     });
 
     describe('when trial is active', () => {
@@ -95,6 +90,41 @@ describe('TrialWidget component', () => {
 
       it('renders the dismiss button', () => {
         expect(findDismissButton().exists()).toBe(true);
+      });
+
+      describe('dismissal', () => {
+        let mockAxios;
+
+        beforeEach(() => {
+          mockAxios = new MockAdapter(axios);
+        });
+
+        afterEach(() => {
+          mockAxios.restore();
+        });
+
+        it('should close the widget when dismiss is clicked', async () => {
+          mockAxios.onPost(provide.dismissEndpoint).replyOnce(HTTP_STATUS_OK);
+          expect(findRootElement().exists()).toBe(true);
+          findDismissButton().vm.$emit('click');
+
+          await waitForPromises();
+          expect(findRootElement().exists()).toBe(false);
+        });
+
+        it('should close the widget and send sentry the exception on backend persistence failure', async () => {
+          mockAxios
+            .onPost(provide.dismissEndpoint)
+            .replyOnce(HTTP_STATUS_BAD_REQUEST, { message: 'bad_request' });
+          expect(findRootElement().exists()).toBe(true);
+          findDismissButton().vm.$emit('click');
+
+          await waitForPromises();
+          expect(findRootElement().exists()).toBe(false);
+          expect(Sentry.captureException).toHaveBeenCalledWith(
+            new Error('Request failed with status code 400'),
+          );
+        });
       });
     });
   });
