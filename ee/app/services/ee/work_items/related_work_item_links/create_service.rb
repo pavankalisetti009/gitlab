@@ -21,7 +21,9 @@ module EE
           result = if sync_related_epic_link?
                      ApplicationRecord.transaction do
                        response = super
-                       raise ::WorkItems::SyncAsEpic::SyncAsEpicError, response[:message] if response[:status] == :error
+                       if response[:status] == :error
+                         raise ::WorkItems::SyncAsEpic::SyncAsEpicError.new(response[:message], response[:http_status])
+                       end
 
                        create_synced_related_epic_link!
                        response
@@ -40,7 +42,7 @@ module EE
         rescue ::WorkItems::SyncAsEpic::SyncAsEpicError => error
           ::Gitlab::ErrorTracking.track_exception(error, work_item_id: issuable.id)
 
-          error(error.message, 422)
+          error(error.message, error.http_status || 422)
         end
 
         private

@@ -4260,7 +4260,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it { is_expected.to eq(false) }
     end
 
-    context 'when disalbed for root ancestor' do
+    context 'when disabled for root ancestor' do
       before do
         stub_feature_flags(work_item_epics_ssot: false)
       end

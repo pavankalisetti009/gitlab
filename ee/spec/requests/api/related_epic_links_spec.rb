@@ -337,6 +337,10 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
       end
 
       context 'when user can access target epic group' do
+        before do
+          target_group.add_guest(user)
+        end
+
         it_behaves_like 'successful response', :created
         it_behaves_like 'endpoint with features check'
 

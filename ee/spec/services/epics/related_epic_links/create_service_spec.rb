@@ -36,7 +36,7 @@ RSpec.describe Epics::RelatedEpicLinks::CreateService, feature_category: :portfo
     context 'with permission checks' do
       let_it_be(:other_user) { create(:user) }
 
-      let(:error_msg) { "Couldn't link epics. You must have at least the Guest role in the epic's group." }
+      let(:error_msg) { "Couldn't link epics. You must have at least the Guest role in both epic's groups." }
       let(:params) { { issuable_references: [issuable3.to_reference(full: true)] } }
 
       subject { described_class.new(issuable, current_user, params).execute }

@@ -39,7 +39,7 @@ module Groups
       end
 
       def create_service
-        ::Epics::RelatedEpicLinks::CreateService.new(epic, current_user, create_params)
+        ::WorkItems::LegacyEpics::RelatedEpicLinks::CreateService.new(epic, current_user, create_params)
       end
 
       def create_params

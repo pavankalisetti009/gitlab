@@ -126,8 +126,8 @@ RSpec.describe Groups::Epics::RelatedEpicLinksController, feature_category: :por
         expect(json_response).to eq('message' => nil, 'issuables' => list_service_response.as_json)
       end
 
-      it 'delegates the creation of the related epic link to Epics::RelatedEpicLinks::CreateService' do
-        expect_next_instance_of(Epics::RelatedEpicLinks::CreateService) do |service|
+      it 'delegates the creation of the related epic link to WorkItems::LegacyEpics::RelatedEpicLinks::CreateService' do
+        expect_next_instance_of(::WorkItems::LegacyEpics::RelatedEpicLinks::CreateService) do |service|
           expect(service).to receive(:execute).once.and_call_original
         end
 

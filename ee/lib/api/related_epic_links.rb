@@ -149,7 +149,7 @@ module API
 
         create_params = { target_issuable: target_epic, link_type: declared_params[:link_type] }
 
-        result = ::Epics::RelatedEpicLinks::CreateService
+        result = ::WorkItems::LegacyEpics::RelatedEpicLinks::CreateService
                    .new(source_epic, current_user, create_params)
                    .execute
 
