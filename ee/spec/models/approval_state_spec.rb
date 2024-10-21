@@ -545,6 +545,13 @@ RSpec.describe ApprovalState do
 
         expect(subject.approvals_required).to eq(13)
       end
+
+      it "correctly sums any approver and other rules" do
+        create_rule(approvals_required: 3, rule_type: :any_approver)
+        create_rule(approvals_required: 10)
+
+        expect(subject.approvals_required).to eq(10)
+      end
     end
 
     describe '#approvers' do

@@ -74,6 +74,9 @@ describe('The Pipeline Tabs', () => {
       stubs: {
         GlTab,
       },
+      propsData: {
+        sbomReportsErrors: [],
+      },
     });
     const tabs = wrapper.findAllComponents(GlTab);
 
@@ -90,7 +93,11 @@ describe('The Pipeline Tabs', () => {
       ${'Failed Jobs'} | ${findFailedJobsTab}
       ${'Tests'}       | ${findTestsTab}
     `('shows $tabName tab with its associated component', ({ tabComponent }) => {
-      createComponent();
+      createComponent({
+        propsData: {
+          sbomReportsErrors: [],
+        },
+      });
 
       expect(tabComponent().exists()).toBe(true);
     });
@@ -99,6 +106,9 @@ describe('The Pipeline Tabs', () => {
       beforeEach(() => {
         createComponent({
           provide: { failedJobsCount: 0 },
+          propsData: {
+            sbomReportsErrors: [],
+          },
         });
       });
 
@@ -121,6 +131,9 @@ describe('The Pipeline Tabs', () => {
         ({ tabComponent, provideKey, isVisible }) => {
           createComponent({
             provide: { [provideKey]: isVisible },
+            propsData: {
+              sbomReportsErrors: [],
+            },
           });
           expect(tabComponent().exists()).toBe(isVisible);
         },
@@ -143,6 +156,9 @@ describe('The Pipeline Tabs', () => {
             canGenerateCodequalityReports: canGenerate,
             codequalityReportDownloadPath,
           },
+          propsData: {
+            sbomReportsErrors: [],
+          },
         });
         expect(findCodeQualityTab().exists()).toBe(isVisible);
       },
@@ -158,6 +174,9 @@ describe('The Pipeline Tabs', () => {
           codequalityReportDownloadPath: '/dsda',
         },
         stubs: { GlTab, CodequalityReportApp },
+        propsData: {
+          sbomReportsErrors: [],
+        },
       });
     });
 
@@ -182,7 +201,12 @@ describe('The Pipeline Tabs', () => {
 
   describe('security', () => {
     beforeEach(() => {
-      createComponent({ provide: { exposeSecurityDashboard: true } });
+      createComponent({
+        provide: { exposeSecurityDashboard: true },
+        propsData: {
+          sbomReportsErrors: [],
+        },
+      });
     });
 
     it('tracks "users_visiting_pipeline_security" metric when tab is selected', () => {
@@ -205,6 +229,9 @@ describe('The Pipeline Tabs', () => {
       createComponent({
         provide: { exposeLicenseScanningData: true },
         stubs: { GlTab },
+        propsData: {
+          sbomReportsErrors: [],
+        },
       });
     });
 
@@ -234,6 +261,9 @@ describe('The Pipeline Tabs', () => {
         createComponent({
           provide: { exposeLicenseScanningData: true, licenseScanCount: undefined },
           stubs: { GlTab },
+          propsData: {
+            sbomReportsErrors: [],
+          },
         });
       });
 
