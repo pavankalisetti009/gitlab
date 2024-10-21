@@ -38,6 +38,7 @@ RSpec.describe RemoteDevelopment::LabelsValidator, feature_category: :workspaces
     { "invalid.dns./valid-name" => "example" }             | false | { labels: ["key: invalid.dns./valid-name must have prefix component with 253 characters or less, and have a valid DNS subdomain as a prefix"] }
     { "example" => ("a" * 64) }                            | false | { labels: ["value: #{'a' * 64} must be 63 characters or less, and start/end with an alphanumeric character"] }
     {}                                                     | true  | {}
+    { "example" => "" }                                    | true  | {}
     { "example" => "valid" }                               | true  | {}
     { "1example" => "valid" }                              | true  | {}
     { "example1" => "valid" }                              | true  | {}

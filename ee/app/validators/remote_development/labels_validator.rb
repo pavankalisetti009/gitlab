@@ -111,6 +111,7 @@ module RemoteDevelopment
     end
 
     def valid_value?(value)
+      return true if value.empty?
       return false if value.length > MAX_VALUE_LENGTH
       return false unless alphanumeric?(value[0]) && alphanumeric?(value[-1])
 
