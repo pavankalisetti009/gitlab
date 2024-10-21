@@ -3,94 +3,126 @@
 require 'spec_helper'
 
 RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_search do
-  subject { described_class.new(Project) }
+  include AdminModeHelper
 
-  let(:query) { 'blob' }
-  let(:options) { {} }
-  let(:elastic_search) { subject.elastic_search(query, options: options) }
-  let(:request) { Elasticsearch::Model::Searching::SearchRequest.new(Project, '*') }
-  let(:response) do
-    Elasticsearch::Model::Response::Response.new(Project, request)
-  end
+  subject(:proxy) { described_class.new(Project, use_separate_indices: true) }
+
+  let_it_be(:current_user) { create(:user) }
+  let(:query) { 'foo' }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_feature_flags(search_uses_match_queries: false)
   end
 
-  describe '#elastic_search' do
-    describe 'query', :elastic_delete_by_query do
+  describe '#elastic_search', :elastic_delete_by_query do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let(:result) { proxy.elastic_search(query, options: options) }
+
+    before do
+      Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+      ensure_elasticsearch_index!
+    end
+
+    where(:search_level, :projects, :groups) do
+      'global' | :any | []
+      'global' | [] | []
+      'group' | :any | [ref(:group)]
+      'group' | [] | [ref(:group)]
+    end
+
+    with_them do
+      let(:project_ids) { projects.eql?(:any) ? projects : projects.map(&:id) }
+      let(:group_ids) { groups.map(&:id) }
+
+      let(:options) do
+        {
+          current_user: current_user,
+          search_level: search_level,
+          project_ids: project_ids,
+          group_ids: group_ids
+        }
+      end
+
       it 'has the correct named queries' do
-        elastic_search.response
+        admin_mode = project_ids == :any
+        enable_admin_mode!(current_user) if admin_mode
+        allow(current_user).to receive(:can_read_all_resources?).and_return(admin_mode)
+
+        expected_queries = %W[project:match:search_terms filters:doc:is_a:project filters:permissions:#{search_level}]
+
+        expected_queries.concat(%W[filters:level:#{search_level}]) unless search_level == 'global'
+        if projects != :any
+          expected_queries.concat(%W[filters:permissions:#{search_level}:visibility_level:public_and_internal])
+        end
+
+        result.response
 
         assert_named_queries(
-          'project:match:search_terms',
-          'doc:is_a:project',
-          'project:archived:false'
+          *expected_queries
         )
       end
 
-      context 'when project_ids is set' do
-        let(:options) { { project_ids: [create(:project).id] } }
+      context 'when include_archived is set' do
+        it 'does not have a filter for archived' do
+          options[:include_archived] = true
+
+          result.response
+
+          assert_named_queries(
+            'project:match:search_terms',
+            'filters:doc:is_a:project',
+            without: %w[filters:archived filters:non_archived]
+          )
+        end
+      end
+
+      context 'when search_project_query_builder flag is false' do
+        before do
+          stub_feature_flags(search_project_query_builder: false)
+        end
 
         it 'has the correct named queries' do
-          elastic_search.response
+          result.response
 
           assert_named_queries(
             'project:match:search_terms',
             'doc:is_a:project',
-            'project:membership:id',
             'project:archived:false'
           )
         end
 
-        context 'when group_ids is also set' do
-          let_it_be(:group) { create(:group, :internal) }
-          let_it_be(:project) { create(:project, :private, group: group) }
-          let_it_be(:user) { create(:user) }
-          let(:options) { { project_ids: [project.id], group_ids: [group.id], group_id: group.id, current_user: user } }
+        context 'when include_archived is set' do
+          it 'does not have a filter for archived' do
+            options[:include_archived] = true
+            result.response
 
-          context 'when the user belongs to the group' do
-            before_all do
-              group.add_developer(user)
-            end
-
-            it 'has the correct named queries' do
-              elastic_search.response
-
-              assert_named_queries('project:ancestry_filter:descendants')
-            end
+            assert_named_queries(
+              'project:match:search_terms',
+              'doc:is_a:project',
+              without: %w[project:archived:false]
+            )
           end
-
-          context 'when the user does not belong to the group' do
-            it 'has the correct named queries' do
-              elastic_search.response
-
-              assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
-            end
-          end
-        end
-      end
-
-      context 'when include_archived is set' do
-        let(:options) { { include_archived: true } }
-
-        it 'does not have a filter for archived' do
-          elastic_search.response
-
-          assert_named_queries(
-            'project:match:search_terms',
-            'doc:is_a:project'
-          )
         end
       end
     end
   end
 
   describe '#routing_options' do
+    let(:options) do
+      {
+        current_user: current_user,
+        search_level: :global
+      }
+    end
+
     subject(:routing_options) { described_class.new(Project).routing_options(options) }
 
-    context 'when the migration has finished' do
+    context 'when the reindex_projects_to_apply_routing migration has finished' do
       before do
         allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
           .with(:reindex_projects_to_apply_routing).and_return(true)

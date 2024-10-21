@@ -123,7 +123,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     end
   end
 
-  context 'when namespace_routing_id is passed in options' do
+  context 'when namespace_routing_id is passed in options', :enable_admin_mode do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
@@ -131,7 +131,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
 
       ensure_elasticsearch_index!
-
       expect(Project.elastic_search('*', **search_options).records).to include(project)
 
       worker.perform(project.id, project.es_id, namespace_routing_id: group.id)

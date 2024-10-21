@@ -3,14 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: :global_search do
+  let_it_be_with_reload(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
   let_it_be(:guest) { create(:user, guest_of: group) }
 
   let(:filters) { {} }
   let(:query) { '*' }
 
-  subject(:results) { described_class.new(user, query, group.projects.pluck_primary_key, group: group, filters: filters) }
+  subject(:results) do
+    described_class.new(user, query, group.projects.pluck_primary_key, group: group, filters: filters)
+  end
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -18,7 +20,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     stub_feature_flags(search_uses_match_queries: false)
   end
 
-  context 'for issues search', :sidekiq_inline do
+  context 'for issues' do
     let_it_be(:project) { create(:project, :public, group: group, developers: user) }
     let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
     let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
@@ -65,7 +67,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  context 'merge_requests search', :sidekiq_inline do
+  context 'for merge_requests' do
     let!(:project) { create(:project, :public, group: group) }
     let_it_be(:unarchived_project) { create(:project, :public, group: group) }
     let_it_be(:archived_project) { create(:project, :public, :archived, group: group) }
@@ -85,7 +87,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'search results filtered by archived'
   end
 
-  context 'blobs', :sidekiq_inline do
+  context 'for blobs', :sidekiq_inline do
     let(:scope) { 'blobs' }
 
     shared_examples 'a blob scoped search result' do
@@ -206,13 +208,47 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
   end
 
   context 'for projects' do
-    let!(:unarchived_result) { create(:project, :public, group: group) }
-    let!(:archived_result) { create(:project, :archived, :public, group: group) }
+    let_it_be(:unarchived_result) { create(:project, :public, group: group) }
+    let_it_be(:archived_result) { create(:project, :archived, :public, group: group) }
 
     let(:scope) { 'projects' }
 
+    context 'when search_project_query_builder feature flag is false' do
+      before do
+        stub_feature_flags(search_project_query_builder: false)
+      end
+
+      it_behaves_like 'search results filtered by archived' do
+        before do
+          Elastic::ProcessInitialBookkeepingService.track!(unarchived_result, archived_result)
+
+          ensure_elasticsearch_index!
+        end
+      end
+
+      context 'if the user is authorized to view the group' do
+        it 'has a traversal_ids prefix filter' do
+          group.add_owner(user)
+
+          results.objects(scope)
+
+          assert_named_queries('project:ancestry_filter:descendants', without: ['project:membership:id'])
+        end
+      end
+
+      context 'if the user is not authorized to view the group' do
+        it 'has a project id inclusion filter' do
+          results.objects(scope)
+
+          assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
+        end
+      end
+    end
+
     it_behaves_like 'search results filtered by archived' do
       before do
+        Elastic::ProcessInitialBookkeepingService.track!(unarchived_result, archived_result)
+
         ensure_elasticsearch_index!
       end
     end
@@ -223,20 +259,26 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
 
         results.objects(scope)
 
-        assert_named_queries('project:ancestry_filter:descendants', without: ['project:membership:id'])
+        assert_named_queries('filters:permissions:group:ancestry_filter:descendants',
+          'filters:permissions:group:visibility_level:public_and_internal',
+          without: ['filters:permissions:group:project:member'])
       end
     end
 
-    context 'if the user is not authorized to view the group' do
-      it 'has a project id inclusion filter' do
+    context 'if the user is authorized to view the project' do
+      it 'has a project membership filter' do
+        unarchived_result.add_developer(user)
+
         results.objects(scope)
 
-        assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
+        assert_named_queries('filters:permissions:group:project:member',
+          'filters:permissions:group:visibility_level:public_and_internal',
+          without: ['filters:permissions:group:ancestry_filter:descendants'])
       end
     end
   end
 
-  context 'group level work_items search', :sidekiq_inline do
+  context 'for group level work items' do
     let(:query) { 'foo' }
     let(:scope) { 'epics' }
 
@@ -291,7 +333,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  context 'epics search', :sidekiq_inline do
+  context 'for epics' do
     let(:query) { 'foo' }
     let(:scope) { 'epics' }
 
@@ -424,7 +466,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  describe 'users' do
+  context 'for users' do
     let(:query) { 'john' }
     let(:scope) { 'users' }
     let(:results) { described_class.new(user, query, group: group) }
@@ -471,7 +513,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  describe '#notes' do
+  context 'for notes' do
     let_it_be(:query) { 'foo' }
     let_it_be(:project) { create(:project, :public, namespace: group) }
     let_it_be(:archived_project) { create(:project, :public, :archived, namespace: group) }
@@ -498,7 +540,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
   end
 
-  describe '#milestones' do
+  context 'for milestones' do
     let!(:unarchived_project) { create(:project, :public, group: group) }
     let!(:archived_project) { create(:project, :public, :archived, group: group) }
     let!(:unarchived_result) { create(:milestone, project: unarchived_project, title: 'foo unarchived') }
@@ -513,7 +555,7 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'search results filtered by archived', nil
   end
 
-  context 'query performance' do
+  describe 'query performance' do
     include_examples 'does not hit Elasticsearch twice for objects and counts',
       %w[projects notes blobs wiki_blobs commits issues merge_requests epics milestones users]
     include_examples 'does not load results for count only queries',

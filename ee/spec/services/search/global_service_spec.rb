@@ -95,7 +95,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     let(:user) { create_user_from_membership(project, membership) }
     let(:user_in_group) { create_user_from_membership(group, membership) }
 
-    context 'on merge request', :sidekiq_inline do
+    context 'on merge request' do
       let!(:merge_request) { create :merge_request, target_project: project, source_project: project }
       let(:scope) { 'merge_requests' }
       let(:search) { merge_request.title }
@@ -189,7 +189,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       end
     end
 
-    context 'on epic', :sidekiq_inline do
+    context 'on epic', :sidekiq_inline do # sidekiq is needed for the group association worker updates
       let(:scope) { 'epics' }
       let(:search) { 'chosen epic title' }
       let!(:epic) do
@@ -300,6 +300,11 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     context 'on milestone', :sidekiq_inline do
       let_it_be_with_reload(:milestone) { create :milestone, project: project }
 
+      before do
+        Elastic::ProcessInitialBookkeepingService.track!(milestone)
+        ensure_elasticsearch_index!
+      end
+
       where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode,
         :expected_count) do
         permission_table_for_milestone_access
@@ -323,15 +328,10 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     end
 
     context 'on project' do
-      where(:project_level, :membership, :expected_count) do
-        permission_table_for_project_access
-      end
-
-      with_them do
-        it "respects visibility" do
+      shared_examples 'a search that respects visibility' do
+        it 'respects visibility' do
           project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
-          ElasticCommitIndexerWorker.new.perform(project.id)
           ensure_elasticsearch_index!
 
           expected_objects = expected_count == 1 ? [project] : []
@@ -344,6 +344,22 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
           ) do |user|
             described_class.new(user, search: project.name).execute
           end
+        end
+      end
+
+      where(:project_level, :membership, :expected_count) do
+        permission_table_for_project_access
+      end
+
+      with_them do
+        it_behaves_like 'a search that respects visibility'
+
+        context 'when search_project_query_builder flag is false' do
+          before do
+            stub_feature_flags(search_project_query_builder: false)
+          end
+
+          it_behaves_like 'a search that respects visibility'
         end
       end
     end

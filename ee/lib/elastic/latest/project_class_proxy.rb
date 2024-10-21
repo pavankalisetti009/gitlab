@@ -6,6 +6,73 @@ module Elastic
       extend ::Gitlab::Utils::Override
 
       def elastic_search(query, options: {})
+        query_hash = if Feature.enabled?(:search_project_query_builder, options[:current_user])
+                       ::Search::Elastic::ProjectQueryBuilder.build(query: query, options: options)
+                     else
+                       legacy_build_query_hash(query, options: options)
+                     end
+
+        search(query_hash, options)
+      end
+
+      override :routing_options
+      def routing_options(options)
+        return super unless ::Elastic::DataMigrationService.migration_has_finished?(:reindex_projects_to_apply_routing)
+
+        group = Group.find_by_id(options[:group_id])
+
+        return {} unless group
+
+        root_namespace_id = group.root_ancestor.id
+
+        { routing: "n_#{root_namespace_id}" }
+      end
+
+      # rubocop: disable CodeReuse/ActiveRecord -- planned to be refactored into a scope
+      def preload_indexing_data(relation)
+        relation.includes(:project_feature, :route, :catalog_resource, :fork_network, :mirror_user,
+          :repository_languages, :group, namespace: :owner)
+      end
+      # rubocop: enable CodeReuse/ActiveRecord
+
+      private
+
+      def namespace_for_traversal_ids_filter(options)
+        return unless options[:group_id]
+        return unless options[:current_user]
+        return if should_use_project_ids_filter?(options)
+
+        group = Group.find(options[:group_id])
+        group if options[:current_user].authorized_groups.include?(group)
+      end
+
+      def prefix_traversal_id_query(namespace, options)
+        ancestry_filter(options[:current_user], [namespace.elastic_namespace_ancestry], prefix: :traversal_ids)
+      end
+
+      def rejected_project_filter(namespace, options)
+        current_user = options[:current_user]
+        scoped_project_ids = scoped_project_ids(current_user, options[:project_ids])
+
+        return if scoped_project_ids == :any
+
+        project_ids = Project
+                        .id_in(scoped_project_ids)
+                        .public_or_visible_to_user(current_user)
+                        .pluck_primary_key
+
+        rejected_ids = namespace.all_project_ids_except(project_ids).pluck_primary_key
+
+        return unless rejected_ids.any?
+
+        {
+          terms: {
+            id: rejected_ids
+          }
+        }
+      end
+
+      def legacy_build_query_hash(query, options: {})
         options[:in] = %w[name^10 name_with_namespace^2 path_with_namespace path^9 description]
         options[:project_id_field] = :id
         options[:no_join_project] = true
@@ -52,7 +119,9 @@ module Elastic
               must_not = rejected_project_filter(namespace, options)
             else
               filters << {
-                bool: project_ids_query(options[:current_user], options[:project_ids], options[:public_and_internal_projects], no_join_project: options[:no_join_project], project_id_field: options[:project_id_field])
+                bool: project_ids_query(options[:current_user], options[:project_ids],
+                  options[:public_and_internal_projects], no_join_project: options[:no_join_project],
+                  project_id_field: options[:project_id_field])
               }
             end
           end
@@ -62,62 +131,8 @@ module Elastic
           query_hash[:query][:bool][:must_not] = must_not if must_not
         end
 
-        search(query_hash, options)
+        query_hash
       end
-
-      def namespace_for_traversal_ids_filter(options)
-        return unless options[:group_id]
-        return unless options[:current_user]
-        return if should_use_project_ids_filter?(options)
-
-        group = Group.find(options[:group_id])
-        group if options[:current_user].authorized_groups.include?(group)
-      end
-
-      def prefix_traversal_id_query(namespace, options)
-        ancestry_filter(options[:current_user], [namespace.elastic_namespace_ancestry], prefix: :traversal_ids)
-      end
-
-      def rejected_project_filter(namespace, options)
-        current_user = options[:current_user]
-        scoped_project_ids = scoped_project_ids(current_user, options[:project_ids])
-
-        return if scoped_project_ids == :any
-
-        project_ids = Project
-                        .id_in(scoped_project_ids)
-                        .public_or_visible_to_user(current_user)
-                        .pluck_primary_key
-
-        rejected_ids = namespace.all_project_ids_except(project_ids).pluck_primary_key
-
-        return unless rejected_ids.any?
-
-        {
-          terms: {
-            id: rejected_ids
-          }
-        }
-      end
-
-      override :routing_options
-      def routing_options(options)
-        return super unless ::Elastic::DataMigrationService.migration_has_finished?(:reindex_projects_to_apply_routing)
-
-        group = Group.find_by_id(options[:group_id])
-
-        return {} unless group
-
-        root_namespace_id = group.root_ancestor.id
-
-        { routing: "n_#{root_namespace_id}" }
-      end
-
-      # rubocop: disable CodeReuse/ActiveRecord
-      def preload_indexing_data(relation)
-        relation.includes(:project_feature, :route, :catalog_resource, :fork_network, :mirror_user, :repository_languages, :group, namespace: :owner)
-      end
-      # rubocop: enable CodeReuse/ActiveRecord
     end
   end
 end
