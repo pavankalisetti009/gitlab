@@ -15,6 +15,7 @@ module GitlabSubscriptions
         end
 
         mount ::GitlabSubscriptions::API::Internal::AddOnPurchases
+        mount ::GitlabSubscriptions::API::Internal::ComputeMinutes
         mount ::GitlabSubscriptions::API::Internal::Members
         mount ::GitlabSubscriptions::API::Internal::Namespaces
         mount ::GitlabSubscriptions::API::Internal::Subscriptions
