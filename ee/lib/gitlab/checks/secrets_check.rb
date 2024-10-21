@@ -43,6 +43,7 @@ module Gitlab
         raw_value: ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_RAW_VALUE
       }.freeze
       UNKNOWN_EXCLUSION_TYPE = ::Gitlab::SecretDetection::GRPC::ScanRequest::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
+      HUNK_HEADER_REGEX = /\A@@ -\d+(,\d+)? \+(\d+)(,\d+)? @@\Z/
 
       # Maximum depth any path exclusion can have.
       MAX_PATH_EXCLUSIONS_DEPTH = 20
@@ -99,11 +100,15 @@ module Gitlab
         end
 
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
-          response = if use_diff_scan?
-                       diff_scan(active_exclusions)
-                     else
-                       whole_scan(active_exclusions)
-                     end
+          # Ensure consistency between different payload types (e.g., git diffs and full files) for scanning.
+          payloads = standardize_payloads
+
+          send_request_to_sds(payloads, exclusions: active_exclusions)
+
+          # Pass payloads to gem for scanning.
+          response = ::Gitlab::SecretDetection::Scan
+            .new(logger: secret_detection_logger)
+            .secrets_scan(payloads, timeout: logger.time_left, exclusions: active_exclusions)
 
           # Log audit events for exlusions that were applied.
           log_applied_exclusions_audit_events(response.applied_exclusions)
@@ -113,9 +118,7 @@ module Gitlab
 
         # TODO: Perhaps have a separate message for each and better logging?
         rescue ::Gitlab::SecretDetection::Scan::RulesetParseError,
-          ::Gitlab::SecretDetection::Scan::RulesetCompilationError,
-          ::Gitlab::SecretDetection::ScanDiffs::RulesetParseError,
-          ::Gitlab::SecretDetection::ScanDiffs::RulesetCompilationError => _
+          ::Gitlab::SecretDetection::Scan::RulesetCompilationError => _
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_initialization_error])
         end
       end
@@ -125,33 +128,6 @@ module Gitlab
       private
 
       attr_reader :sds_client, :sds_auth_token
-
-      def diff_scan(exclusions)
-        payloads = get_diffs
-
-        send_request_to_sds(payloads, exclusions: exclusions)
-
-        # Pass payloads to gem for scanning.
-        ::Gitlab::SecretDetection::ScanDiffs
-          .new(logger: secret_detection_logger)
-          .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
-      end
-
-      def whole_scan(exclusions)
-        payloads = ::Gitlab::Checks::ChangedBlobs.new(
-          project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
-        ).execute(timeout: logger.time_left)
-
-        # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
-        payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
-
-        send_request_to_sds(payloads, exclusions: exclusions)
-
-        # Pass payloads to gem for scanning.
-        ::Gitlab::SecretDetection::Scan
-          .new(logger: secret_detection_logger)
-          .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
-      end
 
       ##############################
       # Project Eligibility Checks
@@ -266,6 +242,37 @@ module Gitlab
       #######################
       # Load Payloads
 
+      # The `standardize_payloads` method gets payloads containing either git diffs or entire file contents
+      # and converts them into a standardized format. Each payload is processed to include its `id`, `data`,
+      # and `offset` (used to calculate the line number that a secret is on).
+      # This ensures consistency between different payload types (e.g., git diffs and full files) for scanning.
+      # For a more thorough explanation of the diff parsing logic, see the comment above the `parse_diffs` method.
+
+      def standardize_payloads
+        if use_diff_scan?
+          payloads = get_diffs
+
+          payloads.flat_map do |payload|
+            parse_diffs(payload)
+          end
+        else
+          payloads = ::Gitlab::Checks::ChangedBlobs.new(
+            project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
+          ).execute(timeout: logger.time_left)
+
+          # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
+          payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
+
+          payloads.map do |payload|
+            {
+              id: payload.id,
+              data: payload.data,
+              offset: 1
+            }
+          end
+        end
+      end
+
       def get_diffs
         diffs = []
         # Get new commits
@@ -297,6 +304,94 @@ module Gitlab
           secret_detection_logger.error(message: e.message)
         end
         diffs
+      end
+
+      # The parse_diffs method processes a diff patch to extract and group all added lines
+      #   based on their position in the file.
+      #
+      # If the line starts with "@@", it is the hunk header, used to calculate the line offset.
+      # If the line starts with "+", it is newly added in this commit,
+      #   and we append the line content to a buffer and track the current line offset.
+      #   If consecutive lines are added, they are grouped together in the same string with a shared offset value.
+      # If the line starts with " ", it is a context line,
+      #   just increment the offset counter to maintain accurate line numbers.
+      # Lines starting with "-" (removed lines) and "\\" (end of diff) are ignored.
+      #
+      # Once the entire diff is parsed, the method returns an array of hashes containing:
+      # - `id`: The id of the blob that the diff corresponds to (`diff.right_blob_id`).
+      # - `data`: A string representing the concatenated added lines.
+      # - `offset`: An integer indicating the line number in the file where this group of added lines starts.
+      #
+      # So for this example diff:
+      #
+      # @@ -0,0 +1,2 @@
+      # +new line
+      # +another added line in the same section
+      # @@ -7,1 +8,2 @@
+      #  unchanged line here
+      # +another new line
+      #
+      # We would process it into:
+      #
+      # [{
+      #    id: "123abc",
+      #    data: "new line\nanother added line in the same section\n",
+      #    offset: 1
+      #  },
+      #  {
+      #    id: "123abc",
+      #    data: "another new line\n",
+      #    offset: 8
+      #  }]
+
+      def parse_diffs(diff)
+        diff_parsed_lines = []
+        current_line_number = 0
+        added_content = ''
+        offset = nil
+
+        diff.patch.each_line do |line|
+          # Parse hunk header for start line
+          if line.start_with?("@@")
+            hunk_info = line.match(HUNK_HEADER_REGEX)
+            start_line = hunk_info[2].to_i
+            current_line_number = start_line - 1
+
+            # Push previous payload if not empty
+            unless added_content.empty?
+              diff_parsed_lines << { id: diff.right_blob_id, data: added_content.delete_suffix("\n"), offset: offset }
+              added_content = ''
+              offset = nil
+            end
+          # Line added in this commit
+          elsif line.start_with?('+')
+            added_content += line[1..] # Add the line content without '+'
+            current_line_number += 1
+            offset ||= current_line_number
+
+          # Context line
+          elsif line.start_with?(' ')
+            unless added_content.empty?
+              diff_parsed_lines << { id: diff.right_blob_id, data: added_content.delete_suffix("\n"), offset: offset }
+              added_content = ''
+              offset = nil
+            end
+
+            current_line_number += 1
+          elsif line.start_with?('-', '\\')
+            # Line removed in this commit or no newline marker, do not increment line number
+            next
+          end
+        end
+
+        # Push the final payload if not empty
+        unless added_content.empty?
+          diff_parsed_lines << {
+            id: diff.right_blob_id, data: added_content.delete_suffix("\n"), offset: offset
+          }
+        end
+
+        diff_parsed_lines
       end
 
       #######################
@@ -557,8 +652,8 @@ module Gitlab
       def build_sds_request(data, exclusions: {}, tags: [])
         payloads = data.inject([]) do |payloads, datum|
           payloads << ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
-            id: datum.id,
-            data: datum.data
+            id: datum[:id],
+            data: datum[:data]
           )
         end
 
