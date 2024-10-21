@@ -174,9 +174,7 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
     merge_requests.pop(5).each do |mr|
       travel_to(get_date_after(mr.created_at))
       MergeRequests::CloseService.new(project: project, current_user: user).execute(mr)
-    end
 
-    merge_requests.pop(5).each do |mr|
       travel_to(get_date_after(mr.created_at))
       mr.metrics.update!(merged_at: Time.now)
       MergeRequestsClosingIssues.create!(issue: project.issues.sample, merge_request: mr)
