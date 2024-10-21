@@ -10,6 +10,8 @@ module Security
 
     APPROVERS_LIMIT = 300
 
+    APPROVAL_RULES_BATCH_SIZE = 5000
+
     SCAN_FINDING = 'scan_finding'
     LICENSE_SCANNING = 'license_scanning'
     LICENSE_FINDING = 'license_finding'
@@ -49,14 +51,23 @@ module Security
 
       def delete_scan_finding_rules
         delete_in_batches(approval_project_rules)
-        delete_in_batches(approval_merge_request_rules.for_unmerged_merge_requests)
+        delete_merge_request_rules
+      end
+
+      def delete_merge_request_rules
+        approval_merge_request_rules.each_batch(of: APPROVAL_RULES_BATCH_SIZE) do |batch|
+          batch.for_unmerged_merge_requests.delete_all
+        end
       end
 
       def delete_scan_finding_rules_for_project(project_id)
         delete_in_batches(approval_project_rules.where(project_id: project_id))
-        delete_in_batches(approval_merge_request_rules
-                            .for_unmerged_merge_requests
-                            .for_merge_request_project(project_id))
+      end
+
+      def delete_merge_request_rules_for_project(project_id)
+        approval_merge_request_rules.each_batch(of: APPROVAL_RULES_BATCH_SIZE) do |batch|
+          batch.for_unmerged_merge_requests.for_merge_request_project(project_id).delete_all
+        end
       end
 
       def delete_software_license_policies_for_project(project)

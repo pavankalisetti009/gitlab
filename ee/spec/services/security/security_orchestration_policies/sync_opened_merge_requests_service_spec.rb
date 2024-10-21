@@ -42,8 +42,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
   let_it_be(:merged_merge_request) { create(:merge_request, :merged, source_project: project) }
   let_it_be(:closed_merge_request) { create(:merge_request, :closed, source_project: project) }
 
-  after do
-    [ApprovalMergeRequestRule, ApprovalProjectRule, ApprovalMergeRequestRuleSource].each(&:delete_all)
+  let_it_be(:opened_mr_rule) do
+    create(:report_approver_rule, :scan_finding,
+      merge_request: opened_merge_request,
+      security_orchestration_policy_configuration: policy_configuration
+    )
+  end
+
+  let_it_be(:draft_mr_rule) do
+    create(:report_approver_rule, :scan_finding,
+      merge_request: draft_merge_request,
+      security_orchestration_policy_configuration: policy_configuration
+    )
   end
 
   describe "#execute" do
@@ -88,6 +98,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
       [opened_merge_request, draft_merge_request].each do |mr|
         expect(mr.approval_rules.scan_finding.count).to be(2)
       end
+    end
+
+    it 'deletes approval_rules of opened merge requests' do
+      subject
+
+      expect { opened_mr_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { draft_mr_rule.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     describe '#notify_for_policy_violations' do
@@ -161,6 +178,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
 
     context "when merge request is synchronized" do
       before do
+        opened_merge_request.delete_approval_rules_for_policy_configuration(policy_configuration.id)
         opened_merge_request.sync_project_approval_rules_for_policy_configuration(policy_configuration.id)
       end
 
