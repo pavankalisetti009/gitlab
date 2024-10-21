@@ -3,12 +3,12 @@
   min-height: $gl-spacing-scale-48;
 
   section {
-    @include gl-bg-transparent;
+    @apply gl-bg-transparent;
   }
 
   footer {
-    @include gl-border-transparent;
-    @include gl-bg-white;
+    @apply gl-border-transparent;
+    @apply gl-bg-white;
   }
 
   .duo-chat-message > .duo-chat-message-feedback {

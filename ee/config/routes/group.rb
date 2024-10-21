@@ -213,6 +213,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
     namespace :add_ons do
       resource :discover_duo_pro, only: [:show], controller: :discover_duo_pro
+      resource :discover_duo_enterprise, only: [:show], controller: :discover_duo_enterprise
     end
 
     resources :dependencies, only: [:index] do
