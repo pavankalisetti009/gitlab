@@ -252,6 +252,9 @@ export default {
         {
           text: __('Delete'),
           action: () => this.handleDelete(policy),
+          extraAttrs: {
+            class: '!gl-text-danger',
+          },
         },
       ];
     },
@@ -503,6 +506,7 @@ export default {
               category="tertiary"
               icon="ellipsis_v"
               placement="bottom-end"
+              class="-gl-my-3"
               :disabled="isPolicyInherited(item.source)"
             />
           </span>
