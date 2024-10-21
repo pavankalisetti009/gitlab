@@ -90,7 +90,7 @@ RSpec.describe API::MemberRoles, api: true, feature_category: :system_access do
       let(:current_user) { admin }
 
       let(:docs_link) do
-        Rails.application.routes.url_helpers.help_page_url('ee/update/deprecations.html',
+        Rails.application.routes.url_helpers.help_page_url('ee/update/deprecations.md',
           anchor: 'deprecate-custom-role-creation-for-group-owners-on-self-managed')
       end
 

@@ -89,7 +89,7 @@ module API
 
       def deprecation_message
         docs_page = Rails.application.routes.url_helpers.help_page_url(
-          'ee/update/deprecations.html',
+          'ee/update/deprecations.md',
           anchor: 'deprecate-custom-role-creation-for-group-owners-on-self-managed'
         )
 
