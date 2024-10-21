@@ -16,7 +16,7 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILA
     end
   end
 
-  let_it_be(:agent_config) { available_agent.workspaces_agent_config }
+  let_it_be(:agent_config) { available_agent.unversioned_latest_workspaces_agent_config }
   let_it_be(:namespace) { available_agent.project.namespace }
   let_it_be(:namespace_agent_mapping) do
     create(

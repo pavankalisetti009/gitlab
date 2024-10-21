@@ -9,7 +9,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigPolicy, feature_ca
     create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: agent_project)
   end
 
-  let_it_be(:agent_config) { agent.workspaces_agent_config }
+  let_it_be(:agent_config) { agent.unversioned_latest_workspaces_agent_config }
 
   subject(:policy_instance) { described_class.new(user, agent_config) }
 

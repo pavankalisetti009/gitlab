@@ -22,30 +22,31 @@ RSpec.describe Clusters::Agent, feature_category: :deployment_management do
     end
   end
 
-  describe 'workspaces_agent_config scopes' do
+  describe 'unversioned_latest_workspaces_agent_config scopes' do
     let_it_be(:agent_with_remote_development_enabled) do
       create(:ee_cluster_agent, :with_existing_workspaces_agent_config).tap do |agent|
-        agent.workspaces_agent_config.update!(enabled: true)
+        agent.unversioned_latest_workspaces_agent_config.update!(enabled: true)
       end
     end
 
     let_it_be(:agent_with_remote_development_config_disabled) do
       create(:ee_cluster_agent, :with_existing_workspaces_agent_config).tap do |agent|
-        agent.workspaces_agent_config.update!(enabled: false)
+        agent.unversioned_latest_workspaces_agent_config.update!(enabled: false)
       end
     end
 
     describe '.with_workspaces_agent_config' do
-      it 'return agents with workspaces_agent_config' do
+      it 'return agents with unversioned_latest_workspaces_agent_config' do
         expect(described_class.with_workspaces_agent_config)
           .to contain_exactly(
             agent_with_remote_development_enabled, agent_with_remote_development_config_disabled)
-        expect(described_class.with_workspaces_agent_config).not_to include(agent_1, agent_2, agent_3)
+        expect(described_class.with_workspaces_agent_config).not_to include(agent_1, agent_2,
+          agent_3)
       end
     end
 
     describe '.without_workspaces_agent_config' do
-      it 'return agents without workspaces_agent_config' do
+      it 'return agents without unversioned_latest_workspaces_agent_config' do
         expect(described_class.without_workspaces_agent_config)
           .not_to include(agent_with_remote_development_enabled, agent_with_remote_development_config_disabled)
         expect(described_class.without_workspaces_agent_config).to include(agent_1, agent_2, agent_3)

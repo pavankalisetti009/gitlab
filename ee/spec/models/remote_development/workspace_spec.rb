@@ -76,7 +76,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
         expect(workspace.project).to eq(project)
         expect(workspace.agent).to eq(agent)
         expect(workspace.personal_access_token).to eq(personal_access_token)
-        expect(agent.workspaces_agent_config.workspaces.first).to eq(workspace)
+        expect(agent.unversioned_latest_workspaces_agent_config.workspaces.first).to eq(workspace)
         expect(workspace.url_prefix).to eq("60001-#{workspace.name}")
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
@@ -270,7 +270,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   end
 
   describe 'validations' do
-    context 'on agent.workspaces_agent_config' do
+    context 'on agent.unversioned_latest_workspaces_agent_config' do
       context 'when no config is present' do
         let(:agent_with_no_workspaces_config) { create(:cluster_agent) }
 
@@ -278,9 +278,9 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
           build(:workspace, user: user, agent: agent_with_no_workspaces_config, project: project)
         end
 
-        it 'validates presence of agent.workspaces_agent_config' do
+        it 'validates presence of agent.unversioned_latest_workspaces_agent_config' do
           # sanity check of fixture
-          expect(agent_with_no_workspaces_config.workspaces_agent_config).not_to be_present
+          expect(agent_with_no_workspaces_config.unversioned_latest_workspaces_agent_config).not_to be_present
 
           expect(invalid_workspace).not_to be_valid
           expect(invalid_workspace.errors.full_messages).to include(
@@ -299,7 +299,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
         context 'when agent is disabled' do
           let(:workspaces_agent_config_enabled) { false }
 
-          it 'validates agent.workspaces_agent_config is enabled' do
+          it 'validates agent.unversioned_latest_workspaces_agent_config is enabled' do
             expect(workspace).not_to be_valid
             expect(workspace.errors[:agent])
               .to include("must have the 'enabled' flag set to true")

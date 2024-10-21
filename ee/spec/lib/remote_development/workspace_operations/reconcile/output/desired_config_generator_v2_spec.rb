@@ -46,7 +46,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     before do
-      allow(agent.workspaces_agent_config)
+      allow(agent.unversioned_latest_workspaces_agent_config)
         .to receive(:network_policy_enabled).and_return(network_policy_enabled)
     end
 

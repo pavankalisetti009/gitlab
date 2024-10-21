@@ -62,7 +62,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     before do
-      allow(agent.workspaces_agent_config)
+      allow(agent.unversioned_latest_workspaces_agent_config)
         .to receive(:network_policy_enabled).and_return(network_policy_enabled)
     end
 
@@ -113,7 +113,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       end
 
       before do
-        allow(agent.workspaces_agent_config).to receive(:default_resources_per_workspace_container) {
+        allow(agent.unversioned_latest_workspaces_agent_config).to receive(:default_resources_per_workspace_container) {
           default_resources_per_workspace_container
         }
       end
@@ -148,7 +148,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         end
 
         before do
-          allow(agent.workspaces_agent_config).to receive(:max_resources_per_workspace) {
+          allow(agent.unversioned_latest_workspaces_agent_config).to receive(:max_resources_per_workspace) {
             max_resources_per_workspace
           }
         end

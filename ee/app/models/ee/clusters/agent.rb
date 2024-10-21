@@ -21,7 +21,17 @@ module EE
           inverse_of: :agent,
           foreign_key: :cluster_agent_id
 
-        has_one :workspaces_agent_config,
+        # WARNING: Do not use this `unversioned_latest_workspaces_agent_config`
+        # association unless you are positive that is what you want to do!
+        #
+        # If you are attempting to get the associated WorkspacesAgentConfig
+        # for a workspace, you should instead be directly using the
+        # `workspace.workspaces_agent_config` method, which will return the proper
+        # version of the config which is associated with that specific workspace.
+        #
+        # For more explanation, see:
+        # https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/README.md#workspaces_agent_configs-versioning
+        has_one :unversioned_latest_workspaces_agent_config,
           class_name: 'RemoteDevelopment::WorkspacesAgentConfig',
           inverse_of: :agent,
           foreign_key: :cluster_agent_id
@@ -32,12 +42,18 @@ module EE
           foreign_key: 'cluster_agent_id'
 
         scope :for_projects, ->(projects) { where(project: projects) }
-        scope :with_workspaces_agent_config, -> { joins(:workspaces_agent_config) }
+        scope :with_workspaces_agent_config, -> {
+                                               joins(:unversioned_latest_workspaces_agent_config)
+                                             }
         scope :without_workspaces_agent_config, -> do
-          includes(:workspaces_agent_config).where(workspaces_agent_config: { cluster_agent_id: nil })
+          includes(:unversioned_latest_workspaces_agent_config).where(
+            unversioned_latest_workspaces_agent_config: { cluster_agent_id: nil }
+          )
         end
         scope :with_remote_development_enabled, -> do
-          with_workspaces_agent_config.where(workspaces_agent_config: { enabled: true })
+          with_workspaces_agent_config.where(
+            unversioned_latest_workspaces_agent_config: { enabled: true }
+          )
         end
       end
     end
