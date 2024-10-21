@@ -25,7 +25,7 @@ module GitlabSubscriptions
             days_remaining: trial_status.days_remaining,
             percentage_complete: trial_status.percentage_complete,
             group_id: namespace.id,
-            trial_discover_page_path: help_page_url('user/gitlab_duo/index'),
+            trial_discover_page_path: group_add_ons_discover_duo_enterprise_path(namespace),
             purchase_now_url: group_billings_path(namespace),
             feature_id: EXPIRED_TRIAL_WIDGET,
             dismiss_endpoint: group_callouts_path

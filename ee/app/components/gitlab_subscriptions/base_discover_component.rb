@@ -72,6 +72,10 @@ module GitlabSubscriptions
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
 
+    def core_section_two_card_collection
+      []
+    end
+
     def render_footer_link(link_path:, link_text:, track_action:, track_label:)
       link_to(
         link_text, link_path, class: 'gl-link', target: '_blank', rel: 'noopener noreferrer',
@@ -108,6 +112,14 @@ module GitlabSubscriptions
       else
         "#{trial_type}_expired_trial"
       end
+    end
+
+    def core_feature_one_grid_class
+      'md:gl-grid-cols-4'
+    end
+
+    def core_feature_two_grid_class
+      'md:gl-grid-cols-4'
     end
   end
 end
