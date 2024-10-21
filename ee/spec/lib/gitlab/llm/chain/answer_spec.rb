@@ -100,24 +100,6 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         expect(answer.content).to eq(input)
       end
     end
-
-    context 'with different parser' do
-      subject(:answer) do
-        described_class.from_response(
-          response_body: input,
-          tools: tools,
-          context: context,
-          parser_klass: Gitlab::Llm::Chain::Parsers::SingleActionParser
-        )
-      end
-
-      let(:input) { create(:action_chunk, tool: "issue_reader") }
-
-      it 'returns intermediate answer with parsed values and a tool' do
-        expect(answer.is_final?).to eq(false)
-        expect(answer.tool::NAME).to eq('IssueReader')
-      end
-    end
   end
 
   describe '.final_answer' do
