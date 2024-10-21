@@ -18,7 +18,8 @@ module RemoteDevelopment
     }
 
     belongs_to :agent,
-      class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces_agent_config
+      class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id',
+      inverse_of: :unversioned_latest_workspaces_agent_config
 
     # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     has_many :workspaces, through: :agent, source: :workspaces

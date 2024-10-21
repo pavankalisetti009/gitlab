@@ -25,7 +25,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
   let(:use_kubernetes_user_namespaces) { false }
   let(:default_runtime_class) { "" }
 
-  subject(:config) { agent.workspaces_agent_config }
+  subject(:config) { agent.unversioned_latest_workspaces_agent_config }
 
   describe 'associations' do
     it { is_expected.to belong_to(:agent) }

@@ -26,7 +26,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category
   let(:default_max_hours_before_termination_default_value) { 24 }
   let(:max_hours_before_termination_limit_default_value) { 120 }
 
-  subject(:config) { agent.workspaces_agent_config }
+  subject(:config) { agent.unversioned_latest_workspaces_agent_config }
 
   describe 'associations' do
     it { is_expected.to belong_to(:agent) }

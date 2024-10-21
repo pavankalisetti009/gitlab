@@ -20,7 +20,7 @@ module RemoteDevelopment
             devfile_path: String => devfile_path
           }
 
-          unless agent.workspaces_agent_config
+          unless agent.unversioned_latest_workspaces_agent_config
             return Gitlab::Fp::Result.err(WorkspaceCreateParamsValidationFailed.new(
               details: "No WorkspacesAgentConfig found for agent '#{agent.name}'"
             ))

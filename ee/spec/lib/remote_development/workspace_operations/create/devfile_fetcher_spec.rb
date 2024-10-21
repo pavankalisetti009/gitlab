@@ -58,7 +58,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
 
       it 'returns an err Result containing error details' do
         # sanity check on fixture
-        expect(agent.workspaces_agent_config).to be_nil
+        expect(agent.unversioned_latest_workspaces_agent_config).to be_nil
 
         expect(result).to be_err_result do |message|
           expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateParamsValidationFailed)
