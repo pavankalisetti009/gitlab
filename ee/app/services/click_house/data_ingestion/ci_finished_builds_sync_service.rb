@@ -35,7 +35,7 @@ module ClickHouse
 
         # Prevent parallel jobs
         in_lock("#{self.class.name.underscore}/worker/#{@worker_index}", ttl: MAX_TTL, retries: 0) do
-          ::Gitlab::Database::LoadBalancing::Session.without_sticky_writes do
+          ::Gitlab::Database::LoadBalancing::SessionMap.without_sticky_writes do
             report = insert_new_finished_builds
 
             ServiceResponse.success(payload: report.merge(service_payload))
