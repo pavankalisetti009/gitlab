@@ -57,7 +57,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
   end
 
   describe "#execute" do
-    subject { described_class.new(project: project, policy_configuration: policy_configuration).execute }
+    subject(:execute) { described_class.new(project: project, policy_configuration: policy_configuration).execute }
 
     context 'without head_pipeline for merge request' do
       it 'does not trigger workers' do
@@ -217,6 +217,30 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncOpenedMergeRequestsS
 
           expect(rule.reload.vulnerability_states).to eq(states)
         end
+      end
+    end
+
+    describe 'metrics' do
+      it 'observes the metrics' do
+        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
+
+        expect(hist)
+          .to receive(:observe).with({}, kind_of(Float)).and_call_original
+
+        execute
+      end
+    end
+
+    describe 'logging' do
+      it 'logs duration, project ID and configuration ID' do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+          hash_including(
+            "class" => described_class.name,
+            "duration" => kind_of(Float),
+            "project_id" => project.id,
+            "configuration_id" => policy_configuration.id))
+
+        execute
       end
     end
   end

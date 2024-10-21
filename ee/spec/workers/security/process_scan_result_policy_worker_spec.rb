@@ -60,13 +60,31 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
     subject(:worker) { described_class.new }
 
     describe 'metrics' do
-      let(:histograms) { Security::SecurityOrchestrationPolicies::ObserveHistogramsService::HISTOGRAMS }
-      let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
-
       specify do
-        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
+        described_class::HISTOGRAMS.each_value do |histogram|
+          hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(histogram)
 
-        expect(hist).to receive(:observe).with({}, kind_of(Float)).and_call_original
+          expect(hist)
+            .to receive(:observe).with({}, kind_of(Float)).and_call_original
+        end
+
+        worker.perform(configuration.project_id, configuration.id)
+      end
+    end
+
+    describe 'logging' do
+      it 'logs duration, project ID and configuration ID for each event' do
+        allow(Gitlab::AppJsonLogger).to receive(:debug)
+
+        described_class::HISTOGRAMS.each_key do |event|
+          expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+            hash_including(
+              "class" => described_class.name,
+              "duration" => kind_of(Float),
+              "event" => event,
+              "project_id" => configuration.project_id,
+              "configuration_id" => configuration.id))
+        end
 
         worker.perform(configuration.project_id, configuration.id)
       end

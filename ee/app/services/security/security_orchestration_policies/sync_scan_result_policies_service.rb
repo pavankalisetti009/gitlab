@@ -9,19 +9,23 @@ module Security
       end
 
       def execute
-        delay = 0
-        projects.each_batch do |projects|
-          projects.each do |project|
-            @sync_project_service.execute(project.id, { delay: delay })
-          end
+        measure(:gitlab_security_policies_update_configuration_duration_seconds) do
+          delay = 0
+          projects.each_batch do |projects|
+            projects.each do |project|
+              @sync_project_service.execute(project.id, { delay: delay })
+            end
 
-          delay += 10.seconds
+            delay += 10.seconds
+          end
         end
       end
 
       private
 
       attr_reader :configuration
+
+      delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService
 
       def projects
         @projects ||= if configuration.namespace?
