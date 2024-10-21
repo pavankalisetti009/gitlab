@@ -13,6 +13,7 @@ module Security
 
       def execute
         each_open_merge_request do |merge_request|
+          merge_request.delete_approval_rules_for_policy_configuration(@policy_configuration.id)
           merge_request.sync_project_approval_rules_for_policy_configuration(@policy_configuration.id)
 
           sync_any_merge_request_approval_rules(merge_request)

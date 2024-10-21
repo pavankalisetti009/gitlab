@@ -420,6 +420,12 @@ module EE
       end
     end
 
+    def delete_approval_rules_for_policy_configuration(configuration_id)
+      return if merged?
+
+      approval_rules.for_policy_configuration(configuration_id).delete_all
+    end
+
     def finalize_rules
       self.finalizing_rules = true
       yield

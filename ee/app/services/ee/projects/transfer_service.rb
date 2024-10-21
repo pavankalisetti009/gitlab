@@ -54,11 +54,13 @@ module EE
       def delete_scan_result_policies(old_group)
         project.all_security_orchestration_policy_configurations.each do |configuration|
           configuration.delete_scan_finding_rules_for_project(project.id)
+          configuration.delete_merge_request_rules_for_project(project.id)
         end
         return unless old_group
 
         old_group.all_security_orchestration_policy_configurations.each do |configuration|
           configuration.delete_scan_finding_rules_for_project(project.id)
+          configuration.delete_merge_request_rules_for_project(project.id)
         end
       end
 

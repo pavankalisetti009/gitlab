@@ -1944,6 +1944,46 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#delete_approval_rules_for_policy_configuration' do
+    let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+    let_it_be(:other_policy_configuration) { create(:security_orchestration_policy_configuration) }
+
+    let_it_be(:mr_approval_rule) do
+      create(:report_approver_rule, :scan_finding,
+        merge_request: merge_request,
+        security_orchestration_policy_configuration: policy_configuration
+      )
+    end
+
+    let_it_be(:other_mr_approval_rule) do
+      create(:report_approver_rule, :scan_finding,
+        merge_request: merge_request,
+        security_orchestration_policy_configuration: other_policy_configuration
+      )
+    end
+
+    subject(:delete_approval_rules_for_policy_configuration) do
+      merge_request.delete_approval_rules_for_policy_configuration(policy_configuration.id)
+    end
+
+    context 'when the merge request is not merged' do
+      it 'deletes approval rules for the given policy configuration' do
+        expect { delete_approval_rules_for_policy_configuration }.to change { ApprovalMergeRequestRule.count }.from(2).to(1)
+      end
+    end
+
+    context 'when the merge request is merged' do
+      before do
+        merge_request.update!(state: 'merged')
+      end
+
+      it 'does not delete any approval rules' do
+        expect { delete_approval_rules_for_policy_configuration }.not_to change { ApprovalMergeRequestRule.count }
+      end
+    end
+  end
+
   describe '#reset_required_approvals' do
     subject(:execute) { merge_request.reset_required_approvals(approval_rules) }
 
