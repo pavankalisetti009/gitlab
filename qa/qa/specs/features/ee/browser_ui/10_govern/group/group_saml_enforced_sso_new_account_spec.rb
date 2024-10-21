@@ -85,7 +85,7 @@ module QA
         page.visit Runtime::Scenario.gitlab_address
       end
 
-      context 'with Snowplow tracking enabled',
+      context 'with Snowplow tracking enabled', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347675' do
         before do
           Flow::Settings.enable_snowplow
@@ -98,7 +98,7 @@ module QA
         it_behaves_like 'group membership actions'
       end
 
-      context 'with Snowplow tracking disabled',
+      context 'with Snowplow tracking disabled', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/351257' do
         before do
           Flow::Settings.disable_snowplow
