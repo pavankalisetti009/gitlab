@@ -34,6 +34,7 @@ module Gitlab
           },
           summarize_review: {
             service_class: ::Gitlab::Llm::Anthropic::Completions::SummarizeReview,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeReview,
             prompt_class: ::Gitlab::Llm::Templates::SummarizeReview,
             feature_category: :ai_abstraction_layer,
             execute_method: ::Llm::MergeRequests::SummarizeReviewService,
