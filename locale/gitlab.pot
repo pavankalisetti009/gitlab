@@ -58912,9 +58912,6 @@ msgstr ""
 msgid "UsageQuota|%{percentageRemaining}%% namespace storage remaining."
 msgstr ""
 
-msgid "UsageQuota|%{percentageRemaining}%% purchased storage remaining."
-msgstr ""
-
 msgid "UsageQuota|%{storage_limit_link_start}A namespace storage limit%{link_end} of %{limit} will soon be enforced for the %{strong_start}%{namespace_name}%{strong_end} namespace. %{extra_message}"
 msgstr ""
 
@@ -58952,6 +58949,9 @@ msgid "UsageQuota|Container Registry"
 msgstr ""
 
 msgid "UsageQuota|Dependency proxy"
+msgstr ""
+
+msgid "UsageQuota|Excess storage usage"
 msgstr ""
 
 msgid "UsageQuota|Filter charts by year"
@@ -59104,9 +59104,6 @@ msgstr ""
 msgid "UsageQuota|This table omits projects that used 0 compute minutes or 0 instance runners duration"
 msgstr ""
 
-msgid "UsageQuota|Total excess storage"
-msgstr ""
-
 msgid "UsageQuota|Total purchased storage"
 msgstr ""
 
@@ -59153,6 +59150,9 @@ msgid "UsageQuota|User settings %{gt} Usage quotas"
 msgstr ""
 
 msgid "UsageQuota|Wiki content."
+msgstr ""
+
+msgid "UsageQuota|You have used %{percentageUsed}%% of your total storage."
 msgstr ""
 
 msgid "UsageTrends|Could not load the issues and merge requests chart. Please refresh the page to try again."
