@@ -35,32 +35,6 @@ namespace :gitlab do
       end
     end
 
-    desc 'GitLab | Geo | Check Geo database replication'
-    task check_database_replication_working: :gitlab_environment do
-      unless ::Gitlab::Geo.secondary?
-        abort Rainbow('This command is only available on a secondary node').red
-      end
-
-      geo_health_check = Gitlab::Geo::HealthCheck.new
-
-      enabled = geo_health_check.replication_enabled?
-      success = enabled && geo_health_check.replication_working?
-
-      if success
-        puts Rainbow('SUCCESS - Database replication is working.').green
-      elsif enabled
-        abort Rainbow("ERROR - Database replication is enabled, but not working.\n"\
-              "This rake task is intended for programmatic use. Please run\n"\
-              "the full Geo check task for more information:\n"\
-              "  gitlab-rake gitlab:geo:check").red
-      else
-        abort Rainbow("ERROR - Database replication is not enabled.\n"\
-              "This rake task is intended for programmatic use. Please run\n"\
-              "the full Geo check task for more information:\n"\
-              "  gitlab-rake gitlab:geo:check").red
-      end
-    end
-
     desc 'Gitlab | Geo | Prevent updates to primary site'
     task prevent_updates_to_primary_site: :environment do
       abort 'This command is only available on a primary node' unless ::Gitlab::Geo.primary?
