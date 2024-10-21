@@ -652,33 +652,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
       include_examples 'search results sorted'
     end
-
-    context 'for epics' do
-      let(:scope) { 'epics' }
-      let_it_be(:member) { create(:group_member, :owner, group: group, user: user) }
-
-      let_it_be(:old_result) { create(:epic, group: group, title: 'sorted old', created_at: 1.month.ago) }
-      let_it_be(:new_result) { create(:epic, group: group, title: 'sorted recent', created_at: 1.day.ago) }
-      let_it_be(:very_old_result) { create(:epic, group: group, title: 'sorted very old', created_at: 1.year.ago) }
-
-      let_it_be(:old_updated) { create(:epic, group: group, title: 'updated old', updated_at: 1.month.ago) }
-      let_it_be(:new_updated) { create(:epic, group: group, title: 'updated recent', updated_at: 1.day.ago) }
-      let_it_be(:very_old_updated) { create(:epic, group: group, title: 'updated very old', updated_at: 1.year.ago) }
-
-      let(:results_created) { described_class.new(user, group, search: 'sorted', sort: sort).execute }
-      let(:results_updated) { described_class.new(user, group, search: 'updated', sort: sort).execute }
-
-      before do
-        stub_licensed_features(epics: true)
-        Elastic::ProcessInitialBookkeepingService.track!(old_result, new_result, very_old_result,
-          old_updated, new_updated, very_old_updated
-        )
-        stub_feature_flags(search_epics_uses_work_items_index: false)
-        ensure_elasticsearch_index!
-      end
-
-      include_examples 'search results sorted'
-    end
   end
 
   describe '#allowed_scopes' do
