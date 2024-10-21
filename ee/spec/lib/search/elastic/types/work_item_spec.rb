@@ -48,5 +48,9 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
     it 'always contains base settings' do
       expect(settings).to include(:number_of_shards)
     end
+
+    it 'contains platform and version specific mappings' do
+      expect(settings).to include(:knn) if helper.matching_distribution?(:opensearch)
+    end
   end
 end

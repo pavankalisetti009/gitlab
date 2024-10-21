@@ -29,9 +29,8 @@ module Search
           end
 
           def settings
-            ::Elastic::Latest::Config.settings.to_hash.deep_merge(
-              index: ::Elastic::Latest::Config.separate_index_specific_settings(index_name)
-            )
+            settings = base_settings
+            opensearch_settings(settings)
           end
 
           def elasticsearch_8_plus_mappings(mappings = {})
@@ -68,6 +67,12 @@ module Search
 
           private
 
+          def opensearch_settings(settings)
+            return settings unless helper.matching_distribution?(:opensearch)
+
+            settings.deep_merge({ index: { knn: true } })
+          end
+
           def base_mappings
             {
               type: { type: 'keyword' },
@@ -100,6 +105,12 @@ module Search
               notes: { type: :text, index_options: 'positions', analyzer: :code_analyzer },
               notes_internal: { type: :text, index_options: 'positions', analyzer: :code_analyzer }
             }
+          end
+
+          def base_settings
+            ::Elastic::Latest::Config.settings.to_hash.deep_merge(
+              index: ::Elastic::Latest::Config.separate_index_specific_settings(index_name)
+            )
           end
 
           def helper
