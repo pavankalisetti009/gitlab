@@ -57,6 +57,8 @@ RSpec.describe 'Duo Enterprise Trial Widget in Sidebar', :saas, :js, feature_cat
 
           dismiss_widget
 
+          expect(page).not_to have_content('See upgrade options')
+
           page.refresh
 
           expect(page).not_to have_content('See upgrade options')

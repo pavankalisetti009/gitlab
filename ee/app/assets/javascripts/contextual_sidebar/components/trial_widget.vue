@@ -2,6 +2,8 @@
 import { GlProgressBar, GlButton, GlLink } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
 import { sprintf } from '~/locale';
+import axios from '~/lib/utils/axios_utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import { TRIAL_WIDGET } from './constants';
 
@@ -23,6 +25,9 @@ export default {
     groupId: { default: '' },
     featureId: { default: '' },
     dismissEndpoint: { default: '' },
+  },
+  data() {
+    return { isDismissed: false };
   },
   computed: {
     currentTrialType() {
@@ -71,18 +76,27 @@ export default {
     formatTrackingLabel(str) {
       return `${snakeCase(str)}_trial`;
     },
+    handleDismiss() {
+      axios
+        .post(this.dismissEndpoint, {
+          feature_name: this.featureId,
+          group_id: this.groupId,
+        })
+        .catch((error) => {
+          Sentry.captureException(error);
+        });
+
+      this.isDismissed = true;
+    },
   },
 };
 </script>
 
 <template>
   <div
+    v-if="!isDismissed"
     :id="$options.trialWidget.containerId"
     class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-gray-10 gl-pt-4 gl-shadow"
-    :class="{ 'js-expired-trial-widget': isDismissable }"
-    :data-group-id="groupId"
-    :data-feature-id="featureId"
-    :data-dismiss-endpoint="dismissEndpoint"
     data-testid="trial-widget-root-element"
   >
     <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
@@ -142,12 +156,13 @@ export default {
     </div>
     <gl-button
       v-if="isDismissable && !isTrialActive"
-      class="js-close gl-absolute gl-right-0 gl-top-0 gl-mr-2 gl-mt-2"
+      class="gl-absolute gl-right-0 gl-top-0 gl-mr-2 gl-mt-2"
       size="small"
       icon="close"
       category="tertiary"
       data-testid="dismiss-btn"
       :aria-label="$options.trialWidget.i18n.dismiss"
+      @click="handleDismiss"
     />
   </div>
 </template>
