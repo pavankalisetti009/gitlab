@@ -5,7 +5,7 @@ module CredentialsInventoryActions
   include CredentialsInventoryHelper
 
   def index
-    @credentials = filter_credentials.page(params[:page]).preload_users.without_count # rubocop:disable Gitlab/ModuleWithInstanceVariables
+    @credentials = filter_credentials.page(params[:page]).preload_users.without_count.load # rubocop:disable Gitlab/ModuleWithInstanceVariables
 
     respond_to do |format|
       format.html do
