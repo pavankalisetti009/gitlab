@@ -9,11 +9,12 @@ module Gitlab
         raise NameError, "completion class for action #{name} not found" unless features_list.key?(name)
 
         feature = features_list[name]
-        service_class = if feature[:aigw_service_class] && Feature.enabled?(:ai_gateway_agents, prompt_message.user)
-                          feature[:aigw_service_class]
-                        else
-                          feature[:service_class]
-                        end
+        service_class =
+          if feature[:aigw_service_class] && Feature.enabled?(:"prompt_migration_#{name}", prompt_message.user)
+            feature[:aigw_service_class]
+          else
+            feature[:service_class]
+          end
 
         service_class.new(prompt_message, feature[:prompt_class], options.merge(action: name))
       end
