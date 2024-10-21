@@ -135,7 +135,7 @@ export default () => {
   const groupNavElement = document.querySelector('.js-custom-group-project-templates-nav-link');
   const groupTabContent = document.querySelector(GROUP_TAB_CONTENT_SELECTOR);
   const findActiveTab = (selector) => document.querySelector(`${selector}.active`);
-  const findPagination = (selector) => findActiveTab(selector)?.querySelector('.pagination');
+  const findPagination = (selector) => findActiveTab(selector)?.querySelector('.gl-pagination');
 
   const initPagination = (handler) => {
     // This is a temporary workaround as part of a P1 bug fix
