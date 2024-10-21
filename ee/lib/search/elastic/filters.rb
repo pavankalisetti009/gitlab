@@ -1035,12 +1035,14 @@ module Search
           project_ids = project_ids_for_user(user, options)
           return false if project_ids.blank?
 
+          # the builder queries set project_id_field, but legacy class proxy queries do not
+          project_id_field = options.fetch(:project_id_field, :project_id)
           membership_filters.minimum_should_match = 1
           add_filter(membership_filters, :should) do
             {
               terms: {
                 _name: context.name(:project, :member),
-                project_id: project_ids
+                "#{project_id_field}": project_ids
               }
             }
           end

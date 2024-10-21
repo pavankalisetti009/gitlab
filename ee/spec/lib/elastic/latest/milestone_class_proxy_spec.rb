@@ -69,9 +69,6 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
 
         expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 
-        # for when the multi match is turned off
-        # milestone:match:search_terms
-
         if projects == :any
           any_filter = %w[
             filters:project:any

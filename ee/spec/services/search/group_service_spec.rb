@@ -493,12 +493,8 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     context 'for projects' do
       let_it_be_with_reload(:project) { create(:project, namespace: group) }
 
-      where(:project_level, :membership, :expected_count) do
-        permission_table_for_project_access
-      end
-
-      with_them do
-        it "respects visibility" do
+      shared_examples 'a search that respects visibility' do
+        it 'respects visibility' do
           project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
           Elastic::ProcessInitialBookkeepingService.track!(project)
@@ -515,6 +511,22 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
             described_class.new(user, group, search: project.name).execute
           end
         end
+      end
+
+      where(:project_level, :membership, :expected_count) do
+        permission_table_for_project_access
+      end
+
+      with_them do
+        context 'when search_project_query_builder is false' do
+          before do
+            stub_feature_flags(search_project_query_builder: false)
+          end
+
+          it_behaves_like 'a search that respects visibility'
+        end
+
+        it_behaves_like 'a search that respects visibility'
       end
     end
   end

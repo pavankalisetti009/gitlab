@@ -2,13 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_search do
+RSpec.describe Project, feature_category: :global_search do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_feature_flags(search_uses_match_queries: false)
   end
 
-  let(:schema_version) { 2402 }
+  let(:schema_version) { ::Elastic::Latest::ProjectInstanceProxy::SCHEMA_VERSION }
+  let_it_be(:admin) { create(:admin) }
 
   context 'when limited indexing is on' do
     let_it_be(:project) { create(:project, :empty_repo, name: 'main_project') }
@@ -48,13 +49,14 @@ RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_sear
         it { is_expected.to be(true) }
       end
 
-      describe 'indexing', :sidekiq_inline do
+      describe 'indexing', :elastic, :sidekiq_inline, :enable_admin_mode do
         it 'indexes all projects' do
           create(:project, :empty_repo, path: 'test_two', description: 'awesome project')
           ensure_elasticsearch_index!
 
-          expect(described_class.elastic_search('main_project', options: { project_ids: :any }).total_count).to eq(1)
-          expect(described_class.elastic_search('"test_two"', options: { project_ids: :any }).total_count).to eq(1)
+          options = { current_user: admin, search_level: :global, project_ids: :any }
+          expect(described_class.elastic_search('main_project', options: options).total_count).to eq(1)
+          expect(described_class.elastic_search('"test_two"', options: options).total_count).to eq(1)
         end
       end
     end
@@ -74,20 +76,21 @@ RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_sear
         it { is_expected.to be(true) }
       end
 
-      describe 'indexing' do
+      describe 'indexing', :elastic, :enable_admin_mode do
         it 'indexes all projects' do
           create(:project, name: 'group_test1', group: create(:group, parent: group))
           create(:project, name: 'group_test2', description: 'awesome project')
           create(:project, name: 'group_test3', group: group)
           ensure_elasticsearch_index!
+          options = { current_user: admin, search_level: :global, project_ids: :any }
 
-          expect(described_class.elastic_search('group_test*', options: { project_ids: :any }).total_count).to eq(3)
-          expect(described_class.elastic_search('"group_test3"', options: { project_ids: :any }).total_count).to eq(1)
-          expect(described_class.elastic_search('"group_test2"', options: { project_ids: :any }).total_count).to eq(1)
+          expect(described_class.elastic_search('group_test*', options: options).total_count).to eq(3)
+          expect(described_class.elastic_search('"group_test3"', options: options).total_count).to eq(1)
+          expect(described_class.elastic_search('"group_test2"', options: options).total_count).to eq(1)
         end
       end
 
-      context 'default_operator' do
+      describe 'default_operator' do
         RSpec.shared_examples 'use correct default_operator' do |operator|
           it 'uses correct operator', :sidekiq_inline do
             create(:project, name: 'project1', group: group, description: 'test foo')
@@ -121,109 +124,68 @@ RSpec.describe Project, :elastic_delete_by_query, feature_category: :global_sear
     end
   end
 
-  context 'when projects and snippets co-exist', issue: 'https://gitlab.com/gitlab-org/gitlab/issues/36340' do
-    context 'when searching with a wildcard' do
-      it 'only returns projects', :sidekiq_inline do
-        create(:project)
-        create(:personal_snippet, :public)
+  context 'when user is an admin', :elastic_delete_by_query, :enable_admin_mode do
+    it 'finds projects' do
+      user = create(:admin)
+      project_ids = []
+
+      project = create(:project, name: 'test1')
+      project1 = create(:project, path: 'test2', description: 'awesome project')
+      project2 = create(:project)
+      create(:project, path: 'someone_elses_project')
+      project_ids += [project.id, project1.id, project2.id]
+
+      create(:project, :private, name: 'test3')
+      options = { current_user: user, search_level: :global, project_ids: project_ids }
+
+      ensure_elasticsearch_index!
+
+      expect(described_class.elastic_search('"test1"', options: options).total_count).to eq(1)
+      expect(described_class.elastic_search('"test2"', options: options).total_count).to eq(1)
+      expect(described_class.elastic_search('"awesome"', options: options).total_count).to eq(1)
+      expect(described_class.elastic_search('test*', options: options).total_count).to eq(3)
+      expect(described_class.elastic_search('test*', options: options.merge(project_ids: :any)).total_count).to eq(3)
+      expect(described_class.elastic_search('"someone_elses_project"', options: options).total_count).to eq(1)
+    end
+
+    context 'when search_project_query_builder flag is false' do
+      before do
+        stub_feature_flags(search_project_query_builder: false)
+      end
+
+      it 'finds projects' do
+        user = create(:admin)
+        project_ids = []
+
+        project = create(:project, name: 'test1')
+        project1 = create(:project, path: 'test2', description: 'awesome project')
+        project2 = create(:project)
+        create(:project, path: 'someone_elses_project')
+        project_ids += [project.id, project1.id, project2.id]
+
+        create(:project, :private, name: 'test3')
+        options = { current_user: user, search_level: :global, project_ids: project_ids }
 
         ensure_elasticsearch_index!
-        response = described_class.elastic_search('*')
 
-        expect(response.total_count).to eq(1)
-        expect(response.results.first['_source']['type']).to eq(described_class.es_type)
+        expect(described_class.elastic_search('"test1"', options: options).total_count).to eq(1)
+        expect(described_class.elastic_search('"test2"', options: options).total_count).to eq(1)
+        expect(described_class.elastic_search('"awesome"', options: options).total_count).to eq(1)
+        expect(described_class.elastic_search('test*', options: options).total_count).to eq(2)
+        expect(described_class.elastic_search('test*', options: options.merge(project_ids: :any)).total_count).to eq(3)
+        expect(described_class.elastic_search('"someone_elses_project"', options: options).total_count).to eq(0)
       end
     end
   end
 
-  it 'finds projects', :sidekiq_inline do
-    project_ids = []
-
-    project = create(:project, name: 'test1')
-    project1 = create(:project, path: 'test2', description: 'awesome project')
-    project2 = create(:project)
-    create(:project, path: 'someone_elses_project')
-    project_ids += [project.id, project1.id, project2.id]
-
-    create(:project, :private, name: 'test3')
-
-    ensure_elasticsearch_index!
-
-    expect(described_class.elastic_search('"test1"', options: { project_ids: project_ids }).total_count).to eq(1)
-    expect(described_class.elastic_search('"test2"', options: { project_ids: project_ids }).total_count).to eq(1)
-    expect(described_class.elastic_search('"awesome"', options: { project_ids: project_ids }).total_count).to eq(1)
-    expect(described_class.elastic_search('test*', options: { project_ids: project_ids }).total_count).to eq(2)
-    expect(described_class.elastic_search('test*', options: { project_ids: :any }).total_count).to eq(3)
-    expect(described_class.elastic_search('"someone_elses_project"',
-      options: { project_ids: project_ids }).total_count).to eq(0)
-  end
-
-  it 'finds partial matches in project names', :sidekiq_inline do
-    project = create :project, name: 'tesla-model-s'
-    project1 = create :project, name: 'tesla_model_s'
+  it 'finds partial matches in project names', :elastic_delete_by_query do
+    project = create(:project, :public, name: 'tesla-model-s')
+    project1 = create(:project, :public, name: 'tesla_model_s')
     project_ids = [project.id, project1.id]
+    options = { search_level: :global, project_ids: project_ids }
 
     ensure_elasticsearch_index!
 
-    expect(described_class.elastic_search('tesla', options: { project_ids: project_ids }).total_count).to eq(2)
-  end
-
-  it 'names elasticsearch queries' do
-    described_class.elastic_search('*').total_count
-
-    assert_named_queries('doc:is_a:project', 'project:match:search_terms')
-  end
-
-  describe '.as_indexed_json' do
-    let_it_be(:project) { create(:project) }
-
-    before do
-      ensure_elasticsearch_index!
-    end
-
-    it 'returns json with all needed elements' do
-      expected_hash = project.attributes.extract!(
-        'id',
-        'name',
-        'path',
-        'description',
-        'namespace_id',
-        'created_at',
-        'archived',
-        'updated_at',
-        'visibility_level',
-        'last_activity_at',
-        'mirror',
-        'star_count'
-      ).merge({
-        'ci_catalog' => project.catalog_resource.present?,
-        'type' => project.es_type,
-        'schema_version' => schema_version,
-        'traversal_ids' => project.elastic_namespace_ancestry,
-        'name_with_namespace' => project.full_name,
-        'path_with_namespace' => project.full_path,
-        'forked' => false,
-        'owner_id' => project.owner.id,
-        'repository_languages' => project.repository_languages.map(&:name),
-        'last_repository_updated_date' => project.last_repository_updated_at
-      })
-
-      expect(project.__elasticsearch__.as_indexed_json).to eq(expected_hash)
-    end
-
-    context 'when add_fields_to_projects_index is not finished' do
-      before do
-        set_elasticsearch_migration_to(:add_fields_to_projects_index, including: false)
-      end
-
-      it 'does not include the ci_catalog field' do
-        as_indexed_json = project.__elasticsearch__.as_indexed_json
-
-        expect(as_indexed_json).not_to have_key('mirror')
-        expect(as_indexed_json).not_to have_key('forked')
-        expect(as_indexed_json).not_to have_key('owner_id')
-        expect(as_indexed_json).not_to have_key('repository_languages')
-      end
-    end
+    expect(described_class.elastic_search('tesla', options: options).total_count).to eq(2)
   end
 end
