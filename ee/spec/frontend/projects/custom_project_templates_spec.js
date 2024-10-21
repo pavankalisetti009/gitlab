@@ -22,7 +22,7 @@ const generateInstanceTabContent = (content) => {
       <div class="js-custom-instance-project-templates-nav-link">Instance tab</div>
       <div class="js-custom-instance-project-templates-tab-content active" data-initial-templates="${INSTANCE_TEMPLATES_ENDPOINT}">
           ${content}
-          <ul class="pagination">
+          <ul class="gl-pagination">
               <li><a href="/users/root/available_instance_templates">Prev</a></li>
               <li><a href="/users/root/available_instance_templates">1</a></li>
               <li><a href="/users/root/available_instance_templates?page=2" class="page-2">2</a></li>
@@ -37,7 +37,7 @@ const generateGroupTabContent = (content) => {
       <div class="js-custom-group-project-templates-nav-link">Group tab</div>
       <div class="js-custom-group-project-templates-tab-content active" data-initial-templates="${GROUP_TEMPLATES_ENDPOINT}">
           ${content}
-          <ul class="pagination">
+          <ul class="gl-pagination">
               <li><a href="/users/root/available_group_templates">Prev</a></li>
               <li><a href="/users/root/available_group_templates">1</a></li>
               <li><a href="/users/root/available_group_templates?page=2" class="page-2">2</a></li>
