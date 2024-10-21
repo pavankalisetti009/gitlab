@@ -31,6 +31,9 @@ module Types
           null: true,
           deprecated: { reason: 'use duoAssignedUsersCount for the same behavior', milestone: '17.6' },
           hash_key: :duo_assigned_users_count
+        field :duo_used_count, GraphQL::Types::Int,
+          description: 'Number of contributors who used any GitLab Duo feature.',
+          null: true
       end
       # rubocop: enable GraphQL/ExtractType
       # rubocop: enable Graphql/AuthorizeTypes

@@ -14,11 +14,8 @@ module Analytics
       end
 
       def execute
-        data = {}
-
-        data = add_code_suggestions_usage(data)
-        data = add_duo_chat_usage(data)
-        data = add_duo_assigned(data)
+        data = add_duo_assigned({})
+        data = add_usage(data, CodeSuggestionUsageService, DuoChatUsageService, DuoUsageService)
 
         ServiceResponse.success(payload: data)
       end
@@ -39,28 +36,20 @@ module Analytics
         data.merge(duo_assigned_users_count: pro_users.count + enterprise_users.count)
       end
 
-      def add_code_suggestions_usage(data)
-        usage = CodeSuggestionUsageService.new(
-          current_user,
-          namespace: namespace,
-          from: from,
-          to: to,
-          fields: fields & CodeSuggestionUsageService::FIELDS
-        ).execute
+      def add_usage(data, *service_classes)
+        service_classes.each do |klass|
+          usage = klass.new(
+            current_user,
+            namespace: namespace,
+            from: from,
+            to: to,
+            fields: fields
+          ).execute
 
-        usage.success? ? data.merge(usage.payload) : data
-      end
+          data.merge!(usage.payload) if usage.success?
+        end
 
-      def add_duo_chat_usage(data)
-        usage = DuoChatUsageService.new(
-          current_user,
-          namespace: namespace,
-          from: from,
-          to: to,
-          fields: fields & DuoChatUsageService::FIELDS
-        ).execute
-
-        usage.success? ? data.merge(usage.payload) : data
+        data
       end
     end
   end

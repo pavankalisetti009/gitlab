@@ -18,10 +18,11 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
   let(:fields) do
     Analytics::AiAnalytics::DuoChatUsageService::FIELDS +
       Analytics::AiAnalytics::CodeSuggestionUsageService::FIELDS +
+      Analytics::AiAnalytics::DuoUsageService::FIELDS +
       [:duo_assigned_users_count]
   end
 
-  let(:expected_filters) { { from: from, to: to } }
+  let(:expected_filters) { { from: from, to: to, fields: fields } }
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
@@ -31,7 +32,7 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
     before do
       allow_next_instance_of(::Analytics::AiAnalytics::DuoChatUsageService,
         current_user,
-        hash_including(expected_filters.merge(fields: ::Analytics::AiAnalytics::DuoChatUsageService::FIELDS))
+        hash_including(expected_filters)
       ) do |instance|
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
           duo_chat_contributors_count: 8
@@ -40,13 +41,22 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
 
       allow_next_instance_of(::Analytics::AiAnalytics::CodeSuggestionUsageService,
         current_user,
-        hash_including(expected_filters.merge(fields: ::Analytics::AiAnalytics::CodeSuggestionUsageService::FIELDS))
+        hash_including(expected_filters)
       ) do |instance|
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
           code_contributors_count: 10,
           code_suggestions_contributors_count: 3,
           code_suggestions_shown_count: 5,
           code_suggestions_accepted_count: 2
+        }))
+      end
+
+      allow_next_instance_of(::Analytics::AiAnalytics::DuoUsageService,
+        current_user,
+        hash_including(expected_filters)
+      ) do |instance|
+        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
+          duo_used_count: 11
         }))
       end
 
@@ -69,7 +79,8 @@ RSpec.describe Analytics::AiAnalytics::AiMetricsService, feature_category: :valu
         code_suggestions_contributors_count: 3,
         code_suggestions_shown_count: 5,
         code_suggestions_accepted_count: 2,
-        duo_assigned_users_count: 3
+        duo_assigned_users_count: 3,
+        duo_used_count: 11
       })
     end
   end
