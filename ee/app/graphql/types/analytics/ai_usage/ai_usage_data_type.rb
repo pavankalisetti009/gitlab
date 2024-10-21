@@ -6,7 +6,7 @@ module Types
       class AiUsageDataType < BaseObject
         graphql_name 'AiUsageData'
 
-        authorize :read_ai_analytics
+        authorize :read_enterprise_ai_analytics
 
         field :code_suggestion_events,
           description: 'Events related to code suggestions feature.',

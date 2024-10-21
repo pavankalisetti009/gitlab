@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'permission to :read_ai_analytics' do
+RSpec.shared_examples 'ai permission to' do |ability|
   using RSpec::Parameterized::TableSyntax
 
-  where(:role, :flag_enabled, :has_duo_enterprise, :allowed) do
+  where(:role, :flag_enabled, :has_subscription_assignment, :allowed) do
     :guest    | false | false | false
     :guest    | false | true  | false
     :guest    | true  | false | false
@@ -20,7 +20,7 @@ RSpec.shared_examples 'permission to :read_ai_analytics' do
     before do
       stub_feature_flags(ai_impact_only_on_duo_enterprise: flag_enabled)
 
-      if has_duo_enterprise
+      if has_subscription_assignment
         create(
           :gitlab_subscription_user_add_on_assignment,
           user: current_user,
@@ -29,6 +29,6 @@ RSpec.shared_examples 'permission to :read_ai_analytics' do
       end
     end
 
-    it { is_expected.to(allowed ? be_allowed(:read_ai_analytics) : be_disallowed(:read_ai_analytics)) }
+    it { is_expected.to(allowed ? be_allowed(ability) : be_disallowed(ability)) }
   end
 end

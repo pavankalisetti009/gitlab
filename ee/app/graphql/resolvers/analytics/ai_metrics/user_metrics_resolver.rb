@@ -9,7 +9,7 @@ module Resolvers
         type ::Types::Analytics::AiMetrics::UserMetricsType, null: true
 
         authorizes_object!
-        authorize :read_ai_analytics
+        authorize :read_enterprise_ai_analytics
 
         argument :start_date, Types::DateType,
           required: false,

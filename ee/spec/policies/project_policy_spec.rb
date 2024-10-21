@@ -1594,7 +1594,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     it { is_expected.not_to be_allowed(:read_dora4_analytics) }
   end
 
-  describe ':read_ai_analytics' do
+  describe ':read_enterprise_ai_analytics' do
     let(:project) { private_project_in_group }
     let(:guest) { inherited_guest }
     let(:reporter) { inherited_reporter }
@@ -1602,13 +1602,47 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context 'when on SAAS', :saas do
       let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
 
-      it_behaves_like 'permission to :read_ai_analytics'
+      it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
     end
 
     context 'when on self-managed' do
       let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
 
-      it_behaves_like 'permission to :read_ai_analytics'
+      it_behaves_like 'ai permission to', :read_enterprise_ai_analytics
+    end
+  end
+
+  describe ':read_pro_ai_analytics' do
+    let(:project) { private_project_in_group }
+    let(:guest) { inherited_guest }
+    let(:reporter) { inherited_reporter }
+
+    context 'when on SAAS', :saas do
+      context 'with pro subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+
+      context 'with enterprise subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'with pro subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :self_managed) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
+
+      context 'with enterprise subscription' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+        it_behaves_like 'ai permission to', :read_pro_ai_analytics
+      end
     end
   end
 
