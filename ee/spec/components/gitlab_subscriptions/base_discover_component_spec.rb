@@ -65,5 +65,28 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
         end
       end
     end
+
+    context 'when core_section_two_card_collection is not empty' do
+      let(:no_method_name) { nil }
+
+      it 'renders another row of feature cards' do
+        allow_next_instance_of(test_discover_class) do |instance|
+          allow(instance).to receive(:core_section_two_card_collection).and_return(
+            [
+              {
+                header: 'Feature A',
+                body: 'This is feature A'
+              },
+              {
+                header: 'Feature B',
+                body: 'This is feature B'
+              }
+            ]
+          )
+        end
+
+        expect(component).to have_css('[data-testid="core-2-entry"]', count: 2)
+      end
+    end
   end
 end
