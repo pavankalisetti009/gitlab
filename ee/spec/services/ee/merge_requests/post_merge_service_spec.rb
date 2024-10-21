@@ -15,24 +15,11 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
 
   describe '#execute' do
     context 'merged event' do
-      context 'when ff_compliance_audit_mr_merge is enabled' do
-        it 'publishes to the MergedEvent' do
-          expect(::Gitlab::EventStore).to receive(:publish)
-          expect(MergeRequests::MergedEvent).to receive(:new)
+      it 'publishes to the MergedEvent' do
+        expect(::Gitlab::EventStore).to receive(:publish)
+        expect(MergeRequests::MergedEvent).to receive(:new)
 
-          subject
-        end
-      end
-
-      context 'when ff_compliance_audit_mr_merge is disabled' do
-        it 'does not publish to the MergedEvent' do
-          stub_feature_flags ff_compliance_audit_mr_merge: false
-
-          expect(::Gitlab::EventStore).not_to receive(:publish)
-          expect(MergeRequests::MergedEvent).not_to receive(:new)
-
-          subject
-        end
+        subject
       end
     end
 
