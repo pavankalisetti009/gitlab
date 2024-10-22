@@ -59,10 +59,8 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
         href: new_trial_path(namespace_id: namespace.id)
       )
 
-      is_expected.to have_css(
-        '[data-event-tracking="click_duo_enterprise_trial_billing_page"]' \
-          '[data-event-label="ultimate_and_duo_enterprise_trial"]'
-      )
+      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'ultimate_and_duo_enterprise_trial' }
+      is_expected.to have_internal_tracking(attributes)
     end
 
     it 'has the secondary action' do
@@ -70,10 +68,8 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
         'Try GitLab Duo Pro', href: new_trials_duo_pro_path(namespace_id: namespace.id)
       )
 
-      is_expected.to have_css(
-        '[data-event-tracking="click_duo_enterprise_trial_billing_page"]' \
-          '[data-event-label="duo_pro_trial"]'
-      )
+      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'duo_pro_trial' }
+      is_expected.to have_internal_tracking(attributes)
     end
   end
 end
