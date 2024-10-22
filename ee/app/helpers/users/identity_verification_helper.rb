@@ -55,7 +55,8 @@ module Users
           phone_number: phone_number_verification_data(user),
           email: email_verification_data(user),
           arkose: arkose_labs_data,
-          arkose_data_exchange_payload: arkose_data_exchange_payload
+          arkose_data_exchange_payload:
+            arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION)
         }.to_json
       }
     end
@@ -101,14 +102,6 @@ module Users
       route_helper_prefix = signup ? 'signup' : ''
       route_helper_name = [action.to_s, route_helper_prefix, 'identity_verification_path'].reject(&:blank?).join('_')
       public_send(route_helper_name) # rubocop:disable GitlabSecurity/PublicSend -- Call either *signup_identity_verification_path and *identity_verification_path route helpers
-    end
-
-    def arkose_data_exchange_payload
-      Arkose::DataExchangePayload.new(
-        request,
-        use_case: Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION,
-        require_challenge: true
-      ).build
     end
   end
 end

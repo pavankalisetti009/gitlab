@@ -15,7 +15,7 @@ module EE
       data = {
         api_key: Arkose::Settings.arkose_public_api_key,
         domain: Arkose::Settings.arkose_labs_domain,
-        data_exchange_payload: signup_arkose_data_exchange_payload
+        data_exchange_payload: arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_SIGN_UP)
       }
 
       data.compact
@@ -41,18 +41,6 @@ module EE
 
     def registration_objective_options
       localized_jobs_to_be_done_choices.dup
-    end
-
-    def signup_arkose_data_exchange_payload
-      use_case = Arkose::DataExchangePayload::USE_CASE_SIGN_UP
-      show_challenge =
-        PhoneVerification::Users::RateLimitService.daily_transaction_hard_limit_exceeded?
-
-      Arkose::DataExchangePayload.new(
-        request,
-        use_case: use_case,
-        require_challenge: show_challenge
-      ).build
     end
   end
 end
