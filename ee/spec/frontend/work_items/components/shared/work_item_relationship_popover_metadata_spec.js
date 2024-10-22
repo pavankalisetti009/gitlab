@@ -51,7 +51,7 @@ describe('WorkItemPopoverMetadataEE', () => {
   it('renders item start and due dates icon and text', () => {
     expect(findDates().exists()).toBe(true);
     expect(findDates().findComponent(GlIcon).props('name')).toBe('calendar');
-    expect(findDates().text()).toContain('Jan 1 – Jun 27, 2024');
+    expect(findDates().text()).toContain('Jan 1 – Jun 27, 2024');
   });
 
   it('renders gl-tooltip', () => {

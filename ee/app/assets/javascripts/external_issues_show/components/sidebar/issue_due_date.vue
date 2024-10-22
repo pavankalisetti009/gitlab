@@ -1,6 +1,6 @@
 <script>
 import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { dateInWords, getDayDifference, newDate } from '~/lib/utils/datetime_utility';
+import { getDayDifference, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
 
 export default {
@@ -19,9 +19,7 @@ export default {
   },
   computed: {
     dueDateInWords() {
-      const date = newDate(this.dueDate);
-
-      return dateInWords(date, true);
+      return localeDateFormat.asDate.format(newDate(this.dueDate));
     },
     formattedDueDate() {
       const today = new Date();

@@ -1,7 +1,7 @@
 <script>
 import { GlIcon, GlButton, GlSprintf } from '@gitlab/ui';
 import { TABLE_TYPE_DEFAULT, TEMPORARY_EXTENSION_LABEL } from 'ee/billings/constants';
-import { dateInWords } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import Popover from '~/vue_shared/components/help_popover.vue';
 import { slugify } from '~/lib/utils/text_utility';
 
@@ -58,10 +58,7 @@ export default {
     formattedNextTermStartDate() {
       if (!this.nextTermStartDate) return ' - ';
 
-      const [year, month, day] = this.nextTermStartDate.split('-');
-      const formattedDate = dateInWords(new Date(year, month - 1, day));
-
-      return formattedDate;
+      return localeDateFormat.asDate.format(newDate(this.nextTermStartDate));
     },
   },
   methods: {
@@ -73,10 +70,8 @@ export default {
     },
     getDisplayValue(col) {
       if (col.isDate && col.value) {
-        const [year, month, day] = col.value.split('-');
-        const formattedDate = dateInWords(new Date(year, month - 1, day));
+        const formattedDate = localeDateFormat.asDate.format(newDate(col.value));
 
-        // create UTC date (prevent date from being converted to local timezone)
         if (col.id === 'subscriptionEndDate' && this.temporaryExtensionEndDate) {
           return `${formattedDate}*`;
         }
@@ -96,9 +91,7 @@ export default {
     },
 
     temporaryExtensionDisplayValue() {
-      const [year, month, day] = this.temporaryExtensionEndDate.split('-');
-
-      return dateInWords(new Date(year, month - 1, day));
+      return localeDateFormat.asDate.format(newDate(this.temporaryExtensionEndDate));
     },
     isSeatsUsageButtonShown(col) {
       return this.billableSeatsHref && col.id === 'seatsInUse';

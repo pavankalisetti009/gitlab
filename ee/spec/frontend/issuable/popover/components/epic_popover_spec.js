@@ -134,7 +134,7 @@ describe('Epic Popover', () => {
       const timeframe = wrapper.findByTestId('epic-timeframe');
       expect(timeframe.exists()).toBe(true);
       expect(timeframe.findComponent(GlIcon).exists()).toBe(true);
-      expect(timeframe.text()).toBe('Oct 31, 2022 – Sep 30, 2023');
+      expect(timeframe.text()).toBe('Oct 31, 2022 – Sep 30, 2023');
     });
   });
 });
