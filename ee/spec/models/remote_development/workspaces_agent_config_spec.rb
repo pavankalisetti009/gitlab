@@ -114,7 +114,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
     end
 
     it 'allows numerical values for workspaces_per_user_quota greater or equal to -1' do
-      validate_numericality_of(:workspaces_per_user_quota).only_integer.is_greater_than_or_equal_to(-1)
+      is_expected.to validate_numericality_of(:workspaces_per_user_quota).only_integer.is_greater_than_or_equal_to(-1)
     end
 
     it 'allows numerical values for max_hours_before_termination_limit greater or equal to' \
@@ -176,7 +176,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
 
         it 'allows the config to be created' do
           expect(config).to be_valid
-          expect(config.allow_privilege_escalation).to eq(true)
+          expect(config.allow_privilege_escalation).to be(true)
           expect(config.default_runtime_class).to eq(default_runtime_class)
         end
       end
@@ -195,7 +195,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       end
 
       it 'create version has nil object' do
-        expect(new_config.versions[0].reify).to be nil
+        expect(new_config.versions[0].reify).to be_nil
       end
     end
 
@@ -243,7 +243,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       it 'does not contain version before delete' do
         reified_object = new_config.versions.last.reify
 
-        expect(reified_object).to be nil
+        expect(reified_object).to be_nil
       end
     end
 

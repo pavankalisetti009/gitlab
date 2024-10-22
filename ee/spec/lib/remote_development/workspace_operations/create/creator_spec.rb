@@ -30,7 +30,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
     }
   end
 
-  let(:workspace) { instance_double("RemoteDevelopment::Workspace") }
+  let(:workspace) { instance_double(RemoteDevelopment::Workspace) }
 
   let(:updated_value) do
     initial_value.merge(

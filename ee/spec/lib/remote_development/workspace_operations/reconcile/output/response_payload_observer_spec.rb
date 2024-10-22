@@ -3,7 +3,7 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadObserver, feature_category: :workspaces do
-  let(:agent) { instance_double("Clusters::Agent", id: 1) }
+  let(:agent) { instance_double(Clusters::Agent, id: 1) }
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }

@@ -20,7 +20,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
 
   let(:workspace) do
     instance_double(
-      "RemoteDevelopment::Workspace",
+      RemoteDevelopment::Workspace,
       id: 1,
       name: "workspace",
       namespace: "namespace",

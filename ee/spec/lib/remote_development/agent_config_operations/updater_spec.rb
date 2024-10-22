@@ -198,7 +198,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
           it 'creates a config record with a default context of enabled as false' do
             expect { result }.to change { RemoteDevelopment::WorkspacesAgentConfig.count }
             expect(result).to be_ok_result
-            expect(agent.reload.unversioned_latest_workspaces_agent_config.enabled).to eq(false)
+            expect(agent.reload.unversioned_latest_workspaces_agent_config.enabled).to be(false)
           end
         end
 

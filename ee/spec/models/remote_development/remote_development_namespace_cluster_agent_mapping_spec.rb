@@ -18,7 +18,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping,
 
   describe 'associations' do
     context "for belongs_to" do
-      it do
+      it "belongs to user" do
         is_expected
           .to belong_to(:user)
             .class_name('User')
@@ -26,13 +26,13 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping,
             .inverse_of(:created_remote_development_namespace_cluster_agent_mappings)
       end
 
-      it do
+      it "belongs to namespace" do
         is_expected
           .to belong_to(:namespace)
             .inverse_of(:remote_development_namespace_cluster_agent_mappings)
       end
 
-      it do
+      it "belongs to agent" do
         is_expected
           .to belong_to(:agent)
             .class_name('Clusters::Agent')

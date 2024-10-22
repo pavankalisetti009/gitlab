@@ -99,8 +99,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
     end
 
     it 'does not change force_include_all_resources for workspaces with false' do
-      expect { returned_value }.not_to change { workspace1.reload.force_include_all_resources }
-      expect { returned_value }.not_to change { workspace2.reload.force_include_all_resources }
+      expect { returned_value }.not_to change {
+        [
+          workspace1.reload.force_include_all_resources,
+          workspace2.reload.force_include_all_resources
+        ]
+      }
     end
 
     it 'does not include workspaces which are not passed in workspaces_to_be_returned' do

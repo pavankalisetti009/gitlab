@@ -7,12 +7,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   let(:dns_zone) { "workspaces.localdev.me" }
   let(:logger) { instance_double(Logger) }
-  let(:user) { instance_double("User", name: "name", email: "name@example.com") }
-  let(:agent) { instance_double("Clusters::Agent", id: 1) }
+  let(:user) { instance_double(User, name: "name", email: "name@example.com") }
+  let(:agent) { instance_double(Clusters::Agent, id: 1) }
   let(:processed_devfile) { read_devfile('example.processed-devfile-v2.yaml') }
   let(:workspace) do
     instance_double(
-      "RemoteDevelopment::Workspace",
+      RemoteDevelopment::Workspace,
       id: 1,
       name: "name",
       namespace: "namespace",
