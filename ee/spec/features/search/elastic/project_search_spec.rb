@@ -160,14 +160,19 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
     let(:results) { Search::Zoekt::SearchResults.new(user, query, ::Project.id_in(project.id), node_id: zoekt_node.id) }
 
     before do
+      sign_in(user)
+      # this tests tests only non-multimatch search
+      # multimatch search is tested in jest
+      stub_feature_flags(zoekt_multimatch_frontend: false)
+
       allow_next_instance_of(SearchService) do |service|
         allow(service).to receive(:search_service).and_return(search_service)
         allow(service).to receive(:show_epics?).and_return(false)
         allow(service).to receive(:search_results).and_return(results)
-        allow(::Gitlab::Search::Zoekt::Client.instance).to receive(:search)
-          .and_return(Gitlab::Search::Zoekt::Response.new({ Error: 'failed to parse query' }))
       end
 
+      allow(::Gitlab::Search::Zoekt::Client.instance).to receive(:search)
+          .and_return(Gitlab::Search::Zoekt::Response.new({ Error: 'failed to parse query' }))
       visit search_path(search: query, project_id: project.id)
     end
 

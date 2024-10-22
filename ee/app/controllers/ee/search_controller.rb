@@ -79,6 +79,11 @@ module EE
 
     private
 
+    override :multi_match?
+    def multi_match?(search_type:, scope:)
+      scope == 'blobs' && search_type == 'zoekt' && ::Feature.enabled?(:zoekt_multimatch_frontend, current_user)
+    end
+
     override :default_sort
     def default_sort
       if search_service.use_elasticsearch?

@@ -73,7 +73,7 @@ module MergeRequests
         items_with_users
           .where(users_association => { user_id: user_ids })
           .group('merge_requests.id')
-          .having("COUNT(#{users_association}.user_id) = ?", user_ids.size)
+          .having("COUNT(#{users_association}.user_id) >= ?", user_ids.size)
       end
     end
 

@@ -37,6 +37,7 @@ module Gitlab
             Attribute.new(:picked_tool, String),
             Attribute.new(:allowed, String),
             Attribute.new(:tool_name, String),
+            Attribute.new(:react_turn, Integer),
             Attribute.new(:ai_event, String),
             Attribute.new(:params, String),
             Attribute.new(:status, Integer),

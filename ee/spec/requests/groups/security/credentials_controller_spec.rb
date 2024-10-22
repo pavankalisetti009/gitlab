@@ -31,7 +31,7 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
         stub_licensed_features(credentials_inventory: true, group_saml: true)
       end
 
-      context 'for a group that enforces group managed accounts' do
+      context 'for a group with enterprise users' do
         context 'for a user with access to view credentials inventory' do
           it 'responds with 200' do
             subject

@@ -107,6 +107,9 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "streams final answer" do
+        expect(agent).to receive(:log_info).with(
+          message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
+
         expect(stream_response_service_double).to receive(:execute).with(
           response: first_response_double,
           options: { chunk_id: 1 }
@@ -144,6 +147,9 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns tool answer" do
+        expect(agent).to receive(:log_info).with(
+          message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
+
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("tool answer")
       end
@@ -220,6 +226,9 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns unknown answer as is" do
+        expect(agent).to receive(:log_info).with(
+          message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
+
         expect(answer.content).to include('foo')
       end
     end
