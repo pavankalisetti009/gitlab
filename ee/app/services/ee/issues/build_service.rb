@@ -11,7 +11,7 @@ module EE
         return {} unless container.respond_to?(:issues_template)
 
         if container.issues_template.present? && params.include?(:description)
-          { description: container.issues_template + "\n" + params.delete(:description) }
+          { description: container.issues_template + "\n" + params.delete(:description).to_s }
         else
           { description: container.issues_template }
         end
