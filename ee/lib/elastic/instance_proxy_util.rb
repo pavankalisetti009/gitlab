@@ -13,14 +13,14 @@ module Elastic
 
       config = version_namespace.const_get(const_name, false)
 
-      @index_name = load_index_name(config)
+      @index_name = config.index_name
       @document_type = config.document_type
     end
 
     ### Multi-version utils
 
     def real_class
-      self.singleton_class.superclass
+      singleton_class.superclass
     end
 
     def version_namespace
@@ -38,29 +38,6 @@ module Elastic
     end
 
     private
-
-    def load_index_name(config)
-      index_partitioning_enabled? ? search_write_index_path : config.index_name
-    end
-
-    def index_partitioning_enabled?
-      case target
-      when Note
-        Feature.enabled?(:search_index_partitioning_notes, target.project)
-      else
-        false
-      end
-    end
-
-    def search_write_index_path
-      search_index = target.search_index
-
-      unless search_index.present?
-        raise ArgumentError, "Search index assignment was missing for #{target.class} with id: `#{target.id}`"
-      end
-
-      search_index.path
-    end
 
     # Some attributes are actually complicated methods. Bad data can cause
     # them to raise exceptions. When this happens, we still want the remainder

@@ -37,11 +37,6 @@ module EE
       end
     end
 
-    def search_index
-      namespace = project&.namespace || author.namespace # Personal snippets do not have a project
-      ::Search::IndexRegistry.index_for_namespace(namespace: namespace, type: ::Search::NoteIndex)
-    end
-
     override :use_elasticsearch?
     def use_elasticsearch?
       !system && super
