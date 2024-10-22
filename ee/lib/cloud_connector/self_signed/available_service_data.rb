@@ -5,8 +5,6 @@ module CloudConnector
     class AvailableServiceData < BaseAvailableServiceData
       extend ::Gitlab::Utils::Override
 
-      IGNORE_CUT_OFF_DATE_EXPIRED_LIST = %i[self_hosted_models sast duo_workflow].freeze
-
       attr_reader :backend
 
       def initialize(name, cut_off_date, bundled_with, backend)
@@ -14,11 +12,6 @@ module CloudConnector
 
         @bundled_with = bundled_with
         @backend = backend
-      end
-
-      override :free_access?
-      def free_access?
-        cut_off_date_expired_enabled? ? false : super
       end
 
       override :access_token
@@ -32,13 +25,6 @@ module CloudConnector
       end
 
       private
-
-      def cut_off_date_expired_enabled?
-        return false unless ::Gitlab.dev_or_test_env? || ::Gitlab.staging?
-        return false if IGNORE_CUT_OFF_DATE_EXPIRED_LIST.include?(name)
-
-        Feature.enabled?(:cloud_connector_cut_off_date_expired, :instance, type: :ops)
-      end
 
       def scopes_for(resource)
         free_access? ? allowed_scopes_during_free_access : allowed_scopes_from_purchased_bundles_for(resource)
