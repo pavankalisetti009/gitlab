@@ -237,6 +237,20 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::StageTimeSummary, fea
       end
     end
 
+    context 'with small values' do
+      let(:from) { 7.days.ago }
+
+      before do
+        issue_1 = create(:closed_issue, project: project, closed_at: Time.zone.now, created_at: created_at)
+
+        issue_1.metrics.update!(first_mentioned_in_commit_at: 432.seconds.ago)
+      end
+
+      it 'rounds up values to 2 numbers after dot' do
+        expect(cycle_time[:value]).to eq('0.01')
+      end
+    end
+
     context 'with `from` date' do
       let(:from) { 7.days.ago }
 
