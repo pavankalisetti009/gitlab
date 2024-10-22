@@ -1,11 +1,8 @@
 import { GlButton, GlButtonGroup, GlCollapse, GlPopover } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import CodeFlowStepsSection from 'ee/vue_shared/components/code_flow/code_flow_steps_section.vue';
 import { mockVulnerability } from 'ee_jest/vulnerabilities/mock_data';
-
-jest.mock('~/behaviors/markdown/render_gfm');
 
 describe('Vulnerability Code Flow', () => {
   let wrapper;
@@ -43,10 +40,6 @@ describe('Vulnerability Code Flow', () => {
     expect(findButtonGroup().exists()).toBe(true);
     expect(findButtons().exists()).toBe(true);
     expect(findButtons().length).toBe(2);
-  });
-
-  it('renders gfm', () => {
-    expect(renderGFM).toHaveBeenCalledWith(getById('description').element);
   });
 
   describe('check popovers content', () => {

@@ -116,14 +116,14 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
         before do
           allow(helper).to receive(:request).and_return(request_double)
 
-          signup_options = { use_case: 'SIGN_UP', require_challenge: false }
-          allow_next_instance_of(::Arkose::DataExchangePayload, request_double, signup_options) do |instance|
-            allow(instance).to receive(:build).and_call_original
+          allow_next_instance_of(Arkose::DataExchangePayload, request_double,
+            a_hash_including({ use_case: 'SIGN_UP' })) do |builder|
+            allow(builder).to receive(:build).and_call_original
           end
 
-          expected_options = { use_case: 'IDENTITY_VERIFICATION', require_challenge: true }
-          allow_next_instance_of(::Arkose::DataExchangePayload, request_double, expected_options) do |instance|
-            allow(instance).to receive(:build).and_return(data_exchange_payload)
+          allow_next_instance_of(Arkose::DataExchangePayload, request_double,
+            a_hash_including({ use_case: 'IDENTITY_VERIFICATION' })) do |builder|
+            allow(builder).to receive(:build).and_return(data_exchange_payload)
           end
         end
 

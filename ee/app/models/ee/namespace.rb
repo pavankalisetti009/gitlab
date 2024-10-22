@@ -37,7 +37,8 @@ module EE
         class_name: 'Security::OrchestrationPolicyConfiguration',
         foreign_key: :namespace_id,
         inverse_of: :namespace
-      has_one :upcoming_reconciliation, inverse_of: :namespace, class_name: "GitlabSubscriptions::UpcomingReconciliation"
+      has_one :upcoming_reconciliation, inverse_of: :namespace,
+        class_name: "GitlabSubscriptions::UpcomingReconciliation"
       has_one :system_access_microsoft_application, class_name: '::SystemAccess::MicrosoftApplication'
       has_one :onboarding_progress, class_name: 'Onboarding::Progress'
 
@@ -51,7 +52,8 @@ module EE
       accepts_nested_attributes_for :namespace_limit
 
       has_one :audit_event_http_namespace_filter, class_name: 'AuditEvents::Streaming::HTTP::NamespaceFilter'
-      has_one :audit_event_http_instance_namespace_filter, class_name: 'AuditEvents::Streaming::HTTP::Instance::NamespaceFilter'
+      has_one :audit_event_http_instance_namespace_filter,
+        class_name: 'AuditEvents::Streaming::HTTP::Instance::NamespaceFilter'
       has_many :work_items_colors, inverse_of: :namespace, class_name: 'WorkItems::Color'
       has_many :audit_events_streaming_group_namespace_filters, class_name: 'AuditEvents::Group::NamespaceFilter'
       has_many :audit_events_streaming_instance_namespace_filters, class_name: 'AuditEvents::Instance::NamespaceFilter'
@@ -65,7 +67,8 @@ module EE
 
       scope :include_gitlab_subscription, -> { includes(:gitlab_subscription) }
       scope :include_gitlab_subscription_with_hosted_plan, -> { includes(gitlab_subscription: :hosted_plan) }
-      scope :join_gitlab_subscription, -> { joins("LEFT OUTER JOIN gitlab_subscriptions ON gitlab_subscriptions.namespace_id=namespaces.id") }
+      scope :join_gitlab_subscription,
+        -> { joins("LEFT OUTER JOIN gitlab_subscriptions ON gitlab_subscriptions.namespace_id=namespaces.id") }
 
       scope :not_in_active_trial, -> do
         left_joins(gitlab_subscription: :hosted_plan)
@@ -136,14 +139,16 @@ module EE
       end
 
       scope :namespace_settings_with_ai_features_enabled, -> do
-        joins("INNER JOIN \"namespace_settings\" ON \"namespace_settings\".\"namespace_id\" = \"namespaces\".traversal_ids[1]")
+        joins("INNER JOIN \"namespace_settings\" \
+          ON \"namespace_settings\".\"namespace_id\" = \"namespaces\".traversal_ids[1]")
           .where(namespace_settings: { experiment_features_enabled: true })
       end
 
       scope :with_ai_supported_plan, ->(feature = :ai_features) do
         plan_names = GitlabSubscriptions::Features.saas_plans_with_feature(feature)
 
-        joins("LEFT OUTER JOIN \"gitlab_subscriptions\" ON \"gitlab_subscriptions\".\"namespace_id\" = \"namespaces\".traversal_ids[1]")
+        joins("LEFT OUTER JOIN \"gitlab_subscriptions\" \
+          ON \"gitlab_subscriptions\".\"namespace_id\" = \"namespaces\".traversal_ids[1]")
           .joins("LEFT OUTER JOIN \"plans\" ON \"plans\".\"id\" = \"gitlab_subscriptions\".\"hosted_plan_id\"")
           .where(
             plans: { name: plan_names }
@@ -161,7 +166,8 @@ module EE
       delegate :eligible_additional_purchased_storage_size, :additional_purchased_storage_size=,
         :additional_purchased_storage_ends_on, :additional_purchased_storage_ends_on=,
         to: :namespace_limit, allow_nil: true
-      delegate :duo_features_enabled, :lock_duo_features_enabled, :duo_availability, to: :namespace_settings, allow_nil: true
+      delegate :duo_features_enabled, :lock_duo_features_enabled, :duo_availability, to: :namespace_settings,
+        allow_nil: true
 
       # `eligible_additional_purchased_storage_size` uses a FF to start checking `additional_purchased_storage_ends_on`
       # if the FF is enabled before returning `additional_purchased_storage_size`
@@ -206,7 +212,8 @@ module EE
       attr_accessor :skip_sync_with_customers_dot
 
       before_update :mark_skip_sync_with_customers_dot, if: -> { name_changed? && !project_namespace? }
-      after_commit :sync_name_with_customers_dot, on: :update, if: -> { name_previously_changed? && !project_namespace? }
+      after_commit :sync_name_with_customers_dot, on: :update,
+        if: -> { name_previously_changed? && !project_namespace? }
 
       def trial?
         !!gitlab_subscription&.trial?
@@ -243,7 +250,7 @@ module EE
     def licensed_feature_available?(feature)
       if GitlabSubscriptions::Features.global?(feature)
         raise ArgumentError, "Use `License.feature_available?` for features that cannot be restricted to only a " \
-                             "subset of projects or namespaces"
+          "subset of projects or namespaces"
       end
 
       available_features = strong_memoize(:licensed_feature_available) do
@@ -306,26 +313,23 @@ module EE
     end
 
     def total_repository_size_excess
-      strong_memoize(:total_repository_size_excess) do
-        total_excess = (total_repository_size_arel - repository_size_limit_arel).sum
+      total_excess = (total_repository_size_arel - repository_size_limit_arel).sum
 
-        projects_for_repository_size_excess.pick(total_excess) || 0
-      end
+      projects_for_repository_size_excess.pick(total_excess) || 0
     end
+    strong_memoize_attr :total_repository_size_excess
 
     def repository_size_excess_project_count
-      strong_memoize(:repository_size_excess_project_count) do
-        projects_for_repository_size_excess.count
-      end
+      projects_for_repository_size_excess.count
     end
+    strong_memoize_attr :repository_size_excess_project_count
 
     def total_repository_size
-      strong_memoize(:total_repository_size) do
-        all_projects
+      all_projects
           .joins(:statistics)
           .pick(total_repository_size_arel.sum) || 0
-      end
     end
+    strong_memoize_attr :total_repository_size
 
     def contains_locked_projects?
       total_repository_size_excess > additional_purchased_storage_size.megabytes
@@ -352,16 +356,15 @@ module EE
     end
 
     def sync_membership_lock_with_parent
-      if parent&.membership_lock?
-        self.membership_lock = true
-      end
+      return unless parent&.membership_lock?
+
+      self.membership_lock = true
     end
 
     def ci_minutes_usage
-      strong_memoize(:ci_minutes_usage) do
-        ::Ci::Minutes::Usage.new(self)
-      end
+      ::Ci::Minutes::Usage.new(self)
     end
+    strong_memoize_attr :ci_minutes_usage
 
     # The same method name is used also at project level
     def shared_runners_minutes_limit_enabled?
@@ -533,7 +536,7 @@ module EE
     end
 
     def invalidate_elasticsearch_indexes_cache!
-      ::Gitlab::CurrentSettings.invalidate_elasticsearch_indexes_cache_for_namespace!(self.id)
+      ::Gitlab::CurrentSettings.invalidate_elasticsearch_indexes_cache_for_namespace!(id)
     end
 
     def elastic_namespace_ancestry
@@ -655,9 +658,9 @@ module EE
     def validate_shared_runner_minutes_support
       return if root?
 
-      if shared_runners_minutes_limit_changed?
-        errors.add(:shared_runners_minutes_limit, 'is not supported for this namespace')
-      end
+      return unless shared_runners_minutes_limit_changed?
+
+      errors.add(:shared_runners_minutes_limit, 'is not supported for this namespace')
     end
 
     def clear_feature_available_cache
@@ -669,7 +672,8 @@ module EE
     end
 
     def disable_project_sharing?
-      share_with_group_lock_changed? && (namespace_settings&.user_cap_enabled? || namespace_settings&.seat_control_block_overages?)
+      share_with_group_lock_changed? &&
+        (namespace_settings&.user_cap_enabled? || namespace_settings&.seat_control_block_overages?)
     end
 
     def mark_skip_sync_with_customers_dot
