@@ -16,11 +16,6 @@ module QA
           project.visit!
         end
 
-        after do
-          group_or_project.remove_member(approver)
-          approver.remove_via_api!
-        end
-
         context 'and the code owner is the root group', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347801' do
           let(:codeowner) { project.group.sandbox.path }
           let(:group_or_project) { project.group.sandbox }

@@ -57,10 +57,6 @@ module QA
           end
         end
 
-        after do
-          project.remove_via_api!
-        end
-
         it_behaves_like 'user without push access', :user_maintainer, 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347775'
         it_behaves_like 'selected developer', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347774'
       end
@@ -88,11 +84,6 @@ module QA
               groups: [group]
             }
           end
-        end
-
-        after do
-          project.remove_via_api!
-          group.remove_via_api!
         end
 
         it_behaves_like 'user without push access', :user_maintainer, 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347772'
@@ -123,12 +114,6 @@ module QA
               groups: [sub_group]
             }
           end
-        end
-
-        after do
-          project.remove_via_api!
-          parent_group.remove_via_api!
-          sub_group.remove_via_api!
         end
 
         it_behaves_like 'user without push access', :user_developer, 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436937'

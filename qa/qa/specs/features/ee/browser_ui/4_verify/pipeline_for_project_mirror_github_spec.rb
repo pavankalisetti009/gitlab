@@ -46,12 +46,6 @@ module QA
         imported_project # import project
       end
 
-      after do
-        imported_project.remove_via_api!
-        group.remove_via_api!
-        user.remove_via_api!
-      end
-
       it(
         'user commits to GitHub triggers CI pipeline',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347679',
