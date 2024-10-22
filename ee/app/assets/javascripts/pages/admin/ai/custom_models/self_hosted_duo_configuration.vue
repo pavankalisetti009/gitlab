@@ -1,8 +1,7 @@
 <script>
-import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
+import { GlTabs, GlTab, GlButton, GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import SelfHostedModelsPage from './self_hosted_models_page.vue';
 import FeatureSettingsPage from './ai_feature_settings_page.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
@@ -10,10 +9,10 @@ import { SELF_HOSTED_DUO_TABS } from './constants';
 export default {
   name: 'SelfHostedDuoConfiguration',
   components: {
-    BetaBadge,
     GlTabs,
     GlTab,
     GlButton,
+    GlExperimentBadge,
     SelfHostedModelsPage,
     FeatureSettingsPage,
     PageHeading,
@@ -57,10 +56,10 @@ export default {
   <div>
     <page-heading>
       <template #heading>
-        <div class="gl-flex gl-items-center gl-gap-3">
+        <span class="gl-flex gl-items-center gl-gap-3">
           <span data-testid="self-hosted-title">{{ $options.i18n.title }}</span>
-          <beta-badge class="gl-flex" />
-        </div>
+          <gl-experiment-badge type="beta" class="gl-mx-0" />
+        </span>
       </template>
       <template #description>{{ $options.i18n.description }}</template>
       <template #actions>
@@ -69,7 +68,7 @@ export default {
         </gl-button>
       </template>
     </page-heading>
-    <div class="top-area gl-items-center gl-border-b-0">
+    <div class="top-area gl-border-b-0">
       <gl-tabs class="gl-flex gl-grow" nav-class="gl-border-b-0">
         <gl-tab
           v-for="tab in $options.tabs"
