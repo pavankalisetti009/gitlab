@@ -1,4 +1,7 @@
-import { mount } from '@vue/test-utils';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import { shallowMount } from '@vue/test-utils';
+import { GlSprintf } from '@gitlab/ui';
 import MRWidgetAutoMergeEnabled from '~/vue_merge_request_widget/components/states/mr_widget_auto_merge_enabled.vue';
 import {
   MWPS_MERGE_STRATEGY,
@@ -7,13 +10,23 @@ import {
   MTWPS_MERGE_STRATEGY,
   MTWCP_MERGE_STRATEGY,
 } from '~/vue_merge_request_widget/constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import autoMergeEnabledQuery from 'ee/vue_merge_request_widget/queries/states/auto_merge_enabled.query.graphql';
+import waitForPromises from 'helpers/wait_for_promises';
+import StateContainer from '~/vue_merge_request_widget/components/state_container.vue';
+import MrWidgetAuthor from '~/vue_merge_request_widget/components/mr_widget_author.vue';
 
 function convertPropsToGraphqlState(props) {
   return {
+    id: '1',
     autoMergeStrategy: props.autoMergeStrategy,
     cancelAutoMergePath: 'http://text.com',
     mergeUser: {
       id: props.mergeUserId,
+      name: '',
+      username: '',
+      webUrl: '',
+      avatarUrl: '',
       ...props.setToAutoMergeBy,
     },
     targetBranch: props.targetBranch,
@@ -23,57 +36,74 @@ function convertPropsToGraphqlState(props) {
     userPermissions: {
       removeSourceBranch: props.canRemoveSourceBranch,
     },
+    __typename: 'MergeRequest',
   };
 }
 
+const mr = {
+  shouldRemoveSourceBranch: false,
+  canRemoveSourceBranch: true,
+  canCancelAutomaticMerge: true,
+  mergeUserId: 1,
+  currentUserId: 1,
+  setToAutoMergeBy: {},
+  sha: '1EA2EZ34',
+  targetBranchPath: '/foo/bar',
+  targetBranch: 'foo',
+  autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+};
+
+const generateMockResponse = ({ mergeRequest, mergeTrainsCount } = {}) => ({
+  data: {
+    project: {
+      id: '1',
+      mergeRequest: convertPropsToGraphqlState({ ...mr, ...mergeRequest }),
+      mergeTrains: {
+        nodes: [
+          {
+            cars: {
+              count: mergeTrainsCount,
+            },
+          },
+        ],
+        __typename: 'MergeTrainConnection',
+      },
+      __typename: 'Project',
+    },
+  },
+});
+
+Vue.use(VueApollo);
+
 describe('MRWidgetAutoMergeEnabled', () => {
   let wrapper;
-  let vm;
-
-  const service = {
-    merge: () => {},
-    poll: () => {},
-  };
+  let service;
 
   const getStatusText = () => wrapper.find('[data-testid="statusText"]').text();
 
-  const mr = {
-    shouldRemoveSourceBranch: false,
-    canRemoveSourceBranch: true,
-    canCancelAutomaticMerge: true,
-    mergeUserId: 1,
-    currentUserId: 1,
-    setToAutoMergeBy: {},
-    sha: '1EA2EZ34',
-    targetBranchPath: '/foo/bar',
-    targetBranch: 'foo',
-    autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-  };
+  const createComponent = ({ mergeRequest, mergeTrainsCount = 0 } = {}) => {
+    const mockResponse = jest
+      .fn()
+      .mockResolvedValue(generateMockResponse({ mergeRequest, mergeTrainsCount }));
+    const apolloProvider = createMockApollo([[autoMergeEnabledQuery, mockResponse]]);
 
-  const factory = (mrUpdates = {}) => {
-    const state = { ...convertPropsToGraphqlState(mr), ...mrUpdates };
-
-    wrapper = mount(MRWidgetAutoMergeEnabled, {
+    wrapper = shallowMount(MRWidgetAutoMergeEnabled, {
+      apolloProvider,
       propsData: {
-        mr: { ...mr, ...mrUpdates },
+        mr,
         service,
       },
-      data() {
-        return { state };
-      },
-      mocks: {
-        $apollo: {
-          queries: {
-            state: { loading: false },
-          },
-        },
+      stubs: {
+        GlSprintf,
       },
     });
-
-    ({ vm } = wrapper);
   };
 
   beforeEach(() => {
+    service = {
+      merge: jest.fn(),
+      poll: jest.fn(),
+    };
     window.gl = {
       mrWidgetData: {
         defaultAvatarUrl: 'no_avatar.png',
@@ -81,174 +111,183 @@ describe('MRWidgetAutoMergeEnabled', () => {
     };
   });
 
-  describe('computed', () => {
-    describe('status', () => {
-      it('should return "to start a merge train..." if MTWPS is selected and there is no existing merge train', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-          },
-          mergeTrains: {
-            nodes: [
-              {
-                cars: {
-                  count: 0,
-                },
-              },
-            ],
-          },
-        });
-
-        expect(getStatusText()).toContain('to start a merge train when the pipeline succeeds');
-      });
-
-      it('should return "to be added to the merge train..." if MTWPS is selected and there is an existing merge train', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-          },
-          mergeTrains: {
-            nodes: [
-              {
-                cars: {
-                  count: 1,
-                },
-              },
-            ],
-          },
-        });
-
-        expect(getStatusText()).toContain(
-          'to be added to the merge train when the pipeline succeeds',
-        );
-      });
-
-      it('should return "to be merged automatically..." if MWPS is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MWPS_MERGE_STRATEGY,
-          },
-        });
-
-        expect(getStatusText()).toContain('to be merged automatically when the pipeline succeeds');
-      });
-
-      it('should return "to be merged automatically..." if MWCP is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MWCP_MERGE_STRATEGY,
-          },
-          mergeTrains: {
-            nodes: [
-              {
-                cars: {
-                  count: 1,
-                },
-              },
-            ],
-          },
-        });
-
-        expect(getStatusText()).toContain('to be merged automatically when all merge checks pass');
-      });
-
-      it('should return "to be added to the merge train..." if MTWCP is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MTWCP_MERGE_STRATEGY,
-          },
-          mergeTrains: {
-            nodes: [
-              {
-                cars: {
-                  count: 1,
-                },
-              },
-            ],
-          },
-        });
-
-        expect(getStatusText()).toContain(
-          'to be added to the merge train when all merge checks pass',
-        );
-      });
-
-      it('should return "start a merge train..." if MTWCP is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MTWCP_MERGE_STRATEGY,
-          },
-          mergeTrains: {
-            nodes: [
-              {
-                cars: {
-                  count: 0,
-                },
-              },
-            ],
-          },
-        });
-
-        expect(getStatusText()).toContain('to start a merge train when all merge checks pass');
-      });
-    });
-
-    describe('cancelButtonText', () => {
-      it('should return "Cancel start merge train" if MTWPS is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-          },
-        });
-
-        expect(vm.cancelButtonText).toBe('Cancel auto-merge');
-      });
-
-      it('should return "Remove from merge train" if the pipeline has been added to the merge train', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MT_MERGE_STRATEGY,
-          },
-        });
-
-        expect(vm.cancelButtonText).toBe('Remove from merge train');
-      });
-
-      it('should return "Cancel" if MWPS is selected', () => {
-        factory({
-          mergeRequest: {
-            autoMergeStrategy: MWPS_MERGE_STRATEGY,
-          },
-        });
-
-        expect(vm.cancelButtonText).toBe('Cancel auto-merge');
-      });
-    });
-  });
-
-  describe('template', () => {
-    it('should render the cancel button as "Cancel" if MTWPS is selected', () => {
-      factory({
+  describe('status', () => {
+    it('should return "to start a merge train..." if MTWPS is selected and there is no existing merge train', async () => {
+      createComponent({
         mergeRequest: {
           autoMergeStrategy: MTWPS_MERGE_STRATEGY,
         },
       });
 
-      const cancelButtonText = wrapper.find('.js-cancel-auto-merge').text();
+      await waitForPromises();
 
-      expect(cancelButtonText).toBe('Cancel auto-merge');
+      expect(getStatusText()).toContain('to start a merge train when the pipeline succeeds');
+    });
+
+    it('should return "to be added to the merge train..." if MTWPS is selected and there is an existing merge train', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 1,
+      });
+
+      await waitForPromises();
+
+      expect(getStatusText()).toContain(
+        'to be added to the merge train when the pipeline succeeds',
+      );
+    });
+
+    it('should return "to be merged automatically..." if MWPS is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MWPS_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 1,
+      });
+
+      await waitForPromises();
+
+      expect(getStatusText()).toContain('to be merged automatically when the pipeline succeeds');
+    });
+
+    it('should return "to be merged automatically..." if MWCP is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MWCP_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 1,
+      });
+
+      await waitForPromises();
+
+      expect(getStatusText()).toContain('to be merged automatically when all merge checks pass');
+    });
+
+    it('should return "to be added to the merge train..." if MTWCP is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MTWCP_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 1,
+      });
+
+      await waitForPromises();
+
+      expect(getStatusText()).toContain(
+        'to be added to the merge train when all merge checks pass',
+      );
+    });
+
+    it('should return "start a merge train..." if MTWCP is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MTWCP_MERGE_STRATEGY,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(getStatusText()).toContain('to start a merge train when all merge checks pass');
     });
   });
 
-  it('should render the cancel button as "Remove from merge train" if the pipeline has been added to the merge train', () => {
-    factory({
-      mergeRequest: {
-        autoMergeStrategy: MT_MERGE_STRATEGY,
-      },
+  describe('cancelButtonText', () => {
+    it('should return "Cancel start merge train" if MTWPS is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 1,
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.findComponent(StateContainer).props('actions')).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            text: 'Cancel auto-merge',
+            testId: 'cancelAutomaticMergeButton',
+          }),
+        ]),
+      );
     });
 
-    const cancelButtonText = wrapper.find('.js-cancel-auto-merge').text();
+    it('should return "Remove from merge train" if the pipeline has been added to the merge train', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MT_MERGE_STRATEGY,
+        },
+        mergeTrainsCount: 0,
+      });
 
-    expect(cancelButtonText).toBe('Remove from merge train');
+      await waitForPromises();
+
+      expect(wrapper.findComponent(StateContainer).props('actions')).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            text: 'Remove from merge train',
+            testId: 'cancelAutomaticMergeButton',
+          }),
+        ]),
+      );
+    });
+
+    it('should return "Cancel" if MWPS is selected', async () => {
+      createComponent({
+        mergeRequest: {
+          autoMergeStrategy: MWPS_MERGE_STRATEGY,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.findComponent(StateContainer).props('actions')).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            text: 'Cancel auto-merge',
+            testId: 'cancelAutomaticMergeButton',
+          }),
+        ]),
+      );
+    });
+  });
+
+  it('should refetch state on subsequent mounts', async () => {
+    const resolver = jest.fn().mockResolvedValueOnce(
+      generateMockResponse({
+        mergeRequest: { setToAutoMergeBy: { name: 'Foo' } },
+        mergeTrainsCount: 1,
+      }),
+    );
+    const apolloProvider = createMockApollo([[autoMergeEnabledQuery, resolver]]);
+    const mountComponent = () => {
+      wrapper = shallowMount(MRWidgetAutoMergeEnabled, {
+        apolloProvider,
+        propsData: {
+          mr,
+          service,
+        },
+        stubs: {
+          GlSprintf,
+        },
+      });
+    };
+
+    mountComponent();
+    await waitForPromises();
+    wrapper.destroy();
+    resolver.mockResolvedValueOnce(
+      generateMockResponse({
+        mergeRequest: { setToAutoMergeBy: { name: 'Bar' } },
+        mergeTrainsCount: 1,
+      }),
+    );
+
+    mountComponent();
+    await waitForPromises();
+
+    expect(wrapper.findComponent(MrWidgetAuthor).props('author').name).toBe('Bar');
   });
 });
