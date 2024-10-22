@@ -29,6 +29,20 @@ RSpec.shared_examples_for 'credentials inventory personal access tokens' do
     it 'has an expiry icon' do
       expect(first_row).to have_selector('[data-testid="expiry-date-icon"]')
     end
+
+    # `SELECT 1/LIMIT 1` query is less performant than the actual query.
+    # Controller explicitly loads the query to avoid this.
+    it 'does not run a select 1 query' do
+      recorded_queries = ActiveRecord::QueryRecorder.new do
+        visit credentials_path
+      end
+
+      found_query = recorded_queries.log.any? do |q|
+        q.starts_with?(/SELECT 1 AS one FROM "personal_access_tokens"/) && q.include?("LIMIT 1 OFFSET 0")
+      end
+
+      expect(found_query).to be false
+    end
   end
 
   context 'when a personal access token is revoked' do
