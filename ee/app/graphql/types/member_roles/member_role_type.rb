@@ -41,9 +41,13 @@ module Types
 
       field :members_count,
         GraphQL::Types::Int,
-        null: false,
         alpha: { milestone: '16.7' },
-        description: 'Total number of members with the custom role.'
+        description: 'Number of times the role has been directly assigned to a group or project member.'
+
+      field :users_count,
+        GraphQL::Types::Int,
+        alpha: { milestone: '17.5' },
+        description: 'Number of users who have been directly assigned the role in at least one group or project.'
 
       field :edit_path,
         GraphQL::Types::String,
@@ -66,6 +70,12 @@ module Types
         return object.members_count if object.respond_to?(:members_count)
 
         object.members.count
+      end
+
+      def users_count
+        object.users_count if object.respond_to?(:users_count)
+
+        object.users.count
       end
 
       def edit_path

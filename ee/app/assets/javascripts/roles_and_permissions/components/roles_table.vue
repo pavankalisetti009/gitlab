@@ -8,7 +8,7 @@ export const TABLE_FIELDS = [
   { key: 'name', label: s__('MemberRole|Name') },
   { key: 'description', label: s__('MemberRole|Description') },
   {
-    key: 'membersCount',
+    key: 'usersCount',
     label: s__('MemberRole|Direct users assigned'),
     thClass: 'gl-w-12 gl-whitespace-nowrap',
     tdClass: 'gl-text-right',

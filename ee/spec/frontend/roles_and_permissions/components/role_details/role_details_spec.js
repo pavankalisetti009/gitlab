@@ -144,31 +144,28 @@ describe('Role details', () => {
 
   describe('delete button', () => {
     describe.each`
-      membersCount | disabled | expectedTooltip
-      ${0}         | ${false} | ${'Delete role'}
-      ${1}         | ${true}  | ${{ delay: 0, title: 'To delete custom role, remove role from all users.' }}
-    `(
-      `when the role members count is $membersCount`,
-      ({ membersCount, disabled, expectedTooltip }) => {
-        beforeEach(() => {
-          const memberRole = { ...mockMemberRole, membersCount };
-          return createWrapper({ memberRoleHandler: getMemberRoleHandler(memberRole) });
-        });
+      usersCount | disabled | expectedTooltip
+      ${0}       | ${false} | ${'Delete role'}
+      ${1}       | ${true}  | ${{ delay: 0, title: 'To delete custom role, remove role from all users.' }}
+    `(`when the role users count is usersCount`, ({ usersCount, disabled, expectedTooltip }) => {
+      beforeEach(() => {
+        const memberRole = { ...mockMemberRole, usersCount };
+        return createWrapper({ memberRoleHandler: getMemberRoleHandler(memberRole) });
+      });
 
-        it('shows button', () => {
-          expect(findDeleteButton().props()).toMatchObject({
-            icon: 'remove',
-            category: 'secondary',
-            variant: 'danger',
-            disabled,
-          });
+      it('shows button', () => {
+        expect(findDeleteButton().props()).toMatchObject({
+          icon: 'remove',
+          category: 'secondary',
+          variant: 'danger',
+          disabled,
         });
+      });
 
-        it('shows button tooltip on wrapper', () => {
-          expect(getTooltip(findDeleteButtonWrapper).value).toEqual(expectedTooltip);
-        });
-      },
-    );
+      it('shows button tooltip on wrapper', () => {
+        expect(getTooltip(findDeleteButtonWrapper).value).toEqual(expectedTooltip);
+      });
+    });
   });
 
   describe('delete role modal', () => {

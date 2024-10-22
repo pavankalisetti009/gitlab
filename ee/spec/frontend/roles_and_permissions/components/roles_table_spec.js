@@ -67,8 +67,8 @@ describe('Roles table', () => {
       expect(findRoleCell(role, 1).text()).toBe(role.description);
     });
 
-    it('shows members count', () => {
-      expect(findRoleCell(role, 2).text()).toBe(`${role.membersCount}`);
+    it('shows users count', () => {
+      expect(findRoleCell(role, 2).text()).toBe(`${role.usersCount}`);
     });
 
     it('shows role actions', () => {

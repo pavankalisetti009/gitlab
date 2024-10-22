@@ -11,13 +11,13 @@ describe('Role actions', () => {
   const defaultRole = { accessLevel: 10 };
   const customRole = {
     id: 1,
-    membersCount: 0,
+    usersCount: 0,
     detailsPath: 'role/path/1',
     editPath: 'role/path/1/edit',
   };
   const customRoleWithMembers = {
     id: 2,
-    membersCount: 2,
+    usersCount: 2,
     detailsPath: 'role/path/2',
     editPath: 'role/path/2/edit',
   };
