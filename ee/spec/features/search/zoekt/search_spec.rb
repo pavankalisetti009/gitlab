@@ -52,11 +52,11 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
   end
 
   it 'finds files with a regex search and allows filtering down again by project' do
-    # Temporary: There is no results in the current version with the FF true
-    # WIP
     stub_feature_flags(zoekt_multimatch_frontend: false)
-    submit_search('user.*egex')
+
     select_search_scope('Code')
+    wait_for_all_requests
+    submit_search('user.*egex')
 
     expect(page).to have_selector('.file-content .blob-content', count: 2)
     expect(page).to have_button('Copy file path')
@@ -75,8 +75,13 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settin
   end
 
   it 'displays that exact code search is enabled' do
-    submit_search('test')
+    stub_feature_flags(zoekt_multimatch_frontend: false)
+
+    choose_project(project1)
+
     select_search_scope('Code')
+    submit_search('test')
+
     expect(page).to have_link('Exact code search (powered by Zoekt)',
       href: help_page_path('user/search/exact_code_search.md'))
   end
