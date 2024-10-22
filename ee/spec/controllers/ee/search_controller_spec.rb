@@ -162,6 +162,41 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         end
       end
     end
+
+    context 'when zoekt is enabled' do
+      let_it_be(:group) { create(:group) }
+
+      before do
+        stub_ee_application_setting(zoekt_search_enabled: true)
+        allow(user).to receive(:has_zoekt_indexed_namespace?).and_return(true)
+      end
+
+      context 'when multi match should be returned' do
+        before do
+          allow_next_instance_of(SearchService) do |search_service|
+            allow(search_service).to receive(:search_type).and_return('zoekt')
+            allow(search_service).to receive(:use_zoekt?).and_return(true)
+            allow(search_service).to receive(:scope).and_return('blobs')
+          end
+        end
+
+        it 'does not call haml_search_results' do
+          expect(controller).not_to receive(:haml_search_results)
+          get :show, params: { scope: 'blobs', search: 'test', group_id: group.id }
+        end
+
+        context 'when the feature flag is disabled' do
+          before do
+            stub_feature_flags(zoekt_multimatch_frontend: false)
+          end
+
+          it 'calls haml_search_results' do
+            expect(controller).to receive(:haml_search_results)
+            get :show, params: { scope: 'blobs', search: 'test', group_id: group.id }
+          end
+        end
+      end
+    end
   end
 
   describe 'GET #autocomplete' do
@@ -383,5 +418,65 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
   def context(event)
     [Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: event).to_context.to_json]
+  end
+
+  describe '#multi_match?' do
+    subject(:controller_instance) { described_class.new }
+
+    let(:current_user) { user }
+    let(:scope) { 'blobs' }
+    let(:search_type) { 'zoekt' }
+
+    before do
+      allow(controller_instance).to receive(:current_user).and_return(current_user)
+    end
+
+    context 'when the feature flag is enabled, scope is "blobs", and search_type is "zoekt"' do
+      before do
+        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
+      end
+
+      it 'returns true' do
+        result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
+        expect(result).to be(true)
+      end
+    end
+
+    context 'when the feature flag is disabled' do
+      before do
+        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(false)
+      end
+
+      it 'returns false' do
+        result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
+        expect(result).to be(false)
+      end
+    end
+
+    context 'when scope is not "blobs"' do
+      let(:scope) { 'other_scope' }
+
+      before do
+        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
+      end
+
+      it 'returns false' do
+        result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
+        expect(result).to be(false)
+      end
+    end
+
+    context 'when search_type is not "zoekt"' do
+      let(:search_type) { 'other_search' }
+
+      before do
+        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
+      end
+
+      it 'returns false' do
+        result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
+        expect(result).to be(false)
+      end
+    end
   end
 end
