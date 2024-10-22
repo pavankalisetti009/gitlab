@@ -17,7 +17,6 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
     stub_config(registry: { enabled: false })
     stub_feature_flags(ml_experiment_tracking: false)
-    stub_feature_flags(model_registry: false)
     stub_feature_flags(agent_registry: false)
     stub_feature_flags(remove_monitor_metrics: false)
     insert_package_nav
@@ -249,24 +248,12 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     it_behaves_like 'verified navigation bar'
   end
 
-  context 'when model registry is available' do
-    before do
-      stub_feature_flags(model_registry: true)
-
-      insert_model_registry_nav(_('Package Registry'))
-
-      visit project_path(project)
-    end
-
-    it_behaves_like 'verified navigation bar'
-  end
-
   context 'when AI agents is available' do
     before do
       stub_feature_flags(agent_registry: true, agent_registry_nav: true)
       stub_licensed_features(ai_agents: true)
 
-      insert_ai_agents_nav(_('Package Registry'))
+      insert_ai_agents_nav(_('Model registry'))
 
       visit project_path(project)
     end
