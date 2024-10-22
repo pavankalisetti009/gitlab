@@ -6,7 +6,7 @@ RSpec.describe 'Suggested Reviewers secret initialization for GitLab EE', featur
   subject { Gitlab::Application.config }
 
   let(:load_suggested_reviewers_secret) do
-    load Rails.root.join('config/initializers/gitlab_suggested_reviewers_secret.rb')
+    load Rails.root.join('ee/config/initializers/gitlab_suggested_reviewers_secret.rb')
   end
 
   context 'when not SAAS' do
