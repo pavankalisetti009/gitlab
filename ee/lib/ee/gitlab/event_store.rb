@@ -38,6 +38,7 @@ module EE
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker,
             to: ::MergeRequests::OverrideRequestedChangesStateEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ApprovedEvent
+          store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ViolationsUpdatedEvent
           store.subscribe ::Search::ElasticDefaultBranchChangedWorker,
             to: ::Repositories::DefaultBranchChangedEvent,
             if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }

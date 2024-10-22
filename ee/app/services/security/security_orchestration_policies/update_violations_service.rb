@@ -45,6 +45,8 @@ module Security
           create_violations if violated_policies.any?
         end
 
+        publish_violations_updated_event if unviolated_policies.any? || violated_policies.any?
+
         [violated_policies.clear, unviolated_policies.clear]
       end
 
@@ -74,6 +76,16 @@ module Security
         return unless attrs.any?
 
         Security::ScanResultPolicyViolation.upsert_all(attrs, unique_by: %w[scan_result_policy_id merge_request_id])
+      end
+
+      def publish_violations_updated_event
+        return unless ::Feature.enabled?(:policy_mergability_check, merge_request.project)
+
+        ::Gitlab::EventStore.publish(
+          ::MergeRequests::ViolationsUpdatedEvent.new(
+            data: { merge_request_id: merge_request.id }
+          )
+        )
       end
     end
   end

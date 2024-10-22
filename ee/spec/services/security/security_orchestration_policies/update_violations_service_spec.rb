@@ -108,6 +108,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
           .to eq({ "violations" => { "scan_finding" => { "uuid" => { "newly_detected" => [123] } } } })
         expect(last_violation).to be_valid
       end
+
+      it 'publishes MergeRequests::ViolationsUpdatedEvent' do
+        expect { service.execute }
+          .to publish_event(::MergeRequests::ViolationsUpdatedEvent)
+          .with(merge_request_id: merge_request.id)
+      end
+
+      context 'when policy_mergability_check is off' do
+        before do
+          stub_feature_flags(policy_mergability_check: false)
+        end
+
+        it 'does not publish MergeRequests::ViolationsUpdatedEvent' do
+          expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
+        end
+      end
     end
 
     context 'with pre-existing violations' do
@@ -168,6 +184,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
         expect(violations).to contain_exactly(unrelated_violation)
       end
+
+      it 'publishes MergeRequests::ViolationsUpdatedEvent' do
+        expect { service.execute }
+          .to publish_event(::MergeRequests::ViolationsUpdatedEvent)
+          .with(merge_request_id: merge_request.id)
+      end
+
+      context 'when policy_mergability_check is off' do
+        before do
+          stub_feature_flags(policy_mergability_check: false)
+        end
+
+        it 'does not publish MergeRequests::ViolationsUpdatedEvent' do
+          expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
+        end
+      end
     end
 
     context 'without violations' do
@@ -175,6 +207,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         service.execute
 
         expect(violations).to be_empty
+      end
+
+      it 'does not publish MergeRequests::ViolationsUpdatedEvent' do
+        expect { service.execute }.not_to publish_event(MergeRequests::ViolationsUpdatedEvent)
       end
     end
   end
