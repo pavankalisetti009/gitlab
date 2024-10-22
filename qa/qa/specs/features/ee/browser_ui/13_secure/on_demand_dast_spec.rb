@@ -66,6 +66,11 @@ module QA
 
       context 'when a scan is ran' do
         it 'populates On Demand scan history and vulnerability report', :blocking,
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498151',
+            type: :investigating,
+            only: { job: /instance/ }
+          },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/448336' do
           webgoat_url = "http://#{webgoat.ip_address}:8080/WebGoat/login"
           Flow::Login.sign_in_unless_signed_in

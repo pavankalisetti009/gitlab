@@ -62202,6 +62202,9 @@ msgstr ""
 msgid "WorkItem|Are you sure you want to cancel editing?"
 msgstr ""
 
+msgid "WorkItem|Are you sure you want to close this %{workItemType}?"
+msgstr ""
+
 msgid "WorkItem|Are you sure you want to close this blocked %{workItemType}?"
 msgstr ""
 
@@ -62221,6 +62224,9 @@ msgid "WorkItem|Cancel"
 msgstr ""
 
 msgid "WorkItem|Child items"
+msgstr ""
+
+msgid "WorkItem|Child items of a confidential parent must be confidential. Turn off confidentiality on the parent item first."
 msgstr ""
 
 msgid "WorkItem|Child removal reverted"
@@ -62581,6 +62587,9 @@ msgid "WorkItem|The current objective"
 msgstr ""
 
 msgid "WorkItem|The current task"
+msgstr ""
+
+msgid "WorkItem|This %{workItemType} has open child items. If you close this %{workItemType}, they will remain open."
 msgstr ""
 
 msgid "WorkItem|This %{workItemType} is confidential and should only be visible to team members with at least Reporter access"
