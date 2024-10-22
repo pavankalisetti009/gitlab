@@ -521,15 +521,11 @@ RSpec.describe User, feature_category: :system_access do
         end
 
         it 'schedules Groups::EnterpriseUsers::AssociateWorker' do
-          user_id = 4242
-
-          allow_next_instance_of(User) do |user|
-            allow(user).to receive(:id).and_return(user_id)
-          end
-
-          expect(Groups::EnterpriseUsers::AssociateWorker).to receive(:perform_async).with(user_id)
+          allow(Groups::EnterpriseUsers::AssociateWorker).to receive(:perform_async)
 
           create_user
+
+          expect(Groups::EnterpriseUsers::AssociateWorker).to have_received(:perform_async).with(create_user.id)
         end
       end
     end
