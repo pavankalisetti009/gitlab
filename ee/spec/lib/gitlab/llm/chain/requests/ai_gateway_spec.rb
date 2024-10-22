@@ -197,60 +197,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
     end
 
-    context 'when request is sent for a new ReAct Duo Chat prompt' do
-      let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
-      let(:prompt) { { prompt: user_prompt, options: options } }
-      let(:unavailable_resources) { %w[Pipelines Vulnerabilities] }
-
-      let(:model_metadata) do
-        { api_key: "test_token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-cool-model' }
-      end
-
-      let(:options) do
-        {
-          agent_scratchpad: [],
-          single_action_agent: true,
-          conversation: "{:role=>:user, :content=>\"previous question\"}",
-          current_resource_params: {
-            type: "issue",
-            content: "string"
-          },
-          current_file_params: {
-            file_path: "never.rb",
-            data: "puts 'gonna give you up'",
-            selected_code: true
-          },
-          model_metadata: model_metadata
-        }
-      end
-
-      let(:body) do
-        {
-          prompt: user_prompt,
-          options: {
-            chat_history: "{:role=>:user, :content=>\"previous question\"}",
-            agent_scratchpad: {
-              agent_type: "react",
-              steps: []
-            },
-            context: {
-              type: "issue",
-              content: "string"
-            },
-            current_file: {
-              file_path: "never.rb",
-              data: "puts 'gonna give you up'",
-              selected_code: true
-            }
-          },
-          model_metadata: model_metadata,
-          unavailable_resources: unavailable_resources
-        }
-      end
-
-      it_behaves_like 'performing request to the AI Gateway'
-    end
-
     context 'when request is sent to chat tools implemented via agents' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
 
@@ -327,37 +273,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           it_behaves_like 'performing request to the AI Gateway'
         end
       end
-    end
-
-    context 'when request is sent for a new ReAct Duo Chat prompt without optional params' do
-      let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
-
-      let(:prompt) { { prompt: user_prompt, options: options } }
-      let(:unavailable_resources) { %w[Pipelines Vulnerabilities] }
-
-      let(:options) do
-        {
-          agent_scratchpad: [],
-          single_action_agent: true,
-          conversation: ""
-        }
-      end
-
-      let(:body) do
-        {
-          prompt: user_prompt,
-          options: {
-            chat_history: "",
-            agent_scratchpad: {
-              agent_type: "react",
-              steps: []
-            }
-          },
-          unavailable_resources: unavailable_resources
-        }
-      end
-
-      it_behaves_like 'performing request to the AI Gateway'
     end
   end
 end
