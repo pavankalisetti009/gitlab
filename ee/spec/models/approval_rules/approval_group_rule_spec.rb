@@ -81,41 +81,10 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
 
     subject(:group_approval_rule) { rule.protected_branches }
 
-    shared_examples 'return protected branches' do
+    describe Quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470289' do
       it 'returns all protected branches belonging to group projects and group level protected branches' do
         expect(group_approval_rule).to contain_exactly(*protected_branches_project_1, *protected_branches_project_2,
           *group_protected_branches)
-      end
-    end
-
-    # Flags `group_protected_branches` and `allow_protected_branches_for_group` represent the same feature.
-    # Group protected branches are enabled when `group_protected_branches` is enabled.
-    # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/116779 for more detail.
-    context 'when feature flags `group_protected_branches` is disabled' do
-      before do
-        stub_feature_flags(group_protected_branches: false)
-      end
-
-      it 'returns a collection of all protected branches belonging to group projects' do
-        expect(group_approval_rule).to contain_exactly(*protected_branches_project_1, *protected_branches_project_2)
-      end
-    end
-
-    context 'when only feature flag `group_protected_branches` is disabled',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470289' do
-      before do
-        stub_feature_flags(group_protected_branches: false)
-      end
-
-      it_behaves_like 'return protected branches'
-    end
-
-    context 'when feature flags `group_protected_branches` is enabled',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470293' do
-      it_behaves_like 'return protected branches'
-
-      it 'returns a collection excluding protected branches from a sub group' do
-        expect(group_approval_rule).not_to contain_exactly(protected_branches_project_3)
       end
     end
   end

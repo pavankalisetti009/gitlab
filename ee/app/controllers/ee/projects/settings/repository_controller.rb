@@ -48,7 +48,7 @@ module EE
 
         override :fetch_protected_branches
         def fetch_protected_branches(project)
-          return super unless group_protected_branches_feature_available?(project.group)
+          return super unless group_protected_branches_feature_available?
 
           project.all_protected_branches.sorted_by_namespace_and_name.page(pagination_params[:page])
         end
@@ -84,12 +84,8 @@ module EE
         end
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
-        def group_protected_branches_feature_available?(group)
-          allow_protected_branches_for_group?(group) && ::License.feature_available?(:group_protected_branches)
-        end
-
-        def allow_protected_branches_for_group?(group)
-          ::Feature.enabled?(:group_protected_branches, group)
+        def group_protected_branches_feature_available?
+          ::License.feature_available?(:group_protected_branches)
         end
 
         def authorize_view_repository_settings!

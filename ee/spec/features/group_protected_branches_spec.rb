@@ -19,7 +19,6 @@ RSpec.describe 'Group-level Protected Branches', :js, feature_category: :source_
     )
   end
 
-  let(:feature_flag_group_protected_branches) { true }
   let(:license_group_protected_branches) { true }
   let(:license_code_owner_approval_required) { true }
   let(:permission_admin_group) { true }
@@ -29,7 +28,6 @@ RSpec.describe 'Group-level Protected Branches', :js, feature_category: :source_
   let(:list_container) { container.find('.protected-branches-list') }
 
   before do
-    stub_feature_flags(group_protected_branches: feature_flag_group_protected_branches)
     stub_licensed_features(
       group_protected_branches: license_group_protected_branches,
       code_owner_approval_required: license_code_owner_approval_required
@@ -44,14 +42,6 @@ RSpec.describe 'Group-level Protected Branches', :js, feature_category: :source_
   end
 
   describe 'group level protected branches feature disabled' do
-    context 'when feature flag disabled' do
-      let(:feature_flag_group_protected_branches) { false }
-
-      it 'does not render protected branches section' do
-        expect(page).not_to have_css('#js-protected-branches-settings')
-      end
-    end
-
     context 'when license is not available' do
       let(:license_group_protected_branches) { false }
 

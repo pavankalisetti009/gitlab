@@ -290,24 +290,8 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
         rule.update!(applies_to_all_protected_branches: true)
       end
 
-      context 'when feature flag `group_protected_branches` disabled' do
-        before do
-          stub_feature_flags(group_protected_branches: false)
-        end
-
-        it 'returns a collection of all protected branches belonging to the project' do
-          expect(subject).to contain_exactly(*protected_branches)
-        end
-      end
-
-      context 'when feature flag `group_protected_branches` enabled' do
-        before do
-          stub_feature_flags(group_protected_branches: true)
-        end
-
-        it 'returns a collection of all protected branches belonging to the project and the group' do
-          expect(subject).to contain_exactly(*protected_branches, *group_protected_branches)
-        end
+      it 'returns a collection of all protected branches belonging to the project and the group' do
+        expect(subject).to contain_exactly(*protected_branches, *group_protected_branches)
       end
     end
 
