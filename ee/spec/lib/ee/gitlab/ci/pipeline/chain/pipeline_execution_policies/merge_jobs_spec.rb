@@ -99,6 +99,12 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
           expect(step.break?).to be true
         end
+
+        it 'increments a counter metric' do
+          expect(command).to receive(:increment_duplicate_job_name_errors_counter).with('never')
+
+          run_chain
+        end
       end
 
       context 'when two policy pipelines have the same job names' do
