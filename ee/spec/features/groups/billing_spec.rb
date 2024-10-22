@@ -11,7 +11,7 @@ RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_m
   let_it_be(:bronze_plan) { create(:bronze_plan) }
 
   def formatted_date(date)
-    date.strftime("%B %-d, %Y")
+    date.strftime("%b %-d, %Y")
   end
 
   def subscription_table

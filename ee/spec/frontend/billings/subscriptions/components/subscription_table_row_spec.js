@@ -6,7 +6,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SubscriptionTableRow from 'ee/billings/subscriptions/components/subscription_table_row.vue';
 import initialStore from 'ee/billings/subscriptions/store';
 import { TABLE_TYPE_DEFAULT } from 'ee/billings/constants';
-import { dateInWords } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import Popover from '~/vue_shared/components/help_popover.vue';
 
 Vue.use(Vuex);
@@ -226,11 +226,10 @@ describe('subscription table row', () => {
     it('should render the date in UTC', () => {
       const currentCol = findContentCells().at(0);
 
-      const d = dateColumn.value.split('-');
-      const outputDate = dateInWords(new Date(d[0], d[1] - 1, d[2]));
-
       expect(currentCol.find('[data-testid="property-label"]').text()).toMatch(dateColumn.label);
-      expect(currentCol.find('.property-value').text()).toMatch(outputDate);
+      expect(currentCol.find('.property-value').text()).toMatch(
+        localeDateFormat.asDate.format(dateColumn.value),
+      );
     });
   });
 
@@ -287,7 +286,9 @@ describe('subscription table row', () => {
         });
 
         expect(wrapper.findByTestId(testId).exists()).toBe(true);
-        expect(wrapper.findByTestId(testId).text()).toBe('December 28, 2023');
+        expect(wrapper.findByTestId(testId).text()).toBe(
+          localeDateFormat.asDate.format(newDate('2023-12-28')),
+        );
       });
     });
 
