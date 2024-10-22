@@ -33,7 +33,7 @@ module Gitlab
         end
 
         def execute
-          MAX_ITERATIONS.times do
+          MAX_ITERATIONS.times do |i|
             events = step_forward
 
             raise EmptyEventsError if events.empty?
@@ -42,7 +42,11 @@ module Gitlab
               process_tool_action(events) ||
               process_unknown(events)
 
-            return answer if answer
+            next unless answer
+
+            log_info(message: "ReAct turn", react_turn: i, event_name: 'react_turn', ai_component: 'duo_chat')
+
+            return answer
           end
 
           raise ExhaustedLoopError
