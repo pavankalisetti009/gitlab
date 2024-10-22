@@ -9,12 +9,15 @@ module Arkose
     USE_CASE_SIGN_UP = 'SIGN_UP'
     USE_CASE_IDENTITY_VERIFICATION = 'IDENTITY_VERIFICATION'
 
-    # Transparent mode - no challenge shown to the user. Inverse of interactive
-    # mode where the user is required to solve a challenge.
-    # See https://developer.arkoselabs.com/docs/verify-api-v4-response-fields
     def initialize(request, use_case:, require_challenge: false)
       @request = request
       @use_case = use_case
+
+      # If true, challenge will be interactive mode (i.e. the user will be shown
+      # and required to solve a challenge). Otherwise, challenge will be
+      # transparent mode (i.e. no challenge shown to the user).
+      #
+      # See https://developer.arkoselabs.com/docs/verify-api-v4-response-fields
       @require_challenge = require_challenge
     end
 
