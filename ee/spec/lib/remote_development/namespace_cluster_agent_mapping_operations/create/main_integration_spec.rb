@@ -39,7 +39,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
       let(:cluster_agent) { create(:cluster_agent) }
 
       it 'does not create the mapping and returns an error' do
-        expect { response }.to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }.by(0)
+        expect { response }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
 
         expect(response).to eq({
           status: :error,
@@ -56,7 +56,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
       end
 
       it 'does not create the mapping and returns an error' do
-        expect { response }.to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }.by(0)
+        expect { response }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
 
         expect(response).to eq({
           status: :error,

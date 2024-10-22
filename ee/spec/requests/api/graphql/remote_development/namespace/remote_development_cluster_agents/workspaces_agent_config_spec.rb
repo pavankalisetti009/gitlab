@@ -73,6 +73,7 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILA
         'gitlabWorkspacesProxyNamespace' => agent_config.gitlab_workspaces_proxy_namespace,
         'workspacesQuota' => agent_config.workspaces_quota,
         'workspacesPerUserQuota' => agent_config.workspaces_per_user_quota,
+        # noinspection RubyResolve -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32301
         'defaultMaxHoursBeforeTermination' => agent_config.default_maxHours_before_termination,
         'maxHoursBeforeTerminationLimit' => agent_config.max_hours_before_termination_limit,
         'createdAt' => agent_config.created_at,

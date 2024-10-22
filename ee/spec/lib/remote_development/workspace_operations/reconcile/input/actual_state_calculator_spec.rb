@@ -44,10 +44,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       with_them do
-        let(:agent) { instance_double("Clusters::Agent", id: 1) }
+        let(:agent) { instance_double(Clusters::Agent, id: 1) }
 
         let(:workspace) do
-          instance_double("RemoteDevelopment::Workspace", id: 1, name: 'name', namespace: 'namespace', agent: agent)
+          instance_double(RemoteDevelopment::Workspace, id: 1, name: 'name', namespace: 'namespace', agent: agent)
         end
 
         let(:latest_k8s_deployment_info) do
