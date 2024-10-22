@@ -34,7 +34,7 @@ module API
           status 200
           {
             'gob' => {
-              'backend' => ::Gitlab::Observability.observability_url,
+              'backend' => observability_url,
               'headers' => Gitlab::CloudConnector.headers(current_user).merge({
                 'X-GitLab-Namespace-id' => project.root_ancestor.id.to_s,
                 'X-GitLab-Project-id' => project.id.to_s,
@@ -43,6 +43,10 @@ module API
               })
             }
           }
+        end
+
+        def observability_url
+          request.post? ? Gitlab::Observability.observability_ingest_url : ::Gitlab::Observability.observability_url
         end
 
         def can_read

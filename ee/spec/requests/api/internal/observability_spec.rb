@@ -29,6 +29,7 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_uuid)
     allow(Labkit::Correlation::CorrelationId).to receive(:current_or_new_id).and_return(correlation_id)
     allow(Gitlab::Observability).to receive(:observability_url).and_return(backend)
+    allow(Gitlab::Observability).to receive(:observability_ingest_url).and_return(backend)
   end
 
   def expect_status(status)
@@ -77,7 +78,7 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
         "/internal/observability/project/#{project.id}#{endpoint}"
       end
 
-      subject do
+      subject(:request) do
         case req_method
         when 'GET'
           get(api(full_path, personal_access_token: pat), headers: headers)
@@ -141,6 +142,16 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
         end
 
         it_behaves_like 'success'
+
+        it 'uses the correct url based on the request method' do
+          if req_method.eql?('GET')
+            expect(Gitlab::Observability).to receive(:observability_url)
+          else
+            expect(Gitlab::Observability).to receive(:observability_ingest_url)
+          end
+
+          request
+        end
       end
 
       context 'without a logged in user' do
