@@ -30,6 +30,9 @@ module ProductAnalytics
     VALUE_STREAM_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/value_stream_dashboard/visualizations'
     VALUE_STREAM_DASHBOARD_VISUALIZATIONS = %w[
       dora_chart
+      vsd_lifecycle_metrics_table
+      vsd_dora_metrics_table
+      vsd_security_metrics_table
       usage_overview
       dora_performers_score
       deployment_frequency_over_time
@@ -41,6 +44,8 @@ module ProductAnalytics
     AI_IMPACT_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/ai_impact_dashboard/visualizations'
     AI_IMPACT_DASHBOARD_VISUALIZATIONS = %w[
       ai_impact_table
+      ai_impact_lifecycle_metrics_table
+      ai_impact_ai_metrics_table
       code_suggestions_usage_rate_over_time
       code_suggestions_acceptance_rate_over_time
       duo_chat_usage_rate_over_time

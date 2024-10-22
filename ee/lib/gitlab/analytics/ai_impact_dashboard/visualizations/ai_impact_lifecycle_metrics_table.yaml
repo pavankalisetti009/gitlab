@@ -1,0 +1,10 @@
+---
+version: 1
+type: AiImpactTable
+data:
+  type: value_stream
+  query:
+    filters:
+      excludeMetrics:
+        - code_suggestions_usage_rate
+options: {}

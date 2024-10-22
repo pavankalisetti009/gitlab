@@ -165,12 +165,17 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       'total_unique_users' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
       'usage_overview' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'dora_chart' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
+      'vsd_lifecycle_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
+      'vsd_dora_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
+      'vsd_security_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'dora_performers_score' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'deployment_frequency_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'lead_time_for_changes_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'time_to_restore_service_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'change_failure_rate_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
       'ai_impact_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
+      'ai_impact_lifecycle_metrics_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
+      'ai_impact_ai_metrics_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
     end
 
     with_them do
@@ -215,7 +220,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   describe '.value_stream_dashboard_visualizations' do
     subject { described_class.value_stream_dashboard_visualizations }
 
-    num_builtin_visualizations = 7
+    num_builtin_visualizations = 10
 
     it 'returns the value stream dashboard builtin visualizations' do
       expect(subject.count).to eq(num_builtin_visualizations)
