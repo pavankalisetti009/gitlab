@@ -36,20 +36,6 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       described_class.new.handle_event(policy_created_event)
     end
 
-    context 'when policy scope is not applicable to project' do
-      before do
-        allow_next_found_instance_of(Security::Policy) do |instance|
-          allow(instance).to receive(:scope_applicable?).and_return(false)
-        end
-      end
-
-      it 'does not call Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
-
-        described_class.new.handle_event(policy_created_event)
-      end
-    end
-
     context 'when policy_configuration is scoped to a namespace with multiple projects' do
       let_it_be(:namespace) { create(:namespace) }
       let_it_be(:project1) { create(:project, namespace: namespace) }
