@@ -1,8 +1,8 @@
 import { nextTick } from 'vue';
+import { GlExperimentBadge } from '@gitlab/ui';
 import FeatureSettingsPage from 'ee/pages/admin/ai/custom_models/ai_feature_settings_page.vue';
 import SelfHostedModelsPage from 'ee/pages/admin/ai/custom_models/self_hosted_models_page.vue';
 import SelfHostedDuoConfiguration from 'ee/pages/admin/ai/custom_models/self_hosted_duo_configuration.vue';
-import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('SelfHostedDuoConfiguration', () => {
@@ -26,7 +26,7 @@ describe('SelfHostedDuoConfiguration', () => {
   const findSelfHostedModelsTab = () => wrapper.findByTestId('self-hosted-models-tab');
   const findFeatureSettingsPage = () => wrapper.findComponent(FeatureSettingsPage);
   const findSelfHostedModelsPage = () => wrapper.findComponent(SelfHostedModelsPage);
-  const findBetaBadge = () => wrapper.findComponent(BetaBadge);
+  const findBetaBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   it('has a title', () => {
     const title = wrapper.findByTestId('self-hosted-title');
