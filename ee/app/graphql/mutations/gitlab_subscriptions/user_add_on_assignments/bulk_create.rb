@@ -5,7 +5,7 @@ module Mutations
     module UserAddOnAssignments
       class BulkCreate < BaseMutation
         graphql_name 'UserAddOnAssignmentBulkCreate'
-        MAX_USER_ASSIGNMENT_LIMIT = 50
+        MAX_USER_ASSIGNMENT_LIMIT = 100
         MAX_USER_ASSIGNMENT_ERROR = "The number of users to be assigned in a single API call " \
                                     "should be less than #{MAX_USER_ASSIGNMENT_LIMIT}."
                                       .freeze
