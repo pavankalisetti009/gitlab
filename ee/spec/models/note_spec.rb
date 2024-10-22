@@ -214,7 +214,8 @@ RSpec.describe Note, feature_category: :team_planning do
       create(:note, noteable: vulnerability_2, project: vulnerability_2.project)
       create(:note, noteable: vulnerability_2, project: vulnerability_2.project)
 
-      expect(described_class.count_for_vulnerability_id([vulnerability_1.id, vulnerability_2.id])).to eq(vulnerability_1.id => 1, vulnerability_2.id => 2)
+      expect(described_class.count_for_vulnerability_id([vulnerability_1.id,
+        vulnerability_2.id])).to eq(vulnerability_1.id => 1, vulnerability_2.id => 2)
     end
   end
 
@@ -267,32 +268,6 @@ RSpec.describe Note, feature_category: :team_planning do
 
       it 'returns the last user who updated the note' do
         expect(updated_by_or_author).to be(user)
-      end
-    end
-  end
-
-  describe '#search_index', feature_category: :global_search do
-    let(:note) { create(:note) }
-    let(:search_index) { instance_double(::Search::NoteIndex) }
-
-    it 'delegates to Search::IndexRegistry' do
-      expect(::Search::IndexRegistry).to receive(:index_for_namespace)
-        .with(namespace: note.project.namespace, type: ::Search::NoteIndex)
-        .and_return(search_index)
-
-      expect(note.search_index).to eq(search_index)
-    end
-
-    context 'when not assigned to a project' do
-      let(:user) { create(:user) }
-      let(:note) { described_class.new(author: user) }
-
-      it 'uses author namespace' do
-        expect(::Search::IndexRegistry).to receive(:index_for_namespace)
-          .with(namespace: user.namespace, type: ::Search::NoteIndex)
-          .and_return(search_index)
-
-        expect(note.search_index).to eq(search_index)
       end
     end
   end
