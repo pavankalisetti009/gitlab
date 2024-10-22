@@ -1,7 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlLink, GlPopover } from '@gitlab/ui';
 import { flattenDeep } from 'lodash';
-import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { __, s__, sprintf } from '~/locale';
 
@@ -84,8 +83,6 @@ export default {
     },
   },
   mounted() {
-    // Use renderGFM() to add syntax highlighting to the markdown.
-    renderGFM(this.$refs.markdownContent);
     this.stepsExpanded = Array(this.vulnerabilityFlowDetails.length).fill(true);
   },
   methods: {
