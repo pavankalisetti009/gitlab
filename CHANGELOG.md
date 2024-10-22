@@ -1635,6 +1635,13 @@ entry.
 
 - [Update learn more link and docs formatting](https://gitlab.com/gitlab-org/gitlab/-/commit/6f536fdb20c2d2b96124afe693042c91483a32b2) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164889))
 
+## 17.3.6 (2024-10-22)
+
+### Security (2 changes)
+
+- [Fixed HTML injection in Global Search bug](https://gitlab.com/gitlab-org/security/gitlab/-/commit/96159ab6cd9af8fc0ceadaf7568c8aaf079a8542) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4506))
+- [Limit max size of manifest file upload](https://gitlab.com/gitlab-org/security/gitlab/-/commit/85bf29446c0423ba04339bc95ba546948b91e12e) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4531))
+
 ## 17.3.5 (2024-10-09)
 
 ### Fixed (1 change)
