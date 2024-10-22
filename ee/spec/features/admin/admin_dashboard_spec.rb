@@ -104,7 +104,7 @@ RSpec.describe 'Admin Dashboard', feature_category: :shared do
       visit admin_root_path
 
       page.within('.admin-dashboard') do
-        expect(find('.badge')).to have_content('Up to date')
+        expect(find_by_testid('check-version-badge')).to have_content('Up to date')
       end
     end
   end
