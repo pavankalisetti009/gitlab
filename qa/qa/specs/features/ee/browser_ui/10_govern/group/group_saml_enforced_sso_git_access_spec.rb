@@ -29,8 +29,6 @@ module QA
       end
 
       after do
-        group.remove_via_api!
-
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
       end
 

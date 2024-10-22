@@ -20,10 +20,6 @@ module QA
         group_for_trial.visit!
       end
 
-      after do
-        user.remove_via_api!
-      end
-
       describe 'starts a free trial' do
         context 'when visiting trials page with multiple eligible namespaces' do
           let!(:group) do
@@ -35,10 +31,6 @@ module QA
 
           before do
             Runtime::Browser.visit(:gitlab, EE::Page::Trials::New)
-          end
-
-          after do
-            group.remove_via_api!
           end
 
           it(

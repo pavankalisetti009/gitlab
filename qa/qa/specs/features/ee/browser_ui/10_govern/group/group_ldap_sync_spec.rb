@@ -9,11 +9,6 @@ module QA
       let(:group) { create(:group, sandbox: root_group, path: "#{group_name}-#{SecureRandom.hex(4)}") }
       let(:project) { create(:project, name: "project-to-test-PrAT-#{SecureRandom.hex(8)}", group: group) }
 
-      after do |example|
-        # If a test fails leave the groups so we can investigate them
-        root_group.remove_via_api! unless example.exception
-      end
-
       shared_examples 'Group sync' do |testcases|
         it 'has LDAP users synced', testcase: testcases[0] do
           verify_users_synced(sync_users)

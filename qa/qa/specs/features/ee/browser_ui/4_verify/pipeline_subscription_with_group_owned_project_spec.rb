@@ -37,9 +37,7 @@ module QA
       end
 
       after do
-        [runner, upstream_project, downstream_project, group].each do |item|
-          item.remove_via_api!
-        end
+        runner.remove_via_api!
       end
 
       context 'when upstream project new tag pipeline finishes' do

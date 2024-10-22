@@ -17,16 +17,6 @@ module QA
         group.sandbox.add_member(user_with_minimal_access, Resource::Members::AccessLevel::MINIMAL_ACCESS)
       end
 
-      after do
-        user_with_minimal_access&.remove_via_api!
-        project&.remove_via_api!
-        begin
-          group&.remove_via_api!
-        rescue Resource::ApiFabricator::ResourceNotDeletedError
-          # It is ok if the group is already marked for deletion by another test
-        end
-      end
-
       it 'is not allowed to push code via the CLI', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347873' do
         expect do
