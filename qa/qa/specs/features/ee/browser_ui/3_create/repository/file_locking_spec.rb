@@ -66,7 +66,7 @@ module QA
         end
       end
 
-      it 'creates a merge request and fails to merge', :blocking,
+      it 'merge request is blocked when a path is locked by another user', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347770' do
         push as_user: user_one, max_attempts: 3, branch: 'test'
 
@@ -76,15 +76,16 @@ module QA
           source_branch: 'test',
           target_branch: project.default_branch)
 
+        Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file
         click_lock
-        Flow::Login.sign_in(as: user_one, skip_page_validation: true)
+
         merge_request.visit!
 
         Page::MergeRequest::Show.perform do |merge_request|
-          merge_request.try_to_merge!
-          expect(page).to have_text("locked by @#{admin_username}", wait: 30)
-          expect(merge_request).to have_merge_button
+          expect(merge_request).to have_content('Merge blocked: 1 check failed', wait: 20)
+          expect(merge_request).to have_content('All paths must be unlocked')
+          expect(merge_request).to be_auto_mergeable
         end
       end
 
@@ -149,10 +150,6 @@ module QA
         expect do
           push as_user: as_user, max_attempts: 3, branch: project.default_branch, file: for_file
         end.not_to raise_error
-      end
-
-      def admin_username
-        create(:user, username: Runtime::User.username).username
       end
     end
   end
