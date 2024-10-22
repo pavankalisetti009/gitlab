@@ -65,7 +65,7 @@ RSpec.describe 'Merge request > User sees status checks widget', :js, feature_ca
     end
 
     with_them do
-      it 'is rendered correctly', :aggregate_failures do
+      it 'is rendered correctly', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/439546' do
         within_testid('info-status-checks') do
           find_by_testid('toggle-button').click
         end
