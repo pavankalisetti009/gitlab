@@ -18,6 +18,12 @@ module Ai
           return error_response("Can not update workflow", :unauthorized)
         end
 
+        handle_status_event
+      end
+
+      private
+
+      def handle_status_event
         case @status_event
         when "finish"
           unless @workflow.can_finish?
@@ -37,6 +43,18 @@ module Ai
           end
 
           @workflow.start
+        when "pause"
+          unless @workflow.can_pause?
+            return error_response("Can not pause workflow that has status #{@workflow.human_status_name}")
+          end
+
+          @workflow.pause
+        when "resume"
+          unless @workflow.can_resume?
+            return error_response("Can not resume workflow that has status #{@workflow.human_status_name}")
+          end
+
+          @workflow.resume
         else
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
@@ -45,8 +63,6 @@ module Ai
 
         ServiceResponse.success(payload: { workflow: @workflow }, message: "Workflow status updated")
       end
-
-      private
 
       def error_response(message, reason = :bad_request)
         ServiceResponse.error(message: message, reason: reason)

@@ -65,6 +65,26 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(workflow.reload.human_status_name).to eq("failed")
       end
 
+      it "can pause a workflow", :aggregate_failures do
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "pause").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow status updated")
+        expect(workflow.reload.human_status_name).to eq("paused")
+      end
+
+      context "when initial status is paused" do
+        let(:workflow_initial_status_enum) { 2 } # status paused
+
+        it "can resume a workflow", :aggregate_failures do
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "resume").execute
+
+          expect(result[:status]).to eq(:success)
+          expect(result[:message]).to eq("Workflow status updated")
+          expect(workflow.reload.human_status_name).to eq("running")
+        end
+      end
+
       context "when initial status is created" do
         let(:workflow_initial_status_enum) { 0 } # status created
 
@@ -78,10 +98,10 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       end
 
       it "does not update to not allowed status", :aggregate_failures do
-        result = described_class.new(workflow: workflow, current_user: user, status_event: "pause").execute
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "another_event").execute
 
         expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq("Can not update workflow status, unsupported event: pause")
+        expect(result[:message]).to eq("Can not update workflow status, unsupported event: another_event")
         expect(result[:reason]).to eq(:bad_request)
         expect(workflow.reload.human_status_name).to eq("running")
       end
@@ -104,6 +124,28 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
 
         expect(result[:status]).to eq(:error)
         expect(result[:message]).to eq("Can not drop workflow that has status finished")
+        expect(result[:reason]).to eq(:bad_request)
+        expect(workflow.reload.human_status_name).to eq("finished")
+      end
+
+      it "does not pause finished workflow", :aggregate_failures do
+        workflow.finish
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "pause").execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to eq("Can not pause workflow that has status finished")
+        expect(result[:reason]).to eq(:bad_request)
+        expect(workflow.reload.human_status_name).to eq("finished")
+      end
+
+      it "does not resume finished workflow", :aggregate_failures do
+        workflow.finish
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "resume").execute
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to eq("Can not resume workflow that has status finished")
         expect(result[:reason]).to eq(:bad_request)
         expect(workflow.reload.human_status_name).to eq("finished")
       end
