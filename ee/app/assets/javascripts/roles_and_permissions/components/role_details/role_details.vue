@@ -81,12 +81,12 @@ export default {
     deleteButtonTooltip() {
       // The button will be disabled if there are assigned members, so we want to show the tooltip immediately on hover
       // instead of the default 0.5-second delay.
-      return this.hasAssignedMembers
+      return this.hasAssignedUsers
         ? { title: s__('MemberRole|To delete custom role, remove role from all users.'), delay: 0 }
         : s__('MemberRole|Delete role');
     },
-    hasAssignedMembers() {
-      return this.role.membersCount > 0;
+    hasAssignedUsers() {
+      return this.role.usersCount > 0;
     },
   },
   methods: {
@@ -121,7 +121,7 @@ export default {
             icon="remove"
             category="secondary"
             variant="danger"
-            :disabled="hasAssignedMembers"
+            :disabled="hasAssignedUsers"
             @click="roleToDelete = role"
           />
         </div>

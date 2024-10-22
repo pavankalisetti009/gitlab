@@ -2,6 +2,6 @@ fragment MemberRole on MemberRole {
   id
   name
   description
-  membersCount
+  usersCount
   editPath
 }

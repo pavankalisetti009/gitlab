@@ -148,7 +148,11 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER, member_role: member_role)
     end
 
-    let_it_be(:membership_without_custom_role) do
+    let_it_be(:membership_with_guest_role) do
+      create(:group_member, group: sub_group, access_level: ::Gitlab::Access::GUEST)
+    end
+
+    let_it_be(:membership_with_maintainer_role) do
       create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER)
     end
 
@@ -167,18 +171,28 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     describe '.with_static_role' do
       subject { described_class.with_static_role }
 
-      it { is_expected.to contain_exactly(membership_without_custom_role) }
+      it { is_expected.to contain_exactly(membership_with_guest_role, membership_with_maintainer_role) }
     end
 
-    describe '.count_by_role' do
-      subject(:count_by_role) { described_class.count_by_role.as_json }
+    describe '.count_members_by_role' do
+      subject(:result) { described_class.count_members_by_role.as_json }
 
       it 'groups by role' do
-        result = count_by_role
-        expect(result.count).to eq(1)
+        expect(result).to contain_exactly(
+          hash_including("access_level" => 40, "members_count" => 2),
+          hash_including("access_level" => 10, "members_count" => 1)
+        )
+      end
+    end
 
-        expect(result.first['access_level']).to eq(40)
-        expect(result.first['members_count']).to eq(1)
+    describe '.count_users_by_role' do
+      subject(:result) { described_class.count_users_by_role.as_json }
+
+      it 'groups by role' do
+        expect(result).to contain_exactly(
+          hash_including("access_level" => 40, "users_count" => 2),
+          hash_including("access_level" => 10, "users_count" => 1)
+        )
       end
     end
   end
