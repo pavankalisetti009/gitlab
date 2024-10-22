@@ -68,12 +68,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
     context 'when merge request is identified' do
       let_it_be(:merge_request1) { create(:merge_request, source_project: project, source_branch: 'branch-1') }
       let_it_be(:merge_request2) { create(:merge_request, source_project: project, source_branch: 'branch-2') }
+
+      let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
           container: project,
           resource: merge_request1,
           current_user: user,
-          ai_request: double
+          ai_request: ai_request_double
         )
       end
 
@@ -282,6 +285,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
             response = "You already have identified the merge request #{context.resource.to_global_id}, read carefully."
             expect(tool.execute.content).to eq(response)
           end
+        end
+
+        it_behaves_like 'uses ai gateway agent prompt' do
+          let(:prompt_class) { Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic }
+          let(:unit_primitive) { 'merge_request_reader' }
         end
       end
     end
