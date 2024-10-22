@@ -8,8 +8,6 @@ import {
 
 export const components = {
   ...componentsCE,
-  PerformanceIssueBody: () =>
-    import('ee/vue_merge_request_widget/components/performance_issue_body.vue'),
   LicenseIssueBody: () =>
     import('ee/vue_shared/license_compliance/components/license_issue_body.vue'),
   SecurityIssueBody: () =>
@@ -24,7 +22,6 @@ export const components = {
 
 export const componentNames = {
   ...componentNamesCE,
-  PerformanceIssueBody: 'PerformanceIssueBody',
   LicenseIssueBody: 'LicenseIssueBody',
   SecurityIssueBody: 'SecurityIssueBody',
   MetricsReportsIssueBody: 'MetricsReportsIssueBody',
