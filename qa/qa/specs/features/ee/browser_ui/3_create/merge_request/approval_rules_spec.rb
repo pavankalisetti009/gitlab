@@ -23,12 +23,6 @@ module QA
         Flow::Login.sign_in
       end
 
-      after do
-        # Cleanup so that retries can start fresh
-        project&.group&.remove_member(approver2)
-        project&.remove_via_api!
-      end
-
       it 'allows multiple approval rules with users and groups', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347771' do
         # Create a merge request with 2 rules
         merge_request = Resource::MergeRequest.fabricate_via_browser_ui! do |resource|

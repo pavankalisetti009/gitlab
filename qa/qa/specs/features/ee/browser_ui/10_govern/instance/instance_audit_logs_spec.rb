@@ -123,10 +123,6 @@ module QA
           Page::Main::Menu.perform(&:click_stop_impersonation_link)
         end
 
-        after do
-          user_for_impersonation.remove_via_api!
-        end
-
         it_behaves_like 'audit event', ["Started Impersonation", "Stopped Impersonation"]
       end
 

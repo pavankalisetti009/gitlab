@@ -30,10 +30,6 @@ module QA
         end.project.visit!
       end
 
-      after do
-        project.remove_via_api!
-      end
-
       it(
         'tests reindexing after push', :blocking,
         retry: 3,
