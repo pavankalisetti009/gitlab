@@ -13,6 +13,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   has_many :saml_providers
   has_many :saml_group_links
   has_many :group_group_links
+  has_many :users, -> { distinct }, through: :members
   belongs_to :namespace
 
   validates :namespace, presence: true, if: :gitlab_com_subscription?
@@ -52,6 +53,13 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       .group(:id)
       .select(MemberRole.default_select_columns)
       .select('COUNT(members.id) AS members_count')
+  end
+
+  scope :with_users_count, -> do
+    left_outer_joins(:members)
+      .group(:id)
+      .select(MemberRole.default_select_columns)
+      .select('COUNT(DISTINCT members.user_id) AS users_count')
   end
 
   before_destroy :prevent_delete_after_member_associated

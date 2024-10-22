@@ -38,7 +38,7 @@ export default {
       return isCustomRole(this.role);
     },
     hasAssignedUsers() {
-      return this.role.membersCount > 0;
+      return this.role.usersCount > 0;
     },
     roleId() {
       return this.isCustomRole ? getIdFromGraphQLId(this.role.id) : this.role.accessLevel;

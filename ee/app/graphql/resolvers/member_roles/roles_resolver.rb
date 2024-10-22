@@ -28,6 +28,7 @@ module Resolvers
 
         member_roles = ::MemberRoles::RolesFinder.new(current_user, params).execute
         member_roles = member_roles.with_members_count if selects_field?(:members_count)
+        member_roles = member_roles.with_users_count if selects_field?(:users_count)
 
         offset_pagination(member_roles)
       end
@@ -39,7 +40,7 @@ module Resolvers
       end
 
       def selects_field?(name)
-        lookahead.selects?(:members_count) || selected_fields.include?(name)
+        lookahead.selects?(name) || selected_fields.include?(name)
       end
     end
   end

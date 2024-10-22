@@ -58,10 +58,12 @@ module EE
         ).left_outer_joins(:member_role)
       end
 
-      scope :count_by_role, -> do
-        select('access_level', 'COUNT(*) as members_count')
-          .where(member_role_id: nil)
-          .group(:access_level)
+      scope :count_members_by_role, -> do
+        select(:access_level, 'COUNT(*) as members_count').group(:access_level)
+      end
+
+      scope :count_users_by_role, -> do
+        select(:access_level, 'COUNT(DISTINCT user_id) as users_count').group(:access_level)
       end
 
       before_create :set_membership_activation
