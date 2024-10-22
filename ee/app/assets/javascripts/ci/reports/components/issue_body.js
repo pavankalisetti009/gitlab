@@ -12,8 +12,6 @@ export const components = {
     import('ee/vue_merge_request_widget/components/performance_issue_body.vue'),
   LicenseIssueBody: () =>
     import('ee/vue_shared/license_compliance/components/license_issue_body.vue'),
-  MetricsReportsIssueBody: () =>
-    import('ee/vue_shared/metrics_reports/components/metrics_reports_issue_body.vue'),
   BlockingMergeRequestsBody: () =>
     import(
       'ee/vue_merge_request_widget/components/blocking_merge_requests/blocking_merge_request_body.vue'
@@ -24,7 +22,6 @@ export const componentNames = {
   ...componentNamesCE,
   PerformanceIssueBody: 'PerformanceIssueBody',
   LicenseIssueBody: 'LicenseIssueBody',
-  MetricsReportsIssueBody: 'MetricsReportsIssueBody',
   BlockingMergeRequestsBody: 'BlockingMergeRequestsBody',
 };
 
