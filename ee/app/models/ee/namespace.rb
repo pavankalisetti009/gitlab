@@ -50,13 +50,6 @@ module EE
       accepts_nested_attributes_for :gitlab_subscription, update_only: true
       accepts_nested_attributes_for :namespace_limit
 
-      has_many :search_index_assignments, class_name: 'Search::NamespaceIndexAssignment'
-
-      has_many :search_indices,
-        through: :search_index_assignments,
-        source: 'index',
-        class_name: 'Search::Index'
-
       has_one :audit_event_http_namespace_filter, class_name: 'AuditEvents::Streaming::HTTP::NamespaceFilter'
       has_one :audit_event_http_instance_namespace_filter, class_name: 'AuditEvents::Streaming::HTTP::Instance::NamespaceFilter'
       has_many :work_items_colors, inverse_of: :namespace, class_name: 'WorkItems::Color'
@@ -537,10 +530,6 @@ module EE
 
     def search_code_with_zoekt?
       ::Search::Zoekt.search?(self)
-    end
-
-    def has_index_assignment?(type:)
-      ::Search::NamespaceIndexAssignment.has_assignment?(namespace: self, type: type)
     end
 
     def invalidate_elasticsearch_indexes_cache!

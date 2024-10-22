@@ -16,7 +16,6 @@ module Gitlab
           ENDPOINT = '/v1/chat/agent'
           BASE_ENDPOINT = '/v1/chat'
           BASE_PROMPTS_CHAT_ENDPOINT = '/v1/prompts/chat'
-          CHAT_V2_ENDPOINT = '/v2/chat/agent'
           DEFAULT_TYPE = 'prompt'
           DEFAULT_SOURCE = 'GitLab EE'
           TEMPERATURE = 0.1
@@ -34,11 +33,9 @@ module Gitlab
             options = default_options.merge(prompt.fetch(:options, {}))
             return unless model_provider_valid?(options)
 
-            v2_chat_schema = options.delete(:single_action_agent)
-
             response = ai_client.stream(
-              url: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
-              body: body(v2_chat_schema, prompt, options, unit_primitive: unit_primitive)
+              url: endpoint(unit_primitive, options[:use_ai_gateway_agent_prompt]),
+              body: body(prompt, options, unit_primitive: unit_primitive)
             ) do |data|
               yield data if block_given?
             end
@@ -85,14 +82,12 @@ module Gitlab
             provider(options)
           end
 
-          def endpoint(unit_primitive, v2_chat_schema, use_ai_gateway_agent_prompt)
+          def endpoint(unit_primitive, use_ai_gateway_agent_prompt)
             path =
               if use_ai_gateway_agent_prompt
                 "#{BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
               elsif unit_primitive.present?
                 "#{BASE_ENDPOINT}/#{unit_primitive}"
-              elsif v2_chat_schema
-                CHAT_V2_ENDPOINT
               else
                 ENDPOINT
               end
@@ -103,10 +98,8 @@ module Gitlab
             "#{base_url}#{path}"
           end
 
-          def body(v2_chat_schema, prompt, options, unit_primitive: nil)
-            if v2_chat_schema
-              request_body_chat_2(prompt: prompt[:prompt], options: options)
-            elsif options[:use_ai_gateway_agent_prompt]
+          def body(prompt, options, unit_primitive: nil)
+            if options[:use_ai_gateway_agent_prompt]
               request_body_agent(inputs: options[:inputs], unit_primitive: unit_primitive)
             else
               request_body(prompt: prompt[:prompt], options: options)
@@ -169,28 +162,6 @@ module Gitlab
                 model: model(options)
               }
             end
-          end
-
-          def request_body_chat_2(prompt:, options: {})
-            option_params = {
-              chat_history: options[:conversation],
-              agent_scratchpad: {
-                agent_type: "react",
-                steps: options[:agent_scratchpad]
-              },
-              context: options[:current_resource_params],
-              current_file: options[:current_file_params],
-              additional_context: options[:additional_context]
-            }.compact
-
-            response = {
-              prompt: prompt,
-              options: option_params,
-              model_metadata: options[:model_metadata],
-              unavailable_resources: unavailable_resources
-            }
-
-            response.compact
           end
 
           def payload_params(options)

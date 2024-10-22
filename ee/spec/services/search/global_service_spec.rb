@@ -517,6 +517,26 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       it 'returns the projects the user has access to' do
         expect(elastic_projects).to eq([project.id])
       end
+
+      it 'fetches authorized projects with cache' do
+        expect(::Search::Cache).to receive(:lookup).and_call_original
+
+        expect(elastic_projects).to eq([project.id])
+      end
+
+      context 'when search_cache_authorizations feature flag is disabled' do
+        before do
+          stub_feature_flags(search_cache_authorizations: false)
+        end
+
+        it 'fetches authorized projects with cache with enabled: false' do
+          expect(::Search::Cache).to receive(:lookup)
+            .with(resource: user, action: anything, expires_in: anything, enabled: false)
+            .and_call_original
+
+          expect(elastic_projects).to eq([project.id])
+        end
+      end
     end
 
     context 'when there is no user' do
