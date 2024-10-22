@@ -5,7 +5,7 @@
   - c.with_body do
     - if group.ldap_group_links.any?
       %ul.content-list
-        = render partial: 'ldap_group_links/ldap_group_link', collection: group.ldap_group_links, locals: { group: group }
+        = render partial: 'ldap_group_links/ldap_group_link', collection: group.ldap_group_links, locals: { group: group, show_remove: true }
     - else
       %p.gl-my-4
         = s_('LDAP|No LDAP synchronizations')
