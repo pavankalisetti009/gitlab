@@ -115,7 +115,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category
     end
 
     it 'allows numerical values for workspaces_per_user_quota greater or equal to -1' do
-      validate_numericality_of(:workspaces_per_user_quota).only_integer.is_greater_than_or_equal_to(-1)
+      is_expected.to validate_numericality_of(:workspaces_per_user_quota).only_integer.is_greater_than_or_equal_to(-1)
     end
 
     it 'allows numerical values for max_hours_before_termination_limit greater or equal to' \

@@ -53,6 +53,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       enable_agent_for_group(agent_name: agent.name, group_name: group.name)
 
       # NAVIGATE TO WORKSPACES PAGE
+      # noinspection RubyResolve -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32301
       visit remote_development_workspaces_path
       wait_for_requests
 

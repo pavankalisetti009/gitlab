@@ -3,7 +3,7 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfosObserver, feature_category: :workspaces do
-  let(:agent) { instance_double("Clusters::Agent", id: 1) }
+  let(:agent) { instance_double(Clusters::Agent, id: 1) }
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
   let(:logger) { instance_double(::Logger) }
   let(:normal_agent_info) do

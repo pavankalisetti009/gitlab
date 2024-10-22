@@ -4,7 +4,8 @@ module RemoteDevelopment
   class AgentConfigsFinder
     # Executes a query to find agent configurations based on the provided filter arguments.
     #
-    # @param [User] current_user The user making the request. Must have permission to access workspaces.
+    # @param [User, QA::Resource::User] current_user The user making the request. Must have permission
+    #   to access workspaces.
     # @param [Array<Integer>] ids A list of specific WorkspacesAgentConfig IDs to filter by (optional).
     # @param [Array<Integer>] cluster_agent_ids A list of ClusterAgent IDs to filter by (optional).
     # @return [ActiveRecord::Relation<WorkspacesAgentConfig>]

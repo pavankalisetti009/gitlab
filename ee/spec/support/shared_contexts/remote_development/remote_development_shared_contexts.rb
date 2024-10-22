@@ -605,6 +605,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     if desired_config_generator_version ==
         RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
+      # noinspection RubyMismatchedArgumentType -- RubyMine incorrectly detecting String#delete instead of Hash#delete
       configmap[:metadata].delete(:annotations)
     end
 
@@ -1120,6 +1121,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     if desired_config_generator_version ==
         RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
+      # noinspection RubyMismatchedArgumentType -- RubyMine incorrectly detecting String#delete instead of Hash#delete
       configmap[:metadata].delete(:annotations)
     end
 

@@ -105,6 +105,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
         expect(page).to have_button('Stopping', disabled: true)
       end
 
+      # @param [String] state
       def expect_workspace_state_indicator(state)
         indicator = find_by_testid("workspace-state-indicator")
 
@@ -114,14 +115,14 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   end
 
   describe 'when viewing project overview page' do
-    let(:subject) { project_path(project) }
+    subject { project_path(project) }
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
   end
 
   describe 'when viewing blob page' do
     # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-    let(:subject) { project_blob_path(project, "#{project.default_branch}/#{devfile_path}") }
+    subject { project_blob_path(project, "#{project.default_branch}/#{devfile_path}") }
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
   end

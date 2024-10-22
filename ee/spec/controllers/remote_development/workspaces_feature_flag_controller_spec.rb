@@ -22,7 +22,7 @@ RSpec.describe RemoteDevelopment::WorkspacesFeatureFlagController, feature_categ
         get :show, params: { flag: flag, namespace_id: namespace_id }
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response["enabled"]).to eq false
+        expect(json_response["enabled"]).to be false
       end
     end
 
@@ -79,7 +79,7 @@ RSpec.describe RemoteDevelopment::WorkspacesFeatureFlagController, feature_categ
             get :show, params: { flag: flag, namespace_id: namespace_id }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response["enabled"]).to eq false
+            expect(json_response["enabled"]).to be false
           end
         end
       end

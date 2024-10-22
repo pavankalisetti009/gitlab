@@ -28,10 +28,8 @@ RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :workspa
 
   before do
     stub_licensed_features(remote_development: true)
-    allow(::RemoteDevelopment::FilterArgumentValidator).to receive(:validate_filter_argument_types!).and_return(true)
-    allow(::RemoteDevelopment::FilterArgumentValidator).to receive(
-      :validate_at_least_one_filter_argument_provided!
-    ).and_return(true)
+    allow(::RemoteDevelopment::FilterArgumentValidator).to receive_messages(validate_filter_argument_types!: true,
+      validate_at_least_one_filter_argument_provided!: true)
   end
 
   context "with ids argument" do

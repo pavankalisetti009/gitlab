@@ -31,6 +31,7 @@ module Resolvers
             cluster_agent_ids: agent_ids
           )
           apply_lookahead(agent_configs).each do |agent_config|
+            # noinspection RubyResolve -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32301
             loader.call(agent_config.cluster_agent_id, agent_config)
           end
         end

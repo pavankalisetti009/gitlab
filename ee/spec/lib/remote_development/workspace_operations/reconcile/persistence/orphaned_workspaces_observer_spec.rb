@@ -3,11 +3,11 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::OrphanedWorkspacesObserver, feature_category: :workspaces do
-  let(:agent) { instance_double("Clusters::Agent", id: 1) }
+  let(:agent) { instance_double(Clusters::Agent, id: 1) }
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
   let(:logger) { instance_double(::Logger) }
 
-  let(:workspace) { instance_double("RemoteDevelopment::Workspace", name: "name", namespace: "namespace") }
+  let(:workspace) { instance_double(RemoteDevelopment::Workspace, name: "name", namespace: "namespace") }
 
   let(:persisted_workspace_agent_info) do
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(

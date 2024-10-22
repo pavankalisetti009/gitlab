@@ -3,6 +3,7 @@
 FactoryBot.define do
   # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   factory :workspace, class: 'RemoteDevelopment::Workspace' do
+    # noinspection RailsParamDefResolve -- RubyMine flags this as requiring a hash, but a symbol is a valid option
     association :project, :in_group
     user
     agent factory: [:ee_cluster_agent, :with_existing_workspaces_agent_config]
