@@ -166,12 +166,31 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
   end
 
   describe '#db_replication_lag_seconds' do
-    it 'returns the set replication lag if secondary' do
-      allow(Gitlab::Geo).to receive(:secondary?).and_return(true)
-      geo_health_check = double('Gitlab::Geo::HealthCheck', perform_checks: '', db_replication_lag_seconds: 1000)
-      allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(geo_health_check)
+    context 'when in a secondary node' do
+      before do
+        allow(Gitlab::Geo).to receive(:secondary?).and_return(true)
+        allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(geo_health_check)
+      end
 
-      expect(subject.db_replication_lag_seconds).to eq(1000)
+      context 'when replication is enabled' do
+        let(:geo_health_check) { instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: 1000) }
+
+        it 'returns the set replication lag' do
+          expect(subject.db_replication_lag_seconds).to eq(1000)
+        end
+      end
+
+      context 'when replication is disabled' do
+        let(:geo_health_check) { instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: nil) }
+
+        before do
+          allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(geo_health_check)
+        end
+
+        it 'returns nil' do
+          expect(subject.db_replication_lag_seconds).to be_nil
+        end
+      end
     end
 
     it "doesn't attempt to set replication lag if primary" do

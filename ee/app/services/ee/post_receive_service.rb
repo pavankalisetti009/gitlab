@@ -50,7 +50,7 @@ module EE
     end
 
     def geo_display_secondary_lag_message?
-      ::Gitlab::Geo.primary? && geo_current_replication_lag.to_i > 0
+      ::Gitlab::Geo.primary? && !geo_current_replication_lag.nil? && geo_current_replication_lag.to_i > 0
     end
 
     def storage_size_limit_alert

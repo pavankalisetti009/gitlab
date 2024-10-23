@@ -109,7 +109,7 @@ module EE
 
       def current_replication_lag_message
         return unless ::Gitlab::Geo.secondary?
-        return if current_replication_lag == 0
+        return if current_replication_lag.nil? || current_replication_lag == 0
 
         "Current replication lag: #{current_replication_lag} seconds"
       end

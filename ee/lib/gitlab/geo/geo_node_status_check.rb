@@ -127,7 +127,12 @@ module Gitlab
 
       def print_db_replication_lag
         print 'Database replication lag: '.rjust(GEO_STATUS_COLUMN_WIDTH)
-        puts "#{Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds} seconds"
+        lag = Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds
+        if lag.nil?
+          puts "N/A"
+        else
+          puts "#{lag} seconds"
+        end
       end
 
       # rubocop: disable CodeReuse/ActiveRecord

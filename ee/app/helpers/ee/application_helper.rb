@@ -34,7 +34,7 @@ module EE
     end
 
     def lag_message
-      if db_lag > DB_LAG_SHOW_THRESHOLD
+      if !db_lag.nil? && db_lag > DB_LAG_SHOW_THRESHOLD
         return (s_('Geo|The database is currently %{db_lag} behind the primary site.') %
           { db_lag: time_ago_in_words(db_lag.seconds.ago) }).html_safe
       end
@@ -114,6 +114,8 @@ module EE
     end
 
     def db_lag
+      return unless ::Gitlab::Geo::HealthCheck.new.replication_enabled?
+
       @db_lag ||= Rails.cache.fetch('geo:db_lag', expires_in: 20.seconds) do
         ::Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds
       end

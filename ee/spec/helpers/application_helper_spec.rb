@@ -206,10 +206,19 @@ RSpec.describe ApplicationHelper do
       end
 
       it 'includes a warning about database lag', :aggregate_failures do
+        allow_any_instance_of(::Gitlab::Geo::HealthCheck).to receive(:replication_enabled?).and_return(true)
         allow_any_instance_of(::Gitlab::Geo::HealthCheck).to receive(:db_replication_lag_seconds).and_return(120)
 
         expect(helper.geo_secondary_read_only_description).to match(/If you want to make changes, you must visit the primary site./)
         expect(helper.geo_secondary_read_only_description).to match(/The database is currently 2 minutes behind the primary site/)
+      end
+
+      it 'does not include a warning about database lag when replication is disabled', :aggregate_failures do
+        allow_any_instance_of(::Gitlab::Geo::HealthCheck).to receive(:replication_enabled?).and_return(false)
+        allow_any_instance_of(::Gitlab::Geo::HealthCheck).to receive(:db_replication_lag_seconds).and_return(180) # this should be ignored
+
+        expect(helper.geo_secondary_read_only_description).to match(/If you want to make changes, you must visit the primary site./)
+        expect(helper.geo_secondary_read_only_description).not_to match(/The database is currently 3 minutes behind the primary site/)
       end
 
       context 'event lag' do

@@ -124,12 +124,23 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
   describe '#db_replication_lag_seconds' do
     before do
       query = 'SELECT CASE WHEN pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn() THEN 0 ELSE EXTRACT (EPOCH FROM now() - pg_last_xact_replay_timestamp())::INTEGER END AS replication_lag'
+      allow(subject).to receive(:replication_enabled?).and_return(replication_enabled)
       allow(ApplicationRecord.database).to receive(:pg_last_wal_receive_lsn).and_return('pg_last_wal_receive_lsn')
       allow(ApplicationRecord.database).to receive(:pg_last_wal_replay_lsn).and_return('pg_last_wal_replay_lsn')
       allow(ActiveRecord::Base).to receive_message_chain('connection.execute').with(query).and_return([{ 'replication_lag' => lag_in_seconds }])
     end
 
+    context 'when replication is not enabled' do
+      let(:replication_enabled) { false }
+      let(:lag_in_seconds) { nil }
+
+      it 'returns nil' do
+        expect(subject.db_replication_lag_seconds).to be_nil
+      end
+    end
+
     context 'when there is no lag' do
+      let(:replication_enabled) { true }
       let(:lag_in_seconds) { nil }
 
       it 'returns 0 seconds' do
@@ -138,6 +149,7 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
     end
 
     context 'when there is lag' do
+      let(:replication_enabled) { true }
       let(:lag_in_seconds) { 7 }
 
       it 'returns the number of seconds' do

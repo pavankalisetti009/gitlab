@@ -64,8 +64,8 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
 
         expect { run_rake_task('geo:set_secondary_as_primary') }
           .to change { Gitlab::CurrentSettings.silent_mode_enabled? }
-          .from(false)
-          .to(true)
+                .from(false)
+                .to(true)
       end
     end
 
@@ -125,7 +125,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
             allow(Gitlab::Geo).to receive(:primary_node).and_return(current_node)
 
             expect { run_rake_task('geo:update_primary_node_url') }
-             .to output(/Error saving Geo node/).to_stdout.and raise_error(SystemExit)
+              .to output(/Error saving Geo node/).to_stdout.and raise_error(SystemExit)
           end
         end
 
@@ -208,6 +208,40 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
 
           checks.each do |text|
             expect { run_rake_task('geo:status') }.to output(text).to_stdout
+          end
+        end
+
+        context 'for database replication lag' do
+          let(:health_check) { instance_double(Gitlab::Geo::HealthCheck) }
+
+          before do
+            allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(health_check)
+          end
+
+          it 'prints N/A when replication is not enabled' do
+            allow(health_check).to receive_messages(
+              replication_enabled?: false,
+              db_replication_lag_seconds: nil
+            )
+
+            expect { run_rake_task('geo:status') }.to output(%r{Database replication lag: N/A}).to_stdout
+          end
+
+          it 'prints the lag in seconds when replication is enabled' do
+            allow(health_check).to receive_messages(
+              replication_enabled?: true,
+              db_replication_lag_seconds: 120
+            )
+
+            expect { run_rake_task('geo:status') }.to output(%r{Database replication lag: 120 seconds}).to_stdout
+          end
+
+          it 'prints N/A when replication is enabled but lag is nil' do
+            allow(health_check).to receive_messages(
+              replication_enabled?: true,
+              db_replication_lag_seconds: nil
+            )
+            expect { run_rake_task('geo:status') }.to output(%r{Database replication lag: N/A}).to_stdout
           end
         end
 

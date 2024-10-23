@@ -15,6 +15,7 @@ export default {
     shardsNotMatched: s__('Geo|Does not match the primary storage configuration'),
     unknown: __('Unknown'),
     ok: __('OK'),
+    nA: __('Not applicable.'),
   },
   classTimestamp: 'gl-text-gray-500 gl-text-sm gl-font-normal',
   components: {
@@ -38,7 +39,7 @@ export default {
         : this.$options.i18n.shardsNotMatched;
     },
     dbReplicationLag() {
-      if (parseInt(this.site.dbReplicationLagSeconds, 10) >= 0) {
+      if (this.site.enabled && parseInt(this.site.dbReplicationLagSeconds, 10) >= 0) {
         const parsedTime = parseSeconds(this.site.dbReplicationLagSeconds, {
           hoursPerDay: 24,
           daysPerWeek: 7,
@@ -47,7 +48,7 @@ export default {
         return stringifyTime(parsedTime);
       }
 
-      return this.$options.i18n.unknown;
+      return this.$options.i18n.nA;
     },
     lastEventTimestamp() {
       // Converting timestamp to ms

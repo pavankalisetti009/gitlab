@@ -118,8 +118,14 @@ module Gitlab
       # With no user activity on the primary site, we expect no new Geo update events to arrive after waiting
       # for the current DB replication lag
       def wait_for_database_replication
+        lag = Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds
+        if lag.nil?
+          puts "Database replication: Replication method unknown. Skipping wait for DB replication."
+          return
+        end
+
         puts "Database replication: Waiting for database replication to catch up"
-        sleep(Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds)
+        sleep(lag)
         puts Rainbow("Database replication: Caught up").green
       end
 
