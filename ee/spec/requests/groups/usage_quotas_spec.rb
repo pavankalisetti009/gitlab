@@ -52,6 +52,26 @@ RSpec.describe 'view usage quotas', feature_category: :consumables_cost_manageme
         expect(response.body).not_to have_pushed_frontend_feature_flags(enableAddOnUsersFiltering: true)
       end
     end
+
+    context 'with enable_add_on_users_pagesize_selection enabled' do
+      it 'exposes the feature flag' do
+        request
+
+        expect(response.body).to have_pushed_frontend_feature_flags(enableAddOnUsersPagesizeSelection: true)
+      end
+    end
+
+    context 'with enable_add_on_users_pagesize_selection disabled' do
+      before do
+        stub_feature_flags(enable_add_on_users_pagesize_selection: false)
+      end
+
+      it 'does not expose feature flag' do
+        request
+
+        expect(response.body).not_to have_pushed_frontend_feature_flags(enableAddOnUsersPagesizeSelection: true)
+      end
+    end
   end
 
   describe 'GET /groups/:group/-/usage_quotas/subscription_history' do
