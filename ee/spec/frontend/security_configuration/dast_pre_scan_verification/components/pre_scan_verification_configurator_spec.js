@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PreScanVerificationConfigurator from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_configurator.vue';
 import PreScanVerificationStatus from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_status.vue';
 import PreScanVerificationSidebar from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_sidebar.vue';
@@ -8,7 +8,7 @@ describe('PreScanVerificationConfigurator', () => {
   let wrapper;
 
   const createComponent = (propsData = {}) => {
-    wrapper = mountExtended(PreScanVerificationConfigurator, {
+    wrapper = shallowMountExtended(PreScanVerificationConfigurator, {
       propsData: {
         ...propsData,
       },
@@ -23,6 +23,7 @@ describe('PreScanVerificationConfigurator', () => {
     expect(findPreScanVerificationSidebar().props('open')).toBe(false);
 
     findPreScanVerificationStatus().vm.$emit('select-results');
+    await nextTick();
     await nextTick();
 
     expect(findPreScanVerificationSidebar().props('open')).toBe(true);
