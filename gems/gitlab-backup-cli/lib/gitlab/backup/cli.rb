@@ -6,6 +6,7 @@
 # while we have this dependency, we need this external require
 require "rainbow/ext/string"
 require 'active_support/all'
+require 'active_record'
 
 module Gitlab
   module Backup
