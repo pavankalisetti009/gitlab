@@ -19,7 +19,6 @@ module Search
       has_many :zoekt_repositories, foreign_key: :zoekt_index_id, inverse_of: :zoekt_index,
         class_name: '::Search::Zoekt::Repository'
 
-      after_commit :index, on: :create
       after_commit :delete_from_index, on: :destroy
 
       enum state: {
@@ -115,12 +114,6 @@ module Search
       end
 
       private
-
-      def index
-        return if Feature.enabled?(:zoekt_initial_indexing_task, Feature.current_request)
-
-        ::Search::Zoekt::NamespaceIndexerWorker.perform_async(zoekt_enabled_namespace.root_namespace_id, :index)
-      end
 
       def delete_from_index
         ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, :delete, zoekt_node_id)

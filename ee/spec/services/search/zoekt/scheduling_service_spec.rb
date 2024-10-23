@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_state, feature_category: :global_search do
-  let(:logger) { instance_double('Logger') }
+  let(:logger) { instance_double(Logger) }
   let(:service) { described_class.new(task.to_s) }
   let_it_be_with_reload(:node) { create(:zoekt_node, :enough_free_space) }
 
@@ -100,7 +100,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
 
     it 'returns false unless saas' do
-      expect(execute_task).to eq(false)
+      expect(execute_task).to be(false)
     end
 
     context 'when on .com', :saas do
@@ -144,7 +144,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           )
 
           expect { execute_task }.to change { Search::Zoekt::Index.pending_deletion.count }.from(0).to(1)
-          expect(zoekt_index2.zoekt_enabled_namespace.reload.search).to eq(false)
+          expect(zoekt_index2.zoekt_enabled_namespace.reload.search).to be(false)
         end
       end
 
@@ -156,7 +156,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let(:task) { :dot_com_rollout }
 
     it 'returns false unless saas' do
-      expect(execute_task).to eq(false)
+      expect(execute_task).to be(false)
     end
 
     context 'when on .com', :saas do
@@ -172,9 +172,8 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           created_at: rollout_cutoff, updated_at: rollout_cutoff)
         create(:zoekt_index, :ready, zoekt_enabled_namespace: ns_1)
         ns_2 = create(:zoekt_enabled_namespace, search: false)
-
-        expect { execute_task }.to change { ns_1.reload.search }.from(false).to(true)
         expect { execute_task }.not_to change { ns_2.reload.search }.from(false)
+        expect(ns_1.reload.search).to be true
       end
 
       context 'when feature flag is disabled' do
@@ -185,7 +184,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         it 'returns false' do
           create(:zoekt_enabled_namespace)
 
-          expect(execute_task).to eq(false)
+          expect(execute_task).to be(false)
         end
       end
 
@@ -254,11 +253,11 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     let(:task) { :remove_expired_subscriptions }
 
     it 'returns false unless saas' do
-      expect(execute_task).to eq(false)
+      expect(execute_task).to be(false)
     end
 
     context 'when on .com', :saas do
-      let_it_be(:expiration_date) { Date.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD }
+      let_it_be(:expiration_date) { Time.zone.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD }
       let_it_be(:zkt_enabled_namespace) { create(:zoekt_enabled_namespace) }
       let_it_be(:zkt_enabled_namespace2) { create(:zoekt_enabled_namespace) }
       let_it_be(:subscription) { create(:gitlab_subscription, namespace: zkt_enabled_namespace2.namespace) }
@@ -289,7 +288,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
 
       it 'returns false' do
-        expect(execute_task).to eq(false)
+        expect(execute_task).to be(false)
       end
     end
 
@@ -312,7 +311,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         end
 
         it 'returns false and does nothing' do
-          expect(execute_task).to eq(false)
+          expect(execute_task).to be(false)
           expect(Search::Zoekt::EnabledNamespace).not_to receive(:with_missing_indices)
         end
       end
@@ -432,26 +431,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           end
         end
 
-        context 'when feature flag zoekt_initial_indexing_task is disabled' do
-          before do
-            stub_feature_flags(zoekt_initial_indexing_task: false)
-          end
-
-          it 'creates a record of Search::Zoekt::Index with state ready' do
-            expect(zkt_enabled_namespace.indices).to be_empty
-            expect(zkt_enabled_namespace2.indices).to be_empty
-            expect(Search::Zoekt::Node).to receive(:online).and_call_original
-            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
-                                                     'message' => "RootStorageStatistics isn't available",
-                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
-            )
-            expect { execute_task }.to change { Search::Zoekt::Index.count }.by(1)
-            expect(zkt_enabled_namespace.indices).to be_empty
-            index = zkt_enabled_namespace2.indices.last
-            expect(index).to be_ready
-          end
-        end
-
         it 'assigns the index to a replica' do
           expect(zkt_enabled_namespace.indices).to be_empty
           expect(zkt_enabled_namespace2.indices).to be_empty
@@ -507,16 +486,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#initial_indexing' do
     let(:task) { :initial_indexing }
     let_it_be_with_reload(:index) { create(:zoekt_index, state: :pending) }
-
-    context 'when feature flag zoekt_initial_indexing_task is disabled' do
-      before do
-        stub_feature_flags(zoekt_initial_indexing_task: false)
-      end
-
-      it 'returns false' do
-        expect(execute_task).to eq(false)
-      end
-    end
 
     context 'when there are no zoekt_indices in pending state' do
       before do
@@ -585,7 +554,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it 'returns false and does not do anything' do
         expect(::Search::Zoekt::ReplicaStateService).not_to receive(:execute)
-        expect(execute_task).to eq(false)
+        expect(execute_task).to be(false)
       end
     end
   end

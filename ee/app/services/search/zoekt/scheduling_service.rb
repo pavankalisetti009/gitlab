@@ -85,7 +85,7 @@ module Search
       # An initial implementation of eviction logic. For now, it's a .com-only task
       def eviction
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
-        return false if Feature.disabled?(:zoekt_reallocation_task)
+        return false if Feature.disabled?(:zoekt_reallocation_task, Feature.current_request)
 
         execute_every 5.minutes, cache_key: :eviction do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
@@ -157,7 +157,7 @@ module Search
       # rubocop:disable CodeReuse/ActiveRecord -- this is a temporary task, which will be removed after the rollout
       def dot_com_rollout
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
-        return false if Feature.disabled?(:zoekt_dot_com_rollout)
+        return false if Feature.disabled?(:zoekt_dot_com_rollout, Feature.current_request)
 
         search_enabled_count = Search::Zoekt::EnabledNamespace.with_all_ready_indices
           .where(search: false, created_at: ..DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
@@ -252,7 +252,7 @@ module Search
                 replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace),
                 reserved_storage_bytes: space_required
               )
-              zoekt_index.state = :ready if Feature.disabled?(:zoekt_initial_indexing_task) || space_required == 0
+              zoekt_index.state = :ready if space_required == 0
               zoekt_indices << zoekt_index
               node.used_bytes += space_required
             else
@@ -295,8 +295,6 @@ module Search
       end
 
       def initial_indexing
-        return false if Feature.disabled?(:zoekt_initial_indexing_task)
-
         execute_every 10.minutes, cache_key: :initial_indexing do
           Index.pending.find_each do |index|
             Gitlab::EventStore.publish(InitialIndexingEvent.new(data: { index_id: index.id }))
@@ -318,7 +316,7 @@ module Search
       end
 
       def update_replica_states
-        return false if Feature.disabled?(:zoekt_replica_state_updates)
+        return false if Feature.disabled?(:zoekt_replica_state_updates, Feature.current_request)
 
         execute_every 2.minutes, cache_key: :update_replica_states do
           ReplicaStateService.execute
