@@ -39,6 +39,7 @@ describe('Reviewer drawer approval rules component', () => {
                 {
                   approvalsRequired,
                   name: 'Optional rule',
+                  type: 'any_approver',
                   approvedBy: {
                     nodes: [],
                   },
@@ -46,6 +47,7 @@ describe('Reviewer drawer approval rules component', () => {
                 {
                   approvalsRequired,
                   name: 'Required rule',
+                  type: 'code_owner',
                   approvedBy: {
                     nodes: [],
                   },
@@ -53,6 +55,7 @@ describe('Reviewer drawer approval rules component', () => {
                 {
                   approvalsRequired,
                   name: 'Approved rule',
+                  type: 'regular',
                   approvedBy: {
                     nodes: [{ id: 1 }],
                   },
@@ -108,6 +111,7 @@ describe('Reviewer drawer approval rules component', () => {
           approvalsRequired: 1,
           name: 'Approved rule',
           section: 'Frontend',
+          type: 'code_owner',
           approvedBy: {
             nodes: [{ id: 1 }],
           },
@@ -123,6 +127,7 @@ describe('Reviewer drawer approval rules component', () => {
           approvalsRequired: 1,
           name: 'Approved rule',
           section: 'codeowners',
+          type: 'code_owner',
           approvedBy: {
             nodes: [{ id: 1 }],
           },
