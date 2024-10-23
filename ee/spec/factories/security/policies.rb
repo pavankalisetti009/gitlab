@@ -41,6 +41,25 @@ FactoryBot.define do
       policy_index { -1 }
     end
 
+    trait :with_policy_scope do
+      scope do
+        {
+          compliance_frameworks: [
+            { id: 1 },
+            { id: 2 }
+          ],
+          projects: {
+            including: [
+              { id: 1 }
+            ],
+            excluding: [
+              { id: 2 }
+            ]
+          }
+        }
+      end
+    end
+
     trait :require_approval do
       content { { actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] } }
     end

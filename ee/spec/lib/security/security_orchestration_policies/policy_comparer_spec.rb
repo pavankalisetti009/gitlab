@@ -42,6 +42,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
   let_it_be(:yaml_policy) do
     {
       name: 'New Policy',
+      type: 'approval_policy',
       description: 'New description',
       enabled: true,
       metadata: {},
@@ -69,6 +70,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
       expect(diff[:name]).to have_attributes(from: 'Old Policy', to: 'New Policy')
       expect(diff[:description]).to have_attributes(from: 'Old description', to: 'New description')
       expect(diff[:rules]).to be_nil
+      expect(diff[:type]).to be_nil
     end
 
     it 'returns the correct changes for rules' do

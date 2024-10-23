@@ -28,9 +28,9 @@ module Security
     private
 
     def handle_create_event(policy)
-      all_projects(policy) do |project|
-        next unless policy.enabled
+      return unless policy.enabled
 
+      all_projects(policy) do |project|
         ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, {})
       end
     end

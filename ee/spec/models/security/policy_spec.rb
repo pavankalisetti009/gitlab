@@ -247,7 +247,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     subject(:policy_hash) { policy.to_policy_hash }
 
     context 'when policy is an approval policy' do
-      let_it_be(:policy) { create(:security_policy, :require_approval) }
+      let_it_be(:policy) { create(:security_policy, :require_approval, :with_policy_scope) }
 
       let_it_be(:rule_content) do
         {
@@ -269,7 +269,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           name: policy.name,
           description: policy.description,
           enabled: true,
-          policy_scope: {},
+          policy_scope: policy.scope.deep_symbolize_keys,
           metadata: {},
           actions: [{ approvals_required: 1, type: "require_approval", user_approvers: ["owner"] }],
           rules: [rule_content]

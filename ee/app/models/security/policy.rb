@@ -125,7 +125,7 @@ module Security
         name: name,
         description: description,
         enabled: enabled,
-        policy_scope: scope,
+        policy_scope: scope.deep_symbolize_keys,
         metadata: metadata
       }.merge(content_by_type)
     end

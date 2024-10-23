@@ -5,7 +5,9 @@ require 'spec_helper'
 RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
-  let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+  let_it_be_with_reload(:policy) do
+    create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+  end
 
   context 'when event is Security::PolicyDeletedEvent' do
     let(:policy_deleted_event) do
@@ -34,6 +36,18 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id, {})
 
       described_class.new.handle_event(policy_created_event)
+    end
+
+    context 'when policy is disabled' do
+      before do
+        policy.update!(enabled: false)
+      end
+
+      it 'does not call Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
+
+        described_class.new.handle_event(policy_created_event)
+      end
     end
 
     context 'when policy_configuration is scoped to a namespace with multiple projects' do
