@@ -23,8 +23,7 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
     context 'when the reviewer IDs param is empty' do
       let(:reviewer_ids) { [] }
 
-      it 'returns an error response', :aggregate_failures,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485613' do
+      it 'returns an error response', :aggregate_failures do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('Reviewer IDs are empty')
@@ -48,8 +47,7 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
     context 'when there is no existing predictions' do
       let(:reviewer_ids) { [1, 2] }
 
-      it 'returns an error response', :aggregate_failures,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485615' do
+      it 'returns an error response', :aggregate_failures do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('No predictions are recorded')
@@ -65,8 +63,7 @@ RSpec.describe MergeRequests::CaptureSuggestedReviewersAcceptedService, feature_
         allow(merge_request).to receive(:predictions).and_return(predictions)
       end
 
-      it 'returns an error response', :aggregate_failures,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/485616' do
+      it 'returns an error response', :aggregate_failures do
         expect(result).to be_a(ServiceResponse)
         expect(result).to be_error
         expect(result.message).to eq('Record invalid')
