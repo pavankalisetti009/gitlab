@@ -46,7 +46,47 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
                 url: 'https://semgrep.dev/r/gitlab.eslint.detect-disable-mustache-escape'
               }
             ],
-            blob_path: '/foo.js#L1'
+            blob_path: '/foo.js#L1',
+            details: {
+              code_flows: {
+                name: 'code_flows',
+                type: 'code-flows',
+                items: [
+                  [
+                    {
+                      type: 'code-flow-node',
+                      node_type: 'source',
+                      file_location: {
+                        type: 'file-location',
+                        file_name: 'path/to/file/app.py',
+                        line_start: 8,
+                        line_end: 8
+                      }
+                    },
+                    {
+                      type: 'code-flow-node',
+                      node_type: 'propagation',
+                      file_location: {
+                        type: 'file-location',
+                        file_name: 'path/to/file/app.py',
+                        line_start: 4,
+                        line_end: 4
+                      }
+                    },
+                    {
+                      type: 'code-flow-node',
+                      node_type: 'sink',
+                      file_location: {
+                        type: 'file-location',
+                        file_name: 'path/to/file/utils.py',
+                        line_start: 5,
+                        line_end: 5
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
           }
         ],
         fixed: []
@@ -88,6 +128,25 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
               externalId
               name
               url
+            }
+            details {
+              ... on VulnerabilityDetailCodeFlows {
+                name
+                items {
+                  ... {
+                    ... on VulnerabilityDetailCodeFlowNode {
+                      nodeType
+                      fileLocation {
+                        ... on VulnerabilityDetailFileLocation {
+                          lineEnd
+                          lineStart
+                          fileName
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
           fixed {
@@ -188,6 +247,39 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
                     externalType: 'semgrep_id',
                     name: 'eslint.detect-disable-mustache-escape',
                     url: 'https://semgrep.dev/r/gitlab.eslint.detect-disable-mustache-escape'
+                  }
+                ],
+                details: [
+                  {
+                    name: 'code_flows',
+                    items: [
+                      [
+                        {
+                          nodeType: 'SOURCE',
+                          fileLocation: {
+                            fileName: 'path/to/file/app.py',
+                            lineStart: 8,
+                            lineEnd: 8
+                          }
+                        },
+                        {
+                          nodeType: 'PROPAGATION',
+                          fileLocation: {
+                            fileName: 'path/to/file/app.py',
+                            lineStart: 4,
+                            lineEnd: 4
+                          }
+                        },
+                        {
+                          nodeType: 'SINK',
+                          fileLocation: {
+                            fileName: 'path/to/file/utils.py',
+                            lineStart: 5,
+                            lineEnd: 5
+                          }
+                        }
+                      ]
+                    ]
                   }
                 ]
               }
