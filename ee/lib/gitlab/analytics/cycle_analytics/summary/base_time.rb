@@ -18,7 +18,7 @@ module Gitlab
           end
 
           def raw_value
-            data_collector.median.days&.round(1)
+            data_collector.median.days&.round(2)
           end
 
           def value
