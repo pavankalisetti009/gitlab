@@ -301,6 +301,27 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
           end
         end
 
+        context 'with a work item' do
+          let_it_be(:work_item) { create(:work_item, :epic, project: project) }
+          let!(:resource) { work_item }
+          let(:params) do
+            { content: content, resource_type: "work_item", resource_id: resource.id }
+          end
+
+          before_all do
+            project.add_developer(authorized_user)
+          end
+
+          it 'sends resource to the chat' do
+            expect(chat_message).to receive(:save!)
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
         context 'without resource' do
           let(:params) { { content: content } }
           let(:resource) { current_user }
