@@ -4,7 +4,7 @@ module RemoteDevelopment
   class WorkspacesAgentConfig < ApplicationRecord
     # NOTE: See the following comment for the reasoning behind the `Workspaces` prefix of this table/model:
     #       https://gitlab.com/gitlab-org/gitlab/-/issues/410045#note_1385602915
-    include IgnorableColumns
+
     include Sortable
 
     UNLIMITED_QUOTA = -1

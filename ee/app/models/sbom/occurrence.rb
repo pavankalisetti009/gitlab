@@ -4,7 +4,6 @@ module Sbom
   class Occurrence < Gitlab::Database::SecApplicationRecord
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
-    include IgnorableColumns
 
     belongs_to :component, optional: false, inverse_of: :occurrences
     belongs_to :component_version, inverse_of: :occurrences

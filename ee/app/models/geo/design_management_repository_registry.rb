@@ -2,7 +2,6 @@
 
 module Geo
   class DesignManagementRepositoryRegistry < Geo::BaseRegistry
-    include IgnorableColumns
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 

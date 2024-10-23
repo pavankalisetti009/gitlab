@@ -2,7 +2,6 @@
 
 module Geo
   class ProjectWikiRepositoryRegistry < Geo::BaseRegistry
-    include IgnorableColumns
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
     extend ::Gitlab::Utils::Override

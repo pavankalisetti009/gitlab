@@ -4,7 +4,6 @@ module Ci
   class FinishedBuildChSyncEvent < Ci::ApplicationRecord
     include EachBatch
     include PartitionedTable
-    include IgnorableColumns
 
     PARTITION_DURATION = 1.day
     PARTITION_CLEANUP_THRESHOLD = 30.days

@@ -7,7 +7,6 @@ module Vulnerabilities
     include Presentable
     include ::VulnerabilityFindingHelpers
     include EachBatch
-    include IgnorableColumns
 
     ignore_columns :confidence, remove_with: '17.4', remove_after: '2024-09-22'
 
