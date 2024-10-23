@@ -428,7 +428,6 @@ spec/frontend/tooltips/components/tooltips_spec.js
 spec/frontend/tooltips/index_spec.js
 spec/frontend/usage_quotas/storage/components/container_registry_usage_spec.js
 spec/frontend/usage_quotas/storage/components/namespace_storage_app_spec.js
-spec/frontend/users/profile/actions/components/user_actions_app_spec.js
 spec/frontend/users_select/index_spec.js
 spec/frontend/vue_alerts_spec.js
 spec/frontend/vue_merge_request_widget/components/checks/conflicts_spec.js
