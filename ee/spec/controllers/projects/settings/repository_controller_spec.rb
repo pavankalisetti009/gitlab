@@ -43,11 +43,11 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
     describe 'group protected branches' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:feature_flag, :licensed_feature, :expected_include_group) do
-        false            | false           | false
-        false            | true            | false
-        true             | false           | false
-        true             | true            | true
+      where(:licensed_feature, :expected_include_group) do
+        false           | false
+        true            | true
+        false           | false
+        true            | true
       end
 
       let!(:protected_branch) { create(:protected_branch, project: nil, group: group) }
@@ -59,7 +59,6 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
 
       with_them do
         before do
-          stub_feature_flags(group_protected_branches: feature_flag)
           stub_licensed_features(group_protected_branches: licensed_feature)
         end
 
@@ -153,7 +152,6 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
 
       context 'when the feature group protected branches enabled' do
         before do
-          stub_feature_flags(group_protected_branches: true)
           stub_licensed_features(group_protected_branches: true)
         end
 

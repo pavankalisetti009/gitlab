@@ -4,7 +4,6 @@ module Search
   module Zoekt
     class Task < ApplicationRecord
       include PartitionedTable
-      include IgnorableColumns
       include EachBatch
 
       PARTITION_DURATION = 1.day

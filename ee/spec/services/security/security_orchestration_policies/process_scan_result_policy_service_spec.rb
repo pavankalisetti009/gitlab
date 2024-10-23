@@ -555,38 +555,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         stub_licensed_features(multiple_approval_rules: true)
       end
 
-      context 'when feature flag `group_protected_branches` enabled' do
+      context 'when setting protected_branch_ids from both project and group levels' do
         include_context 'with existing branch' do
           let(:name) { protected_branch_name }
         end
 
-        before do
-          stub_feature_flags(group_protected_branches: true)
-        end
-
-        it 'set `protected_branch_ids` from the project and group level' do
+        it 'includes both project and group level protected branches' do
           subject
 
           expect(scan_finding_rule.protected_branch_ids).to match_array([
             project_protected_branch.id,
             group_protected_branch.id
           ])
-        end
-      end
-
-      context 'when feature flag `group_protected_branches` disabled' do
-        before do
-          stub_feature_flags(group_protected_branches: false)
-        end
-
-        include_context 'with existing branch' do
-          let(:name) { protected_branch_name }
-        end
-
-        it 'set `protected_branch_ids` from only the project level' do
-          subject
-
-          expect(scan_finding_rule.protected_branch_ids).to match_array([project_protected_branch.id])
         end
       end
     end

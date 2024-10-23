@@ -3,7 +3,6 @@
 class Geo::JobArtifactRegistry < Geo::BaseRegistry
   include ::Geo::ReplicableRegistry
   include ::Geo::VerifiableRegistry
-  include IgnorableColumns
 
   MODEL_CLASS = ::Ci::JobArtifact
   MODEL_FOREIGN_KEY = :artifact_id

@@ -313,7 +313,6 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
     end
 
     before do
-      stub_feature_flags(group_protected_branches: true)
       stub_licensed_features(
         group_protected_branches: true,
         code_owner_approval_required: true

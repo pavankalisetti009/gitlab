@@ -78,13 +78,9 @@ module ApprovalRules
 
       params[:protected_branches] = ProtectedBranch.id_in(protected_branch_ids).for_project(project)
 
-      return unless allow_protected_branches_for_group?(project.group) && project.root_namespace.is_a?(Group)
+      return unless project.root_namespace.is_a?(Group)
 
       params[:protected_branches] += ProtectedBranch.id_in(protected_branch_ids).for_group(project.root_namespace)
-    end
-
-    def allow_protected_branches_for_group?(group)
-      ::Feature.enabled?(:group_protected_branches, group)
     end
 
     def update_rule

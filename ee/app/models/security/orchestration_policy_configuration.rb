@@ -10,7 +10,6 @@ module Security
     include Security::VulnerabilityManagementPolicy
     include EachBatch
     include Gitlab::Utils::StrongMemoize
-    include IgnorableColumns
     include FromUnion
 
     self.table_name = 'security_orchestration_policy_configurations'

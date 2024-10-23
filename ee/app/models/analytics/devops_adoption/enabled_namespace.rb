@@ -4,7 +4,6 @@ class Analytics::DevopsAdoption::EnabledNamespace < ApplicationRecord
   self.table_name = 'analytics_devops_adoption_segments'
 
   include EachBatch
-  include IgnorableColumns
 
   belongs_to :namespace
   belongs_to :display_namespace, class_name: 'Namespace', optional: true

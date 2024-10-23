@@ -27,18 +27,6 @@ RSpec.describe Groups::ProtectedBranchesController, feature_category: :source_co
       end
     end
 
-    context 'when feature flag disabled' do
-      before do
-        stub_feature_flags(group_protected_branches: false)
-      end
-
-      it 'respond status :not_found' do
-        post collection_path
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when license disabled' do
       before do
         stub_licensed_features(group_protected_branches: false)

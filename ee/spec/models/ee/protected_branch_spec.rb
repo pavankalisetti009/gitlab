@@ -244,18 +244,16 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
     context 'when there are matched branches' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:feature_available, :object, :code_owner_approval_required, :result) do
-        true   | ref(:project)         | false        | false
-        true   | ref(:project)         | true         | true
-        false  | ref(:project)         | true         | true
-        true   | ref(:group)           | false        | false
-        true   | ref(:group)           | true         | true
+      where(:object, :code_owner_approval_required, :result) do
+        ref(:project)         | false        | false
+        ref(:project)         | true         | true
+        ref(:project)         | true         | true
+        ref(:group)           | false        | false
+        ref(:group)           | true         | true
       end
 
       with_them do
         before do
-          stub_feature_flags(group_protected_branches: feature_available)
-
           params = object.is_a?(Project) ? { project: object } : { project: nil, group: object }
 
           create(:protected_branch, name: branch_name, code_owner_approval_required: code_owner_approval_required, **params)
@@ -269,14 +267,12 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470328' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:feature_available, :object, :code_owner_approval_required, :result) do
-        false | ref(:group) | true | false
+      where(:object, :code_owner_approval_required, :result) do
+        ref(:group) | true | true
       end
 
       with_them do
         before do
-          stub_feature_flags(group_protected_branches: feature_available)
-
           params = object.is_a?(Project) ? { project: object } : { project: nil, group: object }
 
           create(:protected_branch, name: branch_name, code_owner_approval_required: code_owner_approval_required, **params)
