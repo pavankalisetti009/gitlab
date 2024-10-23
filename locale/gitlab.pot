@@ -5737,7 +5737,7 @@ msgstr ""
 msgid "Allow projects and subgroups to override the group setting"
 msgstr ""
 
-msgid "Allow projects to enable secret push protection. This does not enable secret push protection. When you enable this feature, you accept the %{link_start}GitLab Testing Agreement%{link_end}."
+msgid "Allow projects to enable secret push protection. This does not enable secret push protection."
 msgstr ""
 
 msgid "Allow public access to pipelines and job details, including output logs and artifacts."
