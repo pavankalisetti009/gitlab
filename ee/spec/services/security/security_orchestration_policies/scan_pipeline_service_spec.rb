@@ -164,30 +164,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
       it_behaves_like 'creates scan jobs', pipeline_scan_job_templates: %w[Jobs/Secret-Detection], variables: { 'secret-detection-0': { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' } }
     end
 
-    describe 'metrics' do
+    it_behaves_like 'policy metrics with logging', described_class::HISTOGRAM do
       let(:actions) { [{ scan: 'container_scanning' }] }
-
-      specify do
-        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
-
-        expect(hist).to receive(:observe).with({}, kind_of(Float)).and_call_original
-
-        subject
-      end
-    end
-
-    describe 'logging' do
-      let(:actions) { [{ scan: 'container_scanning' }] }
-
-      it 'logs duration, project ID and action count' do
-        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
-          hash_including(
-            "class" => described_class.name,
-            "duration" => kind_of(Float),
-            "project_id" => project.id,
-            "action_count" => 1))
-
-        subject
+      let(:expected_logged_data) do
+        {
+          "class" => described_class.name,
+          "duration" => kind_of(Float),
+          "project_id" => project.id,
+          "action_count" => 1
+        }
       end
     end
   end
