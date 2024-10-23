@@ -21,14 +21,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
 
   let(:agent_config) do
     instance_double(
-      "RemoteDevelopment::WorkspacesAgentConfig",
+      "RemoteDevelopment::WorkspacesAgentConfig", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
       image_pull_secrets: image_pull_secrets
     )
   end
 
   let(:workspace) do
     instance_double(
-      RemoteDevelopment::Workspace,
+      "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
       id: 1,
       name: "workspace",
       namespace: "namespace",

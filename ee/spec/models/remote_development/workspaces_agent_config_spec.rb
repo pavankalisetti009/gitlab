@@ -126,7 +126,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
 
         it 'allows the config to be created' do
           expect(config).to be_valid
-          expect(config.allow_privilege_escalation).to eq(true)
+          expect(config.allow_privilege_escalation).to be(true)
           expect(config.default_runtime_class).to eq(default_runtime_class)
         end
       end

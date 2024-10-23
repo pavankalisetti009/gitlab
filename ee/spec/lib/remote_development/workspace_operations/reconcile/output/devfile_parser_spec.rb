@@ -7,11 +7,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   let(:dns_zone) { "workspaces.localdev.me" }
   let(:logger) { instance_double(Logger) }
-  let(:user) { instance_double(User, name: "name", email: "name@example.com") }
-  let(:agent) { instance_double(Clusters::Agent, id: 1) }
+  let(:user) { instance_double("User", name: "name", email: "name@example.com") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+  let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:workspace) do
     instance_double(
-      RemoteDevelopment::Workspace,
+      "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
       id: 1,
       name: "name",
       namespace: "namespace",
