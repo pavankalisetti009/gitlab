@@ -43,7 +43,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
       responded_to_agent_at: workspace_timestamps[:responded_to_agent_at],
       desired_state_updated_at: workspace_timestamps[:desired_state_updated_at],
       actual_state: actual_state, max_hours_before_termination: workspace_max_hours_before_termination,
-      workspaces_agent_config_version: workspaces_agent_config_version
+      workspaces_agent_config_version: agent_config.versions.size
     )
   end
 
@@ -316,19 +316,20 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
     end
 
     context 'on workspaces_agent_config_version' do
-      # TODO: uncomment tests with below issue in 17.6
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
-      # context 'when version is nil' do
-      #   before do
-      #     workspace.save!
-      #     workspace.workspaces_agent_config_version = nil
-      #   end
+      context 'when version is nil' do
+        before do
+          workspace.save!
+          workspace.workspaces_agent_config_version = nil
+        end
 
-      #   it 'raises error message as expected' do
-      #     expect(workspace).not_to be_valid
-      #     expect(workspace.errors.full_messages).to include("Workspaces agent config version can't be blank")
-      #   end
-      # end
+        it 'raises error message as expected' do
+          expect do
+            workspace.valid?
+          end.to raise_error(RuntimeError,
+            "#workspaces_agent_config cannot be called until #workspaces_agent_config_version is set. " \
+              "Call set_workspaces_agent_config_version first to automatically set it.")
+        end
+      end
 
       context 'when version is greater than version range' do
         before do
