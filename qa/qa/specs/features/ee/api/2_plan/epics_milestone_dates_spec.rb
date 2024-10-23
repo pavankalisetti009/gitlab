@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
+# rubocop:disable Rails/Date -- e2e specs do not set the timezone
 module QA
   RSpec.describe 'Plan', product_group: :product_planning do
     include Support::API
-    # TODO: Convert back to blocking once proved to be stable. Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/219495
+
     describe 'Epics milestone dates API' do
       let(:milestone_start_date) { (Date.today + 100).iso8601 }
       let(:milestone_due_date) { (Date.today + 120).iso8601 }
@@ -12,8 +13,10 @@ module QA
       let(:api_client) { Runtime::API::Client.new(:gitlab) }
       let(:group) { create(:group, path: "epic-milestone-group-#{SecureRandom.hex(8)}") }
       let(:project) { create(:project, name: "epic-milestone-project-#{SecureRandom.hex(8)}", group: group) }
+      let(:wait_args) { { max_duration: 10, sleep_interval: 1 } }
 
-      it 'updates epic dates when updating milestones', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347958' do
+      it 'updates epic dates when updating milestones', :blocking,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347958' do
         epic, milestone = create_epic_issue_milestone
         new_milestone_start_date = (Date.today + 20).iso8601
         new_milestone_due_date = (Date.today + 30).iso8601
@@ -23,18 +26,11 @@ module QA
         response = Support::API.put(request.url, start_date: new_milestone_start_date, due_date: new_milestone_due_date)
         expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
-        epic.reload!
-
-        # reload! and eventually are used to wait for the epic dates to update since a sidekiq job needs to run
-        aggregate_failures do
-          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(new_milestone_start_date)
-          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(new_milestone_due_date)
-          expect { epic.reload!.start_date }.to eventually_eq(new_milestone_start_date)
-          expect { epic.reload!.due_date }.to eventually_eq(new_milestone_due_date)
-        end
+        expect_epic_to_have_updated_dates(epic, new_milestone_start_date, new_milestone_due_date)
       end
 
-      it 'updates epic dates when adding another issue', :smoke, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347955' do
+      it 'updates epic dates when adding another issue', :smoke,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347955' do
         epic = create_epic_issue_milestone[0]
         new_milestone_start_date = Date.today.iso8601
         new_milestone_due_date = (Date.today + 150).iso8601
@@ -44,17 +40,11 @@ module QA
         second_issue = create_issue(second_milestone)
         add_issue_to_epic(epic, second_issue)
 
-        epic.reload!
-
-        aggregate_failures do
-          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(new_milestone_start_date)
-          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(new_milestone_due_date)
-          expect { epic.reload!.start_date }.to eventually_eq(new_milestone_start_date)
-          expect { epic.reload!.due_date }.to eventually_eq(new_milestone_due_date)
-        end
+        expect_epic_to_have_updated_dates(epic, new_milestone_start_date, new_milestone_due_date)
       end
 
-      it 'updates epic dates when removing issue', :smoke, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347957' do
+      it 'updates epic dates when removing issue', :smoke,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347957' do
         epic = create_epic_issue_milestone[0]
 
         # Get epic_issue_id
@@ -70,28 +60,17 @@ module QA
         response = Support::API.delete(request.url)
         expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
-        epic.reload!
-
-        aggregate_failures do
-          expect { epic.reload!.start_date_from_milestones }.to eventually_be_falsey
-          expect { epic.reload!.due_date_from_milestones }.to eventually_be_falsey
-          expect { epic.reload!.start_date }.to eventually_be_falsey
-          expect { epic.reload!.due_date }.to eventually_be_falsey
-        end
+        expect_epic_to_have_updated_dates(epic, nil, nil)
       end
 
-      it 'updates epic dates when deleting milestones', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347956' do
+      it 'updates epic dates when deleting milestones', :blocking,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347956' do
         epic, milestone = create_epic_issue_milestone
 
         milestone.remove_via_api!
         epic.reload!
 
-        aggregate_failures do
-          expect { epic.reload!.start_date_from_milestones }.to eventually_be_falsey
-          expect { epic.reload!.due_date_from_milestones }.to eventually_be_falsey
-          expect { epic.reload!.start_date }.to eventually_be_falsey
-          expect { epic.reload!.due_date }.to eventually_be_falsey
-        end
+        expect_epic_to_have_updated_dates(epic, nil, nil)
       end
 
       private
@@ -145,17 +124,27 @@ module QA
         response = Support::API.put(request.url, start_date_is_fixed: false, due_date_is_fixed: false)
         expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
-        epic.reload!
-
+        expect_epic_to_have_updated_dates(epic, milestone_start_date, milestone_due_date)
         aggregate_failures do
-          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(milestone_start_date)
-          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(milestone_due_date)
-          expect { epic.reload!.start_date_fixed }.to eventually_eq(fixed_start_date)
-          expect { epic.reload!.due_date_fixed }.to eventually_eq(fixed_due_date)
-          expect { epic.reload!.start_date }.to eventually_eq(milestone_start_date)
-          expect { epic.reload!.due_date }.to eventually_eq(milestone_due_date)
+          expect { epic.reload!.start_date_fixed }.to eventually_eq(fixed_start_date).within(wait_args)
+          expect { epic.reload!.due_date_fixed }.to eventually_eq(fixed_due_date).within(wait_args)
+        end
+      end
+
+      def expect_epic_to_have_updated_dates(epic, new_milestone_start_date, new_milestone_due_date)
+        # reload! and eventually are used to wait for the epic dates to update since a sidekiq job needs to run
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }
+            .to eventually_eq(new_milestone_start_date).within(wait_args)
+          expect { epic.reload!.due_date_from_milestones }
+            .to eventually_eq(new_milestone_due_date).within(wait_args)
+          expect { epic.reload!.start_date }
+            .to eventually_eq(new_milestone_start_date).within(wait_args)
+          expect { epic.reload!.due_date }
+            .to eventually_eq(new_milestone_due_date).within(wait_args)
         end
       end
     end
   end
 end
+# rubocop:enable Rails/Date
