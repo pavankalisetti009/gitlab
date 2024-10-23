@@ -56,6 +56,10 @@ module RemoteDevelopment
     validates :annotations, 'remote_development/annotations': true
     validates :labels, 'remote_development/labels': true
 
+    validates :image_pull_secrets,
+      json_schema: { filename: 'workspaces_agent_configs_image_pull_secrets', detail_errors: true }
+    validates :image_pull_secrets, 'remote_development/image_pull_secrets': true
+
     validate :validate_allow_privilege_escalation
 
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }

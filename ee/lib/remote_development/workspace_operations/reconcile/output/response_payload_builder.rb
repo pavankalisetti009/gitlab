@@ -43,7 +43,8 @@ module RemoteDevelopment
                 actual_state: workspace.actual_state,
                 deployment_resource_version: workspace.deployment_resource_version,
                 # NOTE: config_to_apply should be returned as null if config_to_apply returned nil
-                config_to_apply: config_to_apply
+                config_to_apply: config_to_apply,
+                image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
               }
             end
 

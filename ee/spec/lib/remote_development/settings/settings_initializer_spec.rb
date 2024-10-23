@@ -36,7 +36,8 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           :use_kubernetes_user_namespaces,
           :default_runtime_class,
           :annotations,
-          :labels
+          :labels,
+          :image_pull_secrets
         ],
         settings: {
           default_branch_name: nil,
@@ -60,7 +61,8 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           use_kubernetes_user_namespaces: false,
           default_runtime_class: "",
           annotations: {},
-          labels: {}
+          labels: {},
+          image_pull_secrets: []
         },
         setting_types: {
           default_branch_name: String,
@@ -81,7 +83,8 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           use_kubernetes_user_namespaces: :Boolean,
           default_runtime_class: String,
           annotations: Hash,
-          labels: Hash
+          labels: Hash,
+          image_pull_secrets: Array
         },
         env_var_prefix: "GITLAB_REMOTE_DEVELOPMENT",
         env_var_failed_message_class: RemoteDevelopment::Settings::Messages::SettingsEnvironmentVariableOverrideFailed

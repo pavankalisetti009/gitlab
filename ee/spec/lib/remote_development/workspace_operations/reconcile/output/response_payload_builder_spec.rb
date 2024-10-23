@@ -10,12 +10,20 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
   let(:processed_devfile) { example_processed_devfile }
   let(:force_include_all_resources) { false }
+  let(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }
   let(:current_desired_config_generator_version) do
     RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
   end
 
   let(:previous_desired_config_generator_version) do
     RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
+  end
+
+  let(:agent_config) do
+    instance_double(
+      "RemoteDevelopment::WorkspacesAgentConfig",
+      image_pull_secrets: image_pull_secrets
+    )
   end
 
   let(:workspace) do
@@ -29,7 +37,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       actual_state: actual_state,
       processed_devfile: processed_devfile,
       desired_config_generator_version: desired_config_generator_version,
-      force_include_all_resources: force_include_all_resources
+      force_include_all_resources: force_include_all_resources,
+      workspaces_agent_config: agent_config
     )
   end
 
@@ -69,6 +78,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         deployment_resource_version: workspace.deployment_resource_version,
         desired_state: desired_state,
         actual_state: actual_state,
+        image_pull_secrets: image_pull_secrets,
         config_to_apply:
           generated_config_to_apply&.map do |resource|
             YAML.dump(resource.deep_stringify_keys)
