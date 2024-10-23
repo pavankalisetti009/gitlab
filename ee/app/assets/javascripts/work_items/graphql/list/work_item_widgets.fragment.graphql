@@ -10,4 +10,12 @@ fragment WorkItemWidgets on WorkItemWidget {
     type
     weight
   }
+  ... on WorkItemWidgetLinkedItems {
+    linkedItems {
+      nodes {
+        linkId
+        linkType
+      }
+    }
+  }
 }
