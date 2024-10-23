@@ -25,7 +25,21 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
     instance_double(Gitlab::Llm::Chain::SlashCommand, :command, platform_origin: platform_origin)
   end
 
-  subject(:tool) { described_class.new(context: context, options: {}, command: command) }
+  let(:handler) do
+    Gitlab::Llm::ResponseService.new(context, {})
+  end
+
+  let(:copy) { described_class::WEB_COPY }
+  let(:platform_origin) { Gitlab::Llm::Chain::SlashCommand::WEB }
+
+  subject(:tool) do
+    described_class.new(
+      context: context,
+      options: {},
+      command: command,
+      stream_response_handler: handler
+    )
+  end
 
   describe '#name' do
     it 'returns tool name' do
@@ -38,19 +52,39 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
   end
 
   describe '#execute' do
+    def expect_streaming
+      expect(handler).to receive(:execute) do |response:, options:|
+        expect(options).to eq({ chunk_id: 1 })
+        expect(response.ai_response).to eq(copy)
+      end
+    end
+
     context 'when request is from IDE' do
       let(:platform_origin) { Gitlab::Llm::Chain::SlashCommand::VS_CODE_EXTENSION }
+      let(:copy) { described_class::IDE_COPY }
 
       it 'returns IDE copy' do
-        expect(tool.execute.content).to eq(described_class::IDE_COPY)
+        expect_streaming
+        expect(tool.execute.content).to eq(copy)
       end
     end
 
     context 'when request is from web' do
-      let(:platform_origin) { Gitlab::Llm::Chain::SlashCommand::WEB }
+      let(:copy) { described_class::WEB_COPY }
 
-      it 'returns IDE copy' do
-        expect(tool.execute.content).to eq(described_class::WEB_COPY)
+      it 'returns web copy' do
+        expect_streaming
+        expect(tool.execute.content).to eq(copy)
+      end
+    end
+
+    context 'when streaming feature is disabled' do
+      before do
+        stub_feature_flags(duo_chat_stream_help_answer: false)
+      end
+
+      it 'returns copy' do
+        expect(tool.execute.content).to eq(copy)
       end
     end
   end
