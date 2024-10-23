@@ -116,6 +116,7 @@ module QA
           context 'with context' do
             let(:prompt_data) { super().merge(context: context) }
 
+            it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500005'
             it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491518'
           end
         end
@@ -131,6 +132,7 @@ module QA
                 context 'with context' do
                   let(:prompt_data) { super().merge(context: context) }
 
+                  it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500006'
                   it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
                 end
               end
