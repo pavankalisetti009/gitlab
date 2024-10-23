@@ -12,11 +12,13 @@ module Gitlab
         EmptyEventsError = Class.new(StandardError)
         ExhaustedLoopError = Class.new(StandardError)
         AgentEventError = Class.new(StandardError)
+        RetryableAgentEventError = Class.new(StandardError)
 
         attr_reader :tools, :user_input, :context, :response_handler
         attr_accessor :iterations
 
         MAX_ITERATIONS = 10
+        MAX_RETRY_STEP_FORWARD = 1
 
         # @param [String] user_input - a question from a user
         # @param [Array<Tool>] tools - an array of Tools defined in the tools module.
@@ -34,7 +36,8 @@ module Gitlab
 
         def execute
           MAX_ITERATIONS.times do |i|
-            events = step_forward
+            @retry_attempt = 0
+            events = with_agent_retry { step_forward }
 
             raise EmptyEventsError if events.empty?
 
@@ -57,6 +60,15 @@ module Gitlab
         traceable :execute, name: 'Run ReAct'
 
         private
+
+        def with_agent_retry
+          yield
+        rescue RetryableAgentEventError => error
+          raise AgentEventError, error.message if @retry_attempt >= MAX_RETRY_STEP_FORWARD
+
+          @retry_attempt += 1
+          retry
+        end
 
         # TODO: Improve these error messages. See https://gitlab.com/gitlab-org/gitlab/-/issues/479465
         # TODO Handle ForbiddenError, ClientError, ServerError.
@@ -192,7 +204,11 @@ module Gitlab
           streamed_answer = Gitlab::Llm::Chain::StreamedAnswer.new
 
           step_executor.step(step_params) do |event|
-            raise AgentEventError, event.message if event.instance_of? Gitlab::Duo::Chat::AgentEvents::Error
+            if event.instance_of? Gitlab::Duo::Chat::AgentEvents::Error
+              raise RetryableAgentEventError, event.message if event.retryable?
+
+              raise AgentEventError, event.message
+            end
 
             next unless stream_response_handler
             next unless event.instance_of? Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta

@@ -233,11 +233,11 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
-    context "when error event received" do
+    context "when retryable error event received" do
       before do
         allow(Gitlab::ErrorTracking).to receive(:track_exception)
 
-        event = Gitlab::Duo::Chat::AgentEvents::Error.new({ "message" => 'overload_error' })
+        event = Gitlab::Duo::Chat::AgentEvents::Error.new({ "message" => 'overload_error', 'retryable' => true })
 
         allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
           allow(react_agent).to receive(:step).with(step_params)
@@ -252,6 +252,21 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
           kind_of(described_class::AgentEventError)
         )
+      end
+
+      context "when retry attempt is exceeded" do
+        before do
+          stub_const("#{described_class}::MAX_RETRY_STEP_FORWARD", 0)
+        end
+
+        it "returns an error" do
+          expect(answer.is_final).to eq(true)
+          expect(answer.content).to include("I'm sorry, I can't generate a response. Please try again.")
+          expect(answer.error_code).to include("A1004")
+          expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(
+            kind_of(described_class::AgentEventError)
+          )
+        end
       end
     end
 
