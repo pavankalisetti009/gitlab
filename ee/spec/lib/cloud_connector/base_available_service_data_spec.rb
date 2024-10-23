@@ -99,62 +99,6 @@ RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :clou
     end
   end
 
-  describe '#enabled_by_namespace_ids', :redis do
-    subject(:enabled_by_namespace_ids) { service_data.enabled_by_namespace_ids(user) }
-
-    shared_examples_for 'when the user has an active assigned seat' do
-      context 'when the user has an active assigned seat' do
-        before do
-          create(
-            :gitlab_subscription_user_add_on_assignment,
-            user: user,
-            add_on_purchase: active_gitlab_purchase
-          )
-        end
-
-        it { is_expected.to match_array([active_gitlab_purchase.namespace&.id].compact) }
-      end
-    end
-
-    context 'when on Gitlab.com instance', :saas do
-      before do
-        active_gitlab_purchase.namespace.add_owner(user)
-      end
-
-      include_examples 'when the user has an active assigned seat'
-    end
-
-    context 'when on Self managed instance' do
-      let_it_be_with_reload(:active_gitlab_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)
-      end
-
-      include_examples 'when the user has an active assigned seat'
-
-      context 'when provided add-on name is code_suggestions' do
-        let_it_be(:purchased_add_ons) { %w[code_suggestions] }
-
-        include_examples 'when the user has an active assigned seat'
-      end
-    end
-
-    context 'when the user has an expired assigned duo pro seat' do
-      before do
-        create(
-          :gitlab_subscription_user_add_on_assignment,
-          user: user,
-          add_on_purchase: expired_gitlab_purchase
-        )
-      end
-
-      it { is_expected.to match_array([]) }
-    end
-
-    context 'when the user has no add on seat assignments' do
-      it { is_expected.to match_array([]) }
-    end
-  end
-
   describe '#add_on_purchases' do
     subject(:add_on_purchases) { service_data.add_on_purchases(namespace) }
 

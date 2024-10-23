@@ -5,13 +5,13 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
   let_it_be(:instance_token) { create(:service_access_token, :active) }
-  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
+  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :code_suggestions) }
   let(:enabled_by_namespace_ids) { [1, 2] }
 
   before do
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive(:access_token).and_return(instance_token&.token)
-    allow(service).to receive(:enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use?).and_yield(enabled_by_namespace_ids)
   end
 
   describe "#test_completion" do
