@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.query.graphql';
+import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
@@ -28,6 +29,7 @@ describe('WorkItemIteration component', () => {
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
 
   const successSearchQueryHandler = jest.fn().mockResolvedValue(groupIterationsResponse);
+  const groupSuccessQueryHandler = jest.fn().mockResolvedValue(groupIterationsResponse);
   const successSearchWithNoMatchingIterations = jest
     .fn()
     .mockResolvedValue(groupIterationsResponseWithNoIterations);
@@ -45,10 +47,12 @@ describe('WorkItemIteration component', () => {
     iteration = mockIterationWidgetResponse,
     searchQueryHandler = successSearchQueryHandler,
     mutationHandler = successUpdateWorkItemMutationHandler,
+    isGroup = false,
   } = {}) => {
     wrapper = mountFn(WorkItemIteration, {
       apolloProvider: createMockApollo([
         [projectIterationsQuery, searchQueryHandler],
+        [groupIterationsQuery, groupSuccessQueryHandler],
         [updateWorkItemMutation, mutationHandler],
       ]),
       propsData: {
@@ -57,6 +61,7 @@ describe('WorkItemIteration component', () => {
         iteration,
         workItemId,
         workItemType,
+        isGroup,
       },
       provide: {
         hasIterationsFeature: true,
@@ -95,7 +100,7 @@ describe('WorkItemIteration component', () => {
 
   describe('Dropdown options', () => {
     beforeEach(() => {
-      createComponent({ canUpdate: true });
+      createComponent();
     });
 
     it('calls successSearchQueryHandler with variables when dropdown is opened', async () => {
@@ -103,6 +108,19 @@ describe('WorkItemIteration component', () => {
       await waitForPromises();
 
       expect(successSearchQueryHandler).toHaveBeenCalledWith({
+        fullPath: 'test-project-path',
+        state: 'opened',
+        title: '',
+      });
+    });
+
+    it('calls groupSuccessQueryHandler with variables when dropdown is opened and isGroup is true', async () => {
+      createComponent({ isGroup: true });
+
+      showDropdown();
+      await waitForPromises();
+
+      expect(groupSuccessQueryHandler).toHaveBeenCalledWith({
         fullPath: 'test-project-path',
         state: 'opened',
         title: '',
