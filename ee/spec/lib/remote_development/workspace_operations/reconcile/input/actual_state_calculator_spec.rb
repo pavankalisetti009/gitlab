@@ -44,10 +44,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       with_them do
-        let(:agent) { instance_double(Clusters::Agent, id: 1) }
+        let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 
         let(:workspace) do
-          instance_double(RemoteDevelopment::Workspace, id: 1, name: 'name', namespace: 'namespace', agent: agent)
+          instance_double("RemoteDevelopment::Workspace", id: 1, name: 'name', namespace: 'namespace', agent: agent) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
         end
 
         let(:latest_k8s_deployment_info) do
