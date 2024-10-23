@@ -84,83 +84,73 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(lock_work_item_epics: true)
+        it_behaves_like 'destroys parent link'
+
+        context 'with existing epic issue link' do
+          let_it_be_with_refind(:parent_link) do
+            create(:parent_link, work_item: work_item_issue, work_item_parent: with_synced_epic1)
           end
 
-          it_behaves_like 'does not remove relationship'
-        end
+          before do
+            create(:epic_issue, epic: synced_epic1, issue: issue)
+          end
 
-        context 'when lock_work_item_epics feature flag is disabled' do
-          it_behaves_like 'destroys parent link'
+          it 'removes parent link and epic issue link', :aggregate_failures do
+            expect { destroy_link }.to change { WorkItems::ParentLink.count }.by(-1)
+                                   .and change { EpicIssue.count }.by(-1)
+                                   .and change { WorkItems::ResourceLinkEvent.count }.by(1)
+                                   .and change { Note.count }.by(2)
 
-          context 'with existing epic issue link' do
-            let_it_be_with_refind(:parent_link) do
-              create(:parent_link, work_item: work_item_issue, work_item_parent: with_synced_epic1)
-            end
+            expect(work_item_issue.reload.notes.last.note)
+              .to eq("removed parent epic #{with_synced_epic1.to_reference(full: true)}")
+            expect(with_synced_epic1.reload.notes.last.note)
+              .to eq("removed child issue #{work_item_issue.to_reference(full: true)}")
+          end
 
+          context 'when destroying parent link fails' do
             before do
-              create(:epic_issue, epic: synced_epic1, issue: issue)
+              allow(parent_link).to receive(:destroy!).and_raise(StandardError, 'Some error')
             end
 
-            it 'removes parent link and epic issue link', :aggregate_failures do
-              expect { destroy_link }.to change { WorkItems::ParentLink.count }.by(-1)
-                                     .and change { EpicIssue.count }.by(-1)
-                                     .and change { WorkItems::ResourceLinkEvent.count }.by(1)
-                                     .and change { Note.count }.by(2)
-
-              expect(work_item_issue.reload.notes.last.note)
-                .to eq("removed parent epic #{with_synced_epic1.to_reference(full: true)}")
-              expect(with_synced_epic1.reload.notes.last.note)
-                .to eq("removed child issue #{work_item_issue.to_reference(full: true)}")
+            it 'does not destroy parent link or epic issue link' do
+              expect { destroy_link }.to raise_error(StandardError)
+                                           .and not_change { WorkItems::ParentLink.count }
+                                           .and not_change { EpicIssue.count }
+                                           .and not_change { WorkItems::ResourceLinkEvent.count }
+                                           .and not_change { Note.count }
             end
+          end
 
-            context 'when destroying parent link fails' do
-              before do
-                allow(parent_link).to receive(:destroy!).and_raise(StandardError, 'Some error')
-              end
-
-              it 'does not destroy parent link or epic issue link' do
-                expect { destroy_link }.to raise_error(StandardError)
-                                             .and not_change { WorkItems::ParentLink.count }
-                                             .and not_change { EpicIssue.count }
-                                             .and not_change { WorkItems::ResourceLinkEvent.count }
-                                             .and not_change { Note.count }
+          context 'when destroying epic issue fails' do
+            before do
+              allow_next_instance_of(::EpicIssues::DestroyService) do |instance|
+                allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
               end
             end
 
-            context 'when destroying epic issue fails' do
-              before do
-                allow_next_instance_of(::EpicIssues::DestroyService) do |instance|
-                  allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
-                end
-              end
+            it 'does not destroy parent link or epic issue link', :aggregate_failures do
+              expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
+                .with({
+                  message: 'Not able to remove work item parent link',
+                  error_message: 'Some error',
+                  namespace_id: group.id,
+                  work_item_id: work_item_issue.id,
+                  work_item_parent_id: with_synced_epic1.id
+                })
 
-              it 'does not destroy parent link or epic issue link', :aggregate_failures do
-                expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
-                  .with({
-                    message: 'Not able to remove work item parent link',
-                    error_message: 'Some error',
-                    namespace_id: group.id,
-                    work_item_id: work_item_issue.id,
-                    work_item_parent_id: with_synced_epic1.id
-                  })
+              expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+                instance_of(WorkItems::SyncAsEpic::SyncAsEpicError),
+                { work_item_parent_id: with_synced_epic1.id }
+              )
 
-                expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-                  instance_of(WorkItems::SyncAsEpic::SyncAsEpicError),
-                  { work_item_parent_id: with_synced_epic1.id }
-                )
+              expect { destroy_link }.to not_change { WorkItems::ParentLink.count }
+                                    .and not_change { EpicIssue.count }
+                                    .and not_change { WorkItems::ResourceLinkEvent.count }
+                                    .and not_change { Note.count }
 
-                expect { destroy_link }.to not_change { WorkItems::ParentLink.count }
-                                      .and not_change { EpicIssue.count }
-                                      .and not_change { WorkItems::ResourceLinkEvent.count }
-                                      .and not_change { Note.count }
-
-                expect(destroy_link).to eq(
-                  message: "Couldn't delete link due to an internal error.", status: :error, http_status: 422
-                )
-              end
+              expect(destroy_link).to eq(
+                message: "Couldn't delete link due to an internal error.", status: :error, http_status: 422
+              )
             end
           end
         end
@@ -181,17 +171,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(lock_work_item_epics: true)
-          end
-
-          it_behaves_like 'does not remove relationship'
-        end
-
-        context 'when lock_work_item_epics feature flag is disabled' do
-          it_behaves_like 'destroys parent link'
-        end
+        it_behaves_like 'destroys parent link'
       end
     end
 
@@ -209,93 +189,83 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
+        it_behaves_like 'destroys parent link'
+
+        context 'without group level work items license' do
           before do
-            stub_feature_flags(lock_work_item_epics: true)
+            stub_licensed_features(epics: false, subepics: true)
           end
 
           it_behaves_like 'does not remove relationship'
         end
 
-        context 'when lock_work_item_epics feature flag is disabled' do
-          it_behaves_like 'destroys parent link'
-
-          context 'without group level work items license' do
-            before do
-              stub_licensed_features(epics: false, subepics: true)
-            end
-
-            it_behaves_like 'does not remove relationship'
+        context 'with existing legacy epic parent' do
+          before do
+            synced_epic1.update!(parent: synced_epic2)
           end
 
-          context 'with existing legacy epic parent' do
-            before do
-              synced_epic1.update!(parent: synced_epic2)
-            end
+          it 'destroys parent link and remove legacy parent' do
+            expect { destroy_link }.to change { WorkItems::ParentLink.count }.by(-1)
+                                   .and change { synced_epic2.reload.children.count }.by(-1)
+                                   .and change { WorkItems::ResourceLinkEvent.count }.by(1)
+                                   .and change { Note.count }.by(2)
 
-            it 'destroys parent link and remove legacy parent' do
-              expect { destroy_link }.to change { WorkItems::ParentLink.count }.by(-1)
-                                     .and change { synced_epic2.reload.children.count }.by(-1)
-                                     .and change { WorkItems::ResourceLinkEvent.count }.by(1)
-                                     .and change { Note.count }.by(2)
+            expect(with_synced_epic1.reload.notes.last.note)
+              .to eq("removed parent epic #{with_synced_epic2.to_reference}")
+            expect(with_synced_epic2.reload.notes.last.note)
+              .to eq("removed child epic #{with_synced_epic1.to_reference}")
+          end
+        end
 
-              expect(with_synced_epic1.reload.notes.last.note)
-                .to eq("removed parent epic #{with_synced_epic2.to_reference}")
-              expect(with_synced_epic2.reload.notes.last.note)
-                .to eq("removed child epic #{with_synced_epic1.to_reference}")
-            end
+        context 'when destroying parent link fails' do
+          before do
+            allow(parent_link).to receive(:destroy!).and_raise(StandardError, 'Some error')
           end
 
-          context 'when destroying parent link fails' do
-            before do
-              allow(parent_link).to receive(:destroy!).and_raise(StandardError, 'Some error')
-            end
+          it 'does not destroy parent link or epic issue link' do
+            synced_epic1.update!(parent: synced_epic2)
 
-            it 'does not destroy parent link or epic issue link' do
-              synced_epic1.update!(parent: synced_epic2)
+            expect { destroy_link }.to raise_error(StandardError)
+                                   .and not_change { WorkItems::ParentLink.count }
+                                   .and not_change { synced_epic2.reload.children.count }
+                                   .and not_change { WorkItems::ResourceLinkEvent.count }
+                                   .and not_change { Note.count }
+          end
+        end
 
-              expect { destroy_link }.to raise_error(StandardError)
-                                     .and not_change { WorkItems::ParentLink.count }
-                                     .and not_change { synced_epic2.reload.children.count }
-                                     .and not_change { WorkItems::ResourceLinkEvent.count }
-                                     .and not_change { Note.count }
+        context 'when removing legacy parent epic fails' do
+          before do
+            allow_next_instance_of(::Epics::EpicLinks::DestroyService) do |instance|
+              allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
             end
           end
 
-          context 'when removing legacy parent epic fails' do
-            before do
-              allow_next_instance_of(::Epics::EpicLinks::DestroyService) do |instance|
-                allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
-              end
-            end
+          it 'does not destroy parent link or epic issue link', :aggregate_failures,
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460241' do
+            synced_epic1.update!(parent: synced_epic2)
 
-            it 'does not destroy parent link or epic issue link', :aggregate_failures,
-              quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460241' do
-              synced_epic1.update!(parent: synced_epic2)
+            expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
+              .with({
+                message: 'Not able to remove work item parent link',
+                error_message: 'Some error',
+                namespace_id: group.id,
+                work_item_id: with_synced_epic1.id,
+                work_item_parent_id: with_synced_epic2.id
+              })
 
-              expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
-                .with({
-                  message: 'Not able to remove work item parent link',
-                  error_message: 'Some error',
-                  namespace_id: group.id,
-                  work_item_id: with_synced_epic1.id,
-                  work_item_parent_id: with_synced_epic2.id
-                })
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              instance_of(WorkItems::SyncAsEpic::SyncAsEpicError),
+              { work_item_parent_id: with_synced_epic2.id }
+            )
 
-              expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-                instance_of(WorkItems::SyncAsEpic::SyncAsEpicError),
-                { work_item_parent_id: with_synced_epic2.id }
-              )
+            expect { destroy_link }.to not_change { WorkItems::ParentLink.count }
+                                   .and not_change { synced_epic2.reload.children.count }
+                                   .and not_change { WorkItems::ResourceLinkEvent.count }
+                                   .and not_change { Note.count }
 
-              expect { destroy_link }.to not_change { WorkItems::ParentLink.count }
-                                     .and not_change { synced_epic2.reload.children.count }
-                                     .and not_change { WorkItems::ResourceLinkEvent.count }
-                                     .and not_change { Note.count }
-
-              expect(destroy_link).to eq(
-                message: "Couldn't delete link due to an internal error.", status: :error, http_status: 422
-              )
-            end
+            expect(destroy_link).to eq(
+              message: "Couldn't delete link due to an internal error.", status: :error, http_status: 422
+            )
           end
         end
       end
