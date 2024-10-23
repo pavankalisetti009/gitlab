@@ -170,6 +170,12 @@ describe('TrialWidget component', () => {
         'GitLab Duo Enterprise Trial',
         'Your trial of GitLab Duo Enterprise has ended',
       ],
+      ['legacy_ultimate', 'Ultimate Trial', 'Your trial of Ultimate has ended'],
+      [
+        'ultimate',
+        'Ultimate with GitLab Duo Enterprise Trial',
+        'Your trial of Ultimate with GitLab Duo Enterprise has ended',
+      ],
     ])('renders correctly for %s', (trialType, activeTitle, expiredTitle) => {
       createComponent({ trialType, daysRemaining: 30, percentageComplete: 50 });
       expect(findWidgetTitle().text()).toBe(activeTitle);
@@ -197,6 +203,8 @@ describe('TrialWidget component', () => {
     it.each([
       ['duo_pro', 'Your trial of GitLab Duo Pro has ended'],
       ['duo_enterprise', 'Your trial of GitLab Duo Enterprise has ended'],
+      ['legacy_ultimate', 'Your trial of Ultimate has ended'],
+      ['ultimate', 'Your trial of Ultimate with GitLab Duo Enterprise has ended'],
     ])('shows correct title and upgrade text for %s', (trialType, expiredTitle) => {
       createComponent({ trialType, daysRemaining: -1, percentageComplete: 110 });
 
