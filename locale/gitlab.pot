@@ -32349,6 +32349,9 @@ msgstr[1] ""
 msgid "Line changes"
 msgstr ""
 
+msgid "Line number %{number}"
+msgstr ""
+
 msgid "Link"
 msgstr ""
 
@@ -35034,6 +35037,9 @@ msgid "MlModelRegistry|User canceled upload."
 msgstr ""
 
 msgid "MlModelRegistry|Using the MLflow client"
+msgstr ""
+
+msgid "MlModelRegistry|Version created %{timeAgo} by %{author}"
 msgstr ""
 
 msgid "MlModelRegistry|Version description"
