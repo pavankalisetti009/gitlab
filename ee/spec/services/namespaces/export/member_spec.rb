@@ -16,6 +16,7 @@ RSpec.describe Namespaces::Export::Member, feature_category: :system_access do
         expect(member.username).to eq(group_member.user.username)
         expect(member.role).to eq('Developer')
         expect(member.membership_type).to eq('direct')
+        expect(member.membershipable_type).to eq('Group')
         expect { member.unknown }.to raise_error(NoMethodError)
       end
     end

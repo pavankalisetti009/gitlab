@@ -46,7 +46,7 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
           end
 
           it 'returns correct data' do
-            headers = ['Name', 'Username', 'Email', 'Path', 'Role', 'Membership type', 'Membership source',
+            headers = ['Name', 'Username', 'Email', 'Path', 'Type', 'Role', 'Membership type', 'Membership source',
               'Access granted', 'Access expired', 'Last activity']
 
             expect(data).to match_array([headers] + expected_result)
@@ -56,109 +56,114 @@ RSpec.describe Namespaces::Export::DetailedDataService, feature_category: :syste
         let(:data) { CSV.parse(export.payload) }
         let(:group_members) do
           [
-            user_data(0) + [group.full_path, 'Owner', 'direct', group.full_path] + member_data(group_owner_1),
-            user_data(1) + [group.full_path, 'Maintainer', 'direct', group.full_path] + member_data(group_maintainer_2),
-            user_data(2) + [group.full_path, 'Developer', 'direct', group.full_path] + member_data(group_developer_3)
+            user_data(0) + [group.full_path, 'Group', 'Owner', 'direct',
+              group.full_path] + member_data(group_owner_1),
+            user_data(1) + [group.full_path, 'Group', 'Maintainer', 'direct',
+              group.full_path] + member_data(group_maintainer_2),
+            user_data(2) + [group.full_path, 'Group', 'Developer', 'direct',
+              group.full_path] + member_data(group_developer_3)
           ]
         end
 
         let(:group_project_1_members) do
           [
-            user_data(0) + [group_project_1.full_path, 'Owner', 'inherited',
+            user_data(0) + [group_project_1.full_path, 'Project', 'Owner', 'inherited',
               group.full_path] + member_data(group_owner_1),
-            user_data(1) + [group_project_1.full_path, 'Maintainer', 'inherited',
+            user_data(1) + [group_project_1.full_path, 'Project', 'Maintainer', 'inherited',
               group.full_path] + member_data(group_maintainer_2),
-            user_data(2) + [group_project_1.full_path, 'Developer', 'inherited',
+            user_data(2) + [group_project_1.full_path, 'Project', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(4) + [group_project_1.full_path, 'Owner', 'direct',
+            user_data(4) + [group_project_1.full_path, 'Project', 'Owner', 'direct',
               group_project_1.full_path] + member_data(group_project_1_owner_5)
           ]
         end
 
         let(:group_project_2_members) do
           [
-            user_data(0) + [group_project_2.full_path, 'Owner', 'inherited',
+            user_data(0) + [group_project_2.full_path, 'Project', 'Owner', 'inherited',
               group.full_path] + member_data(group_owner_1),
-            user_data(1) + [group_project_2.full_path, 'Maintainer', 'inherited',
+            user_data(1) + [group_project_2.full_path, 'Project', 'Maintainer', 'inherited',
               group.full_path] + member_data(group_maintainer_2),
-            user_data(2) + [group_project_2.full_path, 'Developer', 'inherited',
+            user_data(2) + [group_project_2.full_path, 'Project', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(5) + [group_project_2.full_path, 'Owner', 'direct',
+            user_data(5) + [group_project_2.full_path, 'Project', 'Owner', 'direct',
               group_project_2.full_path] + member_data(group_project_2_owner_6)
           ]
         end
 
         let(:sub_group_1_members) do
           [
-            user_data(1) + [sub_group_1.full_path, 'Owner', 'direct',
+            user_data(1) + [sub_group_1.full_path, 'Sub Group', 'Owner', 'direct',
               sub_group_1.full_path] + member_data(sub_group_1_owner_2),
-            user_data(0) + [sub_group_1.full_path, 'Owner', 'inherited', group.full_path] + member_data(group_owner_1),
-            user_data(2) + [sub_group_1.full_path, 'Developer', 'inherited',
+            user_data(0) + [sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
+              group.full_path] + member_data(group_owner_1),
+            user_data(2) + [sub_group_1.full_path, 'Sub Group', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(4) + [sub_group_1.full_path, 'Developer', 'shared',
+            user_data(4) + [sub_group_1.full_path, 'Sub Group', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_5),
-            user_data(5) + [sub_group_1.full_path, 'Developer', 'shared',
+            user_data(5) + [sub_group_1.full_path, 'Sub Group', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_6)
           ]
         end
 
         let(:sub_group_1_project_members) do
           [
-            user_data(1) + [sub_group_1_project.full_path, 'Owner', 'inherited',
+            user_data(1) + [sub_group_1_project.full_path, 'Project', 'Owner', 'inherited',
               sub_group_1.full_path] + member_data(sub_group_1_owner_2),
-            user_data(0) + [sub_group_1_project.full_path, 'Owner', 'inherited',
+            user_data(0) + [sub_group_1_project.full_path, 'Project', 'Owner', 'inherited',
               group.full_path] + member_data(group_owner_1),
-            user_data(2) + [sub_group_1_project.full_path, 'Developer', 'inherited',
+            user_data(2) + [sub_group_1_project.full_path, 'Project', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(4) + [sub_group_1_project.full_path, 'Developer', 'shared',
+            user_data(4) + [sub_group_1_project.full_path, 'Project', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_5),
-            user_data(5) + [sub_group_1_project.full_path, 'Developer', 'shared',
+            user_data(5) + [sub_group_1_project.full_path, 'Project', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_6),
-            user_data(3) + [sub_group_1_project.full_path, 'Maintainer', 'direct',
+            user_data(3) + [sub_group_1_project.full_path, 'Project', 'Maintainer', 'direct',
               sub_group_1_project.full_path] + member_data(sub_group_1_project_maintainer_4)
           ]
         end
 
         let(:sub_group_2_members) do
           [
-            user_data(0) + [sub_group_2.full_path, 'Owner', 'inherited', group.full_path] + member_data(group_owner_1),
-            user_data(1) + [sub_group_2.full_path, 'Maintainer', 'inherited',
+            user_data(0) + [sub_group_2.full_path, 'Sub Group', 'Owner', 'inherited',
+              group.full_path] + member_data(group_owner_1),
+            user_data(1) + [sub_group_2.full_path, 'Sub Group', 'Maintainer', 'inherited',
               group.full_path] + member_data(group_maintainer_2),
-            user_data(2) + [sub_group_2.full_path, 'Developer', 'inherited',
+            user_data(2) + [sub_group_2.full_path, 'Sub Group', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3)
           ]
         end
 
         let(:sub_sub_group_1_members) do
           [
-            user_data(3) + [sub_sub_group_1.full_path, 'Owner', 'direct',
+            user_data(3) + [sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'direct',
               sub_sub_group_1.full_path] + member_data(sub_sub_group_owner_4),
-            user_data(4) + [sub_sub_group_1.full_path, 'Owner', 'direct',
+            user_data(4) + [sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'direct',
               sub_sub_group_1.full_path] + member_data(sub_sub_group_owner_5),
-            user_data(0) + [sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(0) + [sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               group.full_path] + member_data(group_owner_1),
-            user_data(1) + [sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(1) + [sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               sub_group_1.full_path] + member_data(sub_group_1_owner_2),
-            user_data(2) + [sub_sub_group_1.full_path, 'Developer', 'inherited',
+            user_data(2) + [sub_sub_group_1.full_path, 'Sub Group', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(5) + [sub_sub_group_1.full_path, 'Developer', 'shared',
+            user_data(5) + [sub_sub_group_1.full_path, 'Sub Group', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_6)
           ]
         end
 
         let(:sub_sub_sub_group_1_members) do
           [
-            user_data(0) + [sub_sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(0) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               group.full_path] + member_data(group_owner_1),
-            user_data(1) + [sub_sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(1) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               sub_group_1.full_path] + member_data(sub_group_1_owner_2),
-            user_data(2) + [sub_sub_sub_group_1.full_path, 'Developer', 'inherited',
+            user_data(2) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Developer', 'inherited',
               group.full_path] + member_data(group_developer_3),
-            user_data(3) + [sub_sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(3) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               sub_sub_group_1.full_path] + member_data(sub_sub_group_owner_4),
-            user_data(4) + [sub_sub_sub_group_1.full_path, 'Owner', 'inherited',
+            user_data(4) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Owner', 'inherited',
               sub_sub_group_1.full_path] + member_data(sub_sub_group_owner_5),
-            user_data(5) + [sub_sub_sub_group_1.full_path, 'Developer', 'shared',
+            user_data(5) + [sub_sub_sub_group_1.full_path, 'Sub Group', 'Developer', 'shared',
               shared_group.full_path] + member_data(shared_maintainer_6)
           ]
         end
