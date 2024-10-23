@@ -69,7 +69,7 @@ describe('Merge request summarize code changes', () => {
 
     await waitForPromises();
 
-    expect(findButton().find('.gl-spinner').exists()).toBe(true);
+    expect(findButton().props('loading')).toBe(true);
   });
 
   describe('when textarea exists', () => {
