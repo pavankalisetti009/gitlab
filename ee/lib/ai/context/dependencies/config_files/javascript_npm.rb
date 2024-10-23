@@ -16,6 +16,7 @@ module Ai
           private
 
           ### Example format:
+          #
           # "dependencies": {
           #   "all-the-cities": "3.1.0",
           #   "argon2": "0.41.1",
@@ -31,8 +32,8 @@ module Ai
 
             %w[dependencies devDependencies].flat_map do |key|
               dig_in(parsed, key).try(:map) do |name, version|
-                # skip dependency if the version is a filepath
-                next if version.include?('/')
+                # Skip dependency if the version is a local filepath
+                next if version&.include?('/')
 
                 Lib.new(name: name, version: version)
               end
