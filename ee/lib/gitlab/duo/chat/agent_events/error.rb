@@ -8,6 +8,10 @@ module Gitlab
           def message
             data["message"]
           end
+
+          def retryable?
+            data["retryable"] || false
+          end
         end
       end
     end
