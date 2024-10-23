@@ -12,6 +12,7 @@ module Namespaces
       attribute :email, :string
       attribute :membershipable_id, :integer
       attribute :membershipable_path, :string
+      attribute :membershipable_class, :string
       attribute :membershipable_type, :string
       attribute :role, :string
       attribute :membership_type, :string
@@ -28,6 +29,14 @@ module Namespaces
       end
 
       def map_attributes(member, membershipable, parent_groups)
+        membershipable_type = if membershipable.is_a?(Project)
+                                'Project'
+                              elsif membershipable.is_a?(Group) && membershipable.parent_id
+                                'Sub Group'
+                              else
+                                'Group'
+                              end
+
         membership_type = if member.source == membershipable
                             'direct'
                           elsif parent_groups.include?(member.source_id)
@@ -43,7 +52,8 @@ module Namespaces
           email: member.user.email,
           membershipable_id: membershipable.id,
           membershipable_path: membershipable.full_path,
-          membershipable_type: membershipable.class,
+          membershipable_type: membershipable_type,
+          membershipable_class: membershipable.class,
           access_level: member.access_level,
           role: member.present.access_level_for_export,
           membership_type: membership_type,

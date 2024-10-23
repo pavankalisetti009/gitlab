@@ -21,6 +21,7 @@ module Namespaces
           'Username' => ->(member) { member.username },
           'Email' => ->(member) { member.email },
           'Path' => ->(member) { member.membershipable_path },
+          'Type' => ->(member) { member.membershipable_type },
           'Role' => ->(member) { member.role },
           'Membership type' => ->(member) { member.membership_type },
           'Membership source' => ->(member) { member.membership_source },
