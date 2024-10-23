@@ -36,7 +36,8 @@ module RemoteDevelopment
           use_kubernetes_user_namespaces: [false, :Boolean],
           default_runtime_class: ["", String],
           annotations: [{}, Hash],
-          labels: [{}, Hash]
+          labels: [{}, Hash],
+          image_pull_secrets: [[], Array]
         }
       end
     end

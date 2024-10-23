@@ -34,6 +34,7 @@ module RemoteDevelopment
       # @param [Clusters::Agent] agent
       # @param [Hash] config_from_agent_config_file
       # @return [RemoteDevelopment::WorkspacesAgentConfig]
+      # rubocop:disable Metrics/AbcSize -- This is being resolved by refactoring in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166065
       def self.find_or_initialize_workspaces_agent_config(agent:, config_from_agent_config_file:)
         model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:disable CodeReuse/ActiveRecord -- We don't want to use a finder, we want to use find_or_initialize_by because it's more concise
 
@@ -71,7 +72,8 @@ module RemoteDevelopment
             :use_kubernetes_user_namespaces,
             :default_runtime_class,
             :annotations,
-            :labels
+            :labels,
+            :image_pull_secrets
           ]
         )
         agent_config_values = agent_config_settings.merge(normalized_config_from_file)
@@ -99,9 +101,11 @@ module RemoteDevelopment
         model_instance.default_runtime_class = agent_config_values.fetch(:default_runtime_class)
         model_instance.annotations = agent_config_values.fetch(:annotations)
         model_instance.labels = agent_config_values.fetch(:labels)
+        model_instance.image_pull_secrets = agent_config_values.fetch(:image_pull_secrets)
 
         model_instance
       end
+      # rubocop:enable Metrics/AbcSize
 
       private_class_method :find_or_initialize_workspaces_agent_config
     end

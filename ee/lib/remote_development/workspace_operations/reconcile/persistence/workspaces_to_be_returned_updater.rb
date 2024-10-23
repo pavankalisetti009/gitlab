@@ -9,7 +9,7 @@ module RemoteDevelopment
           # @return [Hash]
           def self.update(context)
             context => {
-              agent: agent, # Skip type checking to avoid coupling to Rails monolith
+              agent: agent, # Skip type checking so we can use fast_spec_helper in the unit test spec
               workspaces_to_be_returned: Array => workspaces_to_be_returned,
             }
 

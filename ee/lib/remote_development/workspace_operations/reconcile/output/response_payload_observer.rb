@@ -9,7 +9,7 @@ module RemoteDevelopment
           # @return [Hash]
           def self.observe(context)
             context => {
-              agent: agent, # Skip type checking so we can use fast_spec_helper
+              agent: agent, # Skip type checking so we can use fast_spec_helper in the unit test spec
               update_type: String => update_type,
               response_payload: {
                 workspace_rails_infos: Array => workspace_rails_infos,

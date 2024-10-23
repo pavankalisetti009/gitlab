@@ -51,6 +51,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:default_runtime_class) { "" }
   let(:annotations) { {} }
   let(:labels) { {} }
+  let(:image_pull_secrets) { [] }
 
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
 
@@ -81,6 +82,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     remote_development_config['default_runtime_class'] = default_runtime_class
     remote_development_config['annotations'] = annotations
     remote_development_config['labels'] = labels
+    remote_development_config['image_pull_secrets'] = image_pull_secrets
 
     {
       remote_development: HashWithIndifferentAccess.new(remote_development_config)
@@ -102,7 +104,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       :use_kubernetes_user_namespaces,
       :default_runtime_class,
       :annotations,
-      :labels
+      :labels,
+      :image_pull_secrets
     ]
   end
 
@@ -121,7 +124,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
       default_runtime_class: default_runtime_class,
       annotations: annotations,
-      labels: labels
+      labels: labels,
+      image_pull_secrets: image_pull_secrets
     }
   end
 
@@ -174,6 +178,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         expect(config_instance.default_runtime_class).to eq(default_runtime_class)
         expect(config_instance.annotations.deep_symbolize_keys).to eq(annotations)
         expect(config_instance.labels.deep_symbolize_keys).to eq(labels)
+        expect(config_instance.image_pull_secrets).to eq(image_pull_secrets)
 
         expect(result)
           .to be_ok_result(RemoteDevelopment::Messages::AgentConfigUpdateSuccessful.new(
