@@ -21,7 +21,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
     subject { described_class.new(current_group, user: current_user).attributes.keys }
 
     context 'when eligible for ultimate trial widget' do
-      let(:trial_widget_attribute_keys) { [:trial_status_widget_data_attrs, :trial_status_popover_data_attrs] }
+      let(:trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
 
       before do
         build(

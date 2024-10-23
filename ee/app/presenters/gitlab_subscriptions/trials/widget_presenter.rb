@@ -8,7 +8,7 @@ module GitlabSubscriptions
       def initialize(namespace, user:)
         super
 
-        @widget_presenter = GitlabSubscriptions::Trials::StatusWidgetPresenter.new(namespace) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        @widget_presenter = GitlabSubscriptions::Trials::StatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         @duo_enterprise_presenter = DuoEnterpriseStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
       end
 
@@ -28,10 +28,10 @@ module GitlabSubscriptions
 
       def presenter
         @presenter ||=
-          if duo_enterprise_presenter.eligible_for_widget?
-            duo_enterprise_presenter
-          elsif widget_presenter.eligible_for_widget?
+          if widget_presenter.eligible_for_widget?
             widget_presenter
+          elsif duo_enterprise_presenter.eligible_for_widget? && !namespace.ultimate_trial_paid_customer_plan?
+            duo_enterprise_presenter
           else
             DuoProStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
           end
