@@ -32376,6 +32376,9 @@ msgstr[1] ""
 msgid "Line changes"
 msgstr ""
 
+msgid "Line number %{number}"
+msgstr ""
+
 msgid "Link"
 msgstr ""
 
