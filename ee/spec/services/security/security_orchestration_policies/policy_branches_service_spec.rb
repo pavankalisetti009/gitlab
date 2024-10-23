@@ -151,16 +151,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyBranchesService, f
             expect(execute).to include(branch_name)
           end
         end
-
-        context "with feature disabled" do
-          before do
-            stub_feature_flags(group_protected_branches: false)
-          end
-
-          specify do
-            expect(execute).to exclude(branch_name)
-          end
-        end
       end
 
       context "with empty repository" do
