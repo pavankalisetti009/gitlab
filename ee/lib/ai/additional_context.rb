@@ -7,7 +7,8 @@ module Ai
       file: 'file',
       snippet: 'snippet',
       merge_request: 'merge_request',
-      issue: 'issue'
+      issue: 'issue',
+      dependency: 'dependency'
     }.freeze
 
     MAX_BODY_SIZE = ::API::CodeSuggestions::MAX_BODY_SIZE
