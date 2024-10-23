@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
-  include Features::HandRaiseLeadHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
   let_it_be(:group) do
@@ -11,97 +11,90 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
       :group_with_plan,
       plan: :ultimate_trial_plan,
       trial_starts_on: Date.current,
-      trial_ends_on: 30.days.from_now,
+      trial_ends_on: 60.days.from_now,
       owners: user
     )
   end
 
-  before_all do
-    # Setup a duo pro trial here too so that we ensure ultimate trial widget is unaffected
-    create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group)
-  end
-
   before do
     stub_saas_features(subscriptions_trials: true)
-    stub_application_setting(check_namespace_plan: true)
-    allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService, plan: :free) do |instance|
-      allow(instance).to receive(:execute).and_return([{ 'code' => 'ultimate', 'id' => 'ultimate-plan-id' }])
-    end
-
     sign_in(user)
   end
 
-  context 'for the widget' do
-    it 'shows the correct days used and remaining' do
+  context 'when duo enterprise is available' do
+    before do
+      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: group)
+    end
+
+    it 'shows the correct days remaining on the first day of trial' do
+      freeze_time do
+        visit group_path(group)
+
+        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
+        expect(page).to have_content('60 days left in trial')
+      end
+    end
+
+    it 'shows the correct trial type and days remaining' do
       travel_to(15.days.from_now) do
         visit group_path(group)
 
-        expect(page).to have_content('Ultimate Trial Day 15/30')
+        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
+        expect(page).to have_content('45 days left in trial')
+      end
+
+      travel_to(60.days.from_now) do
+        visit group_path(group)
+
+        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
+        expect(page).to have_content('0 days left in trial')
       end
     end
 
-    context 'on the first day of trial' do
-      it 'shows the correct days used' do
-        freeze_time do
+    context 'when widget is expired' do
+      it 'shows upgrade options after trial expiration' do
+        travel_to(62.days.from_now) do
           visit group_path(group)
 
-          expect(page).to have_content('Ultimate Trial Day 1/30')
+          expect(page).to have_content('See upgrade options')
         end
       end
-    end
 
-    context 'on the last day of trial' do
-      it 'shows days used and remaining as the same' do
-        travel_to(30.days.from_now) do
+      it 'and allows dismissal on the first day after trial expiration' do
+        travel_to(62.days.from_now) do
           visit group_path(group)
 
-          expect(page).to have_content('Ultimate Trial Day 30/30')
+          expect(page).to have_content('See upgrade options')
+
+          dismiss_widget
+
+          expect(page).not_to have_content('See upgrade options')
+
+          page.refresh
+
+          expect(page).not_to have_content('See upgrade options')
         end
       end
     end
   end
 
-  context 'for the popover' do
-    context 'when in a group' do
-      before do
-        visit group_path(group)
-      end
-
-      it 'shows the popover for the trial status widget and submits hand raise lead' do
-        expect(page).not_to have_selector('.js-sidebar-collapsed')
-
-        find_by_testid('trial-widget-menu').hover
-
-        within_testid('trial-status-popover') do
-          expect(page).to have_content("We hope you’re enjoying the features of GitLab")
-
-          find_by_testid('trial-popover-hand-raise-lead-button').click
-        end
-
-        fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial-status-show-group')
-      end
+  def expect_widget_to_have_content(widget_title)
+    within_testid(widget_menu_selector) do
+      expect(page).to have_content(widget_title)
     end
+  end
 
-    context 'when in a project' do
-      let_it_be(:project) { create(:project, namespace: group) }
-
-      before do
-        visit project_path(project)
-      end
-
-      it 'shows the popover for the trial status widget' do
-        expect(page).not_to have_selector('.js-sidebar-collapsed')
-
-        find_by_testid('trial-widget-menu').hover
-
-        within_testid('trial-status-popover') do
-          expect(page).to have_content("We hope you’re enjoying the features of GitLab")
-
-          find_by_testid('trial-popover-hand-raise-lead-button').click
-        end
-
-        fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial-status-show-group')
-      end
+  def dismiss_widget
+    within_testid(widget_root_element) do
+      find_by_testid('close-icon').click
     end
+  end
+
+  def widget_menu_selector
+    'trial-widget-menu'
+  end
+
+  def widget_root_element
+    'trial-widget-root-element'
   end
 end

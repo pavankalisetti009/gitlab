@@ -60,6 +60,13 @@ module Types
           description: 'Identifiers of the vulnerability finding.',
           hash_key: "identifiers"
 
+        field :details,
+          type: [VulnerabilityDetailType],
+          null: false,
+          alpha: { milestone: '17.6' },
+          description: 'Details of the vulnerability finding.',
+          resolver: Resolvers::Vulnerabilities::DetailsResolver
+
         def found_by_pipeline_iid
           object.dig('found_by_pipeline', 'iid')
         end
