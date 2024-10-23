@@ -151,30 +151,20 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
+        it_behaves_like 'creates parent link only'
+
+        context 'when issue already has an epic' do
+          let(:child_work_item) { work_item_issue }
+          let(:child_issue) { Issue.find_by_id(child_work_item.id) }
+
           before do
-            stub_feature_flags(lock_work_item_epics: true)
+            create(:epic_issue, issue: child_work_item, epic: other_parent_epic)
           end
 
-          it_behaves_like 'creates parent link only'
-        end
-
-        context 'when lock_work_item_epics feature flag is disabled' do
-          it_behaves_like 'creates parent link only'
-
-          context 'when issue already has an epic' do
-            let(:child_work_item) { work_item_issue }
-            let(:child_issue) { Issue.find_by_id(child_work_item.id) }
-
-            before do
-              create(:epic_issue, issue: child_work_item, epic: other_parent_epic)
-            end
-
-            it_behaves_like 'creates parent link and deletes legacy link' do
-              let(:legacy_child) { child_issue }
-              let(:relationship) { :epic }
-              let(:link_service_class) { ::EpicIssues }
-            end
+          it_behaves_like 'creates parent link and deletes legacy link' do
+            let(:legacy_child) { child_issue }
+            let(:relationship) { :epic }
+            let(:link_service_class) { ::EpicIssues }
           end
         end
       end
@@ -193,70 +183,60 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(lock_work_item_epics: true)
-          end
-
-          it_behaves_like 'does not create parent link'
+        let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+        let_it_be(:other_epic_work_item_link) do
+          create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
+            relative_position: 500)
         end
 
-        context 'when lock_work_item_epics feature flag is disabled' do
-          let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-          let_it_be(:other_epic_work_item_link) do
-            create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
-              relative_position: 500)
+        before_all do
+          other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+        end
+
+        context 'when child is type :epic' do
+          it_behaves_like 'creates parent link only'
+        end
+
+        context 'when child is type :issue' do
+          let(:child_work_item) { work_item_issue }
+          let(:child_issue) { Issue.find(child_work_item.id) }
+
+          let_it_be(:other_issue_work_item) { create(:work_item, :issue, namespace: group) }
+          let_it_be(:other_issue_work_item_link) do
+            create(:parent_link, work_item: other_issue_work_item, work_item_parent: parent_work_item,
+              relative_position: 600)
           end
 
-          before_all do
-            other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+          let_it_be(:other_issue_epic_issue) do
+            create(:epic_issue, issue: other_issue_work_item, epic: parent_work_item.synced_epic,
+              relative_position: 600)
           end
 
-          context 'when child is type :epic' do
-            it_behaves_like 'creates parent link only'
+          it 'calls this service once' do
+            allow(described_class).to receive(:new).and_call_original
+            expect(described_class).to receive(:new).once
+
+            create_link
           end
 
-          context 'when child is type :issue' do
-            let(:child_work_item) { work_item_issue }
-            let(:child_issue) { Issue.find(child_work_item.id) }
+          it 'syncs parent epic and creates notes only for the work items', :aggregate_failures do
+            expect { create_link }.to change { child_issue.reload.epic }.to(parent_epic)
+              .and change { WorkItems::ParentLink.count }.by(1)
+              .and change { Note.count }.by(2)
+              .and not_change { parent_epic.reload.own_notes.count }
 
-            let_it_be(:other_issue_work_item) { create(:work_item, :issue, namespace: group) }
-            let_it_be(:other_issue_work_item_link) do
-              create(:parent_link, work_item: other_issue_work_item, work_item_parent: parent_work_item,
-                relative_position: 600)
-            end
+            expect(child_issue.epic_issue.relative_position).to eq(child_work_item.parent_link.relative_position)
 
-            let_it_be(:other_issue_epic_issue) do
-              create(:epic_issue, issue: other_issue_work_item, epic: parent_work_item.synced_epic,
-                relative_position: 600)
-            end
+            expect(parent_work_item.reload.notes.last.note)
+              .to eq("added #{child_work_item.to_reference(full: true)} as child issue")
+            expect(child_work_item.reload.notes.last.note)
+              .to eq("added #{parent_work_item.to_reference(full: true)} as parent epic")
+          end
 
-            it 'calls this service once' do
-              allow(described_class).to receive(:new).and_call_original
-              expect(described_class).to receive(:new).once
-
-              create_link
-            end
-
-            it 'syncs parent epic and creates notes only for the work items', :aggregate_failures do
-              expect { create_link }.to change { child_issue.reload.epic }.to(parent_epic)
-                .and change { WorkItems::ParentLink.count }.by(1)
-                .and change { Note.count }.by(2)
-                .and not_change { parent_epic.reload.own_notes.count }
-
-              expect(child_issue.epic_issue.relative_position).to eq(child_work_item.parent_link.relative_position)
-
-              expect(parent_work_item.reload.notes.last.note)
-                .to eq("added #{child_work_item.to_reference(full: true)} as child issue")
-              expect(child_work_item.reload.notes.last.note)
-                .to eq("added #{parent_work_item.to_reference(full: true)} as parent epic")
-            end
-
-            it_behaves_like 'link creation with failures' do
-              let(:link_service_class) { ::EpicIssues::CreateService }
-              let(:legacy_child) { child_issue }
-              let(:relationship) { :epic }
-            end
+          it_behaves_like 'link creation with failures' do
+            let(:link_service_class) { ::EpicIssues::CreateService }
+            let(:legacy_child) { child_issue }
+            let(:relationship) { :epic }
           end
         end
       end
@@ -275,29 +255,19 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
+        it_behaves_like 'creates parent link only'
+
+        context 'when legacy epic already has a parent epic' do
+          let(:child_work_item) { other_child_epic.work_item }
+
           before do
-            stub_feature_flags(lock_work_item_epics: true)
+            create(:parent_link, work_item_parent: other_parent_epic.work_item, work_item: child_work_item)
           end
 
-          it_behaves_like 'does not create parent link'
-        end
-
-        context 'when lock_work_item_epics feature flag is disabled' do
-          it_behaves_like 'creates parent link only'
-
-          context 'when legacy epic already has a parent epic' do
-            let(:child_work_item) { other_child_epic.work_item }
-
-            before do
-              create(:parent_link, work_item_parent: other_parent_epic.work_item, work_item: child_work_item)
-            end
-
-            it_behaves_like 'creates parent link and deletes legacy link' do
-              let(:legacy_child) { other_child_epic }
-              let(:relationship) { :parent }
-              let(:link_service_class) { ::Epics::EpicLinks }
-            end
+          it_behaves_like 'creates parent link and deletes legacy link' do
+            let(:legacy_child) { other_child_epic }
+            let(:relationship) { :parent }
+            let(:link_service_class) { ::Epics::EpicLinks }
           end
         end
       end
@@ -317,59 +287,49 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
       context 'when synced_work_item param is false' do
         let(:synced_work_item_param) { false }
 
-        context 'when lock_work_item_epics feature flag is enabled' do
-          before do
-            stub_feature_flags(lock_work_item_epics: true)
-          end
-
-          it_behaves_like 'does not create parent link'
+        let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+        let_it_be(:other_epic_work_item_link) do
+          create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
+            relative_position: 500)
         end
 
-        context 'when lock_work_item_epics feature flag is disabled' do
-          let_it_be(:other_epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-          let_it_be(:other_epic_work_item_link) do
-            create(:parent_link, work_item: other_epic_work_item, work_item_parent: parent_work_item,
-              relative_position: 500)
+        before_all do
+          other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+        end
+
+        context 'when child is type :epic' do
+          it 'calls this service once' do
+            allow(described_class).to receive(:new).and_call_original
+            expect(described_class).to receive(:new).once
+
+            create_link
           end
 
-          before_all do
-            other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+          it 'syncs parent epic and creates notes only for the work items' do
+            expect { create_link }.to change { child_epic.reload.parent }.to(parent_epic)
+              .and change { WorkItems::ParentLink.count }.by(1)
+              .and change { Note.count }.by(2)
+              .and not_change { parent_epic.own_notes.count }
+              .and not_change { child_epic.own_notes.count }
+
+            expect(child_epic.relative_position).to eq(child_work_item.parent_link.relative_position)
+
+            expect(parent_work_item.notes.last.note).to eq("added #{child_work_item.to_reference} as child epic")
+            expect(child_work_item.notes.last.note).to eq("added #{parent_work_item.to_reference} as parent epic")
           end
 
-          context 'when child is type :epic' do
-            it 'calls this service once' do
-              allow(described_class).to receive(:new).and_call_original
-              expect(described_class).to receive(:new).once
+          it_behaves_like 'link creation with failures' do
+            let(:link_service_class) { ::Epics::EpicLinks::CreateService }
+            let(:legacy_child) { child_epic }
+            let(:relationship) { :parent }
+          end
 
-              create_link
+          context 'without group level work items license' do
+            before do
+              stub_licensed_features(epics: false, subepics: true)
             end
 
-            it 'syncs parent epic and creates notes only for the work items' do
-              expect { create_link }.to change { child_epic.reload.parent }.to(parent_epic)
-                .and change { WorkItems::ParentLink.count }.by(1)
-                .and change { Note.count }.by(2)
-                .and not_change { parent_epic.own_notes.count }
-                .and not_change { child_epic.own_notes.count }
-
-              expect(child_epic.relative_position).to eq(child_work_item.parent_link.relative_position)
-
-              expect(parent_work_item.notes.last.note).to eq("added #{child_work_item.to_reference} as child epic")
-              expect(child_work_item.notes.last.note).to eq("added #{parent_work_item.to_reference} as parent epic")
-            end
-
-            it_behaves_like 'link creation with failures' do
-              let(:link_service_class) { ::Epics::EpicLinks::CreateService }
-              let(:legacy_child) { child_epic }
-              let(:relationship) { :parent }
-            end
-
-            context 'without group level work items license' do
-              before do
-                stub_licensed_features(epics: false, subepics: true)
-              end
-
-              it_behaves_like 'does not create parent link'
-            end
+            it_behaves_like 'does not create parent link'
           end
         end
       end

@@ -16,9 +16,11 @@ import {
   SECURITY_POLICY_ACTIONS,
   ACTIONS_LABEL,
   ADD_ACTION_LABEL,
+  ACTION_SECTION_DISABLE_ERROR,
+  CONDITION_SECTION_DISABLE_ERROR,
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
-import DimDisableContainer from '../dim_disable_container.vue';
+import DisabledSection from '../disabled_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import ScanAction from './action/scan_action.vue';
 import {
@@ -44,9 +46,11 @@ export default {
   SECURITY_POLICY_ACTIONS,
   i18n: {
     ACTIONS_LABEL,
+    ACTION_SECTION_DISABLE_ERROR,
     ADD_ACTION_LABEL,
     ADD_CONDITION_LABEL,
     CONDITIONS_LABEL,
+    CONDITION_SECTION_DISABLE_ERROR,
     PARSING_ERROR_MESSAGE,
     createMergeRequest: __('Configure with a merge request'),
     notOwnerButtonText: __('Learn more'),
@@ -74,7 +78,7 @@ export default {
     },
   },
   components: {
-    DimDisableContainer,
+    DisabledSection,
     GlButton,
     GlEmptyState,
     ScanAction,
@@ -123,25 +127,30 @@ export default {
 
     const yamlEditorValue = this.existingPolicy ? policyToYaml(this.existingPolicy) : newPolicyYaml;
 
-    const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
-
-    const parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
+    const { policy, parsingError } = createPolicyObject(yamlEditorValue);
+    const { hasParsingError } = parsingError;
 
     return {
+      parsingError,
       projectsCount: 0,
       showPerformanceWarningModal: false,
       dismissPerformanceWarningModal: false,
       policy,
       policyModificationAction: null,
       hasParsingError,
-      parsingError,
       yamlEditorValue,
       mode: EDITOR_MODE_RULE,
       documentationPath: setUrlFragment(
         this.scanPolicyDocumentationPath,
         'scan-execution-policy-editor',
       ),
+      specificActionSectionError: '',
     };
+  },
+  computed: {
+    actionSectionError() {
+      return this.specificActionSectionError || this.$options.i18n.ACTION_SECTION_DISABLE_ERROR;
+    },
   },
   methods: {
     addAction() {
@@ -182,7 +191,8 @@ export default {
     },
     handleActionBuilderParsingError(key) {
       this.hasParsingError = true;
-      this.parsingError = ERROR_MESSAGE_MAP[key] || PARSING_ERROR_MESSAGE;
+      this.parsingError = { ...this.parsingError, hasParsingError: true, actions: true };
+      this.specificActionSectionError = ERROR_MESSAGE_MAP[key] || '';
     },
     handleRemoveProperty(property) {
       const { [property]: removedProperty, ...updatedPolicy } = this.policy;
@@ -210,12 +220,13 @@ export default {
       this.$emit('save', { action, policy: this.yamlEditorValue });
     },
     updateYaml(manifest) {
-      const { policy, hasParsingError } = createPolicyObject(manifest);
+      const { policy, parsingError } = createPolicyObject(manifest);
 
       this.yamlEditorValue = manifest;
-      this.hasParsingError = hasParsingError;
-      this.parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
       this.policy = policy;
+      this.parsingError = parsingError;
+      this.hasParsingError = parsingError.hasParsingError;
+      this.specificActionSectionError = '';
     },
     updateYamlEditorValue(policy) {
       this.yamlEditorValue = policyToYaml(policy);
@@ -228,11 +239,9 @@ export default {
   <editor-layout
     v-if="!disableScanPolicyUpdate"
     :custom-save-button-text="$options.i18n.createMergeRequest"
-    :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"
-    :parsing-error="parsingError"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
     @remove-policy="handleModifyPolicy($options.SECURITY_POLICY_ACTIONS.REMOVE)"
@@ -243,13 +252,13 @@ export default {
     @update-editor-mode="changeEditorMode"
   >
     <template #rules>
-      <dim-disable-container :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.rules"
+        :error="$options.i18n.CONDITION_SECTION_DISABLE_ERROR"
+        data-testid="disabled-rule"
+      >
         <template #title>
           <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
-        </template>
-
-        <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <rule-section
@@ -268,17 +277,17 @@ export default {
             {{ $options.i18n.ADD_CONDITION_LABEL }}
           </gl-button>
         </div>
-      </dim-disable-container>
+      </disabled-section>
     </template>
 
     <template #actions-first>
-      <dim-disable-container :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.actions"
+        :error="actionSectionError"
+        data-testid="disabled-action"
+      >
         <template #title>
           <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
-        </template>
-
-        <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <scan-action
@@ -299,7 +308,7 @@ export default {
             {{ $options.i18n.ADD_ACTION_LABEL }}
           </gl-button>
         </div>
-      </dim-disable-container>
+      </disabled-section>
     </template>
 
     <template #modal>

@@ -1,7 +1,7 @@
 import {
   createPolicyObject,
   fromYaml,
-  hasRuleModeSupportedScanners,
+  hasInvalidScanners,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/from_yaml';
 import {
   actionId,
@@ -12,7 +12,7 @@ import {
   mockDastScanExecutionManifest,
   mockDastScanExecutionObject,
   mockInvalidCadenceScanExecutionObject,
-  mockInvalidYamlCadenceValue,
+  mockInvalidCadenceScanExecutionManifest,
   mockBranchExceptionsScanExecutionObject,
   mockBranchExceptionsExecutionManifest,
   mockPolicyScopeExecutionManifest,
@@ -20,6 +20,7 @@ import {
   mockTemplateScanExecutionManifest,
   mockTemplateScanExecutionObject,
   mockInvalidTemplateScanExecutionManifest,
+  mockInvalidTemplateScanExecutionObject,
   mockScanSettingsScanExecutionManifest,
   mockScanSettingsScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
@@ -28,41 +29,51 @@ jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 
 describe('fromYaml', () => {
   it.each`
-    title                                                                                                | input                                                                             | output                                     | features
-    ${'returns the policy object for a supported manifest'}                                              | ${{ manifest: mockDastScanExecutionManifest }}                                    | ${mockDastScanExecutionObject}             | ${{}}
-    ${'returns the error object for a policy with an unsupported attribute'}                             | ${{ manifest: unsupportedManifest, validateRuleMode: true }}                      | ${{ error: true }}                         | ${{}}
-    ${'returns the policy object for a policy with an unsupported attribute when validation is skipped'} | ${{ manifest: unsupportedManifest }}                                              | ${unsupportedManifestObject}               | ${{}}
-    ${'returns error object for a policy with invalid cadence cron string and validation mode'}          | ${{ manifest: mockInvalidCadenceScanExecutionObject, validateRuleMode: true }}    | ${{ error: true }}                         | ${{}}
-    ${'returns error object for a policy with invalid cadence cron string'}                              | ${{ manifest: mockInvalidYamlCadenceValue }}                                      | ${{ error: true, key: 'yaml-parsing' }}    | ${{}}
-    ${'returns the policy object for branch exceptions'}                                                 | ${{ manifest: mockBranchExceptionsExecutionManifest, validateRuleMode: true }}    | ${mockBranchExceptionsScanExecutionObject} | ${{}}
-    ${'returns the policy object for project scope'}                                                     | ${{ manifest: mockPolicyScopeExecutionManifest, validateRuleMode: true }}         | ${mockPolicyScopeScanExecutionObject}      | ${{}}
-    ${'returns the policy object for valid template value'}                                              | ${{ manifest: mockTemplateScanExecutionManifest, validateRuleMode: true }}        | ${mockTemplateScanExecutionObject}         | ${{}}
-    ${'returns error object for a policy with invalid template value'}                                   | ${{ manifest: mockInvalidTemplateScanExecutionManifest, validateRuleMode: true }} | ${{ error: true }}                         | ${{}}
-    ${'returns the policy object for a scan with settings'}                                              | ${{ manifest: mockScanSettingsScanExecutionManifest, validateRuleMode: true }}    | ${mockScanSettingsScanExecutionObject}     | ${{}}
-  `('$title', ({ input, output, features }) => {
+    title                                                              | manifest                                    | output                                                                                                        | features
+    ${'policy object for an unsupported attribute'}                    | ${unsupportedManifest}                      | ${{ parsingError: { hasParsingError: false }, policy: unsupportedManifestObject }}                            | ${{}}
+    ${'policy object for a branch exceptions'}                         | ${mockBranchExceptionsExecutionManifest}    | ${{ parsingError: { hasParsingError: false }, policy: mockBranchExceptionsScanExecutionObject }}              | ${{}}
+    ${'policy object for a project scope'}                             | ${mockPolicyScopeExecutionManifest}         | ${{ parsingError: { hasParsingError: false }, policy: mockPolicyScopeScanExecutionObject }}                   | ${{}}
+    ${'policy object for a valid template value'}                      | ${mockTemplateScanExecutionManifest}        | ${{ parsingError: { hasParsingError: false }, policy: mockTemplateScanExecutionObject }}                      | ${{}}
+    ${'policy object with an error for an invalid template value'}     | ${mockInvalidTemplateScanExecutionManifest} | ${{ parsingError: { hasParsingError: true, actions: true }, policy: mockInvalidTemplateScanExecutionObject }} | ${{}}
+    ${'policy object with an error for an invalid cadence cron value'} | ${mockInvalidCadenceScanExecutionManifest}  | ${{ parsingError: { hasParsingError: true, rules: true }, policy: mockInvalidCadenceScanExecutionObject }}    | ${{}}
+    ${'policy object for a manifest with settings'}                    | ${mockScanSettingsScanExecutionManifest}    | ${{ parsingError: { hasParsingError: false }, policy: mockScanSettingsScanExecutionObject }}                  | ${{}}
+  `('returns the $title', ({ manifest, output, features }) => {
     window.gon = { features };
-    expect(fromYaml(input)).toStrictEqual(output);
+    expect(fromYaml({ manifest, validateRuleMode: true })).toStrictEqual(output);
+  });
+
+  describe('without validation', () => {
+    it.each`
+      title                                       | manifest                         | policy                         | features
+      ${'a manifest with supported attributes'}   | ${mockDastScanExecutionManifest} | ${mockDastScanExecutionObject} | ${{}}
+      ${'a manifest with unsupported attributes'} | ${unsupportedManifest}           | ${unsupportedManifestObject}   | ${{}}
+    `('returns the policy object for $title', ({ manifest, policy, features }) => {
+      window.gon = { features };
+      expect(fromYaml({ manifest })).toStrictEqual({
+        parsingError: { hasParsingError: false },
+        policy,
+      });
+    });
   });
 });
 
 describe('createPolicyObject', () => {
   it.each`
-    title                                                                          | input                              | output
-    ${'returns the policy object and no errors for a supported manifest'}          | ${[mockDastScanExecutionManifest]} | ${{ policy: mockDastScanExecutionObject, hasParsingError: false }}
-    ${'returns the error policy object and the error for an unsupported manifest'} | ${[unsupportedManifest]}           | ${{ policy: { error: true }, hasParsingError: true }}
+    title                                                                          | input                                         | output
+    ${'returns the policy object and no errors for a supported manifest'}          | ${[mockDastScanExecutionManifest]}            | ${{ parsingError: { hasParsingError: false }, policy: mockDastScanExecutionObject }}
+    ${'returns the error policy object and the error for an unsupported manifest'} | ${[mockInvalidTemplateScanExecutionManifest]} | ${{ parsingError: { hasParsingError: true, actions: true }, policy: mockInvalidTemplateScanExecutionObject }}
   `('$title', ({ input, output }) => {
     expect(createPolicyObject(...input)).toStrictEqual(output);
   });
 });
 
-describe('hasRuleModeSupportedScanners', () => {
+describe('hasInvalidScanners', () => {
   it.each`
-    title                                                 | input                                                                                              | output
-    ${'return true when all scanners are supported'}      | ${{ actions: [{ scan: 'sast', id: actionId }, { scan: 'dast', id: actionId }] }}                   | ${true}
-    ${'return false when not all scanners are supported'} | ${{ actions: [{ scan: 'sast', id: actionId }, { scan: 'cluster_image_scanning', id: actionId }] }} | ${false}
-    ${'return true when no actions on policy'}            | ${{ name: 'test' }}                                                                                | ${true}
-    ${'return false when no valid scanners'}              | ${{ actions: [{ scan2: 'sast' }, { scan3: 'cluster_image_scanning' }] }}                           | ${false}
+    title                                                | input                                                                                 | output
+    ${'return false when all scanners are supported'}    | ${[{ scan: 'sast', id: actionId }, { scan: 'dast', id: actionId }]}                   | ${false}
+    ${'return true when not all scanners are supported'} | ${[{ scan: 'sast', id: actionId }, { scan: 'cluster_image_scanning', id: actionId }]} | ${true}
+    ${'return true when no valid scanners'}              | ${[{ scan2: 'sast' }, { scan3: 'cluster_image_scanning' }]}                           | ${true}
   `('$title', ({ input, output }) => {
-    expect(hasRuleModeSupportedScanners(input)).toBe(output);
+    expect(hasInvalidScanners(input)).toBe(output);
   });
 });

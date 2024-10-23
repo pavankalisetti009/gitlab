@@ -193,27 +193,6 @@ actions:
     SECRET_DETECTION_HISTORIC_SCAN: 'true'
 `;
 
-export const mockInvalidYamlCadenceValue = `---
-name: Enforce DAST in every pipeline
-description: This policy enforces pipeline configuration to have a job with DAST scan
-enabled: true
-rules:
-- type: schedule
-  cadence: */10 * * * *
-  branches:
-  - main
-- type: pipeline
-  branches:
-  - main
-  - release/*
-  - staging
-actions:
-- scan: dast
-  scanner_profile: Scanner Profile
-  site_profile: Site Profile
-- scan: secret_detection
-`;
-
 export const mockNoActionsScanExecutionManifest = `type: scan_execution_policy
 name: Test Dast
 description: This policy enforces pipeline configuration to have a job with DAST scan
@@ -239,27 +218,25 @@ actions:
   - scan: sast
 `;
 
+export const mockInvalidCadenceScanExecutionManifest = `type: scan_execution_policy
+name: This policy has an invalid cadence
+description: ''
+enabled: false
+rules:
+- type: schedule
+  cadence: INVALID * * * *
+  branches:
+  - main
+actions:
+- scan: sast
+`;
+
 export const mockInvalidCadenceScanExecutionObject = {
+  type: 'scan_execution_policy',
   name: 'This policy has an invalid cadence',
-  rules: [
-    {
-      type: 'pipeline',
-      branches: ['main'],
-      id: ruleId,
-    },
-    {
-      type: 'schedule',
-      branches: ['main'],
-      cadence: '0 0 * * INVALID',
-      id: ruleId,
-    },
-    {
-      type: 'schedule',
-      branches: ['main'],
-      cadence: '0 0 * * *',
-      id: ruleId,
-    },
-  ],
+  description: '',
+  enabled: false,
+  rules: [{ type: 'schedule', branches: ['main'], cadence: 'INVALID * * * *', id: ruleId }],
   actions: [{ scan: 'sast', id: actionId }],
 };
 
@@ -300,6 +277,29 @@ export const mockTemplateScanExecutionObject = {
 export const mockInvalidTemplateScanExecutionManifest = mockDastScanExecutionManifest.concat(
   `    template: not-valid-value\n`,
 );
+
+export const mockInvalidActionScanExecutionObject = {
+  ...mockDastScanExecutionObject,
+  actions: [{ scan: 'sastt', id: actionId }],
+};
+
+export const mockInvalidRuleScanExecutionObject = {
+  ...mockDastScanExecutionObject,
+  rules: [{ type: 'pipeline', branch_type: '', branches: ['main'], id: ruleId }],
+};
+
+export const mockInvalidTemplateScanExecutionObject = {
+  ...mockDastScanExecutionObject,
+  actions: [
+    {
+      id: actionId,
+      scan: 'dast',
+      scanner_profile: 'required_scanner_profile',
+      site_profile: 'required_site_profile',
+      template: 'not-valid-value',
+    },
+  ],
+};
 
 export const mockScanSettingsScanExecutionManifest = mockScheduleScanExecutionManifest.concat(
   `    scan_settings:\n      ignore_default_before_after_script: true`,

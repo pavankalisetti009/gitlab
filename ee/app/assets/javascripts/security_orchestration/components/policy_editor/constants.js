@@ -25,6 +25,14 @@ export const PARSING_ERROR_MESSAGE = s__(
   'SecurityOrchestration|Rule mode is unavailable for this policy. In some cases, we cannot parse the YAML file back into the rules editor.',
 );
 
+export const ACTION_SECTION_DISABLE_ERROR = s__(
+  'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the actions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
+);
+
+export const CONDITION_SECTION_DISABLE_ERROR = s__(
+  'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the conditions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
+);
+
 export const EDITOR_MODES = [
   { value: EDITOR_MODE_RULE, text: s__('SecurityOrchestration|Rule mode') },
   { value: EDITOR_MODE_YAML, text: s__('SecurityOrchestration|.yaml mode') },

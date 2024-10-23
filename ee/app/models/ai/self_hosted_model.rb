@@ -33,5 +33,9 @@ module Ai
     def provider
       :openai
     end
+
+    def identifier
+      self[:identifier] || ''
+    end
   end
 end
