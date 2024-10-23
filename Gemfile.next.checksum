@@ -549,7 +549,7 @@
 {"name":"rack-session","version":"1.0.2","platform":"ruby","checksum":"a02115e5420b4de036839b9811e3f7967d73446a554b42aa45106af335851d76"},
 {"name":"rack-test","version":"2.1.0","platform":"ruby","checksum":"0c61fc61904049d691922ea4bb99e28004ed3f43aa5cfd495024cc345f125dfb"},
 {"name":"rack-timeout","version":"0.7.0","platform":"ruby","checksum":"757337e9793cca999bb73a61fe2a7d4280aa9eefbaf787ce3b98d860749c87d9"},
-{"name":"rackup","version":"1.0.0","platform":"ruby","checksum":"e95e3e1b7f1f54ac3730fa9f1024903cb23e424a901781198d492d32c60079f1"},
+{"name":"rackup","version":"1.0.1","platform":"ruby","checksum":"ba86604a28989fe1043bff20d819b360944ca08156406812dca6742b24b3c249"},
 {"name":"rails","version":"7.1.4.1","platform":"ruby","checksum":"4a9e8955c812c930f074e083375b99860989f61da47a0734b7abf9d0baaa4739"},
 {"name":"rails-controller-testing","version":"1.0.5","platform":"ruby","checksum":"741448db59366073e86fc965ba403f881c636b79a2c39a48d0486f2607182e94"},
 {"name":"rails-dom-testing","version":"2.2.0","platform":"ruby","checksum":"e515712e48df1f687a1d7c380fd7b07b8558faa26464474da64183a7426fa93b"},
