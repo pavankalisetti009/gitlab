@@ -369,6 +369,8 @@ RSpec.describe Notify, feature_category: :shared do
     it_behaves_like 'an email sent from GitLab'
     it_behaves_like 'it should not have Gmail Actions links'
     it_behaves_like "a user cannot unsubscribe through footer link"
+    it_behaves_like 'appearance header and footer enabled'
+    it_behaves_like 'appearance header and footer not enabled'
 
     it 'has the correct subject and body' do
       is_expected.to have_subject("#{project.name} | Repository mirroring paused")
@@ -385,6 +387,8 @@ RSpec.describe Notify, feature_category: :shared do
     it_behaves_like 'an email sent from GitLab'
     it_behaves_like 'it should not have Gmail Actions links'
     it_behaves_like "a user cannot unsubscribe through footer link"
+    it_behaves_like 'appearance header and footer enabled'
+    it_behaves_like 'appearance header and footer not enabled'
 
     it 'has the correct subject and body' do
       is_expected.to have_subject("#{project.name} | Repository mirroring disabled")
@@ -414,6 +418,8 @@ RSpec.describe Notify, feature_category: :shared do
     it_behaves_like 'an email sent from GitLab'
     it_behaves_like 'it should not have Gmail Actions links'
     it_behaves_like "a user cannot unsubscribe through footer link"
+    it_behaves_like 'appearance header and footer enabled'
+    it_behaves_like 'appearance header and footer not enabled'
 
     it 'has the correct subject and body' do
       is_expected.to have_subject("#{project.name} | Mirror user changed")

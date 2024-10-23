@@ -7,7 +7,7 @@ module EE
         @project = ::Project.find(project_id)
         user = ::User.find(user_id)
 
-        mail_with_locale(
+        email_with_layout(
           to: user.notification_email_for(@project.group),
           subject: subject('Repository mirroring paused')
         )
@@ -20,7 +20,7 @@ module EE
 
         return unless user
 
-        mail_with_locale(
+        email_with_layout(
           to: user.notification_email_for(@project.group),
           subject: subject('Repository mirroring disabled')
         )
@@ -31,7 +31,7 @@ module EE
         @deleted_user_name = deleted_user_name
         user = ::User.find(new_mirror_user_id)
 
-        mail_with_locale(
+        email_with_layout(
           to: user.notification_email_for(@project.group),
           subject: subject('Mirror user changed')
         )
