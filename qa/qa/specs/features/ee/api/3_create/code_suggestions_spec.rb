@@ -15,7 +15,7 @@ module QA
       end
 
       let(:token) { Resource::PersonalAccessToken.fabricate!.token }
-      let(:direct_access) { fetch_direct_connection_details(token) }
+      let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
 
       let(:context) do
         [
@@ -212,21 +212,6 @@ module QA
       def get_direct_suggestion(prompt_data, type = 'completions')
         request_code_suggestion(url: "#{direct_access[:base_url]}/v2/code/#{type}", token: direct_access[:token],
           headers: direct_access[:headers], prompt_data: prompt_data)
-      end
-
-      # https://docs.gitlab.com/ee/api/code_suggestions.html#fetch-direct-connection-information
-      def fetch_direct_connection_details(token)
-        response = Support::API.post("#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/direct_access", nil,
-          headers: { Authorization: "Bearer #{token}", 'Content-Type': 'application/json' })
-        expect(response.code).to eq(Support::API::HTTP_STATUS_CREATED)
-
-        direct_connection_details = parse_body(response)
-
-        expect(direct_connection_details[:base_url]).not_to be_empty
-        expect(direct_connection_details[:token]).not_to be_empty
-        expect(direct_connection_details[:headers]).not_to be_empty
-
-        direct_connection_details
       end
 
       def request_code_suggestion(url:, token:, prompt_data:, headers: {})
