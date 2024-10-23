@@ -224,23 +224,43 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
   end
 
   describe '.wait_for_database_replication' do
-    it 'waits until database replication has caught up' do
-      health_check = instance_double(Gitlab::Geo::HealthCheck, db_replication_lag_seconds: 1.34)
-      expect(Gitlab::Geo::HealthCheck).to receive(:new).and_return(health_check)
-      expect(described_class).to receive(:sleep).with(1.34).once
+    let(:health_check) { instance_double(Gitlab::Geo::HealthCheck) }
 
-      described_class.wait_for_database_replication
+    before do
+      allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(health_check)
     end
 
-    it 'outputs what it is doing' do
-      expected_output = <<~MSG
-        Database replication: Waiting for database replication to catch up
-        Database replication: Caught up
-      MSG
+    context 'when db_replication_lag_seconds is nil' do
+      before do
+        allow(health_check).to receive(:db_replication_lag_seconds).and_return(nil)
+      end
 
-      expect do
-        described_class.wait_for_database_replication
-      end.to output(expected_output).to_stdout
+      it 'returns immediately without sleeping' do
+        expect(described_class).not_to receive(:sleep)
+        expected_output = "Database replication: Replication method unknown. Skipping wait for DB replication.\n"
+        expect { described_class.wait_for_database_replication }.to output(expected_output).to_stdout
+      end
+    end
+
+    context 'when db_replication_lag_seconds is not nil' do
+      let(:lag) { 1.34 }
+
+      before do
+        allow(health_check).to receive(:db_replication_lag_seconds).and_return(lag)
+      end
+
+      it 'waits until database replication has caught up' do
+        expect(described_class).to receive(:sleep).with(lag).once
+
+        expected_output = <<~MSG
+          Database replication: Waiting for database replication to catch up
+          Database replication: Caught up
+        MSG
+
+        expect do
+          described_class.wait_for_database_replication
+        end.to output(expected_output).to_stdout
+      end
     end
   end
 
@@ -328,7 +348,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
     before do
       allow(Gitlab::Redis::Queues).to receive(:instances)
-        .and_return({ main: Gitlab::Redis::Queues })
+                                        .and_return({ main: Gitlab::Redis::Queues })
       allow(Gitlab::Redis::Queues).to receive(:sidekiq_redis)
       allow(Sidekiq::Client).to receive(:via).and_yield
     end

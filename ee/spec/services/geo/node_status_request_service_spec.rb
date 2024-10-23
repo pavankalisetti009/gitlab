@@ -44,7 +44,7 @@ RSpec.describe Geo::NodeStatusRequestService, :geo, feature_category: :geo_repli
       args = GeoNodeStatus.new({
         geo_node_id: secondary.id,
         status_message: nil,
-        db_replication_lag_seconds: 0,
+        db_replication_lag_seconds: nil,
         projects_count: 10
       })
 

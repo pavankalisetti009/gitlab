@@ -54,15 +54,17 @@ describe('GeoSiteSecondaryOtherInfo', () => {
 
     describe('conditionally', () => {
       describe.each`
-        dbReplicationLagSeconds | text
-        ${60}                   | ${'1m'}
-        ${null}                 | ${'Unknown'}
-      `(`db replication lag`, ({ dbReplicationLagSeconds, text }) => {
+        dbReplicationLagSeconds | enabled  | text
+        ${60}                   | ${true}  | ${'1m'}
+        ${60}                   | ${false} | ${'Not applicable.'}
+        ${null}                 | ${false} | ${'Not applicable.'}
+        ${null}                 | ${true}  | ${'Not applicable.'}
+      `(`db replication lag`, ({ dbReplicationLagSeconds, enabled, text }) => {
         beforeEach(() => {
-          createComponent({ site: { dbReplicationLagSeconds } });
+          createComponent({ site: { dbReplicationLagSeconds, enabled } });
         });
 
-        it(`renders correctly when dbReplicationLagSeconds is ${dbReplicationLagSeconds}`, () => {
+        it(`renders correctly when dbReplicationLagSeconds is ${dbReplicationLagSeconds} and replication is ${enabled}`, () => {
           expect(findDbReplicationLag().text()).toBe(text);
         });
       });

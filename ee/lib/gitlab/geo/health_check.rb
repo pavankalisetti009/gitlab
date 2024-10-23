@@ -21,6 +21,9 @@ module Gitlab
       def db_replication_lag_seconds
         # Geo currently only replicates the primary database (not the ci database)
         # Obtain the replication lag in seconds
+        # If replication is disabled return nil
+        return unless replication_enabled?
+
         ApplicationRecord.connection
           .execute(db_replication_lag_seconds_query)
           .first
