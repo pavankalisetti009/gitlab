@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:agent) { instance_double(Clusters::Agent, id: 1) }
-  let(:user) { instance_double(User, name: "name", email: "name@example.com") }
+  let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+  let(:user) { instance_double("User", name: "name", email: "name@example.com") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:workspace) { create(:workspace) }
   let(:namespace) { workspace.namespace }
 

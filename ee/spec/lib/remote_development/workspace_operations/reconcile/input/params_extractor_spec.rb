@@ -3,7 +3,7 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsExtractor, feature_category: :workspaces do
-  let(:agent) { instance_double(Clusters::Agent) }
+  let(:agent) { instance_double("Clusters::Agent") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:original_params) do
     {
       "update_type" => "full",

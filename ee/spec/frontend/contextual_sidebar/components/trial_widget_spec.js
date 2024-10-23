@@ -18,11 +18,12 @@ describe('TrialWidget component', () => {
   const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
+
   const provide = {
     trialType: 'duo_enterprise',
     daysRemaining: 40,
     percentageComplete: 33,
-    trialDiscoverPagePath: 'help_page_url',
+    trialDiscoverPagePath: '/discover',
     groupId: '1',
     featureId: '2',
     dismissEndpoint: '/dismiss',
@@ -45,8 +46,8 @@ describe('TrialWidget component', () => {
     });
 
     it('shows the expected days remaining text when trial is active', () => {
-      createComponent({ daysRemaining: 20, percentageComplete: 50 });
-      expect(wrapper.text()).toContain('20 days left in trial');
+      createComponent({ daysRemaining: 30, percentageComplete: 50 });
+      expect(wrapper.text()).toContain('30 days left in trial');
     });
 
     it('does not render the dismiss button during active trial', () => {
@@ -67,6 +68,20 @@ describe('TrialWidget component', () => {
         const ctaButton = findCtaButton();
         expect(ctaButton.exists()).toBe(true);
         expect(ctaButton.text()).toBe('Learn more');
+      });
+
+      it('renders the CTA link', () => {
+        expect(findCtaButton().attributes('href')).toBe('/discover');
+      });
+
+      describe('when under the threshold days', () => {
+        beforeEach(() => {
+          createComponent({ daysRemaining: 20, percentageComplete: 67 });
+        });
+
+        it('renders the CTA link', () => {
+          expect(findCtaButton().attributes('href')).toBe('/purchase');
+        });
       });
     });
 
@@ -100,6 +115,10 @@ describe('TrialWidget component', () => {
 
       it('renders the upgrade options text', () => {
         expect(findUpgradeButton().text()).toBe('See upgrade options');
+      });
+
+      it('renders the upgrade options link', () => {
+        expect(findUpgradeButton().attributes('href')).toBe('/purchase');
       });
 
       it('renders the dismiss button', () => {

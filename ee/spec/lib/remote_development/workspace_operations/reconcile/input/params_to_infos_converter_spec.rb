@@ -15,11 +15,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsT
   end
 
   let(:expected_agent_info_1) do
-    instance_double(RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo, name: "workspace1")
+    instance_double("RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo", name: "workspace1") # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   end
 
   let(:expected_agent_info_2) do
-    instance_double(RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo, name: "workspace2")
+    instance_double("RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo", name: "workspace2") # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   end
 
   let(:context) { { workspace_agent_info_hashes_from_params: workspace_agent_info_hashes_from_params } }
