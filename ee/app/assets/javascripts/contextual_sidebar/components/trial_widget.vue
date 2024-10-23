@@ -44,6 +44,11 @@ export default {
     expiredWidgetTitleText() {
       return this.currentTrialType.widgetTitleExpiredTrial;
     },
+    ctaLink() {
+      return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
+        ? this.purchaseNowUrl
+        : this.trialDiscoverPagePath;
+    },
     ctaText() {
       return this.daysRemaining < this.$options.trialWidget.trialUpgradeThresholdDays
         ? this.$options.trialWidget.i18n.upgradeText
@@ -118,7 +123,7 @@ export default {
               {{ widgetRemainingDays }}
             </span>
             <gl-link
-              :href="trialDiscoverPagePath"
+              :href="ctaLink"
               class="gl-text-sm gl-font-bold gl-no-underline hover:gl-no-underline"
               size="small"
               data-testid="learn-about-features-btn"
