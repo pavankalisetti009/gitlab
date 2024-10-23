@@ -3,10 +3,9 @@ import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
-import { addIdsToPolicy, isValidPolicy, hasInvalidCron } from '../../utils';
+import { addIdsToPolicy, hasConflictingKeys, hasInvalidCron } from '../../utils';
 import {
   BRANCH_TYPE_KEY,
-  PRIMARY_POLICY_KEYS,
   RULE_MODE_SCANNERS,
   VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from '../../constants';
@@ -38,77 +37,53 @@ const hasInvalidTemplate = (actions = []) => {
 };
 
 /**
- * Checks if rule mode supports the inputted scanner
- * @param {Object} policy
+ * Checks if any action has invalid scanner type
+ * @param {Array} actions
  * @returns {Boolean} if all inputted scanners are in the available scanners dictionary
  */
-export const hasRuleModeSupportedScanners = (policy) => {
-  /**
-   * If policy has no actions just return as valid
-   */
-  if (!policy?.actions) {
-    return true;
-  }
+export const hasInvalidScanners = (actions = []) => {
+  if (!actions.length) return false;
 
   const availableScanners = Object.keys(RULE_MODE_SCANNERS);
 
-  const configuredScanners = policy.actions.map((action) => action.scan);
-  return configuredScanners.every((scanner) => availableScanners.includes(scanner));
+  const configuredScanners = actions.map((action) => action.scan);
+  return configuredScanners.some((scanner) => !availableScanners.includes(scanner));
 };
 
-/*
-  Construct a policy object expected by the policy editor from a yaml manifest.
-*/
+/**
+ * Construct a policy object expected by the policy editor from a yaml manifest.
+ * @param {Object} options
+ * @param {String}  options.manifest a security policy in yaml form
+ * @param {Boolean} options.validateRuleMode if properties should be validated
+ * @returns {Object} security policy object and any errors
+ */
 export const fromYaml = ({ manifest, validateRuleMode = false }) => {
+  const error = { hasParsingError: false };
   try {
     const policy = addIdsToPolicy(safeLoad(manifest, { json: true }));
 
     if (validateRuleMode) {
-      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'actions', 'rules'];
+      if (
+        hasConflictingKeys(policy.rules) ||
+        hasInvalidBranchType(policy.rules) ||
+        hasInvalidCron(policy.rules)
+      ) {
+        error.hasParsingError = true;
+        error.rules = true;
+      }
 
-      /**
-       * These values are what is supported by rule mode. If the yaml has any other values,
-       * rule mode will be disabled. This validation should not be used to check whether
-       * the yaml is a valid policy; that should be done on the backend with the official
-       * schema. These values should not be retrieved from the backend schema because
-       * the UI for new attributes may not be available.
-       */
-      const rulesKeys = [
-        'type',
-        'agents',
-        'branches',
-        'branch_type',
-        'cadence',
-        'timezone',
-        'branch_exceptions',
-        'id',
-      ];
-      const actionsKeys = [
-        'scan',
-        'scan_settings',
-        'site_profile',
-        'scanner_profile',
-        'variables',
-        'tags',
-        'id',
-        'template',
-      ];
-
-      return isValidPolicy({ policy, primaryKeys, rulesKeys, actionsKeys }) &&
-        !hasInvalidCron(policy) &&
-        !hasInvalidBranchType(policy.rules) &&
-        !hasInvalidTemplate(policy.actions) &&
-        hasRuleModeSupportedScanners(policy)
-        ? policy
-        : { error: true };
+      if (hasInvalidTemplate(policy.actions) || hasInvalidScanners(policy.actions)) {
+        error.hasParsingError = true;
+        error.actions = true;
+      }
     }
 
-    return policy;
+    return { policy, parsingError: error };
   } catch {
     /**
      * Catch parsing error of safeLoad
      */
-    return { error: true, key: 'yaml-parsing' };
+    return { policy: {}, parsingError: { hasParsingError: true, actions: true, rules: true } };
   }
 };
 
@@ -118,7 +93,5 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  const policy = fromYaml({ manifest, validateRuleMode: true });
-
-  return { policy, hasParsingError: Boolean(policy.error) };
+  return fromYaml({ manifest, validateRuleMode: true });
 };

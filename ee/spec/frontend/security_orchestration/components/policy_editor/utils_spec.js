@@ -237,11 +237,11 @@ describe('isValidPolicy', () => {
 
 describe('hasInvalidCron', () => {
   it.each`
-    input                                                                                                      | output
-    ${{ foo: 'bar', rules: [{ zoo: 'dar', cadence: '0 0 * * *' }] }}                                           | ${false}
-    ${{ foo: 'bar', rules: [{ zoo: 'dar', cadence: '* 0 0 * 5' }] }}                                           | ${true}
-    ${{ foo: 'bar', rules: [{ zoo: 'dar', cadence: '0 0 * asd ada' }] }}                                       | ${true}
-    ${{ foo: 'bar', rules: [{ zoo: 'dar', cadence: '0 0 * asd ada' }, { zoo: 'dar', cadence: '0 0 * * *' }] }} | ${true}
+    input                                                                               | output
+    ${[{ zoo: 'dar', cadence: '0 0 * * *' }]}                                           | ${false}
+    ${[{ zoo: 'dar', cadence: '* 0 0 * 5' }]}                                           | ${true}
+    ${[{ zoo: 'dar', cadence: '0 0 * asd ada' }]}                                       | ${true}
+    ${[{ zoo: 'dar', cadence: '0 0 * asd ada' }, { zoo: 'dar', cadence: '0 0 * * *' }]} | ${true}
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(hasInvalidCron(input)).toBe(output);
   });

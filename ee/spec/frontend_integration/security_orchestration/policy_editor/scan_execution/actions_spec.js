@@ -60,6 +60,7 @@ describe('Scan execution policy actions', () => {
   const findProjectDastProfileSelector = () => wrapper.findComponent(ProjectDastProfileSelector);
   const findRunnerTagsList = () => wrapper.findComponent(RunnerTagsList);
   const findScanFilterButton = () => wrapper.findByTestId('add-variable-button');
+  const findDisabledActionSection = () => wrapper.findByTestId('disabled-action');
 
   describe('secret detection', () => {
     beforeEach(() => {
@@ -70,6 +71,7 @@ describe('Scan execution policy actions', () => {
       const verifyRuleMode = () => {
         expect(findScanTypeSelector().exists()).toBe(true);
         expect(findRunnerTagsList().exists()).toBe(true);
+        expect(findDisabledActionSection().props('disabled')).toBe(false);
       };
 
       await verify({
@@ -95,6 +97,7 @@ describe('Scan execution policy actions', () => {
       const verifyRuleMode = () => {
         expect(findScanTypeSelector().exists()).toBe(true);
         expect(findRunnerTagsList().exists()).toBe(true);
+        expect(findDisabledActionSection().props('disabled')).toBe(false);
       };
 
       await findScanTypeSelector().vm.$emit('select', scanType);
@@ -121,6 +124,7 @@ describe('Scan execution policy actions', () => {
           expect(findScanTypeSelector().exists()).toBe(true);
           expect(findDastSelector().exists()).toBe(true);
           expect(findRunnerTagsList().exists()).toBe(true);
+          expect(findDisabledActionSection().props('disabled')).toBe(false);
         };
 
         await findScanTypeSelector().vm.$emit('select', REPORT_TYPE_DAST);
@@ -140,6 +144,7 @@ describe('Scan execution policy actions', () => {
         expect(findScanTypeSelector().exists()).toBe(true);
         expect(findRunnerTagsList().exists()).toBe(true);
         expect(findCiVariablesSelectors().exists()).toBe(true);
+        expect(findDisabledActionSection().props('disabled')).toBe(false);
       };
 
       await findScanFilterButton().vm.$emit('click');

@@ -40,6 +40,7 @@ describe('Scan execution policy actions', () => {
 
   const findBaseRuleComponent = () => wrapper.findComponent(BaseRuleComponent);
   const findScheduleRuleComponent = () => wrapper.findComponent(ScheduleRuleComponent);
+  const findDisabledRuleSection = () => wrapper.findByTestId('disabled-rule');
 
   describe('pipeline', () => {
     beforeEach(() => {
@@ -50,6 +51,7 @@ describe('Scan execution policy actions', () => {
       const verifyRuleMode = () => {
         expect(findBaseRuleComponent().exists()).toBe(true);
         expect(findScheduleRuleComponent().exists()).toBe(false);
+        expect(findDisabledRuleSection().props('disabled')).toBe(false);
       };
 
       await verify({
@@ -68,6 +70,7 @@ describe('Scan execution policy actions', () => {
     it('parses schedule rule', async () => {
       const verifyRuleMode = () => {
         expect(findScheduleRuleComponent().exists()).toBe(true);
+        expect(findDisabledRuleSection().props('disabled')).toBe(false);
       };
 
       await findScheduleRuleTypeDropDown().vm.$emit('select', SCAN_EXECUTION_SCHEDULE_RULE);
