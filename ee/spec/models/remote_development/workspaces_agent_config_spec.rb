@@ -54,6 +54,84 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       end
     end
 
+    context 'for image_pull_secrets' do
+      # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+      using RSpec::Parameterized::TableSyntax
+
+      where(:image_pull_secrets, :validity, :errors) do
+        # rubocop:disable Layout/LineLength -- The RSpec table syntax often requires long lines for errors
+        nil                            | false | ["must be an array of hashes"]
+        'not-an-array'                 | false | ["must be an array of hashes"]
+        [nil]                          | false | ["must be an array of hashes containing 'name' and 'namespace' attributes of type string"]
+        [{ namespace: 'namespace-a' }] | false | ["must be an array of hashes containing 'name' and 'namespace' attributes of type string"]
+        [{ name: 'secret-a' }]         | false | ["must be an array of hashes containing 'name' and 'namespace' attributes of type string"]
+        []                             | true  | []
+        [{ name: 'secret-a', namespace: 'namespace-a' }, { name: 'secret-b', namespace: 'namespace-b' }] | true  | []
+        [{ name: 'secret-a', namespace: 'namespace-a' }, { name: 'secret-a', namespace: 'namespace-b' }] | false | ["name: secret-a exists in more than one image pull secret, image pull secrets must have a unique 'name'"]
+        # rubocop:enable Layout/LineLength
+      end
+
+      with_them do
+        before do
+          config.image_pull_secrets = image_pull_secrets
+          config.validate
+        end
+
+        it { expect(config.valid?).to eq(validity) }
+        it { expect(config.errors[:image_pull_secrets]).to eq(errors) }
+      end
+    end
+
+    context 'when config has allow_privilege_escalation set to true' do
+      let(:allow_privilege_escalation) { true }
+
+      subject(:config) { build(:workspaces_agent_config, allow_privilege_escalation: true) }
+
+      it 'prevents config from being created' do
+        expect { config.save! }.to raise_error(
+          ActiveRecord::RecordInvalid,
+          "Validation failed: Allow privilege escalation can be true only if " \
+            "either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty"
+        )
+      end
+
+      context 'when use_kubernetes_user_namespaces is set to true' do
+        let(:use_kubernetes_user_namespaces) { true }
+
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            allow_privilege_escalation: allow_privilege_escalation,
+            use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
+          )
+        end
+
+        it 'allows the config to be created' do
+          expect(config).to be_valid
+          expect(config.allow_privilege_escalation).to eq(allow_privilege_escalation)
+          expect(config.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
+        end
+      end
+
+      context 'when default_runtime_class is set to non-empty value' do
+        let(:default_runtime_class) { "test" }
+
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            allow_privilege_escalation: allow_privilege_escalation,
+            default_runtime_class: default_runtime_class
+          )
+        end
+
+        it 'allows the config to be created' do
+          expect(config).to be_valid
+          expect(config.allow_privilege_escalation).to eq(true)
+          expect(config.default_runtime_class).to eq(default_runtime_class)
+        end
+      end
+    end
+
     it 'when network_policy_egress is not specified explicitly' do
       expect(config).to be_valid
       expect(config.network_policy_egress).to eq(default_network_policy_egress)
@@ -130,56 +208,6 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       is_expected.to validate_numericality_of(:default_max_hours_before_termination)
         .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
         .is_greater_than_or_equal_to(1)
-    end
-
-    context 'when config has allow_privilege_escalation set to true' do
-      let(:allow_privilege_escalation) { true }
-
-      subject(:config) { build(:workspaces_agent_config, allow_privilege_escalation: true) }
-
-      it 'prevents config from being created' do
-        expect { config.save! }.to raise_error(
-          ActiveRecord::RecordInvalid,
-          "Validation failed: Allow privilege escalation can be true only if " \
-            "either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty"
-        )
-      end
-
-      context 'when use_kubernetes_user_namespaces is set to true' do
-        let(:use_kubernetes_user_namespaces) { true }
-
-        subject(:config) do
-          build(
-            :workspaces_agent_config,
-            allow_privilege_escalation: allow_privilege_escalation,
-            use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
-          )
-        end
-
-        it 'allows the config to be created' do
-          expect(config).to be_valid
-          expect(config.allow_privilege_escalation).to eq(allow_privilege_escalation)
-          expect(config.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
-        end
-      end
-
-      context 'when default_runtime_class is set to non-empty value' do
-        let(:default_runtime_class) { "test" }
-
-        subject(:config) do
-          build(
-            :workspaces_agent_config,
-            allow_privilege_escalation: allow_privilege_escalation,
-            default_runtime_class: default_runtime_class
-          )
-        end
-
-        it 'allows the config to be created' do
-          expect(config).to be_valid
-          expect(config.allow_privilege_escalation).to be(true)
-          expect(config.default_runtime_class).to eq(default_runtime_class)
-        end
-      end
     end
   end
 

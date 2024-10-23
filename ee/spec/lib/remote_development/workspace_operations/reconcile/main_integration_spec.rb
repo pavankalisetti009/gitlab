@@ -45,11 +45,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     end
   end
 
+  let_it_be(:image_pull_secrets) { [{ "name" => "secret-name", "namespace" => "secret-namespace" }] }
   let_it_be(:dns_zone) { 'workspaces.localdev.me' }
   let_it_be(:user) { create(:user) }
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
   let_it_be(:workspaces_agent_config, refind: true) do
-    create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent)
+    create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent, image_pull_secrets: image_pull_secrets)
   end
 
   let(:egress_ip_rules) { agent.unversioned_latest_workspaces_agent_config.network_policy_egress }
@@ -109,6 +110,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         # NOTE: We don't care about any specific expectations, just that the existing workspace
         #       still has a config returned in the rails_info response even though it was not sent by the agent.
         expect(workspace_rails_info[:config_to_apply]).not_to be_nil
+        expect(workspace_rails_info[:image_pull_secrets]).to eq(image_pull_secrets)
       end
 
       it_behaves_like 'versioned workspaces_agent_configs behavior'
@@ -151,7 +153,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           desired_state: expected_desired_state,
           actual_state: expected_actual_state,
           deployment_resource_version: expected_deployment_resource_version,
-          config_to_apply: expected_config_to_apply
+          config_to_apply: expected_config_to_apply,
+          image_pull_secrets: image_pull_secrets
         }
       end
 
@@ -282,7 +285,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             desired_state: expected_desired_state,
             actual_state: expected_actual_state,
             deployment_resource_version: expected_deployment_resource_version,
-            config_to_apply: nil
+            config_to_apply: nil,
+            image_pull_secrets: image_pull_secrets
           }
         end
 
@@ -598,7 +602,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           desired_state: desired_state,
           actual_state: actual_state,
           deployment_resource_version: nil,
-          config_to_apply: expected_config_to_apply
+          config_to_apply: expected_config_to_apply,
+          image_pull_secrets: image_pull_secrets
         }
       end
 
