@@ -55,13 +55,17 @@ RSpec.describe Gitlab::Llm::CompletionsFactory, feature_category: :ai_abstractio
       context 'when the service has an AI Gateway service class' do
         let(:completion_name) { :my_migrated_feature }
 
+        before do
+          stub_feature_flag_definition(:prompt_migration_my_migrated_feature)
+        end
+
         it_behaves_like 'returning completion' do
           let(:expected_service_class) { aigw_service_class }
         end
 
-        context 'when ai_gateway_agents is disabled' do
+        context 'when prompt_migration_my_migrated_feature is disabled' do
           before do
-            stub_feature_flags(ai_gateway_agents: false)
+            stub_feature_flags(prompt_migration_my_migrated_feature: false)
           end
 
           it_behaves_like 'returning completion'
