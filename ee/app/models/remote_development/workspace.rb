@@ -2,11 +2,9 @@
 
 module RemoteDevelopment
   class Workspace < ApplicationRecord
-    include IgnorableColumns
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
-    include IgnorableColumns
 
     ignore_column :dns_zone, remove_with: '17.5', remove_after: '2024-10-11'
 

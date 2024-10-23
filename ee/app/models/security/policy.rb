@@ -2,7 +2,6 @@
 
 module Security
   class Policy < ApplicationRecord
-    include IgnorableColumns
     include EachBatch
 
     self.table_name = 'security_policies'

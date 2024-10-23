@@ -44,7 +44,6 @@ class Project < ApplicationRecord
   include IssueParent
   include WorkItems::Parent
   include UpdatedAtFilterable
-  include IgnorableColumns
   include CrossDatabaseIgnoredTables
   include UseSqlFunctionForPrimaryKeyLookups
   include Importable

@@ -2,8 +2,6 @@
 
 module Geo
   class EventLog < ApplicationRecord
-    include IgnorableColumns
-
     ignore_column :geo_event_id_convert_to_bigint, remove_with: '16.11', remove_after: '2024-03-21'
     ignore_column :repositories_changed_event_id, remove_with: '17.4', remove_after: '2024-08-15'
 

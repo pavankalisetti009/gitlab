@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Geo::SnippetRepositoryRegistry < Geo::BaseRegistry
-  include IgnorableColumns
   include ::Geo::ReplicableRegistry
   include ::Geo::VerifiableRegistry
 

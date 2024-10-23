@@ -2,8 +2,6 @@
 
 module Onboarding
   class Progress < ApplicationRecord
-    include IgnorableColumns
-
     self.table_name = 'onboarding_progresses'
 
     ignore_column :git_write_at, remove_with: '17.8', remove_after: '2025-01-11'

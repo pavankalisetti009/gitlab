@@ -14,7 +14,6 @@ module Security
     include EachBatch
     include Presentable
     include PartitionedTable
-    include IgnorableColumns
 
     ignore_column :confidence, remove_with: '17.4', remove_after: '2024-09-22'
 
