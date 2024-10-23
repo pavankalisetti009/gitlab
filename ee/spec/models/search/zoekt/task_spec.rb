@@ -174,20 +174,28 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
 
       context 'when the newest record of the partition is older than PARTITION_CLEANUP_THRESHOLD' do
-        let(:created_at) { (described_class::PARTITION_CLEANUP_THRESHOLD + 1.day).ago }
+        let_it_be(:created_at) { (described_class::PARTITION_CLEANUP_THRESHOLD + 1.day).ago }
 
-        let!(:task_failed) { create(:zoekt_task, state: :failed, created_at: created_at) }
-        let!(:task_done) { create(:zoekt_task, state: :done, created_at: created_at) }
-        let!(:task_orphaned) { create(:zoekt_task, state: :orphaned, created_at: created_at) }
+        let_it_be(:task_failed) { create(:zoekt_task, state: :failed, created_at: created_at) }
+        let_it_be(:task_done) { create(:zoekt_task, state: :done, created_at: created_at) }
+        let_it_be(:task_orphaned) { create(:zoekt_task, state: :orphaned, created_at: created_at) }
 
         context 'when the partition does not contain pending or processing records' do
           it { is_expected.to eq(true) }
         end
 
         context 'when there are pending or processing records' do
-          let!(:task_pending) { create(:zoekt_task, state: :pending, created_at: created_at) }
+          let_it_be(:task_pending) { create(:zoekt_task, state: :pending, created_at: created_at) }
 
           it { is_expected.to eq(false) }
+        end
+
+        context 'when there are pending or processing records for orphaned node' do
+          let_it_be(:task_pending) do
+            create(:zoekt_task, state: :pending, created_at: created_at, zoekt_node_id: non_existing_record_id)
+          end
+
+          it { is_expected.to eq(true) }
         end
       end
     end

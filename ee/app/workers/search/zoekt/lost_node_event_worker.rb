@@ -23,9 +23,6 @@ module Search
         start_time = Time.current
         ApplicationRecord.transaction do
           node.lock!
-          count = 0
-          node.tasks.each_batch(of: BATCH_SIZE) { |batch| count += batch.delete_all }
-          log_metadata[:deleted_tasks_count] = count
           indices = node.indices
           unless indices.empty?
             count = 0

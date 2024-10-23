@@ -69,19 +69,18 @@ RSpec.describe Search::Zoekt::LostNodeEventWorker, :zoekt_settings_enabled, feat
       expect(Search::Zoekt::Task.all).to include(zoekt_task)
       expect(Search::Zoekt::Repository.all).to include(zoekt_repository)
       expect(Search::Zoekt::Index.all).to include(zoekt_index)
-      tasks_count = node.tasks.count
       indices_count = node.indices.count
       repos_count = node.indices.reduce(0) { |sum, index| sum + index.zoekt_repositories.count }
       log_data = {
         node_id: node.id, node_name: node.metadata[:name], metadata: hash_including(
-          deleted_tasks_count: tasks_count, deleted_repos_count: repos_count, deleted_indices_count: indices_count,
+          deleted_repos_count: repos_count, deleted_indices_count: indices_count,
           transaction_time: a_kind_of(Float)
         )
       }
       expect(worker).to receive(:log_hash_metadata_on_done).with(log_data)
       execute_event
       expect(Search::Zoekt::Node.all).not_to include(node)
-      expect(Search::Zoekt::Task.all).not_to include(zoekt_task)
+      expect(Search::Zoekt::Task.all).to include(zoekt_task)
       expect(Search::Zoekt::Repository.all).not_to include(zoekt_repository)
       expect(Search::Zoekt::Index.all).not_to include(zoekt_index)
     end

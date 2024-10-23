@@ -22,6 +22,7 @@ module Search
 
       scope :for_partition, ->(partition) { where(partition_id: partition) }
       scope :with_project, -> { includes(zoekt_repository: :project) }
+      scope :join_nodes, -> { joins(:node) }
       scope :perform_now, -> { where(perform_at: (..Time.zone.now)) }
       scope :pending_or_processing, -> { where(state: %i[pending processing]) }
       scope :processing_queue, -> { perform_now.pending_or_processing }
@@ -67,7 +68,7 @@ module Search
       end
 
       def self.no_pending_or_processing(partition)
-        !Task.for_partition(partition.value).pending_or_processing.exists?
+        !Task.for_partition(partition.value).join_nodes.pending_or_processing.exists?
       end
 
       def self.each_task_for_processing(limit:)
