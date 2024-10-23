@@ -63,6 +63,7 @@ module Gitlab
           },
           generate_commit_message: {
             service_class: ::Gitlab::Llm::Completions::GenerateCommitMessage,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage,
             prompt_class: ::Gitlab::Llm::Templates::GenerateCommitMessage,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::GenerateCommitMessageService,
