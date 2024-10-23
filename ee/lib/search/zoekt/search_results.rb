@@ -294,8 +294,7 @@ module Search
           self.class.name,
           :zoekt_targets,
           current_user&.id,
-          sha,
-          Feature.enabled?(:zoekt_search_with_replica, Project.actor_from_id(limit_project_ids.first))
+          sha
         ]
 
         Rails.cache.fetch(cache_key, expires_in: ZOEKT_TARGETS_CACHE_EXPIRES_IN) do

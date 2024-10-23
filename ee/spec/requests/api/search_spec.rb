@@ -533,23 +533,6 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           zoekt_ensure_project_indexed!(project)
         end
 
-        context 'when feature flag zoekt_search_with_replica is disabled' do
-          before do
-            stub_feature_flags(zoekt_search_with_replica: false)
-          end
-
-          it 'sets group search information for logging' do
-            expect(Gitlab::Instrumentation::GlobalSearchApi).to receive(:set_information).with(
-              type: 'zoekt',
-              level: 'group',
-              scope: 'blobs',
-              search_duration_s: a_kind_of(Numeric)
-            )
-
-            get api(endpoint, user), params: { scope: 'blobs', search: 'folder' }
-          end
-        end
-
         context 'when all the replicas are in ready state' do
           before do
             group.zoekt_enabled_namespace.replicas.update_all(state: :ready)

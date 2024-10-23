@@ -31,30 +31,6 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
           it { is_expected.to eq(search) }
         end
-
-        context 'when feature flag zoekt_search_with_replica is disabled' do
-          before do
-            stub_feature_flags(zoekt_search_with_replica: false)
-          end
-
-          context 'when passed a namespace' do
-            let(:container) { group }
-
-            it { is_expected.to eq(search) }
-          end
-
-          context 'when passed a subgroup' do
-            let(:container) { subgroup }
-
-            it { is_expected.to eq(search) }
-          end
-
-          context 'when passed a root namespace id' do
-            let(:container) { group.id }
-
-            it { is_expected.to eq(search) }
-          end
-        end
       end
     end
 

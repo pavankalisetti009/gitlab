@@ -10,7 +10,10 @@ RSpec.describe ::Search::Zoekt::RoutingService, feature_category: :global_search
 
   let_it_be(:project_1) { create(:project, namespace: ns_1) }
   let_it_be(:project_2) { create(:project, namespace: ns_2) }
-  let(:projects) { Project.where(id: [project_1.id, project_2.id]) }
+  let_it_be(:project_3) { create(:project, namespace: ns_2) }
+  let_it_be(:_project_4) { create(:project, namespace: ns_2) }
+
+  let(:projects) { Project.where(id: [project_1.id, project_2.id, project_3.id]) }
 
   subject(:execute_task) { service.execute }
 
@@ -40,44 +43,52 @@ RSpec.describe ::Search::Zoekt::RoutingService, feature_category: :global_search
     end
 
     let_it_be(:zoekt_replica_3) do
+      create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace_2, state: :ready)
+    end
+
+    # Indices attached to this pending replica should be excluded
+    let_it_be(:zoekt_replica_4) do
       create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace_2, state: :pending)
     end
 
-    let_it_be(:zoekt_index_1) do
+    let_it_be(:zoekt_index_1_on_node_1) do
       create(:zoekt_index, replica: zoekt_replica_1, zoekt_enabled_namespace: zoekt_enabled_namespace_1, node: node_1,
         state: :ready)
     end
 
-    let_it_be(:zoekt_index_2) do
+    let_it_be(:zoekt_index_2_on_node_2) do
       create(:zoekt_index, replica: zoekt_replica_2, zoekt_enabled_namespace: zoekt_enabled_namespace_2, node: node_2,
         state: :ready)
     end
 
-    let_it_be(:zoekt_index_3) do
-      create(:zoekt_index, replica: zoekt_replica_3, zoekt_enabled_namespace: zoekt_enabled_namespace_2, node: node_3,
+    let_it_be(:zoekt_index_3_on_node_1) do
+      create(:zoekt_index, replica: zoekt_replica_3, zoekt_enabled_namespace: zoekt_enabled_namespace_2, node: node_1,
         state: :ready)
+    end
+
+    let_it_be(:zoekt_index_4_on_node_3) do
+      create(:zoekt_index, replica: zoekt_replica_4, zoekt_enabled_namespace: zoekt_enabled_namespace_2, node: node_3,
+        state: :ready)
+    end
+
+    let_it_be(:zoekt_repo_project_1_on_index_1_on_node_1) do
+      create(:zoekt_repository, state: :ready, project: project_1, zoekt_index: zoekt_index_1_on_node_1)
+    end
+
+    let_it_be(:zoekt_repo_project_2_on_index_2_on_node_2) do
+      create(:zoekt_repository, state: :ready, project: project_2, zoekt_index: zoekt_index_2_on_node_2)
+    end
+
+    let_it_be(:zoekt_repo_project_3_on_index_3_on_node_1) do
+      create(:zoekt_repository, state: :ready, project: project_3, zoekt_index: zoekt_index_3_on_node_1)
     end
 
     it 'returns correct map' do
       expect(execute_task).to eq(
         {
-          node_1.id => [project_1.id],
+          node_1.id => [project_1.id, project_3.id],
           node_2.id => [project_2.id]
         })
-    end
-
-    context 'when zoekt_search_with_replica feature flag is disabled' do
-      before do
-        stub_feature_flags(zoekt_search_with_replica: false)
-      end
-
-      it 'returns map with projects located on most recent node' do
-        expect(execute_task).to eq(
-          {
-            node_1.id => [project_1.id],
-            node_3.id => [project_2.id]
-          })
-      end
     end
   end
 end

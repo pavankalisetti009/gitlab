@@ -13,9 +13,6 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
 
   before do
     stub_licensed_features(zoekt_code_search: true)
-    # We just want to check the graphql response. So to make it simple, searching with replica is disabled.
-    # With true I need to create ready replicas meaning more setup for test
-    stub_feature_flags(zoekt_search_with_replica: false)
   end
 
   context 'when zoekt is enabled for a group', :zoekt_settings_enabled do

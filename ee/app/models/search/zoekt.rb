@@ -72,10 +72,8 @@ module Search
         end
       end
 
-      def search_with_replica?(container, root_namespace_id)
-        return false if container.is_a? Project
-
-        Feature.enabled?(:zoekt_search_with_replica, Namespace.actor_from_id(root_namespace_id))
+      def search_with_replica?(container, _root_namespace_id)
+        !container.is_a?(Project)
       end
     end
   end
