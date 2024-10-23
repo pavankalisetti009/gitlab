@@ -5479,7 +5479,8 @@ CREATE TABLE agent_activity_events (
     sha bytea,
     detail text,
     agent_project_id bigint,
-    CONSTRAINT check_068205e735 CHECK ((char_length(detail) <= 255))
+    CONSTRAINT check_068205e735 CHECK ((char_length(detail) <= 255)),
+    CONSTRAINT check_9e09ffbd0f CHECK ((agent_project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE agent_activity_events_id_seq
