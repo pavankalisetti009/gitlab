@@ -915,8 +915,6 @@ GEM
     grape_logging (1.8.4)
       grape
       rack
-    graphiql-rails (1.10.0)
-      railties
     graphlient (0.8.0)
       faraday (~> 2.0)
       graphql-client
@@ -2111,7 +2109,6 @@ DEPENDENCIES
   grape-swagger (~> 2.1.0)
   grape-swagger-entity (~> 0.5.1)
   grape_logging (~> 1.8, >= 1.8.4)
-  graphiql-rails (~> 1.10)
   graphlient (~> 0.8.0)
   graphlyte (~> 1.0.0)
   graphql (~> 2.3.14)
