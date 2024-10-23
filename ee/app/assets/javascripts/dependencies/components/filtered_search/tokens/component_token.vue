@@ -11,7 +11,6 @@ import { s__ } from '~/locale';
 import componentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
 
 export default {
-  MINIMUM_SEARCH_LENGTH: 2,
   components: {
     GlIcon,
     GlFilteredSearchToken,
@@ -91,7 +90,7 @@ export default {
         });
       },
       skip() {
-        return this.searchTerm.length < this.$options.MINIMUM_SEARCH_LENGTH;
+        return this.searchTerm === '';
       },
     },
   },
