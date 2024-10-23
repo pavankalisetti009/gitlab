@@ -920,18 +920,31 @@ module EE
 
     # Members belonging directly to Projects within Group or Projects within subgroups
     def billed_project_users(exclude_guests: false)
-      members = billed_project_members(exclude_guests: exclude_guests)
+      members = billed_project_members(exclude_guests: exclude_guests, select: [:user_id])
       billed_users_from_members(members, merge_condition: ::User.with_state(:active))
         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/417464')
     end
 
-    def billed_project_members(exclude_guests: false)
+    def billed_project_members(exclude_guests: false, select: [])
       members = ::ProjectMember.without_invites_and_requests
+        .where(source_id: ::Project.joins(:group).where(namespace: self_and_descendants))
+        .not_banned_in(root_ancestor)
 
-      members = members.with_elevated_guests if exclude_guests
+      if exclude_guests && ::Feature.enabled?(:billed_project_members_performance_improvement, root_ancestor)
+        billed_elevated_guest_custom_roles_in_group_hierarchy = ::MemberRole.occupies_seat
+          .by_namespace(self_and_descendants)
+          .select(:id)
 
-      members.where(source_id: ::Project.joins(:group).where(namespace: self_and_descendants))
-             .not_banned_in(root_ancestor)
+        billed_custom_role_members = ::ProjectMember.without_invites_and_requests
+          .with_member_role_id(billed_elevated_guest_custom_roles_in_group_hierarchy)
+          .not_banned_in(root_ancestor)
+
+        ::Member.from_union([members.non_guests.select(select), billed_custom_role_members.select(select)])
+      elsif exclude_guests
+        members.with_elevated_guests
+      else
+        members
+      end
     end
 
     # Members belonging to Groups invited to collaborate with Groups and Subgroups
