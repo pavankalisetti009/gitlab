@@ -8,8 +8,9 @@ import waitForPromises from 'helpers/wait_for_promises';
 import CreateWorkItem from '~/work_items/components/create_work_item.vue';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
+import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -29,10 +30,19 @@ describe('Create work item component', () => {
       ({ name }) => name === 'Epic',
     ).id;
 
+  const workItemTypeIssueId =
+    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+      ({ name }) => name === 'Issue',
+    ).id;
+
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
   const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
+  const namespaceWorkItemTypesHandler = jest
+    .fn()
+    .mockResolvedValue(namespaceWorkItemTypesQueryResponse);
 
   const findHealthStatusWidget = () => wrapper.findComponent(WorkItemHealthStatus);
+  const findIterationWidget = () => wrapper.findComponent(WorkItemIteration);
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
   const findRolledupDatesWidget = () => wrapper.findComponent(WorkItemRolledupDates);
   const findSelect = () => wrapper.findComponent(GlFormSelect);
@@ -46,6 +56,7 @@ describe('Create work item component', () => {
       [
         [workItemByIidQuery, workItemQuerySuccessHandler],
         [createWorkItemMutation, mutationHandler],
+        [namespaceWorkItemTypesQuery, namespaceWorkItemTypesHandler],
       ],
       resolvers,
       { typePolicies: { Project: { merge: true } } },
@@ -73,18 +84,21 @@ describe('Create work item component', () => {
       provide: {
         fullPath: 'full-path',
         hasIssuableHealthStatusFeature: false,
+        hasIterationsFeature: true,
       },
     });
   };
 
   const initialiseComponentAndSelectWorkItem = async ({
     mutationHandler = createWorkItemSuccessHandler,
+    workItemTypeId = workItemTypeEpicId,
+    workItemTypeName = WORK_ITEM_TYPE_ENUM_EPIC,
   } = {}) => {
-    createComponent({ mutationHandler });
+    createComponent({ mutationHandler, workItemTypeName });
 
     await waitForPromises();
 
-    findSelect().vm.$emit('input', workItemTypeEpicId);
+    findSelect().vm.$emit('input', workItemTypeId);
     await waitForPromises();
   };
 
@@ -117,6 +131,19 @@ describe('Create work item component', () => {
 
     it('renders the work item rolled up dates widget', () => {
       expect(findRolledupDatesWidget().exists()).toBe(true);
+    });
+  });
+
+  describe('Create work item widgets for Issue work item type', () => {
+    beforeEach(async () => {
+      await initialiseComponentAndSelectWorkItem({
+        workItemTypeId: workItemTypeIssueId,
+        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
+      });
+    });
+
+    it('renders the work item iteration widget', () => {
+      expect(findIterationWidget().exists()).toBe(true);
     });
   });
 });

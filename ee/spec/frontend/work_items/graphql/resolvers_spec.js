@@ -6,6 +6,7 @@ import {
   WIDGET_TYPE_COLOR,
   WIDGET_TYPE_ROLLEDUP_DATES,
   WIDGET_TYPE_HEALTH_STATUS,
+  WIDGET_TYPE_ITERATION,
 } from '~/work_items/constants';
 import { createWorkItemQueryResponse } from 'jest/work_items/mock_data';
 
@@ -16,6 +17,20 @@ describe('work items graphql resolvers', () => {
     const fullPath = 'fullPath';
     const fullPathWithId = 'fullPath-issue-id';
     const iid = 'new-work-item-iid';
+    const mockLocalIteration = {
+      __typename: 'Iteration',
+      id: 'gid://gitlab/Iteration/46697',
+      title: null,
+      startDate: '2024-08-26',
+      dueDate: '2024-09-01',
+      webUrl: 'http://127.0.0.1:3000/groups/flightjs/-/iterations/46697',
+      iterationCadence: {
+        __typename: 'IterationCadence',
+        id: 'gid://gitlab/Iterations::Cadence/5042',
+        title:
+          'Tenetur voluptatem necessitatibus velit natus et ut animi deleniti adipisci voluptas.',
+      },
+    };
 
     const mutate = (input) => {
       mockApolloClient.mutate({
@@ -101,6 +116,19 @@ describe('work items graphql resolvers', () => {
           startDate: '2023-12-22',
           startDateFixed: '2023-12-22',
           startDateIsFixed: true,
+        });
+      });
+    });
+
+    describe('with iteration input', () => {
+      it('updates iteration', async () => {
+        await mutate({
+          iteration: mockLocalIteration,
+        });
+
+        const queryResult = await query(WIDGET_TYPE_ITERATION);
+        expect(queryResult).toMatchObject({
+          iteration: mockLocalIteration,
         });
       });
     });

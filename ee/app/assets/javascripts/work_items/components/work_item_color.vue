@@ -213,7 +213,7 @@ export default {
 };
 </script>
 <template>
-  <div class="work-item-color">
+  <div class="work-item-color" data-testid="work-item-color">
     <div v-if="!isEditing" class="gl-flex gl-items-center gl-gap-2">
       <h3 class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.colorLabel }}

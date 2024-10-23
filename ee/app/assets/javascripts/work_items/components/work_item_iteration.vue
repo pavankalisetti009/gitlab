@@ -1,10 +1,12 @@
 <script>
 import { GlLink } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
+import { newWorkItemId } from '~/work_items/utils';
 import { getIterationPeriod, groupOptionsByIterationCadences } from 'ee/iterations/utils';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.query.graphql';
+import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import { STATUS_OPEN } from '~/issues/constants';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -16,6 +18,7 @@ import {
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 
 export default {
   i18n: {
@@ -33,6 +36,10 @@ export default {
   props: {
     fullPath: {
       type: String,
+      required: true,
+    },
+    isGroup: {
+      type: Boolean,
       required: true,
     },
     iteration: {
@@ -110,7 +117,9 @@ export default {
   },
   apollo: {
     iterations: {
-      query: projectIterationsQuery,
+      query() {
+        return this.isGroup ? groupIterationsQuery : projectIterationsQuery;
+      },
       variables() {
         const search = this.searchTerm ? `"${this.searchTerm}"` : '';
         return {
@@ -151,7 +160,24 @@ export default {
       this.track('update_iteration');
 
       this.updateInProgress = true;
+
       try {
+        if (this.workItemId === newWorkItemId(this.workItemType)) {
+          this.$apollo.mutate({
+            mutation: updateNewWorkItemMutation,
+            variables: {
+              input: {
+                workItemType: this.workItemType,
+                fullPath: this.fullPath,
+                iteration: this.localIteration,
+              },
+            },
+          });
+
+          this.updateInProgress = false;
+          return;
+        }
+
         const {
           data: {
             workItemUpdate: { errors },
