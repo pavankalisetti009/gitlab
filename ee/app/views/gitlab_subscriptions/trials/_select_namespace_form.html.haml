@@ -11,7 +11,10 @@
   .col-md-6.m-sm-6
     %h2.gl-pb-5.gl-my-0
       - if Feature.enabled?(:duo_enterprise_trials, current_user)
-        = s_('Trial|Apply your combined trial to an existing group')
+        - if any_trial_eligible_namespaces?
+          = s_('Trial|Apply your trial to a new or existing group')
+        - else
+          = s_('Trial|Apply your trial to a new group')
       - else
         = _('Almost there')
 
