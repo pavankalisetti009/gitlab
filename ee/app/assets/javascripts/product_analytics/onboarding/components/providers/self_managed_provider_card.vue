@@ -82,9 +82,7 @@ export default {
 };
 </script>
 <template>
-  <div
-    class="border-radius-default gl-flex gl-w-full gl-gap-6 gl-border-solid gl-border-gray-100 gl-p-6"
-  >
+  <div class="gl-flex gl-w-full gl-gap-6 gl-rounded-base gl-border-solid gl-border-gray-100 gl-p-6">
     <div class="gl-hidden gl-shrink-0 md:gl-block">
       <img class="gl-dark-invert-keep-hue" :src="$options.CloudUserIllustrationPath" :alt="''" />
     </div>
