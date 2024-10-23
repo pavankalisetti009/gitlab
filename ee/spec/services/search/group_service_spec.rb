@@ -135,14 +135,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     subject { described_class.new(user, group, scope: scope).zoekt_node_id }
 
     it { is_expected.to be nil }
-
-    context 'when feature flag zoekt_search_with_replica is disabled' do
-      before do
-        stub_feature_flags(zoekt_search_with_replica: false)
-      end
-
-      it { is_expected.to eq(node.id) }
-    end
   end
 
   context 'when searching with Zoekt', :zoekt_settings_enabled do
@@ -177,19 +169,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     context 'when advanced search is disabled' do
       before do
         stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
-      end
-
-      context 'when feature flag zoekt_search_with_replica is disabled' do
-        before do
-          stub_feature_flags(zoekt_search_with_replica: false)
-        end
-
-        it 'returns a Search::Zoekt::SearchResults' do
-          expect(service.use_zoekt?).to eq(true)
-          expect(service.search_type).to eq('zoekt')
-          expect(service.zoekt_searchable_scope).to eq(group)
-          expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
-        end
       end
 
       context 'and all replicas are in ready state' do
