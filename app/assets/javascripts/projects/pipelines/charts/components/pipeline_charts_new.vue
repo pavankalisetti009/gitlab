@@ -1,5 +1,109 @@
+<script>
+import { GlCollapsibleListbox, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
+import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
+import { getDateInPast } from '~/lib/utils/datetime_utility';
+import getPipelineAnalytics from '../graphql/queries/get_pipeline_analytics.query.graphql';
+import StatisticsList from './statistics_list.vue';
+
+export default {
+  components: {
+    GlCollapsibleListbox,
+    GlFormGroup,
+    GlSkeletonLoader,
+    StatisticsList,
+  },
+  inject: {
+    projectPath: {
+      type: String,
+      default: '',
+    },
+  },
+  data() {
+    return {
+      dateRange: 7,
+      pipelineAnalytics: {
+        count: null,
+        successCount: null,
+        failedCount: null,
+        otherCount: null,
+        durationStatistics: {
+          p50: null,
+        },
+      },
+    };
+  },
+  apollo: {
+    pipelineAnalytics: {
+      query: getPipelineAnalytics,
+      variables() {
+        return {
+          fullPath: this.projectPath,
+          fromTime: getDateInPast(new Date(), this.dateRange),
+          toTime: new Date(),
+        };
+      },
+      update(data) {
+        return data?.project?.pipelineAnalytics?.aggregate;
+      },
+      error() {
+        createAlert({
+          message: s__('PipelineCharts|An error occurred while loading pipeline analytics.'),
+        });
+      },
+    },
+  },
+  computed: {
+    loading() {
+      return this.$apollo.queries.pipelineAnalytics.loading;
+    },
+    formattedCounts() {
+      return {
+        total: this.pipelineAnalytics.count,
+        meanDuration: this.pipelineAnalytics.durationStatistics.p50,
+        successRatio: (this.pipelineAnalytics.successCount / this.pipelineAnalytics.count) * 100,
+        failureRatio: (this.pipelineAnalytics.failedCount / this.pipelineAnalytics.count) * 100,
+      };
+    },
+  },
+  dateRangeItems: [
+    {
+      value: 7,
+      text: s__('PipelineCharts|Last week'),
+    },
+    {
+      value: 30,
+      text: s__('PipelineCharts|Last 30 days'),
+    },
+    {
+      value: 90,
+      text: s__('PipelineCharts|Last 90 days'),
+    },
+    {
+      value: 180,
+      text: s__('PipelineCharts|Last 180 days'),
+    },
+  ],
+};
+</script>
 <template>
-  <div class="gl-mb-3">
+  <div>
     <h2>{{ s__('PipelineCharts|Pipelines') }}</h2>
+    <div class="gl-mb-4 gl-bg-gray-10 gl-p-4 gl-pb-2">
+      <gl-form-group :label="__('Date range')" label-for="date-range">
+        <gl-collapsible-listbox
+          id="date-range"
+          v-model="dateRange"
+          :items="$options.dateRangeItems"
+        />
+      </gl-form-group>
+    </div>
+    <gl-skeleton-loader v-if="loading">
+      <rect width="45" height="18" rx="4" />
+      <rect x="50" width="45" height="18" rx="4" />
+      <rect x="100" width="45" height="18" rx="4" />
+      <rect x="150" width="45" height="18" rx="4" />
+    </gl-skeleton-loader>
+    <statistics-list v-else :counts="formattedCounts" />
   </div>
 </template>

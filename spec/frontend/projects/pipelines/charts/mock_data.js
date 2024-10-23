@@ -185,3 +185,39 @@ export const mockPipelineStatistics = {
     },
   },
 };
+
+export const mockSevenDayPipelineAnalytics = {
+  data: {
+    project: {
+      id: 1,
+      pipelineAnalytics: {
+        aggregate: {
+          count: 100,
+          successCount: 80,
+          failedCount: 10,
+          durationStatistics: {
+            p50: 12345,
+          },
+        },
+      },
+    },
+  },
+};
+
+export const mockNinetyDayPipelineAnalytics = {
+  data: {
+    project: {
+      id: 1,
+      pipelineAnalytics: {
+        aggregate: {
+          count: 1800,
+          successCount: 600,
+          failedCount: 360,
+          durationStatistics: {
+            p50: 23456,
+          },
+        },
+      },
+    },
+  },
+};
