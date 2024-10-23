@@ -198,8 +198,16 @@ export const createHumanizedScanners = (scanners = []) =>
  * Rule can not have both keys simultaneously
  * @param rule
  */
-export const hasConflictingKeys = (rule) => {
+export const ruleHasConflictingKeys = (rule) => {
   return BRANCH_TYPE_KEY in rule && BRANCHES_KEY in rule;
+};
+
+/**
+ * Rule can not have both keys simultaneously
+ * @param rule
+ */
+export const hasConflictingKeys = (rules = []) => {
+  return rules.some((rule) => BRANCH_TYPE_KEY in rule && BRANCHES_KEY in rule);
 };
 
 /**
@@ -229,7 +237,7 @@ export const isValidPolicy = ({
   return !(
     hasInvalidKey(policy, primaryKeys) ||
     policy.rules?.some((rule) => hasInvalidKey(rule, [...rulesKeys, 'id'])) ||
-    policy.rules?.some(hasConflictingKeys) ||
+    policy.rules?.some(ruleHasConflictingKeys) ||
     policy.actions?.some((action) => hasInvalidKey(action, [...actionsKeys, 'id']))
   );
 };
@@ -266,13 +274,13 @@ export const slugifyToArray = (branches, separator = '-') =>
 
 /**
  * Validate cadence cron string if it exists in rule
- * @param policy
+ * @param rules policy rules
  * @returns {Boolean}
  */
-export const hasInvalidCron = (policy) => {
+export const hasInvalidCron = (rules = []) => {
   const hasInvalidCronString = (cronString) => (cronString ? !isValidCron(cronString) : false);
 
-  return (policy.rules || []).some((rule) => hasInvalidCronString(rule?.cadence));
+  return rules.some((rule) => hasInvalidCronString(rule?.cadence));
 };
 
 export const enforceIntValue = (value) => parseInt(value || '0', 10);

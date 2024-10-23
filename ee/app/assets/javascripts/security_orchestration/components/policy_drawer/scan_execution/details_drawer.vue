@@ -56,7 +56,7 @@ export default {
       return humanizeRules(this.rules);
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml });
+      return fromYaml({ manifest: this.policy.yaml }).policy;
     },
   },
   methods: {

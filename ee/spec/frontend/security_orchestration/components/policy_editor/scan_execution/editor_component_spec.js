@@ -29,9 +29,15 @@ import {
 import {
   mockDastScanExecutionManifest,
   mockDastScanExecutionObject,
+  mockInvalidActionScanExecutionObject,
+  mockInvalidRuleScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
-import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
+import {
+  ACTION_SECTION_DISABLE_ERROR,
+  CONDITION_SECTION_DISABLE_ERROR,
+  SECURITY_POLICY_ACTIONS,
+} from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_SCANNER,
   SCAN_EXECUTION_PIPELINE_RULE,
@@ -111,6 +117,8 @@ describe('EditorComponent', () => {
   const findRuleSection = () => wrapper.findComponent(RuleSection);
   const findAllRuleSections = () => wrapper.findAllComponents(RuleSection);
   const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
+  const findDisabledAction = () => wrapper.findByTestId('disabled-action');
+  const findDisabledRule = () => wrapper.findByTestId('disabled-rule');
 
   const selectScheduleRule = async () => {
     await findRuleSection().vm.$emit('changed', buildDefaultScheduleRule());
@@ -136,9 +144,13 @@ describe('EditorComponent', () => {
     });
 
     it('should render correctly', () => {
-      expect(findPolicyEditorLayout().props()).toMatchObject({
-        hasParsingError: false,
-        parsingError: '',
+      expect(findDisabledAction().props()).toEqual({
+        disabled: false,
+        error: ACTION_SECTION_DISABLE_ERROR,
+      });
+      expect(findDisabledRule().props()).toEqual({
+        disabled: false,
+        error: CONDITION_SECTION_DISABLE_ERROR,
       });
     });
   });
@@ -177,15 +189,13 @@ describe('EditorComponent', () => {
 enabled: true`;
 
       expect(findPolicyEditorLayout().props()).toMatchObject({
-        hasParsingError: false,
         parsingError: '',
-        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }),
+        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }).policy,
         yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
       });
       findPolicyEditorLayout().vm.$emit('update-yaml', newManifest);
       await nextTick();
       expect(findPolicyEditorLayout().props()).toMatchObject({
-        hasParsingError: false,
         parsingError: '',
         policy: expect.objectContaining({ enabled: true }),
         yamlEditorValue: newManifest,
@@ -238,7 +248,7 @@ enabled: true`;
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toStrictEqual(initialValue);
       expect(findAllRuleSections()).toHaveLength(1);
 
@@ -251,7 +261,7 @@ enabled: true`;
       ];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toStrictEqual(finalValue);
       expect(findAllRuleSections()).toHaveLength(2);
     });
@@ -269,7 +279,7 @@ enabled: true`;
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toStrictEqual(initialValue);
 
       const finalValue = [{ ...RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](), branches: ['main'] }];
@@ -278,7 +288,7 @@ enabled: true`;
 
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toStrictEqual(finalValue);
     });
 
@@ -290,7 +300,7 @@ enabled: true`;
       expect(findAllRuleSections()).toHaveLength(2);
       expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(2);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toHaveLength(2);
 
       findRuleSection().vm.$emit('remove', 1);
@@ -299,7 +309,7 @@ enabled: true`;
       expect(findAllRuleSections()).toHaveLength(1);
       expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(1);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
       ).toHaveLength(1);
     });
   });
@@ -314,7 +324,7 @@ enabled: true`;
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toStrictEqual(initialValue);
 
       findAddActionButton().vm.$emit('click');
@@ -326,7 +336,7 @@ enabled: true`;
       ];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toStrictEqual(finalValue);
     });
 
@@ -343,7 +353,7 @@ enabled: true`;
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toStrictEqual(initialValue);
 
       const finalValue = [buildScannerAction({ scanner: 'sast' })];
@@ -352,7 +362,7 @@ enabled: true`;
 
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toStrictEqual(finalValue);
     });
 
@@ -364,7 +374,7 @@ enabled: true`;
       expect(findAllActionBuilders()).toHaveLength(2);
       expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(2);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toHaveLength(2);
 
       findActionBuilder().vm.$emit('remove', 1);
@@ -373,29 +383,56 @@ enabled: true`;
       expect(findAllActionBuilders()).toHaveLength(1);
       expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(1);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
       ).toHaveLength(1);
     });
   });
 
-  describe('parsing tags errors', () => {
-    beforeEach(() => {
-      factory();
-    });
-
+  describe('parsing errors', () => {
     it.each`
-      name               | errorKey                                         | expectedErrorMessage
+      name               | errorKey                                         | error
       ${'tags'}          | ${POLICY_ACTION_BUILDER_TAGS_ERROR_KEY}          | ${RUNNER_TAGS_PARSING_ERROR}
       ${'DAST profiles'} | ${POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY} | ${DAST_SCANNERS_PARSING_ERROR}
-    `(
-      'disables rule editor when parsing of $name fails',
-      async ({ errorKey, expectedErrorMessage }) => {
-        findActionBuilder().vm.$emit('parsing-error', errorKey);
-        await nextTick();
-        expect(findPolicyEditorLayout().props('hasParsingError')).toBe(true);
-        expect(findPolicyEditorLayout().props('parsingError')).toBe(expectedErrorMessage);
-      },
-    );
+    `('disables action section when parsing of $name fails', async ({ errorKey, error }) => {
+      factory();
+      findActionBuilder().vm.$emit('parsing-error', errorKey);
+      await nextTick();
+      expect(findDisabledAction().props()).toEqual({ disabled: true, error });
+      expect(findDisabledRule().props()).toEqual({
+        disabled: false,
+        error: CONDITION_SECTION_DISABLE_ERROR,
+      });
+    });
+
+    it('disables action section for invalid action', () => {
+      factory({
+        propsData: { existingPolicy: mockInvalidActionScanExecutionObject, isEditing: true },
+      });
+      expect(findDisabledAction().props()).toEqual({
+        disabled: true,
+        error: ACTION_SECTION_DISABLE_ERROR,
+      });
+      expect(findDisabledRule().props()).toEqual({
+        disabled: false,
+        error: CONDITION_SECTION_DISABLE_ERROR,
+      });
+    });
+
+    it('does not affect rule section errors', async () => {
+      factory({
+        propsData: { existingPolicy: mockInvalidRuleScanExecutionObject, isEditing: true },
+      });
+      expect(findDisabledRule().props()).toEqual({
+        disabled: true,
+        error: CONDITION_SECTION_DISABLE_ERROR,
+      });
+      findActionBuilder().vm.$emit('parsing-error', POLICY_ACTION_BUILDER_TAGS_ERROR_KEY);
+      await nextTick();
+      expect(findDisabledRule().props()).toEqual({
+        disabled: true,
+        error: CONDITION_SECTION_DISABLE_ERROR,
+      });
+    });
   });
 
   describe('performance warning modal', () => {
