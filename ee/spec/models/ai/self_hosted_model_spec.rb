@@ -32,5 +32,13 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
         expect(self_hosted_model.provider).to eq(:openai)
       end
     end
+
+    describe '#identifier' do
+      subject(:self_hosted_model) { build(:ai_self_hosted_model, identifier: nil) }
+
+      it 'coerces null values to empty string' do
+        expect(self_hosted_model.identifier).to eq('')
+      end
+    end
   end
 end
