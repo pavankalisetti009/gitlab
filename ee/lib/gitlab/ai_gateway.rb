@@ -50,10 +50,14 @@ module Gitlab
     end
 
     def self.headers(user:, service:, agent: nil, lsp_version: nil)
+      allowed_by_namespace_ids = []
+
+      user.allowed_to_use?(service.name) { |namespace_ids| allowed_by_namespace_ids = namespace_ids }
+
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{service.access_token(user)}",
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => service.enabled_by_namespace_ids(user).join(','),
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => allowed_by_namespace_ids.join(','),
         'Content-Type' => 'application/json',
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency

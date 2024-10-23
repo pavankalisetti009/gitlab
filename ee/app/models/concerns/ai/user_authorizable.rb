@@ -108,20 +108,27 @@ module Ai
         end
       end
 
-      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
+      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features, &block)
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[ai_feature]
+        return false unless feature_data
+
         service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
         return false if service.name == :missing_service
 
         # If the user has any relevant add-on purchase, they always have access to this service
-        return true if service.add_on_purchases.assigned_to_user(self).any?
+        purchases = service.add_on_purchases.assigned_to_user(self)
+        if purchases.any?
+          yield purchases.uniq_namespace_ids if block
+
+          return true
+        end
 
         # If the user doesn't have add-on purchases and the service isn't free, they don't have access
         return false if !service.free_access? ||
           (service.name == :self_hosted_models && Feature.enabled?(:self_hosted_models_beta_ended, self))
 
         if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          licensed_to_use_in_com?(feature_data[:maturity])
+          licensed_to_use_in_com?(feature_data[:maturity], &block)
         else
           licensed_to_use_in_sm?(licensed_feature)
         end
@@ -130,9 +137,9 @@ module Ai
       private
 
       def licensed_to_use_in_com?(maturity)
-        with_plan = member_namespaces.with_ai_supported_plan
+        namespaces = member_namespaces.with_ai_supported_plan
 
-        requiring_seat = with_plan.select do |namespace|
+        requiring_seat = namespaces.select do |namespace|
           ::Feature.enabled?(:duo_chat_requires_licensed_seat, namespace)
         end
 
@@ -140,7 +147,11 @@ module Ai
         # to the user, they don't have access
         return false if requiring_seat.any?
 
-        maturity == :ga ? with_plan.any? : any_group_with_ai_available?
+        namespaces = namespaces.namespace_settings_with_ai_features_enabled if maturity != :ga
+
+        yield namespaces.ids if block_given?
+
+        namespaces.any?
       end
 
       def licensed_to_use_in_sm?(licensed_feature)

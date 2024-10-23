@@ -52,6 +52,8 @@ RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
   end
 
   it 'saves question in the chat storage', :aggregate_failures do
+    expect(Llm::Internal::CompletionService).to receive_message_chain(:new, :execute)
+
     chat_completions
 
     last_user_message = Gitlab::Llm::ChatStorage.new(current_user)

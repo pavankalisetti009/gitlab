@@ -10,7 +10,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
   let(:expected_body) { { prompt: 'anything' } }
   let(:timeout) { described_class::DEFAULT_TIMEOUT }
-  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
+  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :test) }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:expected_access_token) { active_token.token }
   let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
@@ -58,7 +58,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive(:access_token).and_return(expected_access_token)
-    allow(service).to receive(:enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
+    allow(user).to receive(:allowed_to_use?).and_yield(enabled_by_namespace_ids)
   end
 
   subject(:ai_client) { described_class.new(user, service_name: :test, tracking_context: tracking_context) }
