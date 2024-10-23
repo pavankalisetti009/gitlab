@@ -24,10 +24,9 @@ module RemoteDevelopment
     validates :user, presence: true
     validates :agent, presence: true
     validates :personal_access_token, presence: true
-    # TODO: uncomment this line with below issue in 17.6
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/493992
-    # validates :workspaces_agent_config_version, presence: true,
-    # if: -> { agent&.unversioned_latest_workspaces_agent_config }
+    validates :workspaces_agent_config_version, presence: true, if: -> {
+      agent&.unversioned_latest_workspaces_agent_config
+    }
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
@@ -73,7 +72,7 @@ module RemoteDevelopment
     end
 
     before_validation :set_workspaces_agent_config_version,
-      on: :create, if: -> { workspaces_agent_config }
+      on: :create, if: -> { agent&.unversioned_latest_workspaces_agent_config }
 
     # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32287
     before_save :touch_desired_state_updated_at, if: ->(workspace) do
@@ -84,12 +83,12 @@ module RemoteDevelopment
       # If no agent or workspaces_agent_configs record exists, return nil
       return unless agent&.unversioned_latest_workspaces_agent_config
 
-      actual_workspaces_agent_configs_table_record = agent.unversioned_latest_workspaces_agent_config
+      if workspaces_agent_config_version.nil?
+        raise "#workspaces_agent_config cannot be called until #workspaces_agent_config_version is set. " \
+          "Call set_workspaces_agent_config_version first to automatically set it."
+      end
 
-      # TODO: This is only temporary until we make the workspaces_agent_config_version field NOT NULL.
-      #       After 17.5, we will replace this line with an exception.
-      #       See https://gitlab.com/gitlab-org/gitlab/-/issues/493992
-      return actual_workspaces_agent_configs_table_record if workspaces_agent_config_version.nil?
+      actual_workspaces_agent_configs_table_record = agent.unversioned_latest_workspaces_agent_config
 
       # If the workspaces_agent_config_version is not nil, then we will try to retrieve and reify the version
       # from the PaperTrail versions table. If we don't find one, that means that the version is out of range
