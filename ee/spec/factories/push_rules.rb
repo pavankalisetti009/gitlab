@@ -4,9 +4,7 @@
 
 FactoryBot.define do
   factory :push_rule do
-    force_push_regex { 'feature\/.*' }
     deny_delete_tag { false }
-    delete_branch_regex { 'bug\/.*' }
     project
 
     trait :commit_message do

@@ -11,8 +11,6 @@ RSpec.describe BulkImports::Projects::Pipelines::PushRulePipeline, feature_categ
 
   let(:push_rule) do
     {
-      'force_push_regex' => 'MustContain',
-      'delete_branch_regex' => 'MustContain',
       'commit_message_regex' => 'MustContain',
       'author_email_regex' => 'MustContain',
       'file_name_regex' => 'MustContain',

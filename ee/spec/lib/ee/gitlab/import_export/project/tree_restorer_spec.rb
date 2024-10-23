@@ -140,7 +140,6 @@ RSpec.describe Gitlab::ImportExport::Project::TreeRestorer, feature_category: :i
 
       expect { restored_project_json }.to change { PushRule.count }.from(0).to(1)
 
-      expect(project.push_rule.force_push_regex).to eq("MustContain")
       expect(project.push_rule.commit_message_negative_regex).to eq("MustNotContain")
       expect(project.push_rule.max_file_size).to eq(1)
       expect(project.push_rule.deny_delete_tag).to be_truthy

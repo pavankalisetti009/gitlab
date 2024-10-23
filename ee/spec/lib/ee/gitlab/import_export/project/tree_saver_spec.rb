@@ -108,7 +108,6 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver do
       it 'has push rules' do
         expect(project_tree_saver.save).to be true
         expect(push_rule_json['max_file_size']).to eq(10)
-        expect(push_rule_json['force_push_regex']).to eq('feature\/.*')
       end
     end
 

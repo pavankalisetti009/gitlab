@@ -29,8 +29,8 @@ class Admin::PushRulesController < Admin::ApplicationController
   end
 
   def push_rule_params
-    allowed_fields = %i[deny_delete_tag delete_branch_regex commit_message_regex commit_message_negative_regex
-      branch_name_regex force_push_regex author_email_regex
+    allowed_fields = %i[deny_delete_tag commit_message_regex commit_message_negative_regex
+      branch_name_regex author_email_regex
       member_check file_name_regex max_file_size prevent_secrets]
 
     if @push_rule.available?(:reject_unsigned_commits)
