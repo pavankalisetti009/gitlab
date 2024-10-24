@@ -46,6 +46,8 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
           expect(control.log).to include(/SELECT "protected_branch_push_access_levels"/).once
           expect(control.log).to include(/SELECT "protected_tag_create_access_levels"/).once
 
+          expect(control).not_to exceed_query_limit(82)
+
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to render_template(:show)
         end
