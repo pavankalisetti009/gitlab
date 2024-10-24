@@ -958,6 +958,32 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '.stuck_mirrors', :freeze_time do
+    let(:time_threshold) { 10.minutes.ago }
+    let_it_be_with_reload(:stuck_mirror_1) { create(:import_state, :mirror, :scheduled) }
+    let_it_be_with_reload(:stuck_mirror_2) { create(:import_state, :mirror, :scheduled) }
+    let_it_be_with_reload(:stuck_mirror_3) { create(:import_state, :mirror, :scheduled) }
+
+    before do
+      stuck_mirror_1.update!(last_update_scheduled_at: time_threshold)
+      stuck_mirror_2.update!(last_update_scheduled_at: time_threshold)
+    end
+
+    context 'when mirrors are stuck on scheduled' do
+      it 'returns all stuck mirrors' do
+        expect(described_class.stuck_mirrors(time_threshold)).to contain_exactly(stuck_mirror_1.project, stuck_mirror_2.project)
+      end
+    end
+
+    context 'when limit is applied' do
+      let(:limit) { 1 }
+
+      it 'returns records matching applied limit' do
+        expect(described_class.stuck_mirrors(time_threshold, limit).count).to eq(1)
+      end
+    end
+  end
+
   describe '#can_store_security_reports?' do
     context 'when the feature is enabled for the namespace' do
       it 'returns true' do

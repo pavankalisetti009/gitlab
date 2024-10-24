@@ -126,6 +126,52 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
     end
   end
 
+  describe '#fail_stuck_mirrors!', :freeze_time do
+    let_it_be_with_reload(:project) { create(:project, :mirror) }
+
+    before do
+      project.import_state.update_columns(status: :scheduled, last_update_scheduled_at: 1.hour.ago)
+    end
+
+    context 'when project import state has exceeded the stuck threshold' do
+      it 'updates import state to failed' do
+        expect(project.import_state.scheduled?).to be(true)
+
+        worker.fail_stuck_mirrors!
+
+        expect(project.import_state.reload.failed?).to be(true)
+      end
+    end
+
+    context 'when project import state has yet to exceed the stuck threshold' do
+      before do
+        stub_const("#{described_class.name}::STUCK_JOBS_DURATION_THRESHOLD", 2.hours.ago)
+      end
+
+      it 'does not update import state' do
+        expect(project.import_state.scheduled?).to be(true)
+
+        worker.fail_stuck_mirrors!
+
+        expect(project.import_state.reload.scheduled?).to be(true)
+      end
+    end
+
+    context 'when fail_stuck_mirrors feature flag is disabled' do
+      before do
+        stub_feature_flags(fail_stuck_mirrors: false)
+      end
+
+      it 'does not update import state' do
+        expect(project.import_state.scheduled?).to be(true)
+
+        worker.fail_stuck_mirrors!
+
+        expect(project.import_state.reload.scheduled?).to be(true)
+      end
+    end
+  end
+
   describe '#schedule_mirrors!', :clean_gitlab_redis_shared_state do
     before do
       # This tests the ability of this worker to clean the state before

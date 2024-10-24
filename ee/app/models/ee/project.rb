@@ -227,6 +227,14 @@ module EE
           .limit(limit)
       end
 
+      scope :stuck_mirrors, ->(time_threshold, limit = nil) do
+        mirror
+          .joins_import_state
+          .where(import_state: { status: [:scheduled] })
+          .where("import_state.last_update_scheduled_at <= ?", time_threshold)
+          .limit(limit)
+      end
+
       scope :with_hard_import_failures, -> do
         joins_import_state
           .where(import_state: { status: [:failed] })
