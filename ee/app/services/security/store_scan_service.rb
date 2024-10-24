@@ -68,7 +68,7 @@ module Security
     end
 
     def store_findings
-      StoreFindingsService.execute(security_scan, security_report, register_finding_keys).then do |result|
+      StoreFindingsService.execute(security_scan, vulnerability_scanner, security_report, register_finding_keys).then do |result|
         # If `StoreFindingsService` returns error, it means the findings
         # have already been stored before so we may re-run the deduplication logic.
         update_deduplicated_findings if result[:status] == :error && deduplicate_findings?
@@ -122,6 +122,12 @@ module Security
       security_scan.status = :preparation_failed
 
       security_scan.add_processing_error!(SCAN_INGESTION_ERROR)
+    end
+
+    def vulnerability_scanner
+      project.vulnerability_scanners.safe_find_or_create_by!(external_id: security_report.primary_scanner.external_id) do |scanner|
+        scanner.assign_attributes(security_report.primary_scanner.to_hash)
+      end
     end
   end
 end

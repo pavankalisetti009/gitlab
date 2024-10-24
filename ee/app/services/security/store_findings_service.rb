@@ -7,12 +7,13 @@ module Security
 
     attr_reader :security_scan, :report, :deduplicated_finding_uuids
 
-    def self.execute(security_scan, report, deduplicated_finding_uuids)
-      new(security_scan, report, deduplicated_finding_uuids).execute
+    def self.execute(security_scan, scanner, report, deduplicated_finding_uuids)
+      new(security_scan, scanner, report, deduplicated_finding_uuids).execute
     end
 
-    def initialize(security_scan, report, deduplicated_finding_uuids)
+    def initialize(security_scan, scanner, report, deduplicated_finding_uuids)
       @security_scan = security_scan
+      @scanner = scanner
       @report = report
       @deduplicated_finding_uuids = deduplicated_finding_uuids
     end
@@ -25,6 +26,8 @@ module Security
     end
 
     private
+
+    attr_reader :scanner
 
     delegate :project, to: :security_scan
 
@@ -63,7 +66,7 @@ module Security
         uuid: report_finding.uuid,
         overridden_uuid: report_finding.overridden_uuid,
         project_fingerprint: report_finding.project_fingerprint,
-        scanner_id: persisted_scanner_for(report_finding.scanner).id,
+        scanner_id: scanner.id,
         deduplicated: deduplicated?(report_finding),
         finding_data: finding_data_for(report_finding)
       }
@@ -88,25 +91,6 @@ module Security
         remediation_byte_offsets: report_finding.remediation_byte_offsets,
         raw_source_code_extract: report_finding.raw_source_code_extract
       }
-    end
-
-    def persisted_scanner_for(report_scanner)
-      existing_scanners[report_scanner.key] ||= create_scanner!(report_scanner)
-    end
-
-    def existing_scanners
-      @existing_scanners ||= project.vulnerability_scanners
-                                    .with_external_id(scanner_external_ids)
-                                    .group_by(&:external_id)
-                                    .transform_values(&:first)
-    end
-
-    def scanner_external_ids
-      report.scanners.values.map(&:external_id)
-    end
-
-    def create_scanner!(report_scanner)
-      project.vulnerability_scanners.create!(report_scanner.to_hash)
     end
   end
 end

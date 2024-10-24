@@ -185,10 +185,41 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
         artifact.security_report.errors.clear
       end
 
-      it 'calls the `Security::StoreFindingsService` to store findings' do
-        store_scan
+      describe 'executing `StoreFindingsService`' do
+        let_it_be(:project) { artifact.project }
+        let_it_be(:security_scanner) { artifact.security_report.primary_scanner }
 
-        expect(Security::StoreFindingsService).to have_received(:execute)
+        context 'when there is already a vulnerability scanner' do
+          let_it_be(:scanner) do
+            create(:vulnerabilities_scanner, project: project, external_id: security_scanner.external_id)
+          end
+
+          it 'calls the `Security::StoreFindingsService` to store findings' do
+            store_scan
+
+            expect(Security::StoreFindingsService).to have_received(:execute).with(
+              an_instance_of(Security::Scan), scanner, artifact.security_report, an_instance_of(Array))
+          end
+
+          it 'does not create a new scanner' do
+            expect { store_scan }.not_to change { Vulnerabilities::Scanner.count }
+          end
+        end
+
+        context 'when there is no vulnerability scanner' do
+          it 'calls the `Security::StoreFindingsService` to store findings with the recently created scanner' do
+            store_scan
+
+            created_scanner = project.vulnerability_scanners.find_by(external_id: security_scanner.external_id)
+
+            expect(Security::StoreFindingsService).to have_received(:execute).with(
+              an_instance_of(Security::Scan), created_scanner, artifact.security_report, an_instance_of(Array))
+          end
+
+          it 'creates a new scanner' do
+            expect { store_scan }.to change { Vulnerabilities::Scanner.count }.by(1)
+          end
+        end
       end
 
       context 'when the report has no warnings' do
