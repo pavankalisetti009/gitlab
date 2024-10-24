@@ -23,7 +23,11 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
   end
 
   describe '.current_node' do
-    it 'returns a GeoNode instance', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444693' do
+    before do
+      described_class.clear_memoization(:current_node)
+    end
+
+    it 'returns a GeoNode instance' do
       expect(GeoNode).to receive(:current_node).and_return(primary_node)
 
       expect(described_class.current_node).to eq(primary_node)
