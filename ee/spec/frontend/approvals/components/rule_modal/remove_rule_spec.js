@@ -4,7 +4,6 @@ import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import ModalRuleRemove from 'ee/approvals/components/rule_modal/remove_rule.vue';
-import { stubComponent } from 'helpers/stub_component';
 
 const TEST_MODAL_ID = 'test-delete-modal-id';
 const TEST_RULE = {
@@ -49,9 +48,6 @@ describe('Approvals ModalRuleRemove', () => {
       store,
       propsData,
       stubs: {
-        GlModal: stubComponent(GlModal, {
-          props: ['modalModule', 'modalId', 'actionPrimary', 'actionCancel'],
-        }),
         GlSprintf,
       },
     });

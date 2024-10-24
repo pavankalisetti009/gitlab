@@ -55,9 +55,6 @@ export default {
   methods: {
     ...mapActions(['deleteRule']),
     ...mapActions({
-      modalShow(dispatch) {
-        return dispatch(`deleteModal/show`);
-      },
       modalHide(dispatch) {
         return dispatch(`deleteModal/hide`);
       },
@@ -65,10 +62,8 @@ export default {
     submit() {
       this.deleteRule(this.rule.id);
     },
-    handleModalChange(isOpen) {
-      if (isOpen) {
-        this.modalShow();
-      } else {
+    handleModalChange(shouldShowModal) {
+      if (!shouldShowModal) {
         this.modalHide();
       }
     },
@@ -82,7 +77,7 @@ export default {
 
 <template>
   <gl-modal
-    v-model="isVisible"
+    :visible="isVisible"
     :modal-id="modalId"
     :title="$options.i18n.modalTitle"
     :action-primary="primaryButtonProps"
