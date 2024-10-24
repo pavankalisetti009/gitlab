@@ -149,7 +149,7 @@ export default {
         />
       </div>
 
-      <div class="security-policies-bg-gray-10">
+      <div class="security-policies-bg-subtle">
         <gl-button
           icon="remove"
           category="tertiary"

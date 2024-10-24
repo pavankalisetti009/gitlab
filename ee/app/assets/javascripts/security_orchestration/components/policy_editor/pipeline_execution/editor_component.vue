@@ -209,7 +209,7 @@ export default {
         </template>
 
         <action-section
-          class="security-policies-bg-gray-10 gl-mb-4 gl-rounded-base gl-p-5"
+          class="security-policies-bg-subtle gl-mb-4 gl-rounded-base gl-p-5"
           :action="policy.content"
           :does-file-exist="!disableSubmit"
           :strategy="strategy"

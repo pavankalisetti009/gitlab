@@ -3,6 +3,7 @@ import * as urlUtils from '~/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import PolicyTypeSelector from 'ee/security_orchestration/components/policy_editor/policy_type_selector.vue';
 import EditorWrapper from 'ee/security_orchestration/components/policy_editor/editor_wrapper.vue';
@@ -13,7 +14,7 @@ describe('App component', () => {
   const findPolicySelection = () => wrapper.findComponent(PolicyTypeSelector);
   const findPolicyEditor = () => wrapper.findComponent(EditorWrapper);
   const findPath = () => wrapper.findComponent(GlPath);
-  const findTitle = () => wrapper.findByTestId('title').text();
+  const findTitle = () => wrapper.findByTestId('page-heading').text();
 
   const factory = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(App, {
@@ -22,7 +23,7 @@ describe('App component', () => {
         namespaceType: NAMESPACE_TYPES.GROUP,
         ...provide,
       },
-      stubs: { GlPath: true },
+      stubs: { GlPath: true, PageHeading },
     });
   };
 

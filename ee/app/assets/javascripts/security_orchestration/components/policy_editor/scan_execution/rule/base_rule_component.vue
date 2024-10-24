@@ -156,7 +156,7 @@ export default {
 
 <template>
   <div
-    class="security-policies-bg-gray-10 gl-relative gl-flex gl-gap-3 gl-rounded-base gl-p-5 gl-pr-0 gl-pt-0"
+    class="security-policies-bg-subtle gl-relative gl-flex gl-gap-3 gl-rounded-base gl-p-5 gl-pr-0 gl-pt-0"
   >
     <div class="gl-mt-5 gl-grow gl-bg-white gl-pb-5 gl-pl-5 gl-pt-5">
       <div class="gl-flex gl-w-full gl-flex-wrap gl-items-center gl-gap-3">
@@ -210,7 +210,7 @@ export default {
       </div>
     </div>
 
-    <div class="gl-min-w-7">
+    <div class="gl-min-w-7 gl-shrink-0 gl-pr-3 gl-pt-3">
       <gl-button
         icon="remove"
         category="tertiary"
