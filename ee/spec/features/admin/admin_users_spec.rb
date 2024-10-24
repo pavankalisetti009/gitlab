@@ -28,6 +28,28 @@ RSpec.describe "Admin::Users", :js, feature_category: :user_management do
       it "has 'admin users' filter" do
         expect(page).to have_link(href: admin_users_path(filter: "admins"))
       end
+
+      it 'does not render role promotions card' do
+        expect(page).not_to have_link(href: admin_role_promotion_requests_path)
+      end
+
+      context 'when member promotion management is applicable' do
+        let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+
+        before do
+          allow(License).to receive(:current).and_return(license)
+          stub_application_setting(enable_member_promotion_management: true)
+          visit admin_users_path
+        end
+
+        it 'renders role promotions card' do
+          expect(page).to have_link(href: admin_role_promotion_requests_path)
+        end
+
+        it "does not render 'admin users' card" do
+          expect(page).not_to have_link(href: admin_users_path(filter: "admins"))
+        end
+      end
     end
 
     describe 'send emails to users' do

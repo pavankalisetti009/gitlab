@@ -4725,6 +4725,9 @@ msgstr ""
 msgid "AdminUsers|Role Promotions"
 msgstr ""
 
+msgid "AdminUsers|Role promotions"
+msgstr ""
+
 msgid "AdminUsers|Search by name, email, or username"
 msgstr ""
 
@@ -4816,6 +4819,9 @@ msgid "AdminUsers|Users can still be invited to your instance and/or add themsel
 msgstr ""
 
 msgid "AdminUsers|Validate user account"
+msgstr ""
+
+msgid "AdminUsers|View"
 msgstr ""
 
 msgid "AdminUsers|View pending member requests"
