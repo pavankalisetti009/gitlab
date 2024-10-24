@@ -24,3 +24,5 @@ class AddFieldsToProjectsIndex < Elastic::Migration
     }
   end
 end
+
+AddFieldsToProjectsIndex.prepend ::Elastic::MigrationObsolete
