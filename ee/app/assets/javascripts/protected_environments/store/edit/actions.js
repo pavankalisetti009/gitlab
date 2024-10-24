@@ -152,6 +152,13 @@ export const updateApproverInheritance = ({ commit }, { rule, value }) => {
   });
 };
 
+export const updateRequiredApprovals = ({ commit }, { rule, value }) => {
+  commit(types.EDIT_RULE, {
+    ...rule,
+    required_approvals: value,
+  });
+};
+
 export const editRule = ({ commit }, rule) => commit(types.EDIT_RULE, rule);
 
 export const unprotectEnvironment = ({ state, commit, dispatch }, environment) => {

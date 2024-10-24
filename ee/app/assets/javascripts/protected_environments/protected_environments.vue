@@ -69,9 +69,6 @@ export default {
   },
   methods: {
     ...mapActions(['setPage', 'fetchProtectedEnvironments']),
-    isLast(index) {
-      return index === this.environments.length - 1;
-    },
     toggleCollapse({ name }) {
       this.expanded = {
         ...this.expanded,
@@ -160,54 +157,48 @@ export default {
         {{ emptyMessage }}
       </div>
       <template v-else>
-        <div class="-gl-mx-5 -gl-my-4">
-          <div
-            v-for="(environment, index) in environments"
-            :key="environment.name"
-            :class="{ 'gl-border-b': !isLast(index) }"
+        <div v-for="environment in environments" :key="environment.name" class="gl-border-b">
+          <gl-button
+            block
+            category="tertiary"
+            variant="confirm"
+            class="!gl-rounded-none !gl-px-5 !gl-py-4"
+            button-text-classes="gl-flex gl-w-full gl-items-baseline"
+            :aria-label="environment.name"
+            data-testid="protected-environment-item-toggle"
+            @click="toggleCollapse(environment)"
           >
+            <span class="gl-py-2 gl-text-gray-900">{{ environment.name }}</span>
+            <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
+              {{ deploymentRulesText(environment) }}
+            </gl-badge>
+            <gl-badge v-if="!isExpanded(environment)" class="gl-ml-3">
+              {{ approvalRulesText(environment) }}
+            </gl-badge>
+            <gl-icon
+              :name="icon(environment)"
+              :size="14"
+              :class="{
+                'gl-ml-3': !isExpanded(environment),
+                'gl-ml-auto': isExpanded(environment),
+              }"
+              class="gl-text-gray-500"
+            />
+          </gl-button>
+          <gl-collapse
+            :visible="isExpanded(environment)"
+            class="gl-flex gl-flex-col gl-rounded-b-base gl-bg-white gl-pb-5"
+          >
+            <slot :environment="environment"></slot>
             <gl-button
-              block
-              category="tertiary"
-              variant="confirm"
-              class="!gl-rounded-none !gl-px-5 !gl-py-4"
-              button-text-classes="gl-flex gl-w-full gl-items-baseline"
-              :aria-label="environment.name"
-              data-testid="protected-environment-item-toggle"
-              @click="toggleCollapse(environment)"
+              category="secondary"
+              variant="danger"
+              class="gl-mr-5 gl-mt-5 gl-self-end"
+              @click="confirmUnprotect(environment)"
             >
-              <span class="gl-py-2 gl-text-gray-900">{{ environment.name }}</span>
-              <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
-                {{ deploymentRulesText(environment) }}
-              </gl-badge>
-              <gl-badge v-if="!isExpanded(environment)" class="gl-ml-3">
-                {{ approvalRulesText(environment) }}
-              </gl-badge>
-              <gl-icon
-                :name="icon(environment)"
-                :size="14"
-                :class="{
-                  'gl-ml-3': !isExpanded(environment),
-                  'gl-ml-auto': isExpanded(environment),
-                }"
-                class="gl-text-gray-500"
-              />
+              {{ s__('ProtectedEnvironments|Unprotect') }}
             </gl-button>
-            <gl-collapse
-              :visible="isExpanded(environment)"
-              class="gl-mx-5 gl-mb-5 gl-mt-3 gl-flex gl-flex-col"
-            >
-              <slot :environment="environment"></slot>
-              <gl-button
-                category="secondary"
-                variant="danger"
-                class="gl-mt-5 gl-self-end"
-                @click="confirmUnprotect(environment)"
-              >
-                {{ s__('ProtectedEnvironments|Unprotect') }}
-              </gl-button>
-            </gl-collapse>
-          </div>
+          </gl-collapse>
         </div>
       </template>
       <template v-if="showPagination" #pagination>

@@ -44369,9 +44369,6 @@ msgstr ""
 msgid "ProtectedEnvironments|Add deployment rules"
 msgstr ""
 
-msgid "ProtectedEnvironments|Allowed to approve"
-msgstr ""
-
 msgid "ProtectedEnvironments|Allowed to deploy"
 msgstr ""
 

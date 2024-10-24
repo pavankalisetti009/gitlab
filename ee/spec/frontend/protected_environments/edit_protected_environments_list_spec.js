@@ -1,10 +1,10 @@
-import { GlAvatar, GlButton, GlToggle, GlSprintf } from '@gitlab/ui';
+import { GlAvatar, GlButton, GlSprintf } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import { mountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { TEST_HOST } from 'helpers/test_constants';
 import axios from '~/lib/utils/axios_utils';
@@ -133,8 +133,8 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
   const findDeployerDeleteButton = () => wrapper.findByTitle('Delete deployer rule');
   const findApproverDeleteButton = () => wrapper.findByTitle('Delete approver rule');
-  const findApproverEditButton = (w = wrapper) => w.findByRole('button', { name: 'Edit' });
-  const findInheritanceToggle = (w = wrapper) => w.findComponent(GlToggle);
+  const findApproverEditButton = (id) => wrapper.findByTestId(`edit-approver-button-${id}`);
+  const findInheritanceToggle = (id) => wrapper.findByTestId(`approval-inheritance-toggle-${id}`);
   const findApproverSaveButton = () => wrapper.findByRole('button', { name: 'Save' });
   const findApprovalsInput = () =>
     wrapper.findByRole('textbox', { name: 'Required approval count' });
@@ -418,7 +418,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
         mock.onPut().reply(HTTP_STATUS_OK);
 
-        const button = findApproverEditButton();
+        const button = findApproverEditButton(rule.id);
 
         await button.trigger('click');
 
@@ -451,18 +451,17 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         const [, rule] = environment.approval_rules;
         mock.onPut().reply(HTTP_STATUS_OK);
 
-        const row = wrapper.findByTestId(`approval_rules-${rule.id}`);
-        const button = findApproverEditButton(extendedWrapper(row));
+        const button = findApproverEditButton(rule.id);
 
-        expect(findInheritanceToggle(row).props('value')).toBe(true);
-        expect(findInheritanceToggle(row).props('disabled')).toBe(true);
+        expect(findInheritanceToggle(rule.id).props('value')).toBe(true);
+        expect(findInheritanceToggle(rule.id).props('disabled')).toBe(true);
 
         await button.trigger('click');
 
-        expect(findInheritanceToggle(row).props('value')).toBe(true);
-        expect(findInheritanceToggle(row).props('disabled')).toBe(false);
+        expect(findInheritanceToggle(rule.id).props('value')).toBe(true);
+        expect(findInheritanceToggle(rule.id).props('disabled')).toBe(false);
 
-        await findInheritanceToggle(row).vm.$emit('change', false);
+        await findInheritanceToggle(rule.id).vm.$emit('change', false);
 
         findApproverSaveButton().trigger('click');
 
@@ -485,15 +484,13 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
       it('hides the toggle for non-group rules', () => {
         const { id } = environment.approval_rules.find(({ user_id: userId }) => userId);
-        const row = wrapper.findByTestId(`approval_rules-${id}`);
 
-        expect(findInheritanceToggle(row).exists()).toBe(false);
+        expect(findInheritanceToggle(id).exists()).toBe(false);
       });
 
       it('hides the edit button for user rules', () => {
         const { id } = environment.approval_rules.find(({ user_id: userId }) => userId);
-        const row = wrapper.findByTestId(`approval_rules-${id}`);
-        const button = findApproverEditButton(extendedWrapper(row));
+        const button = findApproverEditButton(id);
 
         expect(button.exists()).toBe(false);
       });
@@ -673,11 +670,13 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
 
     describe('approver edit rule', () => {
       it('sends the editing request to the groups endpoint', async () => {
+        const [rule] = environment.approval_rules;
+
         mock.onPut().reply(HTTP_STATUS_OK);
 
         findItemToggleButton().vm.$emit('click');
         await nextTick();
-        await findApproverEditButton().trigger('click');
+        await findApproverEditButton(rule.id).trigger('click');
         await findApprovalsInput().setValue('2');
 
         findApproverSaveButton().trigger('click');
