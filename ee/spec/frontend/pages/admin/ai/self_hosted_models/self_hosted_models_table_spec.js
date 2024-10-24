@@ -1,6 +1,5 @@
-import { GlTable, GlDisclosureDropdown, GlLink } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { GlTable, GlDisclosureDropdown, GlLink, GlTruncate } from '@gitlab/ui';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
 import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
 import { mockSelfHostedModelsList } from './mock_data';
@@ -13,18 +12,16 @@ describe('SelfHostedModelsTable', () => {
   const newSelfHostedModelPath = 'admin/ai/self_hosted_models/new';
 
   const createComponent = ({ props }) => {
-    wrapper = extendedWrapper(
-      mount(SelfHostedModelsTable, {
-        propsData: {
-          ...props,
-        },
-        provide: {
-          basePath,
-          aiFeatureSettingsPath,
-          newSelfHostedModelPath,
-        },
-      }),
-    );
+    wrapper = mountExtended(SelfHostedModelsTable, {
+      propsData: {
+        ...props,
+      },
+      provide: {
+        basePath,
+        aiFeatureSettingsPath,
+        newSelfHostedModelPath,
+      },
+    });
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
@@ -34,6 +31,7 @@ describe('SelfHostedModelsTable', () => {
   const findDisclosureDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findEditButtons = () => wrapper.findAllByTestId('model-edit-button');
   const findEmptyStateLink = () => wrapper.findComponent(GlLink);
+  const findTruncators = () => wrapper.findAllComponents(GlTruncate);
   const findDeleteDisclosureItems = () =>
     wrapper.findAllComponents(DeleteSelfHostedModelDisclosureItem);
 
@@ -65,11 +63,27 @@ describe('SelfHostedModelsTable', () => {
 
     const firstModel = findNthTableRow(0);
 
-    expect(firstModel.text()).toContain('mock-self-hosted-model-1');
-    expect(firstModel.text()).toContain('codellama');
-    expect(firstModel.text()).toContain('https://mock-endpoint-1.com');
+    const firstModelTextContent = firstModel
+      .findAll('td')
+      .wrappers.map((cell) => cell.text().replace(/\u200E/g, '')); // Remove U+200E left-to-right marks added by the GlTruncate component
+
+    expect(firstModelTextContent).toContain('mock-self-hosted-model-1');
+    expect(firstModelTextContent).toContain('codellama');
+    expect(firstModelTextContent).toContain('https://mock-endpoint-1.com');
+    expect(firstModelTextContent).toContain('provider/some-model-1');
     expect(firstModel.find('[data-testid="check-circle-icon"]').exists()).toBe(true);
-    expect(firstModel.text()).toContain('provider/some-model-1');
+  });
+
+  it('truncates name and endpoint', () => {
+    const model = mockSelfHostedModelsList[0];
+
+    createComponent({ props: { models: [model] } });
+
+    const nameTruncator = findTruncators().at(0);
+    const endpointTruncator = findTruncators().at(1);
+
+    expect(nameTruncator.props('text')).toBe(model.name);
+    expect(endpointTruncator.props('text')).toBe(model.endpoint);
   });
 
   it('renders a disclosure dropdown for each self-hosted model entry', () => {

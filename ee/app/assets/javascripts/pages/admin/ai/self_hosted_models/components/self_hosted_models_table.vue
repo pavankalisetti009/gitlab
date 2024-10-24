@@ -6,6 +6,7 @@ import {
   GlIcon,
   GlLink,
   GlSprintf,
+  GlTruncate,
 } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
@@ -20,6 +21,7 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
+    GlTruncate,
     DeleteSelfHostedModelDisclosureItem,
   },
   inject: ['basePath', 'newSelfHostedModelPath'],
@@ -51,7 +53,7 @@ export default {
       key: 'endpoint',
       label: s__('AdminSelfHostedModels|Endpoint'),
       thClass: 'gl-w-2/8',
-      tdClass: 'gl-content-center gl-text-ellipsis',
+      tdClass: 'gl-content-center',
     },
     {
       key: 'identifier',
@@ -91,6 +93,7 @@ export default {
     :hover="true"
     :selectable="false"
     :show-empty="true"
+    fixed
   >
     <template #empty>
       <p class="gl-m-0 gl-py-4">
@@ -100,6 +103,12 @@ export default {
           </template>
         </gl-sprintf>
       </p>
+    </template>
+    <template #cell(name)="{ item }">
+      <gl-truncate :text="item.name" position="end" with-tooltip />
+    </template>
+    <template #cell(endpoint)="{ item }">
+      <gl-truncate :text="item.endpoint" position="end" with-tooltip />
     </template>
     <template #cell(has_api_key)="{ item }">
       <gl-icon
