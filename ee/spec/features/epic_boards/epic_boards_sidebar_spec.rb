@@ -24,7 +24,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
   context 'when work item drawer is disabled' do
     before do
       stub_feature_flags(work_item_epics: false)
-      stub_feature_flags(issues_list_drawer: false)
+      stub_feature_flags(epics_list_drawer: false)
       sign_in(user)
 
       visit group_epic_boards_path(group)
