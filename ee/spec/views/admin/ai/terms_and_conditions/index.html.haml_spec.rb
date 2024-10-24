@@ -7,7 +7,7 @@ RSpec.describe 'admin/ai/terms_and_conditions/index.html.haml', feature_category
 
   it do
     is_expected.to have_link('self-hosted models',
-      href: '/help/administration/self_hosted_models/install_infrastructure.md')
+      href: '/help/administration/self_hosted_models/index.md')
   end
 
   it { is_expected.to have_link('Accept GitLab Testing Agreement', href: admin_ai_terms_and_conditions_url) }
