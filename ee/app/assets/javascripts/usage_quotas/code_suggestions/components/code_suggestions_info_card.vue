@@ -67,8 +67,8 @@ export default {
     subscriptionName: { default: null },
     subscriptionStartDate: { default: null },
     subscriptionEndDate: { default: null },
-    duoProActiveTrialStartDate: { default: null },
-    duoProActiveTrialEndDate: { default: null },
+    duoActiveTrialStartDate: { default: null },
+    duoActiveTrialEndDate: { default: null },
   },
   props: {
     groupId: {
@@ -133,7 +133,7 @@ export default {
     },
     startDate() {
       if (this.duoProActiveTrial) {
-        return this.formattedDate(this.duoProActiveTrialStartDate);
+        return this.formattedDate(this.duoActiveTrialStartDate);
       }
 
       const date = this.subscription?.startDate || this.subscriptionStartDate;
@@ -141,14 +141,14 @@ export default {
     },
     endDate() {
       if (this.duoProActiveTrial) {
-        return this.formattedDate(this.duoProActiveTrialEndDate);
+        return this.formattedDate(this.duoActiveTrialEndDate);
       }
 
       const date = this.subscription?.endDate || this.subscriptionEndDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     duoProActiveTrial() {
-      return Boolean(this.duoProActiveTrialStartDate);
+      return Boolean(this.duoActiveTrialStartDate);
     },
     pageViewLabel() {
       return this.duoProActiveTrial ? `duo_pro_add_on_tab_active_trial` : `duo_pro_add_on_tab`;
