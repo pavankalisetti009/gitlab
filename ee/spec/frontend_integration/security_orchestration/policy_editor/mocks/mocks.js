@@ -22,6 +22,7 @@ export const DEFAULT_PROVIDE = {
   maxPipelineExecutionPoliciesAllowed: 1,
   maxScanExecutionPoliciesAllowed: 5,
   maxScanResultPoliciesAllowed: 5,
+  maxScanExecutionPolicyActions: 10,
   policiesPath: 'path/to/policies',
   policyType: 'scan_execution',
   roleApproverTypes: [],
