@@ -18,7 +18,8 @@ module EE
           not_target_branch: params[:not_target_branch],
           author_username: params[:author_username],
           not_author_username: params[:not_author_username],
-          fields: params[:fields]
+          fields: params[:fields],
+          type: params[:type]
         )
       end
     end
