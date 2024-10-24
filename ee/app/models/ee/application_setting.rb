@@ -106,7 +106,7 @@ module EE
       validates :max_personal_access_token_lifetime,
         :max_ssh_key_lifetime,
         allow_blank: true,
-        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 365 }
+        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: :max_auth_lifetime }
 
       validates :new_user_signups_cap,
         allow_blank: true,
@@ -299,6 +299,14 @@ module EE
           search_max_docs_denominator: 100,
           search_min_docs_before_rollover: 50
         )
+      end
+    end
+
+    def max_auth_lifetime
+      if ::Feature.enabled?(:buffered_token_expiration_limit) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Group setting but checked at user
+        400
+      else
+        365
       end
     end
 
