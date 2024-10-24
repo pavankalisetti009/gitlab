@@ -35,7 +35,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
             percentage_complete: 1.67,
             group_id: group.id,
             trial_discover_page_path: group_add_ons_discover_duo_pro_path(group),
-            purchase_now_url: group_settings_gitlab_duo_seat_utilization_index_path(group),
+            purchase_now_url: subscription_portal_url,
             feature_id: described_class::EXPIRED_TRIAL_WIDGET,
             dismiss_endpoint: group_callouts_path
           }
