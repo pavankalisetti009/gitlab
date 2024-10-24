@@ -302,14 +302,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
   describe 'validations' do
     context 'max_personal_access_token_lifetime' do
+      before do
+        stub_feature_flags(buffered_token_expiration_limit: false)
+      end
+
       it { is_expected.to allow_value(1).for(:max_personal_access_token_lifetime) }
       it { is_expected.to allow_value(nil).for(:max_personal_access_token_lifetime) }
       it { is_expected.to allow_value(10).for(:max_personal_access_token_lifetime) }
-      it { is_expected.to allow_value(365).for(:max_personal_access_token_lifetime) }
       it { is_expected.not_to allow_value("value").for(:max_personal_access_token_lifetime) }
       it { is_expected.not_to allow_value(2.5).for(:max_personal_access_token_lifetime) }
       it { is_expected.not_to allow_value(-5).for(:max_personal_access_token_lifetime) }
-      it { is_expected.not_to allow_value(366).for(:max_personal_access_token_lifetime) }
+      it { is_expected.not_to allow_value(401).for(:max_personal_access_token_lifetime) }
+    end
+
+    context 'extended lifetime is selected' do
+      it { is_expected.to allow_value(400).for(:max_personal_access_token_lifetime) }
     end
 
     context 'validates if custom_project_templates_group_id is allowed' do

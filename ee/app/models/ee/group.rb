@@ -118,7 +118,7 @@ module EE
 
       validates :max_personal_access_token_lifetime,
         allow_blank: true,
-        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 365 }
+        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: :max_auth_lifetime }
 
       validate :custom_project_templates_group_allowed, if: :custom_project_templates_group_id_changed?
 
@@ -245,6 +245,17 @@ module EE
           group.ldap_sync_last_update_at = DateTime.current
           group.save
         end
+      end
+
+      def max_auth_lifetime
+        # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153876#note_2099583889 for no actor discussion
+        # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Unable to reliably find actor from Group or PAT usages
+        if ::Feature.enabled?(:buffered_token_expiration_limit)
+          400
+        else
+          365
+        end
+        # rubocop:enable Gitlab/FeatureFlagWithoutActor
       end
 
       def enforced_group_managed_accounts?

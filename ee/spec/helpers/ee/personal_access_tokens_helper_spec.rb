@@ -152,4 +152,20 @@ RSpec.describe EE::PersonalAccessTokensHelper, feature_category: :system_access 
 
     it_behaves_like 'feature availability'
   end
+
+  describe '#max_personal_access_token_lifetime_in_days' do
+    subject { helper.max_personal_access_token_lifetime_in_days }
+
+    context 'when feature flag is enable' do
+      it { is_expected.to eq(400) }
+    end
+
+    context 'with `personal_access_token_expiration_policy` not licensed' do
+      before do
+        stub_feature_flags(buffered_token_expiration_limit: false)
+      end
+
+      it { is_expected.to eq(365) }
+    end
+  end
 end

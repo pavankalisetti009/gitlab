@@ -126,7 +126,17 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'max_personal_access_token', feature_category: :user_management do
-      it { is_expected.to validate_numericality_of(:max_personal_access_token_lifetime).only_integer.is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
+      context 'extended lifetime is not selected' do
+        before do
+          stub_feature_flags(buffered_token_expiration_limit: false)
+        end
+
+        it { is_expected.to validate_numericality_of(:max_personal_access_token_lifetime).only_integer.is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
+      end
+
+      context 'extended lifetime is selected' do
+        it { is_expected.to validate_numericality_of(:max_personal_access_token_lifetime).only_integer.is_greater_than(0).is_less_than_or_equal_to(400).allow_nil }
+      end
     end
 
     describe 'new_user_signups', feature_category: :onboarding do
@@ -138,8 +148,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to validate_numericality_of(:git_two_factor_session_expiry).only_integer.is_greater_than_or_equal_to(1).is_less_than_or_equal_to(10080) }
       it { is_expected.not_to allow_value(nil).for(:git_two_factor_session_expiry) }
 
-      it { is_expected.to validate_numericality_of(:max_ssh_key_lifetime).is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
-      it { is_expected.to validate_numericality_of(:deletion_adjourned_period).is_greater_than(0).is_less_than_or_equal_to(90) }
+      # TODO: test feature flag
+      context 'extended lifetime is selected' do
+        it { is_expected.to validate_numericality_of(:max_ssh_key_lifetime).is_greater_than(0).is_less_than_or_equal_to(400).allow_nil }
+        it { is_expected.to validate_numericality_of(:deletion_adjourned_period).is_greater_than(0).is_less_than_or_equal_to(90) }
+      end
+
+      context 'extended lifetime is not selected' do
+        before do
+          stub_feature_flags(buffered_token_expiration_limit: false)
+        end
+
+        it { is_expected.to validate_numericality_of(:max_ssh_key_lifetime).is_greater_than(0).is_less_than_or_equal_to(365).allow_nil }
+        it { is_expected.to validate_numericality_of(:deletion_adjourned_period).is_greater_than(0).is_less_than_or_equal_to(90) }
+      end
     end
 
     describe 'namespace_storage_forks_cost_factor' do
