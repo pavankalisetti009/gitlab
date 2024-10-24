@@ -14,9 +14,9 @@ class AdjournedProjectDeletionWorker # rubocop:disable Scalability/IdempotentWor
     project = Project.find(project_id)
     user = project.deleting_user
 
-    return unless user
-
-    ::Projects::DestroyService.new(project, user).async_execute
+    Projects::AdjournedDeletionService
+      .new(project: project, current_user: user)
+      .execute
   rescue ActiveRecord::RecordNotFound => error
     logger.error("Failed to delete project (#{project_id}): #{error.message}")
   end

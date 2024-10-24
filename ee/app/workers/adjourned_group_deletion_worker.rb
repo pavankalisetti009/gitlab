@@ -24,7 +24,9 @@ class AdjournedGroupDeletionWorker # rubocop:disable Scalability/IdempotentWorke
       user = deletion_schedule.deleting_user
 
       with_context(namespace: group, user: user) do
-        GroupDestroyWorker.perform_in(delay, group.id, deletion_schedule.user_id)
+        Namespaces::Groups::AdjournedDeletionService
+          .new(group: group, current_user: user, params: { delay: delay })
+          .execute
       end
     end
   end

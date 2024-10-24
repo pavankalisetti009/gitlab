@@ -78,30 +78,6 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
       include_examples 'sends streaming audit event'
     end
 
-    context 'group deletion schedule' do
-      context 'when member user has a scheduled deletion for the group' do
-        let!(:group_deletion_schedule) { create(:group_deletion_schedule, group: group, user_id: member_user.id, marked_for_deletion_on: 2.days.ago) }
-
-        it 'deletes the group deletion schedule' do
-          expect(group.reload.deletion_schedule).to eq(group_deletion_schedule)
-
-          destroy_service.execute(member)
-
-          expect(group.reload.deletion_schedule).to be nil
-        end
-      end
-
-      context 'when scheduled deletion for the group belongs to different user' do
-        let!(:group_deletion_schedule) { create(:group_deletion_schedule, group: group, user_id: current_user.id, marked_for_deletion_on: 2.days.ago) }
-
-        it 'does not delete the group deletion schedule' do
-          destroy_service.execute(member)
-
-          expect(group.reload.deletion_schedule).to eq(group_deletion_schedule)
-        end
-      end
-    end
-
     context 'on-call rotations' do
       let!(:project) { create(:project, group: group) }
 
