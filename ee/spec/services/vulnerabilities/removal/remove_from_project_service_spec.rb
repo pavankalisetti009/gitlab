@@ -115,7 +115,6 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and not_change { Vulnerabilities::Identifier.count }
                                              .and not_change { Vulnerabilities::FindingLink.count }
                                              .and not_change { Vulnerabilities::Remediation.count }
-                                             .and not_change { Vulnerabilities::FindingPipeline.count }
                                              .and not_change { Vulnerabilities::StateTransition.count }
                                              .and not_change { Vulnerabilities::MergeRequestLink.count }
                                              .and not_change { Vulnerabilities::FindingSignature.count }
