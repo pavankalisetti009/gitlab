@@ -46,8 +46,6 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
       where(:licensed_feature, :expected_include_group) do
         false           | false
         true            | true
-        false           | false
-        true            | true
       end
 
       let!(:protected_branch) { create(:protected_branch, project: nil, group: group) }

@@ -247,7 +247,6 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       where(:object, :code_owner_approval_required, :result) do
         ref(:project)         | false        | false
         ref(:project)         | true         | true
-        ref(:project)         | true         | true
         ref(:group)           | false        | false
         ref(:group)           | true         | true
       end
