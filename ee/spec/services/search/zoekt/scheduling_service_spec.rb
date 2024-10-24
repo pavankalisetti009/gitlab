@@ -166,16 +166,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it_behaves_like 'a execute_every task'
 
-      it 'runs and only updates search for namespaces with assigned indices' do
-        rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
-        ns_1 = create(:zoekt_enabled_namespace, namespace: group, search: false,
-          created_at: rollout_cutoff, updated_at: rollout_cutoff)
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: ns_1)
-        ns_2 = create(:zoekt_enabled_namespace, search: false)
-        expect { execute_task }.not_to change { ns_2.reload.search }.from(false)
-        expect(ns_1.reload.search).to be true
-      end
-
       context 'when feature flag is disabled' do
         before do
           stub_feature_flags(zoekt_dot_com_rollout: false)
@@ -186,55 +176,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
           expect(execute_task).to be(false)
         end
-      end
-
-      it 'enables search for namespaces' do
-        rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
-        ns = create(:zoekt_enabled_namespace, namespace: group, search: false,
-          created_at: rollout_cutoff, updated_at: rollout_cutoff)
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: ns)
-
-        expect { execute_task }.to change { ns.reload.search }.from(false).to(true)
-      end
-
-      it 'does not enables search for namespaces if any of the index is not ready' do
-        rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
-        ns = create(:zoekt_enabled_namespace, namespace: group, search: false,
-          created_at: rollout_cutoff, updated_at: rollout_cutoff)
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: ns)
-        create(:zoekt_index, :pending, zoekt_enabled_namespace: ns)
-
-        expect { execute_task }.not_to change { ns.reload.search }
-      end
-
-      context 'when there are multiple namespaces' do
-        before do
-          stub_const("#{described_class}::DOT_COM_ROLLOUT_SEARCH_LIMIT", 1)
-          stub_const("#{described_class}::DOT_COM_ROLLOUT_LIMIT", 0)
-        end
-
-        it 'enables the next namespace on second execution' do
-          rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
-          ns = create(:zoekt_enabled_namespace, search: false, namespace: group,
-            created_at: rollout_cutoff, updated_at: rollout_cutoff)
-          create(:zoekt_index, :ready, zoekt_enabled_namespace: ns)
-
-          group2 = create(:group)
-          ns2 = create(:zoekt_enabled_namespace, search: false, namespace: group2,
-            created_at: rollout_cutoff, updated_at: rollout_cutoff)
-          create(:zoekt_index, :ready, zoekt_enabled_namespace: ns2)
-
-          expect { execute_task }.to change { ns.reload.search }.from(false).to(true)
-
-          expect { service.execute }.to change { ns2.reload.search }.from(false).to(true)
-        end
-      end
-
-      it 'skips recently enabled namespaces' do
-        ns = create(:zoekt_enabled_namespace, namespace: group, search: false)
-        create(:zoekt_index, :ready, zoekt_enabled_namespace: ns)
-
-        expect { execute_task }.not_to change { ns.reload.search }
       end
 
       it 'creates an enabled namespace for namespaces with active subscriptions' do

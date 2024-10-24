@@ -28,7 +28,6 @@ module Search
       DOT_COM_ROLLOUT_TARGET_BYTES = 450.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
       DOT_COM_ROLLOUT_SEARCH_LIMIT = 500
-      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 3.hours
 
       attr_reader :task
 
@@ -159,18 +158,6 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_dot_com_rollout, Feature.current_request)
 
-        search_enabled_count = Search::Zoekt::EnabledNamespace.with_all_ready_indices
-          .where(search: false, created_at: ..DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
-          .order(:id)
-          .limit(DOT_COM_ROLLOUT_SEARCH_LIMIT)
-          .update_all(search: true, updated_at: Time.zone.now)
-
-        logger.info(build_structured_payload(
-          task: :dot_com_rollout,
-          message: 'Search enabled for namespaces',
-          namespace_count: search_enabled_count
-        ))
-
         execute_every 2.hours, cache_key: :dot_com_rollout do
           indexed_namespaces_ids = Search::Zoekt::EnabledNamespace.find_each.map(&:root_namespace_id).to_set
 
@@ -195,7 +182,7 @@ module Search
             size += s
             break count if size > DOT_COM_ROLLOUT_TARGET_BYTES
 
-            Search::Zoekt::EnabledNamespace.create!(root_namespace_id: id, search: false)
+            Search::Zoekt::EnabledNamespace.create!(root_namespace_id: id, search: true)
             count += 1
           end
 
