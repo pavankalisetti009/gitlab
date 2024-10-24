@@ -13,6 +13,7 @@ import {
 } from '@gitlab/ui';
 import { pick, escape } from 'lodash';
 import { __, s__, n__, sprintf } from '~/locale';
+import { DEFAULT_PER_PAGE } from '~/api';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import {
   ADD_ON_ERROR_DICTIONARY,
@@ -23,6 +24,7 @@ import {
   NOT_ENOUGH_SEATS_ERROR_CODE,
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
+import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
@@ -69,6 +71,7 @@ export default {
     GlKeysetPagination,
     GlSkeletonLoader,
     GlTable,
+    PageSizeSelector,
   },
   mixins: [glFeatureFlagMixin(), trackingMixin],
   inject: {
@@ -96,6 +99,11 @@ export default {
       type: Object,
       required: false,
       default: () => {},
+    },
+    pageSize: {
+      type: Number,
+      required: false,
+      default: DEFAULT_PER_PAGE,
     },
     search: {
       type: String,
@@ -153,6 +161,9 @@ export default {
     },
     isFilteringEnabled() {
       return this.glFeatures.enableAddOnUsersFiltering;
+    },
+    isPagesizeSelectionEnabled() {
+      return this.glFeatures.enableAddOnUsersPagesizeSelection;
     },
     showPagination() {
       if (this.isLoading || !this.pageInfo) {
@@ -259,6 +270,9 @@ export default {
       // https://gitlab.com/gitlab-org/gitlab/-/issues/443401
       this.unselectAllUsers();
       this.$emit('prev', this.pageInfo.startCursor);
+    },
+    onPageSizeChange(size) {
+      this.$emit('page-size-change', size);
     },
     handleError(error) {
       this.error = error;
@@ -541,8 +555,16 @@ export default {
         </span>
       </template>
     </gl-table>
-    <div v-if="showPagination" class="gl-mt-5 gl-flex gl-justify-center">
+    <div v-if="showPagination" class="gl-relative gl-mt-5 gl-justify-center gl-text-center">
       <gl-keyset-pagination v-bind="pageInfo" @prev="prevPage" @next="nextPage" />
+
+      <div v-if="isPagesizeSelectionEnabled">
+        <page-size-selector
+          :value="pageSize"
+          class="gl-absolute gl-right-0 gl-top-0"
+          @input="onPageSizeChange"
+        />
+      </div>
     </div>
 
     <add-on-bulk-action-confirmation-modal

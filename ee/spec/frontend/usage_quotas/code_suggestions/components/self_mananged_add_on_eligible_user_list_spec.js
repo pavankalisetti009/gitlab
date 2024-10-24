@@ -1,5 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { DEFAULT_PER_PAGE } from '~/api';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/self_managed_add_on_eligible_users.query.graphql';
@@ -38,6 +39,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('Add On Eligible User List', () => {
   let wrapper;
   let enableAddOnUsersFiltering = false;
+  let enableAddOnUsersPagesizeSelection = false;
 
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
@@ -54,7 +56,7 @@ describe('Add On Eligible User List', () => {
   };
 
   const defaultPaginationParams = {
-    first: 20,
+    first: DEFAULT_PER_PAGE,
     last: null,
     after: null,
     before: null,
@@ -90,6 +92,7 @@ describe('Add On Eligible User List', () => {
       provide: {
         glFeatures: {
           enableAddOnUsersFiltering,
+          enableAddOnUsersPagesizeSelection,
         },
       },
     });
@@ -113,6 +116,7 @@ describe('Add On Eligible User List', () => {
         duoTier: DUO_PRO,
         isLoading: false,
         pageInfo: pageInfoWithMorePages,
+        pageSize: DEFAULT_PER_PAGE,
         search: '',
         users: eligibleSMUsers,
       };
@@ -189,6 +193,7 @@ describe('Add On Eligible User List', () => {
           duoTier: DUO_PRO,
           isLoading: false,
           pageInfo: undefined,
+          pageSize: DEFAULT_PER_PAGE,
           search: '',
           users: [],
         };
@@ -259,6 +264,29 @@ describe('Add On Eligible User List', () => {
         first: null,
         last: 20,
         before: startCursor,
+      });
+    });
+  });
+
+  describe('with page size selection', () => {
+    beforeEach(() => {
+      enableAddOnUsersPagesizeSelection = true;
+      return createComponent();
+    });
+
+    it('fetches changed number of user items', async () => {
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        first: DEFAULT_PER_PAGE,
+      });
+
+      const pageSize = 50;
+      findAddOnEligibleUserList().vm.$emit('page-size-change', pageSize);
+      await waitForPromises();
+
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        first: pageSize,
       });
     });
   });

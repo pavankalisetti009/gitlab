@@ -140,6 +140,10 @@ export default {
         after: null,
       };
     },
+    handlePageSizeChange(size) {
+      this.pageSize = size;
+      this.pagination.first = size;
+    },
     handleFilter(filterOptions) {
       this.pagination = {
         first: this.pageSize,
@@ -162,10 +166,12 @@ export default {
     :users="addOnEligibleUsers"
     :is-loading="$apollo.loading"
     :page-info="pageInfo"
+    :page-size="pageSize"
     :search="filterOptions.search"
     :duo-tier="duoTier"
     @next="handleNext"
     @prev="handlePrev"
+    @page-size-change="handlePageSizeChange"
   >
     <template #search-and-sort-bar>
       <search-and-sort-bar
