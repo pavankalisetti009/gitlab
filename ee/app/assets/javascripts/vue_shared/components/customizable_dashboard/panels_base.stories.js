@@ -84,3 +84,10 @@ WithInformationalTooltip.args = {
     descriptionLink: '#',
   },
 };
+
+export const WithLoadingDelayed = Template.bind({});
+WithLoadingDelayed.args = {
+  ...Default.args,
+  loading: true,
+  loadingDelayed: true,
+};
