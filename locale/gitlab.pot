@@ -34645,6 +34645,9 @@ msgstr ""
 msgid "MlExperimentTracking|-"
 msgstr ""
 
+msgid "MlExperimentTracking|Are you sure you would like to delete this model?"
+msgstr ""
+
 msgid "MlExperimentTracking|Artifacts"
 msgstr ""
 
@@ -34681,7 +34684,7 @@ msgstr ""
 msgid "MlExperimentTracking|Deleting this experiment will also delete its candidates and their associated metadata."
 msgstr ""
 
-msgid "MlExperimentTracking|Deleting this model will delete the associated model versions, candidates and artifacts."
+msgid "MlExperimentTracking|Deleting this model also deletes all its versions, including any imported or uploaded artifacts, and their associated settings."
 msgstr ""
 
 msgid "MlExperimentTracking|Details"
@@ -34830,9 +34833,6 @@ msgid "MlModelRegistry|Delete model version"
 msgstr ""
 
 msgid "MlModelRegistry|Delete model version?"
-msgstr ""
-
-msgid "MlModelRegistry|Delete model?"
 msgstr ""
 
 msgid "MlModelRegistry|Deleting this model version will delete the associated artifacts."
@@ -36524,6 +36524,9 @@ msgid "Note creation requests"
 msgstr ""
 
 msgid "Note parameters are invalid: %{errors}"
+msgstr ""
+
+msgid "Note:"
 msgstr ""
 
 msgid "Note: As an administrator you may like to configure %{github_integration_link}, which will allow login via GitHub and allow importing repositories without generating a personal access token."
