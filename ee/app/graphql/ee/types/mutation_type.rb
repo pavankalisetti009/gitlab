@@ -248,6 +248,8 @@ module EE
         mount_mutation ::Mutations::Ai::FeatureSettings::Update, alpha: { milestone: '17.4' }
         mount_mutation ::Mutations::Projects::TargetBranchRules::Create
         mount_mutation ::Mutations::Projects::TargetBranchRules::Destroy
+        mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirements::Create,
+          alpha: { milestone: '17.6' }
 
         prepend(Types::DeprecatedMutations)
       end
