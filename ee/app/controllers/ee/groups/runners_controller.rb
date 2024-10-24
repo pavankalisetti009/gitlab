@@ -21,6 +21,8 @@ module EE
           next unless ::Gitlab::Ci::RunnerReleases.instance.enabled?
 
           push_licensed_feature(:runner_upgrade_management_for_namespace, group)
+
+          push_frontend_feature_flag(:gke_runners_ff_group, group)
         end
       end
 
