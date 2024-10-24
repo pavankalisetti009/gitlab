@@ -108,7 +108,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         unit_primitives:
           - categorize_duo_chat_question
           - documentation_search
-          - explain_vulnerability
           - resolve_vulnerability
           - generate_issue_description
           - glab_ask_git_command
@@ -125,7 +124,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - documentation_search
           - duo_chat
           - explain_code
-          - explain_vulnerability
           - generate_commit_message
           - generate_cube_query
           - glab_ask_git_command
