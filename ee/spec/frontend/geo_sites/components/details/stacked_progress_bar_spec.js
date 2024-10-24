@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import StackedProgressBarComponent from '~/vue_shared/components/stacked_progress_bar.vue';
+import StackedProgressBarComponent from 'ee/geo_sites/components/details/stacked_progress_bar.vue';
 
 describe('StackedProgressBarComponent', () => {
   let wrapper;
