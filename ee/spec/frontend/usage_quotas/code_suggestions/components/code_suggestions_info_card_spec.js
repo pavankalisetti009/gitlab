@@ -30,8 +30,8 @@ const defaultProvide = {
   subscriptionName: null,
   subscriptionStartDate: '2023-03-16',
   subscriptionEndDate: '2024-03-16',
-  duoProActiveTrialStartDate: null,
-  duoProActiveTrialEndDate: null,
+  duoActiveTrialStartDate: null,
+  duoActiveTrialEndDate: null,
 };
 
 describe('CodeSuggestionsInfoCard', () => {
@@ -241,8 +241,8 @@ describe('CodeSuggestionsInfoCard', () => {
 
         createComponent({
           provide: {
-            duoProActiveTrialStartDate: '2024-01-01',
-            duoProActiveTrialEndDate: '2024-02-01',
+            duoActiveTrialStartDate: '2024-01-01',
+            duoActiveTrialEndDate: '2024-02-01',
           },
         });
 
