@@ -498,6 +498,18 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       end
     end
 
+    context ':work_items' do
+      it 'has root_ancestor_ids' do
+        expect(subject.scope_options(:work_items)).to include :root_ancestor_ids
+      end
+    end
+
+    context ':epics' do
+      it 'has root_ancestor_ids' do
+        expect(subject.scope_options(:epics)).to include :root_ancestor_ids
+      end
+    end
+
     context ':wiki_blobs' do
       it 'has root_ancestor_ids' do
         expect(subject.scope_options(:wiki_blobs)).to include :root_ancestor_ids
