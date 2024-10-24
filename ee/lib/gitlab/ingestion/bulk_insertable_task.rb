@@ -87,7 +87,6 @@ module Gitlab
                 vulnerability_finding_links
                 vulnerability_identifiers
                 vulnerability_occurrence_identifiers
-                vulnerability_occurrence_pipelines
                 vulnerability_occurrences
               ],
               url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474635'

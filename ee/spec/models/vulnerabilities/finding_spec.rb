@@ -19,7 +19,6 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to belong_to(:scanner).class_name('Vulnerabilities::Scanner') }
       it { is_expected.to belong_to(:vulnerability).inverse_of(:findings) }
       it { is_expected.to have_one(:one_vulnerability).class_name('Vulnerability').inverse_of(:vulnerability_finding) }
-      it { is_expected.to have_many(:finding_pipelines).class_name('Vulnerabilities::FindingPipeline').with_foreign_key('occurrence_id') }
       it { is_expected.to have_many(:identifiers).class_name('Vulnerabilities::Identifier') }
       it { is_expected.to have_many(:finding_identifiers).class_name('Vulnerabilities::FindingIdentifier').with_foreign_key('occurrence_id') }
       it { is_expected.to have_many(:finding_links).class_name('Vulnerabilities::FindingLink').with_foreign_key('vulnerability_occurrence_id') }

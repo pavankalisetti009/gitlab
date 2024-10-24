@@ -1888,22 +1888,6 @@ RETURN NEW;
 END
 $$;
 
-CREATE FUNCTION trigger_8ba31bddd655() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-IF NEW."project_id" IS NULL THEN
-  SELECT "project_id"
-  INTO NEW."project_id"
-  FROM "vulnerability_occurrences"
-  WHERE "vulnerability_occurrences"."id" = NEW."occurrence_id";
-END IF;
-
-RETURN NEW;
-
-END
-$$;
-
 CREATE FUNCTION trigger_8d002f38bdef() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -20730,24 +20714,6 @@ CREATE SEQUENCE vulnerability_occurrence_identifiers_id_seq
 
 ALTER SEQUENCE vulnerability_occurrence_identifiers_id_seq OWNED BY vulnerability_occurrence_identifiers.id;
 
-CREATE TABLE vulnerability_occurrence_pipelines (
-    id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    occurrence_id bigint NOT NULL,
-    pipeline_id bigint NOT NULL,
-    project_id bigint
-);
-
-CREATE SEQUENCE vulnerability_occurrence_pipelines_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE vulnerability_occurrence_pipelines_id_seq OWNED BY vulnerability_occurrence_pipelines.id;
-
 CREATE TABLE vulnerability_occurrences (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -23191,8 +23157,6 @@ ALTER TABLE ONLY vulnerability_merge_request_links ALTER COLUMN id SET DEFAULT n
 ALTER TABLE ONLY vulnerability_namespace_historical_statistics ALTER COLUMN id SET DEFAULT nextval('vulnerability_namespace_historical_statistics_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_occurrence_identifiers ALTER COLUMN id SET DEFAULT nextval('vulnerability_occurrence_identifiers_id_seq'::regclass);
-
-ALTER TABLE ONLY vulnerability_occurrence_pipelines ALTER COLUMN id SET DEFAULT nextval('vulnerability_occurrence_pipelines_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_occurrences ALTER COLUMN id SET DEFAULT nextval('vulnerability_occurrences_id_seq'::regclass);
 
@@ -25985,9 +25949,6 @@ ALTER TABLE ONLY vulnerability_namespace_historical_statistics
 
 ALTER TABLE ONLY vulnerability_occurrence_identifiers
     ADD CONSTRAINT vulnerability_occurrence_identifiers_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY vulnerability_occurrence_pipelines
-    ADD CONSTRAINT vulnerability_occurrence_pipelines_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY vulnerability_occurrences
     ADD CONSTRAINT vulnerability_occurrences_pkey PRIMARY KEY (id);
@@ -31612,10 +31573,6 @@ CREATE INDEX index_vulnerability_occurrence_identifiers_on_identifier_id ON vuln
 
 CREATE UNIQUE INDEX index_vulnerability_occurrence_identifiers_on_unique_keys ON vulnerability_occurrence_identifiers USING btree (occurrence_id, identifier_id);
 
-CREATE INDEX index_vulnerability_occurrence_pipelines_occurrence_id_and_id ON vulnerability_occurrence_pipelines USING btree (occurrence_id, id DESC);
-
-CREATE INDEX index_vulnerability_occurrence_pipelines_on_pipeline_id ON vulnerability_occurrence_pipelines USING btree (pipeline_id);
-
 CREATE INDEX index_vulnerability_occurrences_for_override_uuids_logic ON vulnerability_occurrences USING btree (project_id, report_type, location_fingerprint);
 
 CREATE INDEX index_vulnerability_occurrences_on_initial_pipeline_id ON vulnerability_occurrences USING btree (initial_pipeline_id);
@@ -32089,8 +32046,6 @@ CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_reg_ids O
 CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_upstream_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id);
 
 CREATE UNIQUE INDEX virtual_registries_pkgs_maven_registries_on_unique_group_ids ON virtual_registries_packages_maven_registries USING btree (group_id);
-
-CREATE UNIQUE INDEX vulnerability_occurrence_pipelines_on_unique_keys ON vulnerability_occurrence_pipelines USING btree (occurrence_id, pipeline_id);
 
 CREATE INDEX wi_colors_namespace_id_index ON work_item_colors USING btree (namespace_id);
 
@@ -33865,8 +33820,6 @@ CREATE TRIGGER trigger_8a38ce2327de BEFORE INSERT OR UPDATE ON boards_epic_user_
 CREATE TRIGGER trigger_8ac78f164b2d BEFORE INSERT OR UPDATE ON design_management_repositories FOR EACH ROW EXECUTE FUNCTION trigger_8ac78f164b2d();
 
 CREATE TRIGGER trigger_8b39d532224c BEFORE INSERT OR UPDATE ON ci_secure_file_states FOR EACH ROW EXECUTE FUNCTION trigger_8b39d532224c();
-
-CREATE TRIGGER trigger_8ba31bddd655 BEFORE INSERT OR UPDATE ON vulnerability_occurrence_pipelines FOR EACH ROW EXECUTE FUNCTION trigger_8ba31bddd655();
 
 CREATE TRIGGER trigger_8d002f38bdef BEFORE INSERT OR UPDATE ON packages_debian_group_components FOR EACH ROW EXECUTE FUNCTION trigger_8d002f38bdef();
 
@@ -37236,9 +37189,6 @@ ALTER TABLE ONLY dependency_proxy_blobs
 
 ALTER TABLE ONLY board_user_preferences
     ADD CONSTRAINT fk_rails_dbebdaa8fe FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_occurrence_pipelines
-    ADD CONSTRAINT fk_rails_dc3ae04693 FOREIGN KEY (occurrence_id) REFERENCES vulnerability_occurrences(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY instance_audit_events_streaming_headers
     ADD CONSTRAINT fk_rails_dc933c1f3c FOREIGN KEY (instance_external_audit_event_destination_id) REFERENCES audit_events_instance_external_audit_event_destinations(id) ON DELETE CASCADE;

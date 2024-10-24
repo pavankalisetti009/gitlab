@@ -1421,7 +1421,6 @@
 - './ee/spec/models/vulnerabilities/finding/evidence_spec.rb'
 - './ee/spec/models/vulnerabilities/finding_identifier_spec.rb'
 - './ee/spec/models/vulnerabilities/finding_link_spec.rb'
-- './ee/spec/models/vulnerabilities/finding_pipeline_spec.rb'
 - './ee/spec/models/vulnerabilities/finding_remediation_spec.rb'
 - './ee/spec/models/vulnerabilities/finding_signature_spec.rb'
 - './ee/spec/models/vulnerabilities/finding_spec.rb'
