@@ -86,15 +86,13 @@ RSpec.describe 'Group elastic search', :js, :elastic, :disable_rate_limiter,
       choose_group(group)
     end
 
-    it 'finds epics', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/500148' do
-      # issues
+    it 'finds epics' do
       submit_search('chosen')
       select_search_scope('Epics')
       expect(page).to have_content('chosen epic title')
     end
 
     it 'finds issues' do
-      # issues
       submit_search('chosen')
       select_search_scope('Issues')
       expect(page).to have_content('chosen issue title')
