@@ -112,7 +112,7 @@ export default {
           </template>
         </mr-widget-alert-message>
       </template>
-      <blocking-merge-requests-report class="gl-border-b" :mr="mr" />
+      <blocking-merge-requests-report class="gl-border-b gl-border-b-section" :mr="mr" />
 
       <div class="mr-widget-section">
         <template v-if="mergeBlockedComponentVisible">

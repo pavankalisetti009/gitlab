@@ -158,7 +158,7 @@ export default {
 </script>
 
 <template>
-  <table class="table m-0 gl-border-t">
+  <table class="table gl-border-t gl-m-0 gl-border-t-section gl-bg-subtle">
     <thead class="thead-white text-nowrap">
       <tr class="gl-hidden gl-text-sm md:gl-table-row">
         <th class="!gl-bg-white"></th>
@@ -207,7 +207,7 @@ export default {
       <tbody v-for="{ id, title, rules } in sections" :key="id" class="border-top-0">
         <tr v-if="title" class="js-section-title gl-bg-white">
           <td class="w-0"></td>
-          <td colspan="99" class="!gl-pl-0 gl-text-sm gl-text-gray-500">
+          <td colspan="99" class="!gl-pl-0 gl-text-sm gl-text-subtle">
             <strong>{{ title }}</strong>
           </td>
         </tr>

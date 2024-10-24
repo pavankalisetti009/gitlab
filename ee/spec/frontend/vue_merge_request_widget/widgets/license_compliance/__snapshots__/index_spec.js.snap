@@ -2,7 +2,7 @@
 
 exports[`License Compliance extension expanded data with new licenses displays allowed licenses 1`] = `
 <div
-  class="gl-border-t gl-flex gl-items-baseline gl-pl-7 gl-py-3"
+  class="gl-border-t gl-border-t-section gl-flex gl-items-baseline gl-pl-7 gl-py-3"
   data-testid="extension-list-item"
 >
   <div
@@ -191,7 +191,7 @@ exports[`License Compliance extension expanded data with new licenses displays a
 
 exports[`License Compliance extension expanded data with new licenses displays denied licenses 1`] = `
 <div
-  class="gl-border-t gl-border-t-0 gl-flex gl-items-baseline gl-pl-7 gl-py-3"
+  class="gl-border-t gl-border-t-0 gl-border-t-section gl-flex gl-items-baseline gl-pl-7 gl-py-3"
   data-testid="extension-list-item"
 >
   <div
@@ -299,7 +299,7 @@ exports[`License Compliance extension expanded data with new licenses displays d
 
 exports[`License Compliance extension expanded data with new licenses displays uncategorized licenses 1`] = `
 <div
-  class="gl-border-t gl-flex gl-items-baseline gl-pl-7 gl-py-3"
+  class="gl-border-t gl-border-t-section gl-flex gl-items-baseline gl-pl-7 gl-py-3"
   data-testid="extension-list-item"
 >
   <div
