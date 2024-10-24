@@ -330,14 +330,10 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
           stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
         end
 
-        it 'immediately schedules a group destroy' do
+        it 'immediately schedules a group destroy and redirects to root page with alert about immediate deletion' do
           Sidekiq::Testing.fake! do
             expect { subject }.to change { GroupDestroyWorker.jobs.size }.by(1)
           end
-        end
-
-        it 'redirects to root page with alert about immediate deletion' do
-          subject
 
           expect(response).to redirect_to(root_path)
           expect(flash[:toast]).to include "Group '#{group.name}' is being deleted."
