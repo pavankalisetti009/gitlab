@@ -57,7 +57,7 @@ module Gitlab
           def convert_to_days(seconds)
             return Gitlab::CycleAnalytics::Summary::Value::None.new if seconds.to_i == 0
 
-            days = seconds.fdiv(1.day).round(1)
+            days = seconds.fdiv(1.day).round(2)
 
             Gitlab::CycleAnalytics::Summary::Value::Numeric.new(days)
           end
