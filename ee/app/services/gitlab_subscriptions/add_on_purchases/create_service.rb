@@ -20,6 +20,25 @@ module GitlabSubscriptions
         ServiceResponse.error(message: message)
       end
 
+      override :successful_response
+      def successful_response
+        # The in-app trial add on calls from GitLab via in-app trial create actions
+        # query the add on purchase immediately after this update that initiates from CustomersDot.
+        # in-app trials that invoke this area via POST to CustomersDot:
+        # - GitlabSubscriptions::TrialsController#create
+        # - GitlabSubscriptions::DuoProController#create
+        # - GitlabSubscriptions::DuoEnterpriseController#create
+        # Stick to the primary database in order to make those requests aware that
+        # an up to date replica or a primary database must be used to fetch the data.
+        # Note: If changing the CustomersDot operation for creating add on purchases this may mean this sticking
+        # needs to move or change as well.
+        # It must be before the area where the actual add on purchase is committed to the database from
+        # a CustomersDot API call.
+        ::Namespace.sticking.stick(:namespace, namespace.id) if namespace.present? # self-managed doesn't have namespace
+
+        super
+      end
+
       override :add_on_purchase
       def add_on_purchase
         @add_on_purchase ||= GitlabSubscriptions::AddOnPurchase.new(

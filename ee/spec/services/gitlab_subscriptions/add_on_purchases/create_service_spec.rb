@@ -24,6 +24,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
       end
 
       it 'creates a new record' do
+        expect(::Namespace.sticking).to receive(:stick).with(:namespace, namespace.id) if namespace.present?
+
         expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
 
         expect(result[:add_on_purchase]).to be_persisted
@@ -111,6 +113,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
         end
 
         it 'returns an error' do
+          expect(::Namespace.sticking).not_to receive(:stick)
+
           expect(result[:status]).to eq(:error)
           expect(result[:message]).to eq(
             "Add-on purchase for namespace #{namespace.name} and add-on #{add_on.name.titleize} already exists, " \

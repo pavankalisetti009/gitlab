@@ -186,6 +186,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
           it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
 
           it 'shows valid flash message', :freeze_time do
+            allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
+            expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, group_for_trial.id)
+
             post_create
 
             message = s_(
@@ -200,6 +203,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         end
 
         context 'when add_on_purchase is not found upon success for expiration date' do
+          before do
+            stub_feature_flags(add_on_purchase_expires_on: false)
+          end
+
           it 'shows valid flash message', :freeze_time do
             service_params = {
               step: step,

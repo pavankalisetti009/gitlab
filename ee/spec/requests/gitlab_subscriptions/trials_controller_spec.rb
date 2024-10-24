@@ -135,6 +135,9 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(namespace)) }
 
           it 'shows valid flash message', :freeze_time do
+            allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
+            expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, namespace.id)
+
             post_create
 
             message = format(
@@ -172,6 +175,9 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             end
 
             it 'shows valid flash message', :freeze_time do
+              allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original
+              expect(Namespace.sticking).to receive(:find_caught_up_replica).with(:namespace, namespace.id)
+
               post_create
 
               message = format(
@@ -186,6 +192,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
           end
 
           context 'when add_on_purchase is not found upon success for expiration date' do
+            before do
+              stub_feature_flags(add_on_purchase_expires_on: false)
+            end
+
             it 'shows valid flash message', :freeze_time do
               service_params = {
                 step: step,
@@ -271,7 +281,20 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
         end
 
         def update_with_applied_trials(namespace)
-          create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
+          ::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService.new(
+            namespace,
+            {
+              duo_enterprise: [
+                {
+                  started_on: Time.current,
+                  expires_on: 60.days.from_now,
+                  purchase_xid: 'S-A00000001',
+                  quantity: 1,
+                  trial: true
+                }
+              ]
+            }
+          ).execute
           namespace.gitlab_subscription.update!(
             hosted_plan: ultimate_trial_plan,
             trial: true,
