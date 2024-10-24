@@ -7,7 +7,7 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:issue_epic_type) { create(:issue, :epic) }
   let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level) }
-  let_it_be(:non_group_work_item) { create(:work_item) }
+  let_it_be(:non_group_work_item) { create(:work_item, project: project) }
   let(:helper) { Gitlab::Elastic::Helper.default }
 
   before do
@@ -65,14 +65,27 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
     end
 
     describe 'tracking embeddings' do
+      let(:elasticsearch) { true }
+      let(:opensearch) { false }
+      let(:elastic_migration_done) { true }
+      let(:opensearch_migration_done) { false }
+
       before do
         allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
-        allow(helper).to receive(:vectors_supported?).and_return(true)
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+        allow(helper).to receive(:matching_distribution?)
+          .with(:elasticsearch, min_version: anything).and_return(elasticsearch)
+        allow(helper).to receive(:matching_distribution?)
+          .with(:opensearch, min_version: anything).and_return(opensearch)
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:add_embedding_to_work_items)
+          .and_return(elastic_migration_done)
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:add_embedding_to_work_items_opensearch)
+          .and_return(opensearch_migration_done)
       end
 
-      context 'for issue' do
-        subject(:record) { issue }
+      context 'for project level work item' do
+        subject(:record) { non_group_work_item }
 
         it 'tracks the embedding' do
           expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:track_embedding!).with(record)
@@ -124,9 +137,9 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
           end
         end
 
-        context 'when elasticsearch_issue_embedding feature flag is disabled' do
+        context 'when elasticsearch_work_item_embedding feature flag is disabled' do
           before do
-            stub_feature_flags(elasticsearch_issue_embedding: false)
+            stub_feature_flags(elasticsearch_work_item_embedding: false)
           end
 
           it 'does not track the embedding' do
@@ -136,29 +149,41 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
           end
         end
 
-        context 'when vectors are not supported' do
-          before do
-            allow(helper).to receive(:vectors_supported?).and_return(false)
+        describe 'vector support' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:elasticsearch, :elastic_migration_done, :opensearch, :opensearch_migration_done, :vectors_supported) do
+            true  | true  | false | false | true
+            true  | false | false | false | false
+            false | false | false | false | false
+            false | false | true  | true  | true
+            false | false | true  | false | false
           end
 
-          it 'does not track the embedding' do
-            expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+          with_them do
+            it 'tracks embedding if vectors are supported' do
+              if vectors_supported
+                expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:track_embedding!).with(record)
+              else
+                expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+              end
 
-            record.maintain_elasticsearch_update
+              record.maintain_elasticsearch_update
+            end
           end
         end
+      end
+
+      it 'does not track the embedding for project level issue' do
+        expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+
+        issue.maintain_elasticsearch_update
       end
 
       it 'does not track the embedding for group level issue' do
         expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
 
         issue_epic_type.maintain_elasticsearch_update
-      end
-
-      it 'does not track the embedding for project level work item' do
-        expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
-
-        non_group_work_item.maintain_elasticsearch_update
       end
 
       it 'does not track the embedding for group level work item' do
@@ -240,14 +265,27 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
     end
 
     describe 'tracking embeddings' do
+      let(:elasticsearch) { true }
+      let(:opensearch) { false }
+      let(:elastic_migration_done) { true }
+      let(:opensearch_migration_done) { false }
+
       before do
         allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
-        allow(helper).to receive(:vectors_supported?).and_return(true)
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+        allow(helper).to receive(:matching_distribution?)
+          .with(:elasticsearch, min_version: anything).and_return(elasticsearch)
+        allow(helper).to receive(:matching_distribution?)
+          .with(:opensearch, min_version: anything).and_return(opensearch)
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:add_embedding_to_work_items)
+          .and_return(elastic_migration_done)
+        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:add_embedding_to_work_items_opensearch)
+          .and_return(opensearch_migration_done)
       end
 
-      context 'for issue' do
-        subject(:record) { issue }
+      context 'for project level work item' do
+        subject(:record) { non_group_work_item }
 
         it 'tracks the embedding' do
           expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:track_embedding!).with(record)
@@ -291,9 +329,9 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
           end
         end
 
-        context 'when elasticsearch_issue_embedding feature flag is disabled' do
+        context 'when elasticsearch_work_item_embedding feature flag is disabled' do
           before do
-            stub_feature_flags(elasticsearch_issue_embedding: false)
+            stub_feature_flags(elasticsearch_work_item_embedding: false)
           end
 
           it 'does not track the embedding' do
@@ -303,29 +341,41 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
           end
         end
 
-        context 'when vectors are not supported' do
-          before do
-            allow(helper).to receive(:vectors_supported?).and_return(false)
+        describe 'vector support' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:elasticsearch, :elastic_migration_done, :opensearch, :opensearch_migration_done, :vectors_supported) do
+            true  | true  | false | false | true
+            true  | false | false | false | false
+            false | false | false | false | false
+            false | false | true  | true  | true
+            false | false | true  | false | false
           end
 
-          it 'does not track the embedding' do
-            expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+          with_them do
+            it 'tracks embedding if vectors are supported' do
+              if vectors_supported
+                expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:track_embedding!).with(record)
+              else
+                expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+              end
 
-            record.maintain_elasticsearch_create
+              record.maintain_elasticsearch_create
+            end
           end
         end
+      end
+
+      it 'does not track the embedding for project level issue' do
+        expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
+
+        issue.maintain_elasticsearch_create
       end
 
       it 'does not track the embedding for group level issue' do
         expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
 
         issue_epic_type.maintain_elasticsearch_create
-      end
-
-      it 'does not track the embedding for project level work item' do
-        expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).not_to receive(:track_embedding!)
-
-        non_group_work_item.maintain_elasticsearch_create
       end
 
       it 'does not track the embedding for group level work item' do

@@ -17,7 +17,7 @@ end
 private
 
 def elasticsearch_8_plus?
-  helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+  helper.vectors_supported?(:elasticsearch)
 end
 
 def helper

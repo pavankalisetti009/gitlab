@@ -15,7 +15,7 @@ end
 private
 
 def opensearch?
-  helper.matching_distribution?(:opensearch)
+  helper.vectors_supported?(:opensearch)
 end
 
 def helper

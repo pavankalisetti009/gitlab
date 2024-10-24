@@ -693,15 +693,14 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   describe '#vectors_supported?' do
     using RSpec::Parameterized::TableSyntax
 
-    subject { helper.vectors_supported?(arg) }
+    subject { helper.vectors_supported?(distribution.to_sym) }
 
-    where(:arg, :distribution, :version, :result) do
-      :elasticsearch  | 'elasticsearch' | '6.8.23' | false
-      :elasticsearch  | 'elasticsearch' | '7.17.0' | false
-      :elasticsearch  | 'elasticsearch' | '8.0.0'  | true
-      :opensearch     | 'elasticsearch' | '8.0.0'  | false
-      :opensearch     | 'opensearch'    | '1.3.3'  | false
-      :opensearch     | 'opensearch'    | '2.1.0'  | false
+    where(:distribution, :version, :result) do
+      'elasticsearch' | '6.8.23' | false
+      'elasticsearch' | '7.17.0' | false
+      'elasticsearch' | '8.0.0'  | true
+      'opensearch'    | '1.3.3'  | true
+      'opensearch'    | '2.1.0'  | true
     end
 
     before do

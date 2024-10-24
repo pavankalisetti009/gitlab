@@ -46,7 +46,7 @@ RSpec.describe AddEmbeddingToIssues, feature_category: :global_search do
   describe 'skip_migration?' do
     before do
       allow(helper).to receive(:vectors_supported?).and_return(vectors_supported)
-      described_class.skip_if -> { !Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch) }
+      described_class.skip_if -> { !helper.vectors_supported?(:elasticsearch) }
     end
 
     context 'if vectors are supported' do

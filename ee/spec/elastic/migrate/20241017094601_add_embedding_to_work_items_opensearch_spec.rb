@@ -39,8 +39,8 @@ RSpec.describe AddEmbeddingToWorkItemsOpensearch, feature_category: :global_sear
 
     before do
       allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-      allow(helper).to receive(:matching_distribution?).and_return(vectors_supported)
-      described_class.skip_if -> { !Gitlab::Elastic::Helper.default.matching_distribution?(:opensearch) }
+      allow(helper).to receive(:vectors_supported?).and_return(vectors_supported)
+      described_class.skip_if -> { !Gitlab::Elastic::Helper.default.vectors_supported?(:opensearch) }
     end
 
     context 'if vectors are supported' do
