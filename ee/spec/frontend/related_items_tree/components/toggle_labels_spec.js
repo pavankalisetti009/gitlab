@@ -6,7 +6,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
-import ToggleLabels from '~/vue_shared/components/toggle_labels.vue';
+import ToggleLabels from 'ee/related_items_tree/components/toggle_labels.vue';
 import isShowingLabelsQuery from '~/graphql_shared/client/is_showing_labels.query.graphql';
 
 Vue.use(VueApollo);

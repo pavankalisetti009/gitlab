@@ -3,7 +3,7 @@ import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import ToggleLabels from '~/vue_shared/components/toggle_labels.vue';
+import ToggleLabels from 'ee/related_items_tree/components/toggle_labels.vue';
 import RelatedItemsTreeActions from 'ee/related_items_tree/components/related_items_tree_actions.vue';
 import { ITEM_TABS } from 'ee/related_items_tree/constants';
 import createDefaultStore from 'ee/related_items_tree/store';

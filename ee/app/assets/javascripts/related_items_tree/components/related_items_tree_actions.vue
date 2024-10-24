@@ -3,8 +3,8 @@ import { GlButtonGroup, GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 
-import ToggleLabels from '~/vue_shared/components/toggle_labels.vue';
 import { ITEM_TABS } from '../constants';
+import ToggleLabels from './toggle_labels.vue';
 
 export default {
   ITEM_TABS,

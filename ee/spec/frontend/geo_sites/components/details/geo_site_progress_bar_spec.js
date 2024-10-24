@@ -1,8 +1,8 @@
 import { GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoSiteProgressBar from 'ee/geo_sites/components/details/geo_site_progress_bar.vue';
+import StackedProgressBar from 'ee/geo_sites/components/details/stacked_progress_bar.vue';
 import { MOCK_PRIMARY_VERIFICATION_INFO } from 'ee_jest/geo_sites/mock_data';
-import StackedProgressBar from '~/vue_shared/components/stacked_progress_bar.vue';
 
 describe('GeoSiteProgressBar', () => {
   let wrapper;

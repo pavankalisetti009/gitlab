@@ -4,7 +4,7 @@ import VueApollo from 'vue-apollo';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import ContentTransition from '~/vue_shared/components/content_transition.vue';
+import ContentTransition from '~/invite_members/components/content_transition.vue';
 import CEInviteModalBase from '~/invite_members/components/invite_modal_base.vue';
 import EEInviteModalBase from 'ee/invite_members/components/invite_modal_base.vue';
 import {

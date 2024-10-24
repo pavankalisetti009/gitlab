@@ -2,7 +2,7 @@
 import { GlPopover } from '@gitlab/ui';
 import { toNumber } from 'lodash';
 import { __, s__ } from '~/locale';
-import StackedProgressBar from '~/vue_shared/components/stacked_progress_bar.vue';
+import StackedProgressBar from './stacked_progress_bar.vue';
 
 export default {
   name: 'GeoSiteSyncProgress',

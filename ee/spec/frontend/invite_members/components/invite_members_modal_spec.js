@@ -12,7 +12,7 @@ import CEInviteModalBase from '~/invite_members/components/invite_modal_base.vue
 import MembersTokenSelect from '~/invite_members/components/members_token_select.vue';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import eventHub from '~/invite_members/event_hub';
-import ContentTransition from '~/vue_shared/components/content_transition.vue';
+import ContentTransition from '~/invite_members/components/content_transition.vue';
 
 import {
   propsData,
