@@ -5,5 +5,9 @@ module GitlabSubscriptions
     def duo_pro_email
       ::GitlabSubscriptions::DuoSeatAssignmentMailer.duo_pro_email(User.last).message
     end
+
+    def duo_enterprise_email
+      ::GitlabSubscriptions::DuoSeatAssignmentMailer.duo_enterprise_email(User.last).message
+    end
   end
 end
