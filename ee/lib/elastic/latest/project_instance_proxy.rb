@@ -51,12 +51,10 @@ module Elastic
 
         data['last_repository_updated_date'] = target.last_repository_updated_at
 
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_fields_to_projects_index)
-          data['mirror'] = target.mirror?
-          data['forked'] = target.forked? || false
-          data['owner_id'] = target.owner&.id
-          data['repository_languages'] = target.repository_languages.map(&:name)
-        end
+        data['mirror'] = target.mirror?
+        data['forked'] = target.forked? || false
+        data['owner_id'] = target.owner&.id
+        data['repository_languages'] = target.repository_languages.map(&:name)
 
         data
       end

@@ -57,21 +57,6 @@ RSpec.describe Elastic::Latest::ProjectInstanceProxy, :elastic_helpers, feature_
         expect(result[:owner_id]).to be_nil
       end
     end
-
-    context 'when add_fields_to_projects_index migration is not completed' do
-      before do
-        set_elasticsearch_migration_to(:add_fields_to_projects_index, including: false)
-      end
-
-      it 'does not include the gated fields' do
-        result = proxy.as_indexed_json.with_indifferent_access
-
-        expect(result.keys).not_to include(:mirror)
-        expect(result.keys).not_to include(:forked)
-        expect(result.keys).not_to include(:owner_id)
-        expect(result.keys).not_to include(:repository_languages)
-      end
-    end
   end
 
   describe '#es_parent' do
