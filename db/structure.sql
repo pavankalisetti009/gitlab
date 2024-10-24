@@ -15282,7 +15282,10 @@ CREATE TABLE packages_conan_file_metadata (
     recipe_revision character varying(255) DEFAULT '0'::character varying NOT NULL,
     package_revision character varying(255),
     conan_package_reference character varying(255),
-    conan_file_type smallint NOT NULL
+    conan_file_type smallint NOT NULL,
+    recipe_revision_id bigint,
+    package_revision_id bigint,
+    package_reference_id bigint
 );
 
 CREATE SEQUENCE packages_conan_file_metadata_id_seq
@@ -30338,6 +30341,12 @@ CREATE INDEX index_packages_composer_metadata_on_project_id ON packages_composer
 
 CREATE UNIQUE INDEX index_packages_conan_file_metadata_on_package_file_id ON packages_conan_file_metadata USING btree (package_file_id);
 
+CREATE INDEX index_packages_conan_file_metadata_on_package_reference_id ON packages_conan_file_metadata USING btree (package_reference_id);
+
+CREATE INDEX index_packages_conan_file_metadata_on_package_revision_id ON packages_conan_file_metadata USING btree (package_revision_id);
+
+CREATE INDEX index_packages_conan_file_metadata_on_recipe_revision_id ON packages_conan_file_metadata USING btree (recipe_revision_id);
+
 CREATE UNIQUE INDEX index_packages_conan_metadata_on_package_id_username_channel ON packages_conan_metadata USING btree (package_id, package_username, package_channel);
 
 CREATE INDEX index_packages_conan_metadata_on_project_id ON packages_conan_metadata USING btree (project_id);
@@ -34676,6 +34685,9 @@ ALTER TABLE ONLY project_export_jobs
 ALTER TABLE ONLY security_policy_requirements
     ADD CONSTRAINT fk_5b4fae9635 FOREIGN KEY (compliance_requirement_id) REFERENCES compliance_requirements(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY packages_conan_file_metadata
+    ADD CONSTRAINT fk_5bb7e23d6d FOREIGN KEY (package_revision_id) REFERENCES packages_conan_package_revisions(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY user_broadcast_message_dismissals
     ADD CONSTRAINT fk_5c0cfb74ce FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
@@ -35237,6 +35249,9 @@ ALTER TABLE ONLY packages_dependency_links
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_b5df066d8f FOREIGN KEY (framework_id) REFERENCES compliance_management_frameworks(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY packages_conan_file_metadata
+    ADD CONSTRAINT fk_b656d41048 FOREIGN KEY (package_reference_id) REFERENCES packages_conan_package_references(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY catalog_resource_versions
     ADD CONSTRAINT fk_b670eae96b FOREIGN KEY (catalog_resource_id) REFERENCES catalog_resources(id) ON DELETE CASCADE;
 
@@ -35701,6 +35716,9 @@ ALTER TABLE ONLY ml_model_metadata
 
 ALTER TABLE ONLY workspaces
     ADD CONSTRAINT fk_f78aeddc77 FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_conan_file_metadata
+    ADD CONSTRAINT fk_f7aacd483c FOREIGN KEY (recipe_revision_id) REFERENCES packages_conan_recipe_revisions(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY cluster_agents
     ADD CONSTRAINT fk_f7d43dee13 FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
