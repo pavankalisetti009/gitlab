@@ -79,4 +79,17 @@ RSpec.configure do |config|
     stub_application_setting(snowplow_enabled: true)
     stub_application_setting(snowplow_app_id: 'gitlab-test')
   end
+
+  config.include SecretsManagement::GitlabSecretsManagerHelpers, :gitlab_secrets_manager
+
+  config.before(:example, :gitlab_secrets_manager) do
+    SecretsManagement::OpenbaoTestSetup.start_server_and_proxy
+  end
+
+  config.after(:example, :gitlab_secrets_manager) do
+    # For now we'll just clean up kv secrets engines because that's
+    # all we're handling in the secrets manager for now. We can add more
+    # things to clean up here later on as we add more features.
+    clean_all_kv_secrets_engines
+  end
 end

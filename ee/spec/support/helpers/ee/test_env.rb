@@ -6,7 +6,7 @@ module EE
 
     override :setup_methods
     def setup_methods
-      (super + [:setup_indexer]).freeze
+      (super + [:setup_indexer, :setup_openbao]).freeze
     end
 
     override :post_init
@@ -24,6 +24,18 @@ module EE
         task: "gitlab:indexer:install",
         task_args: [indexer_path, indexer_url].compact
       )
+    end
+
+    def setup_openbao
+      component_timed_setup(
+        'OpenBao',
+        install_dir: SecretsManagement::OpenbaoTestSetup.install_dir,
+        version: SecretsManagement::SecretsManagerClient.expected_server_version,
+        task: "gitlab:secrets_management:openbao:clone",
+        task_args: [SecretsManagement::OpenbaoTestSetup.install_dir]
+      ) do
+        raise ::TestEnv::ComponentFailedToInstallError unless SecretsManagement::OpenbaoTestSetup.build_openbao_binary
+      end
     end
 
     def indexer_path
@@ -45,7 +57,10 @@ module EE
     private
 
     def test_dirs
-      @ee_test_dirs ||= super + ['gitlab-elasticsearch-indexer']
+      @ee_test_dirs ||= super + %w[
+        gitlab-elasticsearch-indexer
+        openbao
+      ]
     end
   end
 end

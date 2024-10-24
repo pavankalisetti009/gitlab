@@ -10,7 +10,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, feature_category: :secre
   end
 
   shared_examples_for 'making api request' do
-    let(:api_root_url) { "#{Gitlab.config.openbao.proxy_address}/v1" }
+    let(:api_root_url) { "#{OpenbaoClient::Configuration.default.host}/v1" }
     let(:mocked_response) { {} }
 
     it 'calls the correct OpenBao endpoint' do
@@ -29,6 +29,15 @@ RSpec.describe SecretsManagement::SecretsManagerClient, feature_category: :secre
 
         expect { make_request }.to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
       end
+    end
+  end
+
+  describe '.expected_server_version' do
+    it 'returns the content of GITLAB_OPENBAO_VERSION file' do
+      path = Rails.root.join(described_class::SERVER_VERSION_FILE)
+      version = path.read.chomp
+
+      expect(described_class.expected_server_version).to eq(version)
     end
   end
 
