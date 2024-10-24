@@ -679,10 +679,6 @@ The assignee is changed without having to refresh the page.
 To prevent duplication of issues on the same topic, GitLab searches for similar issues
 when you create a new issue.
 
-Prerequisites:
-
-- [GraphQL](../../../api/graphql/index.md) must be enabled.
-
 As you type in the title text box of the **New issue** page, GitLab searches titles and descriptions
 across all issues in the current project. Only issues you have access to are returned.
 Up to five similar issues, sorted by most recently updated, are displayed below the title text box.
