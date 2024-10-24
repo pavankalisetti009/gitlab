@@ -5,6 +5,7 @@ module GitlabSubscriptions
   module Trials
     class DuoProController < ApplicationController
       include GitlabSubscriptions::Trials::DuoCommon
+      include Gitlab::RackLoadBalancingHelpers
 
       feature_category :subscription_management
       urgency :low
@@ -28,6 +29,10 @@ module GitlabSubscriptions
 
         if @result.success?
           # lead and trial created
+          # We need to stick to an up to date replica or primary db here in order
+          # to properly observe the add_on_purchase that CustomersDot created.
+          # See https://gitlab.com/gitlab-org/gitlab/-/issues/499720
+          load_balancer_stick_request(::Namespace, :namespace, @result.payload[:namespace].id)
           flash[:success] = success_flash_message(
             GitlabSubscriptions::Trials::DuoPro.add_on_purchase_for_namespace(@result.payload[:namespace])
           )
@@ -75,7 +80,12 @@ module GitlabSubscriptions
         # https://gitlab.com/gitlab-org/gitlab/-/issues/492646#note_2163935257
         # So for now we'll default back to 60 days in case it isn't synchronized.
         # https://gitlab.com/gitlab-org/gitlab/-/issues/499720
-        expires_date = add_on_purchase&.expires_on.presence || 60.days.from_now
+        expires_date = if ::Feature.enabled?(:add_on_purchase_expires_on, current_user)
+                         add_on_purchase.expires_on
+                       else
+                         add_on_purchase&.expires_on.presence || 60.days.from_now
+                       end
+
         safe_format(
           s_(
             'DuoProTrial|You have successfully started a Duo Pro trial that will ' \
