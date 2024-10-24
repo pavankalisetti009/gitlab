@@ -33,7 +33,7 @@ module GitlabSubscriptions
       private
 
       def duo_pro_trial_add_on_purchase
-        GitlabSubscriptions::Trials::DuoPro.add_on_purchase_for_namespace(namespace)
+        GitlabSubscriptions::Trials::DuoPro.any_add_on_purchase_for_namespace(namespace)
       end
       strong_memoize_attr :duo_pro_trial_add_on_purchase
 

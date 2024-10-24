@@ -35,7 +35,7 @@ module GitlabSubscriptions
         # in the premium with ultimate trial case the trial_ends_on does not exist on the
         # gitlab_subscription record.
         flash[:success] = success_flash_message(
-          GitlabSubscriptions::Trials::DuoEnterprise.add_on_purchase_for_namespace(@result.payload[:namespace])
+          GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(@result.payload[:namespace])
         )
 
         redirect_to trial_success_path(@result.payload[:namespace])

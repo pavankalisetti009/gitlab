@@ -70,7 +70,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
 
       before do
         allow(GitlabSubscriptions::Trials::DuoEnterprise)
-          .to receive(:add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
+          .to receive(:any_add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
       end
 
       it { is_expected.to match_array(duo_enterprise_trial_widget_attribute_keys) }

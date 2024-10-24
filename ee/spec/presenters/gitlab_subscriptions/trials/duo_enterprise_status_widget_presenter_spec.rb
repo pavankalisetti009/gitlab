@@ -15,9 +15,8 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseStatusWidgetPresenter, 
 
   before do
     build(:gitlab_subscription, :ultimate, namespace: namespace)
-    allow(GitlabSubscriptions::Trials::DuoEnterprise).to receive(:add_on_purchase_for_namespace)
     allow(GitlabSubscriptions::Trials::DuoEnterprise)
-      .to receive(:add_on_purchase_for_namespace).with(namespace).and_return(add_on_purchase)
+      .to receive(:any_add_on_purchase_for_namespace).with(namespace).and_return(add_on_purchase)
   end
 
   describe '#eligible_for_widget?' do
