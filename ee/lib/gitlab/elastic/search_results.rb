@@ -376,7 +376,7 @@ module Gitlab
       end
 
       def work_item_scope_options
-        base_options.merge(
+        work_item_scope_options = base_options.merge(
           {
             klass: Issue, # For rendering the UI
             index_name: ::Search::Elastic::References::WorkItem.index,
@@ -384,6 +384,13 @@ module Gitlab
           },
           filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived, :fields)
         )
+
+        if filters[:type].present?
+          work_item_type_id = ::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[filters[:type].to_sym])&.id
+          work_item_scope_options[:work_item_type_ids] = [work_item_type_id] unless work_item_type_id.nil?
+        end
+
+        work_item_scope_options
       end
 
       def scope_results(scope, klass, count_only:)

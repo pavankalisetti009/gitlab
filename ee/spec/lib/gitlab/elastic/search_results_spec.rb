@@ -411,6 +411,34 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       include_examples 'search results filtered by confidential'
       include_examples 'search results filtered by labels'
 
+      context 'for work_item_type filter' do
+        using RSpec::Parameterized::TableSyntax
+        let_it_be(:requirement) { create(:issue, :requirement, project: project) }
+        let_it_be(:task) { create(:issue, :task, project: project) }
+        let_it_be(:incident) { create(:issue, :incident, project: project) }
+        let_it_be(:issue) { create(:issue, project: project) }
+
+        before do
+          ::Elastic::ProcessBookkeepingService.track!(requirement, task, incident, issue)
+          ensure_elasticsearch_index!
+        end
+
+        where(:type, :expected) do
+          'requirement'  | [ref(:requirement)]
+          'task'         | [ref(:task)]
+          'incident'     | [ref(:incident)]
+          'issue'        | [ref(:issue)]
+          'invalid_type' | [ref(:issue), ref(:incident), ref(:requirement), ref(:task)]
+        end
+
+        with_them do
+          it 'returns the expected issue based on type' do
+            issues = described_class.new(user, '*', [project.id], filters: { type: type }).objects('issues')
+            expect(issues).to include(*expected)
+          end
+        end
+      end
+
       context 'for projects' do
         let_it_be(:group) { create(:group) }
         let_it_be(:unarchived_result) { create(:project, :public, group: group) }
