@@ -3,6 +3,7 @@ import { GlSkeletonLoader, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { REPORT_TYPE_PRESETS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 import { VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import getProjectContainerScanning from '../../graphql/queries/get_project_container_scanning.query.graphql';
 
 const { detected, confirmed } = VULNERABILITY_STATE_OBJECTS;
@@ -47,6 +48,9 @@ export default {
         : s__('ContainerRegistry|Container Scanning for Registry: Off');
     },
   },
+  containerScanningForRegistryHelpUrl: helpPagePath(
+    'user/application_security/continuous_vulnerability_scanning/index',
+  ),
 };
 </script>
 
@@ -73,7 +77,11 @@ export default {
         }}
         <br />
         <br />
-        <gl-link :href="config.containerScanningForRegistryDocsPath" class="gl-font-bold">
+        <gl-link
+          :href="$options.containerScanningForRegistryHelpUrl"
+          target="_blank"
+          class="gl-font-bold"
+        >
           {{ __('What is continuous container scanning?') }}
         </gl-link>
       </gl-popover>
