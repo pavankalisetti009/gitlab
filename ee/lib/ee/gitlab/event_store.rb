@@ -209,13 +209,7 @@ module EE
         end
 
         def subscribe_to_merge_events(store)
-          store.subscribe ::MergeRequests::ProcessMergeAuditEventWorker,
-            to: ::MergeRequests::MergedEvent,
-            if: ->(event) {
-              mr = ::MergeRequest.find_by_id(event.data[:merge_request_id])
-              actor = ::Project.actor_from_id(mr&.project)
-              ::Feature.enabled? :ff_compliance_audit_mr_merge, actor
-            }
+          store.subscribe ::MergeRequests::ProcessMergeAuditEventWorker, to: ::MergeRequests::MergedEvent
         end
       end
     end

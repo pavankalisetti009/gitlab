@@ -33,8 +33,6 @@ module EE
       private
 
       def publish_event_store_event(merge_request)
-        return unless ::Feature.enabled? :ff_compliance_audit_mr_merge, merge_request.project
-
         ::Gitlab::EventStore.publish ::MergeRequests::MergedEvent.new(data: { merge_request_id: merge_request.id })
       end
 
