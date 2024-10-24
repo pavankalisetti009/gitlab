@@ -22905,6 +22905,9 @@ msgstr ""
 msgid "Failed to create branch target"
 msgstr ""
 
+msgid "Failed to create compliance requirement"
+msgstr ""
+
 msgid "Failed to create framework"
 msgstr ""
 
