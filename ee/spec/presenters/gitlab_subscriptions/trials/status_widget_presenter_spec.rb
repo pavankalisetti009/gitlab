@@ -28,7 +28,7 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
 
     context 'when trial has just ended and group is unpaid' do
       before do
-        build(:gitlab_subscription, :ultimate_trial, :expired_trial, :free, namespace: group,
+        build(:gitlab_subscription, :free, :expired_trial, namespace: group,
           trial_starts_on: (trial_duration + 5).days.ago,
           trial_ends_on: 5.days.ago)
       end
@@ -48,7 +48,7 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
 
     context 'when trial ended more than 10 days ago' do
       before do
-        build(:gitlab_subscription, :ultimate_trial, :free, :expired_trial, namespace: group,
+        build(:gitlab_subscription, :free, :expired_trial, namespace: group,
           trial_starts_on: (trial_duration + 11).days.ago,
           trial_ends_on: 11.days.ago)
       end
