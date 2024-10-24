@@ -7,36 +7,82 @@ RSpec.describe AdjournedProjectDeletionWorker, feature_category: :groups_and_pro
     subject(:worker) { described_class.new }
 
     let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project, deleting_user: user, owners: user) }
-    let(:service) { instance_double(Projects::DestroyService) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group, marked_for_deletion_at: 8.days.ago, deleting_user: user) }
 
-    shared_examples 'executes destroying project' do
-      specify do
-        expect(service).to receive(:async_execute)
-        expect(Projects::DestroyService).to receive(:new).with(project, user).and_return(service)
+    context 'when deleting user has access to remove the project', :sidekiq_inline do
+      shared_examples 'destroys the project' do
+        specify do
+          worker.perform(project.id)
 
-        worker.perform(project.id)
+          expect(Project.exists?(project.id)).to be_falsey
+        end
+      end
+
+      context 'when user is a direct owner' do
+        before_all do
+          project.add_owner(user)
+        end
+
+        it_behaves_like 'destroys the project'
+      end
+
+      context 'when user is an inherited owner' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it_behaves_like 'destroys the project'
+      end
+
+      context 'when user is an owner through project sharing' do
+        before_all do
+          invited_group = create(:group, owners: user)
+          create(:project_group_link, :owner, project: project, group: invited_group)
+        end
+
+        it_behaves_like 'destroys the project'
+      end
+
+      context 'when user is an owner through parent group sharing' do
+        before_all do
+          invited_group = create(:group)
+          create(:group_group_link, :owner, shared_group: group, shared_with_group: invited_group)
+          invited_group.add_owner(user)
+        end
+
+        it_behaves_like 'destroys the project'
+      end
+
+      context 'when an admin deletes the project', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+
+        before do
+          project.update!(deleting_user: user)
+        end
+
+        it_behaves_like 'destroys the project'
       end
     end
 
-    it_behaves_like 'executes destroying project'
+    context 'when deleting user does not have access to remove the project', :sidekiq_inline do
+      shared_examples 'restores the project' do
+        specify do
+          worker.perform(project.id)
 
-    context 'when an admin deletes the project', :enable_admin_mode do
-      let_it_be(:user) { create(:admin) }
-
-      before do
-        project.update!(deleting_user: user)
+          expect(project.reload.marked_for_deletion_at.present?).to eq(false)
+        end
       end
 
-      it_behaves_like 'executes destroying project'
-    end
+      it_behaves_like 'restores the project'
 
-    it 'stops execution if user was deleted' do
-      project.update!(deleting_user: nil)
+      context 'when deleting user was deleted' do
+        before do
+          project.update!(deleting_user: nil)
+        end
 
-      expect(Projects::DestroyService).not_to receive(:new)
-
-      worker.perform(project.id)
+        it_behaves_like 'restores the project'
+      end
     end
   end
 end

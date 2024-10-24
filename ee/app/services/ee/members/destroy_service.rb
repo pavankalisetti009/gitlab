@@ -16,7 +16,6 @@ module EE
         end
 
         cleanup_group_identity(member) unless skip_saml_identity
-        cleanup_group_deletion_schedule(member) if member.source.is_a?(Group)
         cleanup_oncall_rotations(member)
         cleanup_escalation_rules(member) if member.user
         reset_seats_usage_callouts(member)
@@ -68,14 +67,6 @@ module EE
         return unless saml_provider
 
         saml_provider.identities.for_user(member.user).delete_all
-      end
-
-      def cleanup_group_deletion_schedule(member)
-        deletion_schedule = member.source&.deletion_schedule
-
-        return unless deletion_schedule
-
-        deletion_schedule.destroy if deletion_schedule.deleting_user == member.user
       end
 
       def cleanup_oncall_rotations(member)
