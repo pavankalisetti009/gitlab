@@ -103,45 +103,4 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
       )
     end
   end
-
-  context 'when free plan' do
-    before do
-      build(:gitlab_subscription, :free, namespace: group)
-    end
-
-    it 'contains the correct text' do
-      render
-
-      expect(rendered).to have_content(
-        'Get the most out of GitLab with Ultimate and GitLab Duo Enterprise'
-      )
-
-      expect(rendered).to have_content(
-        'Start an Ultimate trial with GitLab Duo Enterprise to try the ' \
-          'complete set of features from GitLab. GitLab Duo Enterprise gives ' \
-          'you access to the full product offering from GitLab, including ' \
-          'AI-powered features. You can try it for free, no credit card required.'
-      )
-    end
-
-    it 'contains the primary action' do
-      render
-
-      expect(rendered).to have_link(
-        'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
-        href: new_trial_path(namespace_id: group.id)
-      )
-
-      expect(rendered).to have_css(
-        '[data-event-tracking="click_duo_enterprise_trial_billing_page"]' \
-          '[data-event-label="ultimate_and_duo_enterprise_trial"]'
-      )
-    end
-
-    it 'contains the hand raise lead selector' do
-      render
-
-      expect(rendered).to have_selector('.js-hand-raise-lead-trigger')
-    end
-  end
 end

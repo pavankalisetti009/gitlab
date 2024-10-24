@@ -152,7 +152,7 @@ module BillingPlansHelper
   def show_duo_enterprise_trial_alert?(namespace)
     return false if Feature.disabled?(:duo_enterprise_trials, current_user)
 
-    if namespace.ultimate_plan? || namespace.free_plan?
+    if namespace.ultimate_plan?
       GitlabSubscriptions::DuoEnterprise.no_add_on_purchase_for_namespace?(namespace)
     elsif namespace.premium_plan?
       GitlabSubscriptions::Duo.no_add_on_purchase_for_namespace?(namespace)
@@ -175,13 +175,6 @@ module BillingPlansHelper
         body: [
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab. GitLab Duo Enterprise gives you access to the full product offering from GitLab, including AI-powered features.'),
           s_('BillingPlans|Not ready to trial the full suite of GitLab and GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
-        ]
-      }
-    else
-      {
-        title: s_('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise'),
-        body: [
-          s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab. GitLab Duo Enterprise gives you access to the full product offering from GitLab, including AI-powered features. You can try it for free, no credit card required.')
         ]
       }
     end
