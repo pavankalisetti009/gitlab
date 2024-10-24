@@ -33,7 +33,7 @@ module Arkose
     attr_reader :request, :use_case, :require_challenge
 
     def shared_key
-      @shared_key ||= Settings.data_exchange_key
+      @shared_key ||= ::AntiAbuse::IdentityVerification::Settings.arkose_data_exchange_key
     end
 
     def json_data

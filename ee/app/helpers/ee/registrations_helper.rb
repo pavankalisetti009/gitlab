@@ -13,8 +13,8 @@ module EE
 
     def arkose_labs_data
       data = {
-        api_key: Arkose::Settings.arkose_public_api_key,
-        domain: Arkose::Settings.arkose_labs_domain,
+        api_key: ::AntiAbuse::IdentityVerification::Settings.arkose_public_api_key,
+        domain: ::AntiAbuse::IdentityVerification::Settings.arkose_labs_domain,
         data_exchange_payload: arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_SIGN_UP)
       }
 

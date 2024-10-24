@@ -36,8 +36,8 @@ module Arkose
 
       def authorize_body
         {
-          client_id: Settings.arkose_client_id,
-          client_secret: Settings.arkose_client_secret
+          client_id: AntiAbuse::IdentityVerification::Settings.arkose_client_id,
+          client_secret: AntiAbuse::IdentityVerification::Settings.arkose_client_secret
         }.compact.to_json
       end
 

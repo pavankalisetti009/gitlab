@@ -11,7 +11,7 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
 
   before do
     allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).and_return(false)
-    allow(::Arkose::Settings).to receive(:enabled?).and_return(false)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(false)
   end
 
   describe 'GET #new' do

@@ -189,7 +189,7 @@ module EE
 
     override :arkose_labs_enabled?
     def arkose_labs_enabled?(user: nil)
-      ::Arkose::Settings.enabled?(user: user, user_agent: request.user_agent)
+      ::AntiAbuse::IdentityVerification::Settings.arkose_enabled?(user: user, user_agent: request.user_agent)
     end
 
     override :preregistration_tracking_label

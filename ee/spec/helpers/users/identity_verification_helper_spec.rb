@@ -81,8 +81,8 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
           mock_offer_phone_number_exemption
         )
 
-        allow(::Arkose::Settings).to receive(:arkose_public_api_key).and_return('api-key')
-        allow(::Arkose::Settings).to receive(:arkose_labs_domain).and_return('domain')
+        allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_public_api_key).and_return('api-key')
+        allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_labs_domain).and_return('domain')
       end
 
       subject(:data) { helper.send(method, user) }

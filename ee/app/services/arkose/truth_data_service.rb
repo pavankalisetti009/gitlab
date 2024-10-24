@@ -37,7 +37,7 @@ module Arkose
 
     def body
       {
-        public_key: Settings.arkose_public_api_key,
+        public_key: AntiAbuse::IdentityVerification::Settings.arkose_public_api_key,
         arkose_session_id: arkose_session,
         is_legit: is_legit ? 1 : 0
       }.compact.to_json
