@@ -12,6 +12,8 @@ class UpdateAllMirrorsWorker # rubocop:disable Scalability/IdempotentWorker
   SCHEDULE_WAIT_TIMEOUT = 2.minutes
   LEASE_KEY = 'update_all_mirrors'
   RESCHEDULE_WAIT = 1.second
+  STUCK_JOBS_DURATION_THRESHOLD = 30.minutes.ago
+  STUCK_JOBS_LIMIT = 3000
 
   def perform
     return if Gitlab::Database.read_only?
@@ -19,6 +21,7 @@ class UpdateAllMirrorsWorker # rubocop:disable Scalability/IdempotentWorker
 
     scheduled = 0
     with_lease do
+      fail_stuck_mirrors!
       scheduled = schedule_mirrors!
 
       if scheduled > 0
@@ -39,6 +42,17 @@ class UpdateAllMirrorsWorker # rubocop:disable Scalability/IdempotentWorker
     #
     # This is in addition to the regular (cron-like) scheduling of this job.
     UpdateAllMirrorsWorker.perform_async if Gitlab::Mirror.reschedule_immediately?
+  end
+
+  # This was introduced because Sidekiq/Redis incidents can leave scheduled jobs stuck. This allows us to not wait
+  # for how long it takes StuckImportJob to run, and instead mark them as failed on the next run of this worker.
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/477716.
+  def fail_stuck_mirrors!
+    return unless Feature.enabled?(:fail_stuck_mirrors, Feature.current_request)
+
+    Project.stuck_mirrors(STUCK_JOBS_DURATION_THRESHOLD, STUCK_JOBS_LIMIT).each do |project|
+      project.import_state.mark_as_failed('Project import state stuck in scheduled for too long')
+    end
   end
 
   # rubocop: disable CodeReuse/ActiveRecord
