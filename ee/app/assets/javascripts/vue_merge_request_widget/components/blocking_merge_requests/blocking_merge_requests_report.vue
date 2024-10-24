@@ -160,7 +160,7 @@ export default {
   >
     <template #success>
       {{ __('All merge request dependencies have been merged') }}
-      <span class="text-secondary gl-ml-1">
+      <span class="gl-ml-1 gl-text-subtle">
         {{
           sprintf(__('(%{mrCount} merged)'), {
             mrCount: blockingMergeRequests.totalCount - unmergedBlockingMergeRequests.length,
