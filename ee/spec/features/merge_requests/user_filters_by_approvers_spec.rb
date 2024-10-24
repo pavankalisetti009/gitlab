@@ -26,6 +26,11 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
     create(:merge_request, approval_groups: [group], title: 'Bugfix4', source_project: project, source_branch: 'bugfix4')
   end
 
+  before_all do
+    project.add_developer(first_user)
+    project.add_developer(group_user)
+  end
+
   before do
     sign_in(user)
     visit project_merge_requests_path(project)
@@ -34,7 +39,7 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
   context 'by "approvers"' do
     context 'filtering by approver:none' do
       it 'applies the filter' do
-        input_filtered_search('approver:=none')
+        select_tokens 'Approver', 'None', submit: true
 
         expect(page).to have_issuable_counts(open: 1, closed: 0, all: 1)
 
@@ -47,7 +52,7 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
 
     context 'filtering by approver:any' do
       it 'applies the filter' do
-        input_filtered_search('approver:=any')
+        select_tokens 'Approver', 'Any', submit: true
 
         expect(page).to have_issuable_counts(open: 3, closed: 0, all: 3)
 
@@ -60,7 +65,7 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
 
     context 'filtering by approver:@username' do
       it 'applies the filter' do
-        input_filtered_search("approver:=@#{first_user.username}")
+        select_tokens 'Approver', first_user.username, submit: true
 
         expect(page).to have_issuable_counts(open: 2, closed: 0, all: 2)
 
@@ -73,7 +78,7 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
 
     context 'filtering by multiple approvers' do
       it 'applies the filter' do
-        input_filtered_search("approver:=@#{first_user.username} approver:=@#{user.username}")
+        select_tokens 'Approver', first_user.username, 'Approver', user.username, submit: true
 
         expect(page).to have_issuable_counts(open: 1, closed: 0, all: 1)
 
@@ -86,7 +91,7 @@ RSpec.describe 'Merge Requests > User filters', :js, feature_category: :code_rev
 
     context 'filtering by an approver from a group' do
       it 'applies the filter' do
-        input_filtered_search("approver:=@#{group_user.username}")
+        select_tokens 'Approver', group_user.username, submit: true
 
         expect(page).to have_issuable_counts(open: 1, closed: 0, all: 1)
 

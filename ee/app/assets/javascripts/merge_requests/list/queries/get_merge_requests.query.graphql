@@ -1,13 +1,14 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
-#import "./merge_request.fragment.graphql"
+#import "~/merge_requests/list/queries/merge_request.fragment.graphql"
 
-query getMergeRequests(
+query getMergeRequestsEE(
   $hideUsers: Boolean = false
   $isSignedIn: Boolean = false
   $fullPath: ID!
   $sort: MergeRequestSort
   $state: MergeRequestState
   $approvedBy: [String!]
+  $approver: [String!]
   $assigneeUsernames: String
   $assigneeWildcardId: AssigneeWildcardId
   $reviewerUsername: String
@@ -37,6 +38,7 @@ query getMergeRequests(
       sort: $sort
       state: $state
       approvedBy: $approvedBy
+      approver: $approver
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
