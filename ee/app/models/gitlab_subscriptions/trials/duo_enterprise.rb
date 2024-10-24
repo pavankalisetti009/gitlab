@@ -3,7 +3,7 @@
 module GitlabSubscriptions
   module Trials
     module DuoEnterprise
-      def self.add_on_purchase_for_namespace(namespace)
+      def self.any_add_on_purchase_for_namespace(namespace)
         GitlabSubscriptions::NamespaceAddOnPurchasesFinder
           .new(namespace, add_on: :duo_enterprise, trial: true, only_active: false)
           .execute
@@ -22,7 +22,7 @@ module GitlabSubscriptions
         ::Gitlab::Saas.feature_available?(:subscriptions_trials) &&
           user.can?(:admin_namespace, namespace) &&
           GitlabSubscriptions::Trials::AddOnStatus.new(
-            add_on_purchase: add_on_purchase_for_namespace(namespace.root_ancestor)
+            add_on_purchase: any_add_on_purchase_for_namespace(namespace.root_ancestor)
           ).show?
       end
     end

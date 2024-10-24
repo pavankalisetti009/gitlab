@@ -62,7 +62,7 @@ module GitlabSubscriptions
       strong_memoize_attr :duo_enterprise_status
 
       def duo_enterprise_trial_add_on_purchase
-        GitlabSubscriptions::Trials::DuoEnterprise.add_on_purchase_for_namespace(namespace)
+        GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(namespace)
       end
       strong_memoize_attr :duo_enterprise_trial_add_on_purchase
 

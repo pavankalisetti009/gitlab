@@ -159,8 +159,8 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
     end
   end
 
-  describe '.add_on_purchase_for_namespace' do
-    subject(:add_on_purchase_for_namespace) { described_class.add_on_purchase_for_namespace(namespace) }
+  describe '.any_add_on_purchase_for_namespace' do
+    subject(:any_add_on_purchase_for_namespace) { described_class.any_add_on_purchase_for_namespace(namespace) }
 
     context 'when there is an add_on_purchase' do
       let_it_be(:add_on_purchase) do
@@ -168,7 +168,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
       end
 
       it 'returns the add_on_purchase' do
-        expect(add_on_purchase_for_namespace).to eq(add_on_purchase)
+        expect(any_add_on_purchase_for_namespace).to eq(add_on_purchase)
       end
     end
 
@@ -178,13 +178,13 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
       end
 
       it 'returns nil' do
-        expect(add_on_purchase_for_namespace).to be_nil
+        expect(any_add_on_purchase_for_namespace).to be_nil
       end
     end
 
     context 'when there are no add_on_purchases' do
       it 'returns nil' do
-        expect(add_on_purchase_for_namespace).to be_nil
+        expect(any_add_on_purchase_for_namespace).to be_nil
       end
     end
   end

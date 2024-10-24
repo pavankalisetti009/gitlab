@@ -11,9 +11,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
 
   before do
     build(:gitlab_subscription, :ultimate, namespace: group)
-    allow(GitlabSubscriptions::Trials::DuoPro).to receive(:add_on_purchase_for_namespace)
+    allow(GitlabSubscriptions::Trials::DuoPro).to receive(:any_add_on_purchase_for_namespace)
     allow(GitlabSubscriptions::Trials::DuoPro)
-      .to receive(:add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
+      .to receive(:any_add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
   end
 
   describe '#attributes' do

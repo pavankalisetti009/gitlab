@@ -91,9 +91,8 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
 
     context 'when duo enterprise is available' do
       before do
-        allow(GitlabSubscriptions::Trials::DuoEnterprise).to receive(:add_on_purchase_for_namespace)
         allow(GitlabSubscriptions::Trials::DuoEnterprise)
-          .to receive(:add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
+          .to receive(:any_add_on_purchase_for_namespace).with(group).and_return(add_on_purchase)
       end
 
       it 'returns ultimate type and correct discover page path for bundled trials' do

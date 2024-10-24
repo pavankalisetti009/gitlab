@@ -29,7 +29,7 @@ module GitlabSubscriptions
         if @result.success?
           # lead and trial created
           flash[:success] = success_flash_message(
-            GitlabSubscriptions::Trials::DuoEnterprise.add_on_purchase_for_namespace(@result.payload[:namespace])
+            GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(@result.payload[:namespace])
           )
 
           redirect_to group_settings_gitlab_duo_seat_utilization_index_path(@result.payload[:namespace])
