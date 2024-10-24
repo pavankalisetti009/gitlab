@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, feature_category: :acquisition do
-  include Rails.application.routes.url_helpers
-
   let(:user) { build(:user) }
   let(:group) { build(:group) }
   let(:add_on_purchase) do
