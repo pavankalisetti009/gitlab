@@ -1,6 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import { GlBadge } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
+import { DEFAULT_PER_PAGE } from '~/api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
@@ -39,6 +40,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
   let enableAddOnUsersFiltering = false;
+  let enableAddOnUsersPagesizeSelection = false;
   let wrapper;
 
   const fullPath = 'namespace/full-path';
@@ -48,7 +50,7 @@ describe('Add On Eligible User List', () => {
   const error = new Error('Error');
 
   const defaultPaginationParams = {
-    first: 20,
+    first: DEFAULT_PER_PAGE,
     last: null,
     after: null,
     before: null,
@@ -103,6 +105,7 @@ describe('Add On Eligible User List', () => {
         fullPath,
         glFeatures: {
           enableAddOnUsersFiltering,
+          enableAddOnUsersPagesizeSelection,
         },
         addDuoProHref: 'http://customers.gitlab.com/namespaces/0/duo_pro_seats',
         groupId: 1,
@@ -131,6 +134,7 @@ describe('Add On Eligible User List', () => {
         duoTier,
         isLoading: false,
         pageInfo,
+        pageSize: DEFAULT_PER_PAGE,
         users,
         search: '',
       };
@@ -273,6 +277,29 @@ describe('Add On Eligible User List', () => {
         first: null,
         last: 20,
         before: startCursor,
+      });
+    });
+  });
+
+  describe('with page size selection', () => {
+    beforeEach(() => {
+      enableAddOnUsersPagesizeSelection = true;
+      return createComponent();
+    });
+
+    it('fetches changed number of user items', async () => {
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        first: DEFAULT_PER_PAGE,
+      });
+
+      const newPageSize = 50;
+      findAddOnEligibleUserList().vm.$emit('page-size-change', newPageSize);
+      await waitForPromises();
+
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
+        ...defaultQueryVariables,
+        first: newPageSize,
       });
     });
   });

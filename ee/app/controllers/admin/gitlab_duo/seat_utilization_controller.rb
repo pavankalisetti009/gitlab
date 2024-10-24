@@ -15,6 +15,7 @@ module Admin
 
       before_action do
         push_frontend_feature_flag(:enable_add_on_users_filtering)
+        push_frontend_feature_flag(:enable_add_on_users_pagesize_selection)
       end
 
       def index

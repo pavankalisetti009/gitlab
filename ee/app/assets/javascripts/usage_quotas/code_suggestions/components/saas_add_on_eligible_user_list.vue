@@ -1,9 +1,9 @@
 <script>
 import { GlAvatarLabeled, GlAvatarLink, GlBadge } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import { DEFAULT_PER_PAGE } from '~/api';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { DEFAULT_PER_PAGE } from '~/api';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
 import {
@@ -160,6 +160,10 @@ export default {
     handleSort(sort) {
       this.sort = sort;
     },
+    handlePageSizeChange(size) {
+      this.pageSize = size;
+      this.pagination.first = size;
+    },
     isGroupInvite(user) {
       return user.membershipType === 'group_invite';
     },
@@ -182,10 +186,12 @@ export default {
     :users="addOnEligibleUsers"
     :is-loading="$apollo.loading"
     :page-info="pageInfo"
+    :page-size="pageSize"
     :search="filterOptions.search"
     :duo-tier="duoTier"
     @next="handleNext"
     @prev="handlePrev"
+    @page-size-change="handlePageSizeChange"
   >
     <template #search-and-sort-bar>
       <search-and-sort-bar

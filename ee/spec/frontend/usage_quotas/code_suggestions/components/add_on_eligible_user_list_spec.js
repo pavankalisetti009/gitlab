@@ -9,6 +9,7 @@ import {
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { DEFAULT_PER_PAGE } from '~/api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import CodeSuggestionsAddOnAssignment from 'ee/usage_quotas/code_suggestions/components/code_suggestions_addon_assignment.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
@@ -34,6 +35,7 @@ import {
   DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
 } from 'ee/usage_quotas/code_suggestions/constants';
+import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
 import userAddOnAssignmentBulkCreateMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_bulk_create.mutation.graphql';
@@ -196,6 +198,7 @@ describe('Add On Eligible User List', () => {
 
   const createComponent = ({
     enableAddOnUsersFiltering = false,
+    enableAddOnUsersPagesizeSelection = false,
     isBulkAddOnAssignmentEnabled = false,
     addonAssignmentBulkCreateHandler = bulkAssignAddOnHandler,
     addonAssignmentBulkRemoveHandler = bulkUnassignAddOnHandler,
@@ -215,6 +218,7 @@ describe('Add On Eligible User List', () => {
           addOnPurchaseId,
           users: eligibleUsers,
           pageInfo: pageInfoWithNoPages,
+          pageSize: DEFAULT_PER_PAGE,
           isLoading: false,
           duoTier: 'pro',
           ...props,
@@ -223,6 +227,7 @@ describe('Add On Eligible User List', () => {
           addDuoProHref,
           glFeatures: {
             enableAddOnUsersFiltering,
+            enableAddOnUsersPagesizeSelection,
           },
           isBulkAddOnAssignmentEnabled,
           groupId: 1,
@@ -253,6 +258,7 @@ describe('Add On Eligible User List', () => {
   const findAllCodeSuggestionsAddonComponents = () =>
     wrapper.findAllComponents(CodeSuggestionsAddOnAssignment);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+  const findPageSelector = () => wrapper.findComponent(PageSizeSelector);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
   const serializeUser = (rowWrapper) => {
@@ -717,6 +723,28 @@ describe('Add On Eligible User List', () => {
         });
 
         expect(findPagination().exists()).toBe(false);
+      });
+    });
+
+    describe('when enableAddOnUsersPagesizeSelection is enabled', () => {
+      beforeEach(() => {
+        return createComponent({
+          props: { pageInfo: pageInfoWithMorePages },
+          enableAddOnUsersPagesizeSelection: true,
+        });
+      });
+
+      it('renders page size selection element', () => {
+        expect(findPageSelector().exists()).toBe(true);
+        expect(findPageSelector().props('value')).toBe(DEFAULT_PER_PAGE);
+      });
+
+      it('triggers a call to change page size', async () => {
+        const pageSize = 50;
+        findPageSelector().vm.$emit('input', pageSize);
+        await waitForPromises();
+
+        expect(wrapper.emitted('page-size-change')[0]).toEqual([pageSize]);
       });
     });
 
