@@ -202,20 +202,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
 
       let(:params) { { component_ids: [component_1.id, component_2.id] } }
 
-      context 'when feature flag is enabled' do
-        it 'returns only matching Sbom::Occurrences' do
-          expect(execute.to_a).to match_array([occurrence_1, occurrence_2])
-        end
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(group_level_dependencies_filtering_by_component: false)
-        end
-
-        it 'returns the original relation' do
-          expect(execute.to_a).to match_array(target_occurrences + [occurrence_1, occurrence_2])
-        end
+      it 'returns only matching Sbom::Occurrences' do
+        expect(execute.to_a).to match_array([occurrence_1, occurrence_2])
       end
     end
 
@@ -238,20 +226,8 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
 
       let(:params) { { component_names: [component_1.name] } }
 
-      context 'when feature flag is enabled' do
-        it 'returns only matching Sbom::Occurrences' do
-          expect(execute.to_a).to match_array([occurrence_1])
-        end
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(group_level_dependencies_filtering_by_component: false)
-        end
-
-        it 'returns the original relation' do
-          expect(execute.to_a).to match_array(target_occurrences + [occurrence_1, occurrence_2])
-        end
+      it 'returns only matching Sbom::Occurrences' do
+        expect(execute.to_a).to match_array([occurrence_1])
       end
     end
 
