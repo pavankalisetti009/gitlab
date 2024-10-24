@@ -41,25 +41,6 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
       service.execute
     end
 
-    context 'when temp_unapprove_mr_create is off' do
-      before do
-        stub_feature_flags(temp_unapprove_mr_create: false)
-      end
-
-      it 'does not temporarily unapprove the MR' do
-        mr = service.execute
-
-        expect(mr.temporarily_unapproved?).to be_falsey
-      end
-
-      it 'does not pass any params to the SyncCodeOwner worker' do
-        expect(::MergeRequests::SyncCodeOwnerApprovalRulesWorker).to receive(:perform_async)
-          .with(kind_of(Integer))
-
-        service.execute
-      end
-    end
-
     it 'schedules refresh of code owners for the merge request' do
       Sidekiq::Testing.fake! do
         expect { service.execute }.to change(::MergeRequests::SyncCodeOwnerApprovalRulesWorker.jobs, :size).by(1)
