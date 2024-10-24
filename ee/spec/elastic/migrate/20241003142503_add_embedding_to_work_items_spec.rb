@@ -39,9 +39,9 @@ RSpec.describe AddEmbeddingToWorkItems, feature_category: :global_search do
 
     before do
       allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-      allow(helper).to receive(:matching_distribution?).and_return(vectors_supported)
+      allow(helper).to receive(:vectors_supported?).and_return(vectors_supported)
       described_class.skip_if -> do
-        !Gitlab::Elastic::Helper.default.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+        !Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch)
       end
     end
 

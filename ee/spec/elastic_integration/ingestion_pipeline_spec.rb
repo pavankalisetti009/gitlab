@@ -8,10 +8,12 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
   let_it_be(:project) { create(:project, maintainers: user) }
 
   let(:project_routing) { "project_#{project.id}" }
+  let(:group_routing) { "group_#{project.root_ancestor.id}" }
   let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
   let(:bulk_indexer) { ::Gitlab::Elastic::BulkIndexer.new(logger: logger) }
   let(:bookkeeping_service) { ::Elastic::ProcessBookkeepingService }
   let(:client) { Gitlab::Elastic::Helper.default.client }
+  let(:embedding) { Array.new(768, 1.0) }
 
   before do
     allow(::Gitlab::Elastic::BulkIndexer).to receive(:new).and_return(bulk_indexer)
@@ -125,59 +127,63 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
   end
 
   context 'for embedding references', :elastic_clean do
+    let(:helper) { Gitlab::Elastic::Helper.default }
+
     before do
-      skip 'embeddings are not supported' unless Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch)
+      unless helper.vectors_supported?(:elasticsearch) || helper.vectors_supported?(:opensearch)
+        skip 'embeddings are not supported'
+      end
 
       allow(project).to receive(:public?).and_return(true)
 
       allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
 
       allow_next_instance_of(Search::Elastic::References::Embedding) do |ref|
-        allow(ref).to receive(:as_indexed_json).and_return({ embedding_version: 0, routing: project_routing })
+        allow(ref).to receive(:as_indexed_json).and_return({ embedding_0: embedding, routing: group_routing })
       end
-
-      AddEmbeddingToIssues.new(20240410193847).migrate
     end
 
     it 'adds embedding on create and keeps embedding when title is updated' do
-      issue = create(:issue, project: project)
+      work_item = create(:work_item, project: project)
       ensure_elasticsearch_index!
 
-      expect(docs_in_index('gitlab-test-issues', include_source: true)).to match_array([hash_including({
-        'id' => issue.id, 'routing' => project_routing, 'title' => issue.title, 'embedding_version' => 0
+      expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
+        'id' => work_item.id, 'routing' => group_routing, 'title' => work_item.title, 'embedding_0' => embedding
       })])
 
       new_title = 'My title 2'
-      issue.update!(title: new_title)
+      work_item.update!(title: new_title)
       ensure_elasticsearch_index!
 
-      expect(docs_in_index('gitlab-test-issues', include_source: true)).to match_array([hash_including({
-        'id' => issue.id, 'routing' => project_routing, 'title' => new_title, 'embedding_version' => 0
+      expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
+        'id' => work_item.id, 'routing' => group_routing, 'title' => new_title, 'embedding_0' => embedding
       })])
     end
 
     context 'when embeddings is not enabled' do
       before do
-        stub_feature_flags(elasticsearch_issue_embedding: false)
+        stub_feature_flags(elasticsearch_work_item_embedding: false)
       end
 
       it 'does not add embeddings on create or update' do
-        issue = create(:issue, project: project)
+        work_item = create(:work_item, project: project)
         ensure_elasticsearch_index!
 
-        docs_in_index = docs_in_index('gitlab-test-issues', include_source: true)
+        docs_in_index = docs_in_index('gitlab-test-work_items', include_source: true)
+        old_title = work_item.title
+
         expect(docs_in_index)
-          .to match_array([hash_including({ 'id' => issue.id, 'routing' => project_routing, 'title' => issue.title })])
-        expect(docs_in_index.first.keys).not_to include('embedding_version')
+          .to match_array([hash_including({ 'id' => work_item.id, 'routing' => group_routing, 'title' => old_title })])
+        expect(docs_in_index.first.keys).not_to include('embedding_0')
 
         new_title = 'My title 2'
-        issue.update!(title: new_title)
+        work_item.update!(title: new_title)
         ensure_elasticsearch_index!
 
-        docs_in_index = docs_in_index('gitlab-test-issues', include_source: true)
+        docs_in_index = docs_in_index('gitlab-test-work_items', include_source: true)
         expect(docs_in_index)
-          .to match_array([hash_including({ 'id' => issue.id, 'routing' => project_routing, 'title' => new_title })])
-        expect(docs_in_index.first.keys).not_to include('embedding_version')
+          .to match_array([hash_including({ 'id' => work_item.id, 'routing' => group_routing, 'title' => new_title })])
+        expect(docs_in_index.first.keys).not_to include('embedding_0')
       end
     end
   end

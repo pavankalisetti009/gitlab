@@ -398,13 +398,6 @@ module Gitlab
         end
       end
 
-      # Vectors are only supported on Elasticsearch 8+
-      def vectors_supported?(distribution)
-        info = server_info
-
-        distribution == :elasticsearch && info[:distribution] == 'elasticsearch' && info[:version].to_f >= 8
-      end
-
       # Checks if the Elasticsearch/OpenSearch distribution and version match the specified requirements.
       # @param distribution [Symbol]: The expected distribution (:elasticsearch or :opensearch)
       # @param min_version [String]: The minimum required version (optional)
@@ -418,6 +411,10 @@ module Gitlab
         return true unless min_version
 
         Gitlab::VersionInfo.parse(info[:version]) >= Gitlab::VersionInfo.parse(min_version)
+      end
+
+      def vectors_supported?(distribution)
+        matching_distribution?(distribution, min_version: distribution == :elasticsearch ? '8.0.0' : nil)
       end
 
       def create_index(index_name:, alias_name:, with_alias:, settings:, mappings:, options: {})

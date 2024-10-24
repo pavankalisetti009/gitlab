@@ -34,7 +34,7 @@ module Search
           end
 
           def elasticsearch_8_plus_mappings(mappings = {})
-            return mappings unless helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+            return mappings unless helper.vectors_supported?(:elasticsearch)
 
             mappings.merge({
               embedding_0: {
@@ -47,7 +47,7 @@ module Search
           end
 
           def opensearch_mappings(mappings = {})
-            return mappings unless helper.matching_distribution?(:opensearch)
+            return mappings unless helper.vectors_supported?(:opensearch)
 
             mappings.merge({
               embedding_0: {
@@ -68,7 +68,7 @@ module Search
           private
 
           def opensearch_settings(settings)
-            return settings unless helper.matching_distribution?(:opensearch)
+            return settings unless helper.vectors_supported?(:opensearch)
 
             settings.deep_merge({ index: { knn: true } })
           end

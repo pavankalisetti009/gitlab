@@ -30,12 +30,12 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
     end
 
     it 'contains platform and version specific mappings' do
-      if helper.matching_distribution?(:elasticsearch, min_version: '8.0.0')
+      if helper.vectors_supported?(:elasticsearch)
         expect(mappings.keys).to include(:embedding_0)
         expect(described_class.mappings.to_hash[:properties][:embedding_0][:dims]).to eq(expected_dimensions)
       end
 
-      if helper.matching_distribution?(:opensearch)
+      if helper.vectors_supported?(:opensearch)
         expect(mappings.keys).to include(:embedding_0)
         expect(described_class.mappings.to_hash[:properties][:embedding_0][:dimension]).to eq(expected_dimensions)
       end
@@ -50,7 +50,7 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
     end
 
     it 'contains platform and version specific mappings' do
-      expect(settings).to include(:knn) if helper.matching_distribution?(:opensearch)
+      expect(settings).to include(:knn) if helper.vectors_supported?(:opensearch)
     end
   end
 end

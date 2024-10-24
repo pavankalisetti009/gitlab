@@ -36,13 +36,12 @@ module Search
 
         # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
         def track_embedding?
-          instance_of?(Issue) &&
+          instance_of?(WorkItem) &&
             project&.public? &&
             Feature.enabled?(:ai_global_switch, type: :ops) &&
-            Feature.enabled?(:elasticsearch_issue_embedding, project, type: :ops) &&
+            Feature.enabled?(:elasticsearch_work_item_embedding, project, type: :ops) &&
             Gitlab::Saas.feature_available?(:ai_vertex_embeddings) &&
-            Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch) &&
-            ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_issues)
+            (work_item_embeddings_elastic? || work_item_embeddings_opensearch?)
         end
         # rubocop: enable Gitlab/FeatureFlagWithoutActor
 
@@ -80,6 +79,16 @@ module Search
         end
         indexing_data << synced_epic if synced_epic.present?
         indexing_data.compact
+      end
+
+      def work_item_embeddings_elastic?
+        Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch) &&
+          ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items)
+      end
+
+      def work_item_embeddings_opensearch?
+        Gitlab::Elastic::Helper.default.vectors_supported?(:opensearch) &&
+          ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items_opensearch)
       end
     end
   end
