@@ -1,13 +1,11 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import ModalRuleRemove from 'ee/approvals/components/rule_modal/remove_rule.vue';
 import { stubComponent } from 'helpers/stub_component';
-import GlModalVuex from '~/vue_shared/components/gl_modal_vuex.vue';
 
-const MODAL_MODULE = 'deleteModal';
 const TEST_MODAL_ID = 'test-delete-modal-id';
 const TEST_RULE = {
   id: 7,
@@ -28,13 +26,13 @@ describe('Approvals ModalRuleRemove', () => {
   let actions;
   let deleteModalState;
 
-  const findModal = () => wrapper.findComponent(GlModalVuex);
+  const findModal = () => wrapper.findComponent(GlModal);
 
   const factory = (options = {}) => {
     const store = new Vuex.Store({
       actions,
       modules: {
-        [MODAL_MODULE]: {
+        deleteModal: {
           namespaced: true,
           state: deleteModalState,
         },
@@ -51,7 +49,7 @@ describe('Approvals ModalRuleRemove', () => {
       store,
       propsData,
       stubs: {
-        GlModalVuex: stubComponent(GlModalVuex, {
+        GlModal: stubComponent(GlModal, {
           props: ['modalModule', 'modalId', 'actionPrimary', 'actionCancel'],
         }),
         GlSprintf,
@@ -76,7 +74,6 @@ describe('Approvals ModalRuleRemove', () => {
     expect(modal.exists()).toBe(true);
     expect(modal.props()).toEqual(
       expect.objectContaining({
-        modalModule: MODAL_MODULE,
         modalId: TEST_MODAL_ID,
         actionPrimary: {
           text: 'Remove approvers',
