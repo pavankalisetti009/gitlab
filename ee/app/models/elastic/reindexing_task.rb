@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Elastic::ReindexingTask < ApplicationRecord
+  include EachBatch
+
   self.table_name = 'elastic_reindexing_tasks'
 
   validates :max_slices_running, presence: true
@@ -9,7 +11,8 @@ class Elastic::ReindexingTask < ApplicationRecord
 
   attribute :options, :ind_jsonb # for indifferent access
 
-  has_many :subtasks, class_name: 'Elastic::ReindexingSubtask', foreign_key: :elastic_reindexing_task_id
+  has_many :subtasks, class_name: 'Elastic::ReindexingSubtask',
+    foreign_key: :elastic_reindexing_task_id, inverse_of: :elastic_reindexing_task
 
   enum state: {
     initial: 0,

@@ -47,6 +47,7 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
       it 'schedules other tasks' do
         expect(task_executor_service).to receive(:execute).with(:recreate_index)
         expect(task_executor_service).to receive(:execute).with(:clear_index_status)
+        expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
         expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
         tasks_to_schedule.each do |task|
@@ -69,9 +70,10 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
             end
           end
 
-          it 'recreates the index, clears index status, and schedules other tasks' do
+          it 'recreates the index, clears index status, clears reindex status, and schedules other tasks' do
             expect(task_executor_service).to receive(:execute).with(:recreate_index)
             expect(task_executor_service).to receive(:execute).with(:clear_index_status)
+            expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
             expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
             tasks_to_schedule.each do |task|
@@ -118,9 +120,10 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
         let(:options) { { 'skip' => 'projects' } }
         let(:tasks_to_schedule) { described_class::TASKS - [:initiate, :projects] }
 
-        it 'recreates the index, clears index status, and schedules other tasks' do
+        it 'recreates the index, clears index status, clears reindex status, and schedules other tasks' do
           expect(task_executor_service).to receive(:execute).with(:recreate_index)
           expect(task_executor_service).to receive(:execute).with(:clear_index_status)
+          expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
           expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
           tasks_to_schedule.each do |task|
