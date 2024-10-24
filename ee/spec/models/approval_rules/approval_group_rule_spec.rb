@@ -81,11 +81,10 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
 
     subject(:group_approval_rule) { rule.protected_branches }
 
-    describe Quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470289' do
-      it 'returns all protected branches belonging to group projects and group level protected branches' do
-        expect(group_approval_rule).to contain_exactly(*protected_branches_project_1, *protected_branches_project_2,
-          *group_protected_branches)
-      end
+    it 'returns all protected branches belonging to group projects and group level protected branches',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470289' do
+      expect(group_approval_rule).to contain_exactly(*protected_branches_project_1, *protected_branches_project_2,
+        *group_protected_branches)
     end
   end
 end
