@@ -34940,6 +34940,9 @@ msgstr ""
 msgid "MlModelRegistry|Model card"
 msgstr ""
 
+msgid "MlModelRegistry|Model created %{timeAgo} by %{author}"
+msgstr ""
+
 msgid "MlModelRegistry|Model deleted successfully"
 msgstr ""
 
