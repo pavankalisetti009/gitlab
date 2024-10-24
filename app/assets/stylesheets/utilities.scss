@@ -64,12 +64,6 @@ $type-scale: (
   z-index: $zindex-dropdown-menu !important;
 }
 
-// Will be moved to @gitlab/ui by https://gitlab.com/gitlab-org/gitlab-ui/-/issues/1465
-// stylelint-disable-next-line gitlab/no-gl-class
-.gl-focus-ring-border-1-gray-900\! {
-  @include gl-focus($gl-border-size-1, $gray-900, true);
-}
-
 // stylelint-disable-next-line gitlab/no-gl-class
 .gl-last-of-type-border-b-0:last-of-type {
   border-bottom-width: 0;
