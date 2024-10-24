@@ -44,46 +44,12 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   end
 
   describe 'callbacks' do
-    let_it_be(:namespace_2) { create(:group) }
-    let_it_be(:another_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace_2) }
-
-    describe '#create!' do
-      context 'when feature flag zoekt_initial_indexing_task is disabled' do
-        before do
-          stub_feature_flags(zoekt_initial_indexing_task: false)
-        end
-
-        it 'triggers indexing for the namespace' do
-          expect(::Search::Zoekt::NamespaceIndexerWorker).to receive(:perform_async)
-            .with(another_enabled_namespace.root_namespace_id, :index)
-
-          another_replica = create(:zoekt_replica, zoekt_enabled_namespace: another_enabled_namespace)
-
-          described_class.create!(zoekt_enabled_namespace: another_enabled_namespace, node: zoekt_node,
-            namespace_id: another_enabled_namespace.root_namespace_id, replica: another_replica)
-        end
-      end
-
-      it 'does not triggers indexing for the namespace' do
-        expect(::Search::Zoekt::NamespaceIndexerWorker).not_to receive(:perform_async)
-          .with(another_enabled_namespace.root_namespace_id, :index)
-
-        another_replica = create(:zoekt_replica, zoekt_enabled_namespace: another_enabled_namespace)
-
-        described_class.create!(zoekt_enabled_namespace: another_enabled_namespace, node: zoekt_node,
-          namespace_id: another_enabled_namespace.root_namespace_id, replica: another_replica)
-      end
-    end
-
     describe '#destroy!' do
-      it 'removes index for the namespace' do
-        another_zoekt_index = create(:zoekt_index, zoekt_enabled_namespace: another_enabled_namespace,
-          namespace_id: another_enabled_namespace.root_namespace_id)
+      it 'calls Search::Zoekt::NamespaceIndexerWorker for the namespace with delete operation' do
+        expect(Search::Zoekt::NamespaceIndexerWorker).to receive(:perform_async)
+          .with(zoekt_enabled_namespace.root_namespace_id, :delete, zoekt_node.id)
 
-        expect(::Search::Zoekt::NamespaceIndexerWorker).to receive(:perform_async)
-          .with(another_enabled_namespace.root_namespace_id, :delete, another_zoekt_index.zoekt_node_id)
-
-        another_zoekt_index.destroy!
+        zoekt_index.destroy!
       end
     end
   end
