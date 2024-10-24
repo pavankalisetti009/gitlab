@@ -1,9 +1,8 @@
 <script>
-import { GlSprintf } from '@gitlab/ui';
+import { GlModal, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { n__, __ } from '~/locale';
-import GlModalVuex from '~/vue_shared/components/gl_modal_vuex.vue';
 
 const i18n = {
   cancelButtonText: __('Cancel'),
@@ -19,7 +18,7 @@ const i18n = {
 
 export default {
   components: {
-    GlModalVuex,
+    GlModal,
     GlSprintf,
   },
   props: {
@@ -31,6 +30,7 @@ export default {
   computed: {
     ...mapState('deleteModal', {
       rule: 'data',
+      isVisible: 'isVisible',
     }),
     approversCount() {
       return this.rule.eligibleApprovers.length;
@@ -54,8 +54,23 @@ export default {
   },
   methods: {
     ...mapActions(['deleteRule']),
+    ...mapActions({
+      modalShow(dispatch) {
+        return dispatch(`deleteModal/show`);
+      },
+      modalHide(dispatch) {
+        return dispatch(`deleteModal/hide`);
+      },
+    }),
     submit() {
       this.deleteRule(this.rule.id);
+    },
+    handleModalChange(isOpen) {
+      if (isOpen) {
+        this.modalShow();
+      } else {
+        this.modalHide();
+      }
     },
   },
   cancelButtonProps: {
@@ -66,12 +81,13 @@ export default {
 </script>
 
 <template>
-  <gl-modal-vuex
-    modal-module="deleteModal"
+  <gl-modal
+    v-model="isVisible"
     :modal-id="modalId"
     :title="$options.i18n.modalTitle"
     :action-primary="primaryButtonProps"
     :action-cancel="$options.cancelButtonProps"
+    @change="handleModalChange"
     @ok.prevent="submit"
   >
     <p v-if="rule">
@@ -88,5 +104,5 @@ export default {
         </template>
       </gl-sprintf>
     </p>
-  </gl-modal-vuex>
+  </gl-modal>
 </template>
