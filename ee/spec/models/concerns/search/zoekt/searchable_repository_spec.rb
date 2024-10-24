@@ -37,7 +37,7 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
   describe '#update_zoekt_index!' do
     let(:node_id) { ::Search::Zoekt::Node.last.id }
 
-    it 'makes updates available' do
+    it 'makes updates available', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460391' do
       project.repository.create_file(
         user,
         'somenewsearchablefile.txt',
