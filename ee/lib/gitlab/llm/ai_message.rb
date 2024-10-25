@@ -82,7 +82,7 @@ module Gitlab
       end
 
       def slash_command_prompt?
-        false unless slash_command?
+        return false unless slash_command?
 
         command, _ = slash_command_and_input
 
