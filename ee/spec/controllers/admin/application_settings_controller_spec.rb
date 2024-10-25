@@ -157,7 +157,9 @@ RSpec.describe Admin::ApplicationSettingsController do
           let(:promotion_management_available) { true }
 
           before do
-            allow(controller).to receive(:promotion_management_available?).and_return(promotion_management_available)
+            allow_next_instance_of(::ApplicationSettings::UpdateService) do |instance|
+              allow(instance).to receive(:promotion_management_available?).and_return(promotion_management_available)
+            end
           end
 
           context 'with promotion management available' do

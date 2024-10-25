@@ -87,6 +87,7 @@ module EE
         :scan_execution_policies_action_limit
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
+        settings.concat(enable_promotion_management_attributes)
       end
     end
 
@@ -313,6 +314,12 @@ module EE
         telesign_api_key
         telesign_customer_xid
       ]
+    end
+
+    def enable_promotion_management_attributes
+      return [] if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      %i[enable_member_promotion_management]
     end
   end
 end

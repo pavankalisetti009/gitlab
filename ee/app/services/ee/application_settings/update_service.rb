@@ -5,6 +5,7 @@ module EE
     module UpdateService
       extend ::Gitlab::Utils::Override
       extend ActiveSupport::Concern
+      include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
       override :execute
       def execute
@@ -21,6 +22,8 @@ module EE
 
         elasticsearch_namespace_ids = params.delete(:elasticsearch_namespace_ids)
         elasticsearch_project_ids = params.delete(:elasticsearch_project_ids)
+
+        params[:enable_member_promotion_management] = get_enable_member_promotion_management
 
         if result = super
           find_or_create_elasticsearch_index if params.keys.any? { |key| key.to_s.start_with?('elasticsearch') }
@@ -119,6 +122,21 @@ module EE
 
       def elasticsearch_client
         ::Gitlab::Elastic::Client.build(application_setting.elasticsearch_config)
+      end
+
+      def get_enable_member_promotion_management
+        param_value = ActiveRecord::Type::Boolean.new.cast(params.delete(:enable_member_promotion_management))
+
+        return application_setting.enable_member_promotion_management if param_value.nil?
+        return false unless promotion_management_available?
+        return true if param_value == false && pending_member_approvals?
+
+        param_value
+      end
+
+      def pending_member_approvals?
+        ::GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder
+          .new(current_user).execute.any?
       end
     end
   end

@@ -21,6 +21,10 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       expect(visible_attributes).to include(*expected_fields)
     end
 
+    it 'contains member_promotion_management parameters' do
+      expect(visible_attributes).to include(*%i[enable_member_promotion_management])
+    end
+
     context 'when identity verification is enabled' do
       before do
         stub_saas_features(identity_verification: true)
