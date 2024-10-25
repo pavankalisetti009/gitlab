@@ -182,7 +182,7 @@ module API
           .for_source_or_target(epic)
           .find(declared_params[:related_epic_link_id])
 
-        result = ::Epics::RelatedEpicLinks::DestroyService
+        result = ::WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService
           .new(epic_link, epic, current_user)
           .execute
 
