@@ -46,6 +46,14 @@ export default {
           token: ProjectToken,
           operators: OPERATORS_IS,
         },
+        {
+          type: 'component_names',
+          title: __('Component'),
+          multiSelect: true,
+          unique: true,
+          token: ComponentToken,
+          operators: OPERATORS_IS,
+        },
         ...(this.glFeatures.groupLevelDependenciesFilteringByPackager
           ? [
               {
@@ -54,18 +62,6 @@ export default {
                 multiSelect: true,
                 unique: true,
                 token: PackagerToken,
-                operators: OPERATORS_IS,
-              },
-            ]
-          : []),
-        ...(this.glFeatures.groupLevelDependenciesFilteringByComponent
-          ? [
-              {
-                type: 'component_names',
-                title: __('Component'),
-                multiSelect: true,
-                unique: true,
-                token: ComponentToken,
                 operators: OPERATORS_IS,
               },
             ]

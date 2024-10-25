@@ -22,7 +22,6 @@ describe('GroupDependenciesFilteredSearch', () => {
       provide: {
         belowGroupLimit: true,
         glFeatures: {
-          groupLevelDependenciesFilteringByComponent: true,
           groupLevelDependenciesFilteringByPackager: true,
         },
       },
@@ -131,25 +130,6 @@ describe('GroupDependenciesFilteredSearch', () => {
       expect(findPopover().props('title')).toBe('Filtering unavailable');
       expect(findPopover().text()).toContain(
         "This group exceeds the maximum number of 600 sub-groups. We cannot accurately filter or search the dependency list above this maximum. To view or filter a subset of this information, go to a subgroup's dependency list.",
-      );
-    });
-  });
-
-  describe('with "groupLevelDependenciesFilteringByComponent" feature flag disabled', () => {
-    beforeEach(() => {
-      createComponent({
-        provide: {
-          belowGroupLimit: true,
-          glFeatures: { groupLevelDependenciesFilteringByComponent: false },
-        },
-      });
-    });
-
-    it('does not show the Component token', () => {
-      expect(findFilteredSearch().props('availableTokens')).not.toContainEqual(
-        expect.objectContaining({
-          title: 'Component',
-        }),
       );
     });
   });
