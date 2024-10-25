@@ -103,6 +103,7 @@ module Vulnerabilities
         update_vulnerability_statistics
         delete_feedback_records
         delete_historical_statistics
+        reset_has_vulnerabilities
       end
 
       private
@@ -164,6 +165,10 @@ module Vulnerabilities
 
       def full_cleanup?
         resolved_on_default_branch.nil?
+      end
+
+      def reset_has_vulnerabilities
+        project.project_setting.update!(has_vulnerabilities: vulnerabilities.exists?)
       end
     end
   end
