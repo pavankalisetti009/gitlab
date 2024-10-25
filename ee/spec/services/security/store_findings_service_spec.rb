@@ -6,6 +6,7 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
   let_it_be(:findings_partition_number) { Security::Finding.active_partition_number }
   let_it_be(:security_scan) { create(:security_scan, findings_partition_number: findings_partition_number) }
   let_it_be(:project) { security_scan.project }
+  let_it_be(:scanner) { create(:vulnerabilities_scanner, project: project) }
   let_it_be(:security_finding_1) { build(:ci_reports_security_finding) }
   let_it_be(:security_finding_2) { build(:ci_reports_security_finding) }
   let_it_be(:security_finding_3) { build(:ci_reports_security_finding) }
@@ -21,7 +22,7 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
   end
 
   describe '#execute' do
-    let(:service_object) { described_class.new(security_scan, report, deduplicated_finding_uuids) }
+    let(:service_object) { described_class.new(security_scan, scanner, report, deduplicated_finding_uuids) }
 
     subject(:store_findings) { service_object.execute }
 
@@ -82,22 +83,6 @@ RSpec.describe Security::StoreFindingsService, feature_category: :vulnerability_
             "finding_data" => a_hash_including("raw_source_code_extract" => security_finding_3.raw_source_code_extract)
           )
         )
-      end
-
-      context 'when the scanners already exist in the database' do
-        before do
-          create(:vulnerabilities_scanner, project: project, external_id: security_scanner.key)
-        end
-
-        it 'does not create new scanner entries in the database' do
-          expect { store_findings }.not_to change(Vulnerabilities::Scanner, :count)
-        end
-      end
-
-      context 'when the scanner does not exist in the database' do
-        it 'creates new scanner entry in the database' do
-          expect { store_findings }.to change { project.vulnerability_scanners.count }.by(1)
-        end
       end
     end
   end
