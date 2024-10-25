@@ -126,7 +126,6 @@ module Sbom
 
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
       relation = for_namespace_and_descendants(group)
-        .preload(project: :namespace)
         .where(component_version_id: component_id)
 
       if search.present?
