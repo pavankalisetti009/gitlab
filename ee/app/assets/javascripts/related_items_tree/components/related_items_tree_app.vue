@@ -6,7 +6,6 @@ import { TYPE_EPIC, TYPE_ISSUE } from '~/issues/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__, sprintf } from '~/locale';
 import AddItemForm from '~/related_issues/components/add_issuable_form.vue';
-import SlotSwitch from '~/vue_shared/components/slot_switch.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
   ITEM_TABS,
@@ -22,6 +21,7 @@ import RelatedItemsTreeHeaderActions from './related_items_tree_header_actions.v
 import RelatedItemsTreeCount from './related_items_tree_count.vue';
 import RelatedItemsTreeActions from './related_items_tree_actions.vue';
 import RelatedItemsRoadmapApp from './related_items_roadmap_app.vue';
+import SlotSwitch from './slot_switch.vue';
 import TreeItemRemoveModal from './tree_item_remove_modal.vue';
 
 const FORM_SLOTS = {

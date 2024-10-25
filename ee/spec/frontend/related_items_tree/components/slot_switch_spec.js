@@ -1,12 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
 import { assertProps } from 'helpers/assert_props';
 
-import SlotSwitch from '~/vue_shared/components/slot_switch.vue';
+import SlotSwitch from 'ee/related_items_tree/components/slot_switch.vue';
 
 describe('SlotSwitch', () => {
   const slots = {
-    first: '<a>AGP</a>',
-    second: '<p>PCI</p>',
+    first: '<a data-testid="slot-item">AGP</a>',
+    second: '<p data-testid="slot-item">PCI</p>',
   };
 
   let wrapper;
@@ -18,7 +18,8 @@ describe('SlotSwitch', () => {
     });
   };
 
-  const getChildrenHtml = () => wrapper.findAll('* *').wrappers.map((c) => c.html());
+  const getChildrenHtml = () =>
+    wrapper.findAll('[data-testid="slot-item"]').wrappers.map((c) => c.html());
 
   it('throws an error if activeSlotNames is missing', () => {
     expect(() => assertProps(SlotSwitch, {})).toThrow(
