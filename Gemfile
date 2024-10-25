@@ -582,7 +582,7 @@ group :test do
 
   gem 'shoulda-matchers', '~> 5.1.0', require: false # rubocop:todo Gemfile/MissingFeatureCategory
   gem 'email_spec', '~> 2.2.0' # rubocop:todo Gemfile/MissingFeatureCategory
-  gem 'webmock', '~> 3.23.0', feature_category: :shared
+  gem 'webmock', '~> 3.24.0', feature_category: :shared
   gem 'rails-controller-testing' # rubocop:todo Gemfile/MissingFeatureCategory
   gem 'concurrent-ruby', '~> 1.1' # rubocop:todo Gemfile/MissingFeatureCategory
   gem 'test-prof', '~> 1.4.0', feature_category: :tooling
