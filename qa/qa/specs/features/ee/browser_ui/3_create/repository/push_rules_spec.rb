@@ -67,9 +67,7 @@ module QA
 
         it 'restricts users by email format', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347783' do
-          authors_email_limitation = %{(#{Regexp.escape(creator.email)}|#{root.email})}
-          gitlab_user = create(:user)
-          project.add_member(gitlab_user, Resource::Members::AccessLevel::MAINTAINER)
+          authors_email_limitation = "#{SecureRandom.hex(8)}@test.com"
 
           Page::Project::Settings::Repository.perform do |repository|
             repository.expand_push_rules do |push_rules|
@@ -80,9 +78,9 @@ module QA
 
           expect_error_on_push(
             file: standard_file,
-            user: gitlab_user,
+            user: creator,
             error: Regexp.escape(
-              "Committer's email '#{gitlab_user.email}' does not follow the pattern '#{authors_email_limitation}'"
+              "Committer's email '#{creator.email}' does not follow the pattern '#{authors_email_limitation}'"
             )
           )
         end
