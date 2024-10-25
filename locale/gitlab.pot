@@ -35107,10 +35107,19 @@ msgstr ""
 msgid "Model version not found"
 msgstr ""
 
+msgid "ModelRegistry|Created"
+msgstr ""
+
+msgid "ModelRegistry|Created by"
+msgstr ""
+
 msgid "ModelRegistry|Model registry"
 msgstr ""
 
 msgid "ModelRegistry|New model"
+msgstr ""
+
+msgid "ModelRegistry|Version"
 msgstr ""
 
 msgid "Modified"
