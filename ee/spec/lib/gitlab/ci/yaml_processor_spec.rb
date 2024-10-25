@@ -304,6 +304,32 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
       end
     end
 
+    context 'on gitlab_secrets_manager' do
+      let(:secrets) do
+        {
+          DATABASE_PASSWORD: {
+            gitlab_secrets_manager: {
+              name: 'password'
+            }
+          }
+        }
+      end
+
+      let(:config) { { deploy_to_production: { stage: 'deploy', script: ['echo'], secrets: secrets } } }
+
+      it "returns secrets info" do
+        secrets = result.builds.first.fetch(:secrets)
+
+        expect(secrets).to eq({
+          DATABASE_PASSWORD: {
+            gitlab_secrets_manager: {
+              name: 'password'
+            }
+          }
+        })
+      end
+    end
+
     context 'on azure key vault' do
       let(:secrets) do
         {

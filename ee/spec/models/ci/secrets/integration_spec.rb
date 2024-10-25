@@ -7,7 +7,7 @@ RSpec.describe Ci::Secrets::Integration, feature_category: :secrets_management d
   let_it_be_with_refind(:pipeline) { create(:ci_pipeline, project: project) }
   let(:job) { create(:ci_build, pipeline: pipeline) }
 
-  subject(:secrets_provider?) { job.secrets_provider? }
+  subject(:secrets_provider?) { job.secrets_provider?(nil) }
 
   describe '#secrets_provider?' do
     context 'when no secret CI variables are set' do

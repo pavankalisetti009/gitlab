@@ -299,6 +299,36 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
           end
         end
       end
+
+      context 'for Gitlab Secrets Manager' do
+        context 'when config is valid' do
+          let(:config) do
+            {
+              gitlab_secrets_manager: {
+                name: 'name'
+              }
+            }
+          end
+
+          describe '#value' do
+            it 'returns secret configuration' do
+              expected_result = {
+                gitlab_secrets_manager: {
+                  name: 'name'
+                }
+              }
+
+              expect(entry.value).to eq(expected_result)
+            end
+          end
+
+          describe '#valid?' do
+            it 'is valid' do
+              expect(entry).to be_valid
+            end
+          end
+        end
+      end
     end
   end
 
@@ -319,7 +349,7 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
         it 'reports error' do
           expect(entry.errors)
             .to include 'secret config must use exactly one of these keys: ' \
-            'vault, azure_key_vault, gcp_secret_manager, akeyless'
+            'vault, azure_key_vault, gcp_secret_manager, akeyless, gitlab_secrets_manager'
         end
       end
 

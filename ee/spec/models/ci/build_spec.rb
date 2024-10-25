@@ -868,7 +868,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         stub_licensed_features(ci_secrets_management: false)
       end
 
-      (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
+      (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless, :gitlab_secrets_manager]).each do |provider|
         context "when using #{provider}" do
           let(:valid_secret) { valid_secret_configs.fetch(provider) }
           let(:ci_build) { build(:ci_build, secrets: valid_secret, ci_stage: stage) }
@@ -884,7 +884,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
 
       context 'when there are secrets defined' do
-        (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
+        (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless, :gitlab_secrets_manager]).each do |provider|
           context "when using #{provider}" do
             let(:valid_secret) { valid_secret_configs.fetch(provider) }
 
@@ -910,9 +910,10 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
           let(:valid_secret) { valid_secret_configs.values.inject(:merge) }
 
           let(:ci_build) { build(:ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
+          let(:supported_providers_with_tracking) { Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless, :gitlab_secrets_manager] }
 
           it 'tracks RedisHLL event with user_id on all providers' do
-            (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
+            supported_providers_with_tracking.each do |provider|
               expect(::Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
                 .with("i_ci_secrets_management_#{provider}_build_created", values: user.id)
             end
@@ -923,7 +924,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
           it 'tracks Snowplow event with RedisHLL context on all providers' do
             ci_build.save!
 
-            (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
+            supported_providers_with_tracking.each do |provider|
               params = {
                 category: described_class.to_s,
                 action: "create_secrets_#{provider}",
