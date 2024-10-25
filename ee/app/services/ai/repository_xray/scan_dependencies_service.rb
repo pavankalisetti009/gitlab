@@ -35,18 +35,9 @@ module Ai
         valid_config_files = config_files.select(&:valid?)
         invalid_config_files = config_files - valid_config_files
 
-        success_messages = valid_config_files.map do |config_file|
-          payload = config_file.payload
-          "Found #{payload[:libs].size} dependencies in `#{payload[:fileName]}` (#{class_name(config_file)})"
-        end
-
-        error_messages = invalid_config_files.map do |config_file|
-          "#{config_file.error_message} (#{class_name(config_file)})"
-        end
-
         save_xray_reports(valid_config_files) if valid_config_files.any?
 
-        build_response(success_messages, error_messages)
+        build_response(valid_config_files, invalid_config_files)
       end
 
       def save_xray_reports(config_files)
@@ -75,12 +66,25 @@ module Ai
         end
       end
 
-      def build_response(success_messages, error_messages)
+      def build_response(valid_config_files, invalid_config_files)
+        dependency_counts = []
+
+        success_messages = valid_config_files.map do |config_file|
+          payload = config_file.payload
+          dependency_counts << payload[:libs].size
+          "Found #{dependency_counts.last} dependencies in `#{payload[:fileName]}` (#{class_name(config_file)})"
+        end
+
+        error_messages = invalid_config_files.map do |config_file|
+          "#{config_file.error_message} (#{class_name(config_file)})"
+        end
+
         response_hash = {
           message: "Found #{(success_messages + error_messages).size} dependency config files",
           payload: {
             success_messages: success_messages,
-            error_messages: error_messages
+            error_messages: error_messages,
+            max_dependency_count: dependency_counts.max.to_i
           }
         }
 

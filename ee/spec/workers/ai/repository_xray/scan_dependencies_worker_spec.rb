@@ -50,7 +50,8 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesWorker, type: :worker, featur
           status: :success,
           message: 'Found 1 dependency config files',
           success_messages: ['Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)'],
-          error_messages: []
+          error_messages: [],
+          max_dependency_count: 1
         )
 
       perform
