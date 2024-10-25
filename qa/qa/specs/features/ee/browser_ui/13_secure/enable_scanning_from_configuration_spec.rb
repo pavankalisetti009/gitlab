@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', product_group: :static_analysis do
-    context 'Enable Scanning from UI' do
+  RSpec.describe 'Secure', product_group: :static_analysis, quarantine: {
+    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498138',
+    type: :flaky,
+    only: { job: /cng-instance/ }
+  } do
+    describe 'Enable Scanning from UI' do
       let(:test_data_sast_string_fields_array) do
         [
           %w[SECURE_ANALYZERS_PREFIX registry.example.com],
