@@ -230,14 +230,6 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
           expect(response.message).to eq('Phone verification high-risk user')
           expect(response.reason).to eq(:related_to_high_risk_user)
         end
-
-        context 'when the feature is disabled' do
-          before do
-            stub_feature_flags(duplicate_phone_number_assume_high_risk: false)
-          end
-
-          it_behaves_like 'it returns a success response'
-        end
       end
 
       context 'when a duplicate phone validation is older than 1 week' do

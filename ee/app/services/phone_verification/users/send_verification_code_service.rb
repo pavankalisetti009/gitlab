@@ -204,7 +204,6 @@ module PhoneVerification
       end
 
       def duplicate_phone_number_allowed?
-        return true unless Feature.enabled?(:duplicate_phone_number_assume_high_risk, type: :gitlab_com_derisk)
         return true if user.assumed_high_risk?
 
         last_used = record.duplicate_records.last
