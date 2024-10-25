@@ -1,5 +1,5 @@
 <script>
-import { GlIcon, GlTruncate, GlCollapsibleListbox, GlLink } from '@gitlab/ui';
+import { GlButton, GlIcon, GlTruncate, GlCollapsibleListbox, GlLink } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { n__, s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
@@ -16,6 +16,7 @@ const mapItemToListboxFormat = (item, index) => ({
 export default {
   name: 'DependencyLocationCount',
   components: {
+    GlButton,
     GlIcon,
     GlTruncate,
     GlCollapsibleListbox,
@@ -108,11 +109,10 @@ export default {
     @shown="onShown"
   >
     <template #toggle>
-      <span class="gl-text-blue-500 md:gl-whitespace-nowrap" data-testid="toggle-text">
-        <gl-icon name="doc-text" />
+      <gl-button variant="link" category="tertiary" icon="doc-text" data-testid="toggle-text">
         <span class="md:gl-hidden">{{ locationCount }}</span>
         <span class="gl-hidden md:gl-inline-flex">{{ locationText }}</span>
-      </span>
+      </gl-button>
     </template>
     <template #list-item="{ item }">
       <div v-if="item">
