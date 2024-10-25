@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::BackfillRootNamespaceClusterAgentMappings, :migration,
-  feature_category: :workspaces do
+  schema: 20241023210409, feature_category: :workspaces do
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
   let(:cluster_agents) { table(:cluster_agents) }
