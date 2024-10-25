@@ -2880,7 +2880,8 @@ UPDATE
 SET
   severity = NEW.severity,
   state = NEW.state,
-  resolved_on_default_branch = NEW.resolved_on_default_branch
+  resolved_on_default_branch = NEW.resolved_on_default_branch,
+  auto_resolved = NEW.auto_resolved
 WHERE vulnerability_id = NEW.id;
 RETURN NULL;
 
@@ -20372,6 +20373,7 @@ CREATE TABLE vulnerabilities (
     detected_at timestamp with time zone DEFAULT now(),
     finding_id bigint,
     cvss jsonb DEFAULT '[]'::jsonb,
+    auto_resolved boolean DEFAULT false NOT NULL,
     CONSTRAINT check_4d8a873f1f CHECK ((finding_id IS NOT NULL))
 );
 
@@ -20809,6 +20811,7 @@ CREATE TABLE vulnerability_reads (
     archived boolean DEFAULT false NOT NULL,
     identifier_names text[] DEFAULT '{}'::text[] NOT NULL,
     has_vulnerability_resolution boolean DEFAULT false,
+    auto_resolved boolean DEFAULT false NOT NULL,
     CONSTRAINT check_380451bdbe CHECK ((char_length(location_image) <= 2048)),
     CONSTRAINT check_4b1a1bf5ea CHECK ((has_merge_request IS NOT NULL)),
     CONSTRAINT check_a105eb825a CHECK ((char_length(cluster_agent_id) <= 10)),
