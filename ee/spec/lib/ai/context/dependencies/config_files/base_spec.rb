@@ -47,27 +47,17 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
         'parent_node' => { 'child_node' => [
           { name: ' lib1 ' },
           { name: 'lib2', version: '2.1.0 ' },
-          { name: '' }
+          { name: '' },
+          { name: nil },
+          { name: 'lib3', version: '' },
+          { name: 'lib4', version: nil },
+          { name: 'lib5', version: 123 },
+          { name: 'lib6', version: 1.0 }
         ] }
       })
     end
 
-    let(:expected_formatted_lib_names) { ['lib1', 'lib2 (2.1.0)'] }
-  end
-
-  context 'when a dependency version is blank' do
-    it_behaves_like 'parsing a valid dependency config file' do
-      let(:config_file_content) do
-        Gitlab::Json.dump({
-          'parent_node' => { 'child_node' => [
-            { name: 'lib1', version: '1.0' },
-            { name: 'lib2', version: '' }
-          ] }
-        })
-      end
-
-      let(:expected_formatted_lib_names) { ['lib1 (1.0)', 'lib2'] }
-    end
+    let(:expected_formatted_lib_names) { ['lib1', 'lib2 (2.1.0)', 'lib3', 'lib4', 'lib5 (123)', 'lib6 (1.0)'] }
   end
 
   context 'when a dependency name contains an invalid byte sequence' do
@@ -125,6 +115,21 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
         Gitlab::Json.dump({
           'parent_node' => { 'child_node' => [
             { name: ['lib1'], version: '1.0' },
+            { name: 'lib2', version: '' }
+          ] }
+        })
+      end
+
+      let(:expected_parsing_error_message) { 'dependency name or version is an invalid type' }
+    end
+  end
+
+  context 'when a dependency version is an array' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) do
+        Gitlab::Json.dump({
+          'parent_node' => { 'child_node' => [
+            { name: 'lib1', version: ['1.0'] },
             { name: 'lib2', version: '' }
           ] }
         })

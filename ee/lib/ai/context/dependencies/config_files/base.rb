@@ -15,6 +15,7 @@ module Ai
           # however, it's not applicable here so we just set it to a placeholder value.
           # It may be removed entirely in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
           SCANNER_VERSION = '0.0.0'
+          VALID_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
 
           ParsingError = Class.new(StandardError)
 
@@ -98,13 +99,14 @@ module Ai
             Array.wrap(libs).filter_map do |lib|
               next if lib.name.blank?
 
+              unless lib.name.is_a?(String) && lib.version.class.in?(VALID_LIB_VERSION_TYPES)
+                raise ParsingError, 'dependency name or version is an invalid type'
+              end
+
               lib.name = lib.name.strip
-              lib.version = lib.version&.strip
+              lib.version = lib.version.to_s.strip
               lib
             end
-          rescue NoMethodError
-            # Raised when `.strip` is called on a non-string
-            raise ParsingError, 'dependency name or version is an invalid type'
           end
 
           def formatted_libs

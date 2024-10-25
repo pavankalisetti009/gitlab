@@ -9,10 +9,12 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PhpComposerLock, feature_
 
   it_behaves_like 'parsing a valid dependency config file' do
     let(:config_file_content) { File.read('ee/spec/fixtures/lib/ai/context/dependencies/config_files/composer.lock') }
-    let(:expected_formatted_lib_names) { ['composer/ca-bundle (1.5.1)', 'composer/metadata-minifier (1.0.0)'] }
+    let(:expected_formatted_lib_names) do
+      ['composer/ca-bundle (1.5.1)', 'composer/metadata-minifier (1.0.0)', 'lib/with-integer-version (20240308)']
+    end
   end
 
-  context 'when config file content is an array' do
+  context 'when the content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
       let(:expected_parsing_error_message) { 'encountered invalid node' }
