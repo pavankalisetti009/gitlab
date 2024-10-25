@@ -28,7 +28,7 @@ module GitlabSubscriptions
             days_remaining: trial_status.days_remaining,
             percentage_complete: trial_status.percentage_complete,
             group_id: namespace.id,
-            trial_discover_page_path: trial_discover_path(namespace),
+            trial_discover_page_path: group_discover_path(namespace),
             purchase_now_url: group_billings_path(namespace),
             feature_id: EXPIRED_TRIAL_WIDGET,
             dismiss_endpoint: group_callouts_path
@@ -43,14 +43,6 @@ module GitlabSubscriptions
           'ultimate'
         else
           'legacy_ultimate'
-        end
-      end
-
-      def trial_discover_path(namespace)
-        if duo_enterprise_status.show?
-          help_page_url('user/gitlab_duo/index.md')
-        else
-          group_discover_path(namespace)
         end
       end
 
