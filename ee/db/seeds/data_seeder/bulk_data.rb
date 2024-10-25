@@ -7,6 +7,7 @@ class DataSeeder
     widget_definition
     hierarchy_restriction
     related_link_restriction
+    cycle_analytics_value_stream_setting
   ].freeze
 
   def initialize(quiet = false)
