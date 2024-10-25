@@ -5,7 +5,7 @@ module Mutations
     module UserAddOnAssignments
       class BulkRemove < BaseMutation
         graphql_name 'UserAddOnAssignmentBulkRemove'
-        MAX_USER_UNASSIGNMENT_LIMIT = 50
+        MAX_USER_UNASSIGNMENT_LIMIT = 100
         MAX_USER_UNASSIGNMENT_ERROR = "The number of users to be unassigned in a single API call " \
                                       "should be less than #{MAX_USER_UNASSIGNMENT_LIMIT}."
                                       .freeze
