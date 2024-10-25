@@ -22,6 +22,17 @@ module Projects
       end
     end
 
+    def licenses
+      catalogue = Gitlab::SPDX::Catalogue.latest
+
+      licenses = catalogue
+        .licenses
+        .append(Gitlab::SPDX::License.unknown)
+        .sort_by(&:name)
+
+      render json: ::Sbom::DependencyLicenseListEntity.represent(licenses)
+    end
+
     private
 
     def collect_dependencies

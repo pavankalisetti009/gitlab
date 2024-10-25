@@ -21,6 +21,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
     let(:expectations) do
       {
         endpoint: "/#{project.full_path}/-/dependencies.json",
+        licenses_endpoint: "/#{project.full_path}/-/dependencies/licenses",
         export_endpoint: "/api/v4/projects/#{project.id}/dependency_list_exports",
         vulnerabilities_endpoint: "/api/v4/occurrences/vulnerabilities",
         sbom_reports_errors: expected_sbom_reports_errors,
