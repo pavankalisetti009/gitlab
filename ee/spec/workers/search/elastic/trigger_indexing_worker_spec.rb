@@ -88,9 +88,23 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
 
             it 'pauses indexing and reschedules itself' do
               expect(task_executor_service).to receive(:execute).with(:pause_indexing)
-              expect(described_class).to receive(:perform_in).with(2.minutes, described_class::INITIAL_TASK, {})
+              expect(described_class).to receive(:perform_in)
+                .with(described_class::DEFAULT_DELAY, described_class::INITIAL_TASK, {})
 
               expect(perform).to be false
+            end
+
+            context 'when in development environment' do
+              before do
+                stub_rails_env('development')
+              end
+
+              it 'pauses indexing and runs itself without delay' do
+                expect(task_executor_service).to receive(:execute).with(:pause_indexing)
+                expect(described_class).to receive(:perform_async).with(described_class::INITIAL_TASK, {})
+
+                expect(perform).to be false
+              end
             end
           end
 
@@ -105,9 +119,27 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
                 nil,
                 { elasticsearch_indexing: true }).and_call_original
               expect(task_executor_service).not_to receive(:execute)
-              expect(described_class).to receive(:perform_in).with(2.minutes, described_class::INITIAL_TASK, {})
+              expect(described_class).to receive(:perform_in)
+                .with(described_class::DEFAULT_DELAY, described_class::INITIAL_TASK, {})
 
               expect(perform).to be false
+            end
+
+            context 'when in development environment' do
+              before do
+                stub_rails_env('development')
+              end
+
+              it 'enables indexing and runs itself without delay' do
+                expect(ApplicationSettings::UpdateService).to receive(:new).with(
+                  Gitlab::CurrentSettings.current_application_settings,
+                  nil,
+                  { elasticsearch_indexing: true }).and_call_original
+                expect(task_executor_service).not_to receive(:execute)
+                expect(described_class).to receive(:perform_async).with(described_class::INITIAL_TASK, {})
+
+                expect(perform).to be false
+              end
             end
           end
         end

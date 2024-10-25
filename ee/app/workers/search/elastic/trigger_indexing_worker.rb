@@ -9,6 +9,7 @@ module Search
 
       INITIAL_TASK = :initiate
       TASKS = %i[namespaces projects snippets users].freeze
+      DEFAULT_DELAY = 2.minutes
 
       data_consistency :delayed
 
@@ -55,15 +56,14 @@ module Search
           ).execute
 
           logger.info('Setting `elasticsearch_indexing` has been enabled.')
-          self.class.perform_in(2.minutes, INITIAL_TASK, options)
+          reenqueue_initial_task
 
           return false
         end
 
         unless ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
           task_executor_service.execute(:pause_indexing)
-
-          self.class.perform_in(2.minutes, INITIAL_TASK, options)
+          reenqueue_initial_task
 
           return false
         end
@@ -86,6 +86,14 @@ module Search
 
       def logger
         @logger ||= ::Gitlab::Elasticsearch::Logger.build
+      end
+
+      def reenqueue_initial_task
+        if Rails.env.development?
+          self.class.perform_async(INITIAL_TASK, options)
+        else
+          self.class.perform_in(DEFAULT_DELAY, INITIAL_TASK, options)
+        end
       end
     end
   end
