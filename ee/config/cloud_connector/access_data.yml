@@ -60,6 +60,8 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - write_tests
   include_file_context:
     backend: 'gitlab-ai-gateway'
+    # As a part of the duo_chat service, this service should have the same cut-off date.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_pro:
         unit_primitives:
@@ -69,6 +71,8 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - include_file_context
   include_snippet_context:
     backend: 'gitlab-ai-gateway'
+    # As a part of the duo_chat service, this service should have the same cut-off date.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_pro:
         unit_primitives:
@@ -78,18 +82,24 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - include_snippet_context
   include_merge_request_context:
     backend: 'gitlab-ai-gateway'
+    # As a part of the duo_chat service, this service should have the same cut-off date.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
           - include_merge_request_context
   include_issue_context:
     backend: 'gitlab-ai-gateway'
+    # As a part of the duo_chat service, this service should have the same cut-off date.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
           - include_issue_context
   include_dependency_context:
     backend: 'gitlab-ai-gateway'
+    # As a part of the duo_chat service, this service should have the same cut-off date.
+    cut_off_date: 2024-10-17 00:00:00 UTC
     bundled_with:
       duo_enterprise:
         unit_primitives:
