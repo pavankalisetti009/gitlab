@@ -22,7 +22,7 @@ You can migrate GitLab groups:
 - Between groups in the same GitLab instance.
 
 WARNING:
-Migrating GitLab groups and projects by using direct transfer is [currently unavailable](https://status.gitlab.com). We don't have an
+Migrating GitLab.com groups and projects by using direct transfer is [currently unavailable](https://status.gitlab.com). We don't have an
 estimated time for resolution. For more information, please [contact support](https://about.gitlab.com/support/).
 
 Migration by direct transfer creates a new copy of the group. If you want to move groups instead of copying groups, you
