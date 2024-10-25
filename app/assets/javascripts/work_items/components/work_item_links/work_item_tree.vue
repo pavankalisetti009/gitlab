@@ -16,6 +16,7 @@ import {
   WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY,
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_HIERARCHY,
+  INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION,
 } from '../../constants';
 import {
   findHierarchyWidgets,
@@ -48,6 +49,9 @@ export default {
     WorkItemRolledUpData,
   },
   inject: ['hasSubepicsFeature'],
+  provide: {
+    [INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION]: true,
+  },
   props: {
     fullPath: {
       type: String,
