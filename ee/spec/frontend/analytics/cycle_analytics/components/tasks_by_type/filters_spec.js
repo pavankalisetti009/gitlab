@@ -1,4 +1,4 @@
-import { GlCollapsibleListbox, GlSegmentedControl } from '@gitlab/ui';
+import { GlCollapsibleListbox } from '@gitlab/ui';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Vue from 'vue';
@@ -40,7 +40,7 @@ describe('TasksByTypeFilters', () => {
     await waitForPromises();
   };
 
-  const findSubjectFilters = () => wrapper.findComponent(GlSegmentedControl);
+  const findSubjectFilters = () => wrapper.findComponentByTestId('type-of-work-filters-subject');
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findSelectedLabelsCount = () => wrapper.findByTestId('selected-labels-count');
 
@@ -51,7 +51,7 @@ describe('TasksByTypeFilters', () => {
     });
 
     it('has the issue subject set by default', () => {
-      expect(findSubjectFilters().props().checked).toBe(TASKS_BY_TYPE_SUBJECT_ISSUE);
+      expect(findSubjectFilters().props().value).toBe(TASKS_BY_TYPE_SUBJECT_ISSUE);
     });
 
     it('emits the `update-filter` event when a subject filter is clicked', () => {
