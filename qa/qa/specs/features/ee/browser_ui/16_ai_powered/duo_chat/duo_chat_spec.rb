@@ -5,6 +5,13 @@ module QA
   RSpec.describe 'Ai-powered', product_group: :duo_chat do
     describe 'Duo Chat' do
       let(:project) { create(:project, name: 'duo-chat-project') }
+      let(:token) { Resource::PersonalAccessToken.fabricate!.token }
+      let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
+      # Determine whether we are running against dotcom or a self managed cloud connector by checking
+      # the base_url of the direct connection endpoint. This lets us determine the expected response.
+      # As an orchestrated test we use an ai-gateway with a fake model, so we can assert part of the prompt
+      # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/blob/f2fec5c1ae697a7ced9b07e6812a80f3e1f2009a/ai_gateway/models/mock.py#L140
+      let(:expected_response) { direct_access[:base_url].include?('gitlab.com') ? 'GitLab' : 'mock' }
 
       shared_examples 'Duo Chat' do |testcase|
         it 'gets a response back from Duo Chat', testcase: testcase do
@@ -31,16 +38,10 @@ module QA
       context 'when initiating Duo Chat' do
         context 'on GitLab.com', :external_ai_provider,
           only: { pipeline: %i[staging staging-canary canary production] } do
-          let(:expected_response) { 'GitLab' }
-
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 
         context 'on Self-managed', :blocking, :orchestrated, :ai_gateway do
-          # As an orchestrated test we use an ai-gateway with a fake model, so we can assert part of the prompt
-          # https://gitlab.com/gitlab-org/gitlab/-/blob/481a3af0ded95cb24fc1e34b004d104c72ed95e4/ee/lib/gitlab/llm/chain/agents/zero_shot/executor.rb#L229-229
-          let(:expected_response) { 'mock' }
-
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/464684'
         end
       end
