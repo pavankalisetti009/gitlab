@@ -76,7 +76,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the pipeline',
+      it 'displays security reports in the pipeline', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348036' do
         push_security_reports
         project.visit!
@@ -108,7 +108,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the project security dashboard',
+      it 'displays security reports in the project security dashboard', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037' do
         push_security_reports
         project.visit!
@@ -143,7 +143,7 @@ module QA
         end
       end
 
-      it 'displays security reports in the group security dashboard',
+      it 'displays security reports in the group security dashboard', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348038' do
         push_security_reports
         project.visit!
@@ -235,7 +235,7 @@ module QA
 
       context 'for dependency scanning' do
         it(
-          'displays the Dependency List',
+          'displays the Dependency List', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348035'
         ) do
           commit_scan_files(fixture_json: cyclonedx_json, ci_yaml_content: dependency_scan_yaml)
