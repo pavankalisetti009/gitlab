@@ -24,7 +24,7 @@ describe('FrameworkSelectionBox component', () => {
   // for testing filtering
   mockedResponse.data.namespace.complianceFrameworks.nodes[0].name = 'PCI-DSS';
   const getComplianceFrameworkQueryResponse = jest.fn().mockResolvedValue(mockedResponse);
-
+  const framework = mockedResponse.data.namespace.complianceFrameworks.nodes[0];
   const findNewFrameworkButton = () =>
     wrapper
       .findAllComponents(GlButton)
@@ -65,8 +65,6 @@ describe('FrameworkSelectionBox component', () => {
   });
 
   it('sets toggle-text to framework name when framework is selected', async () => {
-    const framework = mockedResponse.data.namespace.complianceFrameworks.nodes[0];
-
     createComponent({ selected: [framework.id] });
 
     await waitForPromises();
@@ -82,6 +80,16 @@ describe('FrameworkSelectionBox component', () => {
     expect(wrapper.findComponent(GlCollapsibleListbox).props('toggleText')).toBe(
       'Select frameworks',
     );
+  });
+
+  it('updates listbox prop selected when selection is changed', async () => {
+    createComponent({ selected: [framework.id] });
+
+    await nextTick();
+
+    expect(wrapper.findComponent(GlCollapsibleListbox).props('selected')).toMatchObject([
+      framework.id,
+    ]);
   });
 
   it('emits selected framework from underlying listbox', () => {

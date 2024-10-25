@@ -48,7 +48,7 @@ export default {
   data() {
     return {
       frameworkSearchQuery: '',
-      currentSelectedFrameworks: [...this.selected],
+      currentSelectedFrameworks: [],
     };
   },
   apollo: {
@@ -84,6 +84,14 @@ export default {
           value: entry.id,
           extraAttrs: {},
         }));
+    },
+  },
+  watch: {
+    selected: {
+      handler(newValue) {
+        this.currentSelectedFrameworks = [...newValue];
+      },
+      immediate: true,
     },
   },
   methods: {
