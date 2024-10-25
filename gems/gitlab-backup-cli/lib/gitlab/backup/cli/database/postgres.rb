@@ -16,6 +16,8 @@ module Gitlab
           def dump(output_file_path, pg_dump)
             compress_rd, compress_wr = IO.pipe
 
+            # TODO use Shell::Pipeline here
+            # TODO backport to legacy tool as well
             compress_pid = spawn(compress_cmd, in: compress_rd, out: [output_file_path, 'w', FILE_PERMISSION])
             compress_rd.close
 

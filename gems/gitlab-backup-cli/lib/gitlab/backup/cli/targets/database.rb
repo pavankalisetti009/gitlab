@@ -30,7 +30,7 @@ module Gitlab
 
             each_database(destination_dir) do |backup_connection|
               pg_env = backup_connection.database_configuration.pg_env_variables
-              active_record_config = backup_connection.database_configuration.activerecord_variables
+              active_record_config = backup_connection.database_configuration.active_record_config
               pg_database_name = active_record_config[:database]
 
               dump_file_name = file_name(destination_dir, backup_connection.connection_name)
@@ -38,20 +38,12 @@ module Gitlab
 
               Gitlab::Backup::Cli::Output.print_info("Dumping PostgreSQL database #{pg_database_name} ... ")
 
-              schemas = []
-
-              if context.backup_pg_schema
-                schemas << context.backup_pg_schema
-                schemas.push(*databse::EXTRA_SCHEMAS.map(&:to_s))
-              end
-
               pg_dump = ::Gitlab::Backup::Cli::Utils::PgDump.new(
                 database_name: pg_database_name,
                 snapshot_id: backup_connection.snapshot_id,
                 schemas: schemas,
                 env: pg_env)
 
-                # TODO
               success = ::Gitlab::Backup::Cli::Database::Postgres.new.dump(dump_file_name, pg_dump)
 
               backup_connection.release_snapshot! if backup_connection.snapshot_id
@@ -60,30 +52,16 @@ module Gitlab
 
               report_finish_status(success)
             end
-          ensure
-            if database_wrapper.multiple_databases?
-              ::Gitlab::Backup::Cli::Database::EachDatabase.each_connection(
-                only: base_models_for_backup.keys, include_shared: false
-              ) do |_, database_connection_name|
-                backup_connection = ::Gitlab::Backup::Cli::Database::Connection.new(database_connection_name, database_wrapper)
-                backup_connection.restore_timeouts!
-              rescue ActiveRecord::ConnectionNotEstablished
-                raise DatabaseBackupError.new(
-                  backup_connection.database_configuration.activerecord_variables,
-                  file_name(destination_dir, database_connection_name)
-                )
-              end
-            end
+            # TODO Handle db connection timeouts
           end
 
           def restore(destination_dir)
             base_models_for_backup.each do |database_name, _|
               backup_connection = ::Gitlab::Backup::Cli::Database::Connection.new(database_name, database_wrapper)
 
-              config = backup_connection.database_configuration.activerecord_variables
+              database = backup_connection.database_configuration.active_record_config[:database]
 
-              db_file_name = file_name(destination_dir, database_name)
-              database = config[:database]
+              db_file_name = file_name(source, database_name)
 
               unless File.exist?(db_file_name)
                 if main_database?(database_name)
@@ -129,6 +107,17 @@ module Gitlab
 
           protected
 
+          def schemas
+            schemas = []
+
+            if context.backup_pg_schema
+              schemas << context.backup_pg_schema
+              schemas.push(*database_wrapper::EXTRA_SCHEMAS.map(&:to_s))
+            end
+
+            schemas
+          end
+
           def base_models_for_backup
             @base_models_for_backup ||= database_wrapper.database_base_models_with_gitlab_shared
           end
@@ -156,7 +145,6 @@ module Gitlab
           def drop_tables(database_name)
             Gitlab::Backup::Cli::Output.info 'Cleaning the database ... '
 
-            # TODO
             if Rake::Task.task_defined? "gitlab:db:drop_tables:#{database_name}"
               Rake::Task["gitlab:db:drop_tables:#{database_name}"].invoke
             else
@@ -167,21 +155,14 @@ module Gitlab
             Gitlab::Backup::Cli::Output.print_tag(:success)
           end
 
-          # @deprecated This will be removed when restore operation is refactored to use extended_env directly
-          def with_transient_pg_env(extended_env)
-            ENV.merge!(extended_env)
-            result = yield
-            ENV.reject! { |k, _| extended_env.key?(k) }
-
-            result
-          end
-
           def pg_restore_cmd(database, pg_env)
             Shell::Command.new('psql', database, env: pg_env)
           end
 
           def each_database(destination_dir, &block)
             databases = []
+            # TODO rewrite to read config and pick only dbs that don't have database_tasks: false
+
 
             # each connection will loop through all database connections defined in `database.yml`
             # and reject the ones that are shared, so we don't get duplicates
