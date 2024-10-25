@@ -278,7 +278,6 @@ describe('GroupProjectsDropdown', () => {
           expect(requestHandlers.getProjects).toHaveBeenCalledTimes(2);
           expect(requestHandlers.getProjects).toHaveBeenNthCalledWith(2, {
             after: undefined,
-            fullPath: GROUP_FULL_PATH,
             projectIds: null,
             search: '',
           });
@@ -483,6 +482,22 @@ describe('GroupProjectsDropdown', () => {
         await wrapper.findByTestId(`listbox-item-${moreNodes[3].id}`).vm.$emit('select', true);
 
         expect(wrapper.emitted('select')).toEqual([[[...defaultNodes, moreNodes[3]]]]);
+      });
+    });
+
+    it('should search projects by fullPath', async () => {
+      createComponent({
+        propsData: { loadAllProjects: true },
+      });
+      await waitForPromises();
+
+      findDropdown().vm.$emit('search', 'project-1-full-path');
+      await waitForPromises();
+
+      expect(findDropdown().props('items')).toEqual(mapItems([defaultNodes[0]]));
+      expect(requestHandlers.getProjects).toHaveBeenCalledWith({
+        projectIds: null,
+        search: 'project-1-full-path',
       });
     });
   });
