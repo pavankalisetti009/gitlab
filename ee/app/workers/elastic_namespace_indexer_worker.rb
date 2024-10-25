@@ -23,7 +23,6 @@ class ElasticNamespaceIndexerWorker
     case operation.to_s
     when /index/
       index_projects(namespace)
-      index_group_wikis(namespace) if should_maintain_group_wiki_index?(namespace)
       index_group_associations(namespace)
     when /delete/
       delete_from_index(namespace)
@@ -47,7 +46,14 @@ class ElasticNamespaceIndexerWorker
   end
 
   def index_group_associations(namespace)
-    Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!(namespace)
+    namespace.self_and_descendants.each_batch do |batch|
+      Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!(*batch)
+
+      batch.group_namespaces.each.with_index do |namespace, idx|
+        interval = idx % ElasticWikiIndexerWorker::MAX_JOBS_PER_HOUR
+        ElasticWikiIndexerWorker.perform_in(interval, namespace.id, namespace.class.name, { 'force' => true })
+      end
+    end
   end
 
   def delete_from_index(namespace)
