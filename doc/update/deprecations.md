@@ -2720,7 +2720,7 @@ This configuration setting will be removed in GitLab 17.0.
 
 </div>
 
-In GitLab 16.6 the [GitHub importer Rake task](https://docs.gitlab.com/ee/administration/raketasks/github_import.html) is deprecated. The Rake task lacks several features that are supported by the API and is not actively maintained.
+In GitLab 16.6, the GitHub importer Rake task was deprecated. The Rake task lacks several features that are supported by the API and is not actively maintained.
 
 In GitLab 17.0, the Rake task will be removed.
 
