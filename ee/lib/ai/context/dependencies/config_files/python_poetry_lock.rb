@@ -36,6 +36,8 @@ module Ai
             end
           rescue TomlRB::ParseError
             raise ParsingError, 'content is not valid TOML'
+          rescue TomlRB::Error => e
+            raise ParsingError, "TOML error - #{e.message}"
           end
         end
       end
