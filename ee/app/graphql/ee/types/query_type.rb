@@ -220,6 +220,10 @@ module EE
           description: 'List of configurable AI features.',
           resolver: ::Resolvers::Ai::FeatureSettings::FeatureSettingsResolver,
           alpha: { milestone: '17.4' }
+
+        field :ai_slash_commands, [::Types::Ai::SlashCommandType], null: true,
+          resolver: ::Resolvers::Ai::SlashCommandsResolver,
+          description: 'Get available Duo Chat slash commands for the current user for a specific URL'
       end
 
       def vulnerability(id:)

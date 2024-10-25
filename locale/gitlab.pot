@@ -1771,7 +1771,25 @@ msgstr ""
 msgid "/"
 msgstr ""
 
+msgid "/clear"
+msgstr ""
+
 msgid "/day"
+msgstr ""
+
+msgid "/help"
+msgstr ""
+
+msgid "/reset"
+msgstr ""
+
+msgid "/summarize_comments"
+msgstr ""
+
+msgid "/troubleshoot"
+msgstr ""
+
+msgid "/vulnerability_explain"
 msgstr ""
 
 msgid "0 B"
@@ -18169,6 +18187,9 @@ msgstr ""
 msgid "Delete account"
 msgstr ""
 
+msgid "Delete all messages in the current conversation."
+msgstr ""
+
 msgid "Delete asset"
 msgstr ""
 
@@ -22647,6 +22668,9 @@ msgid "Expiring soon"
 msgstr ""
 
 msgid "Expiry notification emails about group and project access tokens should be sent to:"
+msgstr ""
+
+msgid "Explain current vulnerability."
 msgstr ""
 
 msgid "Explain why you're reporting the user."
@@ -32018,6 +32042,9 @@ msgid "Learn more."
 msgstr ""
 
 msgid "Learn more: %{url}"
+msgstr ""
+
+msgid "Learn what Duo Chat can do."
 msgstr ""
 
 msgid "LearnGitLab|%d task to go"
@@ -46312,6 +46339,9 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
+msgid "Reset conversation and ignore previous messages."
+msgstr ""
+
 msgid "Reset error tracking access token"
 msgstr ""
 
@@ -53887,6 +53917,9 @@ msgstr ""
 msgid "Summarize my pending comments"
 msgstr ""
 
+msgid "Summarize the comments in the current issue."
+msgstr ""
+
 msgid "Summary"
 msgstr ""
 
@@ -58206,6 +58239,9 @@ msgid "Trigger|Description"
 msgstr ""
 
 msgid "Trigger|Trigger description"
+msgstr ""
+
+msgid "Troubleshoot failed CI/CD jobs with Root Cause Analysis."
 msgstr ""
 
 msgid "Trust user"
