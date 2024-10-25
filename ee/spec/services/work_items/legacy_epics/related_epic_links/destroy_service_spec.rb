@@ -1,0 +1,110 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService, feature_category: :team_planning do
+  let(:epic) { source_epic }
+
+  let_it_be(:group) { create(:group) }
+  let_it_be(:user) { create(:user, developer_of: group) }
+  let_it_be(:source_epic) { create(:epic, group: group) }
+  let_it_be(:target_epic) { create(:epic, group: group) }
+  let_it_be_with_refind(:related_epic_link) { create(:related_epic_link, source: source_epic, target: target_epic) }
+  let_it_be_with_refind(:work_item_link) do
+    create(:work_item_link, source: source_epic.work_item, target: target_epic.work_item)
+  end
+
+  subject(:execute) { described_class.new(related_epic_link, epic, user).execute }
+
+  before do
+    stub_licensed_features(epics: true, related_epics: true)
+  end
+
+  shared_examples 'success' do
+    it 'destroys the related epic link and the work item link' do
+      expect { subject }
+        .to change { Epic::RelatedEpicLink.count }.by(-1)
+        .and change { WorkItems::RelatedWorkItemLink.count }.by(-1)
+
+      expect(subject[:status]).to eq(:success)
+      expect(subject[:message]).to eq('Relation was removed')
+    end
+
+    it 'destroys related epic link when work item link does not exist' do
+      work_item_link.destroy!
+
+      expect { subject }.to change { Epic::RelatedEpicLink.count }.by(-1)
+
+      expect(subject[:status]).to eq(:success)
+      expect(subject[:message]).to eq('Relation was removed')
+    end
+  end
+
+  shared_examples 'error' do
+    before do
+      stub_licensed_features(epics: true, related_epics: false)
+    end
+
+    it 'does not destroy related epic link or work item' do
+      expect { subject }
+        .to not_change { Epic::RelatedEpicLink.count }
+        .and not_change { WorkItems::RelatedWorkItemLink.count }
+
+      expect(subject[:status]).to eq(:error)
+      expect(subject[:message]).to eq("No Related Epic Link found")
+    end
+  end
+
+  describe '#execute' do
+    context 'when feature flags are enabled' do
+      before do
+        stub_feature_flags(work_item_epics_ssot: true)
+      end
+
+      context 'when epic is source' do
+        it_behaves_like 'success'
+        it_behaves_like 'error'
+
+        it 'calls the WorkItems::RelatedWorkItemLinks::DestroyService with the correct params' do
+          allow(WorkItems::RelatedWorkItemLinks::DestroyService).to receive(:new).and_call_original
+          expect(WorkItems::RelatedWorkItemLinks::DestroyService).to receive(:new)
+            .with(epic.work_item, user, { item_ids: [target_epic.issue_id] }).and_call_original
+
+          execute
+        end
+      end
+
+      context 'when epic is target' do
+        let(:epic) { target_epic }
+
+        it_behaves_like 'success'
+        it_behaves_like 'error'
+
+        it 'calls the WorkItems::RelatedWorkItemLinks::DestroyService with the correct params' do
+          allow(WorkItems::RelatedWorkItemLinks::DestroyService).to receive(:new).and_call_original
+          expect(WorkItems::RelatedWorkItemLinks::DestroyService).to receive(:new)
+            .with(epic.work_item, user, { item_ids: [source_epic.issue_id] }).and_call_original
+
+          execute
+        end
+      end
+    end
+
+    context 'when feature flags are disabled' do
+      before do
+        stub_feature_flags(work_item_epics_ssot: false)
+      end
+
+      it_behaves_like 'success'
+      it_behaves_like 'error'
+
+      it 'calls Epics::RelatedEpicLinks::DestroyService' do
+        allow(Epics::RelatedEpicLinks::DestroyService).to receive(:new).and_call_original
+        expect(Epics::RelatedEpicLinks::DestroyService).to receive(:new)
+          .with(related_epic_link, epic, user, synced_epic: false).and_call_original
+
+        execute
+      end
+    end
+  end
+end

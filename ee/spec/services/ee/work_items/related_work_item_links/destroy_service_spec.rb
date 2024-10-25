@@ -103,8 +103,9 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
 
         context 'when destroying the related epic link fails' do
           before do
-            allow_next_instance_of(Epics::RelatedEpicLinks::DestroyService) do |instance|
-              allow(instance).to receive(:execute).and_return({ status: :error, message: "Some error" })
+            allow_next_found_instance_of(Epic::RelatedEpicLink) do |instance|
+              errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:base, 'Some error') }
+              allow(instance).to receive_messages(destroy: false, errors: errors)
             end
           end
 
@@ -112,7 +113,7 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
             expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
               .with({
                 message: 'Not able to destroy related epic links',
-                error_message: 'Some error',
+                error_message: ['Some error'],
                 group_id: group.id,
                 source_id: source.id,
                 target_id: target.id
@@ -128,9 +129,10 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
           end
 
           it 'returns an error' do
-            expect(destroy_links)
-              .to eq({ status: :error, message: "Couldn't delete work item link due to an internal error.",
-http_status: 422 })
+            expect(destroy_links).to eq({
+              status: :error,
+              message: "Couldn't delete work item link due to an internal error.", http_status: 422
+            })
           end
         end
       end

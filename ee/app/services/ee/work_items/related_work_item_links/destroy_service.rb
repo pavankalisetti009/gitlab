@@ -58,25 +58,18 @@ module EE
         end
 
         def destroy_synced_related_epic_link_for!(link)
-          result =
-            ::Epics::RelatedEpicLinks::DestroyService.new(
-              link.synced_related_epic_link,
-              work_item.synced_epic,
-              current_user,
-              synced_epic: true
-            ).execute
-
-          return result if result[:status] == :success
+          related_link = link.synced_related_epic_link
+          return true if related_link.destroy
 
           ::Gitlab::EpicWorkItemSync::Logger.error(
             message: 'Not able to destroy related epic links',
-            error_message: result[:message],
+            error_message: related_link.errors.full_messages,
             group_id: work_item.namespace.id,
             target_id: link.target.id,
             source_id: link.source.id
           )
 
-          raise ::WorkItems::SyncAsEpic::SyncAsEpicError, result[:message]
+          raise ::WorkItems::SyncAsEpic::SyncAsEpicError, 'Not able to destroy related epic links'
         end
 
         attr_reader :extra_params
