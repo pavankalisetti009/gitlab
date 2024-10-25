@@ -7,7 +7,7 @@ RSpec.shared_examples 'adjourned deletion service' do
 
   shared_examples 'user can remove resource' do
     it 'enqueues the resource destroy worker' do
-      ensure_destroy_worker_scheduled
+      expect(destroy_worker).to receive(perform_method).with(*destroy_worker_params)
 
       service.execute
     end
@@ -24,7 +24,7 @@ RSpec.shared_examples 'adjourned deletion service' do
     it 'uses admin bot to restore the resource', :enable_admin_mode do
       service.execute
 
-      expect(resource.reload.marked_for_deletion?).to eq(false)
+      expect(resource.reload.marked_for_deletion?).to be(false)
     end
   end
 

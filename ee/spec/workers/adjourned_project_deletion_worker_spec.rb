@@ -70,7 +70,7 @@ RSpec.describe AdjournedProjectDeletionWorker, feature_category: :groups_and_pro
         specify do
           worker.perform(project.id)
 
-          expect(project.reload.marked_for_deletion_at.present?).to eq(false)
+          expect(project.reload.marked_for_deletion_at.present?).to be(false)
         end
       end
 

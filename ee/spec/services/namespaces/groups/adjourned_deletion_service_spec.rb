@@ -7,12 +7,11 @@ RSpec.describe Namespaces::Groups::AdjournedDeletionService, feature_category: :
   let_it_be(:params) { { delay: delay } }
   let_it_be_with_reload(:group) { create(:group) }
   let(:resource) { group }
+  let(:destroy_worker) { GroupDestroyWorker }
+  let(:destroy_worker_params) { [delay, resource.id, user.id] }
+  let(:perform_method) { :perform_in }
 
   subject(:service) { described_class.new(group: group, current_user: user, params: params) }
-
-  def ensure_destroy_worker_scheduled
-    expect(GroupDestroyWorker).to receive(:perform_in).with(delay, group.id, user.id)
-  end
 
   include_examples 'adjourned deletion service'
 end
