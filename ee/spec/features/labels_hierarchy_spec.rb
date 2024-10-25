@@ -38,6 +38,8 @@ RSpec.describe 'Labels Hierarchy', :js, feature_category: :team_planning do
           wait_for_requests
 
           click_on label.title
+
+          find_by_testid('close-icon').click
         end
 
         click_button 'Save changes'
