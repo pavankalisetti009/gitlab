@@ -55,7 +55,7 @@ module Gitlab
             service_class: ::Gitlab::Llm::Anthropic::Completions::GenerateDescription,
             aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::GenerateDescription,
             prompt_class: ::Gitlab::Llm::Templates::GenerateDescription,
-            feature_category: :ai_abstraction_layer,
+            feature_category: :team_planning,
             execute_method: ::Llm::GenerateDescriptionService,
             maturity: :experimental,
             self_managed: false,
