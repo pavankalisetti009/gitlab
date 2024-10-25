@@ -3936,7 +3936,7 @@ GitLab self-monitoring gives administrators of self-hosted GitLab instances the 
 
 </div>
 
-The [GitLab.com importer](https://docs.gitlab.com/ee/user/project/import/gitlab_com.html) is deprecated in GitLab 15.8 and will be removed in GitLab 16.0.
+The GitLab.com importer was deprecated in GitLab 15.8 and will be removed in GitLab 16.0.
 
 The GitLab.com importer was introduced in 2015 for importing a project from GitLab.com to a self-managed GitLab instance through the UI.
 This feature is available on self-managed instances only. [Migrating GitLab groups and projects by direct transfer](https://docs.gitlab.com/ee/user/group/import/#migrate-groups-by-direct-transfer-recommended)
