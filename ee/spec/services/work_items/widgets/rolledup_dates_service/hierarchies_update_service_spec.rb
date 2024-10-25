@@ -41,13 +41,9 @@ RSpec.describe ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateServ
     let_it_be_with_reload(:epic_1) { create(:epic, group: group, work_item: work_item_1) }
     let_it_be_with_reload(:epic_2) { create(:epic, group: group, work_item: work_item_2) }
 
-    subject(:service) do
-      described_class.new(WorkItem.id_in([
-        work_item_1.id,
-        work_item_2.id,
-        work_item_fixed_dates.id
-      ]))
-    end
+    let(:work_items) { WorkItem.id_in([work_item_1.id, work_item_2.id, work_item_fixed_dates.id]) }
+
+    subject(:service) { described_class.new(work_items) }
 
     shared_examples 'syncs work item dates sources to epics' do
       specify do
@@ -232,6 +228,34 @@ RSpec.describe ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateServ
           .and change { work_item_2.reload.dates_source&.due_date_sourcing_milestone_id }.from(nil).to(milestone.id)
           .and not_change { work_item_fixed_dates.reload.dates_source.start_date }
           .and not_change { work_item_fixed_dates.dates_source&.due_date }
+      end
+    end
+
+    context 'when no dates_sources records exist' do
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:start_date) { Time.zone.today }
+      let_it_be(:due_date) { Time.zone.tomorrow }
+
+      let_it_be_with_reload(:work_item_without_dates_source) do
+        create(:work_item, :issue, project: project, start_date: start_date, due_date: due_date).tap do |child|
+          create(:parent_link, work_item: child, work_item_parent: work_item_1)
+        end
+      end
+
+      let(:work_items) do
+        WorkItem.id_in([work_item_1.id, work_item_2.id, work_item_fixed_dates.id, work_item_without_dates_source.id])
+      end
+
+      it 'ensures to create the records and sets correct default values' do
+        expect(work_item_without_dates_source.dates_source).to be_nil
+
+        # We have multiple child work items that do not have a dates_source
+        expect { service.execute }.to change { WorkItems::DatesSource.count }.by(3)
+
+        expect(work_item_without_dates_source.reload.dates_source).to have_attributes(
+          start_date: start_date, due_date: due_date, start_date_fixed: start_date, due_date_fixed: due_date,
+          start_date_is_fixed: true, due_date_is_fixed: true
+        )
       end
     end
   end
