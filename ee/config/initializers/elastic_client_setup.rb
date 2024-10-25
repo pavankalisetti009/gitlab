@@ -27,6 +27,7 @@ Elasticsearch::Model::Adapter::ActiveRecord::Importing.prepend GemExtensions::El
 Elasticsearch::Model::Adapter::ActiveRecord::Records.prepend GemExtensions::Elasticsearch::Model::Adapter::ActiveRecord::Records
 Elasticsearch::Model::Client::InstanceMethods.prepend GemExtensions::Elasticsearch::Model::Client
 Elasticsearch::Model::Client::ClassMethods.prepend GemExtensions::Elasticsearch::Model::Client
+Elasticsearch::Model::Multimodel.prepend GemExtensions::Elasticsearch::Model::Client
 Elasticsearch::Model::ClassMethods.prepend GemExtensions::Elasticsearch::Model::Client
 Elasticsearch::Model.singleton_class.prepend GemExtensions::Elasticsearch::Model::Client
 
@@ -40,7 +41,7 @@ module Elasticsearch
     module Searching
       class SearchRequest
         def execute!
-          response = klass.client.search(@definition)
+          response = klass.client(:search).search(@definition)
           raise Elastic::TimeoutError if response['timed_out']
 
           response

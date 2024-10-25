@@ -5,8 +5,7 @@
 # classes will use the same instance, which is refreshed automatically
 # if the settings change.
 #
-# _client is present to match the arity of the overridden method, where
-# it is also not used.
+# when operation is `:search`, the client's retry_on_failure is set to the elasticsearch_retry_on_failure setting.
 module GemExtensions
   module Elasticsearch
     module Model
@@ -14,24 +13,40 @@ module GemExtensions
         CLIENT_MUTEX = Mutex.new
 
         cattr_accessor :cached_client
+        cattr_accessor :cached_search_client
         cattr_accessor :cached_config
+        cattr_accessor :cached_retry_on_failure
         cattr_accessor :cached_adapter
 
-        def client(_client = nil)
+        def client(operation = :general)
           store = ::GemExtensions::Elasticsearch::Model::Client
 
           store::CLIENT_MUTEX.synchronize do
             config = ::Gitlab::CurrentSettings.elasticsearch_config
+            retry_on_failure = ::Gitlab::CurrentSettings.elasticsearch_retry_on_failure
             adapter = ::Gitlab::Elastic::Client.adapter
 
-            if store.cached_client.nil? || config != store.cached_config || adapter != store.cached_adapter
+            if should_build_clients?(store: store, config: config, retry_on_failure: retry_on_failure, adapter: adapter)
+              search_config = config.deep_dup.merge(retry_on_failure: retry_on_failure)
               store.cached_client = ::Gitlab::Elastic::Client.build(config.deep_dup)
+              store.cached_search_client = ::Gitlab::Elastic::Client.build(search_config)
               store.cached_config = config
+              store.cached_retry_on_failure = retry_on_failure
               store.cached_adapter = adapter
             end
           end
 
-          store.cached_client
+          operation == :search ? store.cached_search_client : store.cached_client
+        end
+
+        private
+
+        def should_build_clients?(store:, config:, retry_on_failure:, adapter:)
+          store.cached_client.nil? ||
+            store.cached_search_client.nil? ||
+            config != store.cached_config ||
+            retry_on_failure != store.cached_retry_on_failure ||
+            adapter != store.cached_adapter
         end
       end
     end

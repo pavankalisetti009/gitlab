@@ -10,7 +10,11 @@ module Gitlab
       delegate(*DELEGATED_METHODS, to: :adapter)
 
       def self.execute_search(...)
-        new.execute_search(...)
+        new(adapter: search_adapter).execute_search(...)
+      end
+
+      def self.search_adapter
+        Gitlab::Elastic::Helper.new(operation: :search).client
       end
 
       def initialize(adapter: nil)
