@@ -11,7 +11,7 @@ class Elastic::ReindexingTask < ApplicationRecord
 
   attribute :options, :ind_jsonb # for indifferent access
 
-  has_many :subtasks, class_name: 'Elastic::ReindexingSubtask',
+  has_many :subtasks, class_name: 'Search::Elastic::ReindexingSubtask',
     foreign_key: :elastic_reindexing_task_id, inverse_of: :elastic_reindexing_task
 
   enum state: {

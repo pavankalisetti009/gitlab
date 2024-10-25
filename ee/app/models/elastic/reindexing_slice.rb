@@ -3,7 +3,7 @@
 class Elastic::ReindexingSlice < ApplicationRecord
   self.table_name = 'elastic_reindexing_slices'
 
-  belongs_to :elastic_reindexing_subtask, class_name: 'Elastic::ReindexingSubtask'
+  belongs_to :elastic_reindexing_subtask, class_name: 'Search::Elastic::ReindexingSubtask'
 
   validates :elastic_slice, :elastic_max_slice, :retry_attempt, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
