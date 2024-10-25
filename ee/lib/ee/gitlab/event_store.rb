@@ -82,7 +82,16 @@ module EE
           subscribe_to_milestone_events(store)
           subscribe_to_zoekt_events(store)
           subscribe_to_users_activity_events(store)
+          subscribe_to_member_destroyed_events(store)
           subscribe_to_merge_events(store)
+        end
+
+        def subscribe_to_member_destroyed_events(store)
+          store.subscribe ::GitlabSubscriptions::Members::DestroyedWorker, to: ::Members::DestroyedEvent,
+            if: ->(event) {
+              actor = event.data[:source_type].constantize.actor_from_id(event.data[:source_id])
+              ::Feature.enabled?(:track_member_activity, actor)
+            }
         end
 
         def register_security_policy_subscribers(store)
