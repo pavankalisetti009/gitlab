@@ -1128,6 +1128,16 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
   end
 
+  describe '#clear_reindex_status' do
+    subject(:clear_reindex_status) { service.execute(:clear_reindex_status) }
+
+    it 'calls deletes all reindex records' do
+      create(:elastic_reindexing_task)
+
+      expect { clear_reindex_status }.to change { ::Elastic::ReindexingTask.count }.from(1).to(0)
+    end
+  end
+
   def get_class_proxy(class_name:, use_separate_indices:)
     type_class(class_name) || ::Elastic::Latest::ApplicationClassProxy.new(class_name,
       use_separate_indices: use_separate_indices)

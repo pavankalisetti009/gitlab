@@ -6,6 +6,7 @@ module Search
 
     TASKS = %i[
       clear_index_status
+      clear_reindex_status
       create_empty_index
       delete_index
       disable_search_with_elasticsearch
@@ -56,6 +57,14 @@ module Search
       IndexStatus.delete_all
       ::Elastic::GroupIndexStatus.delete_all
       logger.info(Rainbow('Index status has been reset').green)
+    end
+
+    def clear_reindex_status
+      ::Elastic::ReindexingTask.each_batch do |batch|
+        batch.delete_all
+      end
+
+      logger.info(Rainbow('Reindexing status has been reset').green)
     end
 
     def create_empty_index
