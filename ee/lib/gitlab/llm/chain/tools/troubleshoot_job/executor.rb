@@ -7,8 +7,8 @@ module Gitlab
         module TroubleshootJob
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include ::Gitlab::Utils::StrongMemoize
             prepend Concerns::UseAiGatewayAgentPrompt
+            include Concerns::JobLoggable
 
             # We use 1 Charater per 1 Token because we can't copy the tokenizer logic easily
             # So we go lower the characters per token to compensate for that.
@@ -133,16 +133,6 @@ module Gitlab
                 language_info: language_info
               }
             end
-
-            def job_log
-              # Line limit should be reworked based on
-              # the results of the prompt library and prompt engineering.
-              # 1000*100/4
-              # 1000 lines, ~100 char per line (can be more), ~4 tokens per character
-              # ~25000 tokens
-              job.trace.raw(last_lines: 1000)
-            end
-            strong_memoize_attr :job_log
 
             def truncated_job_log
               log_size_allowed = APPROX_MAX_INPUT_CHARS - prompt_size_without_log

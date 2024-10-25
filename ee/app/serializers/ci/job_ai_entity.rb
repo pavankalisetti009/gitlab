@@ -2,10 +2,10 @@
 
 module Ci
   class JobAiEntity < ::Ci::JobEntity
-    LINES_LIMIT = 1000
+    include Gitlab::Llm::Chain::Concerns::JobLoggable
 
-    expose :job_log do |job, options|
-      job.trace.raw(last_lines: LINES_LIMIT)&.last(options[:content_limit])
+    expose :job_log do |_job, options|
+      job_log&.last(options[:content_limit])
     end
   end
 end
