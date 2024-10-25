@@ -134,4 +134,16 @@ module EE::SecurityOrchestrationHelper
   def max_scan_execution_policy_actions
     Gitlab::CurrentSettings.scan_execution_policies_action_limit
   end
+
+  def breadcrumb_by_type(policy_type)
+    policy_types_map = {
+      "approval_policy" => s_("SecurityOrchestration|New merge request approval policy"),
+      "scan_result_policy" => s_("SecurityOrchestration|New merge request approval policy"),
+      "scan_execution_policy" => s_("SecurityOrchestration|New scan execution policy"),
+      "pipeline_execution_policy" => s_("SecurityOrchestration|New pipeline execution policy"),
+      "vulnerability_management_policy" => s_("SecurityOrchestration|New vulnerability management policy")
+    }
+
+    policy_types_map.fetch(policy_type.to_s, s_("SecurityOrchestration|New policy"))
+  end
 end

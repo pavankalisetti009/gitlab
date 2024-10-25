@@ -86,6 +86,42 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
   end
 
+  describe '#breadcrumb_by_type' do
+    let_it_be(:policy_type) { 'approval_policy' }
+
+    subject { helper.breadcrumb_by_type(policy_type) }
+
+    context 'when merge request approval policy' do
+      it 'returns correct breadcrumb type' do
+        is_expected.to eq('New merge request approval policy')
+      end
+    end
+
+    context 'when scan execution policy' do
+      let_it_be(:policy_type) { 'scan_execution_policy' }
+
+      it 'returns correct breadcrumb type' do
+        is_expected.to eq('New scan execution policy')
+      end
+    end
+
+    context 'when pipeline execution policy' do
+      let_it_be(:policy_type) { 'pipeline_execution_policy' }
+
+      it 'returns correct breadcrumb type' do
+        is_expected.to eq('New pipeline execution policy')
+      end
+    end
+
+    context 'when policy type does not exist' do
+      let_it_be(:policy_type) { 'wrong type' }
+
+      it 'returns correct breadcrumb type' do
+        is_expected.to eq('New policy')
+      end
+    end
+  end
+
   describe '#orchestration_policy_data' do
     context 'for project' do
       let(:approvers) { %w[approver1 approver2] }

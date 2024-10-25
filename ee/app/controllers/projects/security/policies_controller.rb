@@ -25,6 +25,10 @@ module Projects
         render :index, locals: { project: project }
       end
 
+      def new
+        @policy_type = params[:type]
+      end
+
       def edit
         @policy_name = URI.decode_www_form_component(params[:id])
         @policy = policy
