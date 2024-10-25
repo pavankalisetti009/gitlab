@@ -173,6 +173,7 @@ describe('List component', () => {
     it('updates the selected policy when `shouldUpdatePolicyList` changes to `true`', async () => {
       findTable().vm.$emit('row-selected', [mockScanExecutionPoliciesResponse[0]]);
       await nextTick();
+      await nextTick();
       expect(findDrawer().props('policy')).toEqual(mockScanExecutionPoliciesResponse[0]);
       wrapper.setProps({ shouldUpdatePolicyList: true });
       await nextTick();
@@ -194,6 +195,7 @@ describe('List component', () => {
       mountWrapper();
       findTable().vm.$emit('row-selected', [policy]);
       await nextTick();
+      await nextTick();
       const editorDrawer = findDrawer();
       expect(editorDrawer.exists()).toBe(true);
       expect(editorDrawer.props()).toMatchObject({
@@ -208,6 +210,7 @@ describe('List component', () => {
 
       mountWrapper();
       findTable().vm.$emit('row-selected', [scanExecutionPolicy]);
+      await nextTick();
       await nextTick();
 
       expect(findDrawer().props('open')).toEqual(true);
