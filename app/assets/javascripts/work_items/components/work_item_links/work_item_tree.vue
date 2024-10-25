@@ -49,8 +49,10 @@ export default {
     WorkItemRolledUpData,
   },
   inject: ['hasSubepicsFeature'],
-  provide: {
-    [INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION]: true,
+  provide() {
+    return {
+      [INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION]: !this.isDrawer,
+    };
   },
   props: {
     fullPath: {
@@ -99,6 +101,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    isDrawer: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {

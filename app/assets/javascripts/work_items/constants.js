@@ -373,4 +373,6 @@ export const WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemLinks.showLabe
 export const WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY = 'workItemTree.showLabels';
 export const WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemRelationships.showLabels';
 
-export const INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION = 'injection:prevent-router-navigation';
+export const INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION = Symbol(
+  'injection:prevent-router-navigation',
+);
