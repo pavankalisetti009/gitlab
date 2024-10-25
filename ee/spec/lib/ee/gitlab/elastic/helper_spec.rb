@@ -164,7 +164,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
       helper.delete_migrations_index
     end
 
-    it 'creates the index' do
+    it 'creates the index', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/495782' do
       expect { helper.create_migrations_index }
         .to change { helper.migrations_index_exists? }
               .from(false).to(true)
