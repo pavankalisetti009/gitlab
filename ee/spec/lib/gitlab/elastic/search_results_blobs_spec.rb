@@ -171,8 +171,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'blobs', feature_category: :globa
         end
 
         it 'returns the line along with 2 lines before and after' do
-          # TODO put back after the search_query_authorization_refactor feature flag is removed
-          # expect(objects.count).to eq(1)
+          expect(objects.count).to eq(1)
 
           blob = objects.first
 
@@ -185,8 +184,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'blobs', feature_category: :globa
           let(:filters) { { num_context_lines: 5 } }
 
           it 'returns the line along with 5 lines before and after' do
-            # TODO put back after the search_query_authorization_refactor feature flag is removed
-            # expect(objects.count).to eq(1)
+            expect(objects.count).to eq(1)
 
             blob = objects.first
 
@@ -199,13 +197,5 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'blobs', feature_category: :globa
     end
 
     it_behaves_like 'blobs scoped results'
-
-    context 'when search_query_authorization_refactor ff is false' do
-      before do
-        stub_feature_flags(search_query_authorization_refactor: false)
-      end
-
-      it_behaves_like 'blobs scoped results'
-    end
   end
 end

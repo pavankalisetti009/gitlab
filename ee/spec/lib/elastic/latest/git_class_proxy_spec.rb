@@ -79,19 +79,6 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
           }
         end
 
-        context 'when search_query_authorization_refactor is false' do
-          before do
-            stub_feature_flags(search_query_authorization_refactor: false)
-          end
-
-          it 'uses the correct elasticsearch query' do
-            proxy.elastic_search('*', type: 'blob', options: search_options)
-            assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
-          end
-
-          it_behaves_like 'a search that respects custom roles', search_level: :global
-        end
-
         it 'uses the correct elasticsearch query' do
           proxy.elastic_search('*', type: 'blob', options: search_options)
           assert_named_queries('doc:is_a:blob', 'filters:permissions:global', 'blob:match:search_terms')
@@ -111,67 +98,6 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
             order_by: nil,
             sort: nil
           }
-        end
-
-        context 'when search_query_authorization_refactor is false' do
-          before do
-            stub_feature_flags(search_query_authorization_refactor: false)
-          end
-
-          it 'uses the correct elasticsearch query' do
-            proxy.elastic_search('*', type: 'blob', options: search_options)
-            assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
-          end
-
-          context 'when user is authorized for the namespace' do
-            it 'uses the correct elasticsearch query' do
-              group.add_reporter(user)
-
-              proxy.elastic_search('*', type: 'blob', options: search_options)
-              assert_named_queries('doc:is_a:blob', 'blob:match:search_terms', 'blob:authorized:reject_projects',
-                'blob:authorized:namespace:ancestry_filter:descendants')
-            end
-          end
-
-          context 'when the project is private' do
-            before do
-              project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
-              ensure_elasticsearch_index!
-            end
-
-            subject(:search_results) do
-              proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-            end
-
-            context 'when the user is not authorized' do
-              it 'returns no search results' do
-                expect(search_results[:blobs][:results]).to be_empty
-              end
-            end
-
-            context 'when the user is a member' do
-              where(:role, :expected_count) do
-                [
-                  [:guest, 0],
-                  [:reporter, 1],
-                  [:developer, 1],
-                  [:maintainer, 1],
-                  [:owner, 1]
-                ]
-              end
-
-              with_them do
-                before do
-                  project.add_member(user, role)
-                  ensure_elasticsearch_index!
-                end
-
-                it { expect(search_results[:blobs][:results].count).to eq(expected_count) }
-              end
-            end
-          end
-
-          it_behaves_like 'a search that respects custom roles', search_level: :group
         end
 
         it 'uses the correct elasticsearch query' do
@@ -240,34 +166,6 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
             sort: nil,
             repository_id: project.id
           }
-        end
-
-        context 'when search_query_authorization_refactor is false' do
-          before do
-            stub_feature_flags(search_query_authorization_refactor: false)
-          end
-
-          it 'uses the correct elasticsearch query' do
-            proxy.elastic_search('*', type: 'blob', options: search_options)
-
-            assert_named_queries('doc:is_a:blob', 'blob:authorized:project',
-              'blob:match:search_terms', 'blob:related:repositories')
-          end
-
-          context 'when the user is not authorized' do
-            before do
-              project.update!(visibility_level: ::Gitlab::VisibilityLevel::PRIVATE)
-              ensure_elasticsearch_index!
-            end
-
-            it 'returns no search results' do
-              search_results = proxy.elastic_search('Mailer.deliver', type: 'blob', options: search_options)
-
-              expect(search_results[:blobs][:results]).to be_empty
-            end
-          end
-
-          it_behaves_like 'a search that respects custom roles', search_level: :project
         end
 
         it 'uses the correct elasticsearch query' do
@@ -459,53 +357,6 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       expect(result.first.buckets.first[:count]).to eq(2)
     end
 
-    context 'when search_query_authorization_refactor feature flag is false' do
-      before do
-        stub_feature_flags(search_query_authorization_refactor: false)
-      end
-
-      it 'assert names queries for global blob search when migration is complete' do
-        search_options = {
-          current_user: user,
-          search_level: 'global',
-          public_and_internal_projects: true,
-          order_by: nil,
-          sort: nil
-        }
-        proxy.blob_aggregations('*', search_options)
-        assert_named_queries('doc:is_a:blob', 'blob:authorized:project',
-          'blob:match:search_terms')
-      end
-
-      it 'assert names queries for group blob search' do
-        group_search_options = {
-          current_user: user,
-          search_level: 'group',
-          project_ids: [project.id],
-          group_ids: [project.namespace.id],
-          public_and_internal_projects: false,
-          order_by: nil,
-          sort: nil
-        }
-        proxy.blob_aggregations('*', group_search_options)
-        assert_named_queries('doc:is_a:blob', 'blob:authorized:reject_projects', 'blob:match:search_terms',
-          'blob:authorized:namespace:ancestry_filter:descendants')
-      end
-
-      it 'assert names queries for project blob search' do
-        project_search_options = {
-          current_user: user,
-          search_level: 'project',
-          project_ids: [project.id],
-          public_and_internal_projects: false,
-          order_by: nil,
-          sort: nil
-        }
-        proxy.blob_aggregations('*', project_search_options)
-        assert_named_queries('doc:is_a:blob', 'blob:authorized:project', 'blob:match:search_terms')
-      end
-    end
-
     it 'assert names queries for global blob search when migration is complete' do
       search_options = {
         current_user: user,
@@ -546,32 +397,6 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
       proxy.blob_aggregations('*', project_search_options)
       assert_named_queries('doc:is_a:blob', 'filters:level:project',
         'filters:permissions:project', 'blob:match:search_terms')
-    end
-  end
-
-  # these specs are not needed with the code behind the feature flag and will be removed with it
-  context 'when search_query_authorization_refactor feature flag is false' do
-    before do
-      stub_feature_flags(search_query_authorization_refactor: false)
-    end
-
-    context 'when backfilling migration is complete' do
-      it 'does not use the traversal_id filter when project_ids are passed' do
-        expect(Namespace).not_to receive(:find)
-        proxy.elastic_search_as_found_blob('*',
-          options: { search_level: 'project', current_user: user, project_ids: [1, 2] })
-      end
-
-      it 'does not use the traversal_id filter when group_ids are not passed' do
-        expect(Namespace).not_to receive(:find)
-        proxy.elastic_search_as_found_blob('*', options: { search_level: 'global', current_user: user })
-      end
-
-      it 'uses the traversal_id filter' do
-        expect(Namespace).to receive(:find).once.and_call_original
-        proxy.elastic_search_as_found_blob('*',
-          options: { search_level: 'group', current_user: user, group_ids: [1] })
-      end
     end
   end
 end
