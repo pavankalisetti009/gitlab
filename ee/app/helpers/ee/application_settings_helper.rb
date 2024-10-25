@@ -28,6 +28,7 @@ module EE
         :elasticsearch_namespace_ids,
         :elasticsearch_pause_indexing,
         :elasticsearch_project_ids,
+        :elasticsearch_retry_on_failure,
         :elasticsearch_replicas,
         :elasticsearch_search,
         :elasticsearch_shards,

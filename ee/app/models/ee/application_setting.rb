@@ -64,6 +64,7 @@ module EE
         numericality: { only_integer: true, greater_than: 0 }
 
       validates :elasticsearch_max_code_indexing_concurrency,
+        :elasticsearch_retry_on_failure,
         presence: true,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 

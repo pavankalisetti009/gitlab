@@ -139,6 +139,13 @@
                 = _('Elasticsearch HTTP client timeout value in seconds.')
                 = _('To use the system\'s default, set this value to 0.')
 
+            .form-group
+              = f.label :elasticsearch_retry_on_failure, _('Retry on failure'), class: 'label-bold'
+              = f.number_field :elasticsearch_retry_on_failure, value: @application_setting.elasticsearch_retry_on_failure, class: 'form-control gl-form-input'
+              .form-text.gl-text-gray-600.gl-mt-0
+                = _('Maximum number of possible retries for Elasticsearch search requests.')
+                = _('To disable the setting, set this value to 0.')
+
         = render Pajamas::CardComponent.new(**component_params) do |c|
           - c.with_body do
             %h4= _('Elasticsearch indexing restrictions')

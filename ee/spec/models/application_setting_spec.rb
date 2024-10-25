@@ -90,6 +90,11 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value(0).for(:elasticsearch_client_request_timeout) }
       it { is_expected.not_to allow_value(nil).for(:elasticsearch_client_request_timeout) }
 
+      it { is_expected.to allow_value(30).for(:elasticsearch_retry_on_failure) }
+      it { is_expected.to allow_value(0).for(:elasticsearch_retry_on_failure) }
+      it { is_expected.not_to allow_value(-1).for(:elasticsearch_retry_on_failure) }
+      it { is_expected.not_to allow_value(nil).for(:elasticsearch_retry_on_failure) }
+
       it { is_expected.to allow_value('').for(:elasticsearch_username) }
       it { is_expected.to allow_value('a' * 255).for(:elasticsearch_username) }
       it { is_expected.not_to allow_value('a' * 256).for(:elasticsearch_username) }
