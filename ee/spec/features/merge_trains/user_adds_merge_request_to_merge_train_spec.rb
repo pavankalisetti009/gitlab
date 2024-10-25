@@ -113,7 +113,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
           click_button 'Remove from merge train'
         end
 
-        it 'cancels automatic merge' do
+        it 'cancels automatic merge', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/462609' do
           page.within('.mr-state-widget') do
             expect(page).not_to have_content("Added to the merge train by #{user.name}")
             expect(page).to have_button('Merge')
