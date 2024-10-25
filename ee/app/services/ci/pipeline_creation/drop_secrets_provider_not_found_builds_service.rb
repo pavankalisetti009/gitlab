@@ -12,7 +12,7 @@ module Ci
 
         pipeline.builds.each do |build|
           next unless build.created?
-          next unless build.secrets? && !build.secrets_provider?
+          next unless build.secrets? && !build.secrets_provider?(build.secrets)
 
           build.drop!(:secrets_provider_not_found, skip_pipeline_processing: true)
         end

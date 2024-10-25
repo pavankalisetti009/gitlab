@@ -186,7 +186,7 @@ module EE
       end
 
       def secrets_integration
-        ::Ci::Secrets::Integration.new(variables)
+        ::Ci::Secrets::Integration.new(variables: variables, project: project)
       end
 
       def playable?

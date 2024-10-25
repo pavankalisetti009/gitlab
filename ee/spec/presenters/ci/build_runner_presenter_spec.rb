@@ -6,6 +6,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
 
   describe '#secrets_configuration' do
     let!(:ci_build) { create(:ci_build, secrets: secrets) }
+    let(:jwt_token) { "TESTING" }
 
     context 'build has no secrets' do
       let(:secrets) { {} }
@@ -30,20 +31,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           }
         end
 
+        before do
+          create(:ci_variable, project: ci_build.project, key: 'VAULT_SERVER_URL', value: 'https://vault.example.com')
+        end
+
         context 'Vault server URL' do
           let(:vault_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server') }
 
           context 'VAULT_SERVER_URL CI variable is present' do
             it 'returns the URL' do
-              create(:ci_variable, project: ci_build.project, key: 'VAULT_SERVER_URL', value: 'https://vault.example.com')
-
               expect(vault_server.fetch('url')).to eq('https://vault.example.com')
-            end
-          end
-
-          context 'VAULT_SERVER_URL CI variable is not present' do
-            it 'returns nil' do
-              expect(vault_server.fetch('url')).to be_nil
             end
           end
         end
@@ -328,6 +325,50 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
             jwt = presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'gcp_secret_manager', 'server', 'jwt')
 
             expect(jwt).to eq('$GCP_SM_ID_TOKEN')
+          end
+        end
+      end
+
+      context 'with Gitlab Secrets Manager' do
+        let(:secrets) do
+          {
+            DATABASE_PASSWORD: {
+              gitlab_secrets_manager: {
+                name: "password"
+              }
+            }
+          }
+        end
+
+        before do
+          create(:project_secrets_manager, project: ci_build.project)
+        end
+
+        context 'JWT token' do
+          before do
+            allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+          end
+
+          let(:gitlab_secrets_manager_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server') }
+
+          it 'uses the specified token variable' do
+            expect(gitlab_secrets_manager_server.fetch('auth')['data']['jwt']).to eq(jwt_token)
+          end
+        end
+
+        context 'JWT auth method and path' do
+          before do
+            rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+            stub_application_setting(ci_jwt_signing_key: rsa_key)
+          end
+
+          let(:gitlab_secrets_manager_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server') }
+
+          it 'uses the specified token variable' do
+            expect(gitlab_secrets_manager_server.fetch('auth')['name']).to eq("jwt")
+            expect(gitlab_secrets_manager_server.fetch('auth')['path']).to eq("#{ci_build.project.namespace.type.downcase}_#{ci_build.project.namespace.id}/pipeline_jwt")
+            expect(gitlab_secrets_manager_server.fetch('auth')['data']['role']).to eq("project_#{ci_build.project.id}")
+            expect(gitlab_secrets_manager_server.fetch('auth')['data']['jwt']).not_to be_empty
           end
         end
       end

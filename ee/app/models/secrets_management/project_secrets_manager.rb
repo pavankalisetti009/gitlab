@@ -4,7 +4,8 @@ module SecretsManagement
   class ProjectSecretsManager < ApplicationRecord
     STATUSES = {
       provisioning: 0,
-      active: 1
+      active: 1,
+      disabled: 2
     }.freeze
 
     self.table_name = 'project_secrets_managers'
@@ -16,25 +17,76 @@ module SecretsManagement
     state_machine :status, initial: :provisioning do
       state :provisioning, value: STATUSES[:provisioning]
       state :active, value: STATUSES[:active]
+      state :disabled, value: STATUSES[:disabled]
 
       event :activate do
         transition all - [:active] => :active
       end
+
+      event :disable do
+        transition active: :disabled
+      end
     end
+
+    def self.server_url
+      # Allow setting an external secrets manager URL if necessary. This is
+      # useful for GitLab.Com's deployment.
+      return Gitlab.config.openbao.url if Gitlab.config.has_key?("openbao") && Gitlab.config.openbao.has_key?("url")
+
+      default_openbao_server_url
+    end
+
+    def self.default_openbao_server_url
+      "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:8200"
+    end
+    private_class_method :default_openbao_server_url
 
     def ci_secrets_mount_path
       [
         namespace_path,
         "project_#{project.id}",
-        'ci'
+        'secrets',
+        'kv'
       ].compact.join('/')
+    end
+
+    def ci_data_path(secret_key)
+      [
+        'explicit',
+        secret_key
+      ].compact.join('/')
+    end
+
+    def ci_full_path(secret_key)
+      [
+        ci_secrets_mount_path,
+        'data',
+        ci_data_path(secret_key)
+      ].compact.join('/')
+    end
+
+    def ci_auth_mount
+      [
+        namespace_path,
+        'pipeline_jwt'
+      ].compact.join('/')
+    end
+
+    def ci_auth_role
+      "project_#{project.id}"
+    end
+
+    def ci_auth_type
+      'jwt'
+    end
+
+    def ci_jwt(build)
+      Gitlab::Ci::JwtV2.for_build(build, aud: self.class.server_url)
     end
 
     private
 
     def namespace_path
-      return unless project.namespace.type == "User"
-
       [
         project.namespace.type.downcase,
         project.namespace.id.to_s

@@ -15,6 +15,26 @@ module EE
             secret['akeyless']['server'] = akeyless_server(secret)
           end
 
+          # For compatibility with the existing Vault integration in Runner,
+          # template gitlab_secrets_manager data into the vault field.
+          if secret.has_key?('gitlab_secrets_manager')
+            # GitLab Secrets Manager and Vault integrations have different
+            # structure; remove the old secret but save its data for later.
+            gtsm_secret = secret.delete('gitlab_secrets_manager')
+
+            psm = SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
+
+            # Compute full path to secret in OpenBao for Vault runner
+            # compatibility.
+            secret['vault'] = {}
+            secret['vault']['path'] = psm.ci_data_path(gtsm_secret['name'])
+            secret['vault']['engine'] = { name: "kv-v2", path: psm.ci_secrets_mount_path }
+            secret['vault']['field'] = "value"
+
+            # Tell Runner about our server information.
+            secret['vault']['server'] = gitlab_secrets_manager_server(psm)
+          end
+
           secret
         end
       end
@@ -31,6 +51,20 @@ module EE
             'data' => {
               'jwt' => vault_jwt(secret),
               'role' => variable_value('VAULT_AUTH_ROLE')
+            }.compact
+          }
+        }
+      end
+
+      def gitlab_secrets_manager_server(psm)
+        @gitlab_secrets_manager_server ||= {
+          'url' => SecretsManagement::ProjectSecretsManager.server_url,
+          'auth' => {
+            'name' => psm.ci_auth_type,
+            'path' => psm.ci_auth_mount,
+            'data' => {
+              'jwt' => psm.ci_jwt(self),
+              'role' => psm.ci_auth_role
             }.compact
           }
         }

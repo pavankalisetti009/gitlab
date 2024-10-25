@@ -3,19 +3,37 @@
 module Ci
   module Secrets
     class Integration
-      PROVIDERS = [
-        :azure_key_vault,
-        :akeyless,
-        :gcp_secret_manager,
-        :hashicorp_vault
-      ].freeze
+      PROVIDER_TYPE_MAP = {
+        "azure_key_vault" => :azure_key_vault,
+        "akeyless" => :akeyless,
+        "gcp_secret_manager" => :gcp_secret_manager,
+        "vault" => :hashicorp_vault,
+        "gitlab_secrets_manager" => :gitlab_secrets_manager
+      }.freeze
 
-      def initialize(variables)
+      def initialize(variables:, project:)
         @variables = variables
+        @project = project
       end
 
-      def secrets_provider?
-        PROVIDERS.any? { |provider| send(:"#{provider}?") } # rubocop:disable GitlabSecurity/PublicSend -- metaprogramming
+      def secrets_provider?(secrets)
+        candidates = PROVIDER_TYPE_MAP.values.select { |provider| send(:"#{provider}?") } # rubocop:disable GitlabSecurity/PublicSend -- metaprogramming
+
+        # No providers are enabled.
+        return false if candidates.empty?
+
+        # No secrets were provided; vacuously this means all provided secrets
+        # have a provider. This is deferred so global enablement logic can be
+        # checked independently of secrets value.
+        return true if secrets.nil? || secrets.empty?
+
+        # If none of the secrets lacks an enabled provider, we're good.
+        secrets.none? do |(_, secret_info)|
+          secret_info.any? do |(provider_key, _)|
+            PROVIDER_TYPE_MAP.has_key?(provider_key) &&
+              candidates.exclude?(PROVIDER_TYPE_MAP[provider_key])
+          end
+        end
       end
 
       def variable_value(key, default = nil)
@@ -50,6 +68,12 @@ module Ci
 
       def akeyless?
         variable_value('AKEYLESS_ACCESS_ID').present?
+      end
+
+      def gitlab_secrets_manager?
+        # TODO: figure out context for whether GitLab Secrets Manager is
+        # globally enabled on this instance.
+        SecretsManagement::ProjectSecretsManager.find_by_project_id(@project.id)&.active?
       end
     end
   end
