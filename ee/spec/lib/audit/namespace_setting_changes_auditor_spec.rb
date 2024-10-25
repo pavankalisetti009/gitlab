@@ -121,7 +121,7 @@ RSpec.describe Audit::NamespaceSettingChangesAuditor, feature_category: :audit_e
         default_branch_protection_defaults allow_merge_without_pipeline auto_ban_user_on_excessive_projects_download
         lock_math_rendering_limits_enabled enable_auto_assign_gitlab_duo_pro_seats early_access_program_participant
         lock_duo_features_enabled allow_merge_without_pipeline only_allow_merge_if_pipeline_succeeds
-        lock_spp_repository_pipeline_access spp_repository_pipeline_access]
+        lock_spp_repository_pipeline_access spp_repository_pipeline_access archived]
 
       columns_to_audit = Audit::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 
