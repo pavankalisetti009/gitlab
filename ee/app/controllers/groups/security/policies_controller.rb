@@ -21,6 +21,10 @@ module Groups
       urgency :low, [:index, :new]
       track_govern_activity 'security_policies', :index, :edit, :new
 
+      def new
+        @policy_type = params[:type]
+      end
+
       def edit
         @policy_name = URI.decode_www_form_component(params[:id])
         @policy = policy
