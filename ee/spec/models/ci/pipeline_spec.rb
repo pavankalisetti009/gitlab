@@ -1113,13 +1113,11 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
   end
 
   describe "#merge_requests_as_base_pipeline" do
-    let_it_be_with_reload(:pipeline) { create(:ci_empty_pipeline, project: project, status: 'created', ref: 'master', sha: 'a288a022a53a5a944fae87bcec6efc87b7061808') }
-    let(:merge_request) { create(:merge_request, source_project: project) }
-    let(:base_pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha) }
-    let(:head_pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.source_branch) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:base_pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha) }
+    let_it_be(:head_pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.source_branch) }
 
     it "returns merge requests whose `diff_base_sha` matches the pipeline's SHA" do
-      project.reload
       expect(base_pipeline.merge_requests_as_base_pipeline).to eq([merge_request])
     end
 
