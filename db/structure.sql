@@ -14820,6 +14820,7 @@ CREATE TABLE oauth_device_grants (
     scopes text DEFAULT ''::text NOT NULL,
     device_code text NOT NULL,
     user_code text,
+    organization_id bigint DEFAULT 1 NOT NULL,
     CONSTRAINT check_a6271f2c07 CHECK ((char_length(device_code) <= 255)),
     CONSTRAINT check_b0459113c7 CHECK ((char_length(scopes) <= 255)),
     CONSTRAINT check_b36370c6df CHECK ((char_length(user_code) <= 255))
@@ -27455,6 +27456,8 @@ CREATE INDEX idx_oauth_access_grants_on_organization_id ON oauth_access_grants U
 
 CREATE INDEX idx_oauth_access_tokens_on_organization_id ON oauth_access_tokens USING btree (organization_id);
 
+CREATE INDEX idx_oauth_device_grants_on_organization_id ON oauth_device_grants USING btree (organization_id);
+
 CREATE INDEX idx_oauth_openid_requests_on_organization_id ON oauth_openid_requests USING btree (organization_id);
 
 CREATE UNIQUE INDEX idx_on_approval_group_rules_any_approver_type ON approval_group_rules USING btree (group_id, rule_type) WHERE (rule_type = 4);
@@ -35184,6 +35187,9 @@ ALTER TABLE ONLY packages_maven_metadata
 
 ALTER TABLE ONLY remote_development_namespace_cluster_agent_mappings
     ADD CONSTRAINT fk_be8e9c740f FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY oauth_device_grants
+    ADD CONSTRAINT fk_bee7254887 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY zoekt_indices
     ADD CONSTRAINT fk_bf205d4773 FOREIGN KEY (zoekt_enabled_namespace_id) REFERENCES zoekt_enabled_namespaces(id) ON DELETE SET NULL;
