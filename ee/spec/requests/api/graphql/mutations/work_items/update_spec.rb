@@ -1031,11 +1031,36 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when updating parent' do
       let_it_be(:work_item_epic, reload: true) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-      let_it_be(:work_item_issue, reload: true) { create(:work_item, :issue, project: project) }
+      let_it_be(:work_item_issue, reload: true) do
+        create(:work_item, :issue, project: project, due_date: 2.days.from_now, start_date: 2.days.ago)
+      end
 
       let_it_be(:new_parent) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
 
       let(:input) { { 'hierarchyWidget' => { 'parentId' => new_parent.to_global_id.to_s } } }
+
+      context 'when issue has due and start date set but no dates_source record' do
+        let(:input) { { 'hierarchyWidget' => { 'parentId' => work_item_epic.to_global_id.to_s } } }
+
+        before do
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(150)
+        end
+
+        it 'does not clear due and start date values from issue', :sidekiq_inline, :aggregate_failures do
+          set_due_date = work_item_issue.due_date
+          set_start_date = work_item_issue.start_date
+
+          expect(work_item_issue.dates_source).to be_nil
+          expect(set_due_date).to be_present
+          expect(set_start_date).to be_present
+
+          expect do
+            post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+          end.to change { work_item_issue.reload.work_item_parent }.from(nil).to(work_item_epic)
+            .and not_change { work_item_issue.reload.due_date }.from(set_due_date)
+            .and not_change { work_item_issue.reload.start_date }.from(set_start_date)
+        end
+      end
 
       it 'updates work item parent and synced epic parent when moving child is epic' do
         expect do

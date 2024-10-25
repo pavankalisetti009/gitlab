@@ -44,7 +44,7 @@ module WorkItems
         def ensure_dates_sources_exist(work_items)
           work_items
             .excluding(work_items.joins(:dates_source)) # exclude work items that already have a dates source
-            .each(&:create_dates_source)
+            .each(&:create_dates_source_from_current_dates)
         end
 
         def join_with_update(query)
