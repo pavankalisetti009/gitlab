@@ -9,7 +9,7 @@ import mockProjects from 'test_fixtures_static/projects.json';
 import CreateIssueForm from 'ee/related_items_tree/components/create_issue_form.vue';
 import CreateEpicForm from 'ee/related_items_tree/components/create_epic_form.vue';
 import AddItemForm from '~/related_issues/components/add_issuable_form.vue';
-import SlotSwitch from '~/vue_shared/components/slot_switch.vue';
+import SlotSwitch from 'ee/related_items_tree/components/slot_switch.vue';
 import RelatedItemsTreeApp from 'ee/related_items_tree/components/related_items_tree_app.vue';
 import RelatedItemsTreeHeaderActions from 'ee/related_items_tree/components/related_items_tree_header_actions.vue';
 import RelatedItemsTreeActions from 'ee/related_items_tree/components/related_items_tree_actions.vue';
