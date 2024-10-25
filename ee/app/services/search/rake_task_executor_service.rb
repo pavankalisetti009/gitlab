@@ -314,7 +314,6 @@ module Search
     def index_namespaces
       Namespace.by_parent(nil).each_batch do |batch|
         batch = batch.include_route
-        batch = batch.select(&:use_elasticsearch?)
 
         ElasticNamespaceIndexerWorker.bulk_perform_async_with_contexts(
           batch,

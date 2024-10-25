@@ -27,8 +27,8 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
     end
 
     describe 'indexing and deleting', :elastic_helpers do
-      let_it_be(:namespace) { create :namespace }
-      let_it_be(:projects) { create_list :project, 3, namespace: namespace }
+      let_it_be(:namespace) { create(:namespace) }
+      let_it_be(:projects) { create_list(:project, 3, namespace: namespace) }
 
       context 'for :index' do
         it_behaves_like 'an idempotent worker' do
@@ -99,7 +99,7 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
 
             it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
               expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
-                .with(*parent_group).once
+                .with(parent_group, sub_group, sub_child_group).once
 
               worker.perform(*job_args)
             end
