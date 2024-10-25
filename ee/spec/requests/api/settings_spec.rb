@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_category: :shared do
+  using RSpec::Parameterized::TableSyntax
   include StubENV
 
   let(:user) { create(:user) }
@@ -235,6 +236,57 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['error']).to include('secret_detection_token_revocation_url is missing, secret_detection_revocation_token_types_url is missing')
+        end
+      end
+    end
+
+    context 'with billable member management' do
+      context 'when the feature is not available' do
+        it 'does not change enable_member_promotion_management to true' do
+          put api('/application/settings', admin, admin_mode: true),
+            params: { enable_member_promotion_management: true }
+
+          expect(json_response['enable_member_promotion_management']).to eq(false)
+        end
+      end
+
+      context 'when the feature is available' do
+        before do
+          allow_next_instance_of(::ApplicationSettings::UpdateService) do |instance|
+            allow(instance).to receive(:promotion_management_available?).and_return(true)
+          end
+        end
+
+        where(param_value: [true, false])
+
+        with_them do
+          it 'changes enable_member_promotion_management' do
+            ::Gitlab::CurrentSettings.update!(enable_member_promotion_management: !param_value)
+
+            put api('/application/settings', admin, admin_mode: true),
+              params: { enable_member_promotion_management: param_value }
+
+            expect(json_response['enable_member_promotion_management']).to eq(param_value)
+          end
+        end
+
+        context 'when there are pending promotions' do
+          before do
+            allow_next_instance_of(
+              ::GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder
+            ) do |instance|
+              allow(instance).to receive(:execute).and_return(['mock_non_empty_return'])
+            end
+          end
+
+          it 'does not change enable_member_promotion_management to false' do
+            ::Gitlab::CurrentSettings.update!(enable_member_promotion_management: true)
+
+            put api('/application/settings', admin, admin_mode: true),
+              params: { enable_member_promotion_management: false }
+
+            expect(json_response['enable_member_promotion_management']).to eq(true)
+          end
         end
       end
     end

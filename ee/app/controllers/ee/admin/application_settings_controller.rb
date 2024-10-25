@@ -176,10 +176,6 @@ module EE
           attrs << :make_profile_private
         end
 
-        if promotion_management_available?
-          attrs << :enable_member_promotion_management
-        end
-
         attrs << :new_user_signups_cap
         attrs << :namespace_storage_forks_cost_factor
 
