@@ -12,6 +12,7 @@ import ScanFilterSelector from 'ee/security_orchestration/components/policy_edit
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import {
   ACTION_LISTBOX_ITEMS,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   BOT_MESSAGE_TYPE,
   buildApprovalAction,
   buildBotMessageAction,
@@ -679,6 +680,12 @@ describe('EditorComponent', () => {
 
     describe('empty policy alert', () => {
       const settingsPolicy = { approval_settings: { [BLOCK_BRANCH_MODIFICATION]: true } };
+      const groupBranchModificationSettingsPolicy = {
+        actions: [{ type: BOT_MESSAGE_TYPE, enabled: false }],
+        approval_settings: {
+          [BLOCK_GROUP_BRANCH_MODIFICATION]: { enabled: true, exceptions: ['top-level-group'] },
+        },
+      };
       const disabledBotPolicy = { actions: [{ type: BOT_MESSAGE_TYPE, enabled: false }] };
       const disabledBotPolicyWithSettings = {
         approval_settings: { [BLOCK_BRANCH_MODIFICATION]: true },
@@ -686,13 +693,14 @@ describe('EditorComponent', () => {
       };
 
       describe.each`
-        title                                                       | policy                           | hasActions | hasAlert | alertVariant
-        ${'has require approval action and settings'}               | ${settingsPolicy}                | ${true}    | ${false} | ${''}
-        ${'has require approval action but does not have settings'} | ${{}}                            | ${true}    | ${false} | ${''}
-        ${'has settings but does not have actions'}                 | ${settingsPolicy}                | ${false}   | ${true}  | ${'warning'}
-        ${'does not have actions or settings'}                      | ${{}}                            | ${false}   | ${true}  | ${'warning'}
-        ${'has disabled bot action and has settings'}               | ${disabledBotPolicyWithSettings} | ${true}    | ${true}  | ${'warning'}
-        ${'has disabled bot action but does not have settings'}     | ${disabledBotPolicy}             | ${true}    | ${true}  | ${'danger'}
+        title                                                              | policy                                   | hasActions | hasAlert | alertVariant
+        ${'has require approval action and settings'}                      | ${settingsPolicy}                        | ${true}    | ${false} | ${''}
+        ${'has require approval action but does not have settings'}        | ${{}}                                    | ${true}    | ${false} | ${''}
+        ${'has settings but does not have actions'}                        | ${settingsPolicy}                        | ${false}   | ${true}  | ${'warning'}
+        ${'does not have actions or settings'}                             | ${{}}                                    | ${false}   | ${true}  | ${'warning'}
+        ${'has disabled bot action and has settings'}                      | ${disabledBotPolicyWithSettings}         | ${true}    | ${true}  | ${'warning'}
+        ${'has disabled bot action but does not have settings'}            | ${disabledBotPolicy}                     | ${true}    | ${true}  | ${'danger'}
+        ${'has disabled bot action and group branch modification setting'} | ${groupBranchModificationSettingsPolicy} | ${true}    | ${true}  | ${'warning'}
       `('$title', ({ policy, hasActions, hasAlert, alertVariant }) => {
         beforeEach(() => {
           factoryWithExistingPolicy({ policy, hasActions });

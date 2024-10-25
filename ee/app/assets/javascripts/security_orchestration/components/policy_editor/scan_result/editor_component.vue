@@ -27,6 +27,7 @@ import FallbackSection from './fallback_section.vue';
 import { CLOSED } from './constants';
 import {
   ACTION_LISTBOX_ITEMS,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   buildAction,
   buildSettingsList,
   createPolicyObject,
@@ -44,6 +45,7 @@ import {
   humanizeInvalidBranchesError,
   invalidBranchType,
   BOT_MESSAGE_TYPE,
+  PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
 } from './lib';
 
@@ -211,11 +213,16 @@ export default {
     hasEmptySettings() {
       return (
         isEmpty(this.policy.approval_settings) ||
-        Object.values(this.policy.approval_settings).every((value) => {
-          if (typeof value === 'boolean') {
-            return !value;
+        Object.entries(this.policy.approval_settings).every(([key, value]) => {
+          if (key === PERMITTED_INVALID_SETTINGS_KEY) {
+            return true;
           }
-          return true;
+
+          if (key === BLOCK_GROUP_BRANCH_MODIFICATION && typeof value !== 'boolean') {
+            return !value.enabled;
+          }
+
+          return !value;
         })
       );
     },
