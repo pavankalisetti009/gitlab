@@ -10,31 +10,12 @@ module Types
       include ::Gitlab::Utils::StrongMemoize
       include MemberRolesHelper
 
+      implements Types::Members::RoleInterface
+
       field :access_level,
         GraphQL::Types::Int,
         null: false,
         description: 'Access level as a number.'
-
-      field :name,
-        GraphQL::Types::String,
-        null: false,
-        description: 'Access level as a string.'
-
-      field :members_count,
-        GraphQL::Types::Int,
-        alpha: { milestone: '17.3' },
-        description: 'Number of times the role has been directly assigned to a group or project member.'
-
-      field :users_count,
-        GraphQL::Types::Int,
-        alpha: { milestone: '17.5' },
-        description: 'Number of users who have been directly assigned the role in at least one group or project.'
-
-      field :details_path,
-        GraphQL::Types::String,
-        null: false,
-        alpha: { milestone: '17.4' },
-        description: 'URL path to the role details webpage.'
 
       def details_path
         access_level = object[:access_level]

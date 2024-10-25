@@ -12,15 +12,12 @@ module Types
 
       include MemberRolesHelper
 
+      implements Types::Members::RoleInterface
+
       field :id,
         ::Types::GlobalIDType[::MemberRole],
         null: false,
         description: 'ID of the member role.'
-
-      field :name,
-        GraphQL::Types::String,
-        null: false,
-        description: 'Name of the member role.'
 
       field :description,
         GraphQL::Types::String,
@@ -39,27 +36,11 @@ module Types
         alpha: { milestone: '16.5' },
         description: 'Array of all permissions enabled for the custom role.'
 
-      field :members_count,
-        GraphQL::Types::Int,
-        alpha: { milestone: '16.7' },
-        description: 'Number of times the role has been directly assigned to a group or project member.'
-
-      field :users_count,
-        GraphQL::Types::Int,
-        alpha: { milestone: '17.5' },
-        description: 'Number of users who have been directly assigned the role in at least one group or project.'
-
       field :edit_path,
         GraphQL::Types::String,
         null: false,
         alpha: { milestone: '16.11' },
         description: 'Web UI path to edit the custom role.'
-
-      field :details_path,
-        GraphQL::Types::String,
-        null: false,
-        alpha: { milestone: '17.4' },
-        description: 'URL path to the role details webpage.'
 
       field :created_at,
         Types::TimeType,
