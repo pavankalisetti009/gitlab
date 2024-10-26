@@ -5,12 +5,12 @@ module Groups
     before_action :authorize_admin_group!
     before_action :authorize_discover_page
 
-    layout 'group'
-
     feature_category :activation
     urgency :low
 
-    def show; end
+    def show
+      render GitlabSubscriptions::DiscoverTrialComponent.new(namespace: @group)
+    end
 
     private
 

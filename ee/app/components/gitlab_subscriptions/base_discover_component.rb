@@ -60,6 +60,10 @@ module GitlabSubscriptions
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
 
+    def core_feature_two_header_text
+      nil
+    end
+
     def hero_thumbnail
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
@@ -97,7 +101,8 @@ module GitlabSubscriptions
         button_attributes: {
           category: 'secondary',
           variant: 'confirm',
-          class: 'gl-w-full sm:gl-w-auto'
+          class: 'gl-w-full sm:gl-w-auto',
+          'data-testid': 'trial-discover-hand-raise-lead-button'
         }.to_json
       }
     end

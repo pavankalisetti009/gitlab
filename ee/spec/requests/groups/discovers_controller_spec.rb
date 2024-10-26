@@ -36,7 +36,6 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
         get group_discover_path(group)
 
         is_expected.to have_gitlab_http_status(:ok)
-        is_expected.to render_template(:show)
       end
     end
 
