@@ -2,6 +2,7 @@
 import { GlBadge, GlButton, GlTableLite, GlSprintf, GlLabel, GlPagination } from '@gitlab/ui';
 import { updateHistory, getParameterByName, setUrlParams } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
@@ -61,9 +62,15 @@ export default {
         }
         return data.project?.secrets;
       },
+      error() {
+        createAlert({ message: __('An error occurred while fetching secrets, please try again.') });
+      },
     },
   },
   computed: {
+    onSecretsPage() {
+      return window.location.pathname.includes('/-/secrets');
+    },
     queryVariables() {
       return {
         fullPath: this.fullPath,
@@ -108,9 +115,11 @@ export default {
     },
     handlePageChange(page) {
       this.page = page;
-      updateHistory({
-        url: setUrlParams({ page }),
-      });
+      if (this.onSecretsPage) {
+        updateHistory({
+          url: setUrlParams({ page }),
+        });
+      }
     },
   },
   fields: [
@@ -148,7 +157,9 @@ export default {
 </script>
 <template>
   <div>
-    <h1 class="page-title gl-text-size-h-display">{{ s__('Secrets|Secrets') }}</h1>
+    <h1 v-if="onSecretsPage" class="page-title gl-text-size-h-display">
+      {{ s__('Secrets|Secrets') }}
+    </h1>
     <p>
       <gl-sprintf
         :message="
