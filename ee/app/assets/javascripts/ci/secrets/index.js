@@ -7,11 +7,10 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { resolvers, cacheConfig } from './graphql/settings';
 import getSecretsQuery from './graphql/queries/client/get_secrets.query.graphql';
 
-import createRouter from './router';
+import createRouter, { initNavigationGuards } from './router';
 
 import SecretsApp from './components/secrets_app.vue';
 import SecretsBreadcrumbs from './components/secrets_breadcrumbs.vue';
-
 import { mockGroupSecretsData, mockProjectSecretsData } from './mock_data';
 
 Vue.use(VueApollo);
@@ -22,9 +21,13 @@ const apolloProvider = new VueApollo({
 
 // eslint-disable-next-line max-params
 const initSecretsApp = (el, app, props, basePath) => {
-  const router = createRouter(basePath, props);
+  const router = createRouter(basePath, props, window.location.href);
 
-  injectVueAppBreadcrumbs(router, SecretsBreadcrumbs);
+  if (window.location.href.includes(basePath)) {
+    injectVueAppBreadcrumbs(router, SecretsBreadcrumbs);
+  }
+
+  initNavigationGuards({ router, base: basePath, props, location: window.location.href });
 
   return new Vue({
     el,
@@ -71,7 +74,7 @@ export const initProjectSecretsApp = () => {
     return false;
   }
 
-  const { projectPath, projectId, basePath } = el.dataset;
+  const { projectPath, projectSecretsSettingsPath, projectId, basePath } = el.dataset;
 
   apolloProvider.clients.defaultClient.cache.writeQuery({
     query: getSecretsQuery,
@@ -88,5 +91,10 @@ export const initProjectSecretsApp = () => {
     },
   });
 
-  return initSecretsApp(el, SecretsApp, { projectPath, projectId }, basePath);
+  return initSecretsApp(
+    el,
+    SecretsApp,
+    { projectPath, projectSecretsSettingsPath, projectId },
+    basePath,
+  );
 };

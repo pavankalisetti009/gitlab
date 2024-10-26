@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { __, s__ } from '~/locale';
+import { visitUrl } from '~/lib/utils/url_utility';
 import {
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
@@ -15,15 +16,40 @@ import SecretsTable from './components/secrets_table/secrets_table.vue';
 
 Vue.use(VueRouter);
 
-export default (base, props) => {
+export const initNavigationGuards = ({ router, base, props, location }) => {
+  if (location.includes(base)) {
+    // any navigation to the index route redirects
+    // to CI/CD settings with the secrets section expanded
+    router.beforeEach((to, _, next) => {
+      if (to.name === INDEX_ROUTE_NAME) {
+        visitUrl(props.projectSecretsSettingsPath);
+      } else next();
+    });
+  } else {
+    // any navigation away from the index route redirects
+    // to the requested route within the main /-/secrets app
+    router.beforeEach((to, _, next) => {
+      if (to.name !== INDEX_ROUTE_NAME) {
+        visitUrl(base + to.fullPath);
+      } else next();
+    });
+  }
+  return router;
+};
+
+export default (base, props, location) => {
   const { groupPath, projectPath } = props;
 
   const entity = projectPath ? ENTITY_PROJECT : ENTITY_GROUP;
   const fullPath = projectPath || groupPath;
   const isGroup = entity === ENTITY_GROUP;
 
-  return new VueRouter({
-    mode: 'history',
+  // in the main /-/secrets app, use normal router (history)
+  // in CI/CD settings, suppress URL changes (abstract)
+  const mode = location?.includes(base) ? 'history' : 'abstract';
+
+  const router = new VueRouter({
+    mode,
     base,
     routes: [
       {
@@ -87,4 +113,11 @@ export default (base, props) => {
       },
     ],
   });
+
+  // in abstract mode, we have to tell the router where to start
+  if (mode === 'abstract') {
+    router.push('/');
+  }
+
+  return router;
 };

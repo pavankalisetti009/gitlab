@@ -201,12 +201,13 @@ describe('SecretsTable component', () => {
         findPagination().vm.$emit('input', fromPage);
         findPagination().vm.$emit('input', toPage);
 
-        // pushes page change to browser history
-        expect(window.history.pushState).toHaveBeenCalledWith(
-          {},
-          '',
-          `http://test.host/?page=${toPage}`,
-        );
+        // while the Secrets table is in CI/CD settings
+        // we suppress URL changes for page changes
+        // expect(window.history.pushState).toHaveBeenCalledWith(
+        //   {},
+        //   '',
+        //   `http://test.host/?page=${toPage}`,
+        // );
 
         await waitForPromises();
 
