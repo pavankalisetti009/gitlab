@@ -42725,9 +42725,6 @@ msgstr ""
 msgid "ProjectMaintenance|Blobs removal is scheduled."
 msgstr ""
 
-msgid "ProjectMaintenance|Blobs removed"
-msgstr ""
-
 msgid "ProjectMaintenance|Cancel"
 msgstr ""
 
@@ -42779,9 +42776,6 @@ msgstr ""
 msgid "ProjectMaintenance|Removing blobs by ID cannot be undone. Are you sure you want to continue?"
 msgstr ""
 
-msgid "ProjectMaintenance|Run housekeeping to remove old versions from repository."
-msgstr ""
-
 msgid "ProjectMaintenance|Something went wrong while redacting text."
 msgstr ""
 
@@ -42791,9 +42785,6 @@ msgstr ""
 msgid "ProjectMaintenance|Strings to redact"
 msgstr ""
 
-msgid "ProjectMaintenance|Text redacted"
-msgstr ""
-
 msgid "ProjectMaintenance|Text redaction removal is scheduled."
 msgstr ""
 
@@ -42801,9 +42792,6 @@ msgid "ProjectMaintenance|To confirm, enter the following:"
 msgstr ""
 
 msgid "ProjectMaintenance|To ensure that a full backup is available in case changes need to be restored, you should make an %{docs_link_start}export of the project%{docs_link_end}."
-msgstr ""
-
-msgid "ProjectMaintenance|To remove old versions from the repository, run housekeeping."
 msgstr ""
 
 msgid "ProjectMaintenance|Yes, redact matching strings"
