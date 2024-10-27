@@ -386,7 +386,7 @@ module Ci
           # user been blocked.
           unless pipeline.user&.blocked?
             PipelineNotificationWorker
-              .perform_async(pipeline.id, ref_status: ref_status)
+              .perform_async(pipeline.id, 'ref_status' => ref_status&.to_s)
           end
         end
       end
