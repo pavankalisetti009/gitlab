@@ -8,7 +8,7 @@ module PackageMetadata
 
     LEASE_TIMEOUT = 5.minutes
 
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :always
     feature_category :software_composition_analysis
     urgency :low
 

@@ -10,7 +10,7 @@ module Search
 
       include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- cronjob does not schedule other work
 
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- cronjob
+      data_consistency :always
       urgency :throttled
       idempotent!
       deduplicate :until_executed

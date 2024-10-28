@@ -9,7 +9,7 @@ module Search
 
       # Must be always otherwise we risk race condition where it does not think that indexing is enabled yet for the
       # namespace.
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+      data_consistency :always
       idempotent!
       pause_control :zoekt
 

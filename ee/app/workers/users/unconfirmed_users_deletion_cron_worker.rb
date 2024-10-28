@@ -11,7 +11,7 @@ module Users
     BATCH_SIZE = 1_000
 
     idempotent!
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :always
     feature_category :user_management
 
     def perform

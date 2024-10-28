@@ -7,7 +7,7 @@ module Groups
 
       idempotent!
       feature_category :user_management
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+      data_consistency :always
 
       def perform(user_id)
         user = User.find_by_id(user_id)

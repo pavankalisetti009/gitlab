@@ -6,9 +6,7 @@ module Sbom
 
     idempotent!
     deduplicate :until_executing, including_scheduled: true
-    # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- This worker exclusively performs writes.
     data_consistency :always
-    # rubocop:enable SidekiqLoadBalancing/WorkerDataConsistency
 
     feature_category :dependency_management
 
