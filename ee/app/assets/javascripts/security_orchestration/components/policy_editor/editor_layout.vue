@@ -253,6 +253,7 @@ export default {
             >
               <gl-form-input
                 id="policyName"
+                data-testid="policy-name-text"
                 :disabled="hasParsingError"
                 :state="hasValidName || !showValidation"
                 :value="policy.name"
@@ -268,6 +269,7 @@ export default {
             >
               <gl-form-textarea
                 id="policyDescription"
+                data-testid="policy-description-text"
                 :disabled="hasParsingError"
                 :value="policy.description"
                 no-resize
