@@ -5,12 +5,13 @@ module Groups
     def execute
       return error(_('You are not authorized to perform this action')) unless can?(current_user, :remove_group, group)
       return error(_('Group has not been marked for deletion')) unless group.marked_for_deletion?
+      return error(_('Group deletion is in progress')) if group.namespace_details.pending_delete?
 
       result = remove_deletion_schedule
 
       group.reset
 
-      log_audit_event if result[:status] == :success
+      log_event if result[:status] == :success
 
       result
     end
@@ -25,6 +26,11 @@ module Groups
       else
         error(_('Could not restore the group'))
       end
+    end
+
+    def log_event
+      log_audit_event
+      log_info("User #{current_user.id} restored group #{group.full_path}")
     end
 
     def log_audit_event
