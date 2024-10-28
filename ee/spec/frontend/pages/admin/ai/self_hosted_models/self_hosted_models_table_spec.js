@@ -8,7 +8,6 @@ describe('SelfHostedModelsTable', () => {
   let wrapper;
 
   const basePath = '/admin/ai/self_hosted_models';
-  const aiFeatureSettingsPath = '/admin/ai/feature_settings';
   const newSelfHostedModelPath = 'admin/ai/self_hosted_models/new';
 
   const createComponent = ({ props }) => {
@@ -18,7 +17,6 @@ describe('SelfHostedModelsTable', () => {
       },
       provide: {
         basePath,
-        aiFeatureSettingsPath,
         newSelfHostedModelPath,
       },
     });

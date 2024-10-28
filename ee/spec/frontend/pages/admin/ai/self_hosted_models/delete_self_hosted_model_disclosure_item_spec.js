@@ -23,8 +23,6 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
   const modelWithFeatureSettings = mockSelfHostedModelsList[0];
   const modelWithoutFeatureSettings = mockSelfHostedModelsList[1];
 
-  const AI_FEATURE_SETTINGS_PATH = 'path/to/feature/settings/page';
-
   const deleteMutationSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiSelfHostedModelDelete: {
@@ -56,9 +54,6 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
         propsData: {
           model: modelWithoutFeatureSettings,
           ...props,
-        },
-        provide: {
-          aiFeatureSettingsPath: AI_FEATURE_SETTINGS_PATH,
         },
         stubs: { GlModal, GlButton, GlSprintf },
       }),
@@ -191,8 +186,8 @@ describe('DeleteSelfHostedModelDisclosureItem', () => {
         expect(body).toContain('code_suggestions');
       });
 
-      it('has an Okay button to acknowledge the modal', () => {
-        expect(findSecondaryButton().text()).toBe('Okay');
+      it('does not render the modal footer buttons', () => {
+        expect(findModal().attributes('hidefooter')).toBe('true');
       });
     });
   });

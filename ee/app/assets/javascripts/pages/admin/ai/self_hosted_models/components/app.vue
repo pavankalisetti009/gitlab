@@ -16,17 +16,8 @@ export default {
     SelfHostedModelsTable,
     PageHeading,
   },
-  provide() {
-    return {
-      aiFeatureSettingsPath: this.aiFeatureSettingsPath,
-    };
-  },
   props: {
     basePath: {
-      type: String,
-      required: true,
-    },
-    aiFeatureSettingsPath: {
       type: String,
       required: true,
     },
