@@ -16,8 +16,17 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(user_prompt).to include(new_path)
     end
 
-    it 'includes diff' do
-      expect(user_prompt).to include(diff)
+    it 'includes diff lines' do
+      expect(user_prompt).to include(
+        <<~CONTENT
+          <line new_line="1"> # NEW</line>
+          <line new_line="2"> </line>
+          <line new_line="">-Welcome</line>
+          <line new_line="">-This is a new file</line>
+          <line new_line="3">+Welcome!</line>
+          <line new_line="4">+This is a new file.</line>
+        CONTENT
+      )
     end
 
     it 'uses Claude 3.5 Sonnet' do

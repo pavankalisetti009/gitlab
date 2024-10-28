@@ -159,7 +159,7 @@ module Gitlab
           end
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
-          def sorted_and_trimmed_draft_note_params
+          def trimmed_draft_note_params
             # Filter out lower priority comments (< 3) and take only a limited
             # number of reviews to minimize the review volume
             @draft_notes_by_priority
@@ -178,7 +178,7 @@ module Gitlab
 
             return unless Ability.allowed?(user, :create_note, merge_request)
 
-            draft_notes = sorted_and_trimmed_draft_note_params.map do |params|
+            draft_notes = trimmed_draft_note_params.map do |params|
               DraftNote.new(params)
             end
 
