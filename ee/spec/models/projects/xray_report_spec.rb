@@ -9,7 +9,6 @@ RSpec.describe Projects::XrayReport, feature_category: :code_suggestions do
     it { is_expected.to validate_presence_of(:project) }
     it { is_expected.to validate_presence_of(:lang) }
     it { is_expected.to validate_presence_of(:payload) }
-    it { is_expected.to validate_presence_of(:file_checksum) }
 
     it 'validates uniqueness of lang and project', :aggregate_failures do
       create(:xray_report, project: project, lang: 'Ruby')

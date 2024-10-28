@@ -17,7 +17,7 @@ module Ai
             content = ::Gitlab::Json.parse(blob)
             Projects::XrayReport
               .upsert(
-                { project_id: pipeline.project_id, payload: content, lang: lang, file_checksum: content['checksum'] },
+                { project_id: pipeline.project_id, payload: content, lang: lang },
                 unique_by: [:project_id, :lang]
               )
           rescue JSON::ParserError => e

@@ -22,7 +22,7 @@ module CodeSuggestions
         }
 
         Projects::XrayReport.upsert(
-          { project_id: project.id, payload: payload, lang: language, file_checksum: checksum },
+          { project_id: project.id, payload: payload, lang: language },
           unique_by: [:project_id, :lang]
         )
 
