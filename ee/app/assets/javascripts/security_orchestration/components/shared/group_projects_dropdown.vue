@@ -50,7 +50,7 @@ export default {
       },
       variables() {
         return {
-          ...(this.loadAllProjects ? {} : { fullPath: this.groupFullPath }),
+          ...this.pathVariable,
           search: this.searchTerm,
         };
       },
@@ -181,7 +181,11 @@ export default {
         value: id,
         fullPath,
       }));
-      return searchInItemsProperties({ items, properties: ['text'], searchQuery: this.searchTerm });
+      return searchInItemsProperties({
+        items,
+        properties: ['text', 'fullPath'],
+        searchQuery: this.searchTerm,
+      });
     },
     itemsIds() {
       return this.items.map(({ id }) => id);
@@ -191,6 +195,11 @@ export default {
     },
     variant() {
       return this.state ? 'default' : 'danger';
+    },
+    pathVariable() {
+      return {
+        ...(this.loadAllProjects ? {} : { fullPath: this.groupFullPath }),
+      };
     },
   },
   created() {
@@ -204,7 +213,7 @@ export default {
       const { groupsOnly, loadAllProjects } = this;
       const variables = {
         after: this.pageInfo.endCursor,
-        fullPath: this.groupFullPath,
+        ...this.pathVariable,
       };
 
       this.itemsQuery
