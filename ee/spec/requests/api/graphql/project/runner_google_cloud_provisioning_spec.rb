@@ -105,8 +105,7 @@ RSpec.describe 'runnerGoogleCloudProvisioning', feature_category: :runner do
         graphql_data_at(GraphqlHelpers.fieldnamerize(parent_field), 'runnerCloudProvisioning', 'provisioningSteps')
       end
 
-      it 'returns provisioning steps', :aggregate_failures,
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444738' do
+      it 'returns provisioning steps', :aggregate_failures do
         request
         expect_graphql_errors_to_be_empty
 
