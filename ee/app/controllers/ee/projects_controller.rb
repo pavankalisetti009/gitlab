@@ -51,15 +51,9 @@ module EE
       result = ::Projects::MarkForDeletionService.new(project, current_user, {}).execute
 
       if result[:status] == :success
-        date = permanent_deletion_date_formatted(project, project.marked_for_deletion_at)
-        flash[:notice] = _("Project '%{project_name}' will be deleted on %{date}") % { date: date, project_name: project.full_name }
-
-        if project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-          redirect_to(project_path(project), status: :found)
-        else
-          redirect_to dashboard_projects_path, status: :found
-        end
-
+        adjourned_deletion = project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
+        path = adjourned_deletion ? project_path(project) : dashboard_projects_path
+        redirect_to path, status: :found
       else
         flash.now[:alert] = result[:message]
 
