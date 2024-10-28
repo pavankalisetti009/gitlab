@@ -51,7 +51,6 @@ module EE
           store.subscribe ::PackageMetadata::GlobalAdvisoryScanWorker, to: ::PackageMetadata::IngestedAdvisoryEvent
           store.subscribe ::Sbom::ProcessVulnerabilitiesWorker, to: ::Sbom::SbomIngestedEvent
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::NamespaceSettings::AiRelatedSettingsChangedEvent
-          store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::Members::MembersAddedEvent
           store.subscribe ::Security::RefreshProjectPoliciesWorker,
             to: ::ProjectAuthorizations::AuthorizationsChangedEvent,
             delay: 1.minute
@@ -81,6 +80,7 @@ module EE
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
           subscribe_to_zoekt_events(store)
+          subscribe_to_members_added_event(store)
           subscribe_to_users_activity_events(store)
           subscribe_to_member_destroyed_events(store)
           subscribe_to_merge_events(store)
@@ -202,6 +202,16 @@ module EE
 
           store.subscribe ::Search::Zoekt::LostNodeEventWorker,
             to: ::Search::Zoekt::LostNodeEvent
+        end
+
+        def subscribe_to_members_added_event(store)
+          store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::Members::MembersAddedEvent
+
+          store.subscribe ::GitlabSubscriptions::Members::AddedWorker, to: ::Members::MembersAddedEvent,
+            if: ->(event) {
+              actor = event.data[:source_type].constantize.actor_from_id(event.data[:source_id])
+              ::Feature.enabled?(:track_member_activity, actor)
+            }
         end
 
         def subscribe_to_users_activity_events(store)
