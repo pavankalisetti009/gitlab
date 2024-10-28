@@ -13,16 +13,6 @@ export const TRIAL_WIDGET = {
     seeUpgradeOptionsText: s__('TrialWidget|See upgrade options'),
     dismiss: __('Dismiss'),
   },
-  trackingEvents: {
-    action: 'click_link',
-    activeTrialOptions: {
-      category: 'trial_status_widget',
-    },
-    trialEndedOptions: {
-      category: 'trial_ended_widget',
-      label: 'your_trial_has_ended',
-    },
-  },
   trialTypes: {
     [DUO_PRO]: {
       name: s__('TrialWidget|GitLab Duo Pro'),

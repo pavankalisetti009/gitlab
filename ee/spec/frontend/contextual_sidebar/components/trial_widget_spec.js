@@ -6,6 +6,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -38,6 +39,8 @@ describe('TrialWidget component', () => {
       },
     });
   };
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   describe('rendered content', () => {
     it('renders with the correct id', () => {
@@ -158,7 +161,42 @@ describe('TrialWidget component', () => {
             new Error('Request failed with status code 400'),
           );
         });
+
+        it('should track the dismiss event', () => {
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+          findDismissButton().vm.$emit('click');
+
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            'click_dismiss_button_on_trial_widget',
+            {
+              label: 'gitlab_duo_enterprise',
+            },
+            undefined,
+          );
+        });
       });
+    });
+  });
+
+  describe('cta tracking', () => {
+    it('tracks click with correct action and label', () => {
+      createComponent();
+
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      findCtaButton().vm.$emit('click', {
+        stopPropagation: jest.fn(),
+        target: { textContent: 'Learn more' },
+      });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_learn_more_link_on_trial_widget',
+        {
+          label: 'gitlab_duo_enterprise',
+        },
+        undefined,
+      );
     });
   });
 
