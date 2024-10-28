@@ -58625,9 +58625,6 @@ msgstr ""
 msgid "Unknown data source: %{source}"
 msgstr ""
 
-msgid "Unknown encryption strategy: %{encrypted_strategy}!"
-msgstr ""
-
 msgid "Unknown format"
 msgstr ""
 
