@@ -19,7 +19,7 @@ export default {
   DEFAULT_VALUES: [detected.searchParamValue, confirmed.searchParamValue],
   VALID_VALUES: OPTIONS.map(({ value }) => value),
   GROUPS,
-
+  queryStringDefaultValues: [ALL_STATUS_VALUE],
   components: {
     GlFilteredSearchToken,
     GlDropdownDivider,
@@ -173,6 +173,7 @@ export default {
     querystring-key="state"
     :value="querySyncValues"
     :valid-values="$options.VALID_VALUES"
+    :default-values="$options.queryStringDefaultValues"
     @input="updateSelectedFromQS"
   >
     <gl-filtered-search-token

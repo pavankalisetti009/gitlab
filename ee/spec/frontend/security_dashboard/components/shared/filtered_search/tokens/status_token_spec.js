@@ -224,6 +224,7 @@ describe('Status Token component', () => {
       expect(findQuerystringSync().props()).toMatchObject({
         querystringKey: 'state',
         value: StatusToken.DEFAULT_VALUES,
+        defaultValues: ['ALL'],
         validValues: [
           'ALL',
           'DETECTED',
