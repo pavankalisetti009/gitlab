@@ -19,6 +19,9 @@ module EE
           author_username: params[:author_username],
           not_author_username: params[:not_author_username],
           fields: params[:fields],
+          hybrid_similarity: params[:hybrid_similarity]&.to_f,
+          hybrid_boost: params[:hybrid_boost]&.to_f,
+          num_context_lines: params[:num_context_lines]&.to_i,
           type: params[:type]
         )
       end
