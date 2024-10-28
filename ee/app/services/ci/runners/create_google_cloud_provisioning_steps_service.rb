@@ -80,8 +80,8 @@ module Ci
       strong_memoize_attr :runner
 
       def instructions
-        terraform_template = ERB.new(File.read(TERRAFORM_TEMPLATE_PATH))
-        shell_template = ERB.new(File.read(SHELL_TEMPLATE_PATH))
+        terraform_template = ERB.new(File.read(Rails.root.join(TERRAFORM_TEMPLATE_PATH)))
+        shell_template = ERB.new(File.read(Rails.root.join(SHELL_TEMPLATE_PATH)))
 
         locals = {
           runner_token: runner_token,

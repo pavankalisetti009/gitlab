@@ -24,7 +24,7 @@ module Types
       end
 
       def project_setup_shell_script
-        template = ERB.new(File.read(SHELL_SCRIPT_TEMPLATE_PATH))
+        template = ERB.new(File.read(Rails.root.join(SHELL_SCRIPT_TEMPLATE_PATH)))
 
         locals = {
           google_cloud_project_id: google_cloud_project_id
