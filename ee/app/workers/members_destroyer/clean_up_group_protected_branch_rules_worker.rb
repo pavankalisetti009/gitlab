@@ -4,7 +4,7 @@ module MembersDestroyer
   class CleanUpGroupProtectedBranchRulesWorker # rubocop:disable Scalability/CronWorkerContext
     include ApplicationWorker
 
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :always
     feature_category :groups_and_projects
     idempotent!
 

@@ -9,7 +9,7 @@ module ComplianceManagement
 
     idempotent!
     feature_category :compliance_management
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :always
     urgency :high
 
     def perform

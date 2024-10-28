@@ -7,9 +7,7 @@ module Security
     include ApplicationWorker
     include SecurityScansQueue
 
-    # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- Refactor and do not want to change existing behavior
     data_consistency :always
-    # rubocop:enable SidekiqLoadBalancing/WorkerDataConsistency
     sidekiq_options retry: 3
     feature_category :vulnerability_management
     worker_resource_boundary :memory

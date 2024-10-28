@@ -10,7 +10,7 @@ module Onboarding
   class ProgressTrackingWorker
     include ApplicationWorker
 
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- does writes and requires consistency
+    data_consistency :always
 
     sidekiq_options retry: 3
 

@@ -6,7 +6,7 @@ module Security
       include ApplicationWorker
 
       idempotent!
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+      data_consistency :always
       sidekiq_options retry: true
       urgency :low
 

@@ -6,7 +6,7 @@ module Security
       include ApplicationWorker
 
       idempotent!
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- this worker updates approval rules
+      data_consistency :always
 
       queue_namespace :security_scans
       feature_category :security_policy_management

@@ -8,7 +8,7 @@ module Search
       include CronjobQueue
       prepend ::Geo::SkipSecondary
 
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- It is a Cronjob
+      data_consistency :always
       idempotent!
       urgency :low
 

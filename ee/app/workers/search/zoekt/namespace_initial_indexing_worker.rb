@@ -7,7 +7,7 @@ module Search
       include Search::Worker
       prepend ::Geo::SkipSecondary
 
-      data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- always otherwise we risk race condition where it doesn't think that indexing is enabled yet for the namespace.
+      data_consistency :always
       idempotent!
       pause_control :zoekt
       urgency :low

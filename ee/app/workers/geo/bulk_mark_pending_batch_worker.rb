@@ -6,7 +6,7 @@ module Geo
   class BulkMarkPendingBatchWorker
     include ApplicationWorker
 
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :always
 
     include GeoQueue
     include LimitedCapacity::Worker
