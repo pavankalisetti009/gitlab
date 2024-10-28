@@ -1533,6 +1533,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: gitlab_subscriptions_members_added
+  :worker_name: GitlabSubscriptions::Members::AddedWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: gitlab_subscriptions_members_destroyed
   :worker_name: GitlabSubscriptions::Members::DestroyedWorker
   :feature_category: :seat_cost_management
