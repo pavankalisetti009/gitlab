@@ -2056,9 +2056,6 @@ msgstr ""
 msgid "A maximum of %{limit} projects can be searched for at one time."
 msgstr ""
 
-msgid "A member of the abuse team will review your report as soon as possible."
-msgstr ""
-
 msgid "A new Auto DevOps pipeline has been created, go to the Pipelines page for details"
 msgstr ""
 
@@ -41225,7 +41222,7 @@ msgstr ""
 msgid "Please use an email address or domain you control."
 msgstr ""
 
-msgid "Please use this form to report to the administrator users who create spam issues, comments or behave inappropriately."
+msgid "Please use this form to report to the administrator users who create spam issues, comments or behave inappropriately. A member of the abuse team will review your report as soon as possible."
 msgstr ""
 
 msgid "Please wait a few moments while we load the file history for this line."
@@ -45895,9 +45892,6 @@ msgstr ""
 msgid "ReportAbuse|Screenshot"
 msgstr ""
 
-msgid "ReportAbuse|Screenshot of abuse"
-msgstr ""
-
 msgid "ReportAbuse|Something else."
 msgstr ""
 
@@ -45920,9 +45914,6 @@ msgid "ReportAbuse|They're posting spam."
 msgstr ""
 
 msgid "ReportAbuse|They're violating a copyright or trademark."
-msgstr ""
-
-msgid "ReportAbuse|URL of this user posting spam"
 msgstr ""
 
 msgid "ReportAbuse|Why are you reporting this user?"
