@@ -42,4 +42,23 @@ RSpec.describe 'Getting Duo Chat slash commands', feature_category: :duo_chat do
       mock_commands.map(&:stringify_keys)
     )
   end
+
+  context 'when the service raises an exception' do
+    let(:error_message) { 'An error occurred while fetching slash commands' }
+
+    before do
+      allow_next_instance_of(Ai::SlashCommandsService) do |service|
+        allow(service).to receive(:available_commands).and_raise(StandardError, error_message)
+      end
+    end
+
+    it 'returns an error in the response' do
+      post_graphql(query, current_user: user, variables: { url: url })
+
+      expect(response).to have_gitlab_http_status(:error)
+      expect(graphql_errors).to contain_exactly(
+        hash_including('message' => a_string_including(error_message))
+      )
+    end
+  end
 end
