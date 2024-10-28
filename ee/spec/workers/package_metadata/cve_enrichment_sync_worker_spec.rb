@@ -31,9 +31,9 @@ RSpec.describe PackageMetadata::CveEnrichmentSyncWorker, type: :worker, feature_
       end
     end
 
-    context 'when the epss_ingestion feature flag is disabled' do
+    context 'when the cve_enrichment_ingestion feature flag is disabled' do
       before do
-        stub_feature_flags(epss_ingestion: false)
+        stub_feature_flags(cve_enrichment_ingestion: false)
       end
 
       it_behaves_like 'it does not sync'

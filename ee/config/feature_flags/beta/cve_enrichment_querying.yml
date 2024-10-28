@@ -1,5 +1,5 @@
 ---
-name: epss_querying
+name: cve_enrichment_querying
 feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/470835
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/162435
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/481431

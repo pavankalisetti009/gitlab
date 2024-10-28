@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_management do
+RSpec.describe 'Query.vulnerabilities.cveEnrichment', feature_category: :vulnerability_management do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -10,9 +10,9 @@ RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_ma
 
   let_it_be(:fields) do
     <<~QUERY
-      epss {
+      cveEnrichment {
         cve
-        score
+        epssScore
       }
     QUERY
   end
@@ -23,9 +23,9 @@ RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_ma
 
   let_it_be(:vulnerability) { create(:vulnerability, project: project, report_type: :container_scanning) }
 
-  let_it_be(:epss) { create(:pm_epss) }
+  let_it_be(:cve_enrichment) { create(:pm_cve_enrichment) }
   let_it_be(:identifier) do
-    create(:vulnerabilities_identifier, external_type: 'cve', external_id: epss.cve, name: epss.cve)
+    create(:vulnerabilities_identifier, external_type: 'cve', external_id: cve_enrichment.cve, name: cve_enrichment.cve)
   end
 
   let_it_be(:finding) do
@@ -45,16 +45,16 @@ RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_ma
   context 'when feature flag is enabled' do
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(epss_querying: true)
+      stub_feature_flags(cve_enrichment_querying: true)
     end
 
-    it 'returns epss data' do
+    it 'returns cve enrichment' do
       post_graphql(query, current_user: user)
 
-      result = data.first['epss']
+      result = data.first['cveEnrichment']
 
-      expect(result['cve']).to eq(epss.cve)
-      expect(result['score']).to eq(epss.score)
+      expect(result['cve']).to eq(cve_enrichment.cve)
+      expect(result['epssScore']).to eq(cve_enrichment.epss_score)
     end
 
     it 'returns nil for non-cve identifier' do
@@ -75,8 +75,8 @@ RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_ma
       post_graphql(query, current_user: user)
 
       expect(data).to contain_exactly(
-        { "epss" => nil },
-        { "epss" => { "cve" => epss.cve, "score" => epss.score } }
+        { "cveEnrichment" => nil },
+        { "cveEnrichment" => { "cve" => cve_enrichment.cve, "epssScore" => cve_enrichment.epss_score } }
       )
     end
 
@@ -102,14 +102,14 @@ RSpec.describe 'Query.vulnerabilities.epss', feature_category: :vulnerability_ma
   context 'when feature flag is disabled' do
     before do
       stub_licensed_features(security_dashboard: true)
-      stub_feature_flags(epss_querying: false)
+      stub_feature_flags(cve_enrichment_querying: false)
     end
 
-    it 'returns nil for epss data' do
+    it 'returns nil for cve enrichment' do
       post_graphql(query, current_user: user)
 
       expect(data).to contain_exactly(
-        { "epss" => nil }
+        { "cveEnrichment" => nil }
       )
     end
   end

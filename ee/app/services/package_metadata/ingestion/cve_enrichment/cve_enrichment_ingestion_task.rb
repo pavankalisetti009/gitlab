@@ -15,8 +15,11 @@ module PackageMetadata
         end
 
         def execute
-          PackageMetadata::Epss.bulk_upsert!(valid_cve_enrichment_entries, unique_by: %w[cve],
-            returns: %w[id cve score created_at updated_at])
+          PackageMetadata::CveEnrichment.bulk_upsert!(
+            valid_cve_enrichment_entries,
+            unique_by: %w[cve],
+            returns: %w[id cve epss_score created_at updated_at]
+          )
         end
 
         private
@@ -32,7 +35,7 @@ module PackageMetadata
                 Error.new(
                   "invalid CVE enrichment entry"),
                 cve: cve_enrichment_entry.cve,
-                score: cve_enrichment_entry.score,
+                epss_score: cve_enrichment_entry.epss_score,
                 errors: cve_enrichment_entry.errors.to_hash
               )
               next
@@ -44,9 +47,9 @@ module PackageMetadata
 
         def cve_enrichment
           import_data.map do |data_object|
-            PackageMetadata::Epss.new(
+            PackageMetadata::CveEnrichment.new(
               cve: data_object.cve_id,
-              score: data_object.epss_score,
+              epss_score: data_object.epss_score,
               created_at: now,
               updated_at: now
             )

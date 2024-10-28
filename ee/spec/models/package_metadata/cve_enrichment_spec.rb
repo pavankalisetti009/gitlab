@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe PackageMetadata::Epss, type: :model, feature_category: :software_composition_analysis do
+RSpec.describe PackageMetadata::CveEnrichment, type: :model, feature_category: :software_composition_analysis do
   using RSpec::Parameterized::TableSyntax
 
-  subject(:epss) { build(:pm_epss) }
+  subject(:cve_enrichment) { build(:pm_cve_enrichment) }
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:cve) }
-    it { is_expected.to validate_presence_of(:score) }
+    it { is_expected.to validate_presence_of(:epss_score) }
 
     describe 'CVE format validation' do
       where(:attribute, :value, :is_valid) do
@@ -21,7 +21,7 @@ RSpec.describe PackageMetadata::Epss, type: :model, feature_category: :software_
       end
 
       with_them do
-        subject(:epss) { build(:pm_epss, attribute => value).valid? }
+        subject(:cve_enrichment) { build(:pm_cve_enrichment, attribute => value).valid? }
 
         it { is_expected.to eq(is_valid) }
       end
