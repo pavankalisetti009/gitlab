@@ -15,5 +15,8 @@ distribution:
 tier:
   - premium
   - ultimate
+tiers:
+  - premium
+  - ultimate
 events:
   - name: render_duo_pro_lead_page

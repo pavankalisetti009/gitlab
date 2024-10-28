@@ -14,5 +14,7 @@ distribution:
   - ee
 tier:
   - ultimate
+tiers:
+  - ultimate
 events:
   - name: render_duo_enterprise_trial_page

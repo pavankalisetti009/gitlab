@@ -15,4 +15,7 @@ distribution:
 tier:
 - premium
 - ultimate
+tiers:
+- premium
+- ultimate
 value_json_schema: "ee/config/metrics/object_schemas/geo_node_usage.json"

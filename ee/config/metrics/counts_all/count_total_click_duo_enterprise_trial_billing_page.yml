@@ -16,5 +16,9 @@ tier:
   - free
   - premium
   - ultimate
+tiers:
+  - free
+  - premium
+  - ultimate
 events:
   - name: click_duo_enterprise_trial_billing_page

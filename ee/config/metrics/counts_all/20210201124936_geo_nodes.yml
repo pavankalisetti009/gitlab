@@ -14,4 +14,7 @@ distribution:
 tier:
 - premium
 - ultimate
+tiers:
+- premium
+- ultimate
 performance_indicator_type: []
