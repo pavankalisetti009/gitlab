@@ -274,7 +274,7 @@ export default {
       @keydown-description.ctrl.enter="handleSave(arguments[1])"
     >
       <template #edit-form-actions="issuableMeta">
-        <gl-form-checkbox v-if="!isCreate" v-model="satisfied" class="gl-mt-6">{{
+        <gl-form-checkbox v-if="!isCreate" v-model="satisfied">{{
           __('Satisfied')
         }}</gl-form-checkbox>
         <div class="requirement-form-actions gl-flex gl-gap-3">
@@ -288,7 +288,7 @@ export default {
             data-testid="requirement-save"
             variant="confirm"
             category="primary"
-            class="js-requirement-save gl-mr-auto"
+            class="js-requirement-save"
             @click="handleSave(issuableMeta)"
           >
             {{ saveButtonLabel }}
