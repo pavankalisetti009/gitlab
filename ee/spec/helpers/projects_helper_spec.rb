@@ -418,7 +418,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           hide_third_party_offers: 'false',
           vulnerability_quota: {
             critical: 'true',
-            enforced: 'false',
+            exceeded: 'false',
             full: 'false'
           }
         }

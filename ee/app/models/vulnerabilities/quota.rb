@@ -30,7 +30,7 @@ module Vulnerabilities
       end
     end
 
-    def enforced?
+    def exceeded?
       return false unless quota_enabled?
 
       with_redis { |redis| redis.exists?(redis_state_key) }

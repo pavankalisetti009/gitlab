@@ -164,10 +164,10 @@ RSpec.describe Vulnerabilities::Quota, feature_category: :vulnerability_manageme
     end
   end
 
-  describe '#enforced?' do
+  describe '#exceeded?' do
     let(:mock_redis) { instance_double(Redis) }
 
-    subject { quota.enforced? }
+    subject { quota.exceeded? }
 
     before do
       redis_key = "projects:#{project.id}:vulnerability_quota:over_usage"
