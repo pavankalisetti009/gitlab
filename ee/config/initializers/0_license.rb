@@ -20,9 +20,7 @@ load_license = ->(dir:, license_name:) do
   end
 end
 
-Gitlab.ee do
-  load_license.call(dir: '.', license_name: 'license')
-end
+load_license.call(dir: '.', license_name: 'license')
 
 Gitlab.jh do
   load_license.call(dir: 'jh', license_name: 'JH license')
