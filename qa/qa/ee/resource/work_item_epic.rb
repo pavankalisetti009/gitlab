@@ -17,10 +17,7 @@ module QA
           :title,
           :description,
           :labels,
-          :start_date_is_fixed,
-          :start_date_fixed,
-          :due_date_is_fixed,
-          :due_date_fixed,
+          :is_fixed,
           :confidential,
           :author,
           :start_date,
@@ -30,8 +27,7 @@ module QA
           @title = "WI-Epic-#{SecureRandom.hex(8)}"
           @description = "This is a work item epic description."
           @confidential = false
-          @start_date_is_fixed = false
-          @due_date_is_fixed = false
+          @is_fixed = false
         end
 
         def fabricate!
@@ -76,6 +72,26 @@ module QA
             title
             webUrl
             widgets {
+              ... on WorkItemWidgetStartAndDueDate
+              {
+                type
+                dueDate
+                dueDateSourcingMilestone
+                  {
+                    id
+                    title
+                    dueDate
+                  }
+                isFixed
+                rollUp
+                startDate
+                startDateSourcingMilestone
+                  {
+                    id
+                    title
+                    startDate
+                  }
+              }
               ... on WorkItemWidgetRolledupDates
               {
                 type
@@ -162,6 +178,11 @@ module QA
                   description: "#{@description}"
                 }
                 confidential: #{@confidential}
+                startAndDueDateWidget: {
+                  dueDate: "#{@due_date}"
+                  isFixed: #{@is_fixed}
+                  startDate: "#{@start_date}"
+                }
                 workItemTypeId: "#{get_work_item_type_id}"
                 }) {
                 workItem {
