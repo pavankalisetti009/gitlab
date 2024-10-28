@@ -11,6 +11,7 @@ module Sbom
 
     def execute
       Sbom::Occurrence
+        .with_project_namespace
         .filter_by_search_with_component_and_group(params[:search], params[:component_id], namespace)
         .limit(DEFAULT_PER_PAGE)
     end
