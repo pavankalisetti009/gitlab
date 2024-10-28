@@ -13,5 +13,8 @@ distribution:
 tier:
 - premium
 - ultimate
+tiers:
+- premium
+- ultimate
 milestone: "16.3"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/122351

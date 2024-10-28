@@ -14,3 +14,6 @@ distribution:
 tier:
 - premium
 - ultimate
+tiers:
+- premium
+- ultimate
