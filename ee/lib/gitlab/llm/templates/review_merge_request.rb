@@ -14,7 +14,7 @@ module Gitlab
         )
         USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            First, you will be given a filename and the raw git diff of that file. This diff contains the changes made in the MR that you need to review.
+            First, you will be given a filename and the git diff of that file. This diff contains the changes made in the MR that you need to review.
 
             Here is the filename of the git diff:
 
@@ -25,16 +25,15 @@ module Gitlab
             Here is the git diff you need to review:
 
             <git_diff>
-            %{diff}
+            %{diff_lines}
             </git_diff>
 
             To properly review this MR, follow these steps:
 
             1. Parse the git diff:
-               - The diff contains hunk headers that look like this: @@ -1,7 +1,6 @@
-               - Use these headers to determine the correct line numbers for each changed line
-               - Lines starting with '-' are removals, '+' are additions, and ' ' (space) are unchanged context lines
-               - Do not skip any blank lines after the hunk header when determining line numbers
+               - Each `<line>` tags inside of the `<git_diff>` tag represents a line in git diff
+               - Each `<line>` tags also have `new_line` attribute which represents the current line number
+               - Use the `new_line` as the line number in your reviews to refer to them precisely
 
             2. Analyze the changes carefully, strictly focus on the following criteria:
                - Code correctness and functionality
@@ -54,7 +53,7 @@ module Gitlab
             4. Format your comments:
                - Wrap each comment in a <comment> element
                - Include a 'priority' attribute with the assigned priority (1, 2, or 3)
-               - Include a 'line' attribute with the most relevant line number from the Git diff
+               - Include a 'line' attribute with the most relevant `new_line` number from the git diff
                - When suggesting a code change, use code block format ```[your code suggestion]```
                - Wrap your entire response in `<review></review>` tag.
                - Just return `<review></review>` as your entire response, if the change is acceptable
@@ -65,9 +64,9 @@ module Gitlab
           PROMPT
         )
 
-        def initialize(new_path, diff, hunk)
+        def initialize(new_path, raw_diff, hunk)
           @new_path = new_path
-          @diff = diff
+          @raw_diff = raw_diff
           @hunk = hunk
         end
 
@@ -84,13 +83,21 @@ module Gitlab
         def variables
           {
             new_path: new_path,
-            diff: diff
+            diff_lines: xml_diff_lines
           }
         end
 
         private
 
-        attr_reader :new_path, :diff, :hunk
+        def xml_diff_lines
+          lines = Gitlab::Diff::Parser.new.parse(raw_diff.lines)
+
+          lines.map do |line|
+            %(<line new_line="#{line.new_line}">#{line.text}</line>)
+          end.join("\n")
+        end
+
+        attr_reader :new_path, :raw_diff, :hunk
       end
     end
   end
