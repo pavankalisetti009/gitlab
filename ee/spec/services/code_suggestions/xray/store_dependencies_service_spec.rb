@@ -27,7 +27,6 @@ RSpec.describe CodeSuggestions::Xray::StoreDependenciesService, feature_category
         report = project.xray_reports.last!
 
         expect(report.lang).to eq(language)
-        expect(report.file_checksum).to be_present
         expect(report.payload['checksum']).to be_present
         expect(report.payload['scannerVersion']).to eq(scanner_version)
         expect(report.payload['libs']).to match_array(dependencies_hash)

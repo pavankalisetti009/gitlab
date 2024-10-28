@@ -4,7 +4,6 @@ FactoryBot.define do
   factory :xray_report, class: 'Projects::XrayReport' do
     project
     lang { 'Ruby' }
-    file_checksum { '53b5964d32d30fc60089fb54cd73538003a487afdd5d6a3b549ae162ce4819cd' }
     payload do
       {
         "scannerVersion" => "0.0.1",

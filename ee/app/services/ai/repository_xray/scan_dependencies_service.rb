@@ -42,15 +42,12 @@ module Ai
 
       def save_xray_reports(config_files)
         config_files_by_lang = config_files.group_by { |cf| cf.class.lang }
-        # TODO: `file_checksum` to be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
-        file_checksum = config_files.first.payload[:checksum]
 
         reports_array = config_files_by_lang.map do |(lang, config_files)|
           {
             project_id: project.id,
             payload: merge_payloads(config_files),
-            lang: lang,
-            file_checksum: file_checksum
+            lang: lang
           }
         end
 
