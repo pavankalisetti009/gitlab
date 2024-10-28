@@ -32,6 +32,7 @@ export default {
 <template>
   <gl-collapsible-listbox
     label-for="file-path"
+    data-testid="strategy-selector-dropdown"
     :items="$options.CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS"
     :toggle-text="toggleText"
     :selected="strategy"

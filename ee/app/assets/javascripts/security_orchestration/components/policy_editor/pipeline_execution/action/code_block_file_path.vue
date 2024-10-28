@@ -193,6 +193,7 @@ export default {
         <template #projectSelector>
           <group-projects-dropdown
             class="gl-max-w-20"
+            data-testid="pipeline-execution-project-dropdown"
             :group-full-path="groupProjectsPath"
             :selected="selectedProjectId"
             :multiple="false"
@@ -235,6 +236,7 @@ export default {
           <gl-form-group
             class="gl-mb-0 gl-w-full"
             label-sr-only
+            data-testid="ci-file-path-text"
             :label="$options.i18n.formGroupLabel"
             :optional="false"
             :invalid-feedback="filePathValidationError"
