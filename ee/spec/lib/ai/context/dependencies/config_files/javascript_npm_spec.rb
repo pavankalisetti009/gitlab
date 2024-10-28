@@ -16,14 +16,15 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavascriptNpm, feature_ca
           "dependencies": {
             "all-the-cities": "3.1.0",
             "argon2": "0.41.1",
-            "countly-request": "file:api/utils/countly-request"
+            "countly-request": "file:api/utils/countly-request",
+            "lib-with-no-version": null
           }
         }
       JSON
     end
 
     let(:expected_formatted_lib_names) do
-      ['all-the-cities (3.1.0)', 'argon2 (0.41.1)']
+      ['all-the-cities (3.1.0)', 'argon2 (0.41.1)', 'lib-with-no-version']
     end
   end
 
