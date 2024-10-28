@@ -9,7 +9,7 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
     let(:old_epss_score) { 0.5 }
 
     let!(:existing_cve_enrichment) do
-      create(:pm_epss, cve: cve_id, score: old_epss_score)
+      create(:pm_cve_enrichment, cve: cve_id, epss_score: old_epss_score)
     end
 
     let(:import_data) do
@@ -23,14 +23,14 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
 
     context 'when CVE enrichments are valid' do
       it 'adds all new CVE enrichments in import data' do
-        expect { execute }.to change { PackageMetadata::Epss.count }.from(1).to(2)
+        expect { execute }.to change { PackageMetadata::CveEnrichment.count }.from(1).to(2)
       end
 
       it 'updates existing CVE enrichments' do
         expect { execute }
-          .to change { existing_cve_enrichment.reload.score }
-          .from(old_epss_score)
-          .to(new_epss_score)
+          .to change { existing_cve_enrichment.reload.epss_score }
+                .from(old_epss_score)
+                .to(new_epss_score)
       end
 
       it 'correctly stores the data for new and updated CVE enrichments' do
@@ -55,20 +55,20 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
       let(:import_data) { [valid_cve_enrichment, invalid_cve_enrichment] }
 
       it 'creates only valid CVE enrichments' do
-        expect { execute }.to change { PackageMetadata::Epss.count }.by(1)
+        expect { execute }.to change { PackageMetadata::CveEnrichment.count }.by(1)
       end
 
       it 'logs invalid CVE enrichments as an error' do
         expect(Gitlab::ErrorTracking)
           .to receive(:track_exception)
-          .with(
-            an_instance_of(described_class::Error),
-            hash_including(
-              cve: 'invalid',
-              score: invalid_cve_enrichment.epss_score,
-              errors: { cve: ["is invalid"] }
-            )
-          )
+                .with(
+                  an_instance_of(described_class::Error),
+                  hash_including(
+                    cve: 'invalid',
+                    epss_score: invalid_cve_enrichment.epss_score,
+                    errors: { cve: ["is invalid"] }
+                  )
+                )
         execute
       end
     end
