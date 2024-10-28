@@ -18,6 +18,8 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Destroy
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Update
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create
+        mount_mutation ::Mutations::Issuables::CustomFields::Create, alpha: { milestone: '17.6' }
+        mount_mutation ::Mutations::Issuables::CustomFields::Update, alpha: { milestone: '17.6' }
         mount_mutation ::Mutations::Issues::SetIteration
         mount_mutation ::Mutations::Issues::SetWeight
         mount_mutation ::Mutations::Issues::SetEpic,

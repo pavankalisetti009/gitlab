@@ -46,6 +46,8 @@ module Resolvers
 
       def preloads
         {
+          created_by: [:created_by],
+          updated_by: [:updated_by],
           select_options: [:select_options],
           work_item_types: [:work_item_types]
         }

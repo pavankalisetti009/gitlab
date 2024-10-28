@@ -186,6 +186,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:current_user) { guest }
 
       it { is_expected.to be_allowed(:read_custom_field) }
+      it { is_expected.to be_disallowed(:admin_custom_field) }
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { maintainer }
+
+      it { is_expected.to be_allowed(:read_custom_field, :admin_custom_field) }
     end
 
     context 'when user is logged out' do
@@ -202,7 +209,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       stub_licensed_features(custom_fields: false)
     end
 
-    it { is_expected.to be_disallowed(:read_custom_field) }
+    it { is_expected.to be_disallowed(:read_custom_field, :admin_custom_field) }
   end
 
   context 'when cluster deployments is available' do

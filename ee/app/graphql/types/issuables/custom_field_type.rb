@@ -26,8 +26,14 @@ module Types
       field :created_at, Types::TimeType,
         null: false, description: 'Timestamp when the custom field was created.'
 
+      field :created_by, Types::UserType, null: true, # rubocop:disable GraphQL/ExtractType -- no need to extract to created
+        description: 'User that created the custom field.'
+
       field :updated_at, Types::TimeType,
         null: false, description: 'Timestamp when the custom field was last updated.'
+
+      field :updated_by, Types::UserType, null: true, # rubocop:disable GraphQL/ExtractType -- no need to extract to updated
+        description: 'User that last updated the custom field.'
 
       field :select_options, [Types::Issuables::CustomFieldSelectOptionType],
         null: true, description: 'Available options for a select field.'

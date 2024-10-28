@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['CustomField'], feature_category: :team_planning do
   let(:fields) do
-    %i[id name field_type active created_at updated_at select_options work_item_types]
+    %i[id name field_type active created_at created_by updated_at updated_by select_options work_item_types]
   end
 
   specify { expect(described_class.graphql_name).to eq('CustomField') }
