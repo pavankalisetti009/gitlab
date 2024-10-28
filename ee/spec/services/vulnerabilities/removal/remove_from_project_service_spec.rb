@@ -32,6 +32,10 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
 
     subject(:remove_vulnerabilities) { service_object.execute }
 
+    before_all do
+      project.project_setting.update!(has_vulnerabilities: true)
+    end
+
     describe 'batching' do
       before do
         stub_const("#{described_class}::BATCH_SIZE", 1)
@@ -94,6 +98,9 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                          .and change { Vulnerabilities::FindingRemediation.count }.by(-1)
                                          .and change { Vulnerabilities::HistoricalStatistic.count }.by(-1)
                                          .and change { security_statistics.reload.vulnerability_count }.by(-3)
+                                         .and change {
+                                                project.project_setting.reload.has_vulnerabilities
+                                              }.from(true).to(false)
 
         expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
       end
@@ -122,6 +129,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and not_change { Vulnerabilities::ExternalIssueLink.count }
                                              .and not_change { Vulnerabilities::FindingRemediation.count }
                                              .and not_change { Vulnerabilities::HistoricalStatistic.count }
+                                             .and not_change { project.project_setting.reload.has_vulnerabilities }
 
             expect(Vulnerabilities::Statistics::AdjustmentWorker).to have_received(:perform_async).with([project.id])
           end
