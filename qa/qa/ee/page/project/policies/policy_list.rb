@@ -5,7 +5,7 @@ module QA
     module Page
       module Project
         module Policies
-          class Index < QA::Page::Base
+          class PolicyList < QA::Page::Base
             view 'ee/app/assets/javascripts/security_orchestration/components/policies/list_component.vue' do
               element 'policies-list'
             end
