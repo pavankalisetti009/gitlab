@@ -14,4 +14,6 @@ distribution:
   - ee
 tier:
   - ultimate
+tiers:
+- ultimate
 milestone: "<16.4"

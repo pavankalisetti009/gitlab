@@ -14,6 +14,10 @@ tier:
 - ultimate
 - premium
 - free
+tiers:
+- ultimate
+- premium
+- free
 performance_indicator_type: []
 removed_by_url:
 milestone_removed: "<16.4"

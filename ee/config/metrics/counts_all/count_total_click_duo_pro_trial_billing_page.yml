@@ -15,5 +15,8 @@ distribution:
 tier:
   - premium
   - ultimate
+tiers:
+  - premium
+  - ultimate
 events:
   - name: click_duo_pro_trial_billing_page

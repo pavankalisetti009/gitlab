@@ -14,5 +14,7 @@ distribution:
 - ee
 tier:
 - ultimate
+tiers:
+- ultimate
 events:
 - name: view_metrics_details_page
