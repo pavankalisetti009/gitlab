@@ -1,15 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dependency Location Count component renders toggle text 1`] = `
-<span
-  class="gl-text-blue-500 md:gl-whitespace-nowrap"
+<gl-button-stub
+  buttontextclasses=""
+  category="tertiary"
   data-testid="toggle-text"
+  icon="doc-text"
+  size="medium"
+  variant="link"
 >
-  <gl-icon-stub
-    name="doc-text"
-    size="16"
-    variant="current"
-  />
   <span
     class="md:gl-hidden"
   >
@@ -20,5 +19,5 @@ exports[`Dependency Location Count component renders toggle text 1`] = `
   >
     2 locations
   </span>
-</span>
+</gl-button-stub>
 `;

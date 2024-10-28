@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlIcon, GlTruncate, GlCollapsibleListbox, GlAvatar } from '@gitlab/ui';
+import { GlButton, GlLink, GlTruncate, GlCollapsibleListbox, GlAvatar } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { n__, sprintf } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
@@ -17,8 +17,8 @@ const mapItemToListboxFormat = (item) => ({ ...item, value: item.id, text: item.
 export default {
   name: 'DependencyProjectCount',
   components: {
+    GlButton,
     GlLink,
-    GlIcon,
     GlTruncate,
     GlCollapsibleListbox,
     GlAvatar,
@@ -122,11 +122,10 @@ export default {
     @shown="onShown"
   >
     <template #toggle>
-      <span class="gl-text-blue-500 md:gl-whitespace-nowrap" data-testid="toggle-text">
-        <gl-icon name="project" />
+      <gl-button variant="link" category="tertiary" icon="project" data-testid="toggle-text">
         <span class="md:gl-hidden">{{ projectCount }}</span>
         <span class="gl-hidden md:gl-inline-flex">{{ headerText }}</span>
-      </span>
+      </gl-button>
     </template>
     <template #list-item="{ item }">
       <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 hover:gl-no-underline">
