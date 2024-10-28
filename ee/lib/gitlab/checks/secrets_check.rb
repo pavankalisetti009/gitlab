@@ -72,14 +72,11 @@ module Gitlab
 
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
           # Only load exclusions if the feature flag is enabled.
-          exclusions = if Feature.enabled?(:secret_detection_project_level_exclusions, project)
-                         active_exclusions
-                       else
-                         {}
-                       end
+          exclusions = Feature.enabled?(:secret_detection_project_level_exclusions, project) ? active_exclusions : {}
 
           if use_diff_scan?
             payloads = get_diffs
+
             # Pass payloads to gem for scanning.
             response = ::Gitlab::SecretDetection::ScanDiffs
               .new(logger: secret_detection_logger)
@@ -97,6 +94,9 @@ module Gitlab
               .new(logger: secret_detection_logger)
               .secrets_scan(payloads, timeout: logger.time_left, exclusions: exclusions)
           end
+
+          # Log audit events for exlusions that were applied.
+          log_applied_exclusions_audit_events(response.applied_exclusions)
 
           # Handle the response depending on the status returned.
           format_response(response)
@@ -165,7 +165,7 @@ module Gitlab
         message = "#{_('Secret push protection skipped via')} #{skip_method} on branch #{branch_name}"
 
         audit_context = {
-          name: "skip_secret_push_protection",
+          name: 'skip_secret_push_protection',
           author: changes_access.user_access.user,
           target: project,
           scope: project,
@@ -175,9 +175,34 @@ module Gitlab
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
+      def log_applied_exclusions_audit_events(applied_exclusions)
+        # Calling ::Gitlab::Audit::Auditor.audit directly in `gitlab-secret_detection` gem is not
+        # feasible so instead of doing that, we loop through exclusions that have been applied during
+        # scanning of either `rule` or `raw_value` type. For `path` exclusions, we create the audit events
+        # when applied while formatting the response.
+        if Feature.enabled?(:secret_detection_project_level_exclusions, project) && !applied_exclusions.empty?
+          applied_exclusions.each do |exclusion|
+            log_exclusion_audit_event(exclusion)
+          end
+        end
+      end
+
+      def log_exclusion_audit_event(exclusion)
+        audit_context = {
+          name: 'project_security_exclusion_applied',
+          author: changes_access.user_access.user,
+          target: exclusion,
+          scope: project,
+          message: "An exclusion of type (#{exclusion.type}) with value (#{exclusion.value}) was " \
+                   "applied in Secret push protection"
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
       def track_spp_skipped(skip_method)
         track_internal_event(
-          "skip_secret_push_protection",
+          'skip_secret_push_protection',
           user: changes_access.user_access.user,
           project: project,
           namespace: project.namespace,
@@ -467,7 +492,15 @@ module Gitlab
         active_exclusions[:path]
           &.first(::Security::ProjectSecurityExclusion::MAX_PATH_EXCLUSIONS_PER_PROJECT)
           &.any? do |exclusion|
-          File.fnmatch?(exclusion.value, path, File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME)
+          matches = File.fnmatch?(
+            exclusion.value,
+            path,
+            File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME
+          )
+
+          log_exclusion_audit_event(exclusion) if matches
+
+          matches
         end
       end
     end

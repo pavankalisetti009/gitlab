@@ -1287,12 +1287,13 @@ end
 RSpec.shared_examples 'diff scan handles malformed blobs' do
   include_context 'secrets check context'
 
-  it 'logs GRPC invalid argument error when diff_blobs raises an exception' do
+  before do
     allow(project.repository).to receive(:diff_blobs).and_raise(GRPC::InvalidArgument.new('Invalid argument error'))
-
     allow(secret_detection_logger).to receive(:info)
-    expect(secret_detection_logger).to receive(:error).once.with(hash_including(message: '3:Invalid argument error'))
+  end
 
+  it 'logs GRPC invalid argument error when diff_blobs raises an exception' do
+    expect(secret_detection_logger).to receive(:error).once.with(hash_including(message: '3:Invalid argument error'))
     expect { subject.validate! }.not_to raise_error
   end
 end
@@ -1465,6 +1466,19 @@ RSpec.shared_examples 'diff scan discarded secrets because they match exclusions
           )
         end
       end
+
+      it 'creates an audit event for path exclusion' do
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:found_secrets])
+
+        expect { secrets_check.validate! }.to change {
+                                                AuditEvent.count
+                                              }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
+
+        expect(AuditEvent.last.details[:custom_message]).to eq(
+          "An exclusion of type (path) with value (file-exclusion-1.rb) was applied in Secret push protection")
+      end
     end
 
     context 'with less than or equal to the path exclusions limit' do
@@ -1476,7 +1490,7 @@ RSpec.shared_examples 'diff scan discarded secrets because they match exclusions
           # We also support simple globbing, e.g. `spec/**/*.rb`, so we try to ensure as many as possible are matched.
           'spec/file-exclusion-2.rb' => 'KEY=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
           'spec/fixtures/file-exclusion-3.rb' => 'PASS=glpat-JUST20LETTERSANDNUMB', # gitleaks:allow
-          'spec/fixtures/reports/file-exclusion-4.rb' => 'KEY=glpat-JUST20LETTERSANDNUMB' # gitleaks:allow
+          'spec/fixtures/reports/file-exclusion-4.rb' => 'TEST=glpat-JUST20LETTERSANDNUMB' # gitleaks:allow
         )
       end
 
@@ -1529,6 +1543,25 @@ RSpec.shared_examples 'diff scan discarded secrets because they match exclusions
           )
         end
       end
+
+      it 'creates audit events for all path exclusions' do
+        expect(secret_detection_logger).to receive(:info)
+          .once
+          .with(message: log_messages[:found_secrets])
+
+        expect { secrets_check.validate! }.to change {
+                                                AuditEvent.count
+                                              }.by(4).and raise_error(::Gitlab::GitAccess::ForbiddenError)
+
+        expect(AuditEvent.first.details[:custom_message]).to eq(
+          "An exclusion of type (path) with value (file-exclusion-1.txt) was applied in Secret push protection")
+        expect(AuditEvent.second.details[:custom_message]).to eq(
+          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
+        expect(AuditEvent.third.details[:custom_message]).to eq(
+          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
+        expect(AuditEvent.last.details[:custom_message]).to eq(
+          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
+      end
     end
   end
 
@@ -1571,6 +1604,19 @@ RSpec.shared_examples 'diff scan discarded secrets because they match exclusions
           found_secrets_docs_link
         )
       end
+    end
+
+    it 'creates an audit event for the exclusion' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to change {
+                                              AuditEvent.count
+                                            }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
+
+      expect(AuditEvent.last.details[:custom_message]).to eq(
+        "An exclusion of type (rule) with value (gitlab_personal_access_token) was applied in Secret push protection")
     end
   end
 
@@ -1619,6 +1665,21 @@ RSpec.shared_examples 'diff scan discarded secrets because they match exclusions
           found_secrets_docs_link
         )
       end
+    end
+
+    it 'creates an audit event for the exclusion' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to change {
+                                              AuditEvent.count
+                                            }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
+
+      expect(AuditEvent.last.details[:custom_message]).to eq(
+        "An exclusion of type (raw_value) with value " \
+          "(glpat-01234567890123456789) was applied in Secret push protection" # gitleaks:allow
+      )
     end
   end
 end
@@ -1672,6 +1733,15 @@ RSpec.shared_examples 'diff scan does not discard excluded secrets' do
           found_secrets_docs_link
         )
       end
+    end
+
+    it 'does not create an audit event for the exclusion' do
+      expect(secret_detection_logger).to receive(:info)
+        .once
+        .with(message: log_messages[:found_secrets])
+
+      expect { secrets_check.validate! }.to not_change { AuditEvent.count }
+        .and raise_error(::Gitlab::GitAccess::ForbiddenError)
     end
   end
 end
