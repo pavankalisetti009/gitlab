@@ -418,6 +418,7 @@ RSpec.describe GitlabSchema.types['Project'] do
   end
 
   describe 'pipeline_execution_policies', feature_category: :security_policy_management do
+    let_it_be(:ref_project) { create(:project, :repository) }
     let(:query) do
       %(
         query {
@@ -434,6 +435,10 @@ RSpec.describe GitlabSchema.types['Project'] do
           }
         }
       )
+    end
+
+    before do
+      allow(Project).to receive(:find_by_full_path).and_return(ref_project)
     end
 
     include_context 'is an orchestration policy'

@@ -7,7 +7,9 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
 
   include_context 'orchestration policy context'
 
-  let(:policy) { build(:pipeline_execution_policy, name: 'Run custom pipeline') }
+  let_it_be(:ref_project) { create(:project, :repository) }
+  let(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
+  let(:policy) { build(:pipeline_execution_policy, name: 'Run custom pipeline', content: { include: [content] }) }
   let(:policy_yaml) { build(:orchestration_policy_yaml, pipeline_execution_policy: [policy]) }
   let(:expected_resolved) do
     [
@@ -17,6 +19,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
         edit_path: Gitlab::Routing.url_helpers.edit_project_security_policy_url(
           project, id: CGI.escape(policy[:name]), type: 'pipeline_execution_policy'
         ),
+        policy_blob_file_path: "/#{content[:project]}/-/blob/master/#{content[:file]}",
         enabled: true,
         policy_scope: {
           compliance_frameworks: [],
@@ -36,7 +39,28 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
     ]
   end
 
+  before do
+    allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
+  end
+
   subject(:resolve_scan_policies) { resolve(described_class, obj: project, ctx: { current_user: user }) }
 
-  it_behaves_like 'as an orchestration policy'
+  it_behaves_like 'as an orchestration policy' do
+    describe 'policy_blob_file_path' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+        project.add_developer(user)
+      end
+
+      context 'when ref is included in the content' do
+        let(:content) { { project: ref_project.full_path, file: 'pipeline_execution.yml', ref: 'v1.0.0' } }
+
+        it 'returns a file path' do
+          expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq(
+            "/#{content[:project]}/-/blob/#{content[:ref]}/#{content[:file]}"
+          )
+        end
+      end
+    end
+  end
 end
