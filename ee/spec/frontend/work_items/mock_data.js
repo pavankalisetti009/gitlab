@@ -1,18 +1,3 @@
-export const namespaceWorkItemTypesQueryResponse = {
-  data: {
-    workspace: {
-      id: 'gid://gitlab/Namespaces/1',
-      workItemTypes: {
-        nodes: [
-          { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },
-          { id: 'gid://gitlab/WorkItems::Type/2', name: 'Incident' },
-          { id: 'gid://gitlab/WorkItems::Type/3', name: 'Task' },
-        ],
-      },
-    },
-  },
-};
-
 export const createWorkItemMutationResponse = {
   data: {
     workItemCreate: {
