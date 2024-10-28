@@ -11,7 +11,7 @@ module QA
             end
 
             view 'ee/app/assets/javascripts/security_orchestration/components/policy_editor/editor_layout.vue' do
-              element 'policy-name'
+              element 'policy-name-text'
               element 'save-policy'
             end
 
@@ -24,7 +24,7 @@ module QA
             end
 
             def fill_name
-              fill_element('policy-name', 'New policy')
+              fill_element('policy-name-text', 'New policy')
             end
 
             def select_scan_execution_policy

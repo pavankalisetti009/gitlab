@@ -257,7 +257,6 @@ export default {
                 :disabled="hasParsingError"
                 :state="hasValidName || !showValidation"
                 :value="policy.name"
-                data-testid="policy-name"
                 required
                 @input="updateProperty('name', $event)"
               />
