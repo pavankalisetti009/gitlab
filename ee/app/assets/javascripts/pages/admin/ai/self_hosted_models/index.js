@@ -16,7 +16,7 @@ function mountSelfHostedModelsApp() {
     return null;
   }
 
-  const { basePath, newSelfHostedModelPath, aiFeatureSettingsPath } = el.dataset;
+  const { basePath, newSelfHostedModelPath } = el.dataset;
 
   return new Vue({
     el,
@@ -25,7 +25,6 @@ function mountSelfHostedModelsApp() {
     provide: {
       basePath,
       newSelfHostedModelPath,
-      aiFeatureSettingsPath,
     },
     render: (h) => h(SelfHostedDuoConfiguration),
   });
