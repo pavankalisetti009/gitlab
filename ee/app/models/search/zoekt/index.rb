@@ -116,7 +116,7 @@ module Search
       private
 
       def delete_from_index
-        ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, :delete, zoekt_node_id)
+        ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, 'delete', zoekt_node_id)
       end
 
       def logger
