@@ -69,6 +69,7 @@ module BulkImports
 
       def handle_epic_issue(relation_object)
         issue_as_work_item = WorkItem.id_in(relation_object.id).first
+        return unless issue_as_work_item
 
         if issue_as_work_item.epic && issue_as_work_item.epic.work_item
           work_item_parent_link = issue_as_work_item.epic.work_item.child_links.for_children(issue_as_work_item)

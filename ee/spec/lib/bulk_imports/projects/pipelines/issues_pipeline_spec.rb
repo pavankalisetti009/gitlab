@@ -25,7 +25,7 @@ RSpec.describe BulkImports::Projects::Pipelines::IssuesPipeline, feature_categor
 
   let(:issue) do
     {
-      'title' => 'Imported Issue',
+      'title' => 'title',
       'description' => 'Description',
       'state' => 'opened',
       'updated_at' => '2016-06-14T15:02:47.967Z',
@@ -38,7 +38,58 @@ RSpec.describe BulkImports::Projects::Pipelines::IssuesPipeline, feature_categor
           'state_id' => 'opened',
           'author_id' => 22
         }
-      }
+      },
+
+      'design_versions' => [
+        {
+          'sha' => 'cb1c33e9e3ece92b928c4f9b816a88e0ff28eba8',
+          'created_at' => '2024-10-28T11:49:22.451Z',
+          'author_id' => nil, # invalid author
+          'actions' => [
+            {
+              'event' => 'creation',
+              'design' => {
+                'project_id' => project.id,
+                'filename' => 'Screenshot_2024-10-24_at_17.47.27.png',
+                'relative_position' => nil,
+                'iid' => 1
+              }
+            }
+          ]
+        },
+        {
+          'sha' => '8f91cc8f88bb2b418f2cefb46e43737aa8feef19',
+          'created_at' => '2024-10-28T11:49:47.218Z',
+          'author_id' => 22,
+          'actions' => [
+            {
+              'event' => 'deletion',
+              'design' => {
+                'project_id' => project.id,
+                'filename' => 'Screenshot_2024-10-24_at_17.47.27.png',
+                'relative_position' => nil,
+                'iid' => 1
+              }
+            }
+          ]
+        },
+        {
+          'sha' => '4201e269f7edb652927f59ee44a8efe139067b4b',
+          'created_at' => '2024-10-28T11:49:59.540Z',
+          'author_id' => 22,
+          'actions' => [
+            {
+              'event' => 'creation',
+              'design' => {
+                'project_id' => project.id,
+                'filename' => 'Screenshot_2024-10-24_at_17.47.25.png',
+                'relative_position' => nil,
+                'iid' => 2
+              }
+            }
+          ]
+        }
+      ]
     }
   end
 
@@ -59,14 +110,16 @@ RSpec.describe BulkImports::Projects::Pipelines::IssuesPipeline, feature_categor
     end
 
     context 'with pre-existing epic' do
-      it 'associates existing epic with imported issue' do
+      it 'associates existing epic with imported issue even when not all issue relations are valid' do
         epic = create(:epic, title: 'An epic', group: group)
 
         expect { pipeline.run }.not_to change { Epic.count }
 
         expect(group.epics.count).to eq(1)
         expect(project.issues.first.epic).to eq(epic)
+        expect(project.issues.count).to eq(1)
         expect(project.issues.first.epic_issue.relative_position).not_to be_nil
+        expect(project.work_items.first.parent_link.work_item_parent_id).to eq(epic.issue_id)
 
         group.epics.each do |epic|
           expect(epic.work_item).not_to be_nil
