@@ -36,7 +36,7 @@ module QA
       end
 
       context 'when initiating Duo Chat' do
-        context 'on GitLab.com', :external_ai_provider,
+        context 'on GitLab.com', :blocking, :external_ai_provider,
           only: { pipeline: %i[staging staging-canary canary production] } do
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
