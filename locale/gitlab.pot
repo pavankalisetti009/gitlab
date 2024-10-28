@@ -15829,6 +15829,9 @@ msgstr ""
 msgid "Copy KRB5 clone URL"
 msgstr ""
 
+msgid "Copy MLflow run ID"
+msgstr ""
+
 msgid "Copy SSH clone URL"
 msgstr ""
 
@@ -35064,6 +35067,9 @@ msgid "MlModelRegistry|Package creation failed"
 msgstr ""
 
 msgid "MlModelRegistry|Parameters"
+msgstr ""
+
+msgid "MlModelRegistry|Performance"
 msgstr ""
 
 msgid "MlModelRegistry|Provide a subfolder name to organize your artifacts. Entering an existing subfolder's name will place artifacts in the existing folder"
