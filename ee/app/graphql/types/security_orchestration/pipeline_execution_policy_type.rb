@@ -14,6 +14,10 @@ module Types
       field :source, Types::SecurityOrchestration::SecurityPolicySourceType,
         null: false,
         description: 'Source of the policy. Its fields depend on the source type.'
+
+      field :policy_blob_file_path, GraphQL::Types::String,
+        null: false,
+        description: 'Path to the policy file in the project.'
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

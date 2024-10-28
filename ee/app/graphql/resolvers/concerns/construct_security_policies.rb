@@ -34,6 +34,7 @@ module ConstructSecurityPolicies
         name: policy[:name],
         description: policy[:description],
         edit_path: edit_path(policy, :pipeline_execution_policy),
+        policy_blob_file_path: policy_blob_file_path(policy),
         enabled: policy[:enabled],
         policy_scope: policy_scope(policy[:policy_scope]),
         yaml: YAML.dump(
@@ -119,5 +120,13 @@ module ConstructSecurityPolicies
         policy[:project], id: id, type: type
       )
     end
+  end
+
+  def policy_blob_file_path(policy)
+    content_include = policy.dig(:content, :include, 0)
+    project = Project.find_by_full_path(content_include[:project])
+    file = content_include[:file]
+    ref = content_include[:ref] || project.default_branch_or_main
+    Gitlab::Routing.url_helpers.project_blob_path(project, File.join(ref, file))
   end
 end

@@ -13,8 +13,12 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
   end
 
   let_it_be(:policy_scope) { { compliance_frameworks: [{ id: framework.id }] } }
+  let_it_be(:ref_project) { create(:project, :repository) }
+  let_it_be(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
   let_it_be(:policy) do
-    build(:pipeline_execution_policy, name: 'Run my custom script in every pipeline', policy_scope: policy_scope)
+    build(:pipeline_execution_policy, name: 'Run my custom script in every pipeline', policy_scope: policy_scope,
+      content: { include: [content] }
+    )
   end
 
   describe '#resolve' do
@@ -46,6 +50,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
             edit_path: Gitlab::Routing.url_helpers.edit_project_security_policy_url(
               project, id: CGI.escape(policy[:name]), type: 'pipeline_execution_policy'
             ),
+            policy_blob_file_path: "/#{content[:project]}/-/blob/master/#{content[:file]}",
             enabled: policy[:enabled],
             policy_scope: {
               compliance_frameworks: [framework],
@@ -72,6 +77,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
       before do
         stub_licensed_features(security_orchestration_policies: true)
 
+        allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
         allow_next_instance_of(Repository) do |repository|
           allow(repository).to receive(:blob_data_at).and_return({ pipeline_execution_policy: [policy] }.to_yaml)
         end

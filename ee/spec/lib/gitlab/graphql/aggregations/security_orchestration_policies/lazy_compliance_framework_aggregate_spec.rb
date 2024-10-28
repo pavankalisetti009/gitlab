@@ -45,6 +45,8 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
 
   describe '#execute' do
     let(:policy_scope) { { compliance_frameworks: [{ id: framework.id }] } }
+    let_it_be(:ref_project) { create(:project, :repository) }
+    let_it_be(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
     let(:scan_execution_policy) do
       build(:scan_execution_policy, name: 'SEP 1', policy_scope: policy_scope)
     end
@@ -54,7 +56,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
     end
 
     let(:pipeline_execution_policy) do
-      build(:pipeline_execution_policy, name: 'PEP 1', policy_scope: policy_scope)
+      build(:pipeline_execution_policy, name: 'PEP 1', policy_scope: policy_scope, content: { include: [content] })
     end
 
     let(:policy_yaml) do
@@ -69,6 +71,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       stub_licensed_features(security_orchestration_policies: true)
       lazy_aggregate.instance_variable_set(:@lazy_state, fake_state)
 
+      allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
       allow_next_instance_of(Repository) do |repository|
         allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
       end
