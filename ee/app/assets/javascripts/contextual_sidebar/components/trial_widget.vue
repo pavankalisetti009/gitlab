@@ -4,7 +4,7 @@ import { snakeCase } from 'lodash';
 import { sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import Tracking from '~/tracking';
+import { InternalEvents } from '~/tracking';
 import { TRIAL_WIDGET } from './constants';
 
 export default {
@@ -15,7 +15,7 @@ export default {
     GlButton,
     GlLink,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     trialType: { default: '' },
     daysRemaining: { default: 0 },
@@ -54,32 +54,22 @@ export default {
         ? this.$options.trialWidget.i18n.upgradeText
         : this.$options.trialWidget.i18n.learnMore;
     },
-    trackingOptions() {
-      const baseOptions = this.isTrialActive
-        ? this.$options.trialWidget.trackingEvents.activeTrialOptions
-        : this.$options.trialWidget.trackingEvents.trialEndedOptions;
-
-      return {
-        ...baseOptions,
-        label: this.isTrialActive
-          ? this.formatTrackingLabel(this.currentTrialType.name)
-          : baseOptions.label,
-        property: this.currentTrialType.name,
-      };
-    },
     isTrialActive() {
       return this.percentageComplete <= 100;
     },
     isDismissable() {
       return this.groupId && this.featureId && this.dismissEndpoint;
     },
+    trackingLabel() {
+      return snakeCase(this.currentTrialType.name.toLowerCase());
+    },
   },
   methods: {
-    onCtaClick() {
-      this.track(this.$options.trialWidget.trackingEvents.action, this.trackingOptions);
-    },
-    formatTrackingLabel(str) {
-      return `${snakeCase(str)}_trial`;
+    onCtaClick(e) {
+      const linkText = snakeCase(e.target.textContent);
+      this.trackEvent(`click_${linkText}_link_on_trial_widget`, {
+        label: this.trackingLabel,
+      });
     },
     handleDismiss() {
       axios
@@ -92,6 +82,8 @@ export default {
         });
 
       this.isDismissed = true;
+
+      this.trackEvent('click_dismiss_button_on_trial_widget', { label: this.trackingLabel });
     },
   },
 };
