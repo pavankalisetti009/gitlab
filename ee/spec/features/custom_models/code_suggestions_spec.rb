@@ -48,8 +48,12 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, fea
     create(:ai_self_hosted_model, name: 'codestral', model: :codestral, endpoint: ENV['LITELLM_PROXY_URL'])
   end
 
-  let!(:ai_feature_setting) do
-    create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :code_completions)
+  subject(:post_api) do
+    HTTParty.post(
+      url,
+      headers: { "Authorization" => "Bearer #{personal_access_token.token}", content_type: 'application/json' },
+      body: body
+    )
   end
 
   before do
@@ -65,16 +69,56 @@ RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, fea
       .and_return([1, 2])
   end
 
-  subject(:post_api) do
-    HTTParty.post(
-      url,
-      headers: { "Authorization" => "Bearer #{personal_access_token.token}", content_type: 'application/json' },
-      body: body
-    )
+  shared_examples 'a code suggestion response' do
+    it 'includes the right (mock) response from the LLM' do
+      response = post_api
+      expect(response.body).to include('Mock response from codestral')
+    end
   end
 
-  it 'includes the right (mock) response from the LLM' do
-    response = post_api
-    expect(response.body).to include('Mock response from codestral')
+  context 'when code generation' do
+    let!(:ai_feature_setting) do
+      create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :code_generations)
+    end
+
+    let(:body) do
+      {
+        current_file: {
+          file_name: 'test.py',
+          content_above_cursor: '# generate a http server',
+          content_below_cursor: ''
+        },
+        intent: 'generation',
+        stream: false
+      }
+    end
+
+    it_behaves_like 'a code suggestion response'
+  end
+
+  context 'when code completion' do
+    let!(:ai_feature_setting) do
+      create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :code_completions)
+    end
+
+    let(:prefix) do
+      <<~PREFIX
+        def is_even(n: int) ->
+      PREFIX
+    end
+
+    let(:body) do
+      {
+        current_file: {
+          file_name: 'test.py',
+          content_above_cursor: prefix,
+          content_below_cursor: ''
+        },
+        intent: 'completion',
+        stream: false
+      }
+    end
+
+    it_behaves_like 'a code suggestion response'
   end
 end
