@@ -13,7 +13,10 @@ data_category: subscription
 distribution:
   - ee
 tier:
-  - premium
-  - ultimate
+- premium
+- ultimate
+tiers:
+- premium
+- ultimate
 performance_indicator_type: []
 value_json_schema: "ee/config/metrics/object_schemas/licensee.json"
