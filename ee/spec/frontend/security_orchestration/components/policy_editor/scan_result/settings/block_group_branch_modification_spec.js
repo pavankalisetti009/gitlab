@@ -1,7 +1,7 @@
 import { GlCollapsibleListbox, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
-  EXCEPT_BRANCHES,
+  EXCEPT_GROUPS,
   WITHOUT_EXCEPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
@@ -52,7 +52,7 @@ describe('BlockGroupBranchModification', () => {
 
     it('renders when enabled and with exceptions', () => {
       createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_BRANCHES);
+      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_GROUPS);
       expect(findInput().exists()).toBe(true);
       expect(findInput().attributes('value')).toBe('releases/*,main');
     });
@@ -76,7 +76,7 @@ describe('BlockGroupBranchModification', () => {
 
     it('does not update the policy when exceptions are changed and the setting is not enabled', async () => {
       createComponent({ enabled: false });
-      await findExceptionDropdown().vm.$emit('select', EXCEPT_BRANCHES);
+      await findExceptionDropdown().vm.$emit('select', EXCEPT_GROUPS);
       expect(wrapper.emitted('change')).toEqual(undefined);
     });
   });
@@ -84,7 +84,7 @@ describe('BlockGroupBranchModification', () => {
   describe('when enabled', () => {
     it('resets to default state when disabled', async () => {
       createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_BRANCHES);
+      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_GROUPS);
       expect(findInput().attributes('value')).toBe('releases/*,main');
 
       await wrapper.setProps({ enabled: false });
@@ -92,7 +92,7 @@ describe('BlockGroupBranchModification', () => {
       expect(findExceptionDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
       expect(findInput().exists()).toBe(false);
 
-      await findExceptionDropdown().vm.$emit('select', EXCEPT_BRANCHES);
+      await findExceptionDropdown().vm.$emit('select', EXCEPT_GROUPS);
       expect(findInput().attributes('value')).toBe('');
     });
   });
