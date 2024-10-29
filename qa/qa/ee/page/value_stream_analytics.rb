@@ -126,7 +126,7 @@ module QA
         end
 
         def collecting_data?
-          has_element?('.gl-alert-title', text: 'Data is collecting and loading.')
+          has_element?('.gl-alert-title', text: 'Data is collecting and loading.', wait: 5)
         end
 
         private
