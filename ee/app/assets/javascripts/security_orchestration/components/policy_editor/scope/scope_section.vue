@@ -197,9 +197,6 @@ export default {
     isProjectLevel() {
       return isProject(this.namespaceType);
     },
-    groupProjectsFullPath() {
-      return this.isGroupLevel ? this.namespacePath : this.rootNamespacePath;
-    },
     hasMultipleProjectsLinked() {
       return this.linkedSppItems.length > 1;
     },
@@ -447,7 +444,7 @@ export default {
                 :is-dirty="isFormDirty"
                 :exception-type="selectedExceptionType"
                 :projects="projects"
-                :group-full-path="groupProjectsFullPath"
+                :group-full-path="rootNamespacePath"
                 @error="setShowAlert($options.i18n.groupProjectErrorDescription)"
                 @select-exception-type="selectExceptionType"
                 @changed="setSelectedItems"

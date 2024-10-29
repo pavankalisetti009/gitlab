@@ -529,7 +529,7 @@ describe('PolicyScope', () => {
   describe('namespace', () => {
     it.each`
       namespaceType              | expectedResult
-      ${NAMESPACE_TYPES.GROUP}   | ${'gitlab-org'}
+      ${NAMESPACE_TYPES.GROUP}   | ${'gitlab-org-root'}
       ${NAMESPACE_TYPES.PROJECT} | ${'gitlab-org-root'}
     `(
       'queries different namespaces on group and project level',
