@@ -8,13 +8,13 @@ import {
 } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
-  BLOCK_GROUP_BRANCH_MODIFICATION_WITH_BRANCH_HUMANIZED_STRING,
+  BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING,
   BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING,
 } from '../lib';
 import {
-  EXCEPT_BRANCHES,
-  EXCEPTION_BRANCH_TYPE_TEXTS,
-  EXCEPTION_BRANCH_TYPE_LISTBOX_ITEMS,
+  EXCEPT_GROUPS,
+  EXCEPTION_GROUPS_TEXTS,
+  EXCEPTION_GROUPS_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
 } from '../lib/settings';
 
@@ -42,15 +42,15 @@ export default {
   },
   data() {
     return {
-      selectedExceptionType: this.exceptions.length ? EXCEPT_BRANCHES : WITHOUT_EXCEPTIONS,
-      branchWildcardPattern: this.exceptions.join(','),
+      selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
+      groupExceptionValue: this.exceptions.join(','),
     };
   },
   computed: {
     text() {
       return this.selectedExceptionType === WITHOUT_EXCEPTIONS
         ? BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING
-        : BLOCK_GROUP_BRANCH_MODIFICATION_WITH_BRANCH_HUMANIZED_STRING;
+        : BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING;
     },
   },
   watch: {
@@ -66,22 +66,22 @@ export default {
     selectExceptionType(type) {
       this.selectedExceptionType = type;
       if (type === WITHOUT_EXCEPTIONS) {
-        this.resetBranchWildcardPattern();
+        this.resetGroupExceptionValue();
       }
 
       if (this.enabled) {
         const value =
-          type === EXCEPT_BRANCHES
+          type === EXCEPT_GROUPS
             ? { enabled: this.enabled, exceptions: this.exceptions }
             : this.enabled;
         this.emitChangeEvent(value);
       }
     },
-    resetBranchWildcardPattern() {
-      this.branchWildcardPattern = '';
+    resetGroupExceptionValue() {
+      this.groupExceptionValue = '';
     },
-    updateBranchWildcardPattern(value) {
-      this.branchWildcardPattern = value;
+    updateGroupExceptionValue(value) {
+      this.groupExceptionValue = value;
       if (this.enabled) {
         this.emitChangeEvent({ enabled: this.enabled, exceptions: value.split(',') });
       }
@@ -93,8 +93,8 @@ export default {
   GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/repository/branches/protected', {
     anchor: 'for-all-projects-in-a-group',
   }),
-  EXCEPTION_BRANCH_TYPE_TEXTS,
-  EXCEPTION_BRANCH_TYPE_LISTBOX_ITEMS,
+  EXCEPTION_GROUPS_TEXTS,
+  EXCEPTION_GROUPS_LISTBOX_ITEMS,
 };
 </script>
 
@@ -109,17 +109,17 @@ export default {
       <template #exceptSelection>
         <gl-collapsible-listbox
           class="gl-my-3 gl-mr-2 md:gl-my-0"
-          :items="$options.EXCEPTION_BRANCH_TYPE_LISTBOX_ITEMS"
+          :items="$options.EXCEPTION_GROUPS_LISTBOX_ITEMS"
           :selected="selectedExceptionType"
           @select="selectExceptionType"
         />
       </template>
-      <template #projectSelection>
+      <template #groupSelection>
         <gl-form-input
           class="gl-inline-block md:gl-max-w-20"
-          :value="branchWildcardPattern"
-          :placeholder="s__('SecurityOrchestration|Ex: development/*')"
-          @input="updateBranchWildcardPattern"
+          :value="groupExceptionValue"
+          :placeholder="s__('SecurityOrchestration|Ex: top_level_group')"
+          @input="updateGroupExceptionValue"
         />
       </template>
     </gl-sprintf>

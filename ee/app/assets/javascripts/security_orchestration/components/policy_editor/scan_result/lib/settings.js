@@ -46,8 +46,8 @@ export const mergeRequestConfiguration = {
   [REQUIRE_PASSWORD_TO_APPROVE]: false,
 };
 
-export const BLOCK_GROUP_BRANCH_MODIFICATION_WITH_BRANCH_HUMANIZED_STRING = s__(
-  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} matching the wildcard pattern: %{projectSelection}',
+export const BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING = s__(
+  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} matching the full paths: %{groupSelection}',
 );
 export const BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING = s__(
   'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection}',
@@ -161,11 +161,11 @@ const mapToListBoxItems = (textMap) =>
   }));
 
 export const WITHOUT_EXCEPTIONS = 'without_exceptions';
-export const EXCEPT_BRANCHES = 'except_branches';
+export const EXCEPT_GROUPS = 'except_groups';
 
-export const EXCEPTION_BRANCH_TYPE_TEXTS = {
+export const EXCEPTION_GROUPS_TEXTS = {
   [WITHOUT_EXCEPTIONS]: s__('SecurityOrchestration|without exceptions'),
-  [EXCEPT_BRANCHES]: s__('SecurityOrchestration|except branches'),
+  [EXCEPT_GROUPS]: s__('SecurityOrchestration|except groups'),
 };
 
-export const EXCEPTION_BRANCH_TYPE_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_BRANCH_TYPE_TEXTS);
+export const EXCEPTION_GROUPS_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_GROUPS_TEXTS);
