@@ -19,7 +19,7 @@ RSpec.describe 'Create work item epic', :js, feature_category: :team_planning do
       wait_for_all_requests
       visit group_work_items_path(group)
       wait_for_all_requests
-      click_button 'New epic'
+      click_link 'New epic'
       wait_for_all_requests
     end
 
