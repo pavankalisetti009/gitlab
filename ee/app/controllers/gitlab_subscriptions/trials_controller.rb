@@ -130,7 +130,7 @@ module GitlabSubscriptions
           ),
           tag_pair(
             helpers.link_to(
-              '', help_page_path('subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-seats'),
+              '', help_page_path('subscriptions/subscription-add-ons.md', anchor: 'assign-gitlab-duo-seats'),
               target: '_blank', rel: 'noopener noreferrer'
             ),
             :assign_link_start, :assign_link_end
