@@ -57,7 +57,7 @@ module EE
         foreign_key: 'namespace_id',
         inverse_of: :group
 
-      has_many :ldap_group_links, foreign_key: 'group_id', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
+      has_many :ldap_group_links, foreign_key: 'group_id', dependent: :destroy
       has_many :saml_group_links, foreign_key: 'group_id'
       has_many :hooks, class_name: 'GroupHook'
 

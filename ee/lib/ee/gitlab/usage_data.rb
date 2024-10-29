@@ -66,7 +66,6 @@ module EE
           }
         end
 
-        # rubocop:disable CodeReuse/ActiveRecord, UsageData/LargeTable
         def approval_rules_counts
           {
             approval_project_rules: count(ApprovalProjectRule),
@@ -76,7 +75,6 @@ module EE
             approval_project_rules_with_exact_required_approvers: add_metric('ApprovalProjectRulesWithUserMetric', options: { count_type: 'exact_required_approvers' })
           }
         end
-        # rubocop:enable CodeReuse/ActiveRecord, UsageData/LargeTable
 
         def on_demand_pipelines_usage
           { dast_on_demand_pipelines: count(::Ci::Pipeline.ondemand_dast_scan) }
@@ -109,7 +107,6 @@ module EE
         # less "complex" without introducing extra methods (which actually will
         # make things _more_ complex).
         #
-        # rubocop: disable Metrics/AbcSize
         def system_usage_data
           super.tap do |usage_data|
             usage_data[:counts].merge!(
@@ -138,8 +135,6 @@ module EE
               operations_dashboard_usage)
           end
         end
-        # rubocop: enable Metrics/AbcSize
-
         # Omitted because no user, creator or author associated: `lfs_objects`, `pool_repositories`, `web_hooks`
         override :usage_activity_by_stage_create
         # rubocop:disable CodeReuse/ActiveRecord

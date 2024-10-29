@@ -12,7 +12,8 @@ module API
         params :dora_metrics_params do
           requires :metric,
             type: String,
-            desc: 'One of `deployment_frequency`, `lead_time_for_changes`, `time_to_restore_service` or `change_failure_rate`' # rubocop:disable Layout/LineLength
+            desc: 'One of `deployment_frequency`, `lead_time_for_changes`, `time_to_restore_service` or ' \
+              '`change_failure_rate`'
 
           optional :start_date,
             type: Date,

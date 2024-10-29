@@ -92,7 +92,6 @@ RSpec.shared_examples 'a Geo verifiable registry' do
     end
 
     it 'excludes rows which are not synced or are not pending verification' do
-      # rubocop:disable Rails/SaveBang
       create(registry_class_factory, verification_state: verification_state_value(:verification_pending))
       create(registry_class_factory, :started, verification_state: verification_state_value(:verification_pending))
       create(registry_class_factory, :failed, verification_state: verification_state_value(:verification_pending))
@@ -100,8 +99,6 @@ RSpec.shared_examples 'a Geo verifiable registry' do
       create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_started))
       create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_succeeded), verification_checksum: 'abc123')
       create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_disabled))
-      # rubocop:enable Rails/SaveBang
-
       expect(described_class.verification_pending_batch(batch_size: 4)).to match_array([subject.model_record_id])
     end
 
@@ -153,7 +150,6 @@ RSpec.shared_examples 'a Geo verifiable registry' do
       end
 
       it 'excludes rows which are not synced or have not failed verification' do
-        # rubocop:disable Rails/SaveBang
         create(registry_class_factory, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo')
         create(registry_class_factory, :started, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo')
         create(registry_class_factory, :failed, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo')
@@ -161,8 +157,6 @@ RSpec.shared_examples 'a Geo verifiable registry' do
         create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_started))
         create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_succeeded), verification_checksum: 'abc123')
         create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_disabled))
-        # rubocop:enable Rails/SaveBang
-
         expect(described_class.verification_failed_batch(batch_size: 4)).to match_array([subject.model_record_id])
       end
 
@@ -207,26 +201,23 @@ RSpec.shared_examples 'a Geo verifiable registry' do
     end
 
     it 'includes rows which are synced and failed verification and are due for retry' do
-      create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo', verification_retry_at: 1.minute.ago) # rubocop:disable Rails/SaveBang
+      create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo', verification_retry_at: 1.minute.ago)
 
       expect(described_class.needs_verification_count(limit: 3)).to eq(2)
     end
 
     it 'excludes rows which are synced and failed verification and have a future retry time' do
-      create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo', verification_retry_at: 1.minute.from_now) # rubocop:disable Rails/SaveBang
+      create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_failed), verification_failure: 'foo', verification_retry_at: 1.minute.from_now)
 
       expect(described_class.needs_verification_count(limit: 3)).to eq(1)
     end
 
     it 'excludes rows which are not synced or are not (pending or failed) verification' do
-      # rubocop:disable Rails/SaveBang
       create(registry_class_factory, verification_state: verification_state_value(:verification_pending))
       create(registry_class_factory, :started, verification_state: verification_state_value(:verification_pending))
       create(registry_class_factory, :failed, verification_state: verification_state_value(:verification_pending))
       create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_started))
       create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_succeeded), verification_checksum: 'abc123')
-      # rubocop:enable Rails/SaveBang
-
       expect(described_class.needs_verification_count(limit: 3)).to eq(1)
     end
   end

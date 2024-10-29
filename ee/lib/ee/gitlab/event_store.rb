@@ -17,7 +17,7 @@ module EE
         #
         # Only EE subscriptions should be declared in this module.
         override :configure!
-        def configure!(store) # rubocop:disable Metrics/AbcSize -- This is basically a configuration file
+        def configure!(store)
           super(store)
 
           ###

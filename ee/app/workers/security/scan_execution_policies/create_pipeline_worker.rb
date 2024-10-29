@@ -59,7 +59,7 @@ module Security
           project_ids = [project.id]
         else
           namespace = policy_configuration.namespace
-          project_ids = namespace.all_projects.pluck(:id) # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- avoids cross-schema error
+          project_ids = namespace.all_projects.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- avoids cross-schema error
         end
 
         project_ids

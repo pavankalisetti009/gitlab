@@ -3,7 +3,7 @@
 module API
   module Admin
     module Search
-      class Migrations < ::API::Base # rubocop:disable Search/NamespacedClass
+      class Migrations < ::API::Base
         feature_category :global_search
         urgency :low
 

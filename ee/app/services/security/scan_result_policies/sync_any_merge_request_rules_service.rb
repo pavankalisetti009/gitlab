@@ -36,13 +36,11 @@ module Security
         violated_rules, unviolated_rules = update_required_approvals(violated_rules, unviolated_rules)
 
         log_violated_rules(violated_rules)
-        # rubocop:disable CodeReuse/ActiveRecord
         violated_policies -= unviolated_rules.map(&:scan_result_policy_read)
         violations.add(
           violated_policies,
           unviolated_policies + unviolated_rules.map(&:scan_result_policy_read)
         )
-        # rubocop:enable CodeReuse/ActiveRecord
         save_violation_data(violated_policies)
         violations.execute
         generate_policy_bot_comment(merge_request, violated_rules, :any_merge_request)

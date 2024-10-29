@@ -44,7 +44,7 @@ RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_
       expect(page).not_to have_selector('[data-testid="state"]')
 
       expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
-        expect(service).to receive(:execute).with(lead_params).and_return(ServiceResponse.success) # rubocop:disable RSpec/ExpectInHook
+        expect(service).to receive(:execute).with(lead_params).and_return(ServiceResponse.success)
       end
 
       click_button 'Continue'

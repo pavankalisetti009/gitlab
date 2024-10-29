@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Usage::Metrics::Instrumentations::ProtectedEnvironmentApprovalRulesRequiredApprovalsAverageMetric do # rubocop:disable Layout/LineLength
+RSpec.describe Gitlab::Usage::Metrics::Instrumentations::ProtectedEnvironmentApprovalRulesRequiredApprovalsAverageMetric do
   # rubocop:disable Layout/LineLength
   let_it_be(:rule_not_within_timeframe) { create(:protected_environment_approval_rule, :maintainer_access, created_at: 1.day.ago) }
   let_it_be(:rule_for_maintainer_within_timeframe) { create(:protected_environment_approval_rule, :maintainer_access, required_approvals: 2, created_at: 3.days.ago) }

@@ -264,7 +264,6 @@ module Elastic
         result.dig('_source', 'group_id')
       end
 
-      # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/PerceivedComplexity
       # rubocop:disable Metrics/CyclomaticComplexity
       def blob_query(query, type: 'blob', page: 1, per: 20, options: {})

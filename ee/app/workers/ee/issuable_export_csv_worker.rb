@@ -5,7 +5,7 @@ module EE
   #
   # This module is intended to encapsulate EE-specific model logic
   # and be prepended in the `IssuableExportCsvWorker` worker
-  module IssuableExportCsvWorker # rubocop:disable Scalability/IdempotentWorker
+  module IssuableExportCsvWorker
     extend ::Gitlab::Utils::Override
 
     private

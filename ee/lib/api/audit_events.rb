@@ -58,11 +58,8 @@ module API
       end
       get ':id' do
         level = ::Gitlab::Audit::Levels::Instance.new
-        # rubocop: disable CodeReuse/ActiveRecord
         # This is not `find_by!` from ActiveRecord
         audit_event = AuditEventFinder.new(level: level).find(params[:id])
-        # rubocop: enable CodeReuse/ActiveRecord
-
         present audit_event, with: EE::API::Entities::AuditEvent
       end
     end

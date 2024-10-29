@@ -8,9 +8,9 @@ class GeoNode < ApplicationRecord
   SELECTIVE_SYNC_TYPES = %w[namespaces shards].freeze
 
   # Array of repository storages to synchronize for selective sync by shards
-  serialize :selective_sync_shards, Array # rubocop:disable Cop/ActiveRecordSerialize
+  serialize :selective_sync_shards, Array
 
-  belongs_to :oauth_application, class_name: 'Doorkeeper::Application', dependent: :destroy, autosave: true # rubocop: disable Cop/ActiveRecordDependent
+  belongs_to :oauth_application, class_name: 'Doorkeeper::Application', dependent: :destroy, autosave: true
 
   has_many :geo_node_namespace_links
   has_many :namespaces, through: :geo_node_namespace_links

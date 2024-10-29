@@ -16,7 +16,7 @@ module ApprovalRules
     end
 
     def delete_in_batches(relation)
-      relation.each_batch do |batch| # rubocop:disable Style/SymbolProc -- does not work with ActiveRecord::Relation
+      relation.each_batch do |batch|
         batch.delete_all
       end
     end

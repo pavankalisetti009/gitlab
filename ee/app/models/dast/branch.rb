@@ -1,4 +1,3 @@
-# rubocop:disable Naming/FileName
 # frozen_string_literal: true
 
 module Dast
@@ -14,5 +13,3 @@ module Dast
     end
   end
 end
-
-# rubocop:enable Naming/FileName

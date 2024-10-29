@@ -24,7 +24,6 @@ module EE
           end
         end
 
-        # rubocop: disable CodeReuse/ActiveRecord
         def enforce_minutes_based_on_cost_factors(relation)
           strategy.enforce_minutes_limit(relation)
         end

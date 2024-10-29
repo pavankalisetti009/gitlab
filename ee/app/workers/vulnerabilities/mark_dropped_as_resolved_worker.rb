@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  # rubocop:disable Scalability/IdempotentWorker
   class MarkDroppedAsResolvedWorker
     include ApplicationWorker
 
@@ -107,5 +106,4 @@ module Vulnerabilities
       # rubocop:enable Gitlab/DocUrl
     end
   end
-  # rubocop:enable Scalability/IdempotentWorker
 end

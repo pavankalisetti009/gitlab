@@ -334,7 +334,6 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
             end
           end
 
-          # rubocop:disable RSpec/MultipleMemoizedHelpers
           context 'operation download' do
             let(:user) { create(:user) }
             let(:authorization) { ActionController::HttpAuthentication::Basic.encode_credentials(user.username, user.password) }
@@ -420,7 +419,6 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
               end
             end
           end
-          # rubocop:enable RSpec/MultipleMemoizedHelpers
         end
       end
 

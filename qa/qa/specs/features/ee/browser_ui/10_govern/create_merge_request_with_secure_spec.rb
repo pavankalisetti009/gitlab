@@ -7,7 +7,9 @@ module QA
       let(:dependency_scan_vuln_count) { 4 }
       let(:container_scan_vuln_count) { 8 }
       let(:vuln_name) { "Regular Expression Denial of Service in debug" }
-      let(:remediable_vuln_name) { "Authentication bypass via incorrect DOM traversal and canonicalization in saml2-js" } # rubocop:disable Layout/LineLength
+      let(:remediable_vuln_name) do
+        "Authentication bypass via incorrect DOM traversal and canonicalization in saml2-js"
+      end
 
       # rubocop:disable RSpec/InstanceVariable
       after do

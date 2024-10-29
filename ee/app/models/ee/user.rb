@@ -63,15 +63,15 @@ module EE
       has_many :epics,                    foreign_key: :author_id
       has_many :test_reports,             foreign_key: :author_id, inverse_of: :author, class_name: 'RequirementsManagement::TestReport'
       has_many :assigned_epics,           foreign_key: :assignee_id, class_name: "Epic"
-      has_many :path_locks,               dependent: :destroy # rubocop: disable Cop/ActiveRecordDependent
+      has_many :path_locks,               dependent: :destroy
       has_many :vulnerability_feedback, foreign_key: :author_id, class_name: 'Vulnerabilities::Feedback'
       has_many :vulnerability_state_transitions, foreign_key: :author_id, class_name: 'Vulnerabilities::StateTransition', inverse_of: :author
       has_many :commented_vulnerability_feedback, foreign_key: :comment_author_id, class_name: 'Vulnerabilities::Feedback'
       has_many :boards_epic_user_preferences, class_name: 'Boards::EpicUserPreference', inverse_of: :user
       has_many :epic_board_recent_visits, class_name: 'Boards::EpicBoardRecentVisit', inverse_of: :user
 
-      has_many :approvals,                dependent: :destroy # rubocop: disable Cop/ActiveRecordDependent
-      has_many :approvers,                dependent: :destroy # rubocop: disable Cop/ActiveRecordDependent
+      has_many :approvals,                dependent: :destroy
+      has_many :approvers,                dependent: :destroy
 
       has_many :minimal_access_group_members, -> { where(access_level: [::Gitlab::Access::MINIMAL_ACCESS]) }, class_name: 'GroupMember'
       has_many :minimal_access_groups, through: :minimal_access_group_members, source: :group
@@ -86,9 +86,9 @@ module EE
       has_many :group_saml_providers, through: :group_saml_identities, source: :saml_provider
 
       # Protected Branch Access
-      has_many :protected_branch_merge_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::MergeAccessLevel" # rubocop:disable Cop/ActiveRecordDependent
-      has_many :protected_branch_push_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::PushAccessLevel" # rubocop:disable Cop/ActiveRecordDependent
-      has_many :protected_branch_unprotect_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::UnprotectAccessLevel" # rubocop:disable Cop/ActiveRecordDependent
+      has_many :protected_branch_merge_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::MergeAccessLevel"
+      has_many :protected_branch_push_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::PushAccessLevel"
+      has_many :protected_branch_unprotect_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::UnprotectAccessLevel"
 
       has_many :deployment_approvals, class_name: 'Deployments::Approval'
 

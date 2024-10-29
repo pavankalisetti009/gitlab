@@ -22,9 +22,7 @@ FactoryBot.define do
             license.spdx_identifier
           end
 
-        # rubocop: disable RSpec/FactoryBot/StrategyInCallback
         SoftwareLicense.where(spdx_identifier: license.spdx_identifier, name: name).first_or_create!
-        # rubocop: enable RSpec/FactoryBot/StrategyInCallback
       end
     end
   end

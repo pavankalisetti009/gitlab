@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Graphql/AuthorizeTypes
 module Types
   module ProductAnalytics
     class CategoryEnum < BaseEnum
@@ -11,4 +10,3 @@ module Types
     end
   end
 end
-# rubocop:enable Graphql/AuthorizeTypes

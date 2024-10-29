@@ -3,11 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::ExternalIssueLinkEntity, feature_category: :vulnerability_management do
-  # rubocop: disable RSpec/FactoryBot/AvoidCreate -- needs to be persisted
   let_it_be(:project) { build(:project, :repository) }
   let_it_be(:jira_integration) { build(:jira_integration, project: project) }
-  # rubocop: enable RSpec/FactoryBot/AvoidCreate
-
   let_it_be(:user) { build_stubbed(:user) }
   let_it_be(:vulnerability) { build(:vulnerability, project: project) }
 

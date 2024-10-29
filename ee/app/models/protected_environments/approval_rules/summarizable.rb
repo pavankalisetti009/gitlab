@@ -29,7 +29,7 @@ module ProtectedEnvironments
       end
 
       def approvals_for_summary
-        @approvals_for_summary ||= [] # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @approvals_for_summary ||= []
       end
 
       def approvals_for_summary=(approvals)
