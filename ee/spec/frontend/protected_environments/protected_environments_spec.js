@@ -135,11 +135,11 @@ describe('ee/protected_environments/protected_environments.vue', () => {
     });
 
     it('shows the number of deployment rules', () => {
-      expect(findDeploymentBadge().text()).toBe('3 Deployment Rules');
+      expect(findDeploymentBadge().text()).toBe('3 deployment rules');
     });
 
     it('shows the number of approval rules', () => {
-      expect(findApprovalBadge().text()).toBe('3 Approval Rules');
+      expect(findApprovalBadge().text()).toBe('3 approval rules');
     });
 
     it('expands the environment section on click', async () => {

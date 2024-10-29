@@ -83,15 +83,15 @@ export default {
     },
     approvalRulesText({ [APPROVER_RULE_KEY]: approvalRules }) {
       return n__(
-        'ProtectedEnvironments|%d Approval Rule',
-        'ProtectedEnvironments|%d Approval Rules',
+        'ProtectedEnvironments|%d approval rule',
+        'ProtectedEnvironments|%d approval rules',
         approvalRules.length,
       );
     },
     deploymentRulesText({ [DEPLOYER_RULE_KEY]: deploymentRules }) {
       return n__(
-        'ProtectedEnvironments|%d Deployment Rule',
-        'ProtectedEnvironments|%d Deployment Rules',
+        'ProtectedEnvironments|%d deployment rule',
+        'ProtectedEnvironments|%d deployment rules',
         deploymentRules.length,
       );
     },
