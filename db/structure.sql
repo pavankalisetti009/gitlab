@@ -8552,7 +8552,8 @@ CREATE TABLE ci_deleted_objects (
     store_dir text NOT NULL,
     file text NOT NULL,
     project_id bigint,
-    CONSTRAINT check_5e151d6912 CHECK ((char_length(store_dir) <= 1024))
+    CONSTRAINT check_5e151d6912 CHECK ((char_length(store_dir) <= 1024)),
+    CONSTRAINT check_98f90d6c53 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_deleted_objects_id_seq
