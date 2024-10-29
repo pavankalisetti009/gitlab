@@ -28,6 +28,7 @@ module EE
               checkout_sha: ref_payload[:commit_id],
               target_sha: ref_payload[:target_id],
               source_sha: ref_payload[:source_id],
+              pipeline_creation_request: params[:pipeline_creation_request],
               push_options: params[:push_options])
             .execute(:merge_request_event, merge_request: merge_request)
         else
