@@ -19,6 +19,7 @@ import { convertFrameworkIdToGraphQl } from '../../../utils';
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from '../../../graphql/mutations/delete_compliance_framework.mutation.graphql';
+import createComplianceRequirement from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
 import getComplianceFrameworkQuery from './graphql/get_compliance_framework.query.graphql';
 
 import DeleteModal from './components/delete_modal.vue';
@@ -52,7 +53,7 @@ export default {
     return {
       errorMessage: '',
       formData: initialiseFormData(),
-      complianceRequirements: [],
+      requirements: [],
       originalName: '',
       isBasicInformationValid: true,
       isSaving: false,
@@ -75,7 +76,7 @@ export default {
         if (complianceFramework) {
           const { mockRequirements, ...rest } = complianceFramework;
           this.formData = { ...rest };
-          this.complianceRequirements = mockRequirements?.nodes || [];
+          this.requirements = mockRequirements?.nodes ? [...mockRequirements.nodes] : [];
           this.originalName = complianceFramework.name;
           const policyBlob =
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
@@ -185,6 +186,48 @@ export default {
       this.$router.back();
     },
 
+    async createFramework(params) {
+      const { data } = await this.$apollo.mutate({
+        mutation: createComplianceFrameworkMutation,
+        variables: {
+          input: {
+            namespacePath: this.groupPath,
+            params,
+          },
+        },
+      });
+
+      const framework = data?.createComplianceFramework?.framework;
+      const errors = data?.createComplianceFramework?.errors;
+
+      if (errors && errors.length) {
+        throw new Error(errors[0]);
+      }
+
+      return framework.id;
+    },
+
+    async updateFramework(params) {
+      const { data } = await this.$apollo.mutate({
+        mutation: updateComplianceFrameworkMutation,
+        variables: {
+          input: {
+            id: this.graphqlId,
+            params,
+          },
+        },
+      });
+
+      const framework = data?.updateComplianceFramework?.complianceFramework;
+      const errors = data?.updateComplianceFramework?.errors;
+
+      if (errors && errors.length) {
+        throw new Error(errors[0]);
+      }
+
+      return framework.id;
+    },
+
     async onSubmit() {
       this.isSaving = true;
       this.errorMessage = '';
@@ -194,31 +237,23 @@ export default {
           this.pipelineConfigurationFullPathEnabled,
         );
 
-        const mutation = this.isNewFramework
-          ? createComplianceFrameworkMutation
-          : updateComplianceFrameworkMutation;
-        const extraInput = this.isNewFramework
-          ? { namespacePath: this.groupPath }
-          : { id: this.graphqlId };
-        const { data } = await this.$apollo.mutate({
-          mutation,
-          variables: {
-            input: {
-              ...extraInput,
-              params,
-            },
-          },
-        });
+        let frameworkId;
 
-        const [error] = data?.createComplianceFramework?.errors || [];
-        const id = getIdFromGraphQLId(data?.createComplianceFramework?.framework?.id);
-        if (error) {
-          this.setError(new Error(error), error);
+        if (this.isNewFramework) {
+          frameworkId = await this.createFramework(params);
         } else {
-          this.handleMutationSuccess(id);
+          frameworkId = await this.updateFramework(params);
         }
-      } catch (e) {
-        this.setError(e, SAVE_ERROR);
+
+        if (this.adherenceV2Enabled) {
+          await this.createRequirements(frameworkId);
+        }
+
+        this.handleMutationSuccess(this.$route.params.id || frameworkId);
+      } catch (error) {
+        this.setError(error, SAVE_ERROR);
+      } finally {
+        this.isSaving = false;
       }
     },
 
@@ -232,7 +267,33 @@ export default {
         this.navigateBack();
       }
     },
+    async createRequirements(frameworkId) {
+      const newRequirements = this.requirements.filter((requirement) => !requirement.id);
 
+      if (newRequirements.length === 0) {
+        return;
+      }
+
+      const createRequirementPromises = newRequirements.map((requirement) =>
+        this.$apollo.mutate({
+          mutation: createComplianceRequirement,
+          variables: {
+            input: {
+              complianceFrameworkId: frameworkId,
+              params: {
+                name: requirement.name,
+                description: requirement.description,
+              },
+            },
+          },
+        }),
+      );
+
+      await Promise.all(createRequirementPromises);
+    },
+    updateRequirements(data) {
+      this.requirements.push(data);
+    },
     async deleteFramework() {
       this.isDeleting = true;
 
@@ -288,9 +349,10 @@ export default {
 
         <requirements-section
           v-if="adherenceV2Enabled"
-          :requirements="complianceRequirements"
+          :requirements="requirements"
           :full-path="groupPath"
           :graphql-id="graphqlId"
+          @save="updateRequirements"
         />
 
         <policies-section

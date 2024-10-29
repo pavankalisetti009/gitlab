@@ -1,20 +1,37 @@
 <script>
-import { GlLoadingIcon, GlTable } from '@gitlab/ui';
+import { GlLoadingIcon, GlTable, GlButton } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
+import { emptyRequirement } from '../constants';
 
 import EditSection from './edit_section.vue';
+import RequirementModal from './requirement_modal.vue';
 
 export default {
   name: 'FrameworkRequirements',
   components: {
     EditSection,
+    RequirementModal,
     GlLoadingIcon,
     GlTable,
+    GlButton,
   },
   props: {
     requirements: {
       type: Array,
       required: true,
+    },
+  },
+  data() {
+    return {
+      requirementToEdit: {},
+    };
+  },
+  methods: {
+    showRequirementModal(requirement) {
+      this.requirementToEdit = requirement;
+      this.$nextTick(() => {
+        this.$refs.requirementModal.show();
+      });
     },
   },
   tableFields: [
@@ -46,6 +63,7 @@ export default {
     actionDelete: __('Remove'),
     newRequirement: s__('ComplianceFrameworks|New requirement'),
   },
+  emptyRequirement,
 };
 </script>
 <template>
@@ -91,5 +109,20 @@ export default {
         <gl-loading-icon size="lg" />
       </template>
     </gl-table>
+    <gl-button
+      variant="link"
+      class="gl-ml-5"
+      data-testid="add-requirement-button"
+      @click="showRequirementModal($options.emptyRequirement)"
+    >
+      {{ $options.i18n.newRequirement }}
+    </gl-button>
+
+    <requirement-modal
+      v-if="requirementToEdit"
+      ref="requirementModal"
+      :requirement="requirementToEdit"
+      @save="$emit('save', $event)"
+    />
   </edit-section>
 </template>
