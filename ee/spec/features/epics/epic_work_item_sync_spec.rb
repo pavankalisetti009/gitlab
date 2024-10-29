@@ -11,7 +11,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   let_it_be(:parent_epic) { create(:epic, group: group) }
 
   let(:description) { 'My synced epic' }
-  let(:epic_title) { 'New epic' }
+  let(:epic_title) { 'New epic title' }
   let(:updated_title) { 'Another title' }
   let(:updated_description) { 'Updated description' }
   let(:start_date) { 1.day.after(Time.current).to_date }

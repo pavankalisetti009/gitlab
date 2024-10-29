@@ -130,7 +130,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
     it 'creates an objective from the "New issue" toggle button' do
       click_button _('Issue type')
-      click_button s_('OKR|New objective')
+      click_link s_('OKR|New objective')
       send_keys 'I object!'
       click_button 'Create objective'
 
