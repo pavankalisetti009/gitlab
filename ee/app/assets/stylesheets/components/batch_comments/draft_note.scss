@@ -1,4 +1,11 @@
-// Draft notes base styles
+:root {
+  --timeline-entry-draft-note-background-color: var(--gl-color-orange-50);
+}
+
+// stylelint-disable-next-line gitlab/no-gl-class
+:root.gl-dark {
+  --timeline-entry-draft-note-background-color: #453522;
+}
 
 .draft-note {
   .note-header-info {
@@ -6,7 +13,7 @@
   }
 
   .timeline-content {
-    background-color: $orange-50 !important;
+    background-color: var(--timeline-entry-draft-note-background-color) !important;
     padding: $gl-spacing-scale-2 $gl-spacing-scale-3;
     margin-left: $gl-spacing-scale-8;
     border-radius: $gl-border-radius-base;
