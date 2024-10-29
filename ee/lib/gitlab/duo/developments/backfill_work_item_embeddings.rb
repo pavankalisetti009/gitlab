@@ -19,11 +19,6 @@ module Gitlab
             puts "Queue size: #{::Search::Elastic::ProcessEmbeddingBookkeepingService.queue_size}"
 
             ::Search::Elastic::ProcessEmbeddingBookkeepingService.new.execute
-
-            if ::Search::Elastic::ProcessEmbeddingBookkeepingService.queue_size > 0
-              puts 'Sleeping for 1 minute...'
-              sleep(60)
-            end
           end
 
           puts "Finished processing the queue.
