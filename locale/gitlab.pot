@@ -2086,6 +2086,9 @@ msgstr ""
 msgid "A non-confidential work item cannot have a confidential parent."
 msgstr ""
 
+msgid "A parent group has selected \"Only direct members.\" It cannot be overridden by this group."
+msgstr ""
+
 msgid "A parent must be provided when bulk updating issuables"
 msgstr ""
 
@@ -22683,6 +22686,9 @@ msgid "Expiring soon"
 msgstr ""
 
 msgid "Expiry notification emails about group and project access tokens should be sent to:"
+msgstr ""
+
+msgid "Expiry notification emails about group and project access tokens within this group should be sent to:"
 msgstr ""
 
 msgid "Explain current vulnerability."
