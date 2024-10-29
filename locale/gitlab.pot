@@ -35108,6 +35108,9 @@ msgstr ""
 msgid "MlModelRegistry|Using the MLflow client"
 msgstr ""
 
+msgid "MlModelRegistry|Version card"
+msgstr ""
+
 msgid "MlModelRegistry|Version created %{timeAgo} by %{author}"
 msgstr ""
 
