@@ -2,78 +2,71 @@
 
 module Authz
   class CustomAbility
-    def initialize(attributes)
-      @attributes = attributes || {}
+    include Gitlab::Utils::StrongMemoize
+
+    def initialize(user, resource)
+      @user = user
+      @resource = resource
     end
 
-    def name
-      attributes[:name].to_sym
-    end
+    def allowed?(ability_name)
+      ability = Definition.new(ability_name)
 
-    def allowed?(user, resource)
-      return false unless enabled_for?(user, resource)
+      return false unless enabled_for?(ability)
 
-      name.in?(abilities_for(user, resource))
+      abilities_for.include?(ability.name)
     end
 
     class << self
-      def allowed?(user, ability, resource)
-        new(Gitlab::CustomRoles::Definition.all[ability&.to_sym])
-          .allowed?(user, resource)
+      def allowed?(user, ability_name, resource)
+        new(user, resource).allowed?(ability_name)
       end
     end
 
     private
 
-    attr_reader :attributes
+    attr_reader :user, :resource
 
-    def enabled?(attribute, default: false)
-      attributes.fetch(attribute, default)
-    end
-
-    def disabled?(attribute)
-      !enabled?(attribute)
-    end
-
-    def enabled_for?(user, resource)
-      return false if attributes.blank?
+    def enabled_for?(ability)
+      return false unless ability.exists?
       return false unless user.is_a?(User)
-      return false if resource.is_a?(::Group) && disabled?(:group_ability)
-      return false if resource.is_a?(::Project) && disabled?(:project_ability)
-      return false unless ::MemberRole.permission_enabled?(name, user)
+      return false if resource.is_a?(::Group) && !ability.group_ability_enabled?
+      return false if resource.is_a?(::Project) && !ability.project_ability_enabled?
+      return false unless ::MemberRole.permission_enabled?(ability.name, user)
 
-      custom_roles_enabled?(resource)
+      custom_roles_enabled?
     end
 
-    def custom_roles_enabled?(resource)
+    def custom_roles_enabled?
       return true unless resource.respond_to?(:custom_roles_enabled?)
 
       resource.custom_roles_enabled?
     end
 
-    def abilities_for_projects(user, projects)
+    def abilities_for_projects(projects)
       ::Authz::Project.new(user, scope: projects).permitted
     end
 
-    def abilities_for_groups(user, groups)
+    def abilities_for_groups(groups)
       ::Authz::Group.new(user, scope: groups).permitted
     end
 
-    def abilities_for(user, resource)
+    def abilities_for
       case resource
       when ::Project
-        abilities_for_projects(user, [resource]).fetch(resource.id, [])
+        abilities_for_projects([resource]).fetch(resource.id, [])
       when ::Group
-        abilities_for_groups(user, [resource]).fetch(resource.id, [])
+        abilities_for_groups([resource]).fetch(resource.id, [])
       when Ci::Runner
         if resource.project_type?
-          abilities_for_projects(user, resource.projects)
+          abilities_for_projects(resource.projects)
         else
-          abilities_for_groups(user, resource.groups)
+          abilities_for_groups(resource.groups)
         end.flat_map { |(_id, abilities)| abilities }
       else
         []
       end
     end
+    strong_memoize_attr :abilities_for
   end
 end
