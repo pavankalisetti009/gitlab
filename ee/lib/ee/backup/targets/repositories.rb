@@ -16,7 +16,7 @@ module EE
         end
 
         def find_groups_in_batches
-          group_relation.find_each(batch_size: 1000) do |group| # rubocop: disable CodeReuse/ActiveRecord -- legacy code
+          group_relation.find_each(batch_size: 100) do |group| # rubocop: disable CodeReuse/ActiveRecord -- legacy code
             yield(group)
           end
         end
