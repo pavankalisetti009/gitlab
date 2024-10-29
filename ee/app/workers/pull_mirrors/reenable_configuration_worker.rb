@@ -19,7 +19,7 @@ module PullMirrors
 
       Project
         .with(cte.to_arel) # rubocop:disable CodeReuse/ActiveRecord
-        .joins('INNER JOIN namespace_ids ON namespace_ids.id = projects.namespace_id')  # rubocop:disable CodeReuse/ActiveRecord
+        .joins('INNER JOIN namespace_ids ON namespace_ids.id = projects.namespace_id') # rubocop:disable CodeReuse/ActiveRecord
         .each_batch(of: 100) do |batch|
         batch.with_hard_import_failures.each do |project|
           next unless project.mirror?

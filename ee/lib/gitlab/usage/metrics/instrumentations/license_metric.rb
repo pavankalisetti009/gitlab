@@ -41,7 +41,7 @@ module Gitlab
 
             alt_usage_data(fallback: nil) do
               # license_attribute is checked in the constructor, so it's safe
-              ::License.current.send(license_attribute)  # rubocop: disable GitlabSecurity/PublicSend
+              ::License.current.send(license_attribute) # rubocop: disable GitlabSecurity/PublicSend
             end
           end
 

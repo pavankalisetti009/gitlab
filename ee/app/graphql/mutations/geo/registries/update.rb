@@ -32,7 +32,7 @@ module Mutations
         # TODO: `registry_class` argument is unused in this mutation
         # and it is `required: false`, expecting to be removed entirely.
         # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/424563
-        def resolve(action:, registry_id:, registry_class:)  # rubocop:disable Lint/UnusedMethodArgument
+        def resolve(action:, registry_id:, registry_class:) # rubocop:disable Lint/UnusedMethodArgument
           registry = authorized_find!(id: registry_id)
 
           result = ::Geo::RegistryUpdateService.new(action, registry).execute
