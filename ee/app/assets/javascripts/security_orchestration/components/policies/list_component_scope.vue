@@ -3,7 +3,6 @@ import ComplianceFrameworksToggleList from 'ee/security_orchestration/components
 import ProjectsToggleList from 'ee/security_orchestration/components/policy_drawer/projects_toggle_list.vue';
 import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
 import {
   policyScopeHasComplianceFrameworks,
@@ -31,7 +30,6 @@ export default {
     GroupsToggleList,
     ProjectsToggleList,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     policyScope: {
@@ -46,9 +44,6 @@ export default {
     },
   },
   computed: {
-    showGroupScope() {
-      return this.glFeatures.policyGroupScope || this.glFeatures.policyGroupScopeProject;
-    },
     isGroup() {
       return isGroup(this.namespaceType);
     },
@@ -88,7 +83,7 @@ export default {
       return this.policyHasProjects && this.showScopeSection;
     },
     showGroups() {
-      return policyScopeHasGroups(this.policyScope) && this.showScopeSection && this.showGroupScope;
+      return policyScopeHasGroups(this.policyScope) && this.showScopeSection;
     },
     showDefaultLabel() {
       return this.isDefaultMode && this.showScopeSection;

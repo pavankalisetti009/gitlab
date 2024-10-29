@@ -19,7 +19,6 @@ import {
   EXCEPT_PROJECTS,
   WITHOUT_EXCEPTIONS,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
-  PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   ALL_PROJECTS_IN_LINKED_GROUPS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import {
@@ -331,21 +330,8 @@ describe('PolicyScope', () => {
       });
 
       describe('project level with policy group scope', () => {
-        it('does not renders group selector when SPP has linked items but flag is disabled', async () => {
-          await createComponentForSPP();
-
-          await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
-          expect(findScopeGroupSelector().exists()).toBe(false);
-        });
-
         it('renders group selector when SPP has linked items', async () => {
-          await createComponentForSPP({
-            provide: {
-              glFeatures: {
-                policyGroupScopeProject: true,
-              },
-            },
-          });
+          await createComponentForSPP();
 
           await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
           expect(findScopeGroupSelector().exists()).toBe(true);
@@ -353,13 +339,7 @@ describe('PolicyScope', () => {
         });
 
         it('selects policy group scope on project level for SPP', async () => {
-          await createComponentForSPP({
-            provide: {
-              glFeatures: {
-                policyGroupScopeProject: true,
-              },
-            },
-          });
+          await createComponentForSPP();
 
           await findProjectScopeTypeDropdown().vm.$emit('select', ALL_PROJECTS_IN_LINKED_GROUPS);
           await findScopeGroupSelector().vm.$emit('changed', {
@@ -375,13 +355,10 @@ describe('PolicyScope', () => {
           ]);
         });
 
-        it('does not renders group selector when SPP has no linked items but flag is enabled', async () => {
+        it('does not render group selector when SPP has no linked items', async () => {
           createComponent({
             provide: {
               namespaceType: NAMESPACE_TYPES.PROJECT,
-              glFeatures: {
-                policyGroupScopeProject: true,
-              },
             },
           });
 
@@ -660,20 +637,13 @@ describe('PolicyScope', () => {
   describe('policy group scope', () => {
     describe('initial selection', () => {
       beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
-            },
-          },
-        });
+        createComponent();
       });
 
       it('has group scope type in scope dropdown', () => {
-        expect(findProjectScopeTypeDropdown().props('items')).toEqual([
-          ...PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
-          ...PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
-        ]);
+        expect(findProjectScopeTypeDropdown().props('items')).toEqual(
+          PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
+        );
       });
 
       it('should select including groups', async () => {
@@ -746,11 +716,6 @@ describe('PolicyScope', () => {
               },
             },
           },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
-            },
-          },
         });
 
         expect(findScopeGroupSelector().exists()).toBe(true);
@@ -764,11 +729,6 @@ describe('PolicyScope', () => {
               groups: {
                 including: [{ id: 1 }, { id: 2 }],
               },
-            },
-          },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
             },
           },
         });
@@ -791,11 +751,6 @@ describe('PolicyScope', () => {
               projects: {
                 excluding: [{ id: 1 }, { id: 2 }],
               },
-            },
-          },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
             },
           },
         });
@@ -821,11 +776,6 @@ describe('PolicyScope', () => {
               projects: {
                 including: [{ id: 1 }, { id: 2 }],
               },
-            },
-          },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
             },
           },
         });

@@ -4,7 +4,6 @@ import {
   SCOPE_TITLE,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   policyScopeHasComplianceFrameworks,
   policyScopeHasExcludingProjects,
@@ -38,7 +37,6 @@ export default {
     scopeTitle: SCOPE_TITLE,
     defaultProjectText: DEFAULT_PROJECT_TEXT,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType', 'namespacePath'],
   apollo: {
     linkedSppItems: {
@@ -74,9 +72,6 @@ export default {
     };
   },
   computed: {
-    showGroupScope() {
-      return this.glFeatures.policyGroupScope || this.glFeatures.policyGroupScopeProject;
-    },
     isGroup() {
       return isGroup(this.namespaceType);
     },
@@ -93,7 +88,7 @@ export default {
       return policyScopeHasIncludingProjects(this.policyScope);
     },
     policyScopeHasGroups() {
-      return policyScopeHasGroups(this.policyScope) && this.showGroupScope && this.showScopeSection;
+      return policyScopeHasGroups(this.policyScope) && this.showScopeSection;
     },
     policyScopeHasExcludingProjects() {
       return policyScopeHasExcludingProjects(this.policyScope);

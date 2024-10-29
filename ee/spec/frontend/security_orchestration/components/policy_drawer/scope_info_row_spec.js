@@ -132,20 +132,6 @@ describe('ScopeInfoRow', () => {
     });
 
     describe('group scope', () => {
-      it('does not render group scope when ff is off', () => {
-        createComponent({
-          propsData: {
-            policyScope: {
-              includingGroups: {
-                nodes: items,
-              },
-            },
-          },
-        });
-
-        expect(findGroupsToggleList().exists()).toBe(false);
-      });
-
       it('renders group scope when groups are provided', () => {
         createComponent({
           propsData: {
@@ -153,11 +139,6 @@ describe('ScopeInfoRow', () => {
               includingGroups: {
                 nodes: items,
               },
-            },
-          },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
             },
           },
         });
@@ -180,11 +161,6 @@ describe('ScopeInfoRow', () => {
               },
             },
           },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
-            },
-          },
         });
 
         expect(findGroupsToggleList().exists()).toBe(true);
@@ -202,11 +178,6 @@ describe('ScopeInfoRow', () => {
               excludingProjects: {
                 nodes: items,
               },
-            },
-          },
-          provide: {
-            glFeatures: {
-              policyGroupScope: true,
             },
           },
         });
@@ -268,9 +239,6 @@ describe('ScopeInfoRow', () => {
         },
         provide: {
           namespaceType: NAMESPACE_TYPES.PROJECT,
-          glFeatures: {
-            policyGroupScopeProject: true,
-          },
         },
       });
 
@@ -301,9 +269,6 @@ describe('ScopeInfoRow', () => {
         },
         provide: {
           namespaceType: NAMESPACE_TYPES.PROJECT,
-          glFeatures: {
-            policyGroupScopeProject: true,
-          },
         },
       });
 
