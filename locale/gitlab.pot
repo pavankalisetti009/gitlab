@@ -20317,7 +20317,7 @@ msgstr ""
 msgid "DuoChat|Search %{categoryLabel}..."
 msgstr ""
 
-msgid "DuoChat|The issue, epic, or code you're viewing"
+msgid "DuoChat|The issue, epic, merge request, or code you're viewing"
 msgstr ""
 
 msgid "DuoChat|There was an error communicating with GitLab Duo Chat. Please try again later."
