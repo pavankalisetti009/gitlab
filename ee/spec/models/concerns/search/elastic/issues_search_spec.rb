@@ -13,20 +13,18 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
   before do
     issue_epic_type.project = nil # Need to set this to nil as :epic feature is not enforing it.
     allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-
-    # Enforcing this to false because we have test for truthy in work_item_index_spec.rb
-    set_elasticsearch_migration_to :create_work_items_index, including: false
-
     allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(false)
   end
 
   describe '#maintain_elasticsearch_update' do
     it 'calls track! for non group level WorkItem' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
-        expect(tracked_refs[0].db_id).to eq(non_group_work_item.id.to_s)
-        expect(tracked_refs[0].klass).to eq(Issue)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
+        expect(tracked_refs[0].id).to eq(non_group_work_item.id)
+        expect(tracked_refs[1]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
+        expect(tracked_refs[1].db_id).to eq(non_group_work_item.id.to_s)
+        expect(tracked_refs[1].klass).to eq(Issue)
       end
 
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
@@ -39,22 +37,26 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
 
     it 'calls track! for group level Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(0)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0].identifier).to eq(issue_epic_type.id)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
       end
 
       issue_epic_type.maintain_elasticsearch_update
     end
 
     it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item.synced_epic])
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
       work_item.maintain_elasticsearch_update
     end
 
     it 'calls track! with Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(Issue)
-        expect(tracked_refs[0].id).to eq(issue.id)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(issue.id)
+        expect(tracked_refs[1]).to be_a_kind_of(Issue)
+        expect(tracked_refs[1].id).to eq(issue.id)
       end
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
         expect(tracked_refs.count).to eq(1)
@@ -197,10 +199,12 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
   describe '#maintain_elasticsearch_destroy' do
     it 'calls track! for non group level WorkItem' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
-        expect(tracked_refs[0].db_id).to eq(non_group_work_item.id.to_s)
-        expect(tracked_refs[0].klass).to eq(Issue)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
+        expect(tracked_refs[0].id).to eq(non_group_work_item.id)
+        expect(tracked_refs[1].db_id).to eq(non_group_work_item.id.to_s)
+        expect(tracked_refs[1].klass).to eq(Issue)
+        expect(tracked_refs[1]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
       end
 
       non_group_work_item.maintain_elasticsearch_destroy
@@ -208,22 +212,26 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
 
     it 'calls track! for group level Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(0)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0].identifier).to eq(issue_epic_type.id)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
       end
 
       issue_epic_type.maintain_elasticsearch_destroy
     end
 
     it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item.synced_epic])
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
       work_item.maintain_elasticsearch_destroy
     end
 
     it 'calls track! with Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(Issue)
-        expect(tracked_refs[0].id).to eq(issue.id)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(issue.id)
+        expect(tracked_refs[1]).to be_a_kind_of(Issue)
+        expect(tracked_refs[1].id).to eq(issue.id)
       end
 
       issue.maintain_elasticsearch_destroy
@@ -233,32 +241,38 @@ RSpec.describe ::Search::Elastic::IssuesSearch, :elastic_helpers, feature_catego
   describe '#maintain_elasticsearch_create' do
     it 'calls track! for non group level WorkItem' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
-        expect(tracked_refs[0].db_id).to eq(non_group_work_item.id.to_s)
-        expect(tracked_refs[0].klass).to eq(Issue)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
+        expect(tracked_refs[0].id).to eq(non_group_work_item.id)
+        expect(tracked_refs[1].db_id).to eq(non_group_work_item.id.to_s)
+        expect(tracked_refs[1].klass).to eq(Issue)
+        expect(tracked_refs[1]).to be_a_kind_of(::Gitlab::Elastic::DocumentReference)
       end
 
       non_group_work_item.maintain_elasticsearch_create
     end
 
     it 'calls track! for synced_epic' do
-      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item.synced_epic])
+      expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[work_item, work_item.synced_epic])
       work_item.maintain_elasticsearch_create
     end
 
     it 'calls track! for group level Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(0)
+        expect(tracked_refs.count).to eq(1)
+        expect(tracked_refs[0].identifier).to eq(issue_epic_type.id)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
       end
       issue_epic_type.maintain_elasticsearch_create
     end
 
     it 'calls track! with Issue' do
       expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-        expect(tracked_refs.count).to eq(1)
-        expect(tracked_refs[0]).to be_a_kind_of(Issue)
-        expect(tracked_refs[0].id).to eq(issue.id)
+        expect(tracked_refs.count).to eq(2)
+        expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
+        expect(tracked_refs[0].identifier).to eq(issue.id)
+        expect(tracked_refs[1]).to be_a_kind_of(Issue)
+        expect(tracked_refs[1].id).to eq(issue.id)
       end
 
       issue.maintain_elasticsearch_create

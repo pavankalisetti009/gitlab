@@ -28,13 +28,7 @@ module Search
           @logger ||= ::Gitlab::Elasticsearch::Logger.build
         end
 
-        def work_item_index_available?
-          ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-        end
-
         def remove_work_item_documents(project_id, traversal_id)
-          return unless work_item_index_available?
-
           filter_list = []
           filter_list << { term: { project_id: project_id } } unless project_id.nil?
 

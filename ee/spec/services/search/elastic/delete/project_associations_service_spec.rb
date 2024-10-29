@@ -14,10 +14,6 @@ RSpec.describe ::Search::Elastic::Delete::ProjectAssociationsService, :elastic_h
     let_it_be(:project) { create(:project, group: group) }
     let(:work_item) { create(:work_item, project: project) }
 
-    before do
-      set_elasticsearch_migration_to :create_work_items_index, including: true
-    end
-
     context 'when Elasticsearch is enabled', :elastic_delete_by_query do
       before do
         stub_ee_application_setting(elasticsearch_indexing: true)
@@ -67,25 +63,6 @@ RSpec.describe ::Search::Elastic::Delete::ProjectAssociationsService, :elastic_h
 
           # items are deleted
           expect(items_in_index(work_item_index).count).to eq(0)
-        end
-      end
-
-      context 'when migration is not complete' do
-        before do
-          set_elasticsearch_migration_to :create_work_items_index, including: false
-        end
-
-        it 'does not remove work items' do
-          # items are present already
-          expect(items_in_index(work_item_index)).to include(work_item.id)
-          expect(items_in_index(work_item_index).count).to eq(1)
-
-          execute
-          es_helper.refresh_index(index_name: work_item_index)
-
-          # work items not removed
-          expect(items_in_index(work_item_index).count).to eq(1)
-          expect(items_in_index(work_item_index)).to include(work_item.id)
         end
       end
     end

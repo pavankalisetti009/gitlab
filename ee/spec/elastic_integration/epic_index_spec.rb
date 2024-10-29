@@ -28,18 +28,6 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
     context 'when an epic is created' do
       let(:epic) { build(:epic, group: group) }
 
-      context 'when create_work_items_index migration is not complete' do
-        before do
-          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:create_work_items_index).and_return(false)
-        end
-
-        it 'tracks the epic' do
-          expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-          epic.save!
-        end
-      end
-
       it 'tracks the epic and work item' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(2)
@@ -88,18 +76,6 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
           expect(tracked_refs[1].identifier).to eq(epic.issue_id)
         end
         epic.destroy!
-      end
-
-      context 'when create_work_items_index migration is not complete' do
-        before do
-          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:create_work_items_index).and_return(false)
-        end
-
-        it 'tracks the epic' do
-          expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-          epic.destroy!
-        end
       end
 
       it 'deletes the epic from elasticsearch', :elastic_clean do

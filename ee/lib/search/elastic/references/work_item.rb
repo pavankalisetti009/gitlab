@@ -17,14 +17,8 @@ module Search
         def self.instantiate(string)
           _, id, routing = delimit(string)
 
-          return unless work_item_index_available?
-
           # this puts the record in the work items index
           new(id, routing)
-        end
-
-        def self.work_item_index_available?
-          ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
         end
 
         override :preload_indexing_data

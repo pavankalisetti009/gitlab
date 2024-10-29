@@ -56,25 +56,18 @@ module Search
         project.nil?
       end
 
-      def work_item_index_available?
-        ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-      end
-
       def get_indexing_data
         indexing_data = []
         case self
         when WorkItem
-          indexing_data << self if work_item_index_available?
+          indexing_data << self
 
           unless indexing_issue_of_epic_type?
             indexing_data << Search::Elastic::References::Legacy.instantiate_from_array([Issue, id, es_id,
               "project_#{project.id}"])
           end
         when Issue
-          if work_item_index_available?
-            indexing_data << Search::Elastic::References::WorkItem.new(id, "group_#{namespace.root_ancestor.id}")
-          end
-
+          indexing_data << Search::Elastic::References::WorkItem.new(id, "group_#{namespace.root_ancestor.id}")
           indexing_data << self unless indexing_issue_of_epic_type?
         end
         indexing_data << synced_epic if synced_epic.present?

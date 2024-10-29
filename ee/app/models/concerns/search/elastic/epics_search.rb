@@ -32,19 +32,10 @@ module Search
 
       private
 
-      def work_item_index_available?
-        ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-      end
-
       def get_indexing_data
         indexing_data = [self]
-
-        # We can remove issue_id check too when we are cleaning the migration completion check
-        if work_item_index_available? && issue_id
-          indexing_data << Search::Elastic::References::WorkItem.new(issue_id,
-            "group_#{group.root_ancestor.id}")
-        end
-
+        indexing_data << Search::Elastic::References::WorkItem.new(
+          issue_id, "group_#{group.root_ancestor.id}")
         indexing_data
       end
     end

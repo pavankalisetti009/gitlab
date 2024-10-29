@@ -169,16 +169,10 @@ module Search
       end
     end
 
-    def work_item_index_available?
-      ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-    end
-
     def estimate_shard_sizes
       estimates = {}
 
       klasses = CLASSES_TO_COUNT
-
-      klasses -= [WorkItem] unless work_item_index_available?
 
       counts = ::Gitlab::Database::Count.approximate_counts(klasses)
 
@@ -376,8 +370,6 @@ module Search
     end
 
     def index_work_items
-      return unless work_item_index_available?
-
       logger.info('Indexing work_items...')
 
       work_items = if ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
