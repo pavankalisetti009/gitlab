@@ -12,7 +12,17 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
   end
 
   describe '#base_url' do
-    it 'returns correct URL', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/484679' do
+    include_context 'when loading 1_settings initializer'
+
+    # Reload settings to ensure a consistent state
+    # for Settings.cloud_connector base_url
+    # and isolate tests to reduce the risk of flaky tests
+    # due to shared state with other specs
+    before do
+      load_settings
+    end
+
+    it 'returns correct URL' do
       expect(klass.new.base_url).to eql('https://cloud.gitlab.com/ai')
     end
 
