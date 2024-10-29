@@ -37447,6 +37447,7 @@ Name of the check for the compliance standard.
 | <a id="compliancestandardsadherencechecknameat_least_two_approvals"></a>`AT_LEAST_TWO_APPROVALS` | At least two approvals. |
 | <a id="compliancestandardsadherencechecknameprevent_approval_by_merge_request_author"></a>`PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR` | Prevent approval by merge request author. |
 | <a id="compliancestandardsadherencechecknameprevent_approval_by_merge_request_committers"></a>`PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS` | Prevent approval by merge request committers. |
+| <a id="compliancestandardsadherencechecknamesast"></a>`SAST` | Sast. |
 
 ### `ComplianceStandardsAdherenceStandard`
 

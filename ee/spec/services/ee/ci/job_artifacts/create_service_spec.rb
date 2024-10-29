@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Ci::JobArtifacts::CreateService, :clean_gitlab_redis_shared_state, feature_category: :job_artifacts do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, :repository) }
 
   let(:service) { described_class.new(job) }
   let(:job) { create(:ci_build, project: project) }
@@ -60,6 +60,55 @@ RSpec.describe Ci::JobArtifacts::CreateService, :clean_gitlab_redis_shared_state
         subject
 
         expect(unique_metrics_report_uploaders).to eq(1)
+      end
+    end
+
+    context 'when artifact_type is sast' do
+      let(:params) { { 'artifact_type' => 'sast' }.with_indifferent_access }
+
+      before do
+        allow(job).to receive(:user_id).and_return(123)
+      end
+
+      context 'when enable_adherence_check_for_scanners is enabled' do
+        context 'when the artifact is for project default branch' do
+          it 'triggers the adherence worker' do
+            expect(::ComplianceManagement::Standards::Gitlab::SastWorker).to receive(:perform_async)
+              .with({ 'project_id' => project.id, 'user_id' => 123 })
+
+            subject
+          end
+        end
+
+        context 'when the artifact is not for project default branch' do
+          let(:merge_request) do
+            create(
+              :merge_request, source_project: project
+            )
+          end
+
+          let(:pipeline) { create(:ci_pipeline, :detached_merge_request_pipeline, merge_request: merge_request) }
+
+          let(:job) { create(:ci_build, pipeline: pipeline, project: project) }
+
+          it 'does not trigger the adherence worker' do
+            expect(::ComplianceManagement::Standards::Gitlab::SastWorker).not_to receive(:perform_async)
+
+            subject
+          end
+        end
+      end
+
+      context 'when enable_adherence_check_for_scanners is disabled' do
+        before do
+          stub_feature_flags(enable_adherence_check_for_scanners: false)
+        end
+
+        it 'does not trigger adherence worker' do
+          expect(::ComplianceManagement::Standards::Gitlab::SastWorker).not_to receive(:perform_async)
+
+          subject
+        end
       end
     end
   end

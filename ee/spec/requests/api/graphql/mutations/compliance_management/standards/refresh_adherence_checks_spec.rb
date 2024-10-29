@@ -51,11 +51,11 @@ RSpec.describe 'Refresh adherence checks', feature_category: :compliance_managem
 
         mutate
 
-        expect(project.compliance_standards_adherence.count).to eq(4)
-        expect(sub_group_project.compliance_standards_adherence.count).to eq(4)
+        expect(project.compliance_standards_adherence.count).to eq(5)
+        expect(sub_group_project.compliance_standards_adherence.count).to eq(5)
         expect(mutation_response['adherenceChecksStatus']['startedAt']).to eq(Time.now.utc.iso8601)
-        expect(mutation_response['adherenceChecksStatus']['checksCompleted']).to eq(8)
-        expect(mutation_response['adherenceChecksStatus']['totalChecks']).to eq(8)
+        expect(mutation_response['adherenceChecksStatus']['checksCompleted']).to eq(10)
+        expect(mutation_response['adherenceChecksStatus']['totalChecks']).to eq(10)
       end
 
       context 'when refresh service errors', :freeze_time, :sidekiq_inline do
