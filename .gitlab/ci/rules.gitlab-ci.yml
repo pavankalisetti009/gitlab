@@ -1479,7 +1479,7 @@
     - <<: *if-merge-request-labels-pipeline-expedite
       when: never
     - <<: *if-merge-request
-      changes: *code-backstage-patterns
+      when: never
     - <<: *if-default-branch-refs
       changes: *code-backstage-patterns
 
