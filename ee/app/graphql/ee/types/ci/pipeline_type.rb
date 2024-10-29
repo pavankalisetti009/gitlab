@@ -54,6 +54,15 @@ module EE
             null: true,
             description: 'DAST profile associated with the pipeline.'
 
+          field :troubleshoot_job_with_ai, GraphQL::Types::Boolean, null: false,
+            description: "If the user can troubleshoot jobs of a pipeline."
+
+          def troubleshoot_job_with_ai
+            return false unless current_user
+
+            current_user.can?(:troubleshoot_job_with_ai, pipeline)
+          end
+
           def code_quality_reports
             pipeline.codequality_reports.sort_degradations!.values.presence
           end

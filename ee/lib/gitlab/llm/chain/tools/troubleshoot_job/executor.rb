@@ -147,6 +147,8 @@ module Gitlab
               user_prompt.size
             end
 
+            # For now, we'll just accept one job for our context since we have no batch
+            # troubleshooting for jobs yet.
             def job
               context.resource
             end
@@ -167,10 +169,10 @@ module Gitlab
               return '' if language_names.empty?
 
               last_language = language_names.pop
-              languages_comma_seperated = language_names.join(', ')
+              languages_comma_separated = language_names.join(', ')
 
               if language_names.size >= 1
-                "The repository code is written in #{languages_comma_seperated} and #{last_language}."
+                "The repository code is written in #{languages_comma_separated} and #{last_language}."
               else
                 "The repository code is written in #{last_language}."
               end

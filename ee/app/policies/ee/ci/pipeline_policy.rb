@@ -2,14 +2,18 @@
 
 module EE
   module Ci
-    module BuildPolicy
+    module PipelinePolicy
       extend ActiveSupport::Concern
 
       prepended do
         include TroubleshootJobPolicyHelper
 
         rule do
-          can?(:read_build_trace) &
+          # `troubleshoot_job_with_ai` with a pipeline as a subject should be sufficient to show
+          # the troubleshoot button.
+          # We should ensure we check the ability `troubleshoot_job_with_ai` with a build as a subject
+          # before sending job logs to and llm. i.e. user.can?(:troubleshoot_job_with_ai, job)
+          can?(:read_build) &
             troubleshoot_job_licensed &
             troubleshoot_job_cloud_connector_authorized &
             troubleshoot_job_with_ai_authorized
