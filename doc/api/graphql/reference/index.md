@@ -19747,15 +19747,6 @@ CI/CD variables given to a manual job.
 | <a id="ciminutesprojectmonthlyusageproject"></a>`project` | [`Project`](#project) | Project having the recorded usage. |
 | <a id="ciminutesprojectmonthlyusagesharedrunnersduration"></a>`sharedRunnersDuration` | [`Int`](#int) | Total duration (in seconds) of shared runners use by the project for the month. |
 
-### `CiPipelineCreationType`
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="cipipelinecreationtypepipelineid"></a>`pipelineId` **{warning-solid}** | [`ID`](#id) | **Introduced** in GitLab 17.4. **Status**: Experiment. ID of the created pipeline. |
-| <a id="cipipelinecreationtypestatus"></a>`status` **{warning-solid}** | [`CiPipelineCreationStatus`](#cipipelinecreationstatus) | **Introduced** in GitLab 17.4. **Status**: Experiment. Pipeline creation status. |
-
 ### `CiProjectVariable`
 
 CI/CD variables for a project.
@@ -30623,22 +30614,6 @@ Returns [`[CiConfigVariable!]`](#ciconfigvariable).
 | ---- | ---- | ----------- |
 | <a id="projectciconfigvariablesref"></a>`ref` | [`String!`](#string) | Ref. |
 
-##### `Project.ciPipelineCreation`
-
-Information about a pipeline creation.
-
-DETAILS:
-**Introduced** in GitLab 17.4.
-**Status**: Experiment.
-
-Returns [`CiPipelineCreationType`](#cipipelinecreationtype).
-
-###### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="projectcipipelinecreationid"></a>`id` | [`String!`](#string) | Unique ID associated with the pipeline creation. |
-
 ##### `Project.ciTemplate`
 
 Find a single CI/CD template by name.
@@ -37130,14 +37105,6 @@ CI_JOB_TOKEN policy.
 | <a id="cijobtokenscopepoliciesupdate_environment"></a>`UPDATE_ENVIRONMENT` | Update Environment. |
 | <a id="cijobtokenscopepoliciesupdate_pipeline"></a>`UPDATE_PIPELINE` | Update Pipeline. |
 | <a id="cijobtokenscopepoliciesupdate_release"></a>`UPDATE_RELEASE` | Update Release. |
-
-### `CiPipelineCreationStatus`
-
-| Value | Description |
-| ----- | ----------- |
-| <a id="cipipelinecreationstatuscreating"></a>`CREATING` | Pipeline is creating. |
-| <a id="cipipelinecreationstatusfailed"></a>`FAILED` | Pipeline has failed. |
-| <a id="cipipelinecreationstatussucceeded"></a>`SUCCEEDED` | Pipeline has succeeded. |
 
 ### `CiRunnerAccessLevel`
 

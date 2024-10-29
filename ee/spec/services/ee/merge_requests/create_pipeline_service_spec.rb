@@ -63,6 +63,10 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
 
     shared_examples_for 'merged result pipeline' do
       it 'creates a merge result pipeline' do
+        allow(::Ci::CreatePipelineService).to(receive(:new).with(
+          anything, anything, a_hash_including(pipeline_creation_request: nil)
+        )).and_call_original
+
         subject
 
         expect(merge_request.all_pipelines.count).to eq(1)
