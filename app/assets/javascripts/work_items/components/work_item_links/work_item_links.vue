@@ -187,11 +187,9 @@ export default {
     workItemType() {
       return this.workItem?.workItemType?.name || '';
     },
-    displayableChildrenFunction() {
-      return getItems(this.showClosed);
-    },
     hasAllChildItemsHidden() {
-      return this.displayableChildrenFunction(this.children).length === 0;
+      const filterClosed = getItems(this.showClosed);
+      return filterClosed(this.children).length === 0;
     },
   },
   mounted() {
@@ -380,7 +378,6 @@ export default {
           :show-closed="showClosed"
           :disable-content="disableContent"
           :has-indirect-children="false"
-          :displayable-children-function="displayableChildrenFunction"
           @error="error = $event"
           @show-modal="openChild"
         />

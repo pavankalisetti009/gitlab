@@ -2617,7 +2617,6 @@ export const workItemHierarchyTreeSingleClosedItemResponse = {
               __typename: 'PageInfo',
             },
             count: 1,
-            // nodes: mockHierarchyChildren,
             nodes: [
               {
                 id: 'gid://gitlab/WorkItem/31',

@@ -262,11 +262,9 @@ export default {
         return acc;
       }, {});
     },
-    displayableChildrenFunction() {
-      return getItems(this.showClosed);
-    },
     hasAllChildItemsHidden() {
-      return this.displayableChildrenFunction(this.children).length === 0;
+      const filterClosed = getItems(this.showClosed);
+      return filterClosed(this.children).length === 0;
     },
   },
   mounted() {
@@ -432,7 +430,6 @@ export default {
           :has-indirect-children="hasIndirectChildren"
           :allowed-children-by-type="allowedChildrenByType"
           :dragged-item-type="draggedItemType"
-          :displayable-children-function="displayableChildrenFunction"
           @drag="draggedItemType = $event"
           @drop="draggedItemType = null"
           @error="error = $event"

@@ -28,6 +28,7 @@ import {
   workItemHierarchyPaginatedTreeResponse,
   workItemHierarchyTreeFailureResponse,
   workItemHierarchyNoChildrenTreeResponse,
+  workItemHierarchyTreeSingleClosedItemResponse,
 } from '../../mock_data';
 
 jest.mock('~/alert');
@@ -63,7 +64,6 @@ describe('WorkItemLinkChild', () => {
     isExpanded = false,
     showTaskWeight = false,
     showClosed = true,
-    displayableChildrenFunction = (children) => children,
     props = {},
   } = {}) => {
     const mockApollo = createMockApollo([[getWorkItemTreeQuery, workItemTreeQueryHandler]], {
@@ -91,7 +91,6 @@ describe('WorkItemLinkChild', () => {
         workItemFullPath,
         showTaskWeight,
         showClosed,
-        displayableChildrenFunction,
         ...props,
       },
       stubs: {
@@ -251,12 +250,13 @@ describe('WorkItemLinkChild', () => {
       );
     });
 
-    it('filters children given the displayableChildrenFunction', async () => {
+    it('filters closed children', async () => {
       createComponent({
-        childItem: workItemObjectiveWithChild,
+        workItemTreeQueryHandler: jest
+          .fn()
+          .mockRejectedValue(workItemHierarchyTreeSingleClosedItemResponse),
         workItemType: WORK_ITEM_TYPE_VALUE_OBJECTIVE,
         isExpanded: true,
-        displayableChildrenFunction: () => [],
       });
       await findExpandButton().vm.$emit('click');
 

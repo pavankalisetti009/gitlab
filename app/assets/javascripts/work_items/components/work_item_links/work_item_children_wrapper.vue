@@ -11,7 +11,7 @@ import { defaultSortableOptions, DRAG_DELAY } from '~/sortable/constants';
 import { sortableStart, sortableEnd } from '~/sortable/utils';
 
 import { WORK_ITEM_TYPE_VALUE_OBJECTIVE, WORK_ITEM_TYPE_VALUE_EPIC } from '../../constants';
-import { findHierarchyWidgetChildren } from '../../utils';
+import { findHierarchyWidgetChildren, getItems } from '../../utils';
 import {
   addHierarchyChild,
   removeHierarchyChild,
@@ -100,11 +100,6 @@ export default {
       required: false,
       default: null,
     },
-    displayableChildrenFunction: {
-      type: Function,
-      required: false,
-      default: (children) => children,
-    },
   },
   data() {
     return {
@@ -146,7 +141,8 @@ export default {
       return this.$apollo.provider.clients.defaultClient;
     },
     displayableChildren() {
-      return this.displayableChildrenFunction(this.children);
+      const filterClosed = getItems(this.showClosed);
+      return filterClosed(this.children);
     },
   },
   mounted() {
@@ -550,7 +546,6 @@ export default {
       :is-top-level="isTopLevel"
       :data-child-title="child.title"
       :data-child-type="child.workItemType.name"
-      :displayable-children-function="displayableChildrenFunction"
       class="!gl-border-x-0 !gl-border-b-1 !gl-border-t-0 !gl-border-solid !gl-pb-2 last:!gl-border-b-0 last:!gl-pb-0"
       @drag="$emit('drag', $event)"
       @drop="$emit('drop')"

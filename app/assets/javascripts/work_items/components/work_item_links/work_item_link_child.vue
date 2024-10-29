@@ -3,7 +3,7 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { STATE_OPEN, WORK_ITEM_TYPE_VALUE_TASK } from '../../constants';
-import { findHierarchyWidgets, getDefaultHierarchyChildrenCount } from '../../utils';
+import { findHierarchyWidgets, getDefaultHierarchyChildrenCount, getItems } from '../../utils';
 import toggleHierarchyTreeChildMutation from '../../graphql/client/toggle_hierarchy_tree_child.mutation.graphql';
 import isExpandedHierarchyTreeChildQuery from '../../graphql/client/is_expanded_hierarchy_tree_child.query.graphql';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
@@ -78,10 +78,6 @@ export default {
       type: Object,
       required: false,
       default: () => {},
-    },
-    displayableChildrenFunction: {
-      type: Function,
-      required: true,
     },
   },
   data() {
@@ -213,7 +209,8 @@ export default {
       return !this.hasChildren && this.draggedItemTypeIsAllowed;
     },
     displayableChildren() {
-      return this.displayableChildrenFunction(this.children);
+      const filterClosed = getItems(this.showClosed);
+      return filterClosed(this.children);
     },
   },
   methods: {
@@ -313,7 +310,6 @@ export default {
         :has-indirect-children="hasIndirectChildren"
         :dragged-item-type="draggedItemType"
         :allowed-children-by-type="allowedChildrenByType"
-        :displayable-children-function="displayableChildrenFunction"
         @drag="$emit('drag', $event)"
         @drop="$emit('drop')"
         @removeChild="$emit('removeChild', childItem)"

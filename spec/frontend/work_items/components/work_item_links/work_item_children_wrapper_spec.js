@@ -63,7 +63,7 @@ describe('WorkItemChildrenWrapper', () => {
     mutationHandler = updateWorkItemMutationHandler,
     disableContent = false,
     canUpdate = false,
-    displayableChildrenFunction = () => children,
+    showClosed = true,
     moveWorkItemMutationHandler = moveWorkItemMutationSuccessHandler,
   } = {}) => {
     const mockApollo = createMockApollo(
@@ -98,7 +98,7 @@ describe('WorkItemChildrenWrapper', () => {
         isTopLevel,
         disableContent,
         canUpdate,
-        displayableChildrenFunction,
+        showClosed,
         parent: workItemByIidResponseFactory().data.workspace.workItem,
       },
       mocks: {
@@ -117,11 +117,11 @@ describe('WorkItemChildrenWrapper', () => {
     );
   });
 
-  it('does not render children when filtered out by displayableChildrenFunction', () => {
-    createComponent({ displayableChildrenFunction: () => [] });
+  it('does not render children when show closed toggle is off', async () => {
+    await createComponent({ showClosed: false });
 
     const workItemLinkChildren = findWorkItemLinkChildItems();
-    expect(workItemLinkChildren).toHaveLength(0);
+    expect(workItemLinkChildren).toHaveLength(3);
   });
 
   it('emits `show-modal` on `click` event', () => {
