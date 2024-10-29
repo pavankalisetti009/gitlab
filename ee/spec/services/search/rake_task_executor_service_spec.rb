@@ -265,21 +265,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       )
     end
 
-    context 'when work_items are not in a standalone index' do
-      let(:counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000] }
-      let(:counted_items) { described_class::CLASSES_TO_COUNT - [WorkItem] }
-
-      before do
-        set_elasticsearch_migration_to :create_work_items_index, including: false
-      end
-
-      it 'does not include work_items index in shard size estimates' do
-        expect(logger).not_to receive(:info).with(/gitlab-test-work_items/)
-
-        service.execute(:estimate_shard_sizes)
-      end
-    end
-
     it 'outputs shard size estimates' do
       expected_work_items = <<~ESTIMATE
         - gitlab-test-work_items:
@@ -633,16 +618,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
   describe '#index_work_items', :elastic do
     let_it_be(:work_item) { create(:work_item) }
-
-    context 'when work_item index is not available' do
-      before do
-        set_elasticsearch_migration_to(:create_work_items_index, including: false)
-      end
-
-      it 'does not call track for work_items' do
-        expect(Elastic::ProcessInitialBookkeepingService).not_to receive(:track!)
-      end
-    end
 
     it 'calls track! for work_items' do
       expect(logger).to receive(:info).with(/Indexing work_items/).twice

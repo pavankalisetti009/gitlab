@@ -1372,11 +1372,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   describe 'ES related specs' do
     let_it_be(:epic) { create(:epic, group: group) }
 
-    before do
-      allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-        .with(:create_work_items_index).and_return(true)
-    end
-
     context 'when the group has use_elasticsearch? as true' do
       before do
         allow(group).to receive(:use_elasticsearch?).and_return(true)
@@ -1390,18 +1385,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         before do
           allow(Gitlab::CurrentSettings.current_application_settings)
             .to receive(:elasticsearch_indexing?).and_return(true)
-        end
-
-        context 'when create_work_items_index migration is not complete' do
-          before do
-            allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-              .with(:create_work_items_index).and_return(false)
-          end
-
-          it 'tracks the epic' do
-            expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-            epic.update!(title: 'A new title')
-          end
         end
 
         it 'calls ::Elastic::ProcessBookkeepingService.track! when the epic is updated' do

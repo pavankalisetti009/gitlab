@@ -72,8 +72,6 @@ module EE
 
     override :use_elasticsearch?
     def use_elasticsearch?
-      return super unless ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-
       namespace.use_elasticsearch?
     end
 

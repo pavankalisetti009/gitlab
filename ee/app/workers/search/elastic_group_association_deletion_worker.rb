@@ -19,21 +19,16 @@ module Search
 
       group = Group.find_by_id(group_id)
       remove_epics = index_epics?(group)
-      remove_work_items = work_item_index_available?
-      return unless remove_work_items || remove_epics
 
       options = options.with_indifferent_access
-      unless options[:include_descendants]
-        return process_removal(group_id, ancestor_id, remove_epics: remove_epics, remove_work_items: remove_work_items)
-      end
+      return process_removal(group_id, ancestor_id, remove_epics: remove_epics) unless options[:include_descendants]
 
       # We have the return condition here because we still want to remove the deleted items in the above call
       return if group.nil?
 
       # rubocop: disable CodeReuse/ActiveRecord -- We need only the ids of self_and_descendants groups
       group.self_and_descendants.each_batch do |groups|
-        process_removal(groups.pluck(:id), ancestor_id, remove_epics: remove_epics,
-          remove_work_items: remove_work_items)
+        process_removal(groups.pluck(:id), ancestor_id, remove_epics: remove_epics)
       end
       # rubocop: enable CodeReuse/ActiveRecord
     end
@@ -44,21 +39,15 @@ module Search
       @client ||= ::Gitlab::Search::Client.new
     end
 
-    def work_item_index_available?
-      ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-    end
-
     def index_epics?(group)
       return true unless group.present?
 
       group.licensed_feature_available?(:epics)
     end
 
-    def process_removal(group_id, ancestor_id, remove_epics:, remove_work_items:)
-      if remove_work_items
-        remove_items(group_id, ancestor_id, index_name: ::Search::Elastic::Types::WorkItem.index_name,
-          group_id_field: :namespace_id)
-      end
+    def process_removal(group_id, ancestor_id, remove_epics:)
+      remove_items(group_id, ancestor_id, index_name: ::Search::Elastic::Types::WorkItem.index_name,
+        group_id_field: :namespace_id)
 
       return unless remove_epics
 

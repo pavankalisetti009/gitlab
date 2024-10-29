@@ -280,26 +280,10 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   describe '#instantiate' do
     let(:work_item_ref) { described_class.new(work_item.id, work_item.es_parent) }
 
-    context 'when work_item index is available' do
-      before do
-        set_elasticsearch_migration_to :create_work_items_index, including: true
-      end
-
-      it 'instantiates work item' do
-        new_work_item = described_class.instantiate(work_item_ref.serialize)
-        expect(new_work_item.routing).to eq(work_item.es_parent)
-        expect(new_work_item.identifier).to eq(work_item.id)
-      end
-    end
-
-    context 'when migration is not completed' do
-      before do
-        set_elasticsearch_migration_to :create_work_items_index, including: false
-      end
-
-      it 'does not instantiate work item' do
-        expect(described_class.instantiate(work_item_ref.serialize)).to be_nil
-      end
+    it 'instantiates work item' do
+      new_work_item = described_class.instantiate(work_item_ref.serialize)
+      expect(new_work_item.routing).to eq(work_item.es_parent)
+      expect(new_work_item.identifier).to eq(work_item.id)
     end
   end
 
