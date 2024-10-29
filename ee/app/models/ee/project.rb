@@ -396,6 +396,11 @@ module EE
         where(condition.arel.exists.not)
       end
 
+      scope :preload_for_indexing, -> do
+        includes(:mirror_user, :project_feature, :route, :catalog_resource, :fork_network,
+          :repository_languages, :group, namespace: :owner)
+      end
+
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
       delegate :ci_minutes_usage, to: :shared_runners_limit_namespace

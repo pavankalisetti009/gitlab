@@ -28,12 +28,9 @@ module Elastic
         { routing: "n_#{root_namespace_id}" }
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord -- planned to be refactored into a scope
       def preload_indexing_data(relation)
-        relation.includes(:project_feature, :route, :catalog_resource, :fork_network, :mirror_user,
-          :repository_languages, :group, namespace: :owner)
+        relation.preload_for_indexing
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
       private
 

@@ -719,6 +719,25 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         expect(described_class.not_indexed_in_elasticsearch).to match_array([non_indexed_project])
       end
     end
+
+    describe '.preload_for_indexing' do
+      let_it_be(:primary_project) { create(:project, :empty_repo, :mirror) }
+      let_it_be(:forked_project) { create(:project, :fork_repository, forked_from_project: primary_project) }
+
+      it 'preloads association data', :aggregate_failures do
+        record = described_class.preload_for_indexing.first
+
+        expect(record.association(:mirror_user)).to be_loaded
+        expect(record.association(:project_feature)).to be_loaded
+        expect(record.association(:route)).to be_loaded
+        expect(record.association(:catalog_resource)).to be_loaded
+        expect(record.association(:fork_network)).to be_loaded
+        expect(record.association(:repository_languages)).to be_loaded
+        expect(record.association(:group)).to be_loaded
+        expect(record.association(:namespace)).to be_loaded
+        expect(record.namespace.association(:owner)).to be_loaded
+      end
+    end
   end
 
   describe 'validations' do
