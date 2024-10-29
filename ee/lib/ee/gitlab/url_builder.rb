@@ -38,6 +38,8 @@ module EE
             instance.group_epic_url(noteable.group, noteable, anchor: dom_id(note), **options)
           elsif note.for_vulnerability?
             instance.project_security_vulnerability_url(noteable.project, noteable, anchor: dom_id(note), **options)
+          elsif note.for_group_wiki?
+            instance.group_wiki_page_url(note.noteable, anchor: dom_id(note), **options)
           else
             super
           end
