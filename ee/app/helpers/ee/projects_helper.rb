@@ -436,7 +436,7 @@ module EE
       {
         full: project.vulnerability_quota.full?.to_s,
         critical: project.vulnerability_quota.critical?.to_s,
-        enforced: project.vulnerability_quota.enforced?.to_s
+        exceeded: project.vulnerability_quota.exceeded?.to_s
       }
     end
 
