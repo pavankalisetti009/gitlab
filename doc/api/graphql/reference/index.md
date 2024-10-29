@@ -29850,6 +29850,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="pipelinetotaljobs"></a>`totalJobs` | [`Int!`](#int) | Total number of jobs in the pipeline. |
 | <a id="pipelinetrigger"></a>`trigger` | [`Boolean!`](#boolean) | If the pipeline was created by a Trigger request. |
 | <a id="pipelinetriggeredbypath"></a>`triggeredByPath` | [`String`](#string) | Path that triggered the pipeline. |
+| <a id="pipelinetroubleshootjobwithai"></a>`troubleshootJobWithAi` | [`Boolean!`](#boolean) | If the user can troubleshoot jobs of a pipeline. |
 | <a id="pipelineupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of the pipeline's last activity. |
 | <a id="pipelineupstream"></a>`upstream` | [`Pipeline`](#pipeline) | Pipeline that triggered the pipeline. |
 | <a id="pipelineuser"></a>`user` | [`UserCore`](#usercore) | Pipeline user. |
