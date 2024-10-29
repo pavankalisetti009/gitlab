@@ -10,7 +10,7 @@ const i18n = {
   POPOVER_LABEL: s__('DuoChat|GitLab Duo Chat'),
   POPOVER_DESCRIPTION: s__('DuoChat|Use AI to answer questions about things like:'),
   POPOVER_LIST_ITEMS: [
-    s__("DuoChat|The issue, epic, or code you're viewing"),
+    s__("DuoChat|The issue, epic, merge request, or code you're viewing"),
     s__('DuoChat|How to use GitLab'),
   ],
   POPOVER_BUTTON: __('Ask GitLab Duo'),
@@ -91,7 +91,7 @@ export default {
         <p class="gl-m-0 gl-w-7/10" data-testid="duo-chat-callout-description">
           {{ $options.i18n.POPOVER_DESCRIPTION }}
         </p>
-        <ul class="gl-pl-5 gl-pt-3">
+        <ul class="gl-w-3/4 gl-pl-5 gl-pt-3">
           <li v-for="item in $options.i18n.POPOVER_LIST_ITEMS" :key="item">{{ item }}</li>
         </ul>
         <gl-link
