@@ -12720,11 +12720,19 @@ CREATE TABLE instance_integrations (
     group_mention_events boolean DEFAULT false NOT NULL,
     group_confidential_mention_events boolean DEFAULT false NOT NULL,
     category text DEFAULT 'common'::text,
-    type text,
     encrypted_properties bytea,
     encrypted_properties_iv bytea,
+    project_id bigint,
+    group_id bigint,
+    inherit_from_id bigint,
+    instance boolean DEFAULT true,
+    type_new text,
+    CONSTRAINT check_2f305455fe CHECK ((char_length(type_new) <= 255)),
     CONSTRAINT check_611836812c CHECK ((char_length(category) <= 255)),
-    CONSTRAINT check_69b7b09aa8 CHECK ((char_length(type) <= 255))
+    CONSTRAINT group_id_null_constraint CHECK ((group_id IS NULL)),
+    CONSTRAINT inherit_from_id_null_constraint CHECK ((inherit_from_id IS NULL)),
+    CONSTRAINT instance_is_true_constraint CHECK ((instance = true)),
+    CONSTRAINT project_id_null_constraint CHECK ((project_id IS NULL))
 );
 
 CREATE SEQUENCE instance_integrations_id_seq
