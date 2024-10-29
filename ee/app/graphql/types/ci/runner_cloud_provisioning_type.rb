@@ -17,11 +17,6 @@ module Types
         when :google_cloud
           ::Types::Ci::RunnerGoogleCloudProvisioningType
         when :gke
-          raise_resource_not_available_error! '`gke_runners_ff` feature flag is disabled.' \
-            if Feature.disabled?(:gke_runners_ff, object[:container]) && object[:container].is_a?(::Project)
-
-          raise_resource_not_available_error! '`gke_runners_ff_group` feature flag is disabled.' \
-            if Feature.disabled?(:gke_runners_ff_group, object[:container]) && object[:container].is_a?(::Group)
 
           ::Types::Ci::RunnerGkeProvisioningType
         else
