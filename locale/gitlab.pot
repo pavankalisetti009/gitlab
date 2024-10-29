@@ -41360,6 +41360,9 @@ msgstr ""
 msgid "Preferences|Choose the appearance of the application."
 msgstr ""
 
+msgid "Preferences|Choose the default editor for writing content. You can switch editors temporarily when editing."
+msgstr ""
+
 msgid "Preferences|Choose the navigation theme."
 msgstr ""
 
@@ -41397,6 +41400,9 @@ msgid "Preferences|Customize the behavior of the system layout and default views
 msgstr ""
 
 msgid "Preferences|Customize the colors of removed and added lines in diffs."
+msgstr ""
+
+msgid "Preferences|Default text editor"
 msgstr ""
 
 msgid "Preferences|Diff colors"
@@ -41499,6 +41505,12 @@ msgid "Preferences|Time preferences"
 msgstr ""
 
 msgid "Preferences|Turns on or off the ability to follow or be followed by other users."
+msgstr ""
+
+msgid "Preferences|Type in plain text, using Markdown."
+msgstr ""
+
+msgid "Preferences|Type in rich text, as you see it."
 msgstr ""
 
 msgid "Preferences|Use exact code search instead of advanced search to search for code in GitLab."
@@ -54775,6 +54787,12 @@ msgid "Text added to the body of user deactivation email messages. 1000 characte
 msgstr ""
 
 msgid "Text style"
+msgstr ""
+
+msgid "TextEditor|Plain text editor"
+msgstr ""
+
+msgid "TextEditor|Rich text editor"
 msgstr ""
 
 msgid "Thank you for your business."
