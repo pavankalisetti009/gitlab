@@ -9,11 +9,7 @@ module AppSec
         def execute!(url:)
           raise PermissionsError, 'Insufficient permissions' unless allowed?
 
-          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-            %w[dast_sites projects], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478563'
-          ) do
-            DastSite.find_or_create_by!(project: project, url: url) # rubocop:disable CodeReuse/ActiveRecord
-          end
+          DastSite.find_or_create_by!(project: project, url: url) # rubocop:disable CodeReuse/ActiveRecord
         end
 
         private
