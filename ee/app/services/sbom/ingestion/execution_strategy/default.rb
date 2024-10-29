@@ -29,7 +29,13 @@ module Sbom
         attr_reader :ingested_ids
 
         def ingest_reports
-          @ingested_ids = reports.flat_map { |report| ingest_report(report) }
+          response = reports.flat_map do |report|
+            ingest_report(report)
+          end
+
+          @ingested_ids = response.flat_map { |r| r[:occurrence_ids] }
+
+          response
         end
 
         def ingest_report(sbom_report)

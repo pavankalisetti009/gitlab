@@ -8,6 +8,7 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::ContainerScanningForRegistry,
   let_it_be(:reports) { create_list(:ci_reports_sbom_report, 3) }
 
   let(:report_ingested_ids) { [[10], [20], [30]] }
+  let(:ingested_source_ids) { [1] }
   let(:ingested_ids) { report_ingested_ids.flatten }
 
   subject(:strategy) { described_class.new(reports, project, pipeline) }
@@ -17,10 +18,11 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::ContainerScanningForRegistry,
       reports.zip(report_ingested_ids) do |report, ingested_ids|
         allow(Sbom::Ingestion::IngestReportService)
           .to receive(:execute).with(pipeline, report)
-          .and_return(ingested_ids)
+          .and_return({ occurrence_ids: ingested_ids, source_ids: ingested_source_ids })
       end
 
       allow(Gitlab::EventStore).to receive(:publish)
+      allow(Sbom::Ingestion::ContainerScanningForRegistry::DeleteNotPresentOccurrencesService).to receive(:execute)
     end
 
     it 'ingests the reports' do
@@ -38,6 +40,15 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::ContainerScanningForRegistry,
       expect(Gitlab::EventStore).to have_received(:publish).with(
         an_instance_of(Sbom::SbomIngestedEvent).and(having_attributes(data: hash_including(pipeline_id: pipeline.id)))
       )
+    end
+
+    it 'deletes not present occurrences' do
+      strategy.execute
+
+      expect(
+        Sbom::Ingestion::ContainerScanningForRegistry::DeleteNotPresentOccurrencesService
+      ).to have_received(:execute).with(pipeline,
+        ingested_ids, ingested_source_ids.first)
     end
   end
 end

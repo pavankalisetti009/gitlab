@@ -9,6 +9,7 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
 
   let(:report_ingested_ids) { [[1], [2], [3], [4]] }
   let(:ingested_ids) { report_ingested_ids.flatten }
+  let(:ingested_source_ids) { [1] }
 
   subject(:strategy) { described_class.new(reports, project, pipeline) }
 
@@ -81,7 +82,9 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
     reports.zip(report_ingested_ids) do |report, ingested_ids|
       allow(Sbom::Ingestion::IngestReportService)
         .to receive(:execute).with(pipeline, report)
-        .and_return(ingested_ids)
+        .and_return(
+          [{ occurrence_ids: ingested_ids, source_ids: ingested_source_ids }]
+        )
     end
   end
 

@@ -24,7 +24,7 @@ module Sbom
       def execute
         tasks.each { |task| task.execute(pipeline, occurrence_maps) }
 
-        occurrence_maps.map(&:occurrence_id)
+        { occurrence_ids: occurrence_maps.map(&:occurrence_id), source_ids: occurrence_maps.map(&:source_id).uniq }
       end
 
       private

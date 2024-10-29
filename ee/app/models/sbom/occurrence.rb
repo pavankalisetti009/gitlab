@@ -116,6 +116,10 @@ module Sbom
       left_outer_joins(:source).where(sbom_sources: { source_type: source_types })
     end
 
+    scope :filter_by_source_id, ->(source_id) do
+      where(source_id: source_id)
+    end
+
     scope :filter_by_component_names, ->(component_names) do
       where(component_name: component_names)
     end
