@@ -91,9 +91,12 @@ module Projects
 
         return unless result[:status] == :success
 
-        API::Entities::UserBasic.represent(result[:users]) +
-          API::Entities::PublicGroupDetails.represent(result[:groups]) +
-          result[:roles]
+        {
+          single_approvers: API::Entities::UserBasic.represent(result[:users]) +
+            API::Entities::PublicGroupDetails.represent(result[:groups]) +
+            result[:roles],
+          action_approvers: API::Entities::PolicyApprovers.represent(result[:approvers])
+        }
       end
     end
   end

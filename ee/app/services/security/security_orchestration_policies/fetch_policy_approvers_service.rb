@@ -12,17 +12,30 @@ module Security
       end
 
       def execute
-        action = required_approval(policy)
+        actions = required_approvals(policy)
 
-        return success({ users: [], groups: [], all_groups: [], roles: [] }) unless action
+        if actions.nil? || actions.empty?
+          return success({ users: [], groups: [], all_groups: [], roles: [],
+approvers: [] })
+        end
 
-        group_approvers = group_approvers(action)
+        approvers = actions.map do |action|
+          {
+            users: user_approvers(action),
+            groups: group_approvers(action)[:visible],
+            all_groups: group_approvers(action)[:all],
+            roles: role_approvers(action)
+          }
+        end
+
+        first_approver = approvers&.first
 
         success({
-          users: user_approvers(action),
-          groups: group_approvers[:visible],
-          all_groups: group_approvers[:all],
-          roles: role_approvers(action)
+          users: first_approver[:users],
+          groups: first_approver[:groups],
+          all_groups: first_approver[:all_groups],
+          roles: first_approver[:roles],
+          approvers: approvers
         })
       end
 
@@ -30,8 +43,8 @@ module Security
 
       attr_reader :policy, :container, :current_user
 
-      def required_approval(policy)
-        policy&.dig(:actions)&.find { |action| action&.fetch(:type) == Security::ScanResultPolicy::REQUIRE_APPROVAL }
+      def required_approvals(policy)
+        policy&.dig(:actions)&.select { |action| action&.fetch(:type) == Security::ScanResultPolicy::REQUIRE_APPROVAL }
       end
 
       def user_approvers(action)
