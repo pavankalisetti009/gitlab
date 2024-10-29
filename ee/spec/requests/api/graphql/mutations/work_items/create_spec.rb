@@ -522,7 +522,12 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
 
       context 'with assignees widget input containing multiple assignees' do
-        let_it_be(:assignees) { create_list(:user, 2, developer_of: project) }
+        let_it_be(:assignees) do
+          [
+            create(:user, developer_of: project, name: 'BBB'),
+            create(:user, developer_of: project, name: 'AAA')
+          ]
+        end
 
         let(:fields) do
           <<~FIELDS
@@ -536,6 +541,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
                   assignees {
                     nodes {
                       id
+                      name
                       username
                     }
                   }
@@ -569,8 +575,16 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             expect(widgets_response).to include(
               {
                 'assignees' => { 'nodes' => [
-                  { 'id' => assignees[0].to_gid.to_s, 'username' => assignees[0].username },
-                  { 'id' => assignees[1].to_gid.to_s, 'username' => assignees[1].username }
+                  {
+                    'id' => assignees[1].to_gid.to_s,
+                    'username' => assignees[1].username,
+                    'name' => assignees[1].name
+                  },
+                  {
+                    'id' => assignees[0].to_gid.to_s,
+                    'username' => assignees[0].username,
+                    'name' => assignees[0].name
+                  }
                 ] },
                 'type' => 'ASSIGNEES'
               }
@@ -593,7 +607,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             expect(widgets_response).to include(
               {
                 'assignees' => { 'nodes' => [
-                  { 'id' => assignees[0].to_gid.to_s, 'username' => assignees[0].username }
+                  { 'id' => assignees[0].to_gid.to_s, 'username' => assignees[0].username, 'name' => assignees[0].name }
                 ] },
                 'type' => 'ASSIGNEES'
               }
