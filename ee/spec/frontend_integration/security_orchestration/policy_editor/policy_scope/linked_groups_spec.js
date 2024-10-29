@@ -37,7 +37,6 @@ describe('Policy Scope for linked groups', () => {
         existingPolicy: null,
         ...DEFAULT_PROVIDE,
         glFeatures: {
-          policyGroupScope: true,
           ...glFeatures,
         },
         scanResultPolicyApprovers: {},

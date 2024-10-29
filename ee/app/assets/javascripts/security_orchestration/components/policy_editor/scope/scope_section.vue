@@ -15,7 +15,6 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { isProject, isGroup } from 'ee/security_orchestration/components/utils';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import LoaderWithMessage from '../../loader_with_message.vue';
 import ComplianceFrameworkDropdown from './compliance_framework_dropdown.vue';
@@ -25,7 +24,6 @@ import ScopeProjectSelector from './scope_project_selector.vue';
 import {
   PROJECTS_WITH_FRAMEWORK,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
-  PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   PROJECT_SCOPE_TYPE_TEXTS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
@@ -44,7 +42,6 @@ export default {
   COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
   SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/index.md'),
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
-  PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {
     policyScopeLoadingText: s__('SecurityOrchestration|Fetching the scope information.'),
@@ -127,7 +124,6 @@ export default {
       },
     },
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'existingPolicy',
@@ -183,17 +179,8 @@ export default {
     assignedPolicyProjectPath() {
       return this.isGroupLevel ? this.assignedPolicyProject?.fullPath || '' : this.namespacePath;
     },
-    showPolicyGroupScope() {
-      return (
-        this.glFeatures.policyGroupScope ||
-        (this.glFeatures.policyGroupScopeProject && this.hasMultipleProjectsLinked)
-      );
-    },
     scopeItems() {
-      return [
-        ...PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
-        ...(this.showPolicyGroupScope ? PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS : []),
-      ];
+      return PROJECT_SCOPE_TYPE_LISTBOX_ITEMS;
     },
     hasGroups() {
       return Boolean(this.policyScope.groups?.including);
@@ -410,7 +397,7 @@ export default {
                 }"
                 fluid-width
                 data-testid="project-scope-type"
-                :items="scopeItems"
+                :items="$options.PROJECT_SCOPE_TYPE_LISTBOX_ITEMS"
                 :selected="selectedProjectScopeType"
                 :toggle-text="selectedProjectScopeText"
                 :disabled="disableScopeSelector"
@@ -442,7 +429,7 @@ export default {
 
             <template #projectSelector>
               <scope-group-selector
-                v-if="showScopeGroupSelector && showPolicyGroupScope"
+                v-if="showScopeGroupSelector"
                 class="gl-basis-full"
                 :is-dirty="isFormDirty"
                 :exception-type="selectedExceptionType"
