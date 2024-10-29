@@ -2,10 +2,8 @@
 
 module SystemNotes
   class EscalationsService < ::SystemNotes::BaseService
-    def initialize(noteable: nil, project: nil)
-      @noteable = noteable
-      @project = project
-      @author = Users::Internal.alert_bot
+    def initialize(noteable: nil, container: nil)
+      super(noteable: noteable, container: container, author: Users::Internal.alert_bot)
     end
 
     def notify_via_escalation(recipients, escalation_policy:, type:)

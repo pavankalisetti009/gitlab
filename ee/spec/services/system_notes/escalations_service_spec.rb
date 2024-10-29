@@ -12,7 +12,7 @@ RSpec.describe SystemNotes::EscalationsService, feature_category: :incident_mana
   let_it_be(:escalation_policy) { create(:incident_management_escalation_policy, project: project) }
 
   describe '#notify_via_escalation' do
-    subject { described_class.new(noteable: noteable, project: project).notify_via_escalation([user, user_2], escalation_policy: escalation_policy, type: type) }
+    subject { described_class.new(noteable: noteable, container: project).notify_via_escalation([user, user_2], escalation_policy: escalation_policy, type: type) }
 
     let_it_be(:noteable) { create(:alert_management_alert, project: project) }
     let_it_be(:type) { :alert }
@@ -32,7 +32,7 @@ RSpec.describe SystemNotes::EscalationsService, feature_category: :incident_mana
 
     subject do
       described_class
-      .new(noteable: noteable, project: project)
+      .new(noteable: noteable, container: project)
       .start_escalation(escalation_policy, user)
     end
 

@@ -8,7 +8,7 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
 
   let(:vulnerability) { create(:vulnerability, project: project) }
   let(:noteable) { vulnerability }
-  let(:service) { described_class.new(noteable: vulnerability, project: project, author: author) }
+  let(:service) { described_class.new(noteable: vulnerability, container: project, author: author) }
 
   describe '#change_vulnerability_state' do
     subject { service.change_vulnerability_state }

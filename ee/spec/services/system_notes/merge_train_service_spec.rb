@@ -20,7 +20,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#enqueue' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).enqueue(noteable.merge_train_car) }
+    subject { described_class.new(noteable: noteable, container: project, author: author).enqueue(noteable.merge_train_car) }
 
     let(:noteable) { create(:merge_request, :on_train, source_project: project, target_project: project) }
 
@@ -44,7 +44,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#cancel' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).cancel }
+    subject { described_class.new(noteable: noteable, container: project, author: author).cancel }
 
     let(:noteable) { create(:merge_request, :on_train, source_project: project, target_project: project) }
 
@@ -59,7 +59,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
 
   describe '#abort' do
     subject do
-      described_class.new(noteable: noteable, project: project, author: author)
+      described_class.new(noteable: noteable, container: project, author: author)
                      .abort('the source branch was updated. ' \
                        '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).')
     end
@@ -81,7 +81,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#add_when_pipeline_succeeds' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).add_when_pipeline_succeeds(pipeline.sha) }
+    subject { described_class.new(noteable: noteable, container: project, author: author).add_when_pipeline_succeeds(pipeline.sha) }
 
     let(:pipeline) { build(:ci_pipeline) }
 
@@ -99,7 +99,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#cancel_add_when_pipeline_succeeds' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).cancel_add_when_pipeline_succeeds }
+    subject { described_class.new(noteable: noteable, container: project, author: author).cancel_add_when_pipeline_succeeds }
 
     let(:noteable) do
       create(:merge_request, source_project: project, target_project: project)
@@ -115,7 +115,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#abort_add_when_pipeline_succeeds' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).abort_add_when_pipeline_succeeds('target branch was changed') }
+    subject { described_class.new(noteable: noteable, container: project, author: author).abort_add_when_pipeline_succeeds('target branch was changed') }
 
     let(:noteable) do
       create(:merge_request, source_project: project, target_project: project)
@@ -133,7 +133,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#add_when_checks_pass' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).add_when_checks_pass(pipeline.sha) }
+    subject { described_class.new(noteable: noteable, container: project, author: author).add_when_checks_pass(pipeline.sha) }
 
     let(:pipeline) { build(:ci_pipeline) }
 
@@ -151,7 +151,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#cancel_add_when_checks_pass' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).cancel_add_when_checks_pass }
+    subject { described_class.new(noteable: noteable, container: project, author: author).cancel_add_when_checks_pass }
 
     let(:noteable) do
       create(:merge_request, source_project: project, target_project: project)
@@ -167,7 +167,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#abort_add_when_checks_pass' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).abort_add_when_checks_pass('target branch was changed') }
+    subject { described_class.new(noteable: noteable, container: project, author: author).abort_add_when_checks_pass('target branch was changed') }
 
     let(:noteable) do
       create(:merge_request, source_project: project, target_project: project)
