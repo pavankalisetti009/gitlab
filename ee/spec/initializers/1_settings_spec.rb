@@ -3,21 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '1_settings', feature_category: :shared do
-  it 'settings do not change after reload' do
-    original_settings = Settings.to_h
-
-    load_settings
-
-    new_settings = Settings.to_h
-
-    # Gitlab::Pages::Settings is a SimpleDelegator, so each time the settings
-    # are reloaded a new SimpleDelegator wraps the original object. Convert
-    # the settings to a Hash to ensure the comparison works.
-    [new_settings, original_settings].each do |settings|
-      settings['pages'] = settings['pages'].to_h
-    end
-    expect(new_settings).to eq(original_settings)
-  end
+  include_context 'when loading 1_settings initializer'
 
   context 'cron jobs' do
     subject(:cron_jobs) { Settings.cron_jobs }
@@ -56,19 +42,19 @@ RSpec.describe '1_settings', feature_category: :shared do
   describe 'cloud_connector' do
     subject(:cloud_connector_base_url) { Settings.cloud_connector.base_url }
 
+    before do
+      stub_env("CLOUD_CONNECTOR_BASE_URL", base_url)
+      load_settings
+    end
+
     context 'when const CLOUD_CONNECTOR_BASE_URL is set' do
-      before do
-        stub_env("CLOUD_CONNECTOR_BASE_URL", 'https://www.cloud.example.com')
-        load_settings
-      end
+      let(:base_url) { 'https://www.cloud.example.com' }
 
       it { is_expected.to eq('https://www.cloud.example.com') }
     end
 
     context 'when const CLOUD_CONNECTOR_BASE_URL is not set' do
-      before do
-        load_settings
-      end
+      let(:base_url) { nil }
 
       it { is_expected.to eq('https://cloud.gitlab.com') }
     end
@@ -130,12 +116,5 @@ RSpec.describe '1_settings', feature_category: :shared do
       expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/duo-workflow-executor/#{version}/duo-workflow-executor.tar.gz")
       expect(Settings.duo_workflow.executor_version).to eq(version)
     end
-  end
-
-  def load_settings
-    # Avoid wrapping Gitlab::Pages::Settings again
-    Settings.pages = Settings.pages.__getobj__
-
-    load Rails.root.join('config/initializers/1_settings.rb')
   end
 end
