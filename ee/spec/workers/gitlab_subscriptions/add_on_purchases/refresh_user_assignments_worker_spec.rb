@@ -179,7 +179,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker
     context 'with exclusive lease' do
       include ExclusiveLeaseHelpers
 
-      let(:lock_key) { "#{described_class.name.underscore}:#{add_on_purchase.id}" }
+      let(:lock_key) { add_on_purchase.lock_key_for_refreshing_user_assignments }
       let(:timeout) { described_class::LEASE_TTL }
 
       context 'when exclusive lease has not been taken' do

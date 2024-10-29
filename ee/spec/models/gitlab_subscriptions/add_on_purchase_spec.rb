@@ -825,4 +825,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
   end
+
+  describe "#lock_key_for_refreshing_user_assignments" do
+    let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+
+    it 'returns lock key based on class name and id' do
+      lock_key = "gitlab_subscriptions/add_on_purchase:user_refresh:#{add_on_purchase.id}"
+
+      expect(add_on_purchase.lock_key_for_refreshing_user_assignments).to eq(lock_key)
+    end
+  end
 end

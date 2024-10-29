@@ -22,7 +22,7 @@ module GitlabSubscriptions
         return unless add_on_purchase
 
         deleted_assignments_count = 0
-        in_lock(lock_key, ttl: LEASE_TTL, retries: 0) do
+        in_lock(add_on_purchase.lock_key_for_refreshing_user_assignments, ttl: LEASE_TTL, retries: 0) do
           deleted_assignments_count += add_on_purchase.delete_ineligible_user_assignments_in_batches!
 
           reconcile_response = GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService.new(
@@ -46,10 +46,6 @@ module GitlabSubscriptions
 
       def add_on_purchase
         @add_on_purchase ||= GitlabSubscriptions::Duo.enterprise_or_pro_for_namespace(root_namespace_id)
-      end
-
-      def lock_key
-        "#{self.class.name.underscore}:#{add_on_purchase.id}"
       end
 
       def log_event(deleted_count)

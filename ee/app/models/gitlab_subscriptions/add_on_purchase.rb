@@ -115,6 +115,10 @@ module GitlabSubscriptions
       deleted_assignments_count
     end
 
+    def lock_key_for_refreshing_user_assignments
+      "#{self.class.name.underscore}:user_refresh:#{id}"
+    end
+
     private
 
     def filter_ineligible_assigned_user_ids(assigned_user_ids)
