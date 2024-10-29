@@ -30,7 +30,9 @@ RSpec.describe EE::Ci::PipelinesHelper, feature_category: :continuous_integratio
 
       context 'when the user has the `:admin_runners` permission' do
         before do
-          allow(::Authz::CustomAbility).to receive(:allowed?).with(current_user, :admin_runners, project).and_return(true)
+          allow_next_instance_of(Authz::CustomAbility, current_user, project) do |ability|
+            allow(ability).to receive(:allowed?).with(:admin_runners).and_return(true)
+          end
         end
 
         it { is_expected.to include(reset_cache_path: reset_cache_project_settings_ci_cd_path(project)) }

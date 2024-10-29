@@ -7,6 +7,7 @@ module EE
 
     prepended do
       include ReadonlyAbilities
+      include ::Gitlab::Utils::StrongMemoize
 
       desc "User is a security policy bot on the project"
       condition(:security_policy_bot) { user&.security_policy_bot? && team_member? }
@@ -237,7 +238,7 @@ module EE
       MemberRole.all_customizable_project_permissions.each do |ability|
         desc "Custom role on project that enables #{ability.to_s.tr('_', ' ')}"
         condition("custom_role_enables_#{ability}".to_sym) do
-          ::Authz::CustomAbility.allowed?(@user, ability, @subject)
+          custom_role_ability(@user, @subject).allowed?(ability)
         end
       end
 
@@ -1059,6 +1060,12 @@ module EE
 
     def in_group?
       project&.namespace&.group_namespace?
+    end
+
+    def custom_role_ability(user, subject)
+      strong_memoize_with(:custom_role_ability, user, subject) do
+        ::Authz::CustomAbility.new(user, subject)
+      end
     end
   end
 end

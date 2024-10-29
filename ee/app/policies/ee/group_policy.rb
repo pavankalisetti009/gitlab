@@ -6,6 +6,7 @@ module EE
     extend ::Gitlab::Utils::Override
 
     prepended do
+      include ::Gitlab::Utils::StrongMemoize
       include CrudPolicyHelpers
       include RemoteDevelopment::GroupPolicy
 
@@ -230,7 +231,7 @@ module EE
       MemberRole.all_customizable_group_permissions.each do |ability|
         desc "Custom role on group that enables #{ability.to_s.tr('_', ' ')}"
         condition("custom_role_enables_#{ability}".to_sym) do
-          ::Authz::CustomAbility.allowed?(@user, ability, @subject)
+          custom_role_ability(@user, @subject).allowed?(ability)
         end
       end
 
@@ -899,6 +900,12 @@ module EE
       return false if ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
 
       super
+    end
+
+    def custom_role_ability(user, subject)
+      strong_memoize_with(:custom_role_ability, user, subject) do
+        ::Authz::CustomAbility.new(user, subject)
+      end
     end
   end
 end

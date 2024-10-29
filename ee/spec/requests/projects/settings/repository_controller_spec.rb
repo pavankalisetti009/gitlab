@@ -50,6 +50,20 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
           expect(response).to render_template(:show)
         end
       end
+
+      context 'with custom roles' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it 'does not cause a N+1 problem' do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) { get_show }
+
+          expect(control).not_to exceed_query_limit(82)
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to render_template(:show)
+        end
+      end
     end
   end
 end
