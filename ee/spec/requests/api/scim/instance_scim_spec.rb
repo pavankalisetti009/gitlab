@@ -90,6 +90,14 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
     end
   end
 
+  shared_examples 'sets current organization' do
+    it 'uses the first found organization' do
+      expect(::Current).to receive(:organization=).with(::Organizations::Organization.first).and_call_original
+
+      api_request
+    end
+  end
+
   shared_examples 'SCIM API endpoints' do
     describe 'GET api/scim/v2/application/Users' do
       let(:filter_query) { '' }
@@ -103,6 +111,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
 
       it 'responds with paginated users when there is no filter' do
         api_request
@@ -168,6 +177,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
       it_behaves_like 'Invalid extern_uid returns 404'
+      it_behaves_like 'sets current organization'
 
       it 'responds with 403 when instance SAML SSO not configured' do
         allow(Gitlab::Auth::Saml::Config).to receive(:enabled?).and_return(false)
@@ -216,6 +226,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
 
       context 'without an existing user' do
         it 'responds with 201 and the new user attributes' do
@@ -296,6 +307,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
       it_behaves_like 'Invalid extern_uid returns 404'
+      it_behaves_like 'sets current organization'
 
       context 'when params update extern_uid for existing scim identity' do
         let(:new_extern_uid) { 'new_extern_uid' }
@@ -473,6 +485,7 @@ RSpec.describe API::Scim::InstanceScim, :with_default_organization, feature_cate
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
       it_behaves_like 'Invalid extern_uid returns 404'
+      it_behaves_like 'sets current organization'
 
       context 'when existing user' do
         it 'responds with 204 and deactivates the scim identity' do

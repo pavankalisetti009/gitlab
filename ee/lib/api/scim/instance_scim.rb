@@ -58,6 +58,9 @@ module API
       namespace 'application' do
         resource :Users do
           before do
+            # This is only for self-managed, we have only one organization
+            ::Current.organization = ::Organizations::Organization.first
+
             not_found! if Gitlab.com?
             check_instance_saml_configured
             not_found! unless ::License.feature_available?(:instance_level_scim)
