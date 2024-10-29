@@ -992,8 +992,8 @@ RSpec.describe User, feature_category: :system_access do
       context 'when a user is not a member of the groups' do
         subject(:available_subgroups) { user.available_subgroups_with_custom_project_templates }
 
-        it 'only templates in publicly visible groups with projects are available' do
-          expect(available_subgroups).to match_array([subgroup_1, subsubgroup_1, subsubgroup_4])
+        it 'does not return any templates' do
+          expect(available_subgroups).to match_array([])
         end
 
         context 'when feature flag "project_templates_without_min_access" is disabled' do
@@ -1087,7 +1087,7 @@ RSpec.describe User, feature_category: :system_access do
         end
 
         context 'when a Group ID is not passed' do
-          it 'returns all available Groups' do
+          it 'returns all available user Groups' do
             groups = user.available_subgroups_with_custom_project_templates
 
             expect(groups.to_a.size).to eq(4)
