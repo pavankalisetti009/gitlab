@@ -90,7 +90,7 @@ DETAILS:
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
 - Helps catch bugs early by generating tests for the selected code.
-- LLM: Anthropic [Claude 2.1](https://docs.anthropic.com/en/docs/about-claude/models#legacy-models)
+- LLM: Anthropic [Claude 3.5 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-5-sonnet)
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=zWhwuixUkYU&list=PLFGfElNsQthYDx0A_FaNNfUm9NHsK6zED)
 - [View documentation](../gitlab_duo_chat/examples.md#write-tests-in-the-ide).
 
