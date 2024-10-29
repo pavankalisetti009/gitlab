@@ -11,11 +11,12 @@ import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_ro
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 import { issuableListTabs, DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
-import { humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
-import { s__ } from '~/locale';
+import { humanTimeframe, isInPast, newDate } from '~/lib/utils/datetime_utility';
+import { s__, __ } from '~/locale';
 
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC, STATE_CLOSED } from '~/work_items/constants';
+import { STATUS_CLOSED } from '~/issues/constants';
 
 import { transformFetchEpicFilterParams } from '../../roadmap/utils/epic_utils';
 import { epicsSortOptions } from '../constants';
@@ -238,6 +239,18 @@ export default {
     hasDateSet({ startDate, dueDate }) {
       return Boolean(startDate || dueDate);
     },
+    isOverdue({ dueDate, state }) {
+      if (!dueDate || state === STATUS_CLOSED || state === STATE_CLOSED) {
+        return false;
+      }
+      return isInPast(newDate(dueDate));
+    },
+    dateIcon(epic) {
+      return this.isOverdue(epic) ? 'calendar-overdue' : 'calendar';
+    },
+    datesTitle(epic) {
+      return this.isOverdue(epic) ? `${__('Dates')} (${__('overdue')})` : __('Dates');
+    },
   },
 };
 </script>
@@ -324,8 +337,10 @@ export default {
       }}</span>
     </template>
     <template #timeframe="{ issuable }">
-      <gl-icon v-if="hasDateSet(issuable)" name="calendar" />
-      {{ epicTimeframe(issuable) }}
+      <span v-if="hasDateSet(issuable)" v-gl-tooltip :title="datesTitle(issuable)">
+        <gl-icon :name="dateIcon(issuable)" :variant="isOverdue(issuable) ? 'danger' : 'default'" />
+        {{ epicTimeframe(issuable) }}
+      </span>
     </template>
     <template #statistics="{ issuable = {} }">
       <li

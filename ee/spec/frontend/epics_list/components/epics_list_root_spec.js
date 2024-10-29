@@ -10,7 +10,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockAuthor, mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
-import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC, STATE_OPEN } from '~/work_items/constants';
 
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
@@ -37,6 +37,7 @@ const mockRawEpic = {
   dueDate: '2021-06-30',
   createdAt: '2021-04-01',
   updatedAt: '2021-05-01',
+  state: STATE_OPEN,
   blockingCount: 0,
   upvotes: 0,
   downvotes: 0,

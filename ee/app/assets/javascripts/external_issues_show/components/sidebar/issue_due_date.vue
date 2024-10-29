@@ -24,12 +24,12 @@ export default {
     formattedDueDate() {
       const today = new Date();
       const date = newDate(this.dueDate);
-      const isPastDue = getDayDifference(today, date) < 0;
+      const isOverdue = getDayDifference(today, date) < 0;
 
       let formattedDate = this.dueDateInWords;
 
-      if (isPastDue) {
-        formattedDate += ` (${__('Past due')})`;
+      if (isOverdue) {
+        formattedDate += ` (${__('overdue')})`;
       }
 
       return formattedDate;

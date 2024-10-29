@@ -41,7 +41,7 @@ describe('IssueDueDate', () => {
       });
 
       expect(findDueDateCollapsed().text()).toBe('Feb 14, 2021');
-      expect(findDueDateValue().text()).toBe('Feb 14, 2021 (Past due)');
+      expect(findDueDateValue().text()).toBe('Feb 14, 2021 (overdue)');
     });
   });
 
