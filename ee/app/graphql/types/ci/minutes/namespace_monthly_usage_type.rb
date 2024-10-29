@@ -3,7 +3,6 @@
 module Types
   module Ci
     module Minutes
-      # rubocop: disable Graphql/AuthorizeTypes
       # this type only exposes data related to the current user
       class NamespaceMonthlyUsageType < BaseObject
         graphql_name 'CiMinutesNamespaceMonthlyUsage'

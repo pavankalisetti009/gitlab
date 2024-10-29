@@ -186,7 +186,6 @@ module Security
         project.team.users.get_ids_by_ids_or_usernames(user_ids, user_names)
       end
 
-      # rubocop: disable Cop/GroupPublicOrVisibleToUser
       def groups_ids(group_ids, group_paths)
         Security::ApprovalGroupsFinder.new(group_ids: group_ids,
           group_paths: group_paths,
@@ -194,7 +193,6 @@ module Security
           container: project.namespace,
           search_globally: search_groups_globally?).execute(include_inaccessible: true)
       end
-      # rubocop: enable Cop/GroupPublicOrVisibleToUser
 
       def role_access_levels(role_approvers)
         return [] unless role_approvers

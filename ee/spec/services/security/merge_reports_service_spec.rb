@@ -110,7 +110,7 @@ RSpec.describe Security::MergeReportsService, '#execute', feature_category: :vul
       specify { expect(ds_merged_report.findings.last.identifiers).to match_array(finding_id_2_loc_1.identifiers) }
     end
 
-    context 'merging reports step by step' do # rubocop:disable RSpec/MultipleMemoizedHelpers
+    context 'merging reports step by step' do
       let(:gitlab_identifier) { build(:ci_reports_security_identifier, external_id: 'GL-01', external_type: 'gitlab') }
       let(:finding_id_4) { build(:ci_reports_security_finding, identifiers: [identifier_cwe, gitlab_identifier], scanner: gemnasium_scanner, report_type: :dependency_scanning) }
       let(:finding_id_5) { build(:ci_reports_security_finding, identifiers: [identifier_cwe, gitlab_identifier], scanner: retire_js_scaner, report_type: :dependency_scanning) }

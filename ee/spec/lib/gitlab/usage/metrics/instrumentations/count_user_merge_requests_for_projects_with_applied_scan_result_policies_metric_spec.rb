@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountUserMergeRequestsForProjectsWithAppliedScanResultPoliciesMetric do # rubocop:disable Layout/LineLength
+RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountUserMergeRequestsForProjectsWithAppliedScanResultPoliciesMetric do
   let_it_be(:user_1) { create(:user) }
   let_it_be(:user_2) { create(:user) }
 

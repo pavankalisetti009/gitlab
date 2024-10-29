@@ -14,7 +14,6 @@ module EE
           end
         end
 
-        # rubocop:disable Gitlab/ModuleWithInstanceVariables
         override :send_git_audit_streaming_event
         def send_git_audit_streaming_event(msg)
           ::Gitlab::GitAuditEvent.new(actor, project).send_audit_event(msg)
@@ -26,7 +25,6 @@ module EE
 
           ::Gitlab::GitAuditEvent.new(actor, project).enabled?
         end
-        # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
     end
   end

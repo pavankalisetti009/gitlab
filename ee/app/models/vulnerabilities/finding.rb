@@ -224,12 +224,10 @@ module Vulnerabilities
       # which is defined in the `secrets` analyzer:
       # https://gitlab.com/gitlab-org/security-products/analyzers/secrets/-/blob/7e1e03209495a209308f3e9e96c5a4a0d32e1d55/secret.go#L13-13
       commit_sha = location.dig("commit", "sha")
-      # rubocop:disable Style/IfUnlessModifier
       if !commit_sha || commit_sha == SECRET_DETECTION_DEFAULT_COMMIT_SHA
         # Two layers of fallbacks.
         commit_sha = @sha || pipeline_branch
       end
-      # rubocop:enable Style/IfUnlessModifier
 
       commit_sha
     end

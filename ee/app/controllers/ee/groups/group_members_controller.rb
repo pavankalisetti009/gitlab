@@ -44,8 +44,6 @@ module EE
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
       end
 
-      # rubocop:disable Gitlab/ModuleWithInstanceVariables
-      # rubocop: disable CodeReuse/ActiveRecord
       def override
         member = membershipable_members.find(params[:id])
 
@@ -61,8 +59,6 @@ module EE
           end
         end
       end
-      # rubocop: enable CodeReuse/ActiveRecord
-      # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
       def export_csv
         return render_404 unless current_user.can?(:export_group_memberships, group)
@@ -162,7 +158,7 @@ module EE
         # User bans are enforced at the top-level group. Here, we return all
         # members of the group hierarchy that are banned from the top-level
         # group
-        @banned_members ||= ::GroupMembersFinder # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @banned_members ||= ::GroupMembersFinder
           .new(group, current_user, params: params)
           .execute(include_relations: %i[direct descendants])
           .banned_from(group)

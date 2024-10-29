@@ -11,7 +11,7 @@ module SoftwareLicensePolicies
     end
 
     def execute
-      existing_licenses = SoftwareLicense.by_name(license_names).limit(license_names.size).pluck(:name, :id).to_h # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- Array#pluck
+      existing_licenses = SoftwareLicense.by_name(license_names).limit(license_names.size).pluck(:name, :id).to_h # rubocop:disable CodeReuse/ActiveRecord, -- Array#pluck
       missing_licenses_names = license_names - existing_licenses.keys
 
       created_custom_licenses = create_unknown_custom_licenses(missing_licenses_names)

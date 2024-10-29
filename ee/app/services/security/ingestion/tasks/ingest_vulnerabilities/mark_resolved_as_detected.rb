@@ -28,7 +28,7 @@ module Security
 
           def redetected_vulnerability_ids
             strong_memoize(:redetected_vulnerability_ids) do
-              ::Vulnerability.resolved.id_in(vulnerability_ids).pluck_primary_key # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- `finding_maps` collection can have max 100 objects
+              ::Vulnerability.resolved.id_in(vulnerability_ids).pluck_primary_key
             end
           end
 

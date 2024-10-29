@@ -13,7 +13,6 @@ class DashboardEnvironmentsSerializer < BaseSerializer
 
   private
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def batch_load(projects)
     ActiveRecord::Associations::Preloader.new(
       records: projects,
@@ -33,7 +32,6 @@ class DashboardEnvironmentsSerializer < BaseSerializer
 
     projects
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def deployment_associations
     {

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/DocUrl -- Development purpose
 module Gitlab
   module Duo
     module Developments
@@ -19,4 +18,3 @@ module Gitlab
     end
   end
 end
-# rubocop:enable Gitlab/DocUrl

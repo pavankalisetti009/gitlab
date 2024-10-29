@@ -12,7 +12,6 @@ require 'active_support/testing/time_helpers'
 #
 # GROUP_ID=22 FILTER=vsd_overview_counts bundle exec rake db:seed_fu
 
-# rubocop:disable Rails/Output -- this is a seed script
 class Gitlab::Seeder::ValueStreamDashboardCounts # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
   include ActiveSupport::Testing::TimeHelpers
 
@@ -60,4 +59,3 @@ Gitlab::Seeder.quiet do
     seeder.seed!
   end
 end
-# rubocop:enable Rails/Output

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Types
-  # rubocop: disable Graphql/AuthorizeTypes
   class ScanType < BaseObject
     graphql_name 'Scan'
     description 'Represents the security scan information'

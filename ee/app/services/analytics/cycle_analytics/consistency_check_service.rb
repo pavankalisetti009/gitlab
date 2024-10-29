@@ -99,12 +99,10 @@ module Analytics
         end
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord
       def cursor_for_record(record, scope)
         order = Gitlab::Pagination::Keyset::Order.extract_keyset_order_object(scope)
         order.cursor_attributes_for_node(record)
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
       def stage_event_hash_ids(cursor_data)
         last_stage_event_hash_id = stage_event_hash_id_from_cursor_data(cursor_data)

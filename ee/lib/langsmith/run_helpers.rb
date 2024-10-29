@@ -33,7 +33,7 @@ module Langsmith
       end
     end
 
-    def trace(klass_name, method_name, name, run_type, tags, *args, **kwargs) # rubocop:disable Metrics/AbcSize -- Aligned with the other interfaces.
+    def trace(klass_name, method_name, name, run_type, tags, *args, **kwargs)
       correlation_id = Labkit::Correlation::CorrelationId.current_or_new_id
 
       Langsmith::RunHelpers.run_tree ||= {}

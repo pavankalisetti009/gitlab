@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/BoundedContexts -- TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/460756
-
 module Types
   module Sbom
     class SourceTypeEnum < BaseEnum
@@ -20,4 +18,3 @@ module Types
     end
   end
 end
-# rubocop:enable Gitlab/BoundedContexts

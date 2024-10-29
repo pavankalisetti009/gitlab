@@ -103,13 +103,11 @@ module EE
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
-      # rubocop: disable CodeReuse/ActiveRecord
       def find_or_create_subscription_add_on!(name, namespace = nil)
         not_found!('Subscription Add-on') unless GitlabSubscriptions::AddOn.names[name]
 
         GitlabSubscriptions::AddOn.find_or_create_by_name(name, namespace)
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
       # rubocop: disable CodeReuse/ActiveRecord
       def find_subscription_add_on_purchase!(namespace, add_on)

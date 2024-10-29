@@ -59,9 +59,7 @@ module Dora
     strong_memoize_attr :projects_without_any_scores_count
 
     def projects_without_any_dora_scores_count(date:)
-      # rubocop:disable CodeReuse/ActiveRecord
       authorized_projects.select(:id).id_not_in(Project.with_dora_scores_for_date(date)).count
-      # rubocop:enable CodeReuse/ActiveRecord
     end
 
     def raw_counts(metric_symbol)

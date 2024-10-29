@@ -211,7 +211,6 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
 
       context 'when there are several comments in a row followed by empty line' do
         let(:content_above_cursor) do
-          # rubocop:disable Layout/TrailingWhitespace
           <<~CODE
             full_name()
             address()
@@ -220,7 +219,6 @@ RSpec.describe CodeSuggestions::InstructionsExtractor, feature_category: :code_s
             #{comment_sign}with 2 arguments
             #{comment_sign}first and last\n
           CODE
-          # rubocop:enable Layout/TrailingWhitespace
         end
 
         it_behaves_like 'extracted instruction' do

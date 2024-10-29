@@ -4,7 +4,6 @@ module EE
   module BoardsHelper
     extend ::Gitlab::Utils::Override
 
-    # rubocop:disable Metrics/AbcSize
     override :board_data
     def board_data
       show_feature_promotion = @project && show_promotions? &&
@@ -50,7 +49,6 @@ module EE
         sub_epics_feature_available: current_board_namespace.feature_available?(:subepics).to_s
       }
     end
-    # rubocop:enable Metrics/AbcSize
 
     def can_create_epic?
       return can?(current_user, :create_epic, current_board_namespace).to_s if board.is_a?(::Boards::EpicBoard)

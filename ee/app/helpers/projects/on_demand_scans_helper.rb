@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Projects::OnDemandScansHelper
-  # rubocop: disable CodeReuse/ActiveRecord
   def on_demand_scans_data(current_user, project)
     pipelines_counter = Gitlab::PipelineScopeCounts.new(current_user, project, {
       source: "ondemand_dast_scan"
@@ -24,7 +23,6 @@ module Projects::OnDemandScansHelper
       'can-edit-on-demand-scans' => can?(current_user, :edit_on_demand_dast_scan, project).to_s
     })
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def on_demand_scans_form_data(project)
     common_data(project).merge({

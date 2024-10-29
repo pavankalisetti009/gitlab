@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/MultipleMemoizedHelpers -- Test uses a lot of helpers, and will be reviewed in https://gitlab.com/gitlab-org/gitlab/-/issues/495021
 RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :cloud_connector do
   describe '#read_available_services' do
     subject(:available_services) { described_class.new.read_available_services }
@@ -21,4 +20,3 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers

@@ -230,7 +230,7 @@ module EE
       end
 
       def new_license
-        @new_license ||= License.new(data: params[:trial_key]) # rubocop:disable Gitlab/ModuleWithInstanceVariables
+        @new_license ||= License.new(data: params[:trial_key])
       end
 
       def sync_cloud_connector_access_data

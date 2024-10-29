@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe RoutableActions, feature_category: :system_access do
   controller(::ApplicationController) do
-    include RoutableActions # rubocop:disable RSpec/DescribedClass
+    include RoutableActions
     skip_before_action :authenticate_user!
 
     before_action :routable

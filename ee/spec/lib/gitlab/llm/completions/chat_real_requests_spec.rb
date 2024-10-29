@@ -133,7 +133,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
         context 'with issue reference' do
           let(:input) { format(input_template, issue_identifier: "the issue #{issue.to_reference(full: true)}") }
 
-          # rubocop: disable Layout/LineLength -- keep table structure readable
           where(:input_template, :tools) do
             'Please summarize %<issue_identifier>s' | %w[IssueReader]
             'Summarize %<issue_identifier>s with bullet points' | %w[IssueReader]
@@ -144,8 +143,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
             'Summarize the comments from %<issue_identifier>s into bullet points' | %w[IssueReader]
             'What should be the final solution for %<issue_identifier>s?' | %w[IssueReader]
           end
-          # rubocop: enable Layout/LineLength
-
           with_them do
             it_behaves_like 'successful prompt processing'
           end
@@ -155,7 +152,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
           let(:resource) { issue }
           let(:input) { format(input_template, issue_identifier: "this issue") }
 
-          # rubocop: disable Layout/LineLength -- keep table structure readable
           where(:input_template, :tools) do
             'Please summarize %<issue_identifier>s' | %w[]
             'Can you list all the labels on %<issue_identifier>s?' | %w[]
@@ -164,8 +160,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
             'For which milestone is %<issue_identifier>s? And how long until then' | %w[]
             'What should be the final solution for %<issue_identifier>s?' | %w[]
           end
-          # rubocop: enable Layout/LineLength
-
           with_them do
             it_behaves_like 'successful prompt processing'
           end
@@ -203,7 +197,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
             note: '+1, our company will also use this to manage our projects!')
         end
 
-        # rubocop: disable Layout/LineLength -- keep table structure readable
         where(:input_template, :tools) do
           # evaluation of questions which involve processing of other resources is not reliable yet
           # because the IssueReader tool assumes we work with single resource:
@@ -214,8 +207,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
           'Can you expand on your last paragraph?' | []
           'Can you identify the unique use cases the commenters have raised on this issue?' | %w[IssueReader]
         end
-        # rubocop: enable Layout/LineLength
-
         with_them do
           let(:input) { format(input_template) }
 
@@ -301,7 +292,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
     end
 
     context 'when asking to explain code' do
-      # rubocop: disable Layout/LineLength -- keep table structure readable
       where(:input_template, :tools) do
         # NOTE: `tools: []` is the correct expected value.
         # There is no tool for explaining a code and the LLM answers the question directly.
@@ -318,8 +308,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
         'Create a tic tac toe game in Javascript' | []
         'What would the ""def hello_world\\nputs(\""Hello, world!\\n\"");\nend"" code look like in Python?' | []
       end
-      # rubocop: enable Layout/LineLength
-
       with_them do
         let(:input) { input_template }
 
@@ -403,15 +391,12 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
         context 'with epic reference' do
           let(:input) { format(input_template, epic_identifier: "the epic #{epic.to_reference(full: true)}") }
 
-          # rubocop: disable Layout/LineLength -- keep table structure readable
           where(:input_template, :tools) do
             'Please summarize %<epic_identifier>s'                    | %w[EpicReader]
             'Can you list all labels on %{epic_identifier} epic?'     | %w[EpicReader]
             'How old is %<epic_identifier>s?' | %w[EpicReader]
             'How many days ago was %<epic_identifier>s epic created?' | %w[EpicReader]
           end
-          # rubocop: enable Layout/LineLength
-
           with_them do
             it_behaves_like 'successful prompt processing'
           end
@@ -454,7 +439,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
           end
         end
 
-        # rubocop: disable Layout/LineLength -- keep table structure readable
         where(:input_template, :tools) do
           # evaluation of questions which involve processing of other resources is not reliable yet
           # because the EpicReader tool assumes we work with single resource:
@@ -464,8 +448,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
           'Can you reword your answer?' | []
           'Can you explain your third point in different words?' | []
         end
-        # rubocop: enable Layout/LineLength
-
         with_them do
           let(:input) { format(input_template) }
 

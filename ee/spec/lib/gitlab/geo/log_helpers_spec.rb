@@ -7,7 +7,7 @@ RSpec.describe Gitlab::Geo::LogHelpers, feature_category: :geo_replication do
     stub_const('FakeLogHelpersConsumer', Class.new)
 
     FakeLogHelpersConsumer.class_eval do
-      include Gitlab::Geo::LogHelpers # rubocop:disable RSpec/DescribedClass
+      include Gitlab::Geo::LogHelpers
 
       def execute
         log_error('Test message')

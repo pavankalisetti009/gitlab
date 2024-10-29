@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Approver < ApplicationRecord
-  belongs_to :target, polymorphic: true # rubocop:disable Cop/PolymorphicAssociations
+  belongs_to :target, polymorphic: true
   belongs_to :user
 
   include ApproverMigrateHook

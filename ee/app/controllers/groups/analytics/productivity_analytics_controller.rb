@@ -100,7 +100,6 @@ class Groups::Analytics::ProductivityAnalyticsController < Groups::Analytics::Ap
     @productivity_analytics ||= ProductivityAnalytics.new(merge_requests: finder.execute, sort: params[:sort])
   end
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def include_relations(paginated_mrs)
     # Due to Rails bug: https://github.com/rails/rails/issues/34889 we can't use .includes statement
     # to avoid N+1 call when we load custom columns.
@@ -111,7 +110,6 @@ class Groups::Analytics::ProductivityAnalyticsController < Groups::Analytics::Ap
     ).call
     paginated_mrs
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 
   def tracking_namespace_source
     @group

@@ -83,9 +83,9 @@ module EE
       has_many :zoekt_repositories, class_name: '::Search::Zoekt::Repository', inverse_of: :project
       has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager'
 
-      has_many :approvers, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
+      has_many :approvers, as: :target, dependent: :destroy
       has_many :approver_users, through: :approvers, source: :user
-      has_many :approver_groups, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
+      has_many :approver_groups, as: :target, dependent: :destroy
       has_many :approval_rules, class_name: 'ApprovalProjectRule', extend: FilterByBranch
       # NOTE: This was added to avoid N+1 queries when we load list of MergeRequests
       has_many :regular_or_any_approver_approval_rules, -> { regular_or_any_approver.order(rule_type: :desc, id: :asc) }, class_name: 'ApprovalProjectRule', extend: FilterByBranch
@@ -99,14 +99,14 @@ module EE
 
       # the rationale behind vulnerabilities and vulnerability_findings can be found here:
       # https://gitlab.com/gitlab-org/gitlab/issues/10252#terminology
-      has_many :vulnerabilities, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
+      has_many :vulnerabilities, dependent: :destroy
       has_many :vulnerability_reads, class_name: 'Vulnerabilities::Read'
       has_many :vulnerability_feedback, class_name: 'Vulnerabilities::Feedback'
       has_many :vulnerability_historical_statistics, class_name: 'Vulnerabilities::HistoricalStatistic'
       has_many :vulnerability_findings,
         class_name: 'Vulnerabilities::Finding',
         inverse_of: :project,
-        dependent: :destroy do # rubocop:disable Cop/ActiveRecordDependent
+        dependent: :destroy do
           def lock_for_confirmation!(id)
             where(vulnerability_id: nil).lock.find(id)
           end
@@ -538,11 +538,11 @@ module EE
 
         return super() unless licensed_feature_available?(:group_level_merge_checks_setting)
 
-        if inherit_group_setting
-          result = self.public_send(attribute) || public_send("#{attribute}_of_parent_group") # rubocop:disable GitlabSecurity/PublicSend
-        else
-          result = self.public_send(attribute) # rubocop:disable GitlabSecurity/PublicSend
-        end
+        result = if inherit_group_setting
+                   self.public_send(attribute) || public_send("#{attribute}_of_parent_group")
+                 else
+                   self.public_send(attribute)
+                 end
 
         !!result
       end
@@ -550,7 +550,7 @@ module EE
       define_method("#{attribute}_locked?") do
         return super() unless licensed_feature_available?(:group_level_merge_checks_setting)
 
-        public_send("#{attribute}_of_parent_group") # rubocop:disable GitlabSecurity/PublicSend
+        public_send("#{attribute}_of_parent_group")
       end
     end
 

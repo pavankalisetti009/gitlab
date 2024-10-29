@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module MembersDestroyer
-  class CleanUpGroupProtectedBranchRulesWorker # rubocop:disable Scalability/CronWorkerContext
+  class CleanUpGroupProtectedBranchRulesWorker
     include ApplicationWorker
 
     data_consistency :always

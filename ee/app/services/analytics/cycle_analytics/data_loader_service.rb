@@ -140,13 +140,11 @@ module Analytics
         @upsert_count += event_model.upsert_data(data) if data.any?
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord
       def cursor_for_node(record)
         scope, _ = Gitlab::Pagination::Keyset::SimpleOrderBuilder.build(iterator_base_scope)
         order = Gitlab::Pagination::Keyset::Order.extract_keyset_order_object(scope)
         order.cursor_attributes_for_node(record)
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
       def event_model
         CONFIG_MAPPING.fetch(model).fetch(:event_model)
