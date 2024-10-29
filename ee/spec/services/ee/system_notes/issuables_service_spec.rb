@@ -11,7 +11,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
   let_it_be(:issue2) { create(:issue, project: project) }
   let_it_be_with_reload(:noteable) { create(:issue, project: project, health_status: 'on_track') }
 
-  let(:service) { described_class.new(noteable: noteable, project: project, author: author) }
+  let(:service) { described_class.new(noteable: noteable, container: project, author: author) }
 
   describe '#change_health_status_note' do
     subject { service.change_health_status_note(noteable.health_status_before_last_save) }

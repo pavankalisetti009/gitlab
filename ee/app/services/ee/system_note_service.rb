@@ -192,7 +192,7 @@ module EE
     private
 
     def issuables_service(noteable, project, author)
-      ::SystemNotes::IssuablesService.new(noteable: noteable, project: project, author: author)
+      ::SystemNotes::IssuablesService.new(noteable: noteable, container: project, author: author)
     end
 
     def epics_service(noteable, author)
@@ -200,23 +200,23 @@ module EE
     end
 
     def merge_requests_service(noteable, project, author)
-      ::SystemNotes::MergeRequestsService.new(noteable: noteable, project: project, author: author)
+      ::SystemNotes::MergeRequestsService.new(noteable: noteable, container: project, author: author)
     end
 
     def merge_trains_service(noteable, project, author)
-      ::SystemNotes::MergeTrainService.new(noteable: noteable, project: project, author: author)
+      ::SystemNotes::MergeTrainService.new(noteable: noteable, container: project, author: author)
     end
 
     def vulnerabilities_service(noteable, project, author)
-      ::SystemNotes::VulnerabilitiesService.new(noteable: noteable, project: project, author: author)
+      ::SystemNotes::VulnerabilitiesService.new(noteable: noteable, container: project, author: author)
     end
 
     def escalations_service(noteable, project)
-      ::SystemNotes::EscalationsService.new(noteable: noteable, project: project)
+      ::SystemNotes::EscalationsService.new(noteable: noteable, container: project)
     end
 
     def issuable_resource_links_service(noteable, project, author)
-      ::SystemNotes::IssuableResourceLinksService.new(noteable: noteable, project: project, author: author)
+      ::SystemNotes::IssuableResourceLinksService.new(noteable: noteable, container: project, author: author)
     end
   end
 end

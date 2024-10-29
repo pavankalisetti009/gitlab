@@ -11,7 +11,7 @@ RSpec.describe SystemNotes::MergeRequestsService, feature_category: :code_review
 
   let(:noteable) { create(:merge_request, source_project: project, target_project: project) }
 
-  let(:service) { described_class.new(noteable: noteable, project: project, author: author) }
+  let(:service) { described_class.new(noteable: noteable, container: project, author: author) }
 
   describe '#approvals_reset' do
     let(:cause) { :new_push }
@@ -19,7 +19,7 @@ RSpec.describe SystemNotes::MergeRequestsService, feature_category: :code_review
 
     subject(:approvals_reset_note) do
       described_class
-        .new(noteable: noteable, project: project, author: author)
+        .new(noteable: noteable, container: project, author: author)
         .approvals_reset(cause, approvers)
     end
 
@@ -54,7 +54,7 @@ RSpec.describe SystemNotes::MergeRequestsService, feature_category: :code_review
 
     subject(:override_requested_changes_note) do
       described_class
-        .new(noteable: noteable, project: project, author: author)
+        .new(noteable: noteable, container: project, author: author)
         .override_requested_changes(overriding)
     end
 
