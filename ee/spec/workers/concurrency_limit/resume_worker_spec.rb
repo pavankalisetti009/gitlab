@@ -6,10 +6,13 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
   subject(:worker) { described_class.new }
 
   let(:worker_with_concurrency_limit) { ElasticCommitIndexerWorker }
+  let(:concurrent_workers) { 5 }
 
   describe '#perform' do
     before do
       allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:resume_processing!)
+      allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+        .to receive(:concurrent_worker_count).and_return(concurrent_workers)
     end
 
     shared_examples 'report prometheus metrics' do |limit = described_class::BATCH_SIZE, queue_size = 100|
@@ -36,7 +39,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
       end
     end
 
-    shared_examples 'no jobs in the queue' do
+    context 'when there are no jobs in the queue' do
       before do
         allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
           .and_return(10)
@@ -60,7 +63,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
       it_behaves_like 'report prometheus metrics', 10, 0
     end
 
-    shared_examples 'jobs in the queue' do
+    context 'when there are jobs in the queue' do
       before do
         allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
           .and_return(0)
@@ -134,31 +137,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :global_search 
 
         it_behaves_like 'report prometheus metrics', 0
       end
-    end
-
-    context 'when sidekiq_concurrency_limit_optimized_count feature flag is disabled' do
-      let(:concurrent_workers) { 6 }
-
-      before do
-        stub_feature_flags(sidekiq_concurrency_limit_optimized_count: false)
-        allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersConcurrency).to receive(:workers)
-          .and_return(worker_with_concurrency_limit.name => concurrent_workers)
-      end
-
-      it_behaves_like 'no jobs in the queue'
-      it_behaves_like 'jobs in the queue'
-    end
-
-    context 'when sidekiq_concurrency_limit_optimized_count feature flag is enabled' do
-      let(:concurrent_workers) { 5 }
-
-      before do
-        allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-          .to receive(:concurrent_worker_count).and_return(concurrent_workers)
-      end
-
-      it_behaves_like 'no jobs in the queue'
-      it_behaves_like 'jobs in the queue'
     end
   end
 end
