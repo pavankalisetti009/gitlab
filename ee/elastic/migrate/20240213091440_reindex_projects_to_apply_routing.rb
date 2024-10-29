@@ -105,3 +105,5 @@ class ReindexProjectsToApplyRouting < Elastic::Migration
     self.class::DOCUMENT_TYPE.__elasticsearch__.index_name
   end
 end
+
+ReindexProjectsToApplyRouting.prepend ::Elastic::MigrationObsolete

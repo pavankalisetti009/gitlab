@@ -24,7 +24,7 @@ module Elastic
         # If the project is indexed, the project and all associated data are queued for indexing
         # to make sure the namespace_ancestry field gets updated in each document.
         # Delete the project record with old routing from the index
-        ::Elastic::ProcessInitialBookkeepingService.track!(build_document_reference(project))
+        ::Elastic::ProcessInitialBookkeepingService.track!(project)
         ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project, skip_projects: true)
 
         delete_old_project(project, old_namespace_id, project_only: true)
@@ -32,7 +32,7 @@ module Elastic
         # If the new namespace isn't indexed, the project's associated records should no longer exist in the index
         # and will be deleted asynchronously. Queue the project for indexing
         # to update the namespace field and remove the old document from the index.
-        ::Elastic::ProcessInitialBookkeepingService.track!(build_document_reference(project))
+        ::Elastic::ProcessInitialBookkeepingService.track!(project)
 
         delete_old_project(project, old_namespace_id)
       end
@@ -53,19 +53,9 @@ module Elastic
       old_namespace.use_elasticsearch? != new_namespace.use_elasticsearch?
     end
 
-    def build_document_reference(project)
-      return project if project_routing_applied?
-
-      Gitlab::Elastic::DocumentReference.new(Project, project.id, project.es_id, "n_#{project.root_ancestor.id}")
-    end
-
     def delete_old_project(project, old_namespace_id, options = {})
-      options[:namespace_routing_id] = old_namespace_id if project_routing_applied?
+      options[:namespace_routing_id] = old_namespace_id
       ElasticDeleteProjectWorker.perform_async(project.id, project.es_id, **options)
-    end
-
-    def project_routing_applied?
-      ::Elastic::DataMigrationService.migration_has_finished?(:reindex_projects_to_apply_routing)
     end
   end
 end

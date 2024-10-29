@@ -17,8 +17,6 @@ module Elastic
 
       override :routing_options
       def routing_options(options)
-        return super unless ::Elastic::DataMigrationService.migration_has_finished?(:reindex_projects_to_apply_routing)
-
         group = Group.find_by_id(options[:group_id])
 
         return {} unless group
