@@ -187,7 +187,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
           'A namespace storage limit',
           href: help_page_path(
             'user/storage_usage_quotas.md',
-            anchor: 'namespace-storage-limit'
+            anchor: 'manage-storage-usage'
           )
         )
       end
@@ -199,7 +199,7 @@ RSpec.describe Namespaces::Storage::PreEnforcementAlertComponent, :saas, type: :
           'How can I manage my storage',
           href: help_page_path(
             'user/storage_usage_quotas.md',
-            anchor: 'manage-your-storage-usage'
+            anchor: 'manage-storage-usage'
           )
         )
       end

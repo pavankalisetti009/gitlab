@@ -206,11 +206,11 @@ module Namespaces
       def alert_message_cta
         text_args = {
           manage_storage_link_start: link_start_tag(
-            help_page_path('user/storage_usage_quotas.md', anchor: 'manage-your-storage-usage')
+            help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
           ),
           group_member_link_start: link_start_tag(group_group_members_path(root_namespace)),
           purchase_more_link_start: link_start_tag(
-            help_page_path('subscriptions/gitlab_com/index.md', anchor: 'purchase-more-storage-and-transfer')
+            help_page_path('subscriptions/gitlab_com/index.md', anchor: 'purchase-more-storage')
           ),
           link_end: "</a>"
         }
