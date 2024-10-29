@@ -9553,7 +9553,8 @@ CREATE TABLE ci_trigger_requests (
     variables text,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    commit_id bigint
+    commit_id bigint,
+    project_id bigint
 );
 
 CREATE SEQUENCE ci_trigger_requests_id_seq
@@ -28928,6 +28929,8 @@ CREATE INDEX index_ci_subscriptions_projects_on_upstream_project_id ON ci_subscr
 CREATE UNIQUE INDEX index_ci_subscriptions_projects_unique_subscription ON ci_subscriptions_projects USING btree (downstream_project_id, upstream_project_id);
 
 CREATE INDEX index_ci_trigger_requests_on_commit_id ON ci_trigger_requests USING btree (commit_id);
+
+CREATE INDEX index_ci_trigger_requests_on_project_id ON ci_trigger_requests USING btree (project_id);
 
 CREATE INDEX index_ci_trigger_requests_on_trigger_id_and_id ON ci_trigger_requests USING btree (trigger_id, id DESC);
 
