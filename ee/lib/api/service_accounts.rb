@@ -6,7 +6,10 @@ module API
 
     extend ActiveSupport::Concern
 
-    before { authenticated_as_admin! }
+    before do
+      authenticated_as_admin!
+      set_current_organization
+    end
 
     resource :service_accounts do
       desc 'Create a service account user. Available only for instance admins.' do
