@@ -474,7 +474,7 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
         end
 
         it 'cleans up train car ref' do
-          expect(train_car).to receive(:cleanup_ref)
+          expect(train_car).to receive(:try_cleanup_ref)
 
           train_car.finish_merge!
         end
@@ -517,11 +517,11 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
     end
   end
 
-  describe '#cleanup_ref' do
+  describe '#try_cleanup_ref' do
     let(:train_car) { create(:merge_train_car) }
 
     context 'when running async' do
-      subject { train_car.cleanup_ref }
+      subject { train_car.try_cleanup_ref }
 
       it 'schedules cleanup_refs for merge request' do
         expect(train_car.merge_request).to receive(:schedule_cleanup_refs).with(only: :train)
@@ -531,12 +531,23 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
     end
 
     context 'when running immediately' do
-      subject { train_car.cleanup_ref(async: false) }
+      subject { train_car.try_cleanup_ref(async: false) }
 
       it 'executes cleanup_refs for merge request' do
         expect(train_car.merge_request).to receive(:cleanup_refs).with(only: :train)
 
         subject
+      end
+    end
+
+    context 'when the ref deletion fails' do
+      before do
+        allow(train_car).to receive(:cleanup_ref).and_raise(Gitlab::Git::CommandError, "some message")
+      end
+
+      it 'captures the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(an_instance_of(Gitlab::Git::CommandError))
+        expect { train_car.try_cleanup_ref }.not_to raise_error
       end
     end
   end

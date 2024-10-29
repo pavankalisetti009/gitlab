@@ -27,7 +27,7 @@ module MergeTrains
         ::Ci::CancelPipelineService.new( # rubocop: disable CodeReuse/ServiceClass
           pipeline: car.pipeline,
           current_user: nil).force_execute
-        car.cleanup_ref(async: false)
+        car.try_cleanup_ref(async: false)
       end
     end
 
@@ -67,7 +67,7 @@ module MergeTrains
 
       after_transition merging: :merged do |car|
         car.run_after_commit do
-          car.cleanup_ref
+          car.try_cleanup_ref
         end
       end
 
@@ -177,14 +177,13 @@ module MergeTrains
       train.first_car == self
     end
 
-    def cleanup_ref(async: true)
-      if async
-        merge_request.schedule_cleanup_refs(only: :train)
-      else
-        # Synchronous removal might result in Gitaly deadlock
-        # Ref.: https://gitlab.com/gitlab-org/gitaly/-/issues/5369
-        merge_request.cleanup_refs(only: :train)
-      end
+    def try_cleanup_ref(async: true)
+      # The async variant isn't necessarily async, it depends on the feature
+      # flags merge_request_delete_gitaly_refs_in_batches and
+      # merge_request_cleanup_ref_worker_async
+      cleanup_ref(async: async)
+    rescue ::Gitlab::Git::BaseError => e
+      Gitlab::ErrorTracking.track_exception(e)
     end
 
     def active?
@@ -203,6 +202,16 @@ module MergeTrains
     end
 
     private
+
+    def cleanup_ref(async: true)
+      if async
+        merge_request.schedule_cleanup_refs(only: :train)
+      else
+        # Synchronous removal might result in Gitaly deadlock
+        # Ref.: https://gitlab.com/gitlab-org/gitaly/-/issues/5369
+        merge_request.cleanup_refs(only: :train)
+      end
+    end
 
     def has_pipeline?
       pipeline_id.present? && pipeline
