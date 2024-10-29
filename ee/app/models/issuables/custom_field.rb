@@ -5,13 +5,14 @@ module Issuables
     include Gitlab::SQL::Pattern
 
     MAX_ACTIVE_FIELDS = 50
+    MAX_SELECT_OPTIONS = 50
 
     enum field_type: { single_select: 0, multi_select: 1, number: 2, text: 3 }, _prefix: true
 
     belongs_to :namespace
     belongs_to :created_by, class_name: 'User', optional: true
     belongs_to :updated_by, class_name: 'User', optional: true
-    has_many :select_options, -> { order(:position) },
+    has_many :select_options, -> { order(:position, :id) }, dependent: :delete_all, autosave: true,
       class_name: 'Issuables::CustomFieldSelectOption', inverse_of: :custom_field
     has_many :work_item_type_custom_fields, class_name: 'WorkItems::TypeCustomField'
     has_many :work_item_types, -> { order(:name) },
@@ -20,9 +21,14 @@ module Issuables
     validates :namespace, :field_type, presence: true
     validates :name, presence: true, length: { maximum: 255 },
       uniqueness: { scope: [:namespace_id], case_sensitive: false }
+    validates :select_options, length: {
+      maximum: MAX_SELECT_OPTIONS,
+      message: ->(*) { _('exceeds the limit of %{count}.') }
+    }
 
     validate :namespace_is_root_group
     validate :number_of_active_fields_per_namespace
+    validate :selectable_field_type_with_select_options
 
     scope :of_namespace, ->(namespace) { where(namespace_id: namespace) }
     scope :active, -> { where(archived_at: nil) }
@@ -78,6 +84,13 @@ module Issuables
         :namespace,
         format(_('can only have a maximum of %{limit} active custom fields.'), limit: MAX_ACTIVE_FIELDS)
       )
+    end
+
+    def selectable_field_type_with_select_options
+      return if field_type_single_select? || field_type_multi_select?
+      return if select_options.blank?
+
+      errors.add(:field_type, _('does not support select options.'))
     end
   end
 end

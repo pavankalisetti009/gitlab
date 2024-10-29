@@ -28,6 +28,98 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
     end
   end
 
+  context 'with select field' do
+    let(:custom_field) { create(:custom_field, namespace: group, field_type: 'single_select') }
+
+    context 'when adding select options' do
+      let(:params) { { select_options: [{ value: 'option1' }, { value: 'option2' }] } }
+
+      it 'updates the custom field with the options' do
+        expect(response).to be_success
+        expect(updated_custom_field).to be_persisted
+        expect(updated_custom_field.select_options).to match([
+          have_attributes(id: a_kind_of(Integer), value: 'option1', position: 0),
+          have_attributes(id: a_kind_of(Integer), value: 'option2', position: 1)
+        ])
+        expect(updated_custom_field.updated_by_id).to eq(user.id)
+      end
+    end
+
+    context 'with existing select options' do
+      let!(:option1) { create(:custom_field_select_option, custom_field: custom_field, position: 0) }
+      let!(:option2) { create(:custom_field_select_option, custom_field: custom_field, position: 1) }
+
+      before do
+        custom_field.select_options.reload
+      end
+
+      context 'when reordering the options' do
+        let(:params) { { select_options: [option2.slice(:id, :value), option1.slice(:id, :value)] } }
+
+        it 'updates the positions of the options' do
+          expect(response).to be_success
+          expect(updated_custom_field).to be_persisted
+          expect(updated_custom_field.select_options).to match([
+            have_attributes(id: option2.id, position: 0),
+            have_attributes(id: option1.id, position: 1)
+          ])
+          expect(updated_custom_field.updated_by_id).to eq(user.id)
+        end
+      end
+
+      context 'when select_options param is not provided' do
+        let(:params) { { name: 'new field name' } }
+
+        it 'does not remove the select options' do
+          expect(response).to be_success
+          expect(updated_custom_field).to be_persisted
+          expect(updated_custom_field.name).to eq('new field name')
+          expect(updated_custom_field.select_options).to match([
+            have_attributes(id: option1.id, position: 0),
+            have_attributes(id: option2.id, position: 1)
+          ])
+        end
+      end
+
+      context 'when adding and removing options' do
+        let(:params) { { select_options: [{ value: 'new option' }, option1.slice(:id, :value)] } }
+
+        it 'updates the options and sets the correct positions' do
+          expect(response).to be_success
+          expect(updated_custom_field).to be_persisted
+          expect(updated_custom_field.select_options).to match([
+            have_attributes(id: a_kind_of(Integer), value: 'new option', position: 0),
+            have_attributes(id: option1.id, position: 1)
+          ])
+          expect(updated_custom_field.updated_by_id).to eq(user.id)
+          expect(Issuables::CustomFieldSelectOption.exists?(option2.id)).to be(false)
+        end
+      end
+
+      context 'when given option ID is invalid' do
+        let(:other_field_option) { create(:custom_field_select_option) }
+
+        let(:params) { { name: 'new field name', select_options: [{ id: other_field_option.id, value: 'option2' }] } }
+
+        it 'returns an error' do
+          expect(response).to be_error
+          expect(response.message).to eq("Select option ID #{other_field_option.id} is invalid.")
+
+          expect(custom_field.reload.name).not_to eq('new field name')
+        end
+      end
+
+      context 'when updated option is invalid' do
+        let(:params) { { select_options: [option1.slice(:id, :value), { id: option2.id, value: option1.value }] } }
+
+        it 'returns an error' do
+          expect(response).to be_error
+          expect(response.message).to include('Select options value has already been taken')
+        end
+      end
+    end
+  end
+
   context 'when there are no changes' do
     let(:params) { { name: custom_field.name } }
 

@@ -34,6 +34,47 @@ RSpec.describe 'Updating a custom field', feature_category: :team_planning do
     )
   end
 
+  context 'with select field' do
+    let(:custom_field) { create(:custom_field, namespace: group, field_type: 'single_select') }
+    let!(:option1) { create(:custom_field_select_option, custom_field: custom_field, value: 'option1', position: 0) }
+    let!(:option2) { create(:custom_field_select_option, custom_field: custom_field, value: 'option2', position: 1) }
+
+    let(:params) do
+      {
+        name: 'My Custom Field',
+        select_options: [
+          { id: option2.to_global_id.to_s, value: 'Renamed option' },
+          { value: 'New option' }
+        ]
+      }
+    end
+
+    it 'updates the custom field with its select options' do
+      post_graphql_mutation(mutation, current_user: maintainer)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect_graphql_errors_to_be_empty
+
+      expect(mutation_response['customField']).to match(
+        a_hash_including(
+          'name' => 'My Custom Field',
+          'selectOptions' => [
+            a_hash_including(
+              'id' => option2.to_global_id.to_s,
+              'value' => 'Renamed option'
+            ),
+            a_hash_including(
+              'value' => 'New option'
+            )
+          ],
+          'updatedBy' => a_hash_including(
+            'id' => maintainer.to_global_id.to_s
+          )
+        )
+      )
+    end
+  end
+
   context 'when user does not have access' do
     it 'returns an error' do
       guest = create(:user, guest_of: group)

@@ -26,6 +26,10 @@ module Mutations
           required: true,
           description: copy_field_description(Types::Issuables::CustomFieldType, :name)
 
+        argument :select_options, [Types::Issuables::CustomFieldSelectOptionInputType],
+          required: false,
+          description: copy_field_description(Types::Issuables::CustomFieldType, :select_options)
+
         def resolve(group_path:, **args)
           group = authorized_find!(group_path: group_path)
 

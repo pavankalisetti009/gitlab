@@ -33,6 +33,37 @@ RSpec.describe 'Creating a custom field', feature_category: :team_planning do
     )
   end
 
+  context 'when select options are provided' do
+    let(:params) do
+      {
+        name: 'Select Field',
+        field_type: 'SINGLE_SELECT',
+        select_options: [
+          { value: 'option1' },
+          { value: 'option2' }
+        ]
+      }
+    end
+
+    it 'creates a select field with options' do
+      post_graphql_mutation(mutation, current_user: maintainer)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect_graphql_errors_to_be_empty
+
+      expect(mutation_response['customField']).to match(
+        a_hash_including(
+          'name' => 'Select Field',
+          'fieldType' => 'SINGLE_SELECT',
+          'selectOptions' => [
+            a_hash_including('value' => 'option1'),
+            a_hash_including('value' => 'option2')
+          ]
+        )
+      )
+    end
+  end
+
   context 'when user does not have access' do
     it 'returns an error' do
       guest = create(:user, guest_of: group)

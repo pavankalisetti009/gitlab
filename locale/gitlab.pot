@@ -65260,6 +65260,9 @@ msgstr ""
 msgid "does not match dast_site_validation.project"
 msgstr ""
 
+msgid "does not support select options."
+msgstr ""
+
 msgid "download it"
 msgstr ""
 
@@ -65338,6 +65341,9 @@ msgid "exceeds the limit of %{bytes} bytes for directory name \"%{dirname}\""
 msgstr ""
 
 msgid "exceeds the limit of %{count} links"
+msgstr ""
+
+msgid "exceeds the limit of %{count}."
 msgstr ""
 
 msgid "expired on %{timebox_due_date}"
