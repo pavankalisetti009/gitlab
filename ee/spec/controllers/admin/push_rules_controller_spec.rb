@@ -14,8 +14,8 @@ RSpec.describe Admin::PushRulesController, feature_category: :source_code_manage
   describe '#update' do
     let(:params) do
       {
-        deny_delete_tag: "true", delete_branch_regex: "any", commit_message_regex: "any", branch_name_regex: "any",
-        force_push_regex: "any", author_email_regex: "any", member_check: "true", file_name_regex: "any",
+        deny_delete_tag: "true", commit_message_regex: "any", branch_name_regex: "any",
+        author_email_regex: "any", member_check: "true", file_name_regex: "any",
         max_file_size: "0", prevent_secrets: "true", commit_committer_check: "true", reject_unsigned_commits: "true",
         reject_non_dco_commits: "true", commit_committer_name_check: "true"
       }

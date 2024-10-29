@@ -289,9 +289,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
       it 'creates push rule from sample' do
         expect(created_project.push_rule).to(
           have_attributes(
-            force_push_regex: sample.force_push_regex,
             deny_delete_tag: sample.deny_delete_tag,
-            delete_branch_regex: sample.delete_branch_regex,
             commit_message_regex: sample.commit_message_regex
           )
         )
@@ -339,7 +337,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
       end
 
       context 'when group has push rule defined' do
-        let(:group_push_rule) { create(:push_rule_without_project, force_push_regex: 'testing me') }
+        let(:group_push_rule) { create(:push_rule_without_project, commit_message_regex: 'testing me') }
 
         before do
           group.update!(push_rule: group_push_rule)
@@ -356,9 +354,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
 
           expect(project_push_rule).to(
             have_attributes(
-              force_push_regex: group_push_rule.force_push_regex,
               deny_delete_tag: group_push_rule.deny_delete_tag,
-              delete_branch_regex: group_push_rule.delete_branch_regex,
               commit_message_regex: group_push_rule.commit_message_regex,
               is_sample: false
             )
@@ -376,9 +372,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
 
             expect(project_push_rule).to(
               have_attributes(
-                force_push_regex: group_push_rule.force_push_regex,
                 deny_delete_tag: group_push_rule.deny_delete_tag,
-                delete_branch_regex: group_push_rule.delete_branch_regex,
                 commit_message_regex: group_push_rule.commit_message_regex,
                 is_sample: false
               )
@@ -394,9 +388,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         it 'creates push rule from sample' do
           expect(created_project.push_rule).to(
             have_attributes(
-              force_push_regex: sample.force_push_regex,
               deny_delete_tag: sample.deny_delete_tag,
-              delete_branch_regex: sample.delete_branch_regex,
               commit_message_regex: sample.commit_message_regex
             )
           )
@@ -410,9 +402,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           it 'creates push rule from sample in sub-group' do
             expect(created_project.push_rule).to(
               have_attributes(
-                force_push_regex: sample.force_push_regex,
                 deny_delete_tag: sample.deny_delete_tag,
-                delete_branch_regex: sample.delete_branch_regex,
                 commit_message_regex: sample.commit_message_regex
               )
             )

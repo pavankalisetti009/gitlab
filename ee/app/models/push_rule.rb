@@ -3,6 +3,8 @@
 class PushRule < ApplicationRecord
   extend Gitlab::Cache::RequestCache
 
+  ignore_columns %i[delete_branch_regex force_push_regex], remove_with: '17.8', remove_after: '2024-12-14'
+
   request_cache_key do
     [self.id]
   end
@@ -11,8 +13,6 @@ class PushRule < ApplicationRecord
 
   # Max size: 511 characters
   SHORT_REGEX_COLUMNS = %i[
-    force_push_regex
-    delete_branch_regex
     commit_message_regex
     author_email_regex
     file_name_regex
