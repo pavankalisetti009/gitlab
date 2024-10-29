@@ -66214,6 +66214,9 @@ msgstr ""
 msgid "organizations can only be added to root groups and groups configured as CRM targets"
 msgstr ""
 
+msgid "overdue"
+msgstr ""
+
 msgid "packages"
 msgstr ""
 
@@ -66235,6 +66238,9 @@ msgid "parent must be in the same project or group as child."
 msgstr ""
 
 msgid "password"
+msgstr ""
+
+msgid "past due"
 msgstr ""
 
 msgid "pending comment"
@@ -66617,6 +66623,9 @@ msgid "unicode domains should use IDNA encoding"
 msgstr ""
 
 msgid "unsubscribed %{emails}"
+msgstr ""
+
+msgid "upcoming"
 msgstr ""
 
 msgid "updated"

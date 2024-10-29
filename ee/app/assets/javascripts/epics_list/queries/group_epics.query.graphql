@@ -43,6 +43,7 @@ query groupEpics(
       nodes {
         id
         iid
+        state
         title
         createdAt
         updatedAt

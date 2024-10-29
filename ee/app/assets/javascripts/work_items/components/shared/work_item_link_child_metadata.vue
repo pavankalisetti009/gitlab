@@ -12,7 +12,7 @@ import {
   WIDGET_TYPE_START_AND_DUE_DATE,
   WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
-import { humanTimeframe, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
+import { humanTimeframe, isInPast, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import { getIterationPeriod } from 'ee/iterations/utils';
 
@@ -119,6 +119,18 @@ export default {
     weightTooltip() {
       return this.workItemType === WORK_ITEM_TYPE_VALUE_EPIC ? __('Issue weight') : __('Weight');
     },
+    isOverdue() {
+      if (!this.dueDate) {
+        return false;
+      }
+      return isInPast(newDate(this.dueDate)) && this.isChildItemOpen;
+    },
+    overdueText() {
+      return this.isOverdue ? ` (${__('overdue')})` : '';
+    },
+    datesIcon() {
+      return this.isOverdue ? 'calendar-overdue' : 'calendar';
+    },
   },
   methods: {
     getTimestamp(rawTimestamp) {
@@ -181,12 +193,11 @@ export default {
         data-testid="item-dates"
         class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
       >
-        <gl-icon name="calendar" />
+        <gl-icon :variant="isOverdue ? 'danger' : 'default'" :name="datesIcon" />
         <span data-testid="dates-value">{{ workItemTimeframe }}</span>
         <gl-tooltip :target="() => $refs.datesData">
-          <div class="gl-font-bold">
-            {{ __('Dates') }}
-          </div>
+          <span class="gl-font-bold">{{ __('Dates') }}</span
+          ><span>{{ overdueText }}</span>
         </gl-tooltip>
       </div>
       <div

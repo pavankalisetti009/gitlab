@@ -168,6 +168,50 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
       expect(wrapper.findByTestId('dates-value').text().trim()).toBe('Jun 27, 2024 – No due date');
     });
+
+    describe('when due date in the past', () => {
+      let overdueDate = new Date();
+      overdueDate = overdueDate.getDate() - 17;
+
+      describe('when work item is open', () => {
+        it('renders as overdue', () => {
+          createComponent({
+            metadataWidgets: {
+              START_AND_DUE_DATE: {
+                type: 'START_AND_DUE_DATE',
+                startDate: null,
+                dueDate: overdueDate,
+                __typename: 'WorkItemWidgetStartAndDueDate',
+              },
+            },
+          });
+          expect(wrapper.findByTestId('item-dates').findComponent(GlIcon).props()).toMatchObject({
+            variant: 'danger',
+            name: 'calendar-overdue',
+          });
+        });
+      });
+
+      describe('when issue is closed', () => {
+        it('does not render as overdue', () => {
+          createComponent({
+            metadataWidgets: {
+              START_AND_DUE_DATE: {
+                type: 'START_AND_DUE_DATE',
+                startDate: null,
+                dueDate: overdueDate,
+                __typename: 'WorkItemWidgetStartAndDueDate',
+              },
+            },
+            isChildItemOpen: false,
+          });
+          expect(wrapper.findByTestId('item-dates').findComponent(GlIcon).props()).toMatchObject({
+            variant: 'default',
+            name: 'calendar',
+          });
+        });
+      });
+    });
   });
 
   describe('iteration', () => {
