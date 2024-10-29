@@ -366,6 +366,21 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.filter_by_source_id' do
+    let_it_be(:sbom_source_1) { create(:sbom_source) }
+    let_it_be(:sbom_source_2) { create(:sbom_source) }
+    let_it_be(:occurrence_1) { create(:sbom_occurrence, source: sbom_source_1) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence, source: sbom_source_2) }
+
+    it 'returns records filtered by source_id' do
+      expect(described_class.filter_by_source_id(sbom_source_1.id)).to eq([occurrence_1])
+    end
+
+    it 'returns an empty array if no records match the source_id' do
+      expect(described_class.filter_by_source_id(non_existing_record_id)).to eq([])
+    end
+  end
+
   describe '.by_licenses' do
     using RSpec::Parameterized::TableSyntax
 

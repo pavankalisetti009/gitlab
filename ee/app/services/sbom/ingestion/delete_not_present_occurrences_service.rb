@@ -39,8 +39,6 @@ module Sbom
         build.metadata.config_options.dig(:artifacts, :reports, :cyclonedx).present?
       end
 
-      # Prevent deletion of occurrences with source type :container_scanning_for_registry.
-      # This is a temprory quick fix for https://gitlab.com/gitlab-org/gitlab/-/issues/478376.
       def not_present_occurrences
         project.sbom_occurrences.filter_by_source_types(default_source_type_filters).id_not_in(ingested_occurrence_ids)
       end
