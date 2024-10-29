@@ -40,7 +40,7 @@ describe('Status checks actions', () => {
     });
 
     it(`sends the status check with the '${event}' event`, () => {
-      button().trigger('click');
+      button().vm.$emit('click');
 
       expect(wrapper.emitted(event)[0][0]).toStrictEqual(statusCheck);
     });
