@@ -25,7 +25,7 @@ code_completions:
     - claude_3
     - gpt
 duo_chat:
-  title: Duo Chat
+  title: —
   release_state: BETA
   main_feature: Duo Chat
   compatible_llms:
