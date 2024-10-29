@@ -41,5 +41,27 @@ RSpec.describe Gitlab::UrlBuilder do
         expect(subject.build(object, only_path: true)).to eq(path)
       end
     end
+
+    context 'when passing a group wiki note' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:wiki_page_meta) { create(:wiki_page_meta, container: group) }
+      let_it_be(:wiki_page_slug) { create(:wiki_page_slug, wiki_page_meta: wiki_page_meta, canonical: true) }
+
+      let(:note) { build_stubbed(:note, noteable: wiki_page_meta, namespace: wiki_page_meta.namespace) }
+
+      let(:path) { "/groups/#{group.full_path}/-/wikis/#{note.noteable.canonical_slug}#note_#{note.id}" }
+
+      before do
+        wiki_page_meta.canonical_slug = wiki_page_slug.slug
+      end
+
+      it 'returns the full URL' do
+        expect(subject.build(note)).to eq("#{Gitlab.config.gitlab.url}#{path}")
+      end
+
+      it 'returns only the path if only_path is given' do
+        expect(subject.build(note, only_path: true)).to eq(path)
+      end
+    end
   end
 end

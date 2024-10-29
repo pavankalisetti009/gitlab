@@ -123,8 +123,10 @@ module EE
 
     override :ensure_namespace_id
     def ensure_namespace_id
-      return super unless for_epic?
+      return super unless for_epic? || for_group_wiki?
       return if namespace_id.present? && !noteable_changed?
+
+      return noteable&.namespace_id if for_group_wiki?
 
       self.namespace_id = noteable&.group_id
     end
