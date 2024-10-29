@@ -73,6 +73,20 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
           expect { subject }.to change { AuditEvent.count }.by(1)
         end
       end
+
+      it 'logs the restore' do
+        expect(::Gitlab::AppLogger).to receive(:info).with("User #{user.id} restored group #{group.full_path}")
+
+        subject
+      end
+
+      context 'when the group is deletion is in progress' do
+        before do
+          group.namespace_details.update!(pending_delete: true)
+        end
+
+        it { is_expected.to eq({ status: :error, message: 'Group deletion is in progress' }) }
+      end
     end
 
     context 'with a user that cannot admin the group' do
