@@ -85,6 +85,31 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         expect(service_response.payload[:reason]).to eq(:requires_top_level_group)
       end
     end
+
+    context 'when specified stage does not match group or model' do
+      it 'raises exception for specified stage belongs to different namespace' do
+        stage = create(:cycle_analytics_stage, {
+          start_event_identifier: :merge_request_created,
+          end_event_identifier: :merge_request_merged
+        })
+
+        expect do
+          described_class.new(group: namespace, stages: [stage], model: MergeRequest)
+        end.to raise_error('Incorrect stage detected. Stages must match group and model')
+      end
+
+      it 'raises exception for specified stage belongs to different model' do
+        stage = create(:cycle_analytics_stage, {
+          namespace: namespace,
+          start_event_identifier: :issue_created,
+          end_event_identifier: :issue_closed
+        })
+
+        expect do
+          described_class.new(group: namespace, stages: [stage], model: MergeRequest)
+        end.to raise_error('Incorrect stage detected. Stages must match group and model')
+      end
+    end
   end
 
   describe 'data loading into stage tables' do
@@ -107,6 +132,14 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         namespace: top_level_group,
         start_event_identifier: :issue_created,
         end_event_identifier: :issue_closed
+      })
+    end
+
+    let_it_be(:stage3) do
+      create(:cycle_analytics_stage, {
+        namespace: top_level_group,
+        start_event_identifier: :issue_created,
+        end_event_identifier: :issue_first_assigned_at
       })
     end
 
@@ -257,7 +290,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       let_it_be(:issue1) { create(:issue, project: project1, created_at: creation_time, closed_at: creation_time + 5.minutes, weight: 5) }
       let_it_be(:issue2) { create(:issue, project: project1, created_at: creation_time, closed_at: creation_time + 10.minutes) }
       let_it_be(:issue3) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time + 15.minutes, weight: 2, iteration: iteration) }
-      # invalid the creation time would be later than closed_at, this should not be aggregated
+      # invalid the creation time would be later than closed_at, this should not be aggregated by stage2
       let_it_be(:issue4) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time - 5.minutes) }
 
       let(:durations) do
@@ -268,8 +301,8 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         }
       end
 
-      it 'inserts stage records' do
-        expected_data = [issue1, issue2, issue3].map do |issue|
+      let(:expected_stage2_data) do
+        [issue1, issue2, issue3].map do |issue|
           issue.reload
           [
             issue.id,
@@ -283,11 +316,27 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
             durations.fetch(issue)
           ]
         end
+      end
 
-        described_class.new(group: top_level_group, model: Issue).execute
+      let(:expected_stage3_data) do
+        [issue1, issue2, issue3, issue4].map do |issue|
+          issue.reload
+          [
+            issue.id,
+            issue.project.parent_id,
+            issue.project_id,
+            issue.created_at,
+            nil,
+            issue.state_id,
+            issue.weight,
+            issue.sprint_id,
+            nil
+          ]
+        end
+      end
 
-        events = Analytics::CycleAnalytics::IssueStageEvent.all
-        event_data = events.map do |event|
+      def actual_data
+        Analytics::CycleAnalytics::IssueStageEvent.all.map do |event|
           [
             event.issue_id,
             event.group_id,
@@ -300,8 +349,21 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
             event.duration_in_milliseconds
           ]
         end
+      end
 
-        expect(event_data.sort).to match_array(expected_data.sort)
+      it 'inserts stage records' do
+        described_class.new(group: top_level_group, model: Issue).execute
+
+        expect(actual_data.sort_by(&:first))
+          .to match_array((expected_stage2_data + expected_stage3_data).sort_by(&:first))
+      end
+
+      context 'with stage specified' do
+        it 'inserts specified stage records only' do
+          described_class.new(group: top_level_group, model: Issue, stages: [stage2]).execute
+
+          expect(actual_data.sort_by(&:first)).to match_array(expected_stage2_data.sort_by(&:first))
+        end
       end
     end
   end

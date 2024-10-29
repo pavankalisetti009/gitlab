@@ -2,6 +2,7 @@
 
 module Analytics
   module CycleAnalytics
+    # rubocop: disable CodeReuse/ActiveRecord -- data loader is intended to work with AR directly
     class DataLoaderService
       include Validations
 
@@ -15,13 +16,15 @@ module Analytics
         MergeRequest => { event_model: MergeRequestStageEvent }.freeze
       }.freeze
 
-      def initialize(group:, model:, context: Analytics::CycleAnalytics::AggregationContext.new)
+      def initialize(group:, model:, stages: nil, context: Analytics::CycleAnalytics::AggregationContext.new)
         @group = group # could also be a Namespaces::UserNamespace object
         @model = model
         @context = context
         @upsert_count = 0
 
-        load_stages # ensure stages are loaded/created
+        guard_stages!(stages)
+
+        @stages = stages || load_stages # ensure stages are loaded/created
       end
 
       def execute
@@ -31,22 +34,21 @@ module Analytics
         response = success(:model_processed, context: context)
 
         context.processing_start!
-        iterator.each_batch(of: BATCH_LIMIT) do |records|
-          loaded_records = records.to_a
+        model_iterator.each_batch(of: BATCH_LIMIT) do |records|
+          batch_ids = records.pluck(:id)
+          break if batch_ids.empty?
 
-          break if records.empty?
+          last_record = model.find(batch_ids.last)
 
-          load_timestamp_data_into_value_stream_analytics(loaded_records)
+          upsert_stage_events(fetch_records_with_stage_timestamps(batch_ids))
 
-          context.processed_records += loaded_records.size
-          context.cursor = cursor_for_node(loaded_records.last)
-
+          context.processed_records += batch_ids.size
+          context.cursor = cursor_for_node(last_record)
           if upsert_count >= MAX_UPSERT_COUNT || context.over_time?
             response = success(:limit_reached, context: context)
             break
           end
         end
-
         context.processing_finished!
 
         response
@@ -56,14 +58,11 @@ module Analytics
 
       attr_reader :group, :model, :context, :upsert_count, :stages
 
-      # rubocop: disable CodeReuse/ActiveRecord
       def iterator_base_scope
         model.order(:updated_at, :id)
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
-      # rubocop: disable CodeReuse/ActiveRecord
-      def iterator
+      def model_iterator
         opts = {
           in_operator_optimization_options: {
             array_scope: group.all_project_ids,
@@ -75,14 +74,12 @@ module Analytics
 
         Gitlab::Pagination::Keyset::Iterator.new(scope: iterator_base_scope, cursor: context.cursor, **opts)
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
-      # rubocop: disable CodeReuse/ActiveRecord
-      def load_timestamp_data_into_value_stream_analytics(loaded_records)
+      def fetch_records_with_stage_timestamps(batch_ids)
         records_by_id = {}
 
         events.each_slice(EVENTS_LIMIT) do |event_slice|
-          scope = model.join_project.id_in(loaded_records.pluck(:id))
+          scope = model.join_project.id_in(batch_ids)
 
           current_select_columns = event_model.select_columns # default SELECT columns
           # Add the stage timestamp columns to the SELECT
@@ -91,49 +88,53 @@ module Analytics
             current_select_columns << event.timestamp_projection.as(event_column_name(event))
           end
 
-          record_attributes = scope
-            .reselect(*current_select_columns)
-            .to_a
-            .map(&:attributes)
+          record_attributes = scope.reselect(*current_select_columns).to_a.map(&:attributes)
 
           records_by_id.deep_merge!(record_attributes.index_by { |attr| attr['id'] }.compact)
         end
 
-        upsert_data(records_by_id)
+        records_by_id.values
       end
-      # rubocop: enable CodeReuse/ActiveRecord
 
-      def upsert_data(records)
+      def upsert_stage_events(records)
+        upsert_data_with_limit(records) do |record, stage|
+          start_event_timestamp, end_event_timestamp, duration_in_milliseconds = calculate_duration(
+            record[event_column_name(stage.start_event)],
+            record[event_column_name(stage.end_event)]
+          )
+
+          next if start_event_timestamp.nil?
+
+          {
+            stage_event_hash_id: stage.stage_event_hash_id,
+            issuable_id: record['id'],
+            group_id: record['group_id'],
+            project_id: record['project_id'],
+            author_id: record['author_id'],
+            milestone_id: record['milestone_id'],
+            state_id: record['state_id'],
+            start_event_timestamp: start_event_timestamp,
+            end_event_timestamp: end_event_timestamp,
+            duration_in_milliseconds: duration_in_milliseconds,
+            weight: record['weight'],
+            sprint_id: record['sprint_id']
+          }
+        end
+      end
+
+      def upsert_data_with_limit(records)
         data = []
 
-        records.each_value do |record|
+        records.each do |record|
           stages.each do |stage|
-            start_event_timestamp, end_event_timestamp, duration_in_milliseconds = calculate_duration(
-              record[event_column_name(stage.start_event)],
-              record[event_column_name(stage.end_event)]
-            )
+            stage_event_data = yield(record, stage)
 
-            next if start_event_timestamp.nil?
+            data << stage_event_data if stage_event_data
+          end
 
-            data << {
-              stage_event_hash_id: stage.stage_event_hash_id,
-              issuable_id: record['id'],
-              group_id: record['group_id'],
-              project_id: record['project_id'],
-              author_id: record['author_id'],
-              milestone_id: record['milestone_id'],
-              state_id: record['state_id'],
-              start_event_timestamp: start_event_timestamp,
-              end_event_timestamp: end_event_timestamp,
-              duration_in_milliseconds: duration_in_milliseconds,
-              weight: record['weight'],
-              sprint_id: record['sprint_id']
-            }
-
-            if data.size == UPSERT_LIMIT
-              @upsert_count += event_model.upsert_data(data)
-              data.clear
-            end
+          if data.size == UPSERT_LIMIT
+            @upsert_count += event_model.upsert_data(data)
+            data.clear
           end
         end
 
@@ -155,10 +156,16 @@ module Analytics
       end
 
       def load_stages
-        @stages ||= ::Gitlab::Analytics::CycleAnalytics::DistinctStageLoader
+        ::Gitlab::Analytics::CycleAnalytics::DistinctStageLoader
           .new(group: group)
           .stages
           .select { |stage| stage.start_event.object_type == model }
+      end
+
+      def guard_stages!(stages)
+        return unless stages&.any? { |stage| stage.namespace != group || stage.start_event.object_type != model }
+
+        raise "Incorrect stage detected. Stages must match group and model"
       end
 
       def events
@@ -199,5 +206,6 @@ module Analytics
         ]
       end
     end
+    # rubocop: enable CodeReuse/ActiveRecord
   end
 end
