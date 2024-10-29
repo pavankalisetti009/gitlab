@@ -124,7 +124,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
   describe '#orchestration_policy_data' do
     context 'for project' do
-      let(:approvers) { %w[approver1 approver2] }
+      let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { project.first_owner }
       let(:policy) { nil }
       let(:policy_type) { 'scan_execution_policy' }
@@ -143,7 +143,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           policy_type: policy_type,
           role_approver_types: %w[developer maintainer owner],
           scan_policy_documentation_path: kind_of(String),
-          scan_result_approvers: approvers&.to_json,
+          action_approvers: approvers.nil? ? nil : approvers[:action_approvers].to_json,
+          scan_result_approvers: approvers.nil? ? nil : approvers[:single_approvers].to_json,
           software_licenses: [apache_license.name, mit_license.name],
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
@@ -218,7 +219,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       let_it_be(:mit_license) { create(:software_license, :mit) }
       let_it_be(:apache_license) { create(:software_license, :apache_2_0) }
 
-      let(:approvers) { %w[approver1 approver2] }
+      let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { namespace.first_owner }
       let(:policy) { nil }
       let(:policy_type) { 'scan_execution_policy' }
@@ -234,7 +235,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           scan_policy_documentation_path: kind_of(String),
           namespace_path: namespace.full_path,
           namespace_id: namespace.id,
-          scan_result_approvers: approvers&.to_json,
+          action_approvers: approvers.nil? ? nil : approvers[:action_approvers].to_json,
+          scan_result_approvers: approvers.nil? ? nil : approvers[:single_approvers].to_json,
           software_licenses: [apache_license.name, mit_license.name],
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
