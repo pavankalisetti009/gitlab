@@ -56,7 +56,6 @@ namespace :admin do
         resources :terms_and_conditions, only: [:index, :create]
       end
     end
-    resources :feature_settings, only: [:index, :edit, :update, :create]
   end
 
   # using `only: []` to keep duplicate routes from being created

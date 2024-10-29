@@ -3576,9 +3576,6 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|AI-powered features"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|AI-powered features that can be enabled, disabled, or linked to a cloud-based or self-hosted model."
-msgstr ""
-
 msgid "AdminAIPoweredFeatures|Add self-hosted model"
 msgstr ""
 
@@ -3589,9 +3586,6 @@ msgid "AdminAIPoweredFeatures|Compatible models"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Disabled"
-msgstr ""
-
-msgid "AdminAIPoweredFeatures|Features that can be enabled, disabled, or linked to a cloud-based or self-hosted model."
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Main feature"
@@ -3606,40 +3600,16 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Sub feature"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|%{feature_name}"
-msgstr ""
-
 msgid "AdminAiPoweredFeatures|%{selected_model} is incompatible with the %{title} feature"
 msgstr ""
 
 msgid "AdminAiPoweredFeatures|AI vendor"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|AI-powered features"
-msgstr ""
-
-msgid "AdminAiPoweredFeatures|Choose the AI model to use with %{feature_name}."
-msgstr ""
-
 msgid "AdminAiPoweredFeatures|Disabled"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Model provider"
-msgstr ""
-
 msgid "AdminAiPoweredFeatures|Self-hosted model"
-msgstr ""
-
-msgid "AdminAiPoweredFeatures|Turn off"
-msgstr ""
-
-msgid "AdminAiPoweredFeatures|Turn off %{feature_name} for the instance."
-msgstr ""
-
-msgid "AdminAiPoweredFeatures|Turn on %{feature_name}, powered by a GitLab-selected AI Vendor. The model must be configured for the instance."
-msgstr ""
-
-msgid "AdminAiPoweredFeatures|Turn on %{feature_name}, powered by a self-hosted model."
 msgstr ""
 
 msgid "AdminArea|%{billable_users_link_start}Learn more%{billable_users_link_end} about what defines a billable user"
@@ -23203,9 +23173,6 @@ msgid "Feature flag was not removed."
 msgstr ""
 
 msgid "Feature flag was successfully removed."
-msgstr ""
-
-msgid "Feature settings updated successfully"
 msgstr ""
 
 msgid "FeatureFlags|%d user"
