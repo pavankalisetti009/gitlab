@@ -15,6 +15,7 @@ module ComplianceManagement
         ::ComplianceManagement::Standards::Gitlab::PreventApprovalByAuthorGroupWorker,
         ::ComplianceManagement::Standards::Gitlab::PreventApprovalByCommitterGroupWorker,
         ::ComplianceManagement::Standards::Gitlab::AtLeastTwoApprovalsGroupWorker,
+        ::ComplianceManagement::Standards::Gitlab::SastGroupWorker,
         ::ComplianceManagement::Standards::Soc2::AtLeastOneNonAuthorApprovalGroupWorker
       ].freeze
 

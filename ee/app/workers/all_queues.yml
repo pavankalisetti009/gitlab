@@ -1299,6 +1299,24 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: compliance_management_standards_gitlab_sast
+  :worker_name: ComplianceManagement::Standards::Gitlab::SastWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: compliance_management_standards_gitlab_sast_group
+  :worker_name: ComplianceManagement::Standards::Gitlab::SastGroupWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: compliance_management_standards_group_base
   :worker_name: ComplianceManagement::Standards::GroupBaseWorker
   :feature_category: :compliance_management

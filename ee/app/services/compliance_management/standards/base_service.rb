@@ -46,7 +46,8 @@ module ComplianceManagement
           namespace_id: project.namespace_id,
           status: status,
           check_name: self.class::CHECK_NAME,
-          standard: self.class::STANDARD
+          standard: self.class::STANDARD,
+          updated_at: Time.current
         }
       end
 
