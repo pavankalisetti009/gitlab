@@ -34741,6 +34741,9 @@ msgstr ""
 msgid "MlExperimentTracking|Create new candidates"
 msgstr ""
 
+msgid "MlExperimentTracking|Created"
+msgstr ""
+
 msgid "MlExperimentTracking|Created at"
 msgstr ""
 
@@ -35179,10 +35182,19 @@ msgstr ""
 msgid "Model version not found"
 msgstr ""
 
+msgid "ModelRegistry|Author"
+msgstr ""
+
 msgid "ModelRegistry|Created"
 msgstr ""
 
 msgid "ModelRegistry|Created by"
+msgstr ""
+
+msgid "ModelRegistry|Latest version"
+msgstr ""
+
+msgid "ModelRegistry|Model name"
 msgstr ""
 
 msgid "ModelRegistry|Model registry"
@@ -35192,6 +35204,12 @@ msgid "ModelRegistry|New model"
 msgstr ""
 
 msgid "ModelRegistry|Version"
+msgstr ""
+
+msgid "ModelRegistry|version"
+msgstr ""
+
+msgid "ModelRegistry|versions"
 msgstr ""
 
 msgid "Modified"
