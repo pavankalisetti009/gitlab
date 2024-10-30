@@ -4,6 +4,7 @@ module Integrations
   class Github < Integration
     include Gitlab::Routing
     include HasAvatar
+    include SafeFormatHelper
 
     delegate :api_url, :owner, :repository_name, to: :remote_project
 
@@ -56,7 +57,7 @@ module Integrations
         _('What is repository mirroring?'),
         Rails.application.routes.url_helpers.help_page_url('user/project/repository/repository_mirroring.md')
       )
-      s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}" % { docs_link: docs_link }).html_safe
+      safe_format(s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}" % { docs_link: docs_link }))
     end
 
     def self.to_param
@@ -66,13 +67,13 @@ module Integrations
     def self.static_context_field_help
       learn_more_link_url = ::Gitlab::Routing.url_helpers.help_page_path('user/project/integrations/github.md', anchor: 'static-or-dynamic-status-check-names')
       learn_more_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: learn_more_link_url }
-      s_('GithubIntegration|Select this if you want GitHub to mark status checks as "Required". %{learn_more_link_start}Learn more%{learn_more_link_end}.').html_safe % { learn_more_link_start: learn_more_link_start, learn_more_link_end: '</a>'.html_safe }
+      safe_format(s_('GithubIntegration|Select this if you want GitHub to mark status checks as "Required". %{learn_more_link_start}Learn more%{learn_more_link_end}.'), learn_more_link_start: learn_more_link_start, learn_more_link_end: '</a>'.html_safe)
     end
 
     def self.token_field_help
       token_url = 'https://github.com/settings/tokens'
       token_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: token_url }
-      s_('GithubIntegration|Create a %{token_link_start}personal access token%{token_link_end} with %{status_html} access granted and paste it here.').html_safe % { token_link_start: token_link_start, token_link_end: '</a>'.html_safe, status_html: '<code>repo:status</code>'.html_safe }
+      safe_format(s_('GithubIntegration|Create a %{token_link_start}personal access token%{token_link_end} with %{status_html} access granted and paste it here.'), token_link_start: token_link_start, token_link_end: '</a>'.html_safe, status_html: '<code>repo:status</code>'.html_safe)
     end
 
     def self.supported_events

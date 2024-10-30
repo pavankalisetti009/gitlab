@@ -2,6 +2,7 @@
 module EE
   module SearchHelper
     extend ::Gitlab::Utils::Override
+    include SafeFormatHelper
 
     SWITCH_TO_BASIC_SEARCHABLE_TABS = %w[projects issues merge_requests milestones users epics].freeze
     PLACEHOLDER = '_PLACEHOLDER_'
@@ -63,9 +64,9 @@ module EE
       return super unless gitlab_com_snippet_db_search?
 
       if collection.total_pages > 1
-        s_("SearchResults|Showing %{from} - %{to} of %{count} %{scope} for %{term_element} in your personal and project snippets").html_safe
+        safe_format(s_("SearchResults|Showing %{from} - %{to} of %{count} %{scope} for %{term_element} in your personal and project snippets"), from: from, to: to, count: count, scope: scope, term_element: term_element)
       else
-        s_("SearchResults|Showing %{count} %{scope} for %{term_element} in your personal and project snippets").html_safe
+        safe_format(s_("SearchResults|Showing %{count} %{scope} for %{term_element} in your personal and project snippets"), count: count, scope: scope, term_element: term_element)
       end
     end
 
