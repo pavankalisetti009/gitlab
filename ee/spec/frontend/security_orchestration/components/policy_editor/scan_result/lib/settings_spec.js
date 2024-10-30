@@ -1,5 +1,6 @@
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
+  BLOCK_BRANCH_MODIFICATION,
   PREVENT_APPROVAL_BY_AUTHOR,
   buildSettingsList,
   mergeRequestConfiguration,
@@ -43,7 +44,29 @@ describe('buildSettingsList', () => {
       }),
     ).toEqual({
       ...protectedBranchesConfiguration,
-      ...groupProtectedBranchesConfiguration,
+      ...groupProtectedBranchesConfiguration(false),
+      ...settings,
+    });
+  });
+
+  it('can update merge request settings for a group w/ an enabled block_branch_modification setting and w/ scanResultPolicyBlockGroupBranchModification ff', () => {
+    const enabledSetting = { [BLOCK_BRANCH_MODIFICATION]: true };
+    const settings = {
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
+      [PREVENT_APPROVAL_BY_AUTHOR]: false,
+    };
+    expect(
+      buildSettingsList({
+        settings: enabledSetting,
+        options: {
+          namespaceType: NAMESPACE_TYPES.GROUP,
+          scanResultPolicyBlockGroupBranchModification: true,
+        },
+      }),
+    ).toEqual({
+      ...enabledSetting,
+      ...groupProtectedBranchesConfiguration(true),
       ...settings,
     });
   });
@@ -65,7 +88,7 @@ describe('buildSettingsList', () => {
       }),
     ).toEqual({
       ...protectedBranchesConfiguration,
-      ...groupProtectedBranchesConfiguration,
+      ...groupProtectedBranchesConfiguration(false),
       ...settings,
     });
   });
