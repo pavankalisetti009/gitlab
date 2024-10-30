@@ -173,6 +173,7 @@ module Types
     mount_mutation Mutations::Ci::JobArtifact::Destroy
     mount_mutation Mutations::Ci::JobTokenScope::RemoveGroup
     mount_mutation Mutations::Ci::JobTokenScope::RemoveProject
+    mount_mutation Mutations::Ci::JobTokenScope::UpdateJobTokenPolicies, alpha: { milestone: '17.6' }
     mount_mutation Mutations::Ci::Pipeline::Cancel
     mount_mutation Mutations::Ci::Pipeline::Destroy
     mount_mutation Mutations::Ci::Pipeline::Retry
