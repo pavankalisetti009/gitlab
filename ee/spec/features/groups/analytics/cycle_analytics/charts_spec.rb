@@ -105,7 +105,7 @@ RSpec.describe 'Value stream analytics charts', :js, feature_category: :value_st
 
           page.within filters_selector do
             find_by_testid('base-dropdown-toggle').click
-            find('[data-testid="type-of-work-filters-subject"] label', text: 'Merge Requests').click
+            find('[data-testid="type-of-work-filters-subject"] button', text: 'Merge Requests').click
           end
 
           task_by_type_description_tooltip.hover
