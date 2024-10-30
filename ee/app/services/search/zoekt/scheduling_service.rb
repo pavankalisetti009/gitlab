@@ -166,7 +166,7 @@ module Search
             namespace_ids = batch.pluck(:namespace_id) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- each_batch limits the query
             filtered_namespace_ids = namespace_ids.reject { |id| indexed_namespaces_ids.include?(id) }
 
-            scope = Group.includes(:root_storage_statistics).where(parent_id: nil).where(id: filtered_namespace_ids)
+            scope = Group.includes(:root_storage_statistics).top_level.id_in(filtered_namespace_ids)
 
             scope.find_each do |n|
               sizes[n.id] = n.root_storage_statistics.repository_size if n.root_storage_statistics
