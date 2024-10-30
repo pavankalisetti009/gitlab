@@ -81,12 +81,15 @@ module MergeTrains
       # #mergeable_from_train_ref?
       #
       # (1) Base case: If we're the first car, then the train ref will be based
-      # on the target branch, and is trivially mergeable.
-      return true if merge_train_car.first_car?
+      # on the target branch, and is trivially mergeable. We use #prev instead
+      # of #first_car? to guard against an unlikely edge case where the car
+      # becomes the first car in between those two checks.
+      prev = merge_train_car.prev
+      return true if prev.nil?
 
       # (2) Recursive case: The previous MR has not been merged, so we check
       # whether it was constructed with a mergeable train ref.
-      mergeable_sha_and_message?(merge_train_car.prev)
+      mergeable_sha_and_message?(prev)
     end
 
     def mergeable_sha_and_message?(car)
