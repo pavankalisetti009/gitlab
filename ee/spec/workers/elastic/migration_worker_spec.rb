@@ -41,8 +41,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
 
       before do
         allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-        allow(helper).to receive(:unsupported_version?).and_return(true)
-        allow(helper).to receive(:alias_exists?).and_return(true)
+        allow(helper).to receive_messages(unsupported_version?: true, alias_exists?: true)
       end
 
       it 'pauses indexing and does not execute migration' do
@@ -59,8 +58,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
         allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
         allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
         allow(::Gitlab::Elasticsearch::Logger).to receive(:build).and_return(logger)
-        allow(helper).to receive(:unsupported_version?).and_return(false)
-        allow(helper).to receive(:alias_exists?).and_return(true)
+        allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
       end
 
       it 'raises an error and does not execute migration' do
@@ -76,8 +74,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
       before do
         allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
         allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
-        allow(helper).to receive(:unsupported_version?).and_return(false)
-        allow(helper).to receive(:alias_exists?).and_return(true)
+        allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
       end
 
       it 'returns without execution' do
@@ -135,9 +132,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
 
         context 'when executing migration with retry_on_failure set' do
           before do
-            allow(migration).to receive(:started?).and_return(true)
-            allow(migration).to receive(:retry_on_failure?).and_return(true)
-            allow(migration).to receive(:max_attempts).and_return(2)
+            allow(migration).to receive_messages(started?: true, retry_on_failure?: true, max_attempts: 2)
             allow(migration).to receive(:migrate).and_raise(StandardError)
             allow(::Gitlab::Elasticsearch::Logger).to receive(:build).and_return(logger)
           end
@@ -161,11 +156,9 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
 
         context 'for migration process' do
           before do
-            allow(migration).to receive(:started?).and_return(started)
-            allow(migration).to receive(:completed?).and_return(completed)
-            allow(migration).to receive(:batched?).and_return(batched)
             # retry_on_failure is tested in the context above
-            allow(migration).to receive(:retry_on_failure?).and_return(false)
+            allow(migration).to receive_messages(started?: started, completed?: completed, batched?: batched,
+              retry_on_failure?: false)
           end
 
           using RSpec::Parameterized::TableSyntax
@@ -242,8 +235,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
 
             before do
               allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-              allow(migration).to receive(:space_requirements?).and_return(true)
-              allow(migration).to receive(:space_required_bytes).and_return(10)
+              allow(migration).to receive_messages(space_requirements?: true, space_required_bytes: 10)
             end
 
             it 'halts the migration if there is not enough space' do
@@ -294,13 +286,10 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
         before do
           allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
           allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(true)
-          allow(helper).to receive(:unsupported_version?).and_return(false)
-          allow(helper).to receive(:alias_exists?).and_return(true)
+          allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
           allow(Elastic::MigrationRecord).to receive(:load_versions).and_return([])
           allow(Elastic::DataMigrationService).to receive(:migrations).and_return([migration])
-          allow(migration).to receive(:space_requirements?).and_return(false)
-          allow(migration).to receive(:started?).and_return(false)
-          allow(migration).to receive(:batched?).and_return(false)
+          allow(migration).to receive_messages(space_requirements?: false, started?: false, batched?: false)
         end
 
         it 'executes the first migration' do
