@@ -7,6 +7,8 @@ exports[`False positive badge component should render the alert badge 1`] = `
   <gl-badge-stub
     icon="false-positive"
     iconsize="md"
+    tag="span"
+    target="_self"
     variant="warning"
   />
   <gl-popover-stub

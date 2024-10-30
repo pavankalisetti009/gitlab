@@ -35,7 +35,7 @@ describe('WorkspaceStateIndicator', () => {
 
       const badge = wrapper.findComponent(GlBadge);
 
-      expect(badge.props()).toEqual({
+      expect(badge.props()).toMatchObject({
         icon: iconName,
         iconSize: 'md',
         iconOpticallyAligned: false,

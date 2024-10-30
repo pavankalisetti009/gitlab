@@ -45,6 +45,7 @@ exports[`Alert integration settings form should match the default snapshot 1`] =
         <gl-form-select-stub
           class="gl-border-gray-400 gl-leading-normal gl-ml-3 gl-w-auto"
           options="[object Object],[object Object]"
+          selectclass=""
           value="minutes"
         />
       </div>

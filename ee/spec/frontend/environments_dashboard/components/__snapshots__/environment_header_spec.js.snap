@@ -124,6 +124,8 @@ exports[`Environment Header with environments grouped into a folder matches the 
     <gl-badge-stub
       class="dashboard-card-icon"
       iconsize="md"
+      tag="span"
+      target="_self"
       variant="muted"
     >
       5
