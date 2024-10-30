@@ -63,7 +63,7 @@ module Gitlab
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s,
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(',')
-      }.merge(Gitlab::CloudConnector.ai_headers(user))
+      }.merge(Gitlab::CloudConnector.ai_headers(user, namespace_ids: allowed_by_namespace_ids))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
 
