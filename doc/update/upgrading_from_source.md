@@ -331,6 +331,9 @@ sudo -u git -H bundle exec rake "gitlab:workhorse:install[/home/git/gitlab-workh
 
 ### 13. Update Gitaly
 
+Upgrade Gitaly servers to the newer version before upgrading the application server. This prevents the gRPC client
+on the application server from sending RPCs that the old Gitaly version does not support.
+
 If Gitaly is located on its own server, or you use Gitaly Cluster, see [Zero-downtime upgrades](zero_downtime.md).
 
 #### Compile Gitaly
