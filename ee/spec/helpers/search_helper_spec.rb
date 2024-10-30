@@ -231,6 +231,9 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     let(:user) { create(:user) }
     let(:message) { "Showing %{count} %{scope} for %{term_element}" }
     let(:new_message) { message + " in your personal and project snippets" }
+    let(:count) { 1 }
+    let(:scope) { 'test' }
+    let(:term_element) { 'foo' }
 
     subject { search_entries_info_template(collection) }
 
@@ -251,7 +254,7 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
     context 'when all requirements are met' do
       it 'returns a custom message' do
-        expect(subject).to eq new_message
+        expect(subject).to eq "Showing 1 test for foo in your personal and project snippets"
       end
     end
 

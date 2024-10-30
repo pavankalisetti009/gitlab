@@ -12,7 +12,7 @@ module PushRulesHelper
   end
 
   def reject_non_dco_commits_description(push_rule)
-    message = format(s_("ProjectSettings|Only commits that include a %{code_block_start}Signed-off-by:%{code_block_end} element can be pushed to this repository.").html_safe, code_block_start: '<code>'.html_safe, code_block_end: '</code>'.html_safe)
+    message = safe_format(s_("ProjectSettings|Only commits that include a %{code_block_start}Signed-off-by:%{code_block_end} element can be pushed to this repository."), tag_pair(tag.code, :code_block_start, :code_block_end))
 
     push_rule_update_description(message, push_rule, :reject_non_dco_commits)
   end

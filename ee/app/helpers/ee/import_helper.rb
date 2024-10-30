@@ -23,7 +23,7 @@ module EE
     def import_svn_message(ci_cd_only)
       if ci_cd_only
         svn_link = link_to _('this document'), help_page_path('user/project/import/svn.md')
-        _('To connect an SVN repository, check out %{svn_link}.').html_safe % { svn_link: svn_link }
+        safe_format(_('To connect an SVN repository, check out %{svn_link}.'), svn_link: svn_link)
       else
         super
       end

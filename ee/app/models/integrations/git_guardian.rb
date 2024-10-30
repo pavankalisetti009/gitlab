@@ -29,8 +29,7 @@ module Integrations
         rel: 'noopener noreferrer'
       )
 
-      format(_('Scan pushed document contents for policy breaks. %{docs_link}').html_safe, # rubocop:disable Rails/OutputSafety -- It is fine to call html_safe here
-        docs_link: docs_link.html_safe) # rubocop:disable Rails/OutputSafety -- It is fine to call html_safe here
+      safe_format(_('Scan pushed document contents for policy breaks. %{docs_link}'), docs_link: docs_link.html_safe) # rubocop:disable Rails/OutputSafety -- It is fine to call html_safe here
     end
 
     def self.to_param

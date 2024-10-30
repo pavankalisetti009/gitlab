@@ -3,6 +3,7 @@
 module Gitlab
   class ManualQuarterlyCoTermBanner
     include ::Gitlab::Utils::StrongMemoize
+    include SafeFormatHelper
 
     REMINDER_DAYS = 14.days
 
@@ -24,19 +25,19 @@ module Gitlab
 
     def body
       if display_error_version?
-        _(
+        safe_format(_(
           'You have more active users than are allowed by your license. GitLab must now reconcile your ' \
             'subscription. To complete this process, export your license usage file and email it to ' \
             '%{renewal_service_email}. A new license will be emailed to the email address registered in the ' \
             '%{customers_dot}. You can add this license to your instance.'
-        ).html_safe % { renewal_service_email: renewal_service_email, customers_dot: customers_dot_url }
+        ), renewal_service_email: renewal_service_email, customers_dot: customers_dot_url)
       else
-        _(
+        safe_format(_(
           'You have more active users than are allowed by your license. Before %{date} GitLab ' \
             'must reconcile your subscription. To complete this process, export your license usage file and email ' \
             'it to %{renewal_service_email}. A new license will be emailed to the email address registered in ' \
             'the %{customers_dot}. You can add this license to your instance.'
-        ).html_safe % { date: formatted_date, renewal_service_email: renewal_service_email, customers_dot: customers_dot_url }
+        ), date: formatted_date, renewal_service_email: renewal_service_email, customers_dot: customers_dot_url)
       end
     end
 

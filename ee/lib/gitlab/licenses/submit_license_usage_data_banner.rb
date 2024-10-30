@@ -3,6 +3,8 @@
 module Gitlab
   module Licenses
     class SubmitLicenseUsageDataBanner
+      include SafeFormatHelper
+
       SUBMIT_LICENSE_USAGE_DATA_BANNER = 'submit_license_usage_data_banner'
 
       def initialize(user = nil)
@@ -35,7 +37,7 @@ module Gitlab
       def body
         return unless display?
 
-        _(
+        safe_format(_(
           'For the GitLab Team to keep your subscription data up to date, this is a ' \
           'reminder to report your license usage on a monthly basis, or at the ' \
           'cadence set in your agreement with GitLab. This allows us to simplify ' \
@@ -43,7 +45,7 @@ module Gitlab
           'export your license usage file and email it to %{renewal_service_email}. ' \
           'If you need an updated license, GitLab will send the license to the email ' \
           'address registered in the %{customers_dot}, and you can upload this license to your instance.'
-        ).html_safe % { renewal_service_email: renewal_service_email, customers_dot: customers_dot_url }
+        ), renewal_service_email: renewal_service_email, customers_dot: customers_dot_url)
       end
 
       def dismissable?
