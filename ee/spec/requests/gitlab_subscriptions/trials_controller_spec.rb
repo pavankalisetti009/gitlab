@@ -30,6 +30,26 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
       it { is_expected.to have_gitlab_http_status(:ok) }
 
+      context 'with eligible_namespaces' do
+        context 'and there are no eligible namespaces' do
+          it 'is empty' do
+            get_new
+
+            expect(assigns(:eligible_namespaces)).to be_empty
+          end
+        end
+
+        context 'and there are eligible namespaces' do
+          it 'assigns eligible_namespaces with namespace' do
+            namespace = create(:group, owners: user)
+
+            get_new
+
+            expect(assigns(:eligible_namespaces)).to match_array([namespace])
+          end
+        end
+      end
+
       context 'when subscriptions_trials is not available' do
         let(:subscriptions_trials_enabled) { false }
 
@@ -347,6 +367,26 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             post_create
 
             expect(response).to redirect_to(new_trial_path(payload[:trial_selection_params]))
+          end
+
+          context 'with eligible_namespaces' do
+            context 'and there are no eligible namespaces' do
+              it 'is empty' do
+                post_create
+
+                expect(assigns(:eligible_namespaces)).to be_empty
+              end
+            end
+
+            context 'and there are eligible namespaces' do
+              it 'assigns eligible_namespaces with namespace' do
+                namespace = create(:group, owners: user)
+
+                post_create
+
+                expect(assigns(:eligible_namespaces)).to match_array([namespace])
+              end
+            end
           end
         end
 

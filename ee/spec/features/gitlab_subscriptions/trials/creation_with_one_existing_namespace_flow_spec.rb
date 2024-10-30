@@ -39,6 +39,40 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       end
     end
 
+    context 'on a free plan and has previously had a legacy ultimate trial' do
+      it 'fills out form, submits and lands on the group page' do
+        group.gitlab_subscription.update!(trial_ends_on: Date.current.advance(days: -10), trial: false)
+
+        sign_in(user)
+
+        visit new_trial_path
+
+        fill_in_company_information
+
+        submit_company_information_form(with_trial: true, button_text: 'Continue')
+
+        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+      end
+    end
+
+    context 'on a premium plan and has previously had a legacy ultimate trial' do
+      it 'fills out form, submits and lands on the group page' do
+        group.gitlab_subscription.update!(
+          hosted_plan_id: create(:premium_plan).id, trial_ends_on: Date.current.advance(days: -10), trial: false
+        )
+
+        sign_in(user)
+
+        visit new_trial_path
+
+        fill_in_company_information
+
+        submit_company_information_form(with_trial: true, button_text: 'Continue')
+
+        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+      end
+    end
+
     context 'when part of the discover security flow' do
       it 'fills out form, submits and lands on the group security dashboard page' do
         sign_in(user)

@@ -13,6 +13,9 @@ module GitlabSubscriptions
     skip_before_action :set_confirm_warning
     before_action :check_feature_available!
     before_action :authenticate_user!
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/500686 will likely move this to being performed
+    # during an eligibility check similar to Trials::DuoEnterpriseController.
+    before_action :eligible_namespaces
 
     feature_category :plan_provisioning
     urgency :low
@@ -97,6 +100,10 @@ module GitlabSubscriptions
     def trial_params
       params.permit(*::Onboarding::Status::GLM_PARAMS, :new_group_name, :namespace_id, :trial_entity)
       .with_defaults(organization_id: Current.organization_id).to_h
+    end
+
+    def eligible_namespaces
+      @eligible_namespaces = Users::TrialEligibleNamespacesFinder.new(current_user).execute
     end
 
     def discover_group_security_flow?

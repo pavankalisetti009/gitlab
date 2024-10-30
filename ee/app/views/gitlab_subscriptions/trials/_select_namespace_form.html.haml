@@ -11,7 +11,7 @@
   .col-md-6.m-sm-6
     %h2.gl-pb-5.gl-my-0
       - if Feature.enabled?(:duo_enterprise_trials, current_user)
-        - if any_trial_eligible_namespaces?
+        - if @eligible_namespaces.any?
           = s_('Trial|Apply your trial to a new or existing group')
         - else
           = s_('Trial|Apply your trial to a new group')
@@ -19,12 +19,12 @@
         = _('Almost there')
 
     %p.gl-text-gray-700.gl-text-lg
-      = trial_selection_intro_text
+      = trial_selection_intro_text(@eligible_namespaces)
 
     = yield :before_form
 
     = form_tag trials_path(**glm_params, step: GitlabSubscriptions::Trials::CreateService::TRIAL), method: :post, class: 'js-saas-trial-group', data: { testid: 'trial-form' } do
-      .js-namespace-selector{ data: trial_namespace_selector_data(local_assigns[:namespace_create_errors]) }
+      .js-namespace-selector{ data: trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
       - if should_ask_company_question?
         .form-group
           = label_tag :trial_entity, _('Who will be using GitLab?')
