@@ -141,3 +141,28 @@ export const mockFilterLabels = ['bug', 'regression'];
 export const mockCollectionLabels = ['S::1', 'S::2', 'S::3', 'S::4'];
 
 export const mockGroupBy = 'month';
+
+export const createLoadingChartData = () => {
+  return pageInfo.charts.reduce((memo, chart) => {
+    return { ...memo, [chart.title]: {} };
+  }, {});
+};
+
+export const createLoadedChartData = ({ dataSourceType = 'issue' } = {}) => {
+  return pageInfo.charts.reduce((memo, chart) => {
+    return {
+      ...memo,
+      [chart.title]: {
+        loaded: true,
+        type: chart.type,
+        description: '',
+        data: barChartData,
+        dataSourceType,
+        filterLabels: mockFilterLabels,
+        collectionLabels: mockCollectionLabels,
+        groupBy: mockGroupBy,
+        error: null,
+      },
+    };
+  }, {});
+};
