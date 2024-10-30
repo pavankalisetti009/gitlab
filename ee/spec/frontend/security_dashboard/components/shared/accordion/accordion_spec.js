@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { Accordion } from 'ee/vue_shared/components/accordion';
+import { Accordion } from 'ee/security_dashboard/components/shared/accordion';
 
 jest.mock('lodash/uniqueId', () => () => 'foo');
 
