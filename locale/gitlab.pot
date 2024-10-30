@@ -18989,6 +18989,9 @@ msgstr ""
 msgid "Deployments|No deployment history"
 msgstr ""
 
+msgid "Deployment|%{releaseName} release notes:"
+msgstr ""
+
 msgid "Deployment|A colleague"
 msgstr ""
 

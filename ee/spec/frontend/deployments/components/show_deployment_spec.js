@@ -6,6 +6,7 @@ import mockEnvironmentFixture from 'test_fixtures/graphql/deployments/graphql/qu
 import ShowDeployment from '~/deployments/components/show_deployment.vue';
 import deploymentQuery from '~/deployments/graphql/queries/deployment.query.graphql';
 import environmentQuery from '~/deployments/graphql/queries/environment.query.graphql';
+import releaseQuery from '~/deployments/graphql/queries/release.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import DeploymentTimeline from 'ee/deployments/components/deployment_timeline.vue';
@@ -20,22 +21,40 @@ const ENVIRONMENT_NAME = mockEnvironmentFixture.data.project.environment.name;
 const DEPLOYMENT_IID = deployment.iid;
 const GRAPHQL_ETAG_KEY = 'project/environments';
 const PROTECTED_ENVIRONMENTS_SETTINGS_PATH = '/settings/ci_cd#js-protected-environments-settings';
+const RELEASE_QUERY_RESPONSE_MOCK = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      release: {
+        id: 'gid://gitlab/Release/1',
+        name: 'Test Release',
+        descriptionHtml: '<p>Test Release Description</p>',
+        links: {
+          selfUrl: 'http://gitlab.test/test/test/-/releases/1.0.0',
+        },
+      },
+    },
+  },
+};
 
 describe('~/deployments/components/show_deployment.vue', () => {
   let wrapper;
   let mockApollo;
   let deploymentQueryResponse;
   let environmentQueryResponse;
+  let releaseQueryResponse;
 
   beforeEach(() => {
     deploymentQueryResponse = jest.fn();
     environmentQueryResponse = jest.fn();
+    releaseQueryResponse = jest.fn();
   });
 
   const createComponent = () => {
     mockApollo = createMockApollo([
       [deploymentQuery, deploymentQueryResponse],
       [environmentQuery, environmentQueryResponse],
+      [releaseQuery, releaseQueryResponse],
     ]);
     wrapper = shallowMount(ShowDeployment, {
       apolloProvider: mockApollo,
@@ -56,36 +75,68 @@ describe('~/deployments/components/show_deployment.vue', () => {
     return waitForPromises();
   };
 
-  beforeEach(async () => {
-    deploymentQueryResponse.mockResolvedValue(mockDeploymentFixture);
-    environmentQueryResponse.mockResolvedValue(mockEnvironmentFixture);
-    await createComponent();
-  });
+  describe('default behavior', () => {
+    beforeEach(async () => {
+      deploymentQueryResponse.mockResolvedValue(mockDeploymentFixture);
+      environmentQueryResponse.mockResolvedValue(mockEnvironmentFixture);
+      await createComponent();
+    });
 
-  it('shows the deployment approval table', () => {
-    expect(wrapper.findComponent(DeploymentApprovals).props()).toEqual({
-      approvalSummary: deployment.approvalSummary,
-      deployment,
+    it('shows the deployment approval table', () => {
+      expect(wrapper.findComponent(DeploymentApprovals).props()).toEqual({
+        approvalSummary: deployment.approvalSummary,
+        deployment,
+      });
+    });
+
+    it('shows the deployment approvals timeline', () => {
+      expect(wrapper.findComponent(DeploymentTimeline).props()).toEqual({
+        approvalSummary: deployment.approvalSummary,
+      });
+    });
+
+    it('shows the approvals empty state', () => {
+      expect(wrapper.findComponent(ApprovalsEmptyState).props('approvalSummary')).toEqual(
+        mockDeploymentFixture.data.project.deployment.approvalSummary,
+      );
+    });
+
+    it('refetches the deployment on approval change', async () => {
+      deploymentQueryResponse.mockClear();
+      wrapper.findComponent(DeploymentApprovals).vm.$emit('change');
+      await waitForPromises();
+
+      expect(deploymentQueryResponse).toHaveBeenCalled();
     });
   });
 
-  it('shows the deployment approvals timeline', () => {
-    expect(wrapper.findComponent(DeploymentTimeline).props()).toEqual({
-      approvalSummary: deployment.approvalSummary,
+  describe('when the deployment release tag', () => {
+    beforeEach(() => {
+      environmentQueryResponse.mockResolvedValue(mockEnvironmentFixture);
     });
-  });
 
-  it('shows the approvals empty state', () => {
-    expect(wrapper.findComponent(ApprovalsEmptyState).props('approvalSummary')).toEqual(
-      mockDeploymentFixture.data.project.deployment.approvalSummary,
-    );
-  });
+    describe('is absent', () => {
+      it('does not fetch the release data', async () => {
+        deploymentQueryResponse.mockResolvedValue(mockDeploymentFixture);
 
-  it('refetches the deployment on approval change', async () => {
-    deploymentQueryResponse.mockClear();
-    wrapper.findComponent(DeploymentApprovals).vm.$emit('change');
-    await waitForPromises();
+        createComponent();
+        await waitForPromises();
 
-    expect(deploymentQueryResponse).toHaveBeenCalled();
+        expect(releaseQueryResponse).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('is present', () => {
+      it('fetches the release data', async () => {
+        mockDeploymentFixture.data.project.deployment.tag = true;
+        deploymentQueryResponse.mockResolvedValue(mockDeploymentFixture);
+        releaseQueryResponse.mockResolvedValue(RELEASE_QUERY_RESPONSE_MOCK);
+
+        createComponent();
+        await waitForPromises();
+
+        expect(releaseQueryResponse).toHaveBeenCalled();
+      });
+    });
   });
 });
