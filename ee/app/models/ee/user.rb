@@ -416,7 +416,7 @@ module EE
     def owns_group_without_trial?
       owned_groups
         .include_gitlab_subscription
-        .where(parent_id: nil)
+        .top_level
         .where(gitlab_subscriptions: { trial_ends_on: nil })
         .any?
     end
@@ -763,7 +763,7 @@ module EE
       ::Gitlab::SQL::Union.new(
         [
           ::Namespace.select(select).where(type: ::Namespaces::UserNamespace.sti_name, owner: self),
-          owned_groups.select(select).where(parent_id: nil)
+          owned_groups.select(select).top_level
         ]).to_sql
     end
 
@@ -771,7 +771,7 @@ module EE
       ::Gitlab::SQL::Union.new(
         [
           ::Namespace.select(select).where(type: ::Namespaces::UserNamespace.sti_name, owner: self),
-          reporter_developer_maintainer_owned_groups.select(select).where(parent_id: nil)
+          reporter_developer_maintainer_owned_groups.select(select).top_level
         ]).to_sql
     end
 

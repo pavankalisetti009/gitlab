@@ -79,7 +79,7 @@ module Subscriptions
 
       result = GitlabSubscriptions::FetchPurchaseEligibleNamespacesService.new(
         user: current_user,
-        namespaces: current_user.owned_groups.top_most.with_counts(archived: false),
+        namespaces: current_user.owned_groups.top_level.with_counts(archived: false),
         plan_id: plan_id
       ).execute
 

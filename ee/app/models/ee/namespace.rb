@@ -138,8 +138,8 @@ module EE
         end
 
         left_joins(gitlab_subscription: :hosted_plan)
+          .top_level
           .where(
-            parent_id: nil,
             gitlab_subscriptions: subscription_conditions,
             plans: { name: [nil, *plans_eligible_for_trial] }
           ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
@@ -177,7 +177,7 @@ module EE
       end
 
       scope :root_namespaces_without_zoekt_enabled_namespace, -> do
-        top_most.left_outer_joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { root_namespace_id: nil })
+        top_level.left_outer_joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { root_namespace_id: nil })
       end
 
       delegate :eligible_additional_purchased_storage_size, :additional_purchased_storage_size=,
