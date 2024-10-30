@@ -22,7 +22,7 @@ module QA
       end
 
       let(:new_image_tag) { "#{registry_host}/#{project.full_path}:latest" }
-      let(:docker_utils) { QA::Service::DockerRun::ContainerRegistryUtils.new }
+      let(:docker_utils) { QA::Service::DockerRun::ContainerRegistryUtils.new(image: image_tag) }
 
       before do
         Runtime::Feature.enable(:cvs_for_container_scanning, project: project)
@@ -50,10 +50,11 @@ module QA
       end
 
       def push_container_image
+        docker_utils.pull
         docker_utils.login(registry_host,
           user: Runtime::Env.user_username,
           password: registry_password_token)
-        docker_utils.tag_image(image_tag, new_image_tag)
+        docker_utils.tag_image(new_image_tag)
         docker_utils.push_image(new_image_tag)
       end
 
