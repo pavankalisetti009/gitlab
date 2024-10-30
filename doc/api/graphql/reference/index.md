@@ -5859,6 +5859,29 @@ Input type: `ImportSourceUserCancelReassignmentInput`
 | <a id="mutationimportsourceusercancelreassignmenterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationimportsourceusercancelreassignmentimportsourceuser"></a>`importSourceUser` | [`ImportSourceUser`](#importsourceuser) | Mapping of a user on source instance to a user on destination instance after mutation. |
 
+### `Mutation.importSourceUserKeepAllAsPlaceholder`
+
+DETAILS:
+**Introduced** in GitLab 17.6.
+**Status**: Experiment.
+
+Input type: `ImportSourceUserKeepAllAsPlaceholderInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationimportsourceuserkeepallasplaceholderclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationimportsourceuserkeepallasplaceholdernamespaceid"></a>`namespaceId` | [`NamespaceID!`](#namespaceid) | Global ID of the namespace. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationimportsourceuserkeepallasplaceholderclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationimportsourceuserkeepallasplaceholdererrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationimportsourceuserkeepallasplaceholderupdatedimportsourceusercount"></a>`updatedImportSourceUserCount` | [`Int`](#int) | Number of successfully updated mappings of users on source instance to their destination users. |
+
 ### `Mutation.importSourceUserKeepAsPlaceholder`
 
 DETAILS:
