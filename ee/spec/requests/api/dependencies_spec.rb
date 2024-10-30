@@ -35,9 +35,7 @@ RSpec.describe API::Dependencies, feature_category: :dependency_management do
     end
 
     def json_dependency(occurrence)
-      vulnerabilities = occurrence.vulnerabilities.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474120'
-      ).map do |vulnerability|
+      vulnerabilities = occurrence.vulnerabilities.map do |vulnerability|
         {
           'id' => vulnerability.id,
           'name' => vulnerability.title,
