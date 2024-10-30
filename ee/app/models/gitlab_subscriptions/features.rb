@@ -110,6 +110,7 @@ module GitlabSubscriptions
       disable_name_update_for_users
       disable_personal_access_tokens
       domain_verification
+      epic_colors
       epics
       extended_audit_events
       external_authorization_service_api_management
@@ -201,7 +202,6 @@ module GitlabSubscriptions
       dast
       dependency_scanning
       dora4_analytics
-      epic_colors
       enterprise_templates
       environment_alerts
       evaluate_group_level_compliance_pipeline
