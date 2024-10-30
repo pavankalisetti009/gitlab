@@ -23,11 +23,12 @@ module Gitlab
       def initialize(
         version: ::Elastic::MultiVersionUtil::TARGET_VERSION,
         client: nil,
+        operation: nil,
         target_name: nil)
 
         proxy = self.class.create_proxy(version)
 
-        @client = client || proxy.client
+        @client = client || proxy.client(operation)
         @target_name = target_name || proxy.index_name
         @version = version
       end

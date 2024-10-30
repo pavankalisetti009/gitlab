@@ -15,6 +15,7 @@ RSpec.describe Gitlab::Search::Client, feature_category: :global_search do
   end
 
   describe '.execute_search' do
+    let(:adapter) { described_class.search_adapter }
     let(:options) { { klass: Project } }
     let(:query) { { foo: 'bar' } }
 
@@ -22,7 +23,7 @@ RSpec.describe Gitlab::Search::Client, feature_category: :global_search do
       expect(adapter).to receive(:search)
         .with(a_hash_including(timeout: '30s', index: Project.index_name, body: { foo: 'bar' })).and_return(true)
 
-      client.execute_search(query: query, options: options) do |response|
+      described_class.execute_search(query: query, options: options) do |response|
         expect(response).to eq(true)
       end
     end
@@ -34,7 +35,7 @@ RSpec.describe Gitlab::Search::Client, feature_category: :global_search do
         expect(adapter).to receive(:search)
           .with(a_hash_including(timeout: '1s', index: Project.index_name, body: { foo: 'bar' })).and_return(true)
 
-        client.execute_search(query: query, options: options) do |response|
+        described_class.execute_search(query: query, options: options) do |response|
           expect(response).to eq(true)
         end
       end
@@ -47,9 +48,30 @@ RSpec.describe Gitlab::Search::Client, feature_category: :global_search do
         expect(adapter).to receive(:search)
           .with(a_hash_including(timeout: '1s', index: 'foo-bar', body: { foo: 'bar' })).and_return(true)
 
-        client.execute_search(query: query, options: options) do |response|
+        described_class.execute_search(query: query, options: options) do |response|
           expect(response).to eq(true)
         end
+      end
+    end
+
+    context 'when retry_on_failure is set' do
+      let(:retry_on_failure) { 3 }
+
+      before do
+        stub_application_setting(elasticsearch_retry_on_failure: retry_on_failure)
+      end
+
+      it 'calls search with the expected query' do
+        expect(adapter).to receive(:search)
+          .with(a_hash_including(timeout: '30s', index: Project.index_name, body: { foo: 'bar' })).and_return(true)
+
+        described_class.execute_search(query: query, options: options) do |response|
+          expect(response).to eq(true)
+        end
+      end
+
+      it 'has the correct retry_on_failure option' do
+        expect(adapter.transport.transport.options[:retry_on_failure]).to eq(retry_on_failure)
       end
     end
   end
