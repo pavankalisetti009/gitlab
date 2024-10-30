@@ -24,7 +24,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
       ensure_elasticsearch_index!
 
       submit_dashboard_search('Test')
-      select_search_scope('Issues')
+      select_search_scope('Work items')
 
       expect(page).to have_selector('.results', text: 'Test searching for an issue')
     end
