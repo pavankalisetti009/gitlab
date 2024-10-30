@@ -54,7 +54,7 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
     include_examples 'returns an error'
   end
 
-  context 'when promotion_management_applicable? returns false' do
+  context 'when member_promotion_management_enabled? returns false' do
     let(:promotion_feature) { false }
 
     include_examples 'returns an error'

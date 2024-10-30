@@ -19,7 +19,7 @@ module Resolvers
           end
 
           def authorize!
-            raise_resource_not_available_error! unless promotion_management_applicable? &&
+            raise_resource_not_available_error! unless member_promotion_management_enabled? &&
               current_user.can_admin_all_resources?
           end
         end

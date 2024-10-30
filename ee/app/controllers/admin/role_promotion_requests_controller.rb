@@ -12,7 +12,7 @@ module Admin
     private
 
     def verify_role_promotion_requests_enabled!
-      render_404 unless promotion_management_applicable?
+      render_404 unless member_promotion_management_enabled?
     end
   end
 end

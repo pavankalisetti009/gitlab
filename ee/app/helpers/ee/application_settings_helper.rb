@@ -203,7 +203,7 @@ module EE
         })
       end
 
-      promotion_management_available = promotion_management_available?
+      promotion_management_available = member_promotion_management_feature_available?
       form_data[:promotion_management_available] = promotion_management_available.to_s
       if promotion_management_available
         form_data[:enable_member_promotion_management] = @application_setting[:enable_member_promotion_management].to_s

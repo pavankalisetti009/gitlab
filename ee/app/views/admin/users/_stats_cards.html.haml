@@ -2,7 +2,7 @@
                                   value: limited_counter_with_delimiter(User.blocked_pending_approval),
                                   href: admin_users_path(filter: "blocked_pending_approval"),
                                   link_title: s_('AdminUsers|Filter list')
-- if promotion_management_applicable?
+- if member_promotion_management_enabled?
   - requests_count = limited_counter_with_delimiter(::GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder.new(current_user).execute)
   = render 'admin/users/stat_card', title: s_('AdminUsers|Role promotions'),
                                     value: requests_count,

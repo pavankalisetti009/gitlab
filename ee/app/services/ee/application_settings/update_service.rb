@@ -128,7 +128,7 @@ module EE
         param_value = ActiveRecord::Type::Boolean.new.cast(params.delete(:enable_member_promotion_management))
 
         return application_setting.enable_member_promotion_management if param_value.nil?
-        return false unless promotion_management_available?
+        return false unless member_promotion_management_feature_available?
         return true if param_value == false && pending_member_approvals?
 
         param_value

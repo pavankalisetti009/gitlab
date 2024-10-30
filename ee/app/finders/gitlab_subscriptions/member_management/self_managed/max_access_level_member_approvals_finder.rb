@@ -12,7 +12,7 @@ module GitlabSubscriptions
 
         def execute
           model = ::Members::MemberApproval
-          return model.none unless promotion_management_applicable?
+          return model.none unless member_promotion_management_enabled?
           return model.none unless current_user.can_admin_all_resources?
 
           model.pending_member_approvals_with_max_new_access_level

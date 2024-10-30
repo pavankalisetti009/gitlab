@@ -17,13 +17,13 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
     stub_application_setting(enable_member_promotion_management: setting_enabled)
   end
 
-  describe '#promotion_management_applicable?' do
+  describe '#member_promotion_management_enabled?' do
     context 'when self-managed' do
       context 'when feature is disabled' do
         let(:feature_enabled) { false }
 
         it 'returns false' do
-          expect(promotion_management_applicable?).to be false
+          expect(member_promotion_management_enabled?).to be false
         end
       end
 
@@ -31,14 +31,14 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
         let(:setting_enabled) { false }
 
         it 'returns false' do
-          expect(promotion_management_applicable?).to be false
+          expect(member_promotion_management_enabled?).to be false
         end
       end
 
       context 'when feature and setting is enabled' do
         context 'when guests are excluded' do
           it 'returns true' do
-            expect(promotion_management_applicable?).to be true
+            expect(member_promotion_management_enabled?).to be true
           end
         end
 
@@ -46,7 +46,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
           let(:plan_type) { License::STARTER_PLAN }
 
           it 'returns false' do
-            expect(promotion_management_applicable?).to be false
+            expect(member_promotion_management_enabled?).to be false
           end
         end
       end
@@ -54,22 +54,22 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
 
     context 'when on saas', :saas do
       it 'returns false' do
-        expect(promotion_management_applicable?).to be false
+        expect(member_promotion_management_enabled?).to be false
       end
     end
   end
 
-  describe '#promotion_management_available?' do
+  describe '#member_promotion_management_feature_available?' do
     context 'when self-managed' do
       it 'returns true' do
-        expect(promotion_management_applicable?).to be true
+        expect(member_promotion_management_feature_available?).to be true
       end
 
       context 'when feature is disabled' do
         let(:feature_enabled) { false }
 
         it 'returns false' do
-          expect(promotion_management_applicable?).to be false
+          expect(member_promotion_management_feature_available?).to be false
         end
       end
 
@@ -77,14 +77,14 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
         let(:plan_type) { License::STARTER_PLAN }
 
         it 'returns false' do
-          expect(promotion_management_applicable?).to be false
+          expect(member_promotion_management_feature_available?).to be false
         end
       end
     end
 
     context 'when on saas', :saas do
       it 'returns false' do
-        expect(promotion_management_applicable?).to be false
+        expect(member_promotion_management_feature_available?).to be false
       end
     end
   end
@@ -99,7 +99,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
 
     subject(:promotion_check) { promotion_management_required_for_role?(new_access_level: access_level) }
 
-    context 'when promotion_management_applicable? returns true' do
+    context 'when member_promotion_management_enabled? returns true' do
       context 'when role change is billable' do
         it { is_expected.to be true }
       end
@@ -111,9 +111,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
       end
     end
 
-    context 'when promotion_management_applicable? returns false' do
+    context 'when member_promotion_management_enabled? returns false' do
       before do
-        allow(self).to receive(:promotion_management_applicable?).and_return(false)
+        allow(self).to receive(:member_promotion_management_enabled?).and_return(false)
       end
 
       it { is_expected.to be false }

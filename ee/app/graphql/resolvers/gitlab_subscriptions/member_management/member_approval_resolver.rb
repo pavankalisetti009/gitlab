@@ -19,7 +19,7 @@ module Resolvers
         end
 
         def authorize!
-          return false unless promotion_management_applicable?
+          return false unless member_promotion_management_enabled?
 
           case object
           when ::Group

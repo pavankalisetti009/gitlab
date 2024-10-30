@@ -21,7 +21,7 @@ module Mutations
 
         def resolve(user_id:, status:)
           raise_resource_not_available_error! unless
-            promotion_management_applicable? && current_user.can_admin_all_resources?
+            member_promotion_management_enabled? && current_user.can_admin_all_resources?
 
           user = Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(user_id))
 

@@ -14,7 +14,7 @@ module GitlabSubscriptions
       deduplicate :until_executed
 
       def handle_event(event)
-        return unless promotion_management_applicable?
+        return unless member_promotion_management_enabled?
 
         member_user = User.find_by_id(event.data[:member_user_id])
         return unless member_user.present?
