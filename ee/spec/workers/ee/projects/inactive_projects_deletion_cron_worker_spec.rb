@@ -8,7 +8,7 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
   describe "#perform", :clean_gitlab_redis_shared_state, :sidekiq_inline do
     subject(:worker) { described_class.new }
 
-    let_it_be(:admin_bot) { create(:user, :admin_bot) }
+    let_it_be(:admin_bot) { ::Users::Internal.admin_bot }
     let_it_be(:non_admin_user) { create(:user) }
     let_it_be(:group) { create(:group) }
     let_it_be(:new_blank_project) do
@@ -107,8 +107,7 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
 
         worker.perform
 
-        expect(inactive_large_project.reload.pending_delete).to eq(true)
-        expect(inactive_large_project.reload.marked_for_deletion_at).to be_nil
+        expect(Project.exists?(inactive_large_project.id)).to be(false)
 
         Gitlab::Redis::SharedState.with do |redis|
           expect(
