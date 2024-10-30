@@ -16,6 +16,8 @@ import {
   mockFilterLabels,
   mockCollectionLabels,
   mockGroupBy,
+  createLoadingChartData,
+  createLoadedChartData,
 } from 'ee_jest/insights/mock_data';
 import { TEST_HOST } from 'helpers/test_constants';
 import { CHART_TYPES, INSIGHTS_CHARTS_SUPPORT_DRILLDOWN } from 'ee/insights/constants';
@@ -36,31 +38,6 @@ describe('Insights page component', () => {
         ...props,
       },
     });
-  };
-
-  const createLoadingChartData = () => {
-    return pageInfo.charts.reduce((memo, chart) => {
-      return { ...memo, [chart.title]: {} };
-    }, {});
-  };
-
-  const createLoadedChartData = ({ dataSourceType = 'issue' } = {}) => {
-    return pageInfo.charts.reduce((memo, chart) => {
-      return {
-        ...memo,
-        [chart.title]: {
-          loaded: true,
-          type: chart.type,
-          description: '',
-          data: barChartData,
-          dataSourceType,
-          filterLabels: mockFilterLabels,
-          collectionLabels: mockCollectionLabels,
-          groupBy: mockGroupBy,
-          error: null,
-        },
-      };
-    }, {});
   };
 
   const expectTrackingAction = (action) =>
