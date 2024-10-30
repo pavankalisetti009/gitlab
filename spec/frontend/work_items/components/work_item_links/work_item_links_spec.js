@@ -21,7 +21,7 @@ import WorkItemMoreActions from '~/work_items/components/shared/work_item_more_a
 import {
   FORM_TYPES,
   WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
-  WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
+  WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
 } from '~/work_items/constants';
 import getWorkItemTreeQuery from '~/work_items/graphql/work_item_tree.query.graphql';
 
@@ -375,7 +375,7 @@ describe('WorkItemLinks', () => {
 
     it('calls getToggleFromLocalStorage on mount for toggle-show-closed', () => {
       expect(utils.getToggleFromLocalStorage).toHaveBeenCalledWith(
-        WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
+        WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
       );
     });
   });

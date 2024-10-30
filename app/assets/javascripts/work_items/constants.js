@@ -373,7 +373,6 @@ export const WORK_ITEM_BASE_ROUTE_MAP = {
 };
 
 export const WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemLinks.showLabels';
-export const WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY = 'workItemLinks.showClosed';
 export const WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY = 'workItemTree.showLabels';
 export const WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY = 'workItemTree.showClosed';
 export const WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemRelationships.showLabels';

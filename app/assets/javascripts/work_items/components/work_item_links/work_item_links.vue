@@ -21,7 +21,7 @@ import {
   DEFAULT_PAGE_SIZE_CHILD_ITEMS,
   DETAIL_VIEW_QUERY_PARAM_NAME,
   WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
-  WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
+  WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
 } from '../../constants';
 import {
   findHierarchyWidgets,
@@ -128,7 +128,7 @@ export default {
       fetchNextPageInProgress: false,
       disableContent: false,
       showLabelsLocalStorageKey: WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
-      showClosedLocalStorageKey: WORKITEM_LINKS_SHOWCLOSED_LOCALSTORAGEKEY,
+      showClosedLocalStorageKey: WORKITEM_TREE_SHOWCLOSED_LOCALSTORAGEKEY,
     };
   },
   computed: {
