@@ -59,5 +59,7 @@ For optimal performance, the following hardware specifications are recommended a
 
 - **CPU**: Minimum 8 cores (16 threads recommended).
 - **RAM**: At least 32 GB (64 GB or more recommended for larger models).
-- **GPU**: 2x NVIDIA A100 or equivalent for optimal inference performance.
+- **GPU**:
+  - **Minimum**: 2x NVIDIA A100 or equivalent for optimal inference performance.
+  - **Note**: For running Mixtral 8x22B and Mixtral 8x22B-it, it is recommended to use 8x NVIDIA A100 GPUs.
 - **Storage**: SSD with sufficient space for model weights and data.
