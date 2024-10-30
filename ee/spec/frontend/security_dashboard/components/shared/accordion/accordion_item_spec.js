@@ -1,7 +1,7 @@
 import { uniqueId } from 'lodash';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { AccordionItem } from 'ee/vue_shared/components/accordion';
-import accordionEventBus from 'ee/vue_shared/components/accordion/accordion_event_bus';
+import { AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
+import accordionEventBus from 'ee/security_dashboard/components/shared/accordion/accordion_event_bus';
 
 jest.mock('lodash/uniqueId', () => jest.fn().mockReturnValue('mockUniqueId'));
 

@@ -8,7 +8,7 @@ import {
   SEVERITY_LEVELS_ORDERED_BY_SEVERITY,
   SEVERITY_GROUPS,
 } from 'ee/security_dashboard/constants';
-import { Accordion, AccordionItem } from 'ee/vue_shared/components/accordion';
+import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import { s__, n__, sprintf } from '~/locale';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 
