@@ -109,7 +109,6 @@ export default {
     >
       <gl-disclosure-dropdown-item
         class="work-item-dropdown-toggle"
-        tabindex="-1"
         @action="$emit('toggle-show-labels')"
       >
         <template #list-item>
@@ -124,7 +123,6 @@ export default {
 
       <gl-disclosure-dropdown-item
         class="work-item-dropdown-toggle"
-        tabindex="-1"
         @action="$emit('toggle-show-closed')"
       >
         <template #list-item>
