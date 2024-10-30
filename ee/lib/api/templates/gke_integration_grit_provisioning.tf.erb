@@ -26,9 +26,9 @@ provider "google" {
 }
 
 provider "kubectl" {
-  host                   = module.gke_runner_deployment.cluster.host
-  cluster_ca_certificate = module.gke_runner_deployment.cluster.ca_certificate
-  token                  = module.gke_runner_deployment.cluster.access_token
+  host                   = module.gke_runner_deployment.cluster_host
+  cluster_ca_certificate = module.gke_runner_deployment.cluster_ca_certificate
+  token                  = module.gke_runner_deployment.cluster_access_token
   load_config_file       = false
 }
 
