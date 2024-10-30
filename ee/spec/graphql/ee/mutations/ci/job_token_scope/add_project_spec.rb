@@ -59,7 +59,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddProject, feature_category: :cont
         it 'does not log an audit event' do
           expect_next_instance_of(::Ci::JobTokenScope::AddProjectService) do |service|
             expect(service)
-              .to receive(:validate_edit!)
+              .to receive(:validate_source_project_and_target_project_access!)
             .with(project, target_project, current_user)
             .and_raise(ActiveRecord::RecordNotUnique)
           end

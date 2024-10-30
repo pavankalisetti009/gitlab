@@ -90,7 +90,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
         it 'does not log an audit event' do
           expect_next_instance_of(::Ci::JobTokenScope::RemoveProjectService) do |service|
             expect(service)
-             .to receive(:validate_edit!)
+             .to receive(:validate_source_project_and_target_project_access!)
             .and_raise(::Ci::JobTokenScope::EditScopeValidations::ValidationError)
           end
 
