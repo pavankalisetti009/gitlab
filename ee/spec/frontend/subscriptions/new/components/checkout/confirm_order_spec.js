@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import Api from 'ee/api';
 import { STEPS } from 'ee/subscriptions/constants';
 import ConfirmOrder from 'ee/subscriptions/new/components/checkout/confirm_order.vue';
-import { createMockApolloProvider } from 'ee_jest/vue_shared/purchase_flow/spec_helper';
+import { createMockApolloProvider } from 'ee_jest/subscriptions/shared/components/purchase_flow/spec_helper';
 import * as googleTagManager from 'ee/google_tag_manager';
 import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import Tracking from '~/tracking';

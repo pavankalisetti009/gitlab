@@ -5,7 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import OrderSummary from 'ee/subscriptions/buy_addons_shared/components/order_summary.vue';
 import subscriptionsResolvers from 'ee/subscriptions/buy_addons_shared/graphql/resolvers';
 import stateQuery from 'ee/subscriptions/graphql/queries/state.query.graphql';
-import purchaseFlowResolvers from 'ee/vue_shared/purchase_flow/graphql/resolvers';
+import purchaseFlowResolvers from 'ee/subscriptions/shared/components/purchase_flow/graphql/resolvers';
 import {
   mockStoragePlans,
   mockParsedNamespaces,

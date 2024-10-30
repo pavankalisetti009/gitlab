@@ -5,7 +5,7 @@ import VueApollo from 'vue-apollo';
 import { stateData as initialStateData } from 'ee_jest/subscriptions/mock_data';
 import AddonPurchaseDetails from 'ee/subscriptions/buy_addons_shared/components/checkout/addon_purchase_details.vue';
 import stateQuery from 'ee/subscriptions/graphql/queries/state.query.graphql';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';

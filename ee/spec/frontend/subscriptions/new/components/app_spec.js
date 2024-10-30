@@ -13,7 +13,7 @@ import initialStore from 'ee/subscriptions/new/store';
 import {
   PURCHASE_ERROR_DICTIONARY,
   CONTACT_SUPPORT_DEFAULT_MESSAGE,
-} from 'ee/vue_shared/purchase_flow/error_constants';
+} from 'ee/subscriptions/shared/components/purchase_flow/error_constants';
 
 Vue.use(Vuex);
 

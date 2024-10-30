@@ -1,9 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
 import updateState from 'ee/subscriptions/graphql/mutations/update_state.mutation.graphql';
-import BillingAddress from 'jh_else_ee/vue_shared/purchase_flow/components/checkout/billing_address.vue';
-import ConfirmOrder from 'ee/vue_shared/purchase_flow/components/checkout/confirm_order.vue';
-import PaymentMethod from 'ee/vue_shared/purchase_flow/components/checkout/payment_method.vue';
+import BillingAddress from 'jh_else_ee/subscriptions/shared/components/purchase_flow/components/checkout/billing_address.vue';
+import ConfirmOrder from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/confirm_order.vue';
+import PaymentMethod from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/payment_method.vue';
 import { s__ } from '~/locale';
 import { PurchaseEvent } from 'ee/subscriptions/new/constants';
 

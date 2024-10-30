@@ -4,14 +4,14 @@ import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { mockTracking } from 'helpers/tracking_helper';
-import furthestAccessedStepQuery from 'ee/vue_shared/purchase_flow/graphql/queries/furthest_accessed_step.query.graphql';
+import furthestAccessedStepQuery from 'ee/subscriptions/shared/components/purchase_flow/graphql/queries/furthest_accessed_step.query.graphql';
 import { QSR_RECONCILIATION_PATH, STEPS, STEP_BILLING_ADDRESS } from 'ee/subscriptions/constants';
 import Component from 'ee/subscriptions/new/components/checkout/subscription_details.vue';
 import { PurchaseEvent, NEW_GROUP } from 'ee/subscriptions/new/constants';
 import createStore from 'ee/subscriptions/new/store';
 import * as types from 'ee/subscriptions/new/store/mutation_types';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
-import { createMockApolloProvider } from 'ee_jest/vue_shared/purchase_flow/spec_helper';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
+import { createMockApolloProvider } from 'ee_jest/subscriptions/shared/components/purchase_flow/spec_helper';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';

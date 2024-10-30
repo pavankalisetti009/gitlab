@@ -2,7 +2,7 @@
 import { GlAlert, GlFormInput } from '@gitlab/ui';
 import { STEPS } from 'ee/subscriptions/constants';
 import updateState from 'ee/subscriptions/graphql/mutations/update_state.mutation.graphql';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
 import { PurchaseEvent } from 'ee/subscriptions/new/constants';
 import {

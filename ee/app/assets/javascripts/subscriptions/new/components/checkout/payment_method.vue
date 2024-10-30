@@ -3,10 +3,10 @@ import { GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { STEP_PAYMENT_METHOD, TRACK_SUCCESS_MESSAGE } from 'ee/subscriptions/constants';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
 import { sprintf, s__ } from '~/locale';
 import Tracking from '~/tracking';
-import { i18n } from 'ee/vue_shared/purchase_flow/constants';
+import { i18n } from 'ee/subscriptions/shared/components/purchase_flow/constants';
 import Zuora from './zuora.vue';
 
 export default {

@@ -4,7 +4,7 @@ import * as constants from 'ee/subscriptions/constants';
 import { CHARGE_PROCESSING_TYPE } from 'ee/subscriptions/new/constants';
 import defaultClient from 'ee/subscriptions/new/graphql';
 import * as actions from 'ee/subscriptions/new/store/actions';
-import activateNextStepMutation from 'ee/vue_shared/purchase_flow/graphql/mutations/activate_next_step.mutation.graphql';
+import activateNextStepMutation from 'ee/subscriptions/shared/components/purchase_flow/graphql/mutations/activate_next_step.mutation.graphql';
 import testAction from 'helpers/vuex_action_helper';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';

@@ -3,7 +3,7 @@ import emptySvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-dashboar
 import { GlEmptyState } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { logError } from '~/lib/logger';
-import StepOrderApp from 'ee/vue_shared/purchase_flow/components/step_order_app.vue';
+import StepOrderApp from 'ee/subscriptions/shared/components/purchase_flow/components/step_order_app.vue';
 import OrderSummary from 'jh_else_ee/subscriptions/buy_addons_shared/components/order_summary.vue';
 import { ERROR_FETCHING_DATA_HEADER, ERROR_FETCHING_DATA_DESCRIPTION } from '~/ensure_data';
 import Checkout from 'jh_else_ee/subscriptions/buy_addons_shared/components/checkout.vue';
@@ -17,7 +17,7 @@ import stateQuery from 'ee/subscriptions/graphql/queries/state.query.graphql';
 import {
   PURCHASE_ERROR_DICTIONARY,
   CONTACT_SUPPORT_DEFAULT_MESSAGE,
-} from 'ee/vue_shared/purchase_flow/error_constants';
+} from 'ee/subscriptions/shared/components/purchase_flow/error_constants';
 
 export default {
   components: {

@@ -8,13 +8,13 @@ import axios from '~/lib/utils/axios_utils';
 import Api from 'ee/api';
 import Zuora from 'ee/subscriptions/new/components/checkout/zuora.vue';
 import { mockTracking } from 'helpers/tracking_helper';
-import furthestAccessedStepQuery from 'ee/vue_shared/purchase_flow/graphql/queries/furthest_accessed_step.query.graphql';
+import furthestAccessedStepQuery from 'ee/subscriptions/shared/components/purchase_flow/graphql/queries/furthest_accessed_step.query.graphql';
 import { STEPS, STEP_CONFIRM_ORDER } from 'ee/subscriptions/constants';
 import PaymentMethod from 'ee/subscriptions/new/components/checkout/payment_method.vue';
 import createStore from 'ee/subscriptions/new/store';
 import * as types from 'ee/subscriptions/new/store/mutation_types';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
-import { createMockApolloProvider } from 'ee_jest/vue_shared/purchase_flow/spec_helper';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
+import { createMockApolloProvider } from 'ee_jest/subscriptions/shared/components/purchase_flow/spec_helper';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { stubComponent } from 'helpers/stub_component';
 
