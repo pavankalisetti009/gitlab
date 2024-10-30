@@ -47,7 +47,7 @@ module Analytics
         # as it means that issues were already processed
         unless cursor_data[:merge_requests_stage_event_hash_id].present?
           response = Analytics::CycleAnalytics::ConsistencyCheckService.new(
-            group: group,
+            namespace: group,
             event_model: Analytics::CycleAnalytics::IssueStageEvent
           ).execute(runtime_limiter: runtime_limiter, cursor_data: cursor_data)
 
@@ -55,7 +55,7 @@ module Analytics
         end
 
         Analytics::CycleAnalytics::ConsistencyCheckService.new(
-          group: group,
+          namespace: group,
           event_model: Analytics::CycleAnalytics::MergeRequestStageEvent
         ).execute(runtime_limiter: runtime_limiter, cursor_data: cursor_data)
       end

@@ -25,7 +25,7 @@ module Analytics
           break if batch.empty?
 
           batch.each do |aggregation|
-            Analytics::CycleAnalytics::AggregatorService.new(aggregation: aggregation, mode: :incremental,
+            Analytics::CycleAnalytics::NamespaceAggregatorService.new(aggregation: aggregation, mode: :incremental,
               runtime_limiter: runtime_limiter).execute
 
             if runtime_limiter.over_time?

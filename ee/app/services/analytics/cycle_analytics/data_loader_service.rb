@@ -16,8 +16,10 @@ module Analytics
         MergeRequest => { event_model: MergeRequestStageEvent }.freeze
       }.freeze
 
-      def initialize(group:, model:, stages: nil, context: Analytics::CycleAnalytics::AggregationContext.new)
-        @group = group # could also be a Namespaces::UserNamespace object
+      def initialize(namespace:, model:, stages: nil, context: Analytics::CycleAnalytics::AggregationContext.new)
+        raise "Model #{model} is not supported" unless CONFIG_MAPPING.key?(model)
+
+        @namespace = namespace # could also be a Namespaces::UserNamespace object
         @model = model
         @context = context
         @upsert_count = 0
@@ -56,7 +58,7 @@ module Analytics
 
       private
 
-      attr_reader :group, :model, :context, :upsert_count, :stages
+      attr_reader :namespace, :model, :context, :upsert_count, :stages
 
       def iterator_base_scope
         model.order(:updated_at, :id)
@@ -65,7 +67,7 @@ module Analytics
       def model_iterator
         opts = {
           in_operator_optimization_options: {
-            array_scope: group.all_project_ids,
+            array_scope: namespace.all_project_ids,
             array_mapping_scope: ->(id_expression) {
                                    model.where(model.arel_table[event_model.project_column].eq(id_expression))
                                  }
@@ -157,15 +159,15 @@ module Analytics
 
       def load_stages
         ::Gitlab::Analytics::CycleAnalytics::DistinctStageLoader
-          .new(group: group)
+          .new(group: namespace)
           .stages
-          .select { |stage| stage.start_event.object_type == model }
+          .select { |stage| stage.subject_class == model }
       end
 
       def guard_stages!(stages)
-        return unless stages&.any? { |stage| stage.namespace != group || stage.start_event.object_type != model }
+        return unless stages&.any? { |stage| stage.namespace != namespace || stage.subject_class != model }
 
-        raise "Incorrect stage detected. Stages must match group and model"
+        raise "Incorrect stage detected. Stages must match namespace and model"
       end
 
       def events

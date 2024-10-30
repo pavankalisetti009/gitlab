@@ -10,7 +10,7 @@ RSpec.shared_context 'with value stream analytics flow metrics common data' do
   let_it_be(:assignee) { create(:user) }
 
   before do
-    Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: model_to_aggregate).execute
+    Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: model_to_aggregate).execute
   end
 end
 

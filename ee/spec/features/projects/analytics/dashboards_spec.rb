@@ -110,7 +110,7 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
           end
 
           before do
-            Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: Issue).execute
+            Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
             visit_project_value_streams_dashboard(project)
           end
 
