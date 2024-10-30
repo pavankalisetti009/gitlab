@@ -19,6 +19,9 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
     let(:lead_service_class) { GitlabSubscriptions::CreateLeadService }
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyTrialService }
 
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
     subject(:execute) do
       described_class.new(
         step: step, lead_params: lead_params(user, extra_lead_params), trial_params: trial_params, user: user
@@ -27,8 +30,93 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
     it_behaves_like 'when on the lead step', :free_plan
     it_behaves_like 'when on trial step', :free_plan
+    it_behaves_like 'when on trial step', :premium_plan
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
+
+    context 'with an expired legacy trial' do
+      let_it_be(:group) do
+        create(:gitlab_subscription, :premium, :expired_trial, :with_group, trial: false).namespace
+      end
+
+      let(:step) { described_class::TRIAL }
+      let(:namespace_id) { group.id.to_s }
+      let(:trial_params) { { namespace_id: namespace_id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      it 'applies the trial successfully' do
+        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
+
+        expect(execute).to be_success
+        expect(execute.payload).to eq({ namespace: group })
+      end
+    end
+
+    context 'with an existing duo enterprise add on' do
+      let_it_be(:group) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on).namespace
+      end
+
+      let(:step) { described_class::TRIAL }
+      let(:namespace_id) { group.id.to_s }
+      let(:trial_params) { { namespace_id: namespace_id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      it 'returns an error for ineligible namespace' do
+        expect(apply_trial_service_class).not_to receive(:new)
+
+        expect(execute).to be_error
+        expect(execute.reason).to eq(:not_found)
+      end
+    end
+
+    context 'with an active duo pro trial' do
+      let_it_be(:group) do
+        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on).namespace
+      end
+
+      let(:step) { described_class::TRIAL }
+      let(:namespace_id) { group.id.to_s }
+      let(:trial_params) { { namespace_id: namespace_id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      it 'returns an error for ineligible namespace' do
+        expect(apply_trial_service_class).not_to receive(:new)
+
+        expect(execute).to be_error
+        expect(execute.reason).to eq(:not_found)
+      end
+    end
+
+    context 'with an expired duo pro trial' do
+      let_it_be(:group) do
+        create(:gitlab_subscription_add_on_purchase, :expired_trial, add_on: duo_pro_add_on).namespace
+      end
+
+      let(:step) { described_class::TRIAL }
+      let(:namespace_id) { group.id.to_s }
+      let(:trial_params) { { namespace_id: namespace_id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      it 'applies the trial successfully' do
+        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
+
+        expect(execute).to be_success
+        expect(execute.payload).to eq({ namespace: group })
+      end
+    end
 
     context 'when in the create group flow' do
       let(:step) { described_class::TRIAL }

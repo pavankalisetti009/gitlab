@@ -60,10 +60,10 @@ module GitlabSubscriptions
       end
     end
 
-    def trial_namespace_selector_data(namespace_create_errors)
+    def trial_namespace_selector_data(namespaces, namespace_create_errors)
       namespace_selector_data(namespace_create_errors).merge(
-        any_trial_eligible_namespaces: any_trial_eligible_namespaces?.to_s,
-        items: namespace_options_for_listbox(trial_eligible_namespaces).to_json
+        any_trial_eligible_namespaces: namespaces.any?.to_s,
+        items: namespace_options_for_listbox(namespaces).to_json
       )
     end
 
@@ -78,8 +78,8 @@ module GitlabSubscriptions
       ::Gitlab.config.gitlab.host
     end
 
-    def trial_selection_intro_text
-      if any_trial_eligible_namespaces?
+    def trial_selection_intro_text(namespaces)
+      if namespaces.any?
         if Feature.enabled?(:duo_enterprise_trials, current_user)
           s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
         else
@@ -155,14 +155,6 @@ module GitlabSubscriptions
         :jobs_to_be_done_other,
         :opt_in
       )
-    end
-
-    def trial_eligible_namespaces
-      current_user.manageable_namespaces_eligible_for_trial
-    end
-
-    def any_trial_eligible_namespaces?
-      trial_eligible_namespaces.any?
     end
 
     def _lead_form_data

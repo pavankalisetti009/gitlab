@@ -450,18 +450,54 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.no_active_duo_pro_trial' do
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+      let_it_be(:regular_namespace) { create(:group) }
+      let_it_be(:namespace_with_active_duo) do
+        create(:gitlab_subscription_add_on_purchase, :active, add_on: add_on).namespace
+      end
+
+      let_it_be(:namespace_with_expired_duo) do
+        create(:gitlab_subscription_add_on_purchase, :expired, add_on: add_on).namespace
+      end
+
+      let_it_be(:namespace_with_expired_duo_trial) do
+        create(:gitlab_subscription_add_on_purchase, :expired_trial, add_on: add_on).namespace
+      end
+
+      let_it_be(:namespace_with_other_addon) do
+        create(:gitlab_subscription_add_on_purchase, :product_analytics).namespace
+      end
+
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: add_on)
+      end
+
+      it 'includes correct namespaces' do
+        expected_namespaces = [
+          namespace_with_active_duo,
+          namespace_with_expired_duo,
+          namespace_with_expired_duo_trial,
+          namespace_with_other_addon,
+          regular_namespace
+        ]
+
+        expect(described_class.no_active_duo_pro_trial).to match_array(expected_namespaces)
+      end
+    end
+
     describe '.eligible_for_trial', :saas do
       let_it_be(:namespace) { create :namespace }
 
-      subject { described_class.eligible_for_trial.first }
+      subject { described_class.eligible_for_trial }
 
       context 'when there is no subscription' do
-        it { is_expected.to eq(namespace) }
+        it { is_expected.to contain_exactly(namespace) }
       end
 
       context 'when there is a subscription' do
         context 'with a plan that is eligible for a trial' do
-          where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
+          where(plan: ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL)
 
           with_them do
             context 'and has not yet been trialed' do
@@ -469,23 +505,31 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
                 create :gitlab_subscription, plan, namespace: namespace
               end
 
-              it { is_expected.to eq(namespace) }
+              it { is_expected.to contain_exactly(namespace) }
             end
 
-            context 'but has already had a trial' do
+            context 'and has already had a trial without fully downgrading' do
               before do
                 create :gitlab_subscription, plan, :expired_trial, namespace: namespace
               end
 
-              it { is_expected.to be_nil }
+              it { is_expected.to be_empty }
             end
 
-            context 'but is currently being trialed' do
+            context 'and has already had a trial that has been downgraded correctly' do
+              before do
+                create :gitlab_subscription, plan, :expired_trial, trial: false, namespace: namespace
+              end
+
+              it { is_expected.to contain_exactly(namespace) }
+            end
+
+            context 'and is currently being trialed' do
               before do
                 create :gitlab_subscription, plan, :active_trial, namespace: namespace
               end
 
-              it { is_expected.to be_nil }
+              it { is_expected.to be_empty }
             end
           end
         end
@@ -498,13 +542,43 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
               create :gitlab_subscription, plan, namespace: namespace
             end
 
-            it { is_expected.to be_nil }
+            it { is_expected.to be_empty }
           end
         end
 
         context 'with duo_enterprise_trials disabled' do
           before do
             stub_feature_flags(duo_enterprise_trials_registration: false)
+          end
+
+          context 'with a plan that is eligible for a trial' do
+            where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
+
+            with_them do
+              context 'and has not yet been trialed' do
+                before do
+                  create :gitlab_subscription, plan, namespace: namespace
+                end
+
+                it { is_expected.to contain_exactly(namespace) }
+              end
+
+              context 'and has already had a trial' do
+                before do
+                  create :gitlab_subscription, plan, :expired_trial, namespace: namespace
+                end
+
+                it { is_expected.to be_empty }
+              end
+
+              context 'and has already had a trial that has been downgraded correctly' do
+                before do
+                  create :gitlab_subscription, plan, :expired_trial, trial: false, namespace: namespace
+                end
+
+                it { is_expected.to be_empty }
+              end
+            end
           end
 
           context 'with a plan that is ineligible for a trial' do
@@ -515,7 +589,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
                 create :gitlab_subscription, plan, namespace: namespace
               end
 
-              it { is_expected.to be_nil }
+              it { is_expected.to be_empty }
             end
           end
         end

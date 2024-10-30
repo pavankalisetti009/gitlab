@@ -376,15 +376,13 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
   end
 
   describe '#trial_selection_intro_text' do
-    before do
-      allow(helper).to receive(:any_trial_eligible_namespaces?).and_return(have_group_namespace)
-    end
+    let(:namespace) { build(:namespace) }
 
-    subject { helper.trial_selection_intro_text }
+    subject { helper.trial_selection_intro_text(namespaces) }
 
-    where(:have_group_namespace, :text) do
-      true  | s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
-      false | s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
+    where(:namespaces, :text) do
+      [ref(:namespace)] | s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
+      []                | s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
     end
 
     with_them do
@@ -396,9 +394,9 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
         stub_feature_flags(duo_enterprise_trials: false)
       end
 
-      where(:have_group_namespace, :text) do
-        true  | 'You can apply your trial to a new group or an existing group.'
-        false | s_('Trials|Create a new group to start your GitLab Ultimate trial.')
+      where(:namespaces, :text) do
+        [ref(:namespace)] | 'You can apply your trial to a new group or an existing group.'
+        []                | s_('Trials|Create a new group to start your GitLab Ultimate trial.')
       end
 
       with_them do
@@ -407,89 +405,60 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     end
   end
 
-  context 'with namespace_selector_data', :saas do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:free) { create(:group) }
-    let_it_be(:premium_subscription) { create(:gitlab_subscription, :premium, :with_group) }
-    let_it_be(:ultimate_subscription) { create(:gitlab_subscription, :ultimate, :with_group) }
-    let_it_be(:ultimate_trial_subscription) { create(:gitlab_subscription, :ultimate_trial, :with_group) }
-    let_it_be(:all_groups) do
-      [
-        free,
-        premium_subscription.namespace,
-        ultimate_subscription.namespace,
-        ultimate_trial_subscription.namespace
-      ]
-    end
-
-    let_it_be(:premium) { premium_subscription.namespace }
-
+  describe '#trial_namespace_selector_data' do
     let(:parsed_selector_data) { Gitlab::Json.parse(selector_data[:items]) }
 
-    before do
-      allow(helper).to receive(:current_user).and_return(user)
-      all_groups.map { |group| group.add_owner(user) }
-    end
+    subject(:selector_data) { helper.trial_namespace_selector_data(eligible_namespaces, nil) }
 
-    context 'when duo_enterprise_trials are disabled' do
-      before do
-        stub_feature_flags(duo_enterprise_trials_registration: false)
-      end
+    context 'when there are eligible namespaces' do
+      let(:namespace) { build(:namespace) }
+      let(:eligible_namespaces) { [namespace] }
 
-      describe '#trial_namespace_selector_data' do
-        subject(:selector_data) { helper.trial_namespace_selector_data(nil) }
-
-        it 'returns free group' do
-          group_options = [{ 'text' => free.name, 'value' => free.id.to_s }]
-
-          is_expected.to include(any_trial_eligible_namespaces: 'true')
-          new_group_option = parsed_selector_data[0]['options']
-          group_select_options = parsed_selector_data[1]['options']
-          expect(new_group_option).to eq([{ 'text' => _('Create group'), 'value' => '0' }])
-          expect(group_select_options).to eq(group_options)
-        end
-      end
-    end
-
-    describe '#trial_namespace_selector_data' do
-      subject(:selector_data) { helper.trial_namespace_selector_data(nil) }
-
-      it 'returns free and premium group' do
-        group_options = [
-          { 'text' => free.name, 'value' => free.id.to_s },
-          { 'text' => premium.name, 'value' => premium.id.to_s }
-        ]
+      it 'returns selector data with the eligible namespace' do
+        group_options = [{ 'text' => namespace.name, 'value' => namespace.id.to_s }]
 
         is_expected.to include(any_trial_eligible_namespaces: 'true')
         new_group_option = parsed_selector_data[0]['options']
         group_select_options = parsed_selector_data[1]['options']
         expect(new_group_option).to eq([{ 'text' => _('Create group'), 'value' => '0' }])
-        expect(group_select_options).to match_array(group_options)
+        expect(group_select_options).to eq(group_options)
       end
     end
 
-    describe '#duo_trial_namespace_selector_data' do
-      let_it_be(:all_groups) do
-        [
-          premium_subscription.namespace,
-          ultimate_subscription.namespace,
-          ultimate_trial_subscription.namespace
-        ]
+    context 'when there are no eligible namespaces' do
+      let(:eligible_namespaces) { [] }
+
+      it 'returns selector data with only create option' do
+        is_expected.to include(any_trial_eligible_namespaces: 'false')
+        new_group_option = parsed_selector_data[0]['options']
+        group_select = parsed_selector_data[1]
+        expect(new_group_option).to eq([{ 'text' => _('Create group'), 'value' => '0' }])
+        expect(group_select).to be_nil
       end
+    end
+  end
 
-      before_all do
-        create(:gitlab_subscription_add_on, :gitlab_duo_pro)
-      end
+  describe '#duo_trial_namespace_selector_data' do
+    let(:parsed_selector_data) { Gitlab::Json.parse(selector_data[:items]) }
 
-      subject(:selector_data) { helper.duo_trial_namespace_selector_data(all_groups, nil) }
+    subject(:selector_data) { helper.duo_trial_namespace_selector_data(eligible_namespaces, nil) }
 
-      it 'returns all groups without create group option' do
-        group_options = all_groups.map do |group|
-          { 'text' => group.name, 'value' => group.id.to_s }
-        end
+    context 'when there are eligible namespaces' do
+      let(:namespace) { build(:namespace) }
+      let(:eligible_namespaces) { [namespace] }
 
+      it 'returns selector data with the eligible namespace' do
         is_expected.to include(any_trial_eligible_namespaces: 'true')
-        expect(parsed_selector_data).to eq(group_options)
+        expect(parsed_selector_data).to eq([{ 'text' => namespace.name, 'value' => namespace.id.to_s }])
+      end
+    end
+
+    context 'when there are no eligible namespaces' do
+      let(:eligible_namespaces) { [] }
+
+      it 'returns empty selector data' do
+        is_expected.to include(any_trial_eligible_namespaces: 'false')
+        expect(parsed_selector_data).to be_empty
       end
     end
   end

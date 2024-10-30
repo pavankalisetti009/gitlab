@@ -5,9 +5,7 @@ require 'spec_helper'
 RSpec.shared_examples 'when on the lead step' do |plan_name|
   context 'when lead creation is successful' do
     context 'when there is only one trial eligible namespace' do
-      let_it_be(:group) do
-        create(:group_with_plan, plan: plan_name, name: 'gitlab') { |record| record.add_owner(user) }
-      end
+      let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
 
       it 'starts a trial and tracks the event' do
         expect_create_lead_success(trial_user_params)
@@ -51,8 +49,8 @@ RSpec.shared_examples 'when on the lead step' do |plan_name|
 
     context 'when there are multiple trial eligible namespaces' do
       let_it_be(:group) do
-        create(:group_with_plan, plan: plan_name) { |record| record.add_owner(user) }
-        create(:group_with_plan, plan: plan_name, name: 'gitlab') { |record| record.add_owner(user) }
+        create(:group_with_plan, plan: plan_name, owners: user)
+        create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
       end
 
       it 'does not create a trial and returns that there is no namespace' do
@@ -88,7 +86,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
   let(:step) { described_class::TRIAL }
 
   context 'in the existing namespace flow' do
-    let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab') { |record| record.add_owner(user) } }
+    let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
     let(:namespace_id) { group.id.to_s }
     let(:extra_params) { { trial_entity: '_entity_' } }
     let(:trial_params) { { namespace_id: namespace_id }.merge(extra_params) }
@@ -141,7 +139,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
     end
 
     context 'when the user is not an owner of the namespace' do
-      let(:namespace_id) { create(:group_with_plan, plan: plan_name) { |record| record.add_developer(user) }.id.to_s }
+      let(:namespace_id) { create(:group_with_plan, plan: plan_name, developers: user).id.to_s }
 
       it_behaves_like 'returns an error of not_found and does not apply a trial'
     end

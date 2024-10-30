@@ -113,17 +113,34 @@ module EE
             ).or(GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id].eq(nil)))
       end
 
+      scope :no_active_duo_pro_trial, -> do
+        today = Date.current
+        add_on_purchases = GitlabSubscriptions::AddOnPurchase.arel_table
+        no_add_on = add_on_purchases[:subscription_add_on_id].eq(nil)
+        not_started_yet = add_on_purchases[:started_at].gt(today)
+        not_a_trial = add_on_purchases[:trial].eq(false)
+        not_duo_pro = GitlabSubscriptions::AddOn.arel_table[:name].not_eq(:code_suggestions)
+        not_expired_yet = add_on_purchases[:expires_on].lteq(today)
+
+        left_joins(subscription_add_on_purchases: :add_on)
+          .where(no_add_on.or(not_started_yet.or(not_a_trial.or(not_duo_pro.or(not_expired_yet)))))
+      end
+
       scope :eligible_for_trial, -> do
-        plans_eligible_for_trial = if ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
-                                     ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL
-                                   else
-                                     ::Plan::PLANS_ELIGIBLE_FOR_TRIAL
-                                   end
+        plans_eligible_for_trial = ::Plan::PLANS_ELIGIBLE_FOR_TRIAL
+        subscription_conditions = { trial: [nil, false], trial_ends_on: [nil] }
+
+        if ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
+          plans_eligible_for_trial = ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL
+          # We'll  keep this guard here just in case CustomersDot hasn't full sync'd the downgrade yet
+          # to keep any edge cases around that from causing issues with CTA/attempted trials.
+          subscription_conditions = { trial: [nil, false] }
+        end
 
         left_joins(gitlab_subscription: :hosted_plan)
           .where(
             parent_id: nil,
-            gitlab_subscriptions: { trial: [nil, false], trial_ends_on: [nil] },
+            gitlab_subscriptions: subscription_conditions,
             plans: { name: [nil, *plans_eligible_for_trial] }
           ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
