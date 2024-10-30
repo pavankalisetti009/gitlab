@@ -1,9 +1,0 @@
----
-name: custom_models_vue_app
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/463133
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154236
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/484708
-milestone: '17.5'
-group: group::custom models
-type: beta
-default_enabled: true
