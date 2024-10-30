@@ -1,6 +1,6 @@
 <script>
 import { GlSkeletonLoader, GlSprintf, GlIcon, GlLink } from '@gitlab/ui';
-import countsQuery from 'ee/packages_and_registries/container_registry/explorer/graphql/queries/get_project_container_scanning.query.graphql';
+import vulnerabilityCountsQuery from 'ee/packages_and_registries/container_registry/explorer/graphql/queries/get_project_container_scanning.query.graphql';
 import { REPORT_TYPE_PRESETS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 import {
   VULNERABILITY_STATE_OBJECTS,
@@ -49,20 +49,20 @@ export default {
         count: this.counts[severity] || 0,
       }));
     },
-    counts() {
+    vulnerabilityCounts() {
       return this.project?.vulnerabilitySeveritiesCount || {};
     },
     criticalSeverity() {
-      return this.formattedCounts(this.counts[CRITICAL]);
+      return this.formattedCounts(this.vulnerabilityCounts[CRITICAL]);
     },
     highSeverity() {
-      return this.formattedCounts(this.counts[HIGH]);
+      return this.formattedCounts(this.vulnerabilityCounts[HIGH]);
     },
     otherSeverity() {
       let totalCounts = 0;
 
       [MEDIUM, LOW, INFO, UNKNOWN].forEach((severity) => {
-        const count = this.counts[severity];
+        const count = this.vulnerabilityCounts[severity];
 
         if (count) {
           totalCounts += count;
@@ -74,7 +74,7 @@ export default {
   },
   apollo: {
     project: {
-      query: countsQuery,
+      query: vulnerabilityCountsQuery,
       errorPolicy: 'none',
       variables() {
         return {
