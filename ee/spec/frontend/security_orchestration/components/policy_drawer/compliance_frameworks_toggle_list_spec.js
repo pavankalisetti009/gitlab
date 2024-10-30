@@ -35,6 +35,18 @@ describe('ComplianceFrameworksToggleList', () => {
     });
   });
 
+  describe('projects exceed page size', () => {
+    it('renders correct label when project list is bigger then default page size', () => {
+      createComponent({
+        propsData: {
+          defaultProjectPageSize: 2,
+        },
+      });
+
+      expect(findHeader().text()).toBe('2+ projects which have compliance framework:');
+    });
+  });
+
   describe('single framework', () => {
     beforeEach(() => {
       createComponent({
@@ -55,8 +67,8 @@ describe('ComplianceFrameworksToggleList', () => {
 
     it.each`
       labelsToShow | expectedLength | expectedText
-      ${2}         | ${2}           | ${'+ 1 more'}
-      ${1}         | ${1}           | ${'+ 2 more'}
+      ${2}         | ${2}           | ${'+ 2 more'}
+      ${1}         | ${1}           | ${'+ 3 more'}
     `('can show only partial list', ({ labelsToShow, expectedLength, expectedText }) => {
       createComponent({
         propsData: {

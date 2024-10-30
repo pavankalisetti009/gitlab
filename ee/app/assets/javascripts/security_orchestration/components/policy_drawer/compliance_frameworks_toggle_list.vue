@@ -4,6 +4,7 @@ import { sprintf, __ } from '~/locale';
 import {
   COMPLIANCE_FRAMEWORKS_DESCRIPTION,
   COMPLIANCE_FRAMEWORKS_DESCRIPTION_NO_PROJECTS,
+  COMPLIANCE_FRAMEWORKS_DESCRIPTION_OVER_MAX_NUMBER_OF_PROJECTS,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
 
 export default {
@@ -21,6 +22,11 @@ export default {
       type: Number,
       required: false,
       default: 0,
+    },
+    defaultProjectPageSize: {
+      type: Number,
+      required: false,
+      default: 100,
     },
   },
   computed: {
@@ -51,7 +57,21 @@ export default {
         return COMPLIANCE_FRAMEWORKS_DESCRIPTION_NO_PROJECTS;
       }
 
+      if (this.hasMoreProjects) {
+        return sprintf(COMPLIANCE_FRAMEWORKS_DESCRIPTION_OVER_MAX_NUMBER_OF_PROJECTS, {
+          pageSize: this.defaultProjectPageSize,
+        });
+      }
+
       return COMPLIANCE_FRAMEWORKS_DESCRIPTION(this.projectsLength);
+    },
+    hasMoreProjects() {
+      return this.projectsLength >= this.defaultProjectPageSize && this.hasNextPage;
+    },
+    hasNextPage() {
+      return this.complianceFrameworks.some(
+        (framework) => framework.projects.pageInfo?.hasNextPage,
+      );
     },
     projectsLength() {
       const allProjectsOfComplianceFrameworks = this.complianceFrameworks
