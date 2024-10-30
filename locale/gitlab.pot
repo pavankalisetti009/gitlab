@@ -44455,13 +44455,13 @@ msgstr ""
 msgid "ProtectedBranch|default"
 msgstr ""
 
-msgid "ProtectedEnvironments|%d Approval Rule"
-msgid_plural "ProtectedEnvironments|%d Approval Rules"
+msgid "ProtectedEnvironments|%d approval rule"
+msgid_plural "ProtectedEnvironments|%d approval rules"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "ProtectedEnvironments|%d Deployment Rule"
-msgid_plural "ProtectedEnvironments|%d Deployment Rules"
+msgid "ProtectedEnvironments|%d deployment rule"
+msgid_plural "ProtectedEnvironments|%d deployment rules"
 msgstr[0] ""
 msgstr[1] ""
 

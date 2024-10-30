@@ -122,7 +122,7 @@ RSpec.describe 'Protected Environments', feature_category: :environment_manageme
         visit project_settings_ci_cd_path(project)
 
         within_protected_environments_list do
-          expect(page).to have_content('2 Deployment Rules')
+          expect(page).to have_content('2 deployment rules')
         end
       end
 
