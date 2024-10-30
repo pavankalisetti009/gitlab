@@ -118,6 +118,12 @@ export default {
       return this.currentTab === 0 && !this.showEmptyState;
     },
   },
+  mounted() {
+    document.addEventListener('visibilitychange', this.handleVisibilityChanged);
+  },
+  beforeDestroy() {
+    document.removeEventListener('visibilitychange', this.handleVisibilityChanged);
+  },
   methods: {
     nextPage(item) {
       this.cursor = {
@@ -150,6 +156,11 @@ export default {
     handleFiltersChanged(data) {
       this.alert?.dismiss();
       this.queryFilterValues = { ...data };
+    },
+    handleVisibilityChanged() {
+      if (!document.hidden) {
+        this.updateAllQueries();
+      }
     },
     async handleItemChanged(id, markedAsDone) {
       await this.updateAllQueries(false);
