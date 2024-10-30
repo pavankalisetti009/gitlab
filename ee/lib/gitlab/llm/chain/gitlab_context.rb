@@ -7,7 +7,7 @@ module Gitlab
         attr_accessor :current_user, :container, :resource, :ai_request, :tools_used, :extra_resource, :request_id,
           :current_file, :agent_version, :additional_context
 
-        delegate :current_page_type, :current_page_sentence, :current_page_short_description,
+        delegate :current_page_type, :current_page_short_description,
           to: :authorized_resource, allow_nil: true
 
         # rubocop:disable Metrics/ParameterLists -- we probably need to rethink this initializer

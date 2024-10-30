@@ -31,23 +31,6 @@ RSpec.describe Ai::AiResource::Ci::Build, feature_category: :duo_chat do
     end
   end
 
-  describe '#current_page_sentence' do
-    it 'returns prompt' do
-      expect(wrapped_build.current_page_sentence)
-        .to include("utilize it instead of using the 'BuildReader' tool.")
-    end
-
-    context 'with ai_build_reader_for_chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_build_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_build.current_page_sentence).to eq("")
-      end
-    end
-  end
-
   describe '#current_page_short_description' do
     it 'returns prompt' do
       expect(wrapped_build.current_page_short_description)
