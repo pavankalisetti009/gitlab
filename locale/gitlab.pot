@@ -38760,9 +38760,6 @@ msgstr ""
 msgid "Package type must be NuGet"
 msgstr ""
 
-msgid "Package type must be Terraform Module"
-msgstr ""
-
 msgid "PackageRegistry|%{linkStart}Wildcards%{linkEnd} such as `my-package-*` are supported."
 msgstr ""
 
