@@ -15,6 +15,14 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
 
   before do
     stub_saas_features(subscriptions_trials: true)
+    stub_feature_flags(
+      migrate_purchase_flows_for_existing_customers: false,
+      migrate_purchase_flows_for_new_customers: false
+    )
+
+    allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+      allow(instance).to receive(:execute).and_return([Hashie::Mash.new({ id: "plan_id", code: "ultimate" })])
+    end
 
     sign_in(user)
 
