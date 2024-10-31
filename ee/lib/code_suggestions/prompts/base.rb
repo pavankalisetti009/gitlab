@@ -5,6 +5,8 @@ module CodeSuggestions
     class Base
       include Gitlab::Utils::StrongMemoize
 
+      MAX_LIBRARIES = 300
+
       def initialize(params)
         @params = params
       end

@@ -108,7 +108,7 @@ module CodeSuggestions
         def libraries
           return [] unless xray_report
 
-          xray_report.libs.map { |l| l['name'] } # rubocop:disable Rails/Pluck -- libs is an array
+          xray_report.libs.map { |l| l['name'] }.first(MAX_LIBRARIES) # rubocop:disable Rails/Pluck -- libs is an array
         end
         strong_memoize_attr :libraries
 

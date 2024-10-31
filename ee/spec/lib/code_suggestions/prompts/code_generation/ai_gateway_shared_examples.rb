@@ -188,18 +188,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
 
         let(:xray) { create(:xray_report, payload: payload) }
         let(:payload) do
-          {
-            "libs" => [
-              {
-                "name" => "test library",
-                "description" => "This is some lib."
-              },
-              {
-                "name" => "other library",
-                "description" => "This is some other lib."
-              }
-            ]
-          }
+          { 'libs' => [{ 'name' => 'test library' }, { 'name' => 'other library' }, { 'name' => 'another library' }] }
         end
 
         let(:params) do
@@ -219,6 +208,7 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
             <libs>
             test library
             other library
+            another library
             </libs>
             The list of available libraries is provided in <libs></libs> tags.
           LIBS
@@ -280,6 +270,15 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
           PROMPT
         end
 
+        let(:expected_request_params) do
+          {
+            model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
+            model_name: model_name,
+            prompt_version: prompt_version,
+            prompt: expected_prompt
+          }
+        end
+
         before do
           allow(::Projects::XrayReport).to receive(:for_project).and_call_original
           allow(::Projects::XrayReport).to receive(:for_lang).and_return([xray])
@@ -304,13 +303,27 @@ RSpec.shared_examples 'code generation AI Gateway request prompt' do
         end
 
         it 'returns expected request params' do
-          request_params = {
-            model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
-            model_name: model_name,
-            prompt_version: prompt_version
-          }
+          expect(subject.request_params).to eq(expected_request_params)
+        end
 
-          expect(subject.request_params).to eq(request_params.merge(prompt: expected_prompt))
+        context 'when the number of X-Ray report libraries exceeds MAX_LIBRARIES' do
+          before do
+            stub_const('CodeSuggestions::Prompts::Base::MAX_LIBRARIES', 2)
+          end
+
+          let(:expected_libs) do
+            <<~LIBS
+              <libs>
+              test library
+              other library
+              </libs>
+              The list of available libraries is provided in <libs></libs> tags.
+            LIBS
+          end
+
+          it 'returns expected request params' do
+            expect(subject.request_params).to eq(expected_request_params)
+          end
         end
       end
 
@@ -676,7 +689,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
     context 'when all parameters are present' do
       before_all do
         create(:xray_report, lang: 'go', project: project,
-          payload: { libs: [{ name: 'zlib (1.2.3)' }, { name: 'boost (2.0.0)' }] })
+          payload: { libs: [{ name: 'zlib (1.2.3)' }, { name: 'boost (2.0.0)' }, { name: 'jwt (3.1.2)' }] })
       end
 
       let(:expected_file_name) { file_name }
@@ -686,7 +699,7 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       let(:expected_examples_array) { examples }
       let(:expected_trimmed_content_above_cursor) { content_above_cursor }
       let(:expected_trimmed_content_below_cursor) { content_below_cursor }
-      let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)'] }
+      let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)', 'jwt (3.1.2)'] }
       let(:expected_user_instruction) { comment }
       let(:expected_stream) { true }
 
@@ -746,6 +759,18 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
           it 'returns expected request params' do
             expect(subject.request_params).to eq(expected_request_params)
           end
+        end
+      end
+
+      context 'when the number of X-Ray report libraries exceeds MAX_LIBRARIES' do
+        before do
+          stub_const('CodeSuggestions::Prompts::Base::MAX_LIBRARIES', 2)
+        end
+
+        let(:expected_libraries) { ['zlib (1.2.3)', 'boost (2.0.0)'] }
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(expected_request_params)
         end
       end
     end

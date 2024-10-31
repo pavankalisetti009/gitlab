@@ -213,7 +213,7 @@ module CodeSuggestions
         def libraries
           return [] unless xray_report
 
-          xray_report.libs.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
+          xray_report.libs.pluck('name').first(MAX_LIBRARIES) # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
         end
         strong_memoize_attr :libraries
       end
