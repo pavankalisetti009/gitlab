@@ -208,7 +208,7 @@ module EE
       end
 
       def log_audit_events
-        Audit::ProjectChangesAuditor.new(current_user, project).execute
+        ::Projects::ProjectChangesAuditor.new(current_user, project).execute
       end
 
       def sync_wiki_on_enable

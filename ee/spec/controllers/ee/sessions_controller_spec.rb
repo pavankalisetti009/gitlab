@@ -82,7 +82,7 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
           }
         }
 
-        expect(Audit::UnauthenticatedSecurityEventAuditor).to receive(:new).with('foo@bar.com').and_call_original
+        expect(::Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with('foo@bar.com').and_call_original
         expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_context).and_call_original
 
         get(:new, params: { user: { login: 'foo@bar.com' } })

@@ -11,7 +11,7 @@ module EE
       def before_destroy(issuable)
         return unless issuable.is_a?(MergeRequest)
 
-        ::Audit::MergeRequestBeforeDestroyAuditor.new(issuable, current_user).execute
+        ::MergeRequests::MergeRequestBeforeDestroyAuditor.new(issuable, current_user).execute
       end
 
       override :after_destroy
@@ -33,7 +33,7 @@ module EE
         return unless current_user
 
         if issuable.is_a?(MergeRequest)
-          ::Audit::MergeRequestDestroyAuditor.new(issuable, current_user).execute
+          ::MergeRequests::MergeRequestDestroyAuditor.new(issuable, current_user).execute
         else
           issuable_name = issuable.is_a?(Issue) ? issuable.work_item_type.name : issuable.class.name
 

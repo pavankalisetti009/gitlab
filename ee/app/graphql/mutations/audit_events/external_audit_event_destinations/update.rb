@@ -6,7 +6,7 @@ module Mutations
       class Update < Base
         graphql_name 'ExternalAuditEventDestinationUpdate'
 
-        include ::Audit::Changes
+        include ::AuditEvents::Changes
 
         UPDATE_EVENT_NAME = 'update_event_streaming_destination'
 

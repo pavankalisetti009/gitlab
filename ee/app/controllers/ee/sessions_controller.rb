@@ -69,7 +69,7 @@ module EE
     override :log_failed_login
     def log_failed_login
       login = request.filtered_parameters.dig('user', 'login')
-      Audit::UnauthenticatedSecurityEventAuditor.new(login).execute
+      ::Authn::UnauthenticatedSecurityEventAuditor.new(login).execute
 
       super
     end

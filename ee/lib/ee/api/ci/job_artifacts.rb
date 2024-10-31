@@ -11,7 +11,7 @@ module EE
             def audit_download(build, filename)
               super
 
-              Audit::Ci::ArtifactDownloadAuditor.new(
+              ::Ci::ArtifactDownloadAuditor.new(
                 current_user: current_user,
                 build: build,
                 filename: filename

@@ -38,7 +38,7 @@ module ComplianceManagement
           .find_or_create_by_project(project, framework)
 
         publish_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added])
-        Audit::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
+        ::ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
 
         success
       end
@@ -48,7 +48,8 @@ module ComplianceManagement
 
         publish_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:removed])
         deleted_framework_settings.each do |framework_setting|
-          Audit::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
+          ::ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting,
+            project).execute
         end
 
         success

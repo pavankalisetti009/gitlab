@@ -2,7 +2,7 @@
 
 module ApprovalRules
   module Updater
-    include ::Audit::Changes
+    include ::AuditEvents::Changes
 
     APPROVAL_RULE_UPDATE_EVENT_NAME = 'update_approval_rules'
     APPROVAL_RULE_CREATE_EVENT_NAME = 'approval_rule_created'

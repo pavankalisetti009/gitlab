@@ -11,7 +11,7 @@ module EE
 
     override :log_audit_reset_failure
     def log_audit_reset_failure(user)
-      ::Audit::UserPasswordResetAuditor.new(user, user, request.remote_ip).audit_reset_failure
+      ::Users::UserPasswordResetAuditor.new(user, user, request.remote_ip).audit_reset_failure
     end
 
     def complexity

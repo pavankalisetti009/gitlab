@@ -87,7 +87,7 @@ module EE
       end
 
       def log_audit_events
-        Audit::ApplicationSettingChangesAuditor.new(current_user, application_setting).execute
+        AppConfig::ApplicationSettingChangesAuditor.new(current_user, application_setting).execute
       end
 
       def user_cap_increased?

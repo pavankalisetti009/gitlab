@@ -148,7 +148,7 @@ module EE
         @ip_restriction_update_service&.log_audit_event # rubocop:disable Gitlab/ModuleWithInstanceVariables
         @allowed_email_domains_update_service&.log_audit_event(group.allowed_email_domains.map(&:domain)) # rubocop:disable Gitlab/ModuleWithInstanceVariables
 
-        Audit::GroupChangesAuditor.new(current_user, group).execute
+        ::Namespaces::GroupChangesAuditor.new(current_user, group).execute
       end
 
       def update_cascading_settings

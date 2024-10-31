@@ -2,7 +2,7 @@
 
 module Ci
   class AuditVariableChangeService < ::BaseContainerService
-    include ::Audit::Changes
+    include ::AuditEvents::Changes
 
     AUDITABLE_VARIABLE_CLASSES = [::Ci::Variable, ::Ci::GroupVariable, ::Ci::InstanceVariable].freeze
     TEXT_COLUMNS = {

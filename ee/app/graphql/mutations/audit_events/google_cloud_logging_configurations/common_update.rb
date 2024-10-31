@@ -9,7 +9,7 @@ module Mutations
         AUDIT_EVENT_COLUMNS = [:google_project_id_name, :client_email, :private_key, :log_id_name, :name].freeze
 
         included do
-          include ::Audit::Changes
+          include ::AuditEvents::Changes
 
           argument :name, GraphQL::Types::String,
             required: false,

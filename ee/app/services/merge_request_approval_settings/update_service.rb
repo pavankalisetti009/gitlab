@@ -63,7 +63,7 @@ module MergeRequestApprovalSettings
     end
 
     def log_audit_event(setting)
-      Audit::GroupMergeRequestApprovalSettingChangesAuditor.new(current_user, setting, params).execute
+      ::MergeRequests::GroupMergeRequestApprovalSettingChangesAuditor.new(current_user, setting, params).execute
     end
 
     def run_compliance_standards_checks

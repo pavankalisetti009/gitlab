@@ -7,7 +7,7 @@ module EE
       #
       module UnregisterRunnerService
         extend ::Gitlab::Utils::Override
-        include ::Audit::Changes
+        include ::AuditEvents::Changes
 
         override :execute
         def execute

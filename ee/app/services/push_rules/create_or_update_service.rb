@@ -6,8 +6,8 @@ module PushRules
       push_rule = container.push_rule || container.build_push_rule
 
       if push_rule.update(params)
-        ::Audit::PushRules::GroupPushRulesChangesAuditor.new(current_user, push_rule).execute
-        ::Audit::PushRules::ProjectPushRulesChangesAuditor.new(current_user, push_rule).execute
+        ::Repositories::GroupPushRulesChangesAuditor.new(current_user, push_rule).execute
+        ::Repositories::ProjectPushRulesChangesAuditor.new(current_user, push_rule).execute
 
         ServiceResponse.success(payload: { push_rule: push_rule })
       else
