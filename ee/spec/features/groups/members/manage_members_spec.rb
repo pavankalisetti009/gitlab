@@ -200,18 +200,21 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
 
       include_examples 'adding one user with a given role doesn\'t trigger an overage modal', 'Guest'
+      include_examples 'shows an overage modal when adding one user with a given role', 'Planner'
       include_examples 'shows an overage modal when adding one user with a given role', 'Developer'
 
       include_examples 'adding one user by email with a given role doesn\'t trigger an overage modal', 'Guest'
+      include_examples 'adding user by email with a given role', 'Planner'
       include_examples 'adding user by email with a given role', 'Developer'
     end
 
-    context 'when adding a member to a ultimate group that alerady has an overage' do
+    context 'when adding a member to a ultimate group that already has an overage' do
       before do
         create(:gitlab_subscription, namespace: group, hosted_plan: ultimate_plan, seats: 1, seats_in_use: 2)
       end
 
       include_examples 'shows an overage modal when adding one user with a given role', 'Developer'
+      include_examples 'shows an overage modal when adding one user with a given role', 'Planner'
       include_examples 'adding one user by email with a given role doesn\'t trigger an overage modal', 'Guest'
     end
 
