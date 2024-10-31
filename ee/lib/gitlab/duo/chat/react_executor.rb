@@ -166,10 +166,20 @@ module Gitlab
 
           tool_class = get_tool_class(event.tool)
 
+          log_conditional_info(
+            context.current_user,
+            message: "ReAct calling tool",
+            event_name: 'calling_tool',
+            ai_component: 'duo_chat',
+            ai_event: event
+          )
+
+          input = Feature.enabled?(:duo_chat_use_tool_input, context.current_user) ? event.tool_input : user_input
+
           tool = tool_class.new(
             context: context,
             options: {
-              input: user_input,
+              input: input,
               suggestions: event.thought
             },
             stream_response_handler: stream_response_handler

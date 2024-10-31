@@ -126,8 +126,10 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
     context "when tool answer if final" do
       let(:tool_answer) { create(:answer, :final, content: 'tool answer') }
+      let(:tool_input_enabled) { true }
 
       before do
+        stub_feature_flags(duo_chat_use_tool_input: tool_input_enabled)
         event = Gitlab::Duo::Chat::AgentEvents::Action.new(
           {
             "thought" => 'I think I need to use issue_reader',
@@ -147,11 +149,41 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
 
       it "returns tool answer" do
+        expect(agent).to receive(:log_conditional_info).with(
+          user,
+          hash_including(
+            message: "ReAct calling tool",
+            ai_component: 'duo_chat'
+          )
+        )
+
         expect(agent).to receive(:log_info).with(
           message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
 
+        expect(Gitlab::Llm::Chain::Tools::IssueReader::Executor).to receive(:new).with(
+          hash_including(options: {
+            input: '#123',
+            suggestions: 'I think I need to use issue_reader'
+          })
+        )
+
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("tool answer")
+      end
+
+      context 'when duo_chat_use_tool_input is disabled' do
+        let(:tool_input_enabled) { false }
+
+        it 'uses user_input instead of tool_input' do
+          expect(Gitlab::Llm::Chain::Tools::IssueReader::Executor).to receive(:new).with(
+            hash_including(options: {
+              input: 'question?',
+              suggestions: 'I think I need to use issue_reader'
+            })
+          )
+
+          answer
+        end
       end
     end
 
