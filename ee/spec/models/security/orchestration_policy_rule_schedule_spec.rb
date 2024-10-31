@@ -287,6 +287,30 @@ RSpec.describe Security::OrchestrationPolicyRuleSchedule, feature_category: :sec
     end
   end
 
+  describe '#policy_source' do
+    let(:rule_schedule) do
+      build(
+        :security_orchestration_policy_rule_schedule,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    subject { rule_schedule.policy_source }
+
+    context 'when security policy project is linked to group' do
+      let(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, :namespace)
+      end
+
+      it { is_expected.to eq('group') }
+    end
+
+    context 'when security policy project is linked to project' do
+      let(:security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration) }
+
+      it { is_expected.to eq('project') }
+    end
+  end
+
   describe '#set_next_run_at' do
     it_behaves_like 'handles set_next_run_at' do
       let(:schedule) { create(:security_orchestration_policy_rule_schedule, cron: '*/1 * * * *') }
