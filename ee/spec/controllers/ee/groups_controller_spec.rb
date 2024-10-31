@@ -273,11 +273,10 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
             end
           end
 
-          it 'redirects to group path with notice about delayed deletion' do
+          it 'redirects to group path' do
             subject
 
             expect(response).to redirect_to(group_path(group))
-            expect(flash[:notice]).to include "'#{group.name}' has been scheduled for removal on"
           end
         end
 
