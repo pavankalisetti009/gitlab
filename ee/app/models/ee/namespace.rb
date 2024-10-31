@@ -120,10 +120,10 @@ module EE
         not_started_yet = add_on_purchases[:started_at].gt(today)
         not_a_trial = add_on_purchases[:trial].eq(false)
         not_duo_pro = GitlabSubscriptions::AddOn.arel_table[:name].not_eq(:code_suggestions)
-        not_expired_yet = add_on_purchases[:expires_on].lteq(today)
+        is_expired = add_on_purchases[:expires_on].lteq(today)
 
         left_joins(subscription_add_on_purchases: :add_on)
-          .where(no_add_on.or(not_started_yet.or(not_a_trial.or(not_duo_pro.or(not_expired_yet)))))
+          .where(no_add_on.or(not_started_yet.or(not_a_trial.or(not_duo_pro.or(is_expired)))))
       end
 
       scope :eligible_for_trial, -> do
