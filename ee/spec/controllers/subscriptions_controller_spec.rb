@@ -9,229 +9,65 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
     context 'when the request is unauthenticated' do
       subject(:get_new) { get :new, params: { plan_id: 'premium-plan-id' } }
 
-      context 'when the customers dot migration FFs are disabled' do
-        before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: false,
-            migrate_purchase_flows_for_new_customers: false
-          )
-        end
+      it { is_expected.to have_gitlab_http_status(:redirect) }
+      it { is_expected.to redirect_to new_user_registration_path }
 
-        it { is_expected.to have_gitlab_http_status(:redirect) }
-        it { is_expected.to redirect_to new_user_registration_path }
+      it 'stores the subscription path to redirect to after sign up' do
+        get_new
 
-        it 'stores the subscription path to redirect to after sign up' do
-          get_new
-
-          expect(controller.stored_location_for(:user)).to eq(new_subscriptions_path(plan_id: 'premium-plan-id'))
-        end
-      end
-
-      context 'when the customers dot migration FFs are enabled' do
-        before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: true,
-            migrate_purchase_flows_for_new_customers: true
-          )
-        end
-
-        it { is_expected.to have_gitlab_http_status(:redirect) }
-        it { is_expected.to redirect_to new_user_registration_path }
-
-        it 'stores the subscription path to redirect to after sign up' do
-          get_new
-
-          expect(controller.stored_location_for(:user)).to eq(new_subscriptions_path(plan_id: 'premium-plan-id'))
-        end
+        expect(controller.stored_location_for(:user)).to eq(new_subscriptions_path(plan_id: 'premium-plan-id'))
       end
     end
 
     context 'when the user is authenticated' do
       before do
         sign_in(user)
-      end
-
-      context 'when the customers dot migration FFs are disabled' do
-        subject(:get_new) { get :new, params: { plan_id: 'premium-plan-id' } }
-
-        before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: false,
-            migrate_purchase_flows_for_new_customers: false
+        allow_next_instance_of(
+          GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
+          user: user,
+          namespaces: [owned_group],
+          any_self_service_plan: true
+        ) do |instance|
+          allow(instance).to receive(:execute).and_return(
+            instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
           )
-        end
-
-        it { is_expected.to render_template 'layouts/minimal' }
-        it { is_expected.to render_template :new }
-
-        context 'when there are groups eligible for the subscription' do
-          let_it_be(:owned_group) { create(:group) }
-          let_it_be(:sub_group) { create(:group, parent: owned_group) }
-          let_it_be(:maintainer_group) { create(:group) }
-          let_it_be(:developer_group) { create(:group) }
-
-          before do
-            owned_group.add_owner(user)
-            maintainer_group.add_maintainer(user)
-            developer_group.add_developer(user)
-
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              namespaces: [owned_group],
-              any_self_service_plan: true
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
-              )
-            end
-          end
-
-          it 'assigns the eligible groups for the subscription' do
-            get_new
-
-            expect(assigns(:eligible_groups)).to match_array [owned_group]
-          end
-
-          context 'and request specify which group to use' do
-            it 'assign requested group' do
-              get :new, params: { namespace_id: owned_group.id }
-
-              expect(assigns(:namespace)).to eq(owned_group)
-            end
-          end
-        end
-
-        context 'when there are no eligible groups for the subscription' do
-          let_it_be(:group) { create(:group) }
-
-          it 'assigns eligible groups as an empty array if CustomerDot returns empty payload' do
-            group.add_owner(user)
-
-            expect_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              namespaces: [group],
-              any_self_service_plan: true
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(instance_double(ServiceResponse, success?: true, payload: []))
-            end
-
-            get_new
-
-            expect(assigns(:eligible_groups)).to eq []
-          end
-
-          it 'assigns eligible groups as an empty array if user is not owner of any groups' do
-            get_new
-
-            expect(assigns(:eligible_groups)).to eq []
-          end
-        end
-
-        context 'when URL has no plan_id param' do
-          before do
-            get :new
-          end
-
-          it { is_expected.to have_gitlab_http_status(:ok) }
         end
       end
 
-      context 'when the customers dot migration FFs are enabled' do
-        let_it_be(:owned_group) { create(:group) }
-        let_it_be(:sub_group) { create(:group, parent: owned_group) }
-        let_it_be(:maintainer_group) { create(:group) }
-        let_it_be(:developer_group) { create(:group) }
+      let_it_be(:owned_group) { create(:group) }
+      let_it_be(:sub_group) { create(:group, parent: owned_group) }
+      let_it_be(:maintainer_group) { create(:group) }
+      let_it_be(:developer_group) { create(:group) }
 
-        before_all do
-          owned_group.add_owner(user)
-          maintainer_group.add_maintainer(user)
-          developer_group.add_developer(user)
+      before_all do
+        owned_group.add_owner(user)
+        maintainer_group.add_maintainer(user)
+        developer_group.add_developer(user)
+      end
+
+      context 'when the user has already selected a group' do
+        it 'redirects to customers dot' do
+          get :new, params: { plan_id: 'premium-plan-id', namespace_id: owned_group.id }
+
+          expect(response)
+            .to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{owned_group.id}&plan_id=premium-plan-id}
         end
+      end
 
+      context 'when the user has not selected a group' do
+        it 'redirects to the group selection page' do
+          get :new, params: { plan_id: 'premium-plan-id' }
+
+          expect(response).to redirect_to %r{/-/subscriptions/groups/new\?plan_id=premium-plan-id}
+        end
+      end
+
+      context 'when URL has no plan_id param' do
         before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: true,
-            migrate_purchase_flows_for_new_customers: true
-          )
-
-          allow_next_instance_of(
-            GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-            user: user,
-            namespaces: [owned_group],
-            any_self_service_plan: true
-          ) do |instance|
-            allow(instance).to receive(:execute).and_return(
-              instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
-            )
-          end
+          get :new
         end
 
-        context 'when the user already has a customers dot account' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_billing_account_details)
-              .with(user)
-              .and_return({
-                success: true,
-                billing_account_details: { "billingAccount" => { "zuoraAccountName" => "sample-account" } }
-              })
-          end
-
-          context 'when the user has already selected a group' do
-            it 'redirects to customers dot' do
-              get :new, params: { plan_id: 'premium-plan-id', namespace_id: owned_group.id }
-
-              expect(response)
-                .to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{owned_group.id}&plan_id=premium-plan-id}
-            end
-          end
-
-          context 'when the user has not selected a group' do
-            it 'redirects to the group selection page' do
-              get :new, params: { plan_id: 'premium-plan-id' }
-
-              expect(response).to redirect_to %r{/-/subscriptions/groups/new\?plan_id=premium-plan-id}
-            end
-          end
-
-          context 'when URL has no plan_id param' do
-            before do
-              get :new
-            end
-
-            it { is_expected.to redirect_to "https://about.gitlab.com/pricing/" }
-          end
-        end
-
-        context 'when the user has not made a purchase before' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_billing_account_details)
-              .with(user)
-              .and_return({
-                success: true, billing_account_details: { "billingAccount" => { "zuoraAccountName" => nil } }
-              })
-          end
-
-          context 'when the user has already selected a group' do
-            it 'redirects to customers dot' do
-              get :new, params: { plan_id: 'premium-plan-id', namespace_id: owned_group.id }
-
-              expect(response)
-                .to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{owned_group.id}&plan_id=premium-plan-id}
-            end
-          end
-
-          context 'when the user has not selected a group' do
-            it 'redirects to the group selection page' do
-              get :new, params: { plan_id: 'premium-plan-id' }
-
-              expect(response).to redirect_to %r{/-/subscriptions/groups/new\?plan_id=premium-plan-id}
-            end
-          end
-        end
+        it { is_expected.to redirect_to "https://about.gitlab.com/pricing/" }
       end
     end
   end
@@ -257,32 +93,58 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
         sign_in(user)
       end
 
-      context 'when the customers dot migration FFs are disabled' do
-        subject(:buy_minutes) { get :buy_minutes, params: { selected_group: group.id } }
-
+      context 'when the add on does not exist' do
         before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: false,
-            migrate_purchase_flows_for_new_customers: false
-          )
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
+            .and_return({ success: false, data: [] })
         end
 
-        context 'when the add-on plan cannot be found' do
+        it 'returns not found' do
+          get :buy_minutes, params: { selected_group: group.id }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when the add on exists' do
+        before do
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
+            .and_return({ success: true, data: [{ 'id' => 'ci_minutes' }] })
+        end
+
+        context 'when the group does not exist' do
+          it 'returns not found' do
+            get :buy_minutes, params: { selected_group: non_existing_record_id }
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when the group is not eligible for CI minutes' do
           before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
-              .and_return({ success: false, data: [] })
+            allow_next_instance_of(
+              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
+              user: user,
+              plan_id: 'ci_minutes',
+              namespaces: [group]
+            ) do |instance|
+              allow(instance).to receive(:execute).and_return(
+                instance_double(ServiceResponse, success?: true, payload: [])
+              )
+            end
           end
 
-          it { is_expected.to have_gitlab_http_status(:not_found) }
+          it 'returns not found' do
+            get :buy_minutes, params: { selected_group: group.id }
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
 
-        context 'when there are groups eligible for the addon' do
+        context 'when the group is eligible for CI minutes' do
           before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
-              .and_return({ success: true, data: [{ 'id' => 'ci_minutes' }] })
-
             allow_next_instance_of(
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
@@ -295,123 +157,10 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             end
           end
 
-          it { is_expected.to render_template 'layouts/minimal' }
-          it { is_expected.to render_template :buy_minutes }
-
-          it 'assigns the group for the addon' do
-            buy_minutes
-
-            expect(assigns(:group)).to eq group
-            expect(assigns(:account_id)).to eq nil
-          end
-        end
-      end
-
-      context 'when the customers dot migration FFs are enabled' do
-        before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: true,
-            migrate_purchase_flows_for_new_customers: true
-          )
-        end
-
-        context 'when the add on does not exist' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
-              .and_return({ success: false, data: [] })
-          end
-
-          it 'returns not found' do
+          it 'redirects to the customers dot purchase flow' do
             get :buy_minutes, params: { selected_group: group.id }
 
-            expect(response).to have_gitlab_http_status(:not_found)
-          end
-        end
-
-        context 'when the add on exists' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['CI_1000_MINUTES_PLAN'])
-              .and_return({ success: true, data: [{ 'id' => 'ci_minutes' }] })
-          end
-
-          context 'when the group does not exist' do
-            it 'returns not found' do
-              get :buy_minutes, params: { selected_group: non_existing_record_id }
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
-
-          context 'when the group is not eligible for CI minutes' do
-            before do
-              allow_next_instance_of(
-                GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-                user: user,
-                plan_id: 'ci_minutes',
-                namespaces: [group]
-              ) do |instance|
-                allow(instance).to receive(:execute).and_return(
-                  instance_double(ServiceResponse, success?: true, payload: [])
-                )
-              end
-            end
-
-            it 'returns not found' do
-              get :buy_minutes, params: { selected_group: group.id }
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
-
-          context 'when the group is eligible for CI minutes' do
-            before do
-              allow_next_instance_of(
-                GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-                user: user,
-                plan_id: 'ci_minutes',
-                namespaces: [group]
-              ) do |instance|
-                allow(instance).to receive(:execute).and_return(
-                  instance_double(ServiceResponse, success?: true, payload: [{ namespace: group, account_id: nil }])
-                )
-              end
-            end
-
-            context 'when the customer already has a billing account' do
-              before do
-                allow(Gitlab::SubscriptionPortal::Client)
-                  .to receive(:get_billing_account_details)
-                  .with(user)
-                  .and_return({
-                    success: true, billing_account_details: { 'billingAccount' => { 'zuoraAccountName' => 'account-id' } }
-                  })
-              end
-
-              it 'redirects to the customers dot purchase flow' do
-                get :buy_minutes, params: { selected_group: group.id }
-
-                expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=ci_minutes}
-              end
-            end
-
-            context 'when the customer does not have a billing account' do
-              before do
-                allow(Gitlab::SubscriptionPortal::Client)
-                  .to receive(:get_billing_account_details)
-                  .with(user)
-                  .and_return({
-                    success: true, billing_account_details: { 'billingAccount' => { 'zuoraAccountName' => nil } }
-                  })
-              end
-
-              it 'redirects to the customers dot purchase flow' do
-                get :buy_minutes, params: { selected_group: group.id }
-
-                expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=ci_minutes}
-              end
-            end
+            expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=ci_minutes}
           end
         end
       end
@@ -438,36 +187,58 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
         sign_in(user)
       end
 
-      context 'when the customers dot migration FFs are disabled' do
-        subject(:buy_storage) { get :buy_storage, params: { selected_group: group.id } }
-
-        before_all do
-          group.add_owner(user)
-        end
-
+      context 'when the add on does not exist' do
         before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: false,
-            migrate_purchase_flows_for_new_customers: false
-          )
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
+            .and_return({ success: false, data: [] })
         end
 
-        context 'when the add-on plan cannot be found' do
+        it 'returns not found' do
+          get :buy_storage, params: { selected_group: group.id }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when the add on exists' do
+        before do
+          allow(Gitlab::SubscriptionPortal::Client)
+            .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
+            .and_return({ success: true, data: [{ 'id' => 'storage' }] })
+        end
+
+        context 'when the group does not exist' do
+          it 'returns not found' do
+            get :buy_storage, params: { selected_group: non_existing_record_id }
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when the group is not eligible for storage' do
           before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
-              .and_return({ success: false, data: [] })
+            allow_next_instance_of(
+              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
+              user: user,
+              plan_id: 'storage',
+              namespaces: [group]
+            ) do |instance|
+              allow(instance).to receive(:execute).and_return(
+                instance_double(ServiceResponse, success?: true, payload: [])
+              )
+            end
           end
 
-          it { is_expected.to have_gitlab_http_status(:not_found) }
+          it 'returns not found' do
+            get :buy_storage, params: { selected_group: group.id }
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
 
-        context 'when there are groups eligible for the addon' do
+        context 'when the group is eligible for storage' do
           before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
-              .and_return({ success: true, data: [{ 'id' => 'storage' }] })
-
             allow_next_instance_of(
               GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
               user: user,
@@ -480,123 +251,10 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             end
           end
 
-          it { is_expected.to render_template 'layouts/minimal' }
-          it { is_expected.to render_template :buy_storage }
-
-          it 'assigns the group for the addon' do
-            buy_storage
-
-            expect(assigns(:group)).to eq group
-            expect(assigns(:account_id)).to eq nil
-          end
-        end
-      end
-
-      context 'when the customers dot migration FFs are enabled' do
-        before do
-          stub_feature_flags(
-            migrate_purchase_flows_for_existing_customers: true,
-            migrate_purchase_flows_for_new_customers: true
-          )
-        end
-
-        context 'when the add on does not exist' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
-              .and_return({ success: false, data: [] })
-          end
-
-          it 'returns not found' do
+          it 'redirects to the customers dot purchase flow' do
             get :buy_storage, params: { selected_group: group.id }
 
-            expect(response).to have_gitlab_http_status(:not_found)
-          end
-        end
-
-        context 'when the add on exists' do
-          before do
-            allow(Gitlab::SubscriptionPortal::Client)
-              .to receive(:get_plans).with(tags: ['STORAGE_PLAN'])
-              .and_return({ success: true, data: [{ 'id' => 'storage' }] })
-          end
-
-          context 'when the group does not exist' do
-            it 'returns not found' do
-              get :buy_storage, params: { selected_group: non_existing_record_id }
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
-
-          context 'when the group is not eligible for storage' do
-            before do
-              allow_next_instance_of(
-                GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-                user: user,
-                plan_id: 'storage',
-                namespaces: [group]
-              ) do |instance|
-                allow(instance).to receive(:execute).and_return(
-                  instance_double(ServiceResponse, success?: true, payload: [])
-                )
-              end
-            end
-
-            it 'returns not found' do
-              get :buy_storage, params: { selected_group: group.id }
-
-              expect(response).to have_gitlab_http_status(:not_found)
-            end
-          end
-
-          context 'when the group is eligible for storage' do
-            before do
-              allow_next_instance_of(
-                GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-                user: user,
-                plan_id: 'storage',
-                namespaces: [group]
-              ) do |instance|
-                allow(instance).to receive(:execute).and_return(
-                  instance_double(ServiceResponse, success?: true, payload: [{ namespace: group, account_id: nil }])
-                )
-              end
-            end
-
-            context 'when the customer already has a billing account' do
-              before do
-                allow(Gitlab::SubscriptionPortal::Client)
-                  .to receive(:get_billing_account_details)
-                  .with(user)
-                  .and_return({
-                    success: true, billing_account_details: { 'billingAccount' => { 'zuoraAccountName' => 'account-id' } }
-                  })
-              end
-
-              it 'redirects to the customers dot purchase flow' do
-                get :buy_storage, params: { selected_group: group.id }
-
-                expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=storage}
-              end
-            end
-
-            context 'when the customer does not have a billing account' do
-              before do
-                allow(Gitlab::SubscriptionPortal::Client)
-                  .to receive(:get_billing_account_details)
-                  .with(user)
-                  .and_return({
-                    success: true, billing_account_details: { 'billingAccount' => { 'zuoraAccountName' => nil } }
-                  })
-              end
-
-              it 'redirects to the customers dot purchase flow' do
-                get :buy_storage, params: { selected_group: group.id }
-
-                expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=storage}
-              end
-            end
+            expect(response).to redirect_to %r{/subscriptions/new\?gl_namespace_id=#{group.id}&plan_id=storage}
           end
         end
       end

@@ -280,11 +280,6 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
     let(:plan) { double('Plan', id: 'plan-id') }
 
-    before do
-      stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
-      stub_feature_flags(migrate_purchase_flows_for_new_customers: false)
-    end
-
     it 'builds correct gitlab url with some source' do
       user = create(:user)
 
@@ -292,7 +287,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       allow(helper).to receive(:params).and_return({ source: 'some_source' })
 
       expect(helper.plan_purchase_url(group, plan))
-        .to include "/-/subscriptions/new?namespace_id=#{group.id}&plan_id=plan-id&source=some_source"
+        .to eq("#{Gitlab::Routing.url_helpers.subscription_portal_new_subscription_url}?gl_namespace_id=#{group.id}&plan_id=plan-id&source=some_source")
     end
 
     it 'builds correct url for the old purchase flow' do

@@ -99,7 +99,6 @@ module BillingPlansHelper
 
   def plan_purchase_url(group, plan)
     GitlabSubscriptions::PurchaseUrlBuilder.new(
-      current_user: current_user,
       plan_id: plan.id,
       namespace: group
     ).build(source: params[:source])
