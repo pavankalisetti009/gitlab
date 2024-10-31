@@ -58,9 +58,7 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
   end
 
-  describe ".with_license_by_name" do
-    subject { described_class }
-
+  shared_examples 'find license by name' do
     let!(:mit_policy) { create(:software_license_policy, software_license: mit) }
     let!(:mit) { create(:software_license, :mit) }
     let!(:apache_policy) { create(:software_license_policy, software_license: apache) }
@@ -76,6 +74,50 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
 
     it 'finds multiple licenses' do
       expect(subject.with_license_by_name([mit.name, apache.name])).to match_array([mit_policy, apache_policy])
+    end
+  end
+
+  describe ".with_license_by_name" do
+    subject { described_class }
+
+    it_behaves_like 'find license by name'
+  end
+
+  describe ".with_license_or_custom_license_by_name" do
+    subject { described_class }
+
+    context 'when related to software license' do
+      it_behaves_like 'find license by name'
+    end
+
+    context 'when related to a custom software license' do
+      let_it_be(:custom_software_license) { create(:custom_software_license, name: 'Custom-License') }
+      let_it_be(:custom_software_license_policy) do
+        create(:software_license_policy,
+          project: custom_software_license.project,
+          software_license: nil,
+          custom_software_license: custom_software_license)
+      end
+
+      let_it_be(:other_custom_software_license) { create(:custom_software_license, name: 'Other-Custom-License') }
+      let_it_be(:other_custom_software_license_policy) do
+        create(:software_license_policy,
+          project: other_custom_software_license.project,
+          software_license: nil,
+          custom_software_license: other_custom_software_license)
+      end
+
+      it 'finds a custom license by an exact match' do
+        expect(subject.with_license_or_custom_license_by_name(custom_software_license.name)).to match_array([custom_software_license_policy])
+      end
+
+      it 'finds a custom license by a case insensitive match' do
+        expect(subject.with_license_or_custom_license_by_name('cuStom-LiCense')).to match_array([custom_software_license_policy])
+      end
+
+      it 'finds multiple custom licenses' do
+        expect(subject.with_license_or_custom_license_by_name([custom_software_license.name, other_custom_software_license.name])).to match_array([custom_software_license_policy, other_custom_software_license_policy])
+      end
     end
   end
 

@@ -29,77 +29,140 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
 
     subject(:service) { described_class.new(project, pipeline_report, target_branch_report) }
 
-    where(:target_branch, :pipeline_branch, :states, :policy_license, :policy_state, :violated_licenses) do
-      ref(:case1) | ref(:case2) | ['newly_detected'] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case1) | ref(:case2) | ['newly_detected'] | [nil, 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case2) | ref(:case3) | ['newly_detected'] | ['GPL v3', 'GNU 3'] | :denied | nil
-      ref(:case2) | ref(:case3) | ['newly_detected'] | [nil, 'GNU 3'] | :denied | nil
-      ref(:case3) | ref(:case4) | ['newly_detected'] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation3)
-      ref(:case3) | ref(:case4) | ['newly_detected'] | [nil, 'GNU 3'] | :denied | ref(:violation3)
-      ref(:case4) | ref(:case5) | ['newly_detected'] | ['GPL v3', 'GNU 3'] | :denied | nil
-      ref(:case4) | ref(:case5) | ['newly_detected'] | [nil, 'GNU 3'] | :denied | nil
-      ref(:case1) | ref(:case2) | ['detected'] | ['GPL v3', 'GNU 3'] | :denied | nil
-      ref(:case1) | ref(:case2) | ['detected'] | [nil, 'GNU 3'] | :denied | nil
-      ref(:case2) | ref(:case3) | ['detected'] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case2) | ref(:case3) | ['detected'] | [nil, 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case3) | ref(:case4) | ['detected'] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case3) | ref(:case4) | ['detected'] | [nil, 'GNU 3'] | :denied | ref(:violation1)
-      ref(:case4) | ref(:case5) | ['detected'] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation2)
-      ref(:case4) | ref(:case5) | ['detected'] | [nil, 'GNU 3'] | :denied | ref(:violation2)
-      ref(:case4) | ref(:case5) | %w[newly_detected detected] | ['GPL v3', 'GNU 3'] | :denied | ref(:violation2)
+    context 'with software_licenses' do
+      include_context 'for license_checker'
 
-      ref(:case1) | ref(:case2) | ['newly_detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case1) | ref(:case2) | ['newly_detected'] | [nil, 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case2) | ref(:case3) | ['newly_detected'] | ['MIT', 'MIT License'] | :allowed | nil
-      ref(:case3) | ref(:case4) | ['newly_detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation3)
-      ref(:case3) | ref(:case4) | ['newly_detected'] | [nil, 'MIT License'] | :allowed | ref(:violation3)
-      ref(:case4) | ref(:case5) | ['newly_detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation4)
-      ref(:case4) | ref(:case5) | ['newly_detected'] | [nil, 'MIT License'] | :allowed | ref(:violation4)
-      ref(:case1) | ref(:case2) | ['detected'] | ['MIT', 'MIT License'] | :allowed | nil
-      ref(:case1) | ref(:case2) | ['detected'] | [nil, 'MIT License'] | :allowed | nil
-      ref(:case2) | ref(:case3) | ['detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case2) | ref(:case3) | ['detected'] | [nil, 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case3) | ref(:case4) | ['detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case3) | ref(:case4) | ['detected'] | [nil, 'MIT License'] | :allowed | ref(:violation1)
-      ref(:case4) | ref(:case5) | ['detected'] | ['MIT', 'MIT License'] | :allowed | ref(:violation2)
-      ref(:case4) | ref(:case5) | ['detected'] | [nil, 'MIT License'] | :allowed | ref(:violation2)
-      ref(:case4) | ref(:case5) | %w[newly_detected detected] | ['MIT', 'MIT License'] | :allowed | ref(:violation4)
+      with_them do
+        let_it_be(:target_branch_report) { create(:ci_reports_license_scanning_report) }
+        let_it_be(:pipeline_report) { create(:ci_reports_license_scanning_report) }
 
-      ref(:case2) | ref(:case2) | ['detected'] | [nil, 'GPL v3'] | :allowed | nil
+        let(:match_on_inclusion_license) { policy_state == :denied }
+        let(:license_states) { states }
+        let(:license) { create(:software_license, spdx_identifier: policy_license[0], name: policy_license[1]) }
+        let(:scan_result_policy_read) do
+          create(:scan_result_policy_read, project: project, license_states: license_states,
+            match_on_inclusion_license: match_on_inclusion_license)
+        end
+
+        before do
+          target_branch.each do |ld|
+            target_branch_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+          end
+
+          pipeline_branch.each do |ld|
+            pipeline_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+          end
+
+          create(:software_license_policy, policy_state,
+            project: project,
+            software_license: license,
+            scan_result_policy_read: scan_result_policy_read
+          )
+        end
+
+        it 'syncs approvals_required' do
+          result = service.execute(scan_result_policy_read)
+
+          expect(result).to eq(violated_licenses)
+        end
+      end
     end
 
-    with_them do
-      let_it_be(:target_branch_report) { create(:ci_reports_license_scanning_report) }
-      let_it_be(:pipeline_report) { create(:ci_reports_license_scanning_report) }
+    context 'with custom_software_licenses' do
+      include_context 'for license_checker'
 
-      let(:match_on_inclusion_license) { policy_state == :denied }
-      let(:license_states) { states }
-      let(:license) { create(:software_license, spdx_identifier: policy_license[0], name: policy_license[1]) }
-      let(:scan_result_policy_read) do
-        create(:scan_result_policy_read, project: project, license_states: license_states,
-          match_on_inclusion_license: match_on_inclusion_license)
-      end
+      with_them do
+        let_it_be(:target_branch_report) { create(:ci_reports_license_scanning_report) }
+        let_it_be(:pipeline_report) { create(:ci_reports_license_scanning_report) }
 
-      before do
-        target_branch.each do |ld|
-          target_branch_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+        let(:match_on_inclusion_license) { policy_state == :denied }
+        let(:license_states) { states }
+
+        let(:custom_license) { create(:custom_software_license, name: policy_license[1]) }
+        let(:scan_result_policy_read) do
+          create(:scan_result_policy_read, project: project, license_states: license_states,
+            match_on_inclusion_license: match_on_inclusion_license)
         end
 
-        pipeline_branch.each do |ld|
-          pipeline_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+        before do
+          target_branch.each do |ld|
+            target_branch_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+          end
+
+          pipeline_branch.each do |ld|
+            pipeline_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+          end
+
+          create(:software_license_policy, policy_state,
+            project: project,
+            custom_software_license: custom_license,
+            software_license: nil,
+            scan_result_policy_read: scan_result_policy_read
+          )
         end
 
-        create(:software_license_policy, policy_state,
-          project: project,
-          software_license: license,
-          scan_result_policy_read: scan_result_policy_read
-        )
+        subject(:service_result) { service.execute(scan_result_policy_read) }
+
+        it 'syncs approvals_required' do
+          expect(service_result).to eq(violated_licenses)
+        end
       end
 
-      it 'syncs approvals_required' do
-        result = service.execute(scan_result_policy_read)
+      context 'with software licenses and custom_software_licenses' do
+        include_context 'for license_checker'
 
-        expect(result).to eq(violated_licenses)
+        with_them do
+          let_it_be(:target_branch_report) { create(:ci_reports_license_scanning_report) }
+          let_it_be(:pipeline_report) { create(:ci_reports_license_scanning_report) }
+
+          let(:match_on_inclusion_license) { policy_state == :denied }
+          let(:license_states) { states }
+
+          let(:license) do
+            if policy_license[0].present?
+              create(:software_license, spdx_identifier: policy_license[0], name: policy_license[1])
+            else
+              create(:custom_software_license, name: policy_license[1])
+            end
+          end
+
+          let(:scan_result_policy_read) do
+            create(:scan_result_policy_read, project: project, license_states: license_states,
+              match_on_inclusion_license: match_on_inclusion_license)
+          end
+
+          before do
+            target_branch.each do |ld|
+              target_branch_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+            end
+
+            pipeline_branch.each do |ld|
+              pipeline_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
+            end
+
+            if license.is_a?(SoftwareLicense)
+              create(:software_license_policy, policy_state,
+                project: project,
+                custom_software_license: nil,
+                software_license: license,
+                scan_result_policy_read: scan_result_policy_read
+              )
+            else
+              create(:software_license_policy, policy_state,
+                project: project,
+                custom_software_license: license,
+                software_license: nil,
+                scan_result_policy_read: scan_result_policy_read
+              )
+            end
+          end
+
+          it 'syncs approvals_required' do
+            result = service.execute(scan_result_policy_read)
+
+            expect(result).to eq(violated_licenses)
+          end
+        end
       end
     end
   end
