@@ -1,4 +1,3 @@
-import { pick } from 'lodash';
 import { __, s__ } from '~/locale';
 
 export const SORT_FIELD_NAME = 'name';
@@ -6,26 +5,12 @@ export const SORT_FIELD_PACKAGER = 'packager';
 export const SORT_FIELD_SEVERITY = 'severity';
 export const SORT_FIELD_LICENSE = 'license';
 
-const SORT_FIELDS = {
+export const SORT_FIELDS = {
   [SORT_FIELD_NAME]: s__('Dependencies|Component name'),
   [SORT_FIELD_PACKAGER]: s__('Dependencies|Packager'),
   [SORT_FIELD_SEVERITY]: s__('Vulnerability|Severity'),
   [SORT_FIELD_LICENSE]: s__('Dependencies|License'),
 };
-
-export const SORT_FIELDS_PROJECT = pick(SORT_FIELDS, [
-  SORT_FIELD_NAME,
-  SORT_FIELD_PACKAGER,
-  SORT_FIELD_LICENSE,
-  SORT_FIELD_SEVERITY,
-]);
-
-export const SORT_FIELDS_GROUP = pick(SORT_FIELDS, [
-  SORT_FIELD_NAME,
-  SORT_FIELD_PACKAGER,
-  SORT_FIELD_LICENSE,
-  SORT_FIELD_SEVERITY,
-]);
 
 export const SORT_ASCENDING = 'asc';
 export const SORT_DESCENDING = 'desc';

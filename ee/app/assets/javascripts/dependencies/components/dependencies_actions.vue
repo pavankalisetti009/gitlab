@@ -7,11 +7,7 @@ import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
 import { NAMESPACE_PROJECT } from '../constants';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
-import {
-  SORT_FIELDS_PROJECT,
-  SORT_FIELDS_GROUP,
-  SORT_ASCENDING,
-} from '../store/modules/list/constants';
+import { SORT_FIELDS, SORT_ASCENDING } from '../store/modules/list/constants';
 
 export default {
   i18n: {
@@ -44,14 +40,11 @@ export default {
       },
     }),
     sortFieldName() {
-      return this.sortFields[this.sortField];
-    },
-    sortFields() {
-      return this.isProjectNamespace ? SORT_FIELDS_PROJECT : SORT_FIELDS_GROUP;
+      return SORT_FIELDS[this.sortField];
     },
     sortOptions() {
-      return Object.keys(this.sortFields).map((key) => ({
-        text: this.sortFields[key],
+      return Object.keys(SORT_FIELDS).map((key) => ({
+        text: SORT_FIELDS[key],
         value: key,
       }));
     },
