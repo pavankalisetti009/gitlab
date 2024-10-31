@@ -206,7 +206,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
             isChildItemOpen: false,
           });
           expect(wrapper.findByTestId('item-dates').findComponent(GlIcon).props()).toMatchObject({
-            variant: 'default',
+            variant: 'current',
             name: 'calendar',
           });
         });

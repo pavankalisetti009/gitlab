@@ -193,7 +193,7 @@ export default {
         data-testid="item-dates"
         class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
       >
-        <gl-icon :variant="isOverdue ? 'danger' : 'default'" :name="datesIcon" />
+        <gl-icon :variant="isOverdue ? 'danger' : 'current'" :name="datesIcon" />
         <span data-testid="dates-value">{{ workItemTimeframe }}</span>
         <gl-tooltip :target="() => $refs.datesData">
           <span class="gl-font-bold">{{ __('Dates') }}</span
