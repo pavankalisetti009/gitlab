@@ -121,9 +121,7 @@ module SaasRegistrationHelpers
 
   def user_signs_up_through_subscription_with_sso(provider: 'google_oauth2')
     user_signs_up_with_sso({}, provider: provider) do
-      stub_invoice_preview
-
-      visit new_subscriptions_path(plan_id: 'bronze_id')
+      visit new_subscriptions_path(plan_id: premium_plan_id)
       # expect sign in here
     end
   end
@@ -223,9 +221,7 @@ module SaasRegistrationHelpers
   def user_registers_from_subscription
     new_user = build(:user, name: 'Registering User', email: user_email)
 
-    stub_invoice_preview
-
-    visit new_subscriptions_path(plan_id: 'bronze_id')
+    visit new_subscriptions_path(plan_id: premium_plan_id)
 
     perform_enqueued_jobs do
       fill_in_sign_up_form(new_user)
@@ -445,119 +441,29 @@ module SaasRegistrationHelpers
     base_params.merge(glm_params)
   end
 
-  def stub_subscription_customers_dot_requests
-    plan_data = [
-      {
-        "id" => "bronze_id",
-        "name" => "Bronze Plan",
-        "free" => false,
-        "code" => "bronze",
-        "price_per_year" => 48.0
+  def premium_plan_id
+    "premium-plan-id"
+  end
+
+  def premium_plan
+    {
+      id: premium_plan_id,
+      name: "Premium Plan",
+      free: false,
+      code: "premium",
+      price_per_year: 48.0,
+      purchase_link: {
+        action: "upgrade",
+        href: "https://customers.gitlab.com/subscriptions/new?plan_id=#{premium_plan_id}"
       }
-    ]
+    }
+  end
+
+  def stub_subscription_plans
+    plan_data = [premium_plan]
     allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
       allow(instance).to receive(:execute).and_return(plan_data)
     end
-
-    subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
-
-    stub_request(:get, "#{subscription_portal_url}/payment_forms/paid_signup_flow")
-      .with(
-        headers: {
-          'Accept' => 'application/json',
-          'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-          'Content-Type' => 'application/json',
-          'User-Agent' => 'Ruby',
-          'X-Admin-Email' => 'gl_com_api@gitlab.com',
-          'X-Admin-Token' => 'customer_admin_token'
-        })
-      .to_return(status: 200, body: "", headers: {})
-  end
-
-  def expect_to_see_checkout_form
-    expect(page).to have_content('Checkout')
-    expect(page).to have_content('Subscription details')
-  end
-
-  def fill_in_checkout_form(has_billing_account: false)
-    subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
-
-    stub_request(:get, "#{subscription_portal_url}/payment_forms/paid_signup_flow")
-      .with(
-        headers: {
-          'Accept' => 'application/json',
-          'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-          'Content-Type' => 'application/json',
-          'User-Agent' => 'Ruby',
-          'X-Admin-Email' => 'gl_com_api@gitlab.com',
-          'X-Admin-Token' => 'customer_admin_token'
-        })
-      .to_return(status: 200, body: "", headers: {})
-
-    if user.setup_for_company
-      within_fieldset('Name of company or organization using GitLab') do
-        fill_in with: 'Test company'
-      end
-    end
-
-    click_button 'Continue to billing'
-
-    unless has_billing_account
-      within_fieldset('Country') do
-        select 'United States of America'
-      end
-
-      within_fieldset('Street address') do
-        first("input[type='text']").fill_in with: '123 fake street'
-      end
-
-      within_fieldset('City') do
-        fill_in with: 'Fake city'
-      end
-
-      within_fieldset('State') do
-        select 'Florida'
-      end
-
-      within_fieldset('Zip code') do
-        fill_in with: 'A1B 2C3'
-      end
-    end
-
-    click_button 'Continue to payment'
-
-    stub_confirm_purchase
-  end
-
-  def stub_confirm_purchase
-    allow_next_instance_of(GitlabSubscriptions::CreateService) do |instance|
-      allow(instance).to receive(:execute).and_return({ success: true, data: 'foo' })
-    end
-
-    expect(GitlabSubscriptions::CreateService).to receive(:new).with(
-      user,
-      group: an_instance_of(Group),
-      customer_params: customer_params,
-      subscription_params: subscription_params,
-      idempotency_key: a_string_matching(/[0-9a-fA-F-]{36}/) # UUID
-    )
-
-    # this is an ad-hoc solution to skip the zuora step and allow 'confirm purchase' button to show up
-    page.execute_script <<~JS
-      document.querySelector('[data-testid="subscription_app"]').__vue__.$store.dispatch('fetchPaymentMethodDetailsSuccess')
-    JS
-
-    accept_privacy_and_terms
-
-    click_button 'Confirm purchase'
-  end
-
-  def expect_to_see_subscriptions_group_edit_page
-    prefilled_group_name = user.setup_for_company ? 'Test company' : 'Registering User'
-
-    expect(page).to have_content('Thanks for your purchase')
-    expect(page).to have_content('Create your group')
-    expect(page).to have_field('Group name (your organization)', with: prefilled_group_name)
   end
 
   def customer_params
@@ -574,19 +480,9 @@ module SaasRegistrationHelpers
     ).permit!
   end
 
-  def subscription_params(plan_id: 'bronze_id', quantity: 1)
-    ActionController::Parameters.new(
-      plan_id: plan_id,
-      payment_method_id: nil,
-      quantity: quantity
-    ).permit!
-  end
-
-  def expect_to_see_group_validation_errors
-    page.within('[data-testid="subscription-group-edit-form"]') do
-      expect(page).to have_content("Name can contain only")
-      expect(page).to have_content("It must start with")
-    end
+  def expect_to_see_subscription_group_selection_form
+    expect(page).to have_content('Select a group for your Premium subscription')
+    expect(page).to have_content('Your subscription will be applied to this group')
   end
 
   def expect_to_see_company_form_failure

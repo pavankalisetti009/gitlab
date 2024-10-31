@@ -6,6 +6,7 @@ class SubscriptionsController < ApplicationController
   include InternalRedirect
   include OneTrustCSP
   include GoogleAnalyticsCSP
+  include ActionView::Helpers::SanitizeHelper
 
   layout 'minimal'
 
@@ -31,16 +32,11 @@ class SubscriptionsController < ApplicationController
         @eligible_groups.find { |n| n.id == namespace_id }
       end
 
-    purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
-      current_user: current_user,
-      plan_id: params[:plan_id],
-      namespace: @namespace
-    )
-
-    return unless purchase_url_builder.customers_dot_flow?
-
     if params[:plan_id]
-      redirect_to purchase_url_builder.build
+      redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
+        plan_id: sanitize(params[:plan_id]),
+        namespace: @namespace
+      ).build
     else
       redirect_to Gitlab::Saas.about_pricing_url
     end
@@ -53,21 +49,13 @@ class SubscriptionsController < ApplicationController
     # This might change in the future given the intention to associate the account id to the namespace.
     # See: https://gitlab.com/gitlab-org/gitlab/-/issues/338546#note_684762160
     result = find_group(plan_id: ci_minutes_plan_data["id"])
-    @group = result[:namespace]
-    @account_id = result[:account_id]
-    @active_subscription = result[:active_subscription]
 
-    return render_404 if @group.nil?
+    return render_404 if result[:namespace].nil?
 
-    purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
-      current_user: current_user,
+    redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
       plan_id: ci_minutes_plan_data['id'],
       namespace: result[:namespace]
-    )
-
-    return unless purchase_url_builder.customers_dot_flow?
-
-    redirect_to purchase_url_builder.build(transaction: 'ci_minutes')
+    ).build(transaction: 'ci_minutes')
   end
 
   def buy_storage
@@ -77,21 +65,13 @@ class SubscriptionsController < ApplicationController
     # This might change in the future given the intention to associate the account id to the namespace.
     # See: https://gitlab.com/gitlab-org/gitlab/-/issues/338546#note_684762160
     result = find_group(plan_id: storage_plan_data["id"])
-    @group = result[:namespace]
-    @account_id = result[:account_id]
-    @active_subscription = result[:active_subscription]
 
-    return render_404 if @group.nil?
+    return render_404 if result[:namespace].nil?
 
-    purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
-      current_user: current_user,
+    redirect_to GitlabSubscriptions::PurchaseUrlBuilder.new(
       plan_id: storage_plan_data["id"],
       namespace: result[:namespace]
-    )
-
-    return unless purchase_url_builder.customers_dot_flow?
-
-    redirect_to purchase_url_builder.build(transaction: 'storage')
+    ).build(transaction: 'storage')
   end
 
   def payment_form

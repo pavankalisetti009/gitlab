@@ -102,44 +102,6 @@ module SubscriptionPortalHelpers
       }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
-  def stub_invoice_preview(namespace_id = 'null', plan_id = 'bronze_id')
-    stub_full_request(graphql_url, method: :post)
-      .with(
-        body: invoice_preview_request_body(namespace_id, plan_id)
-      )
-      .to_return(
-        status: 200,
-        headers: { 'Content-Type' => 'application/json' },
-        body: stubbed_invoice_preview_response_body
-      )
-  end
-
-  def invoice_preview_request_body(namespace_id = 'null', plan_id = 'bronze_id')
-    "{\"operationName\":\"GetInvoicePreview\",\"variables\":{\"planId\":\"#{plan_id}\",\"quantity\":1,\"namespaceId\":#{namespace_id}},\"query\":\"query GetInvoicePreview($planId: ID!, $quantity: Int!, $promoCode: String, $namespaceId: ID) {\\n  invoicePreview(\\n    planId: $planId\\n    quantity: $quantity\\n    promoCode: $promoCode\\n    namespaceId: $namespaceId\\n  ) {\\n    invoice {\\n      amountWithoutTax\\n      __typename\\n    }\\n    invoiceItem {\\n      chargeAmount\\n      processingType\\n      unitPrice\\n      __typename\\n    }\\n    metaData {\\n      showPromotionalOfferText\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\"}"
-  end
-
-  def stubbed_invoice_preview_response_body
-    {
-      data: {
-        invoicePreview: {
-          invoice: {
-            amountWithoutTax: 228
-          },
-          invoiceItem: [
-            {
-              chargeAmount: 228,
-              processingType: "Charge",
-              unitPrice: 228
-            }
-          ],
-          metaData: {
-            showPromotionalOfferText: true
-          }
-        }
-      }
-    }.to_json
-  end
-
   def stub_temporary_extension_data(namespace_id)
     stub_full_request(graphql_url, method: :post)
       .with(
@@ -150,48 +112,6 @@ module SubscriptionPortalHelpers
           temporaryExtension: {
             endDate: (Date.current + 2.weeks).strftime('%F')
           }
-        }
-      }.to_json)
-  end
-
-  def stub_get_billing_account(has_billing_account: false)
-    contact = {
-      id: 1,
-      workEmail: "example@gitlab.com",
-      firstName: "Lucille",
-      lastName: "Bluth",
-      address1: "1 Lucille Lane",
-      address2: "",
-      city: "Newport Coast",
-      state: "California",
-      postalCode: "92606",
-      country: "United States"
-    }
-
-    billing_account = if has_billing_account
-                        {
-                          zuoraAccountName: "My Account",
-                          zuoraAccountVatId: "A012345",
-                          vatFieldVisible: true,
-                          billingAccountCustomers: [{
-                            id: contact['id'],
-                            firstName: contact['firstName'],
-                            lastName: contact['lastName'],
-                            fullName: "#{contact['firstName']} #{contact['lastName']}",
-                            email: contact['workEmail']
-                          }],
-                          soldToContact: contact,
-                          billToContact: contact
-                        }
-                      else
-                        {}
-                      end
-
-    stub_full_request(graphql_url, method: :post)
-      .with(body: /getBillingAccount/)
-      .to_return(status: 200, body: {
-        data: {
-          billingAccount: billing_account
         }
       }.to_json)
   end
