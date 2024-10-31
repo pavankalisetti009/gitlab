@@ -31,6 +31,20 @@ RSpec.describe Admin::GroupsController, feature_category: :continuous_integratio
     end
   end
 
+  describe 'POST #create', :with_current_organization do
+    subject(:post_request) { post :create, params: { group: params } }
+
+    context 'when repository size limit is provided' do
+      let(:params) { { path: 'test', name: 'test', repository_size_limit: '5000' } }
+
+      it 'creates a group with a correct repository limit' do
+        expect { post_request }.to change { Group.count }.by(1)
+
+        expect(Group.last.repository_size_limit).to eq(5000.megabytes)
+      end
+    end
+  end
+
   describe 'PUT #update' do
     it 'converts the user entered MiB value into bytes' do
       put :update, params: { id: group, group: { repository_size_limit: '5000' } }
