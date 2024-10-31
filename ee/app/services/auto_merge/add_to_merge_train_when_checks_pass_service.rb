@@ -38,8 +38,17 @@ module AutoMerge
     end
 
     def abort(merge_request, reason)
-      super do
-        SystemNoteService.abort_add_to_merge_train_when_checks_pass(merge_request, project, current_user, reason)
+      # If the merge request is already on a merge train, we need to destroy the car
+      # i.e. If the target branch is deleted which causes an abort with this strategy,
+      # after the pipeline succeeded and was added
+      #
+      if merge_request.merge_train_car
+        AutoMerge::MergeTrainService.new(project, current_user).abort(merge_request, reason)
+        # Before the pipeline checks pass and was added to the merge train
+      else
+        super do
+          SystemNoteService.abort_add_to_merge_train_when_checks_pass(merge_request, project, current_user, reason)
+        end
       end
     end
 

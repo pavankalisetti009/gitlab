@@ -140,14 +140,32 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
 
     let(:merge_request) { create(:merge_request, :add_to_merge_train_when_checks_pass, merge_user: user) }
 
-    it 'aborts auto merge' do
-      expect(SystemNoteService)
-        .to receive(:abort_add_to_merge_train_when_checks_pass)
-        .with(merge_request, project, user, 'an error')
+    context 'without merge train car' do
+      it 'disables the auto-merge' do
+        expect(SystemNoteService)
+          .to receive(:abort_add_to_merge_train_when_checks_pass)
+                .with(merge_request, project, user, 'an error')
 
-      abort_call
+        abort_call
 
-      expect(merge_request).not_to be_auto_merge_enabled
+        expect(merge_request).not_to be_auto_merge_enabled
+      end
+    end
+
+    context 'with merge train car' do
+      let(:merge_train_car) { create(:merge_train_car, merge_request: merge_request, target_project: project) }
+
+      it 'aborts by destroying the running train car and canceling the pipeline' do
+        expect(merge_train_car).not_to be_nil
+        expect(SystemNoteService)
+          .to receive(:abort_merge_train)
+                .with(merge_request, project, user, 'an error')
+
+        abort_call
+
+        expect(merge_request).not_to be_auto_merge_enabled
+        expect(merge_request.reload.merge_train_car).to be_nil
+      end
     end
   end
 
