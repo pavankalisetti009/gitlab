@@ -231,6 +231,7 @@ export default {
         />
         <issue-health-status
           v-if="healthStatus && isChildItemOpen"
+          class="gl-text-nowrap"
           display-as-text
           text-size="sm"
           :health-status="healthStatus"
