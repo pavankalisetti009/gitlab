@@ -76,7 +76,7 @@ describe('TestCaseSidebarTodo', () => {
         createComponent();
 
         const todoEl = findExpandedTodoEl();
-        expect(todoEl.findComponent(GlButton).text()).toBe('Add a to do');
+        expect(todoEl.findComponent(GlButton).text()).toBe('Add a to-do item');
       });
 
       it('display loading icon', () => {
@@ -106,7 +106,7 @@ describe('TestCaseSidebarTodo', () => {
 
         const todoButton = findCollapsedTodoButton();
 
-        expect(todoButton.attributes('title')).toBe('Add a to do');
+        expect(todoButton.attributes('title')).toBe('Add a to-do item');
       });
 
       it('display loading icon', () => {

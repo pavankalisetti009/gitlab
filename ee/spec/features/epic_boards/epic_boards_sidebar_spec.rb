@@ -94,7 +94,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         wait_for_requests
 
         within_testid('sidebar-todo') do
-          click_button 'Add a to do'
+          click_button 'Add a to-do item'
           wait_for_requests
 
           expect(page).to have_content 'Mark as done'
@@ -106,11 +106,11 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         wait_for_requests
 
         within_testid('sidebar-todo') do
-          click_button 'Add a to do'
+          click_button 'Add a to-do item'
           wait_for_requests
           click_button 'Mark as done'
           wait_for_requests
-          expect(page).to have_content 'Add a to do'
+          expect(page).to have_content 'Add a to-do item'
         end
       end
     end
@@ -300,7 +300,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         wait_for_requests
 
         within_testid('work-item-drawer') do
-          click_button 'Add a to do'
+          click_button 'Add a to-do item'
           wait_for_requests
 
           expect(page).to have_selector('button[title="Mark as done"]')
@@ -312,11 +312,11 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         wait_for_requests
 
         within_testid('work-item-drawer') do
-          click_button 'Add a to do'
+          click_button 'Add a to-do item'
           wait_for_requests
           click_button 'Mark as done'
           wait_for_requests
-          expect(page).to have_selector('button[title="Add a to do"]')
+          expect(page).to have_selector('button[title="Add a to-do item"]')
         end
       end
     end

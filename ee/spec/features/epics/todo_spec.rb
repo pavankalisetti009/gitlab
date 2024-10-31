@@ -20,7 +20,7 @@ RSpec.describe 'Manually create a todo item from epic', :js, feature_category: :
 
     it 'creates todo when clicking button' do
       page.within '.issuable-sidebar' do
-        click_button 'Add a to do'
+        click_button 'Add a to-do item'
 
         expect(page).to have_content 'Mark as done'
       end
@@ -32,7 +32,7 @@ RSpec.describe 'Manually create a todo item from epic', :js, feature_category: :
 
     it 'marks a todo as done' do
       page.within '.issuable-sidebar' do
-        click_button 'Add a to do'
+        click_button 'Add a to-do item'
       end
 
       expect(page).to have_selector(nav_todos_link, visible: true)
@@ -63,7 +63,7 @@ RSpec.describe 'Manually create a todo item from epic', :js, feature_category: :
 
     it 'creates todo when clicking button', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444882' do
       page.within '.issuable-sidebar' do
-        click_button 'Add a to do'
+        click_button 'Add a to-do item'
         wait_for_requests
 
         expect(page).to have_selector("button[title='Mark as done']")
