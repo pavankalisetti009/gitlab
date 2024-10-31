@@ -3,60 +3,50 @@
 module Security
   module ScanResultPolicies
     class SyncPreexistingStatesApprovalRulesService
-      include PolicyViolationCommentGenerator
       include VulnerabilityStatesHelper
 
       def initialize(merge_request)
         @merge_request = merge_request
-        @violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, :scan_finding)
+        @approval_rules = merge_request.approval_rules.scan_finding.including_scan_result_policy_read
       end
 
       def execute
         return if merge_request.merged?
 
-        sync_required_approvals
-      end
-
-      private
-
-      attr_reader :merge_request, :violations
-
-      delegate :project, to: :merge_request, private: true
-
-      def sync_required_approvals
-        all_scan_finding_rules = merge_request.approval_rules.scan_finding.including_scan_result_policy_read
-        rules_with_preexisting_states = all_scan_finding_rules.reject do |rule|
+        rules_with_preexisting_states = approval_rules.reject do |rule|
           include_newly_detected?(rule)
         end
 
         return unless rules_with_preexisting_states.any?
 
-        update_scan_finding_rules_with_preexisting_states(rules_with_preexisting_states)
-        generate_policy_bot_comment(merge_request, all_scan_finding_rules, :scan_finding)
+        evaluate_rules(rules_with_preexisting_states)
+        evaluation.save
       end
 
-      def update_scan_finding_rules_with_preexisting_states(approval_rules)
-        violated_rules, unviolated_rules = approval_rules.partition do |rule|
-          preexisting_findings_count_violated?(rule)
+      private
+
+      attr_reader :merge_request, :approval_rules
+
+      delegate :project, to: :merge_request, private: true
+
+      def evaluate_rules(approval_rules)
+        approval_rules.each do |rule|
+          rule_violated, violation_data = preexisting_findings_count_violated?(rule)
+
+          if rule_violated
+            log_violated_rule(approval_rule_id: rule.id, approval_rule_name: rule.name)
+            evaluation.fail!(rule, data: violation_data)
+          else
+            evaluation.pass!(rule)
+          end
         end
-        update_required_approvals(violated_rules, unviolated_rules)
-      end
-
-      def update_required_approvals(violated_rules, unviolated_rules)
-        merge_request.reset_required_approvals(violated_rules)
-        ApprovalMergeRequestRule.remove_required_approved(unviolated_rules) if unviolated_rules.any?
-
-        log_violated_rules(violated_rules)
-        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules.map(&:scan_result_policy_read))
-        violations.execute
       end
 
       def preexisting_findings_count_violated?(approval_rule)
         vulnerabilities = vulnerabilities(approval_rule)
 
         violated = vulnerabilities.count > approval_rule.vulnerabilities_allowed
-        save_violations(approval_rule, vulnerabilities) if violated
-        violated
+        [violated, build_violation_data(vulnerabilities)]
       end
 
       def vulnerabilities(approval_rule)
@@ -70,17 +60,6 @@ module Security
           vulnerability_age: approval_rule.scan_result_policy_read&.vulnerability_age
         }
         ::Security::ScanResultPolicies::VulnerabilitiesFinder.new(project, finder_params).execute
-      end
-
-      def log_violated_rules(rules)
-        return unless rules.any?
-
-        rules.each do |approval_rule|
-          log_violated_rule(
-            approval_rule_id: approval_rule.id,
-            approval_rule_name: approval_rule.name
-          )
-        end
       end
 
       def log_violated_rule(**attributes)
@@ -97,13 +76,18 @@ module Security
         )
       end
 
-      def save_violations(approval_rule, vulnerabilities)
+      def evaluation
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
+          .new(merge_request, approval_rules, :scan_finding)
+      end
+
+      def build_violation_data(vulnerabilities)
+        return if vulnerabilities.blank?
+
         violated_uuids = vulnerabilities.with_findings
                                         .limit(Security::ScanResultPolicyViolation::MAX_VIOLATIONS)
                                         .map(&:finding_uuid)
-        violations.add_violation(approval_rule.scan_result_policy_read, {
-          uuids: { previously_existing: violated_uuids }
-        })
+        { uuids: { previously_existing: violated_uuids } }
       end
     end
   end

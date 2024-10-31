@@ -191,6 +191,18 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           execute
         end
 
+        it 'persists the error in violation data' do
+          execute
+
+          expect(last_violation.violation_data)
+            .to eq('errors' => [{
+              'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
+              'missing_scans' => ['dependency_scanning']
+            }], 'context' => {
+              'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [target_pipeline.id]
+            })
+        end
+
         context 'when policy fails open' do
           before do
             report_approver_rule.scan_result_policy_read.update!(fallback_behavior: { fail: "open" })
@@ -203,16 +215,56 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
         end
 
-        it 'persists the error in violation data' do
-          execute
+        context 'when there are active scan execution policies' do
+          let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
+          let_it_be(:security_orchestration_policy_configuration) do
+            create(:security_orchestration_policy_configuration, project: project)
+          end
 
-          expect(last_violation.violation_data)
-            .to eq('errors' => [{
-              'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
-              'missing_scans' => ['dependency_scanning']
-            }], 'context' => {
-              'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [target_pipeline.id]
-            })
+          let(:vulnerability_states) { %w[new_needs_triage new_dismissed] }
+          let(:scan_execution_policy) do
+            build(:scan_execution_policy,
+              rules: [{ type: 'pipeline', branch_type: 'all' }],
+              actions: [{ scan: 'dependency_scanning' }])
+          end
+
+          before do
+            allow_next_instance_of(Repository) do |repository|
+              allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+            end
+          end
+
+          it_behaves_like 'sets approvals_required to 0'
+
+          context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
+            before do
+              stub_feature_flags(unblock_rules_using_execution_policies: false)
+            end
+
+            it_behaves_like 'does not update approvals_required'
+          end
+
+          context 'when rule is not excludable' do
+            let(:vulnerability_states) { %w[new_needs_triage detected] }
+
+            it_behaves_like 'does not update approvals_required'
+          end
+
+          context 'when policy is not applicable for the source branch' do
+            let(:scan_execution_policy) do
+              build(:scan_execution_policy,
+                rules: [{ type: 'pipeline', branches: %w[other] }],
+                actions: [{ scan: 'dependency_scanning' }])
+            end
+
+            it_behaves_like 'does not update approvals_required'
+          end
+
+          context 'when the scanner in scan execution policies does not match approval rule scanners' do
+            let(:scan_execution_policy) { build(:scan_execution_policy, actions: [{ scan: 'container_scanning' }]) }
+
+            it_behaves_like 'does not update approvals_required'
+          end
         end
       end
 

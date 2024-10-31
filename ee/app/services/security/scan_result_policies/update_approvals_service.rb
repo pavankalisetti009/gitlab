@@ -4,15 +4,14 @@ module Security
   module ScanResultPolicies
     class UpdateApprovalsService
       include Gitlab::Utils::StrongMemoize
-      include PolicyViolationCommentGenerator
       include VulnerabilityStatesHelper
 
-      attr_reader :pipeline, :merge_request, :violations
+      attr_reader :pipeline, :merge_request, :approval_rules
 
       def initialize(merge_request:, pipeline:)
         @pipeline = pipeline
         @merge_request = merge_request
-        @violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, :scan_finding)
+        @approval_rules = merge_request.approval_rules.scan_finding
       end
 
       def execute
@@ -21,29 +20,11 @@ module Security
         return unless pipeline_complete
         return unless pipeline.can_store_security_reports?
 
-        all_scan_finding_rules = merge_request.approval_rules.scan_finding
-
-        approval_rules_with_newly_detected_states = all_scan_finding_rules.select do |rule|
-          include_newly_detected?(rule)
-        end
-
+        approval_rules_with_newly_detected_states = approval_rules.select { |rule| include_newly_detected?(rule) }
         return if approval_rules_with_newly_detected_states.empty?
 
-        log_update_approval_rule('Evaluating MR approval rules from scan result policies', **validation_context)
-
-        violated_rules, unviolated_rules = partition_rules(approval_rules_with_newly_detected_states)
-
-        update_required_approvals(violated_rules, unviolated_rules)
-        violations.add(
-          violated_rules.filter_map(&:scan_result_policy_read),
-          unviolated_rules.filter_map(&:scan_result_policy_read)
-        )
-        violations.execute
-        generate_policy_bot_comment(
-          merge_request,
-          all_scan_finding_rules.applicable_to_branch(merge_request.target_branch),
-          :scan_finding
-        )
+        evaluate_rules(approval_rules_with_newly_detected_states)
+        evaluation.save
       end
 
       def scan_removed?(approval_rule)
@@ -58,17 +39,11 @@ module Security
 
       delegate :project, to: :pipeline
 
-      def update_required_approvals(violated_rules, unviolated_rules)
-        # Ensure we require approvals for violated rules
-        # in case the approvals had been removed before and the pipeline has found violations after re-run
-        merge_request.reset_required_approvals(violated_rules)
+      def evaluate_rules(approval_rules)
+        log_update_approval_rule('Evaluating MR approval rules from scan result policies', **validation_context)
 
-        ApprovalMergeRequestRule.remove_required_approved(unviolated_rules) if unviolated_rules.any?
-      end
-
-      def partition_rules(approval_rules)
-        approval_rules.partition do |approval_rule|
-          approval_rule = approval_rule.source_rule if approval_rule.source_rule
+        approval_rules.each do |merge_request_approval_rule|
+          approval_rule = merge_request_approval_rule.try(:source_rule) || merge_request_approval_rule
 
           if !fail_open?(approval_rule) && scan_removed?(approval_rule)
             log_update_approval_rule(
@@ -78,12 +53,15 @@ module Security
               approval_rule_name: approval_rule.name,
               missing_scans: missing_scans(approval_rule)
             )
-            violations.add_error(approval_rule.scan_result_policy_read, :scan_removed, context: validation_context,
-              missing_scans: missing_scans(approval_rule))
+            evaluation.error!(
+              merge_request_approval_rule, :scan_removed,
+              context: validation_context, missing_scans: missing_scans(approval_rule)
+            )
             next true
           end
 
-          approval_rule_violated = violates_approval_rule?(approval_rule)
+          approval_rule_violated, violation_data = violates_approval_rule?(approval_rule)
+
           if approval_rule_violated
             log_update_approval_rule(
               'Updating MR approval rule',
@@ -91,9 +69,10 @@ module Security
               approval_rule_id: approval_rule.id,
               approval_rule_name: approval_rule.name
             )
+            fail_evaluation_with_data!(merge_request_approval_rule, **violation_data)
+          else
+            evaluation.pass!(merge_request_approval_rule)
           end
-
-          approval_rule_violated
         end
       end
 
@@ -146,36 +125,27 @@ module Security
 
         if only_newly_detected?(approval_rule)
           violated = new_uuids.count > vulnerabilities_allowed
-          add_violation_data(approval_rule, newly_detected: new_uuids) if violated
-          return violated
+          return violated, { newly_detected: new_uuids }
         end
 
         vulnerabilities_count = vulnerabilities_count_for_uuids(pipeline_uuids + target_pipeline_uuids, approval_rule)
         previously_existing_uuids = (pipeline_uuids + target_pipeline_uuids - new_uuids).uniq
 
         if vulnerabilities_count[:exceeded_allowed_count]
-          add_violation_data(approval_rule, newly_detected: new_uuids, previously_existing: previously_existing_uuids)
-          return true
+          return true, { newly_detected: new_uuids, previously_existing: previously_existing_uuids }
         end
 
         total_count = vulnerabilities_count[:count]
         total_count += new_uuids.count if include_newly_detected?(approval_rule)
 
         violated = total_count > vulnerabilities_allowed
-
-        if violated
-          add_violation_data(approval_rule, newly_detected: new_uuids, previously_existing: previously_existing_uuids)
-        end
-
-        violated
+        [violated, { newly_detected: new_uuids, previously_existing: previously_existing_uuids }]
       end
 
-      def add_violation_data(rule, newly_detected: nil, previously_existing: nil)
-        return unless rule.scan_result_policy_read
-
-        violations.add_violation(
-          rule.scan_result_policy_read,
-          {
+      def fail_evaluation_with_data!(rule, newly_detected: nil, previously_existing: nil)
+        evaluation.fail!(
+          rule,
+          data: {
             uuids: {
               newly_detected: Security::ScanResultPolicyViolation.trim_violations(newly_detected),
               previously_existing: Security::ScanResultPolicyViolation.trim_violations(previously_existing)
@@ -183,6 +153,11 @@ module Security
           },
           context: validation_context
         )
+      end
+
+      def evaluation
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
+          .new(merge_request, approval_rules, :scan_finding)
       end
 
       def related_pipeline_sources

@@ -3,7 +3,6 @@
 module Security
   class UnenforceablePolicyRulesNotificationService
     include Gitlab::Utils::StrongMemoize
-    include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
     include ::Security::ScanResultPolicies::RelatedPipelines
 
     def initialize(merge_request)
@@ -29,24 +28,16 @@ module Security
 
       unblock_fail_open_rules(report_type)
 
-      applicable_rules = approval_rules.applicable_to_branch(merge_request.target_branch)
+      policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
+                            .new(merge_request, approval_rules, report_type)
 
-      violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, report_type)
-      fail_closed_applicable_rules = applicable_rules.reject do |rule|
-        rule.scan_result_policy_read.nil? || rule.scan_result_policy_read&.fail_open?
-      end
-      fail_closed_applicable_rules.each do |rule|
-        violations.add_error(rule.scan_result_policy_read, :artifacts_missing,
+      applicable_rules = approval_rules.applicable_to_branch(merge_request.target_branch)
+      applicable_rules.each do |rule|
+        policy_evaluation.error!(rule, :artifacts_missing,
           context: related_pipelines_context(pipeline, merge_request, report_type))
       end
 
-      if ::Feature.enabled?(:policy_mergability_check, project)
-        merge_request.reset_required_approvals(fail_closed_applicable_rules)
-      end
-
-      violations.execute
-
-      generate_policy_bot_comment(merge_request, applicable_rules, report_type)
+      policy_evaluation.save
     end
 
     def unenforceable_report?(report_type)
