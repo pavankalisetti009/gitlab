@@ -6,6 +6,7 @@
 class SoftwareLicensePolicy < ApplicationRecord
   include Presentable
   include EachBatch
+  include FromUnion
 
   # Only allows modification of the approval status
   FORM_EDITABLE = %i[approval_status].freeze
@@ -53,6 +54,18 @@ class SoftwareLicensePolicy < ApplicationRecord
 
   scope :with_license_by_name, ->(license_name) do
     with_license.where(SoftwareLicense.arel_table[:name].lower.in(Array(license_name).map(&:downcase)))
+  end
+
+  scope :with_license_or_custom_license_by_name, ->(license_names) do
+    license_names = Array(license_names).map(&:downcase)
+
+    software_licenses = joins(:software_license)
+      .where(SoftwareLicense.arel_table[:name].lower.in(license_names))
+
+    custom_software_licenses = joins(:custom_software_license)
+      .where(Security::CustomSoftwareLicense.arel_table[:name].lower.in(license_names))
+
+    SoftwareLicensePolicy.from_union([software_licenses, custom_software_licenses])
   end
 
   scope :by_spdx, ->(spdx_identifier) do
