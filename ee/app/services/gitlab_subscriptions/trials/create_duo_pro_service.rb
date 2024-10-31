@@ -18,6 +18,18 @@ module GitlabSubscriptions
         'duo_pro_trial'
       end
 
+      override :trial_user_params
+      def trial_user_params
+        # We override here as we use a general add on lead service currently
+        # GitlabSubscriptions::Trials::CreateAddOnLeadService.
+        params = super
+        if Feature.enabled?(:pass_add_on_name_for_trial_requests, Feature.current_request)
+          params[:add_on_name] = 'code_suggestions'
+        end
+
+        params
+      end
+
       override :tracking_prefix
       def tracking_prefix
         'duo_pro'

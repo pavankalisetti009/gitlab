@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan, owners: user) }
 
-  let(:trial_user_information) { { namespace_id: namespace.id } }
+  let(:trial_user_information) { { namespace_id: namespace.id, add_on_name: "code_suggestions" } }
   let(:apply_trial_params) do
     {
       uid: user.id,
@@ -26,6 +26,18 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
 
       it 'returns success: true' do
         expect(execute).to be_success
+      end
+
+      context 'when pass_add_on_name_for_trial_requests is disabled' do
+        let(:trial_user_information) { { namespace_id: namespace.id } }
+
+        before do
+          stub_feature_flags(pass_add_on_name_for_trial_requests: false)
+        end
+
+        it 'returns success: true' do
+          expect(described_class.execute(apply_trial_params)).to be_success
+        end
       end
     end
   end

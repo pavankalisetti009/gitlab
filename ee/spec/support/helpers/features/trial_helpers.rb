@@ -244,7 +244,8 @@ module Features
         state: form_data.dig(:state, :id),
         product_interaction: 'duo_pro_trial',
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-        opt_in: user.onboarding_status_email_opt_in
+        opt_in: user.onboarding_status_email_opt_in,
+        add_on_name: 'code_suggestions'
       }
 
       expect_next_instance_of(GitlabSubscriptions::Trials::CreateAddOnLeadService) do |service|
