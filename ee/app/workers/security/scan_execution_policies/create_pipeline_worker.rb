@@ -5,6 +5,7 @@ module Security
     class CreatePipelineWorker # rubocop:disable Scalability/IdempotentWorker -- The worker should not run multiple times to avoid creating multiple pipelines
       include ApplicationWorker
       prepend Gitlab::ConditionalConcurrencyLimitControl
+      include Gitlab::InternalEventsTracking
 
       CACHE_EXPIRES_IN = 1.second
 
@@ -30,6 +31,8 @@ module Security
         service_result = ::Security::SecurityOrchestrationPolicies::CreatePipelineService
           .new(project: project, current_user: current_user, params: { actions: actions, branch: branch })
           .execute
+
+        track_creation_event(project, schedule, actions.size, service_result[:status])
 
         return unless service_result[:status] == :error
 
@@ -92,6 +95,18 @@ module Security
         return [] if policy.blank?
 
         policy[:actions]
+      end
+
+      def track_creation_event(project, schedule, scans_count, result)
+        track_internal_event(
+          'enforce_scheduled_scan_execution_policy_in_project',
+          project: project,
+          additional_properties: {
+            value: scans_count, # Number of enforced scans,
+            label: result.to_s, # Was the creation of the pipeline successful,
+            property: schedule.policy_source
+          }
+        )
       end
 
       def log_error(current_user, schedule, message)

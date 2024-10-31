@@ -23,6 +23,8 @@ module Security
     validates :rule_index, presence: true
     validates :policy_type, presence: true
 
+    delegate :namespace?, :project?, to: :security_orchestration_policy_configuration, prefix: :from
+
     scope :runnable_schedules, -> { where("next_run_at < ?", Time.zone.now) }
     scope :with_owner, -> { includes(:owner) }
     scope :with_security_policy_bots, -> do
@@ -62,6 +64,10 @@ module Security
 
     def for_agent?
       applicable_agents.present?
+    end
+
+    def policy_source
+      from_namespace? ? 'group' : 'project'
     end
 
     def cron_timezone

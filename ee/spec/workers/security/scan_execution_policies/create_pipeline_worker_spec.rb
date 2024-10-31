@@ -62,6 +62,20 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
     end
   end
 
+  shared_examples_for 'tracks internal metrics' do |scan_count, policy_source|
+    it 'tracks internal metrics with the right parameters' do
+      expect { run_worker }.to trigger_internal_events('enforce_scheduled_scan_execution_policy_in_project')
+        .with(project: project, additional_properties: { value: scan_count, label: anything,
+                                                         property: policy_source })
+    end
+  end
+
+  shared_examples_for 'does not track internal metrics' do
+    it 'does not track internal metrics' do
+      expect { run_worker }.not_to trigger_internal_events('enforce_scheduled_scan_execution_policy_in_project')
+    end
+  end
+
   describe '#perform' do
     before do
       allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |instance|
@@ -93,6 +107,8 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
         run_worker
       end
 
+      it_behaves_like 'tracks internal metrics', 1, 'project'
+
       context 'when the number of active security policy scheduled scans exceeds the limit' do
         before do
           stub_application_setting(security_policy_scheduled_scans_max_concurrency: 2)
@@ -114,12 +130,14 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
             end
 
             it_behaves_like 'creates a new pipeline'
+            it_behaves_like 'tracks internal metrics', 1, 'project'
           end
 
           context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
             it_behaves_like 'does not creates a new pipeline'
 
             it_behaves_like 'reschedules the worker'
+            it_behaves_like 'does not track internal metrics'
           end
 
           context 'when the policy is defined at group level' do
@@ -166,6 +184,7 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
                 end
 
                 it_behaves_like 'reschedules the worker'
+                it_behaves_like 'does not track internal metrics'
               end
 
               context 'when the worker is running for a project outside of the group' do
@@ -177,10 +196,12 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
                   end
 
                   it_behaves_like 'creates a new pipeline'
+                  it_behaves_like 'tracks internal metrics', 1, 'project'
                 end
 
                 context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
                   it_behaves_like 'creates a new pipeline'
+                  it_behaves_like 'tracks internal metrics', 1, 'project'
                 end
               end
             end
@@ -203,10 +224,12 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
             end
 
             it_behaves_like 'creates a new pipeline'
+            it_behaves_like 'tracks internal metrics', 1, 'project'
           end
 
           context 'when feature flag `scan_execution_pipeline_concurrency_control` is enabled' do
             it_behaves_like 'creates a new pipeline'
+            it_behaves_like 'tracks internal metrics', 1, 'project'
           end
         end
       end
@@ -217,6 +240,8 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
             allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'message'))
           end
         end
+
+        it_behaves_like 'tracks internal metrics', 1, 'project'
 
         it 'logs the error' do
           expect(::Gitlab::AppJsonLogger).to receive(:warn).with({
