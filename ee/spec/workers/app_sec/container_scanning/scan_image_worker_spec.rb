@@ -14,7 +14,6 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
 
   before do
     image_pushed_event.project = project
-
     stub_licensed_features(container_scanning_for_registry: true)
   end
 
@@ -59,6 +58,17 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
       end
     end
 
+    context 'when security_setting exists but container_scanning_for_registry_enabled? is false' do
+      before do
+        allow(image_pushed_event.project.security_setting).to receive(
+          :container_scanning_for_registry_enabled?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(described_class.dispatch?(image_pushed_event)).to eq(false)
+      end
+    end
+
     context 'when security_setting is nil' do
       before do
         allow(image_pushed_event.project).to receive(:security_setting).and_return(nil)
@@ -72,6 +82,26 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
     context 'when project repository is empty' do
       before do
         allow(image_pushed_event.project.repository).to receive(:empty?).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(described_class.dispatch?(image_pushed_event)).to eq(false)
+      end
+    end
+
+    context 'when event does not have a project' do
+      before do
+        image_pushed_event.project = nil
+      end
+
+      it 'returns false' do
+        expect(described_class.dispatch?(image_pushed_event)).to eq(false)
+      end
+    end
+
+    context 'when project does not have a repository' do
+      before do
+        allow(image_pushed_event.project).to receive(:repository).and_return(nil)
       end
 
       it 'returns false' do
