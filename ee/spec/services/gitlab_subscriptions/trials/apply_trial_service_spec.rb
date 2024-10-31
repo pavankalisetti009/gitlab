@@ -108,6 +108,13 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
         end
 
         it_behaves_like 'records an onboarding progress action', :trial_started
+
+        context 'when namespace has already had a trial', :saas do
+          let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+          let_it_be(:user) { create(:user, owner_of: namespace) }
+
+          it { is_expected.to be_success }
+        end
       end
 
       context 'with error while applying the trial' do
@@ -148,6 +155,21 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
           expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
         end
       end
+
+      context 'when duo_enterprise_trials_registration feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials_registration: false)
+        end
+
+        context 'when namespace has already had a trial', :saas do
+          let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+          let_it_be(:user) { create(:user, owner_of: namespace) }
+
+          it 'returns success: false with errors' do
+            expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
+          end
+        end
+      end
     end
   end
 
@@ -171,10 +193,41 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     end
 
     context 'when namespace is already on a trial', :saas do
-      let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_trial_plan, trial_ends_on: 1.year.from_now) }
+      let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+      let_it_be(:user) { create(:user, owner_of: namespace) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with valid plans', :saas do
+      where(plan: ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL)
+
+      with_them do
+        let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
+        let(:user) { create(:user, owner_of: namespace) }
+
+        it { is_expected.to be true }
+      end
+    end
+
+    context 'with an invalid plan', :saas do
+      let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be false }
+    end
+
+    context 'when duo_enterprise_trials_registration feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_enterprise_trials_registration: false)
+      end
+
+      context 'when namespace is already on a trial', :saas do
+        let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
+        let_it_be(:user) { create(:user, owner_of: namespace) }
+
+        it { is_expected.to be false }
+      end
     end
   end
 end
