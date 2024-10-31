@@ -91,7 +91,8 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
       end
 
-      it 'invokes Projects::DestroyService for projects that are inactive even after being notified' do
+      it 'invokes Projects::DestroyService for projects that are inactive even after being notified',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/501376' do
         Gitlab::Redis::SharedState.with do |redis|
           redis.hset(
             'inactive_projects_deletion_warning_email_notified',
