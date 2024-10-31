@@ -1,7 +1,11 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlEmptyState } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import SettingsSection from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_section.vue';
 import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/fallback_section.vue';
 import {
@@ -59,6 +63,7 @@ import {
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
+import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { goToRuleMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -79,8 +84,22 @@ describe('EditorComponent', () => {
     role: [],
   };
 
-  const factory = ({ propsData = {}, provide = {} } = {}) => {
+  const defaultGroups = [
+    { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+  ];
+
+  const createMockApolloProvider = (handler) => {
+    Vue.use(VueApollo);
+    return createMockApollo([[getSppLinkedProjectsGroups, handler]]);
+  };
+
+  const factory = ({
+    propsData = {},
+    provide = {},
+    handler = mockLinkedSppItemsResponse(),
+  } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
+      apolloProvider: createMockApolloProvider(handler),
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
         errorSources: [],
@@ -102,7 +121,12 @@ describe('EditorComponent', () => {
     });
   };
 
-  const factoryWithExistingPolicy = ({ policy = {}, provide = {}, hasActions = true } = {}) => {
+  const factoryWithExistingPolicy = ({
+    policy = {},
+    provide = {},
+    handler,
+    hasActions = true,
+  } = {}) => {
     const existingPolicy = { ...mockDefaultBranchesScanResultObject };
 
     if (!hasActions) {
@@ -116,6 +140,7 @@ describe('EditorComponent', () => {
         isEditing: true,
       },
       provide,
+      handler,
     });
   };
 
@@ -614,16 +639,16 @@ describe('EditorComponent', () => {
   });
 
   describe('settings section', () => {
-    describe('settings', () => {
-      const defaultProjectApprovalConfiguration = {
-        [PREVENT_PUSHING_AND_FORCE_PUSHING]: true,
-        [BLOCK_BRANCH_MODIFICATION]: true,
-        [PREVENT_APPROVAL_BY_AUTHOR]: true,
-        [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: true,
-        [REMOVE_APPROVALS_WITH_NEW_COMMIT]: true,
-        [REQUIRE_PASSWORD_TO_APPROVE]: false,
-      };
+    const defaultProjectApprovalConfiguration = {
+      [PREVENT_PUSHING_AND_FORCE_PUSHING]: true,
+      [BLOCK_BRANCH_MODIFICATION]: true,
+      [PREVENT_APPROVAL_BY_AUTHOR]: true,
+      [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: true,
+      [REMOVE_APPROVALS_WITH_NEW_COMMIT]: true,
+      [REQUIRE_PASSWORD_TO_APPROVE]: false,
+    };
 
+    describe('settings', () => {
       beforeEach(() => {
         factory();
       });
@@ -712,6 +737,93 @@ describe('EditorComponent', () => {
             expect(findEmptyActionsAlert().props('variant')).toBe(alertVariant);
           }
         });
+      });
+    });
+
+    describe('linked groups', () => {
+      describe('graphql request', () => {
+        it('fetches when namespace type is project', async () => {
+          const mockRequestHandler = mockLinkedSppItemsResponse();
+          factory({
+            provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
+            handler: mockRequestHandler,
+          });
+          await waitForPromises();
+          expect(mockRequestHandler).toHaveBeenCalledWith({
+            fullPath: defaultProjectPath,
+          });
+        });
+
+        it('does not fetch when namespace type is group', async () => {
+          const mockRequestHandler = mockLinkedSppItemsResponse();
+          factory({
+            provide: {
+              namespaceType: NAMESPACE_TYPES.GROUP,
+              glFeatures: { scanResultPolicyBlockGroupBranchModification: true },
+            },
+            handler: mockRequestHandler,
+          });
+          await waitForPromises();
+          expect(mockRequestHandler).not.toHaveBeenCalled();
+        });
+
+        it('does not fetch when namespace type is a project and the ff is false', async () => {
+          const mockRequestHandler = mockLinkedSppItemsResponse();
+          factory({
+            handler: mockRequestHandler,
+          });
+          await waitForPromises();
+          expect(mockRequestHandler).not.toHaveBeenCalled();
+        });
+      });
+
+      it('updates the settings if groups are linked', async () => {
+        factory({
+          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
+          handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
+        });
+        await waitForPromises();
+        expect(findSettingsSection().props('settings')).toEqual({
+          ...defaultProjectApprovalConfiguration,
+          [BLOCK_GROUP_BRANCH_MODIFICATION]: true,
+        });
+        expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(
+          `${BLOCK_GROUP_BRANCH_MODIFICATION}: true`,
+        );
+      });
+
+      it('does not update the settings if groups are not linked', async () => {
+        factory({
+          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
+          handler: mockLinkedSppItemsResponse(),
+        });
+        await waitForPromises();
+        expect(findSettingsSection().props('settings')).toEqual(
+          defaultProjectApprovalConfiguration,
+        );
+        expect(findPolicyEditorLayout().props('yamlEditorValue')).not.toContain(
+          BLOCK_GROUP_BRANCH_MODIFICATION,
+        );
+      });
+
+      it('does not change existing policy settings', async () => {
+        const blockGroupBranchModificationSetting = {
+          [BLOCK_GROUP_BRANCH_MODIFICATION]: {
+            enabled: true,
+            exceptions: ['top-level-group'],
+          },
+        };
+        factoryWithExistingPolicy({
+          policy: {
+            approval_settings: blockGroupBranchModificationSetting,
+          },
+          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
+          handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
+        });
+        await waitForPromises();
+        expect(findSettingsSection().props('settings')).toMatchObject(
+          blockGroupBranchModificationSetting,
+        );
       });
     });
   });

@@ -120,20 +120,24 @@ export const PERMITTED_INVALID_SETTINGS = {
  * @returns {Object} final settings
  */
 const buildConfig = ({
+  hasLinkedGroups = false,
   namespaceType = NAMESPACE_TYPES.PROJECT,
   scanResultPolicyBlockGroupBranchModification = false,
 }) => {
-  if (namespaceType === NAMESPACE_TYPES.GROUP && scanResultPolicyBlockGroupBranchModification) {
-    return {
-      ...protectedBranchesConfiguration,
-      ...groupProtectedBranchesConfiguration,
-      ...pushingBranchesConfiguration,
-      ...mergeRequestConfiguration,
-    };
+  const baseConfigurations = {
+    ...protectedBranchesConfiguration,
+  };
+
+  const isGroupOrHasLinkedGroups = namespaceType === NAMESPACE_TYPES.GROUP || hasLinkedGroups;
+  const shouldIncludeGroupConfiguration =
+    isGroupOrHasLinkedGroups && scanResultPolicyBlockGroupBranchModification;
+
+  if (shouldIncludeGroupConfiguration) {
+    Object.assign(baseConfigurations, groupProtectedBranchesConfiguration);
   }
 
   return {
-    ...protectedBranchesConfiguration,
+    ...baseConfigurations,
     ...pushingBranchesConfiguration,
     ...mergeRequestConfiguration,
   };

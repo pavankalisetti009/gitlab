@@ -12,6 +12,7 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:vulnerability_management_policy_type, project)
+        push_frontend_feature_flag(:scan_result_policy_block_group_branch_modification, project)
         push_frontend_feature_flag(:scan_execution_policy_action_limit, project)
       end
 
