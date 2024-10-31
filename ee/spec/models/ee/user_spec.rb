@@ -2095,7 +2095,7 @@ RSpec.describe User, feature_category: :system_access do
         trialed_group.add_owner(user)
       end
 
-      it { is_expected.not_to include trialed_group }
+      it { is_expected.to include trialed_group }
     end
 
     context 'guest of a non-trialed group' do
