@@ -24,7 +24,7 @@ export const mockSelfHostedModelsList = [
   },
   {
     id: 'gid://gitlab/Ai::SelfHostedModel/2',
-    name: 'mock-self-hosted-model-1',
+    name: 'mock-self-hosted-model-2',
     model: 'mistral',
     endpoint: 'https://mock-endpoint-2.com',
     identifier: '',

@@ -1,4 +1,4 @@
-import { GlTable, GlDisclosureDropdown, GlLink, GlTruncate } from '@gitlab/ui';
+import { GlTable, GlDisclosureDropdown, GlLink, GlTruncate, GlSearchBoxByType } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
 import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
@@ -26,6 +26,7 @@ describe('SelfHostedModelsTable', () => {
   const findTableHeaders = () => findTable().findAllComponents('th');
   const findTableRows = () => findTable().findAllComponents('tbody > tr');
   const findNthTableRow = (idx) => findTableRows().at(idx);
+  const findSearchBox = () => wrapper.findComponent(GlSearchBoxByType);
   const findDisclosureDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findEditButtons = () => wrapper.findAllByTestId('model-edit-button');
   const findEmptyStateLink = () => wrapper.findComponent(GlLink);
@@ -90,26 +91,45 @@ describe('SelfHostedModelsTable', () => {
     expect(findDisclosureDropdowns().length).toBe(2);
   });
 
-  describe('when there are no self-hosted models', () => {
-    it('renders empty state text', () => {
-      createComponent({ props: { models: [] } });
+  describe('search', () => {
+    beforeEach(() => {
+      createComponent({ props: { models: mockSelfHostedModelsList } });
+    });
 
+    it('renders a search bar', () => {
+      expect(findSearchBox().exists()).toBe(true);
+    });
+
+    it('can search the table', async () => {
+      await findSearchBox().vm.$emit('input', 'mock-self-hosted-model-1');
+
+      expect(findTableRows().length).toEqual(1);
+      expect(findTableRows().at(0).text()).toContain('mock-self-hosted-model-1');
+    });
+  });
+
+  describe('when there are no self-hosted models', () => {
+    beforeEach(() => {
+      createComponent({ props: { models: [] } });
+    });
+
+    it('renders empty state text', () => {
       expect(findTable().text()).toMatch(
         'You do not currently have any self-hosted models. Add a self-hosted model to get started.',
       );
     });
 
     it('renders a link to create a new self-hosted model', () => {
-      createComponent({ props: { models: [] } });
-
       expect(findEmptyStateLink().attributes('href')).toBe(newSelfHostedModelPath);
     });
   });
 
   describe('Editing a model', () => {
-    it('renders an edit button for each model', () => {
+    beforeEach(() => {
       createComponent({ props: { models: mockSelfHostedModelsList } });
+    });
 
+    it('renders an edit button for each model', () => {
       expect(findEditButtons().length).toBe(2);
 
       findEditButtons().wrappers.forEach((button) => {
@@ -118,8 +138,6 @@ describe('SelfHostedModelsTable', () => {
     });
 
     it('routes to the correct path', () => {
-      createComponent({ props: { models: mockSelfHostedModelsList } });
-
       findEditButtons().wrappers.forEach((button, idx) => {
         expect(button.html()).toContain(`href="/admin/ai/self_hosted_models/${idx + 1}/edit"`);
       });
