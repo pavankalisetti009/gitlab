@@ -89,7 +89,7 @@ export default {
       tabindex="0"
       class="gl-flex gl-gap-3 gl-text-sm gl-font-normal gl-text-gray-500"
     >
-      <span data-testid="on-track-count">
+      <span class="gl-inline-flex gl-gap-1" data-testid="on-track-count">
         <gl-icon
           :name="statusIcon($options.HEALTH_STATUS_ON_TRACK)"
           :class="{ [statusClass($options.HEALTH_STATUS_ON_TRACK)]: true, 'gl-mr-1': true }"
@@ -97,7 +97,7 @@ export default {
         />
         <span>{{ rolledUpOnTrackWorkItems.count }}</span>
       </span>
-      <span data-testid="needs-attention-count">
+      <span class="gl-inline-flex gl-gap-1" data-testid="needs-attention-count">
         <gl-icon
           :name="statusIcon($options.HEALTH_STATUS_NEEDS_ATTENTION)"
           :class="{ [statusClass($options.HEALTH_STATUS_NEEDS_ATTENTION)]: true, 'gl-mr-1': true }"
@@ -105,7 +105,7 @@ export default {
         />
         {{ rolledUpNeedsAttentionWorkItems.count }}
       </span>
-      <span data-testid="at-risk-count">
+      <span class="gl-inline-flex gl-gap-1" data-testid="at-risk-count">
         <gl-icon
           :name="statusIcon($options.HEALTH_STATUS_AT_RISK)"
           :class="{ [statusClass($options.HEALTH_STATUS_AT_RISK)]: true, 'gl-mr-1': true }"

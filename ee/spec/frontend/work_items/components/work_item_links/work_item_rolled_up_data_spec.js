@@ -3,7 +3,6 @@ import { GlIcon } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemRolledUpData from '~/work_items/components/work_item_links/work_item_rolled_up_data.vue';
-import WorkItemRolledUpCount from '~/work_items/components/work_item_links/work_item_rolled_up_count.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -13,14 +12,13 @@ import { mockRolledUpHealthStatus } from '../../mock_data';
 
 Vue.use(VueApollo);
 
-describe('WorkItemRollUpData', () => {
+describe('WorkItemRolledUpData', () => {
   let wrapper;
 
   const findRolledUpWeight = () => wrapper.findByTestId('work-item-rollup-weight');
   const findRolledUpWeightValue = () => wrapper.findByTestId('work-item-weight-value');
   const findRolledUpProgress = () => wrapper.findByTestId('work-item-rollup-progress');
   const findRolledUpProgressValue = () => wrapper.findByTestId('work-item-progress-value');
-  const findRolledUpCount = () => wrapper.findComponent(WorkItemRolledUpCount);
   const findWorkItemRolledUpHealthStatus = () =>
     wrapper.findComponent(WorkItemRolledUpHealthStatus);
 
@@ -48,12 +46,6 @@ describe('WorkItemRollUpData', () => {
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
     });
   };
-
-  it('renders rolled up count component', () => {
-    createComponent();
-
-    expect(findRolledUpCount().exists()).toBe(true);
-  });
 
   describe('rolled up weight', () => {
     it.each`
