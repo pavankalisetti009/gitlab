@@ -5,6 +5,7 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
+import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import {
   ADD_ACTION_LABEL,
   BRANCHES_KEY,
@@ -91,14 +92,43 @@ export default {
     ScanFilterSelector,
     SettingsSection,
   },
+  apollo: {
+    linkedSppGroups: {
+      query: getSppLinkedProjectsGroups,
+      variables() {
+        return { fullPath: this.namespacePath };
+      },
+      update(data) {
+        return data?.project?.securityPolicyProjectLinkedGroups?.nodes || [];
+      },
+      result({ data }) {
+        const groups = data?.project?.securityPolicyProjectLinkedGroups?.nodes || [];
+        const currentSettingsValue = this.policy.approval_settings[BLOCK_GROUP_BRANCH_MODIFICATION];
+        if (groups.length && currentSettingsValue === undefined) {
+          const newSettings = {
+            ...this.policy.approval_settings,
+            [BLOCK_GROUP_BRANCH_MODIFICATION]: true,
+          };
+          this.updateSettings(newSettings);
+        }
+      },
+      skip() {
+        return (
+          isGroup(this.namespaceType) ||
+          !this.glFeatures.scanResultPolicyBlockGroupBranchModification
+        );
+      },
+    },
+  },
   mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
-    'policyEditorEmptyStateSvgPath',
     'namespaceId',
+    'namespacePath',
+    'namespaceType',
+    'policyEditorEmptyStateSvgPath',
     'scanPolicyDocumentationPath',
     'scanResultPolicyApprovers',
-    'namespaceType',
   ],
   props: {
     assignedPolicyProject: {
@@ -140,6 +170,7 @@ export default {
     return {
       errors: { action: [] },
       invalidBranches: [],
+      linkedSppGroups: [],
       policy,
       hasParsingError,
       documentationPath: setUrlFragment(
@@ -190,6 +221,7 @@ export default {
       return buildSettingsList({
         settings: this.policy.approval_settings,
         options: {
+          hasLinkedGroups: Boolean(this.linkedSppGroups.length),
           namespaceType: this.namespaceType,
           scanResultPolicyBlockGroupBranchModification:
             this.glFeatures.scanResultPolicyBlockGroupBranchModification,

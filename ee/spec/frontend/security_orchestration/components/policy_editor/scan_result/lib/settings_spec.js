@@ -48,6 +48,28 @@ describe('buildSettingsList', () => {
     });
   });
 
+  it('can update merge request settings for SPP w/ linked groups && w/ scanResultPolicyBlockGroupBranchModification ff', () => {
+    const settings = {
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
+      [PREVENT_APPROVAL_BY_AUTHOR]: false,
+    };
+    expect(
+      buildSettingsList({
+        settings,
+        options: {
+          hasLinkedGroups: true,
+          namespaceType: NAMESPACE_TYPES.PROJECT,
+          scanResultPolicyBlockGroupBranchModification: true,
+        },
+      }),
+    ).toEqual({
+      ...protectedBranchesConfiguration,
+      ...groupProtectedBranchesConfiguration,
+      ...settings,
+    });
+  });
+
   it('can update merge request settings for group w/o scanResultPolicyBlockGroupBranchModification ff', () => {
     const settings = {
       ...pushingBranchesConfiguration,
