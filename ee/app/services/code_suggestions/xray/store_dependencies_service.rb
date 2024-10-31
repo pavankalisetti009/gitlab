@@ -3,21 +3,17 @@
 module CodeSuggestions
   module Xray
     class StoreDependenciesService
-      def initialize(project, language, dependencies, scanner_version)
+      def initialize(project, language, dependencies)
         @project = project
         @language = language
         @dependencies = dependencies
-        @scanner_version = scanner_version
       end
 
       def execute
         return ServiceResponse.error(message: 'project cannot be blank') if project.blank?
         return ServiceResponse.error(message: 'language cannot be blank') if language.blank?
 
-        checksum = Digest::SHA256.hexdigest(dependencies.join(' '))
         payload = {
-          "scannerVersion" => scanner_version,
-          "checksum" => checksum,
           "libs" => dependencies.map { |name| { "name" => name } }
         }
 
@@ -31,7 +27,7 @@ module CodeSuggestions
 
       private
 
-      attr_reader :project, :language, :dependencies, :scanner_version
+      attr_reader :project, :language, :dependencies
     end
   end
 end

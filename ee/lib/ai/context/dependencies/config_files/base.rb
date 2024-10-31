@@ -9,12 +9,6 @@ module Ai
         # config file type/language, create a new class that inherits from this Base.
         # Then append the new class name to ConfigFiles::Constants::CONFIG_FILE_CLASSES.
         class Base
-          include Gitlab::Utils::StrongMemoize
-
-          # This value is supposed to indicate the version of Repository X-Ray we are using;
-          # however, it's not applicable here so we just set it to a placeholder value.
-          # It may be removed entirely in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
-          SCANNER_VERSION = '0.0.0'
           VALID_LIB_VERSION_TYPES = [String, Integer, Float, NilClass].freeze
 
           ParsingError = Class.new(StandardError)
@@ -70,9 +64,7 @@ module Ai
 
             {
               libs: formatted_libs,
-              checksum: checksum,
-              fileName: path,
-              scannerVersion: SCANNER_VERSION
+              file_path: path
             }
           end
 
@@ -126,11 +118,6 @@ module Ai
           def error(message)
             @errors << message
           end
-
-          def checksum
-            Digest::SHA256.hexdigest(blob.data)
-          end
-          strong_memoize_attr :checksum
 
           # dig() throws a generic error in certain cases, e.g. when accessing an array with
           # a string key or calling it on an integer or nil. This method wraps dig() so that

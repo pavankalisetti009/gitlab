@@ -87,7 +87,6 @@ module API
               params do
                 requires :id, type: Integer, desc: "Job's ID"
                 requires :token, type: String, desc: "Job's authentication token"
-                requires :scanner_version, type: String, desc: 'The version of X-Ray scanner'
                 requires :language, type: String,
                   values: ::CodeSuggestions::ProgrammingLanguage::SUPPORTED_LANGUAGES.keys,
                   desc: 'The programming language of dependencies'
@@ -101,8 +100,7 @@ module API
                 service_response = ::CodeSuggestions::Xray::StoreDependenciesService.new(
                   current_job.project,
                   params[:language],
-                  params[:dependencies],
-                  params[:scanner_version]
+                  params[:dependencies]
                 ).execute
 
                 if service_response.success?

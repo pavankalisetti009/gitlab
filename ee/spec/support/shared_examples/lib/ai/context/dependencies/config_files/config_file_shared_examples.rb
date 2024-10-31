@@ -11,7 +11,6 @@
 #
 RSpec.shared_examples 'parsing a valid dependency config file' do
   let(:blob) { double(path: 'path/to/file', data: config_file_content, project: instance_double('Project', id: 123)) } # rubocop: disable RSpec/VerifiedDoubles -- Inherits from both Gitlab::Git::Blob and Blob
-  let(:expected_checksum) { Digest::SHA256.hexdigest(config_file_content) }
   let(:config_file) { (try(:config_file_class) || described_class).new(blob) }
 
   it 'returns the expected payload' do
@@ -20,9 +19,7 @@ RSpec.shared_examples 'parsing a valid dependency config file' do
     expect(config_file).to be_valid
     expect(config_file.payload).to match({
       libs: match_array(expected_formatted_lib_names.map { |lib_name| { name: lib_name } }),
-      checksum: expected_checksum,
-      fileName: blob.path,
-      scannerVersion: described_class::SCANNER_VERSION
+      file_path: blob.path
     })
   end
 end

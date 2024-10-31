@@ -1,12 +1,6 @@
 {
   "definitions": {
-    "scannerVersion": {
-      "type": "string"
-    },
-    "fileName": {
-      "type": "string"
-    },
-    "checksum": {
+    "file_path": {
       "type": "string"
     },
     "libs": {

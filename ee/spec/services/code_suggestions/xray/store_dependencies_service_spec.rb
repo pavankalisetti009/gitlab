@@ -6,11 +6,10 @@ RSpec.describe CodeSuggestions::Xray::StoreDependenciesService, feature_category
   let_it_be(:project) { create(:project) }
   let(:language) { 'Ruby' }
   let(:dependencies) { %w[rails devise attr_encrypted grape kaminari] }
-  let(:scanner_version) { '2.0.0' }
   let(:dependencies_hash) { dependencies.map { |name| { "name" => name } } }
 
   describe '#execute' do
-    subject(:execute) { described_class.new(project, language, dependencies, scanner_version).execute }
+    subject(:execute) { described_class.new(project, language, dependencies).execute }
 
     context 'when there is no report for programming language yet' do
       it 'responds with success' do
@@ -27,8 +26,6 @@ RSpec.describe CodeSuggestions::Xray::StoreDependenciesService, feature_category
         report = project.xray_reports.last!
 
         expect(report.lang).to eq(language)
-        expect(report.payload['checksum']).to be_present
-        expect(report.payload['scannerVersion']).to eq(scanner_version)
         expect(report.payload['libs']).to match_array(dependencies_hash)
       end
     end
