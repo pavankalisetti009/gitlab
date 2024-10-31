@@ -58,6 +58,10 @@ module Security
       license_states.include?(ApprovalProjectRule::NEWLY_DETECTED)
     end
 
+    def only_newly_detected_licenses?
+      license_states == [ApprovalProjectRule::NEWLY_DETECTED]
+    end
+
     def vulnerability_age
       return {} unless age_operator.present? && age_interval.present? && age_value.present?
 

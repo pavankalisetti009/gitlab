@@ -31,8 +31,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
   let_it_be(:preexisting_states) { false }
 
+  let(:license_states) { ['newly_detected'] }
   let(:scan_result_policy_read) do
-    create(:scan_result_policy_read, project: project, license_states: ['newly_detected'])
+    create(:scan_result_policy_read, project: project, license_states: license_states)
   end
 
   let!(:license_finding_rule) do
@@ -103,10 +104,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
   context 'for preexisting states' do
     let_it_be(:preexisting_states) { true }
     let_it_be(:pipeline) { nil }
+    let(:license_states) { ['detected'] }
 
     before do
-      license_finding_rule.scan_result_policy_read.update!(license_states: ['detected'])
-
       allow_next_instance_of(Security::ScanResultPolicies::LicenseViolationChecker) do |checker|
         allow(checker).to receive(:execute).and_return({ 'GNU' => ['A'] })
       end

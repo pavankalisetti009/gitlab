@@ -261,6 +261,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     end
   end
 
+  describe '#remove_violation' do
+    subject(:remove_violation) do
+      service.remove_violation(policy_a)
+      service.execute
+    end
+
+    let!(:existing_violation) do
+      create(:scan_result_policy_violation, merge_request: merge_request, project: project,
+        scan_result_policy_read: policy_a)
+    end
+
+    it 'removes violation for the policy' do
+      expect { remove_violation }.to change { merge_request.scan_result_policy_violations.count }.from(1).to(0)
+    end
+  end
+
   describe '#add_error' do
     subject(:violation_data) do
       service.add_error(policy_a, error, context: context, **extra_data)

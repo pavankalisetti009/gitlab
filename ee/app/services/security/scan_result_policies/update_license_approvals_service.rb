@@ -4,42 +4,34 @@ module Security
   module ScanResultPolicies
     class UpdateLicenseApprovalsService
       include Gitlab::Utils::StrongMemoize
-      include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
 
       def initialize(merge_request, pipeline, preexisting_states = false)
         @merge_request = merge_request
         @pipeline = pipeline
         @preexisting_states = preexisting_states
+        @approval_rules = merge_request
+                            .approval_rules
+                            .report_approver
+                            .license_scanning
+                            .with_scan_result_policy_read
+                            .including_scan_result_policy_read
       end
 
       def execute
         return if merge_request.merged?
-
-        all_license_approval_rules = merge_request
-                           .approval_rules
-                           .report_approver
-                           .license_scanning
-                           .with_scan_result_policy_read
-                           .including_scan_result_policy_read
-
-        return if all_license_approval_rules.empty?
+        return if approval_rules.empty?
         return if !preexisting_states && !scanner.results_available?
 
-        filtered_rules = filter_approval_rules(all_license_approval_rules)
+        filtered_rules = filter_approval_rules(approval_rules)
         return if filtered_rules.empty?
 
-        update_approvals(filtered_rules)
-
-        generate_policy_bot_comment(
-          merge_request,
-          all_license_approval_rules.applicable_to_branch(merge_request.target_branch),
-          :license_scanning
-        )
+        evaluate_rules(filtered_rules)
+        evaluation.save
       end
 
       private
 
-      attr_reader :merge_request, :pipeline, :preexisting_states
+      attr_reader :merge_request, :pipeline, :preexisting_states, :approval_rules
 
       delegate :project, to: :merge_request
 
@@ -49,34 +41,30 @@ module Security
         preexisting_states ? approval_rules.reject(&rule_filter) : approval_rules.select(&rule_filter)
       end
 
-      def update_approvals(license_approval_rules)
-        violated_rules, unviolated_rules = license_approval_rules.partition do |approval_rule|
-          partition_rule(approval_rule)
-        end
+      def evaluate_rules(license_approval_rules)
+        license_approval_rules.each do |approval_rule|
+          rule_violated, violation_data = rule_violated?(approval_rule)
 
-        merge_request.reset_required_approvals(violated_rules)
-        ApprovalMergeRequestRule.remove_required_approved(unviolated_rules)
-
-        violations.add(violated_rules.map(&:scan_result_policy_read), unviolated_rules.map(&:scan_result_policy_read))
-        violations.execute
-
-        violated_rules.each do |approval_rule|
-          log_update_approval_rule(approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name)
+          if rule_violated
+            evaluation.fail!(approval_rule, data: violation_data, context: validation_context)
+            log_update_approval_rule(approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name)
+          else
+            evaluation.pass!(approval_rule)
+          end
         end
       end
 
-      def partition_rule(rule)
+      def rule_violated?(rule)
         scan_result_policy_read = rule.scan_result_policy_read
-        return false if !target_branch_pipeline && fail_open?(scan_result_policy_read)
+        return false, nil if !target_branch_pipeline && fail_open?(scan_result_policy_read)
 
         denied_licenses_with_dependencies = violation_checker.execute(scan_result_policy_read)
 
         if denied_licenses_with_dependencies.present?
-          add_violation_data(rule, denied_licenses_with_dependencies)
-          return true
+          return true, build_violation_data(denied_licenses_with_dependencies)
         end
 
-        false
+        [false, nil]
       end
 
       def violation_checker
@@ -93,10 +81,10 @@ module Security
       end
       strong_memoize_attr :scanner
 
-      def violations
-        Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, :license_scanning)
+      def evaluation
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
+          .new(merge_request, approval_rules, :license_scanning)
       end
-      strong_memoize_attr :violations
 
       def target_branch_pipeline
         target_pipeline = merge_request.latest_comparison_pipeline_with_sbom_reports
@@ -141,16 +129,14 @@ module Security
         )
       end
 
-      def add_violation_data(rule, denied_licenses_with_dependencies)
+      def build_violation_data(denied_licenses_with_dependencies)
         return if denied_licenses_with_dependencies.blank?
 
-        trimmed_license_list = denied_licenses_with_dependencies
-                                              .first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS)
-                                              .to_h
-                                              .transform_values do |dependencies|
+        denied_licenses_with_dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS)
+                                         .to_h
+                                         .transform_values do |dependencies|
           Security::ScanResultPolicyViolation.trim_violations(dependencies)
         end
-        violations.add_violation(rule.scan_result_policy_read, trimmed_license_list, context: validation_context)
       end
 
       def fail_open?(scan_result_policy_read)

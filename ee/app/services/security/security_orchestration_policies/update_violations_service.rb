@@ -27,6 +27,10 @@ module Security
         @violation_data[policy.id].deep_merge!({ context: context, violations: { report_type => data } }.compact_blank)
       end
 
+      def remove_violation(policy)
+        unviolated_policies.add(policy)
+      end
+
       def add_error(policy, error, context: nil, **extra_data)
         add([policy], [])
 

@@ -112,6 +112,30 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
   end
 
+  describe '#only_newly_detected_licenses?' do
+    subject { scan_result_policy_read.only_newly_detected_licenses? }
+
+    context 'when license_states contains newly_detected' do
+      let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, license_states: ['newly_detected']) }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when license_states contains both newly_detected and detected' do
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read, license_states: %w[newly_detected detected])
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when license_states does not contain newly_detected' do
+      let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, license_states: ['detected']) }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '#approval_policy_rule' do
     let(:scan_result_policy) { create(:scan_result_policy_read) }
     let(:policy_configuration) { scan_result_policy.security_orchestration_policy_configuration }

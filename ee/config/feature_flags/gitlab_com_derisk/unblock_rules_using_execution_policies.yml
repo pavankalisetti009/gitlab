@@ -1,0 +1,9 @@
+---
+name: unblock_rules_using_execution_policies
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/490092
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168222
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/498717
+milestone: '17.6'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

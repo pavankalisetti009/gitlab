@@ -18,7 +18,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     )
   end
 
-  let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+  let_it_be(:scan_result_policy_read, reload: true) { create(:scan_result_policy_read, project: project) }
   let_it_be(:protected_branch) do
     create(:protected_branch, name: merge_request.target_branch, project: project)
   end
@@ -213,12 +213,88 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     end
   end
 
+  shared_context 'with unenforceable rules unblocked by scan execution policy' do |_report_type, _other_report_type|
+    let!(:approval_project_rule) do
+      create(:approval_project_rule, :scan_finding, project: project, approvals_required: 1,
+        applies_to_all_protected_branches: true, protected_branches: [protected_branch],
+        scan_result_policy_read: scan_result_policy_read)
+    end
+
+    let(:policy_scans) { %w[dependency_scanning container_scanning] }
+    let(:scan_execution_policy) { build(:scan_execution_policy, actions: policy_scans.map { |scan| { scan: scan } }) }
+
+    let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
+    let_it_be(:security_orchestration_policy_configuration) do
+      create(:security_orchestration_policy_configuration, project: project)
+    end
+
+    before do
+      create(:scan_result_policy_violation, merge_request: merge_request,
+        scan_result_policy_read: scan_result_policy_read, project: project)
+
+      allow_next_instance_of(Repository) do |repository|
+        allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+      end
+    end
+
+    it 'unblocks the rules with matching scanners' do
+      expect { execute }.to change { matching_scanner_rule.reload.approvals_required }
+      .and not_change { non_matching_scanner_rule.reload.approvals_required }
+    end
+
+    context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
+      before do
+        stub_feature_flags(unblock_rules_using_execution_policies: false)
+      end
+
+      it 'does not unblock the rules' do
+        expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+      end
+    end
+  end
+
   context 'with unenforceable scan_finding report' do
     before do
       create(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: pipeline.project)
     end
 
     it_behaves_like 'unenforceable report', :scan_finding
+
+    context 'with active scan execution policy' do
+      include_context 'with unenforceable rules unblocked by scan execution policy'
+
+      let(:vulnerability_states) { %w[new_needs_triage newly_detected] }
+
+      let!(:matching_scanner_rule) do
+        create(:report_approver_rule, :scan_finding, name: "Rule matching", merge_request: merge_request,
+          approval_project_rule: approval_project_rule, approvals_required: 1,
+          vulnerability_states: vulnerability_states,
+          scanners: %w[dependency_scanning container_scanning],
+          scan_result_policy_read: scan_result_policy_read)
+      end
+
+      let!(:non_matching_scanner_rule) do
+        create(:report_approver_rule, :license_scanning, name: "Rule non matching", merge_request: merge_request,
+          approval_project_rule: approval_project_rule, approvals_required: 1,
+          scan_result_policy_read: scan_result_policy_read)
+      end
+
+      context 'when rule is not excludable' do
+        let(:vulnerability_states) { %w[detected] }
+
+        it 'does not unblock the rule' do
+          expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+        end
+      end
+
+      context 'when scan execution policies do not include all scanners' do
+        let(:policy_scans) { ['dependency_scanning'] }
+
+        it 'does not unblock the rule' do
+          expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+        end
+      end
+    end
   end
 
   context 'with unenforceable license_scanning report' do
@@ -227,5 +303,43 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     end
 
     it_behaves_like 'unenforceable report', :license_scanning
+
+    context 'with active scan execution policy' do
+      include_context 'with unenforceable rules unblocked by scan execution policy'
+
+      let!(:matching_scanner_rule) do
+        create(:report_approver_rule, :license_scanning, name: "Rule matching", merge_request: merge_request,
+          approval_project_rule: approval_project_rule, approvals_required: 1,
+          scan_result_policy_read: scan_result_policy_read)
+      end
+
+      let!(:non_matching_scanner_rule) do
+        create(:report_approver_rule, :scan_finding, name: "Rule non matching", merge_request: merge_request,
+          approval_project_rule: approval_project_rule, approvals_required: 1,
+          scan_result_policy_read: scan_result_policy_read)
+      end
+
+      let(:license_states) { %w[newly_detected] }
+
+      before do
+        scan_result_policy_read.update!(license_states: license_states)
+      end
+
+      context 'when rule is not excludable' do
+        let(:license_states) { %w[detected] }
+
+        it 'does not unblock the rule' do
+          expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+        end
+      end
+
+      context 'when scan execution policies do not include dependency_scanning' do
+        let(:policy_scans) { ['container_scanning'] }
+
+        it 'does not unblock the rule' do
+          expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+        end
+      end
+    end
   end
 end
