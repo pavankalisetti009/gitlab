@@ -20656,9 +20656,6 @@ msgstr ""
 msgid "Edit Geo Site"
 msgstr ""
 
-msgid "Edit Identity"
-msgstr ""
-
 msgid "Edit Password"
 msgstr ""
 
@@ -20717,6 +20714,9 @@ msgid "Edit group application"
 msgstr ""
 
 msgid "Edit group: %{group_name}"
+msgstr ""
+
+msgid "Edit identity"
 msgstr ""
 
 msgid "Edit identity for %{user_name}"
@@ -35881,9 +35881,6 @@ msgid "New File"
 msgstr ""
 
 msgid "New Group"
-msgstr ""
-
-msgid "New Identity"
 msgstr ""
 
 msgid "New Issue"
