@@ -34892,19 +34892,10 @@ msgstr ""
 msgid "MlModelRegistry|Delete model"
 msgstr ""
 
-msgid "MlModelRegistry|Delete model version"
-msgstr ""
-
-msgid "MlModelRegistry|Delete model version?"
-msgstr ""
-
 msgid "MlModelRegistry|Delete version"
 msgstr ""
 
 msgid "MlModelRegistry|Delete version %{versionName}"
-msgstr ""
-
-msgid "MlModelRegistry|Deleting this model version will delete the associated artifacts."
 msgstr ""
 
 msgid "MlModelRegistry|Deleting this version also deletes all of its imported or uploaded artifacts and its settings."
