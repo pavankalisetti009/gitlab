@@ -4,10 +4,7 @@ import DependenciesActions from 'ee/dependencies/components/dependencies_actions
 import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
 import createStore from 'ee/dependencies/store';
 import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
-import {
-  SORT_FIELDS_GROUP,
-  SORT_FIELDS_PROJECT,
-} from 'ee/dependencies/store/modules/list/constants';
+import { SORT_FIELDS } from 'ee/dependencies/store/modules/list/constants';
 import * as urlUtility from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'helpers/test_constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -48,13 +45,13 @@ describe('DependenciesActions component', () => {
   });
 
   it('dispatches the right setSortField action on clicking each item in the dropdown', () => {
-    Object.keys(SORT_FIELDS_PROJECT).forEach((field) => {
+    Object.keys(SORT_FIELDS).forEach((field) => {
       emitSortByChange(field);
     });
 
     expect(store.dispatch.mock.calls).toEqual(
       expect.arrayContaining(
-        Object.keys(SORT_FIELDS_PROJECT).map((field) => [`${namespace}/setSortField`, field]),
+        Object.keys(SORT_FIELDS).map((field) => [`${namespace}/setSortField`, field]),
       ),
     );
   });
@@ -70,13 +67,13 @@ describe('DependenciesActions component', () => {
     });
 
     it('dispatches the right setSortField action on clicking each item in the dropdown', () => {
-      Object.keys(SORT_FIELDS_GROUP).forEach((field) => {
+      Object.keys(SORT_FIELDS).forEach((field) => {
         emitSortByChange(field);
       });
 
       expect(store.dispatch.mock.calls).toEqual(
         expect.arrayContaining(
-          Object.keys(SORT_FIELDS_GROUP).map((field) => [`${namespace}/setSortField`, field]),
+          Object.keys(SORT_FIELDS).map((field) => [`${namespace}/setSortField`, field]),
         ),
       );
       expect(urlUtility.updateHistory).toHaveBeenCalledTimes(4);
