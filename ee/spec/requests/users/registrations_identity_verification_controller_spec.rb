@@ -7,7 +7,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
   include SessionHelpers
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:unconfirmed_user) { create(:user, :unconfirmed, :low_risk) }
+  let_it_be_with_reload(:unconfirmed_user) { create(:user, :unconfirmed, :low_risk) }
   let_it_be(:confirmed_user, reload: true) { create(:user, :low_risk) }
   let_it_be(:invalid_verification_user_id) { non_existing_record_id }
 
@@ -109,7 +109,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     let(:arkose_enabled) { true }
 
     before do
-      allow(::Arkose::Settings).to receive(:enabled?).and_return(arkose_enabled)
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(arkose_enabled)
 
       stub_session(session_data: { verification_user_id: user.id })
 
@@ -151,7 +151,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     end
 
     context 'with a banned user' do
-      let_it_be_with_reload(:user) { unconfirmed_user }
+      let_it_be(:user) { unconfirmed_user }
 
       before do
         stub_session(session_data: { verification_user_id: user.id })

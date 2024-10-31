@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 def mock_arkose_token_verification(success:, challenge_shown: true, service_down: false)
-  allow(::Arkose::Settings).to receive(:enabled?).and_return(true)
+  allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
 
   response = Gitlab::Json.parse(
     File.read(

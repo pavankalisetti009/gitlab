@@ -27,8 +27,8 @@ RSpec.describe EE::RegistrationsHelper, feature_category: :user_management do
     before do
       allow(helper).to receive(:request).and_return(request_double)
 
-      allow(::Arkose::Settings).to receive(:arkose_public_api_key).and_return('api-key')
-      allow(::Arkose::Settings).to receive(:arkose_labs_domain).and_return('domain')
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_public_api_key).and_return('api-key')
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_labs_domain).and_return('domain')
       allow_next_instance_of(Arkose::DataExchangePayload, request_double,
         a_hash_including({ use_case: Arkose::DataExchangePayload::USE_CASE_SIGN_UP })) do |builder|
         allow(builder).to receive(:build).and_return(data_exchange_payload)

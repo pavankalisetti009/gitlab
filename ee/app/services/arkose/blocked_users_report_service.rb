@@ -4,7 +4,7 @@ module Arkose
     NON_LEGIT_URL = 'https://customer-sessions.arkoselabs.com/nonlegit'
 
     def execute
-      return true unless Settings.arkose_public_api_key && Settings.arkose_private_api_key
+      return true unless arkose_public_api_key && arkose_private_api_key
 
       sessions = UserCustomAttribute.sessions
 
@@ -15,12 +15,22 @@ module Arkose
       response.success?
     end
 
+    private
+
     def body(sessions)
       {
-        publicKey: Settings.arkose_public_api_key,
-        privateKey: Settings.arkose_private_api_key,
+        publicKey: arkose_public_api_key,
+        privateKey: arkose_private_api_key,
         sessions: sessions
       }.to_json
+    end
+
+    def arkose_public_api_key
+      AntiAbuse::IdentityVerification::Settings.arkose_public_api_key
+    end
+
+    def arkose_private_api_key
+      AntiAbuse::IdentityVerification::Settings.arkose_private_api_key
     end
   end
 end

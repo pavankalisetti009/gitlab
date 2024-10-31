@@ -106,7 +106,7 @@ module SaasRegistrationHelpers
 
     mock_auth_hash(provider, 'external_uid', user_email, name: name)
     stub_omniauth_setting(block_auto_created_users: false)
-    allow(::Arkose::Settings).to receive(:enabled?).and_return(true)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
 
     if block_given?
       yield

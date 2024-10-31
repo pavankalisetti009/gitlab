@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Arkose::Settings, feature_category: :instance_resiliency do
+RSpec.describe AntiAbuse::IdentityVerification::Settings, feature_category: :instance_resiliency do
   using RSpec::Parameterized::TableSyntax
 
   describe '.arkose_client_id' do
@@ -85,10 +85,10 @@ RSpec.describe Arkose::Settings, feature_category: :instance_resiliency do
     it { is_expected.to eq "#{setting_value}-api.arkoselabs.com" }
   end
 
-  describe '.enabled?' do
+  describe '.arkose_enabled?' do
     let_it_be(:a_user) { create(:user) }
 
-    subject { described_class.enabled?(user: user, user_agent: 'user_agent') }
+    subject { described_class.arkose_enabled?(user: user, user_agent: 'user_agent') }
 
     where(:private_key, :public_key, :namespace, :qa_request, :user, :group_saml_user, :result) do
       nil       | 'public' | 'namespace' | false | ref(:a_user) | false | false
@@ -102,8 +102,8 @@ RSpec.describe Arkose::Settings, feature_category: :instance_resiliency do
 
     with_them do
       before do
-        allow(described_class).to receive(:arkose_private_api_key).and_return(private_key)
-        allow(described_class).to receive(:arkose_public_api_key).and_return(public_key)
+        allow(described_class).to receive_messages(arkose_private_api_key: private_key,
+          arkose_public_api_key: public_key)
         stub_application_setting(arkose_labs_namespace: namespace)
         allow(::Gitlab::Qa).to receive(:request?).with('user_agent').and_return(qa_request)
         create(:group_saml_identity, user: user) if group_saml_user
@@ -118,13 +118,13 @@ RSpec.describe Arkose::Settings, feature_category: :instance_resiliency do
           stub_feature_flags(arkose_labs: false)
         end
 
-        it { is_expected.to eq false }
+        it { is_expected.to be false }
       end
     end
   end
 
-  describe '.data_exchange_key' do
-    subject { described_class.data_exchange_key }
+  describe '.arkose_data_exchange_key' do
+    subject { described_class.arkose_data_exchange_key }
 
     context 'when set in application settings' do
       let(:setting_value) { 'setting_public_key' }

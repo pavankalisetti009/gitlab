@@ -19,8 +19,9 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
 
     allow(view).to receive(:arkose_labs_enabled?).and_return(arkose_labs_enabled)
     allow(view).to receive(:preregistration_tracking_label).and_return('free_registration')
-    allow(::Arkose::Settings).to receive(:arkose_public_api_key).and_return(arkose_labs_api_key)
-    allow(::Arkose::Settings).to receive(:arkose_labs_domain).and_return(arkose_labs_domain)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_public_api_key)
+      .and_return(arkose_labs_api_key)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_labs_domain).and_return(arkose_labs_domain)
   end
 
   it { is_expected.to have_selector('#js-arkose-labs-challenge') }

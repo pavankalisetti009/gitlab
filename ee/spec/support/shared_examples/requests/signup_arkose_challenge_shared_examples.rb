@@ -22,7 +22,7 @@ RSpec.shared_examples 'creates a user with ArkoseLabs risk band on signup reques
   let(:arkose_status_response) { ServiceResponse.success }
 
   before do
-    allow(::Arkose::Settings).to receive(:enabled?).and_return(true)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
 
     allow_next_instance_of(Arkose::TokenVerificationService) do |instance|
       allow(instance).to receive(:execute).and_return(service_response)
@@ -119,7 +119,7 @@ RSpec.shared_examples 'creates a user with ArkoseLabs risk band on signup reques
 
   context 'when feature is disabled' do
     before do
-      allow(::Arkose::Settings).to receive(:enabled?).and_return(false)
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(false)
     end
 
     it_behaves_like 'creates the user'
