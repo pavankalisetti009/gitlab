@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingData, feature_category: :vulnerability_management do # rubocop:disable Layout/LineLength -- This is auto generated
+RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingData,
+  :suppress_partitioning_routing_analyzer,
+  feature_category: :vulnerability_management do
   let(:succeded_scan_status) { 1 }
   let(:errored_scan_status) { 3 }
   let(:purged_scan_status) { 6 }

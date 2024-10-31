@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe(
   Gitlab::BackgroundMigration::MigrateVulnerabilitiesFeedbackToVulnerabilitiesStateTransition,
+  :suppress_partitioning_routing_analyzer,
   feature_category: :vulnerability_management
 ) do
   let(:feedback_types) do
