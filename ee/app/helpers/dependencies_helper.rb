@@ -7,6 +7,7 @@ module DependenciesHelper
     shared_dependencies_data.merge({
       has_dependencies: project.has_dependencies?.to_s,
       endpoint: project_dependencies_path(project, format: :json),
+      licenses_endpoint: licenses_project_dependencies_path(project),
       export_endpoint: expose_path(api_v4_projects_dependency_list_exports_path(id: project.id)),
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
       sbom_reports_errors: sbom_report_ingestion_errors(pipeline).to_json,

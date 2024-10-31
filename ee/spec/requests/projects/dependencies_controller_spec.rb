@@ -3,20 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe Projects::DependenciesController, feature_category: :dependency_management do
+  let_it_be(:developer) { create(:user) }
+  let_it_be(:guest) { create(:user) }
+  let_it_be(:project) { create(:project, :repository, :private) }
+
+  let(:params) { {} }
+
+  before do
+    project.add_developer(developer)
+    project.add_guest(guest)
+
+    sign_in(user)
+  end
+
   describe 'GET #index' do
-    let_it_be(:developer) { create(:user) }
-    let_it_be(:guest) { create(:user) }
-    let_it_be(:project) { create(:project, :repository, :private) }
-
-    let(:params) { {} }
-
-    before do
-      project.add_developer(developer)
-      project.add_guest(guest)
-
-      sign_in(user)
-    end
-
     include_context '"Security and compliance" permissions' do
       let(:user) { developer }
       let(:valid_request) { get project_dependencies_path(project) }
@@ -205,6 +205,61 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
 
       it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
         let(:request) { get project_dependencies_path(project, format: :html) }
+      end
+    end
+  end
+
+  describe 'GET #licenses' do
+    include_context '"Security and compliance" permissions' do
+      let(:user) { developer }
+      let(:valid_request) { get licenses_project_dependencies_path(project), as: :json }
+    end
+
+    context 'with authorized user' do
+      context 'when feature is available' do
+        let(:user) { developer }
+
+        before do
+          stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
+        end
+
+        it 'returns http status :ok' do
+          valid_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        it 'returns licenses from Gitlab::SPDX::Catalogue sorted by name' do
+          expect_next_instance_of(Gitlab::SPDX::Catalogue) do |catalogue|
+            expect(catalogue).to receive(:licenses).and_call_original
+          end
+
+          valid_request
+
+          expect(json_response['licenses']).not_to be_empty
+          license_names = json_response['licenses'].pluck('name')
+          expect(license_names.sort).to eq(license_names)
+        end
+      end
+
+      context 'when licensed feature is unavailable' do
+        let(:user) { developer }
+
+        it 'returns 403 for a JSON request' do
+          valid_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'with unauthorized user' do
+      let(:user) { guest }
+
+      it 'returns 403 for a JSON request' do
+        valid_request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
       end
     end
   end

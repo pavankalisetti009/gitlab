@@ -114,7 +114,11 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
         namespace :vulnerability_feedback do
           get :count
         end
-        resources :dependencies, only: [:index]
+        resources :dependencies, only: [:index] do
+          collection do
+            get :licenses, format: :json
+          end
+        end
 
         resources :feature_flags, param: :iid do
           resources :feature_flag_issues, only: [:index, :create, :destroy], as: 'issues', path: 'issues'
