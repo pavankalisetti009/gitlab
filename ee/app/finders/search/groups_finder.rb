@@ -16,7 +16,6 @@ module Search
       @user = user
     end
 
-    # rubocop:disable CodeReuse/ActiveRecord -- This is a custom finder
     def execute
       return Group.none unless user
 
@@ -24,7 +23,6 @@ module Search
         Group.from_union([direct_groups, linked_groups])
       end
     end
-    # rubocop:enable CodeReuse/ActiveRecord
 
     private
 
