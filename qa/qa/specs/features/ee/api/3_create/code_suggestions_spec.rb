@@ -123,7 +123,7 @@ module QA
 
         context 'on Self-managed', :orchestrated do
           context 'with a valid license' do
-            context 'with a Duo Pro add-on' do
+            context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
                 it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
                 it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
@@ -166,7 +166,7 @@ module QA
 
         context 'on Self-managed', :orchestrated do
           context 'with a valid license' do
-            context 'with a Duo Pro add-on' do
+            context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
                 it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462967'
               end
@@ -176,7 +176,7 @@ module QA
               end
             end
 
-            context 'with no Duo Pro add-on', :blocking, :ai_gateway_no_add_on do
+            context 'with no Duo Enterprise add-on', :blocking, :ai_gateway_no_add_on do
               it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452448'
             end
           end
@@ -196,7 +196,7 @@ module QA
 
           context 'on Self-managed', :orchestrated do
             context 'with a valid license' do
-              context 'with a Duo Pro add-on' do
+              context 'with a Duo Enterprise add-on' do
                 context 'when seat is assigned', :blocking, :ai_gateway do
                   it_behaves_like 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462968'
                 end
