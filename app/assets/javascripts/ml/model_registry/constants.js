@@ -40,3 +40,4 @@ export const UPLOAD_STATUS = {
 
 export const ROUTE_DETAILS = 'details';
 export const ROUTE_PERFORMANCE = 'performance';
+export const ROUTE_ARTIFACTS = 'artifacts';
