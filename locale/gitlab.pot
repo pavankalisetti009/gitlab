@@ -10378,6 +10378,9 @@ msgstr ""
 msgid "By quarter"
 msgstr ""
 
+msgid "By selecting Continue or registering through a third party, I agree that GitLab can contact me by email or telephone about its product, services, or events."
+msgstr ""
+
 msgid "By using a primary email tied to an Enterprise email address, you acknowledge that this account is an Enterprise User."
 msgstr ""
 
@@ -27635,9 +27638,6 @@ msgid "How to track time"
 msgstr ""
 
 msgid "HttpDestinationValidator validates only http external audit event destinations."
-msgstr ""
-
-msgid "I agree that by clicking continue or registering through a third party GitLab may contact me via email and telephone about its product, services and events."
 msgstr ""
 
 msgid "I forgot my password"
