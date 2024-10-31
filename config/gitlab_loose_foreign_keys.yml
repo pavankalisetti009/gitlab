@@ -103,16 +103,6 @@ ci_pipeline_schedules:
   - table: projects
     column: project_id
     on_delete: async_delete
-ci_pipelines:
-  - table: merge_requests
-    column: merge_request_id
-    on_delete: async_delete
-  - table: users
-    column: user_id
-    on_delete: async_nullify
-  - table: projects
-    column: project_id
-    on_delete: async_delete
 ci_project_mirrors:
   - table: projects
     column: project_id
@@ -193,7 +183,7 @@ country_access_logs:
     column: user_id
     on_delete: async_delete
 dast_pre_scan_verifications:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: ci_pipeline_id
     on_delete: async_delete
   - table: projects
@@ -211,7 +201,7 @@ dast_profiles:
     column: project_id
     on_delete: async_delete
 dast_profiles_pipelines:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: ci_pipeline_id
     on_delete: async_delete
 dast_profiles_tags:
@@ -264,7 +254,7 @@ dependency_list_export_parts:
     column: organization_id
     on_delete: async_delete
 dependency_list_exports:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_delete
   - table: users
@@ -317,7 +307,7 @@ members:
     column: user_id
     on_delete: async_delete
 merge_request_metrics:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
 merge_request_requested_changes:
@@ -331,11 +321,11 @@ merge_request_requested_changes:
     column: user_id
     on_delete: async_delete
 merge_requests:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: head_pipeline_id
     on_delete: async_nullify
 merge_trains:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
 ml_candidates:
@@ -425,7 +415,7 @@ p_ci_stages:
     column: project_id
     on_delete: async_delete
 packages_build_infos:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
 packages_npm_metadata_caches:
@@ -435,7 +425,7 @@ packages_npm_metadata_caches:
     target_column: status
     target_value: 2
 packages_package_file_build_infos:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
 pages_deployments:
@@ -495,7 +485,7 @@ sbom_components:
     column: organization_id
     on_delete: async_delete
 sbom_occurrences:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
   - table: projects
@@ -597,7 +587,7 @@ vulnerability_external_issue_links:
     column: author_id
     on_delete: async_delete
 vulnerability_feedback:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: pipeline_id
     on_delete: async_nullify
   - table: merge_requests
@@ -658,10 +648,10 @@ vulnerability_namespace_historical_statistics:
     column: namespace_id
     on_delete: async_delete
 vulnerability_occurrences:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: initial_pipeline_id
     on_delete: async_nullify
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: latest_pipeline_id
     on_delete: async_nullify
   - table: projects
@@ -690,7 +680,7 @@ vulnerability_state_transitions:
     column: author_id
     on_delete: async_nullify
 vulnerability_statistics:
-  - table: ci_pipelines
+  - table: p_ci_pipelines
     column: latest_pipeline_id
     on_delete: async_nullify
   - table: projects
