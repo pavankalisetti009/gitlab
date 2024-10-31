@@ -500,37 +500,11 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           where(plan: ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL)
 
           with_them do
-            context 'and has not yet been trialed' do
-              before do
-                create :gitlab_subscription, plan, namespace: namespace
-              end
-
-              it { is_expected.to contain_exactly(namespace) }
+            before do
+              create :gitlab_subscription, plan, namespace: namespace
             end
 
-            context 'and has already had a trial without fully downgrading' do
-              before do
-                create :gitlab_subscription, plan, :expired_trial, namespace: namespace
-              end
-
-              it { is_expected.to be_empty }
-            end
-
-            context 'and has already had a trial that has been downgraded correctly' do
-              before do
-                create :gitlab_subscription, plan, :expired_trial, trial: false, namespace: namespace
-              end
-
-              it { is_expected.to contain_exactly(namespace) }
-            end
-
-            context 'and is currently being trialed' do
-              before do
-                create :gitlab_subscription, plan, :active_trial, namespace: namespace
-              end
-
-              it { is_expected.to be_empty }
-            end
+            it { is_expected.to contain_exactly(namespace) }
           end
         end
 

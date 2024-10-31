@@ -127,22 +127,20 @@ module EE
       end
 
       scope :eligible_for_trial, -> do
-        plans_eligible_for_trial = ::Plan::PLANS_ELIGIBLE_FOR_TRIAL
-        subscription_conditions = { trial: [nil, false], trial_ends_on: [nil] }
-
         if ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
-          plans_eligible_for_trial = ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL
-          # We'll  keep this guard here just in case CustomersDot hasn't full sync'd the downgrade yet
-          # to keep any edge cases around that from causing issues with CTA/attempted trials.
-          subscription_conditions = { trial: [nil, false] }
+          left_joins(gitlab_subscription: :hosted_plan)
+            .top_level
+            .where(
+              plans: { name: [nil, *::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL] }
+            ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
+        else
+          left_joins(gitlab_subscription: :hosted_plan)
+            .top_level
+            .where(
+              gitlab_subscriptions: { trial: [nil, false], trial_ends_on: [nil] },
+              plans: { name: [nil, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL] }
+            ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
         end
-
-        left_joins(gitlab_subscription: :hosted_plan)
-          .top_level
-          .where(
-            gitlab_subscriptions: subscription_conditions,
-            plans: { name: [nil, *plans_eligible_for_trial] }
-          ).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/419988")
       end
 
       scope :with_feature_available_in_plan, ->(feature) do

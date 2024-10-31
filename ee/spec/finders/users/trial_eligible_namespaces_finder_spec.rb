@@ -21,9 +21,6 @@ RSpec.describe Users::TrialEligibleNamespacesFinder, feature_category: :subscrip
       let_it_be(:namespace_with_free_plan) { create(:group_with_plan, plan: :free_plan, owners: user) }
       let_it_be(:namespace_with_premium_plan) { create(:group_with_plan, plan: :premium_plan, owners: user) }
       let_it_be(:namespace_with_ultimate_trial) { create(:group_with_plan, plan: :ultimate_trial_plan, owners: user) }
-      let_it_be(:namespace_with_expired_trial) do
-        create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.yesterday, owners: user)
-      end
 
       context 'when duo_enterprise_trials_registration is enabled' do
         let(:eligible_namespaces) do
@@ -118,6 +115,10 @@ RSpec.describe Users::TrialEligibleNamespacesFinder, feature_category: :subscrip
 
         before do
           stub_feature_flags(duo_enterprise_trials_registration: false)
+        end
+
+        before_all do
+          create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.yesterday, owners: user)
         end
 
         it { is_expected.to match_array(eligible_namespaces) }
