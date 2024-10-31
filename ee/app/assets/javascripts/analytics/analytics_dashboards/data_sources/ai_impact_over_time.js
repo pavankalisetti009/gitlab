@@ -59,17 +59,17 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
     }
 
     case AI_METRICS.DUO_CHAT_USAGE_RATE: {
-      const { duoChatContributorsCount, duoProAssignedUsersCount } = resp;
+      const { duoChatContributorsCount, duoAssignedUsersCount } = resp;
       return {
         rate: calculateRate({
           numerator: duoChatContributorsCount,
-          denominator: duoProAssignedUsersCount,
+          denominator: duoAssignedUsersCount,
         }),
         tooltip: {
           ...tooltip,
           description: sprintf(tooltipDescription, {
             duoChatContributorsCount,
-            duoProAssignedUsersCount,
+            duoAssignedUsersCount,
           }),
         },
       };
