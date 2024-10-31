@@ -43,6 +43,15 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
         .and change { project.reload.vulnerability_statistic&.latest_pipeline_id }.to(pipeline.id)
     end
 
+    context 'when ingested reports are empty' do
+      let(:ids_1) { [] }
+      let(:ids_2) { [] }
+
+      it 'does not set has_vulnerabilities' do
+        expect { ingest_reports }.not_to change { project.reload.project_setting.has_vulnerabilities }.from(false)
+      end
+    end
+
     it 'calls ScheduleMarkDroppedAsResolvedService with primary identifier IDs' do
       ingest_reports
 
