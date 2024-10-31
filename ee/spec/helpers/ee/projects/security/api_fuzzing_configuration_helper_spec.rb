@@ -10,7 +10,7 @@ RSpec.describe Projects::Security::ApiFuzzingConfigurationHelper do
   let(:full_path) { project.full_path }
   let(:gitlab_ci_yaml_edit_path) { Rails.application.routes.url_helpers.project_ci_pipeline_editor_path(project) }
   let(:api_fuzzing_documentation_path) { help_page_path('user/application_security/api_fuzzing/index.md') }
-  let(:api_fuzzing_authentication_documentation_path) { help_page_path('user/application_security/api_fuzzing/index.md', anchor: 'authentication') }
+  let(:api_fuzzing_authentication_documentation_path) { help_page_path('user/application_security/api_fuzzing/configuration/customizing_analyzer_settings.md', anchor: 'authentication') }
   let(:ci_variables_documentation_path) { help_page_path('ci/variables/index.md') }
   let(:project_ci_settings_path) { project_settings_ci_cd_path(project) }
 
