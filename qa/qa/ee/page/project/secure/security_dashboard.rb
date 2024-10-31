@@ -87,12 +87,10 @@ module QA
             end
 
             def wait_for_vuln_report_to_load
-              raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
-
-              wait_until(max_duration: 40, sleep_interval: 10, message: "Vulnerability report not loaded yet") do
-                has_element?('vulnerability-report-header')
+              wait_until(max_duration: 60, sleep_interval: 10, message: "Vulnerabilities not loaded yet") do
+                page.has_no_content?('No vulnerabilities to report')
               end
-              wait_for_requests
+              raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
             end
           end
         end
