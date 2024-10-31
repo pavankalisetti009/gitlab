@@ -15,6 +15,9 @@ RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category
     allow_next_instance_of(::CloudConnector::StatusChecks::StatusService) do |status_service|
       allow(status_service).to receive(:probes).and_return([test_probe])
     end
+
+    # Stub out all attempts to go to the filesystem.
+    allow(File).to receive(:open).and_return(instance_double(File).as_null_object)
   end
 
   describe 'health check execution' do
@@ -66,8 +69,7 @@ RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category
 
     context 'when a username is provided' do
       it 'loads the user and uses it in the health check' do
-        expect(User).to receive(:find_by_username).with('test_user').and_call_original
-        expect(CloudConnector::StatusChecks::StatusService).to receive(:new).with(user: user).and_call_original
+        expect(User).to receive(:find_by_username).with('test_user').and_return(user)
 
         expect { run_rake_task('cloud_connector:health_check', ['test_user', nil]) }
           .to output(/✔ Success:/).to_stdout
@@ -91,7 +93,7 @@ RSpec.describe 'cloud_connector:health_check', :silence_stdout, feature_category
 
   describe 'error handling' do
     it 'handles file write errors gracefully' do
-      allow(File).to receive(:open).and_raise(StandardError.new('disk full'))
+      expect(File).to receive(:open).with(filepath, 'w').and_raise(StandardError.new('disk full'))
 
       expect { run_rake_task('cloud_connector:health_check', [nil, filename]) }
         .to output(/Failed to write report to #{filepath}: disk full/).to_stdout

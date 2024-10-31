@@ -8,7 +8,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
     let(:uri) { 'https://example.com' }
 
-    context 'when the host is nil' do
+    context 'when the URI is nil' do
       let(:uri) { nil }
 
       it 'returns a failure result' do
@@ -20,7 +20,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
       end
     end
 
-    context 'when the host is not a valid URL' do
+    context 'when the URI is not valid' do
       let(:uri) { 'not_a_valid_url' }
 
       it 'returns a failure result' do
@@ -32,9 +32,9 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
       end
     end
 
-    context 'when the host is reachable' do
+    context 'when the URI is reachable' do
       before do
-        allow(TCPSocket).to receive(:new).and_return(instance_double(TCPSocket, close: nil))
+        WebMock.stub_request(:head, uri).to_return(status: 200)
       end
 
       it 'returns a success result' do
@@ -46,9 +46,9 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
       end
     end
 
-    context 'when the host is unreachable' do
+    context 'when the request times out' do
       before do
-        allow(TCPSocket).to receive(:new).and_raise(Errno::EHOSTUNREACH)
+        WebMock.stub_request(:head, uri).to_timeout
       end
 
       it 'returns a failure result' do
@@ -56,13 +56,13 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to match("example.com could not be reached. If you use firewalls or proxy servers")
+        expect(result.message).to match("example.com connection failed: execution expired")
       end
     end
 
-    context 'when the network is unreachable' do
+    context 'when connection cannot be established because an error is raised' do
       before do
-        allow(TCPSocket).to receive(:new).and_raise(Errno::ENETUNREACH)
+        WebMock.stub_request(:head, uri).to_raise(Gitlab::HTTP_V2::BlockedUrlError.new("URL blocked"))
       end
 
       it 'returns a failure result' do
@@ -70,21 +70,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to match("example.com could not be reached. If you use firewalls or proxy servers")
-      end
-    end
-
-    context 'when connection cannot be established for other reasons' do
-      before do
-        allow(TCPSocket).to receive(:new).and_raise(StandardError.new('the cause'))
-      end
-
-      it 'returns a failure result' do
-        result = probe.execute
-
-        expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
-        expect(result.success?).to be false
-        expect(result.message).to match("example.com connection failed: the cause")
+        expect(result.message).to match("example.com connection failed: URL blocked")
       end
     end
   end
