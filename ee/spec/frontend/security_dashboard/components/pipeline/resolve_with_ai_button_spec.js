@@ -168,6 +168,16 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_button.vue',
     });
 
     describe('resolve with AI', () => {
+      it('emits "resolveWithAiStart" event when the button is clicked', () => {
+        createWrapperWithApollo();
+
+        expect(wrapper.emitted('resolveStart')).toBeUndefined();
+
+        clickButton();
+
+        expect(wrapper.emitted('resolveStart')).toHaveLength(1);
+      });
+
       it('starts the "aiResponse" subscription', () => {
         createWrapperWithApollo();
 

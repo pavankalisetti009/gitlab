@@ -143,6 +143,7 @@ export default {
         await this.createVulnerabilityForFinding();
       }
       this.startResolveWithAISubscription();
+      this.$emit('resolveStart');
     },
     handleError(e) {
       // The full error handling will be done in https://gitlab.com/gitlab-org/gitlab/-/issues/481792
