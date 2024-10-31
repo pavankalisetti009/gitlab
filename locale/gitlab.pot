@@ -53434,6 +53434,9 @@ msgstr ""
 msgid "Storage nodes for new repositories"
 msgstr ""
 
+msgid "Storage size"
+msgstr ""
+
 msgid "Storage:"
 msgstr ""
 
