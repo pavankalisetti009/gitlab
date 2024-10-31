@@ -27,7 +27,7 @@ code_completions:
 duo_chat:
   title: —
   release_state: BETA
-  main_feature: Duo Chat
+  main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
     - claude_3
