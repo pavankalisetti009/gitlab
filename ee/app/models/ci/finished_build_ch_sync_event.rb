@@ -17,8 +17,7 @@ module Ci
       next_partition_if: ->(active_partition) { any_older_partitions_exist?(active_partition, PARTITION_DURATION) },
       detach_partition_if: ->(partition) { detach_partition?(partition) }
 
-    belongs_to :build, # rubocop: disable Rails/InverseOf -- this relation is not present on build
-      class_name: 'Ci::Build'
+    belongs_to :build, class_name: 'Ci::Build'
 
     validates :project_id, presence: true
     validates :build_id, presence: true

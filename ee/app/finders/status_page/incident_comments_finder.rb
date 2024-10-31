@@ -26,7 +26,7 @@ module StatusPage
 
     def all
       execute
-        .limit(MAX_LIMIT) # rubocop: disable CodeReuse/ActiveRecord
+        .limit(MAX_LIMIT)
     end
 
     private

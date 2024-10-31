@@ -16,7 +16,6 @@ module Search
       @user = user
     end
 
-    # rubocop:disable CodeReuse/ActiveRecord -- This is a custom finder
     def execute
       return Project.none unless user
 
@@ -28,7 +27,6 @@ module Search
           ])
       end
     end
-    # rubocop:enable CodeReuse/ActiveRecord
 
     private
 

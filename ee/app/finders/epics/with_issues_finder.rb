@@ -25,11 +25,9 @@ module Epics
 
     attr_reader :accessible_epics, :accessible_issues
 
-    # rubocop: disable CodeReuse/ActiveRecord
     def epics_cte
       @epics_cte ||= Gitlab::SQL::CTE.new(:sorted_epics, accessible_epics)
     end
-    # rubocop: enable CodeReuse/ActiveRecord
 
     # rubocop: disable CodeReuse/ActiveRecord
     def issues_joined_with_epics
