@@ -21,17 +21,22 @@ new UserCallout();
 initDeployKeys();
 initSettingsPanels();
 
-if (document.querySelector('.js-protected-refs-for-users')) {
-  new ProtectedBranchCreate({ hasLicense: true });
-  new ProtectedBranchEditList();
+const PROTECTED_BRANCHES_SELECTOR = '#js-protected-branches-settings';
+const PROTECTED_TAGS_SELECTOR = '#js-protected-tags-settings';
+const protectedBranchesConfig = { hasLicense: true, sectionSelector: PROTECTED_BRANCHES_SELECTOR };
+const protectedTagsConfig = { hasLicense: true, sectionSelector: PROTECTED_TAGS_SELECTOR };
 
-  new ProtectedTagCreate({ hasLicense: true });
-  new ProtectedTagEditList({ hasLicense: true });
+if (document.querySelector('.js-protected-refs-for-users')) {
+  new ProtectedBranchCreate(protectedBranchesConfig);
+  new ProtectedBranchEditList(PROTECTED_BRANCHES_SELECTOR);
+
+  new ProtectedTagCreate(protectedTagsConfig);
+  new ProtectedTagEditList(protectedTagsConfig);
 } else {
-  new ProtectedBranchCreate({ hasLicense: false });
-  new CEProtectedBranchEditList();
-  new ProtectedTagCreate({ hasLicense: false });
-  new ProtectedTagEditList({ hasLicense: false });
+  new ProtectedBranchCreate({ ...protectedBranchesConfig, hasLicense: false });
+  new CEProtectedBranchEditList(PROTECTED_BRANCHES_SELECTOR);
+  new ProtectedTagCreate({ ...protectedTagsConfig, hasLicense: false });
+  new ProtectedTagEditList({ ...protectedTagsConfig, hasLicense: false });
 }
 
 const pushPullContainer = document.querySelector('.js-mirror-settings');
