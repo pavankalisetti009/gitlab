@@ -409,8 +409,8 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
   context "when user is navigating via keyboard" do
     before do
+      stub_feature_flags(epics_list_drawer: false)
       stub_licensed_features(epics: true)
-
       group.add_guest(user)
       sign_in(user)
       visit_epic_boards_page
