@@ -25,6 +25,15 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
     end
   end
 
+  describe '.for_project' do
+    let_it_be(:project) { create(:project) }
+    let(:project_workflow) { create(:duo_workflows_workflow, project: project) }
+
+    it 'finds the workflows for the given project' do
+      expect(described_class.for_project(project)).to eq([project_workflow])
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(4096) }
