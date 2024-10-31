@@ -56,7 +56,11 @@ module Security
       end
 
       def mark_project_as_vulnerable!
-        project.mark_as_vulnerable!
+        project.mark_as_vulnerable! if ingested_vulnerabilities?
+      end
+
+      def ingested_vulnerabilities?
+        ingested_ids_by_scanner.values.any?(&:present?)
       end
 
       def set_latest_pipeline!
