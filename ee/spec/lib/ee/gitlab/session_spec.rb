@@ -8,7 +8,9 @@ RSpec.describe Gitlab::Session, feature_category: :system_access do
       let(:rack_session) { Rack::Session::SessionId.new('6919a6f1bb119dd7396fadc38fd18d0d') }
       let(:session) do
         ActionDispatch::Request::Session.allocate.tap do |session|
-          allow(session).to receive(:id).and_return(rack_session)
+          allow(session).to receive_messages(id: rack_session,
+            options: ActionDispatch::Request::Session::Options.new(nil, {})
+          )
         end
       end
 
@@ -31,6 +33,20 @@ RSpec.describe Gitlab::Session, feature_category: :system_access do
 
     context 'when sessionless' do
       let(:session) { nil }
+
+      it 'returns nil' do
+        described_class.with_session(session) do
+          expect(described_class.session_id_for_worker).to eq(nil)
+        end
+      end
+    end
+
+    context 'when session options is a hash' do
+      let(:session) do
+        ActionDispatch::Request::Session.allocate.tap do |session|
+          allow(session).to receive(:options).and_return({ skip: true })
+        end
+      end
 
       it 'returns nil' do
         described_class.with_session(session) do
