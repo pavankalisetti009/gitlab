@@ -16,9 +16,9 @@ export const protectedBranchesConfiguration = {
 };
 
 // This defines behavior for existing policies. They shouldn't automatically opt-in to use this setting.
-export const groupProtectedBranchesConfiguration = {
-  [BLOCK_GROUP_BRANCH_MODIFICATION]: false,
-};
+export const groupProtectedBranchesConfiguration = (blockBranchModificationValue = false) => ({
+  [BLOCK_GROUP_BRANCH_MODIFICATION]: blockBranchModificationValue,
+});
 
 // This defines behavior for existing policies. They shouldn't automatically opt-in to use this setting.
 export const pushingBranchesConfiguration = {
@@ -54,7 +54,7 @@ export const BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING = s__(
 );
 
 export const SETTINGS_HUMANIZED_STRINGS = {
-  [BLOCK_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent project branch modification'),
+  [BLOCK_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent branch modification'),
   [PREVENT_PUSHING_AND_FORCE_PUSHING]: s__('ScanResultPolicy|Prevent pushing and force pushing'),
   [PREVENT_APPROVAL_BY_AUTHOR]: s__("ScanResultPolicy|Prevent approval by merge request's author"),
   [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: s__('ScanResultPolicy|Prevent approval by commit author'),
@@ -119,11 +119,14 @@ export const PERMITTED_INVALID_SETTINGS = {
  * Build settings based on provided flags, scalable for more flags in future
  * @returns {Object} final settings
  */
-const buildConfig = ({
-  hasLinkedGroups = false,
-  namespaceType = NAMESPACE_TYPES.PROJECT,
-  scanResultPolicyBlockGroupBranchModification = false,
-}) => {
+const buildConfig = (
+  settings,
+  {
+    hasLinkedGroups = false,
+    namespaceType = NAMESPACE_TYPES.PROJECT,
+    scanResultPolicyBlockGroupBranchModification = false,
+  },
+) => {
   const baseConfigurations = {
     ...protectedBranchesConfiguration,
   };
@@ -133,7 +136,10 @@ const buildConfig = ({
     isGroupOrHasLinkedGroups && scanResultPolicyBlockGroupBranchModification;
 
   if (shouldIncludeGroupConfiguration) {
-    Object.assign(baseConfigurations, groupProtectedBranchesConfiguration);
+    Object.assign(
+      baseConfigurations,
+      groupProtectedBranchesConfiguration(settings[BLOCK_BRANCH_MODIFICATION]),
+    );
   }
 
   return {
@@ -149,7 +155,7 @@ const buildConfig = ({
  * @returns {Object}
  */
 export const buildSettingsList = ({ settings, options = {} } = { settings: {}, options: {} }) => {
-  const configuration = buildConfig(options);
+  const configuration = buildConfig(settings, options);
 
   return Object.keys(configuration).reduce((acc, setting) => {
     const hasEnabledProperty = settings ? setting in settings : false;
