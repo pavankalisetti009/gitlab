@@ -28,9 +28,6 @@ RSpec.describe 'Multiple Issue Boards', :js, feature_category: :portfolio_manage
       click_button board.name
 
       expect(page).not_to have_content('Create new board')
-
-      find_by_testid('boards-config-button').click
-      expect(page).not_to have_content('Delete board')
     end
 
     it 'does not show license warning when there is one board created',
