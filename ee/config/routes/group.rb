@@ -21,6 +21,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       resource :merge_requests, only: [:update]
       resources :roles_and_permissions, only: [:index, :new, :edit, :show]
       resource :analytics, only: [:show, :update]
+      get 'gitlab_duo', to: redirect('groups/%{group_id}/-/settings/gitlab_duo/seat_utilization')
       namespace :gitlab_duo do
         resources :seat_utilization, only: [:index]
       end
