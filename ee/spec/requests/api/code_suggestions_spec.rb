@@ -238,6 +238,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
         .and_return(enabled_by_namespace_ids)
       stub_feature_flags(use_codestral_for_code_completions: false)
+      stub_feature_flags(fireworks_qwen_code_completion: false)
     end
 
     shared_examples 'code completions endpoint' do
@@ -877,9 +878,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(json_response).to match(expected_response)
           end
 
-          context 'when use_codestral_for_code_completions FF is disabled' do
+          context 'when code completions FFs are disabled' do
             before do
               stub_feature_flags(use_codestral_for_code_completions: false)
+              stub_feature_flags(fireworks_qwen_code_completion: false)
             end
 
             it 'does not include the model metadata in the direct access details' do

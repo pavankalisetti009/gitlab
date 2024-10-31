@@ -24,6 +24,9 @@ module CodeSuggestions
         elsif Feature.enabled?(:use_codestral_for_code_completions, current_user, type: :beta)
           # codestral hosted on vertex
           CodeSuggestions::Prompts::CodeCompletion::VertexCodestral.new(params)
+        elsif Feature.enabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
+          # codestral hosted on vertex
+          CodeSuggestions::Prompts::CodeCompletion::FireworksQwen.new(params)
         else
           # codegecho hosted on vertex
           CodeSuggestions::Prompts::CodeCompletion::VertexAi.new(params)
