@@ -147,35 +147,6 @@ RSpec.describe Project, feature_category: :global_search do
       expect(described_class.elastic_search('test*', options: options.merge(project_ids: :any)).total_count).to eq(3)
       expect(described_class.elastic_search('"someone_elses_project"', options: options).total_count).to eq(1)
     end
-
-    context 'when search_project_query_builder flag is false' do
-      before do
-        stub_feature_flags(search_project_query_builder: false)
-      end
-
-      it 'finds projects' do
-        user = create(:admin)
-        project_ids = []
-
-        project = create(:project, name: 'test1')
-        project1 = create(:project, path: 'test2', description: 'awesome project')
-        project2 = create(:project)
-        create(:project, path: 'someone_elses_project')
-        project_ids += [project.id, project1.id, project2.id]
-
-        create(:project, :private, name: 'test3')
-        options = { current_user: user, search_level: :global, project_ids: project_ids }
-
-        ensure_elasticsearch_index!
-
-        expect(described_class.elastic_search('"test1"', options: options).total_count).to eq(1)
-        expect(described_class.elastic_search('"test2"', options: options).total_count).to eq(1)
-        expect(described_class.elastic_search('"awesome"', options: options).total_count).to eq(1)
-        expect(described_class.elastic_search('test*', options: options).total_count).to eq(2)
-        expect(described_class.elastic_search('test*', options: options.merge(project_ids: :any)).total_count).to eq(3)
-        expect(described_class.elastic_search('"someone_elses_project"', options: options).total_count).to eq(0)
-      end
-    end
   end
 
   it 'finds partial matches in project names', :elastic_delete_by_query do

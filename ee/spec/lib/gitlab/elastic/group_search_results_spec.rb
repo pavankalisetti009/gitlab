@@ -213,38 +213,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
 
     let(:scope) { 'projects' }
 
-    context 'when search_project_query_builder feature flag is false' do
-      before do
-        stub_feature_flags(search_project_query_builder: false)
-      end
-
-      it_behaves_like 'search results filtered by archived' do
-        before do
-          Elastic::ProcessInitialBookkeepingService.track!(unarchived_result, archived_result)
-
-          ensure_elasticsearch_index!
-        end
-      end
-
-      context 'if the user is authorized to view the group' do
-        it 'has a traversal_ids prefix filter' do
-          group.add_owner(user)
-
-          results.objects(scope)
-
-          assert_named_queries('project:ancestry_filter:descendants', without: ['project:membership:id'])
-        end
-      end
-
-      context 'if the user is not authorized to view the group' do
-        it 'has a project id inclusion filter' do
-          results.objects(scope)
-
-          assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
-        end
-      end
-    end
-
     it_behaves_like 'search results filtered by archived' do
       before do
         Elastic::ProcessInitialBookkeepingService.track!(unarchived_result, archived_result)
