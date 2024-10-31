@@ -8,7 +8,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:raw_pipeline) { create(:ci_pipeline, project: project, ref: 'master', sha: project.commit.id) }
+  let_it_be(:raw_pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project, ref: 'master', sha: project.commit.id) }
   let_it_be(:pipeline) { Ci::PipelinePresenter.new(raw_pipeline, current_user: user) }
 
   describe '#js_pipeline_tabs_data' do
@@ -221,6 +221,34 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
 
       it 'returns the licenses api path' do
         is_expected.to eq(licenses_project_pipeline_path(project, pipeline))
+      end
+    end
+  end
+
+  describe 'expose_license_scanning_data?' do
+    before do
+      project.add_developer(user)
+    end
+
+    subject(:expose_license_scanning_data?) { helper.expose_license_scanning_data?(project, pipeline) }
+
+    describe 'when `license_scanning` feature is not available' do
+      before do
+        stub_licensed_features(license_scanning: false)
+      end
+
+      it 'returns false' do
+        is_expected.to be(false)
+      end
+    end
+
+    describe 'when `license_scanning` feature is available' do
+      before do
+        stub_licensed_features(license_scanning: true)
+      end
+
+      it 'returns true' do
+        is_expected.to be(true)
       end
     end
   end

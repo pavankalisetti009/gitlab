@@ -43,7 +43,7 @@ module EE
       end
 
       def expose_license_scanning_data?(project, pipeline)
-        scanner_for_pipeline(project, pipeline).has_data?
+        project.licensed_feature_available?(:license_scanning) && scanner_for_pipeline(project, pipeline).has_data?
       end
 
       def codequality_blob_path(project, pipeline)
