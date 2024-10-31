@@ -19,6 +19,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   before do
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
+    stub_feature_flags(fireworks_qwen_code_completion: false)
   end
 
   context 'when using saas model Vertex' do
@@ -82,6 +83,55 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
               "content_below_cursor" => "som"
             },
             "telemetry" => [{ "model_engine" => "vertex-ai" }],
+            "prompt_version" => 1
+          }
+        end
+
+        let(:expected_feature_name) { :code_suggestions }
+      end
+    end
+  end
+
+  context 'when using saas model fireworks' do
+    let(:unsafe_params) do
+      {
+        'current_file' => current_file,
+        'telemetry' => [{ 'model_engine' => 'fireworks-ai' }]
+      }.with_indifferent_access
+    end
+
+    let(:params) do
+      {
+        current_file: current_file,
+        code_completion_model_family: model_family
+      }
+    end
+
+    let(:model_family) { :fireworks_ai }
+    let(:task) do
+      described_class.new(
+        params: params,
+        unsafe_passthrough_params: unsafe_params
+      )
+    end
+
+    context "when using fireworks qwen for code suggestion task" do
+      before do
+        stub_feature_flags(use_codestral_for_code_completions: false)
+        stub_feature_flags(fireworks_qwen_code_completion: true)
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_body) do
+          {
+            "model_name" => "qwen2p5-coder-7b",
+            "model_provider" => "fireworks_ai",
+            "current_file" => {
+              "file_name" => "test.py",
+              "content_above_cursor" => "sor",
+              "content_below_cursor" => "som"
+            },
+            "telemetry" => [{ "model_engine" => "fireworks-ai" }],
             "prompt_version" => 1
           }
         end

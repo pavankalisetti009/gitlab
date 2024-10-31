@@ -14,6 +14,8 @@ module CodeSuggestions
 
       return codestral_model_details if use_codestral_for_code_completions?
 
+      return fireworks_qwen_2_5_model_details if use_fireworks_qwen_for_code_completions?
+
       # the default behavior is returning an empty hash
       # AI Gateway will fall back to the code-gecko model if model details are not provided
       {}
@@ -34,12 +36,23 @@ module CodeSuggestions
       }
     end
 
+    def fireworks_qwen_2_5_model_details
+      {
+        model_provider: CodeSuggestions::Prompts::CodeCompletion::FireworksQwen::MODEL_PROVIDER,
+        model_name: CodeSuggestions::Prompts::CodeCompletion::FireworksQwen::MODEL_NAME
+      }
+    end
+
     def self_hosted?
       feature_setting&.self_hosted?
     end
 
     def use_codestral_for_code_completions?
       Feature.enabled?(:use_codestral_for_code_completions, current_user, type: :beta)
+    end
+
+    def use_fireworks_qwen_for_code_completions?
+      Feature.enabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
     end
 
     def feature_setting
