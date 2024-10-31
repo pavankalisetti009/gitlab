@@ -179,6 +179,18 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
         end
       end
 
+      context 'filtering by closed_by_id' do
+        let_it_be(:user3) { create(:user) }
+
+        let!(:closed_issue) { create(:issue, author: user2, assignees: [user2], project: project2, state: 'closed', closed_by_id: user3.id) }
+
+        let(:params) { { state: 'closed', closed_by_id: user3.id } }
+
+        it 'returns issues closed by the user whose ID is provided' do
+          expect(items).to contain_exactly(closed_issue)
+        end
+      end
+
       context 'filter by epic' do
         let_it_be(:epic_1) { create(:epic, group: group) }
         let_it_be(:epic_2) { create(:epic, group: group) }
