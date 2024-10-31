@@ -157,6 +157,19 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
           end
         end
       end
+
+      context 'when auto merge is not set' do
+        before do
+          # simulate clearing the auto merge parameters with a car present
+          merge_request.update!(auto_merge_enabled: false, merge_user_id: nil)
+        end
+
+        it_behaves_like 'drops the merge request from the merge train' do
+          let(:expected_reason) do
+            'the merge request is not set to auto-merge'
+          end
+        end
+      end
     end
 
     context 'when pipeline for merge train failed' do

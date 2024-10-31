@@ -57,6 +57,10 @@ module MergeTrains
       if merge_request.draft?
         raise ProcessError, "the merge request is marked as draft. [Learn more](#{learn_more_url})."
       end
+
+      unless merge_request.auto_merge_enabled?
+        raise ProcessError, 'the merge request is not set to auto-merge'
+      end
     end
 
     def learn_more_url
@@ -157,7 +161,7 @@ module MergeTrains
     end
 
     def abort(error)
-      AutoMerge::MergeTrainService.new(project, merge_user)
+      AutoMerge::MergeTrainService.new(project, merge_train_car.user)
         .abort(merge_request, error.message, process_next: false)
 
       error(error.message)
