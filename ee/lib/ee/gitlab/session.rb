@@ -12,7 +12,9 @@ module EE
           return unless session
 
           if session.is_a?(::ActionDispatch::Request::Session)
-            session.id.private_id
+            # Read the https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171262 description
+            # for more details of why options might be a hash
+            session.options.is_a?(Hash) ? nil : session.id.private_id
           elsif session.respond_to?(:[]) # Hash-like
             session[::Gitlab::SidekiqMiddleware::SetSession::Server::SESSION_ID_HASH_KEY]
           else
