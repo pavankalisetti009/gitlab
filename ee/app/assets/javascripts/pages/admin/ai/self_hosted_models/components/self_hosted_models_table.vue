@@ -5,6 +5,7 @@ import {
   GlDisclosureDropdownItem,
   GlIcon,
   GlLink,
+  GlSearchBoxByType,
   GlSprintf,
   GlTruncate,
 } from '@gitlab/ui';
@@ -20,6 +21,7 @@ export default {
     GlDisclosureDropdownItem,
     GlIcon,
     GlLink,
+    GlSearchBoxByType,
     GlSprintf,
     GlTruncate,
     DeleteSelfHostedModelDisclosureItem,
@@ -30,6 +32,11 @@ export default {
       type: Array,
       required: true,
     },
+  },
+  data() {
+    return {
+      searchTerm: '',
+    };
   },
   i18n: {
     emptyStateText: s__(
@@ -85,49 +92,57 @@ export default {
 };
 </script>
 <template>
-  <gl-table
-    data-testid="self-hosted-model-table"
-    :fields="$options.fields"
-    :items="models"
-    stacked="md"
-    :hover="true"
-    :selectable="false"
-    :show-empty="true"
-    fixed
-  >
-    <template #empty>
-      <p class="gl-m-0 gl-py-4">
-        <gl-sprintf :message="$options.i18n.emptyStateText">
-          <template #link="{ content }">
-            <gl-link :href="newSelfHostedModelPath">{{ content }}</gl-link>
-          </template>
-        </gl-sprintf>
-      </p>
-    </template>
-    <template #cell(name)="{ item }">
-      <gl-truncate :text="item.name" position="end" with-tooltip />
-    </template>
-    <template #cell(endpoint)="{ item }">
-      <gl-truncate :text="item.endpoint" position="end" with-tooltip />
-    </template>
-    <template #cell(has_api_key)="{ item }">
-      <gl-icon
-        v-if="item.hasApiToken"
-        :aria-label="s__('AdminSelfHostedModels|Model uses an API token')"
-        name="check-circle"
-      />
-    </template>
-    <template #cell(edit)="{ item }">
-      <gl-disclosure-dropdown
-        class="gl-py-2"
-        category="tertiary"
-        size="small"
-        icon="ellipsis_v"
-        :no-caret="true"
-      >
-        <gl-disclosure-dropdown-item data-testid="model-edit-button" :item="editModelItem(item)" />
-        <delete-self-hosted-model-disclosure-item :model="item" />
-      </gl-disclosure-dropdown>
-    </template>
-  </gl-table>
+  <div>
+    <div class="gl-border-t gl-py-4">
+      <gl-search-box-by-type v-model.trim="searchTerm" />
+    </div>
+    <gl-table
+      :fields="$options.fields"
+      :items="models"
+      stacked="md"
+      :hover="true"
+      :filter="searchTerm"
+      :selectable="false"
+      show-empty
+      fixed
+    >
+      <template #empty>
+        <p class="gl-m-0 gl-py-4">
+          <gl-sprintf :message="$options.i18n.emptyStateText">
+            <template #link="{ content }">
+              <gl-link :href="newSelfHostedModelPath">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </p>
+      </template>
+      <template #cell(name)="{ item }">
+        <gl-truncate :text="item.name" position="end" with-tooltip />
+      </template>
+      <template #cell(endpoint)="{ item }">
+        <gl-truncate :text="item.endpoint" position="end" with-tooltip />
+      </template>
+      <template #cell(has_api_key)="{ item }">
+        <gl-icon
+          v-if="item.hasApiToken"
+          :aria-label="s__('AdminSelfHostedModels|Model uses an API token')"
+          name="check-circle"
+        />
+      </template>
+      <template #cell(edit)="{ item }">
+        <gl-disclosure-dropdown
+          class="gl-py-2"
+          category="tertiary"
+          size="small"
+          icon="ellipsis_v"
+          :no-caret="true"
+        >
+          <gl-disclosure-dropdown-item
+            data-testid="model-edit-button"
+            :item="editModelItem(item)"
+          />
+          <delete-self-hosted-model-disclosure-item :model="item" />
+        </gl-disclosure-dropdown>
+      </template>
+    </gl-table>
+  </div>
 </template>
