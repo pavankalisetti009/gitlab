@@ -36,7 +36,7 @@ export default {
       return this.$apollo.queries.testCase.loading || this.testCaseTodoUpdateInProgress;
     },
     todoActionText() {
-      return this.isTodoPending ? __('Mark as done') : __('Add a to do');
+      return this.isTodoPending ? __('Mark as done') : __('Add a to-do item');
     },
     todoIcon() {
       return this.isTodoPending ? 'todo-done' : 'todo-add';

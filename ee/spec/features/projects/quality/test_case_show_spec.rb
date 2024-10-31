@@ -97,16 +97,16 @@ RSpec.describe 'Test cases', :js, feature_category: :quality_management do
 
       context 'todo' do
         it 'add test case as todo' do
-          click_button('Add a to do')
+          click_button('Add a to-do item')
 
           expect(page).to have_button('Mark as done')
         end
 
         it 'mark test case todo as done' do
-          click_button('Add a to do')
+          click_button('Add a to-do item')
           click_button('Mark as done')
 
-          expect(page).to have_button('Add a to do')
+          expect(page).to have_button('Add a to-do item')
         end
       end
 
