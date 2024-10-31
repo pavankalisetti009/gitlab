@@ -338,7 +338,7 @@ export default {
     </template>
     <template #timeframe="{ issuable }">
       <span v-if="hasDateSet(issuable)" v-gl-tooltip :title="datesTitle(issuable)">
-        <gl-icon :name="dateIcon(issuable)" :variant="isOverdue(issuable) ? 'danger' : 'default'" />
+        <gl-icon :name="dateIcon(issuable)" :variant="isOverdue(issuable) ? 'danger' : 'current'" />
         {{ epicTimeframe(issuable) }}
       </span>
     </template>
