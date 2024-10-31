@@ -307,7 +307,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     let(:params) do
       {
         token: token,
-        scanner_version: '2.0.0',
         language: 'Ruby',
         dependencies: %w[rails rspec-rails pry-rails]
       }
@@ -457,7 +456,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         let(:params) do
           {
             token: token,
-            scanner_version: '2.0.0',
             dependencies: %w[rails rspec-rails pry-rails]
           }
         end
@@ -467,23 +465,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response).to eq({ 'error' => 'language is missing, language does not have a valid value' })
-        end
-      end
-
-      context 'when scanner_version param is missing' do
-        let(:params) do
-          {
-            token: token,
-            language: 'Ruby',
-            dependencies: %w[rails rspec-rails pry-rails]
-          }
-        end
-
-        it 'responds with error', :aggregate_failures do
-          post_api
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response).to eq({ 'error' => 'scanner_version is missing' })
         end
       end
 

@@ -6,9 +6,7 @@ FactoryBot.define do
     lang { 'Ruby' }
     payload do
       {
-        "scannerVersion" => "0.0.1",
-        "fileName" => "pyproject.toml",
-        "checksum" => "53b5964d32d30fc60089fb54cd73538003a487afdd5d6a3b549ae162ce4819cd",
+        "file_path" => "pyproject.toml",
         "libs" =>
           [
             {

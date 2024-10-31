@@ -54,12 +54,10 @@ module Ai
         Projects::XrayReport.upsert_all(reports_array, unique_by: [:project_id, :lang])
       end
 
-      # TODO: We're not concerned with the value of `fileName` nor `checksum` because they are
-      # not utilized and will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
       def merge_payloads(config_files)
         config_files.each_with_object({ file_paths: [], libs: [] }) do |config_file, merged|
           merged[:libs].concat(config_file.payload[:libs])
-          merged[:file_paths] << config_file.payload[:fileName]
+          merged[:file_paths] << config_file.payload[:file_path]
         end
       end
 
@@ -69,7 +67,7 @@ module Ai
         success_messages = valid_config_files.map do |config_file|
           payload = config_file.payload
           dependency_counts << payload[:libs].size
-          "Found #{dependency_counts.last} dependencies in `#{payload[:fileName]}` (#{class_name(config_file)})"
+          "Found #{dependency_counts.last} dependencies in `#{payload[:file_path]}` (#{class_name(config_file)})"
         end
 
         error_messages = invalid_config_files.map do |config_file|
