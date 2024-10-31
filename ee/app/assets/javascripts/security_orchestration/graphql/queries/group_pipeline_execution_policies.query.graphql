@@ -12,6 +12,7 @@ query groupPipelineExecutionPolicies(
         name
         yaml
         editPath
+        policyBlobFilePath
         enabled
         policyScope {
           ...PolicyScope

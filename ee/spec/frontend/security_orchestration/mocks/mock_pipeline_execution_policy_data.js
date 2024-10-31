@@ -71,7 +71,7 @@ content:
    include:
      - project: gitlab-policies/js6
        ref: main
-       file: test_path
+       file: pipeline_execution_jobs.yml
 `;
 
 export const mockPipelineScanExecutionObject = {
@@ -93,6 +93,7 @@ export const mockProjectPipelineExecutionPolicy = {
   updatedAt: new Date('2021-06-07T00:00:00.000Z'),
   yaml: mockPipelineExecutionManifest,
   editPath: '/policies/policy-name/edit?type="pipeline_execution_policy"',
+  policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
   enabled: true,
   ...POLICY_SCOPE_MOCK,
   source: {
