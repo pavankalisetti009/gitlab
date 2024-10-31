@@ -102,7 +102,7 @@ module PackageMetadata
       ADVISORIES_PATH = Rails.root.join('vendor/package_metadata/advisories').freeze
       ADVISORIES_BUCKET = 'prod-export-advisory-bucket-1a6c642fc4de57d4'
       CVE_ENRICHMENT_PATH = Rails.root.join('vendor/package_metadata/cve_enrichment').freeze
-      CVE_ENRICHMENT_BUCKET = 'prod-export-cve-enrichments-bucket-1a6c642fc4de57d4'
+      CVE_ENRICHMENT_BUCKET = 'prod-export-cve-enrichment-bucket-1a6c642fc4de57d4'
 
       def self.for_licenses
         if File.exist?(LICENSES_PATH)
