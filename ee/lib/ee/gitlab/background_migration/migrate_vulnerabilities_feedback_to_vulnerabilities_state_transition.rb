@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/MethodLength, Metrics/BlockLength, Layout/LineLength, Gitlab/RailsLogger -- migration
+# rubocop:disable Metrics/MethodLength, Metrics/BlockLength, Layout/LineLength, -- migration
 module EE
   module Gitlab
     module BackgroundMigration
@@ -287,4 +287,4 @@ module EE
     end
   end
 end
-# rubocop:enable Metrics/MethodLength, Metrics/BlockLength, Layout/LineLength, Gitlab/RailsLogger
+# rubocop:enable Metrics/MethodLength, Metrics/BlockLength, Layout/LineLength

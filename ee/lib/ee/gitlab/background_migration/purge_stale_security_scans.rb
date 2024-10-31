@@ -3,7 +3,6 @@
 module EE
   module Gitlab
     module BackgroundMigration
-      # rubocop:disable Style/Documentation
       module PurgeStaleSecurityScans
         extend ::Gitlab::Utils::Override
         extend ActiveSupport::Concern

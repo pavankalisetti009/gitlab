@@ -3,7 +3,6 @@
 module EE
   module Gitlab
     module BackgroundMigration
-      # rubocop:disable Style/Documentation
       module PopulateDenormalizedColumnsForSbomOccurrences
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override

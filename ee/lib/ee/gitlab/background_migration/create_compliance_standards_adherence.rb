@@ -33,16 +33,16 @@ module EE
           include ::Gitlab::Utils::StrongMemoize
           self.table_name = 'namespaces'
           self.inheritance_column = :_type_disabled
-          has_many :projects, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project' # rubocop:disable Layout/LineLength'
-          belongs_to :parent, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Namespace' # rubocop:disable Layout/LineLength'
+          has_many :projects, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project'
+          belongs_to :parent, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Namespace'
         end
 
         # Migration only version of `namespaces` table
         class Group < ::ApplicationRecord
           self.table_name = 'namespaces'
           self.inheritance_column = :_type_disabled
-          has_one :group_merge_request_approval_setting, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::GroupMergeRequestApprovalSetting' # rubocop:disable Layout/LineLength'
-          has_many :projects, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project' # rubocop:disable Layout/LineLength'
+          has_one :group_merge_request_approval_setting, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::GroupMergeRequestApprovalSetting'
+          has_many :projects, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project'
         end
 
         # Migration only version of `group_merge_request_approval_settings` table
@@ -55,8 +55,8 @@ module EE
         class Project < ::ApplicationRecord
           self.table_name = 'projects'
           belongs_to :namespace
-          belongs_to :group, -> { where(type: 'Group') }, foreign_key: 'namespace_id', class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Group' # rubocop:disable Layout/LineLength'
-          has_many :approval_rules, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::ApprovalProjectRule' # rubocop:disable Layout/LineLength
+          belongs_to :group, -> { where(type: 'Group') }, foreign_key: 'namespace_id', class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Group'
+          has_many :approval_rules, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::ApprovalProjectRule'
 
           delegate :root_ancestor, to: :namespace, allow_nil: true
         end
@@ -64,7 +64,7 @@ module EE
         # Migration only version of `approval_project_rules` table
         class ApprovalProjectRule < ::ApplicationRecord
           self.table_name = 'approval_project_rules'
-          belongs_to :project, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project' # rubocop:disable Layout/LineLength
+          belongs_to :project, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project'
         end
 
         override :perform

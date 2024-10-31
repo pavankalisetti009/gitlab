@@ -26,7 +26,7 @@ module EE
             }
 
             where(namespace_id: params[:namespace_id]).first || create!(params)
-          rescue ActiveRecord::RecordInvalid => invalid # rubocop:disable BackgroundMigration/AvoidSilentRescueExceptions -- an exception is acceptable here if record already exists
+          rescue ActiveRecord::RecordInvalid => invalid
             raise unless invalid.record&.errors&.of_kind?(:namespace_id, :taken)
 
             Gitlab::BackgroundMigration::Logger.warn(message: 'Retrying zoekt first or create', error: invalid.message)
