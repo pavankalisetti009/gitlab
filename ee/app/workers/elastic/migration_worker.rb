@@ -103,7 +103,7 @@ module Elastic
       return false if Feature.disabled?(:elastic_migration_worker, type: :ops) # rubocop:disable Gitlab/ FeatureFlagWithoutActor -- this is an ops flag that should be on or off
       return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
       return false unless helper.alias_exists?
-      return false if Elastic::ReindexingTask.current
+      return false if Search::Elastic::ReindexingTask.current
 
       if helper.unsupported_version?
         msg = <<~MSG.strip_heredoc.tr("\n", ' ')

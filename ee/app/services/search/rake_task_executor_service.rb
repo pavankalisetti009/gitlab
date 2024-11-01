@@ -60,7 +60,7 @@ module Search
     end
 
     def clear_reindex_status
-      ::Elastic::ReindexingTask.each_batch do |batch|
+      ::Search::Elastic::ReindexingTask.each_batch do |batch|
         batch.delete_all
       end
 
@@ -120,7 +120,7 @@ module Search
     end
 
     def reindex_cluster
-      ::Elastic::ReindexingTask.create!
+      ::Search::Elastic::ReindexingTask.create!
 
       ::ElasticClusterReindexingCronWorker.perform_async
 
@@ -222,8 +222,8 @@ module Search
     end
 
     def mark_reindex_failed
-      if ::Elastic::ReindexingTask.running?
-        ::Elastic::ReindexingTask.current.failure!
+      if ::Search::Elastic::ReindexingTask.running?
+        ::Search::Elastic::ReindexingTask.current.failure!
         logger.info(Rainbow('Marked the current reindexing job as failed.').green)
       else
         logger.info('Did not find the current running reindexing job.')

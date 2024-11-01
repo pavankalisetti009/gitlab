@@ -14,8 +14,8 @@ RSpec.describe ReindexMergeRequestsForTitleCompletion, feature_category: :global
 
   describe '#migrate' do
     it 'creates reindexing task with correct target and options' do
-      expect { migration.migrate }.to change { Elastic::ReindexingTask.count }.by(1)
-      task = Elastic::ReindexingTask.last
+      expect { migration.migrate }.to change { Search::Elastic::ReindexingTask.count }.by(1)
+      task = Search::Elastic::ReindexingTask.last
       expect(task.targets).to eq(%w[MergeRequest])
       expect(task.options).to eq('skip_pending_migrations_check' => true)
     end

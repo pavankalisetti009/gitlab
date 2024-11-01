@@ -19,10 +19,10 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   # POST
   # Trigger reindexing task
   def trigger_reindexing
-    if Elastic::ReindexingTask.running?
+    if Search::Elastic::ReindexingTask.running?
       flash[:warning] = _('Elasticsearch reindexing is already in progress')
     else
-      @elasticsearch_reindexing_task = Elastic::ReindexingTask.new(trigger_reindexing_params)
+      @elasticsearch_reindexing_task = Search::Elastic::ReindexingTask.new(trigger_reindexing_params)
       if @elasticsearch_reindexing_task.save
         flash[:notice] = _('Elasticsearch reindexing triggered')
       else
@@ -37,7 +37,7 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   # POST
   # Cancel index deletion after a successful reindexing operation
   def cancel_index_deletion
-    task = Elastic::ReindexingTask.find(params[:task_id])
+    task = Search::Elastic::ReindexingTask.find(params[:task_id])
     task.update!(delete_original_index_at: nil)
 
     flash[:notice] = _('Index deletion is canceled')
@@ -65,7 +65,7 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   end
 
   def trigger_reindexing_params
-    permitted_params = params.require(:elastic_reindexing_task).permit(:elasticsearch_max_slices_running,
+    permitted_params = params.require(:search_elastic_reindexing_task).permit(:elasticsearch_max_slices_running,
       :elasticsearch_slice_multiplier)
     trigger_reindexing_params = {}
     if permitted_params.has_key?(:elasticsearch_max_slices_running)

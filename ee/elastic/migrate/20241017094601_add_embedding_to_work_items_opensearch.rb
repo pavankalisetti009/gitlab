@@ -4,7 +4,7 @@ class AddEmbeddingToWorkItemsOpensearch < Elastic::Migration
   skip_if -> { !opensearch? }
 
   def migrate
-    Elastic::ReindexingTask.create!(targets: %w[WorkItem], options: { skip_pending_migrations_check: true })
+    Search::Elastic::ReindexingTask.create!(targets: %w[WorkItem], options: { skip_pending_migrations_check: true })
   end
 
   def completed?

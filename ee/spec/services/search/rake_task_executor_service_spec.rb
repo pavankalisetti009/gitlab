@@ -330,14 +330,14 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   describe '#mark_reindex_failed' do
     context 'when there is a running reindex job' do
       before do
-        Elastic::ReindexingTask.create!
+        Search::Elastic::ReindexingTask.create!
       end
 
       it 'marks the current reindex job as failed' do
         expect(logger).to receive(:info).with(/Marked the current reindexing job as failed/)
 
         expect { service.execute(:mark_reindex_failed) }
-          .to change { Elastic::ReindexingTask.running? }.from(true).to(false)
+          .to change { Search::Elastic::ReindexingTask.running? }.from(true).to(false)
       end
 
       it 'prints a message after marking it as failed' do
@@ -1071,7 +1071,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     subject(:reindex_cluster) { service.execute(:reindex_cluster) }
 
     it 'creates a reindexing task and queues the cron worker' do
-      expect(::Elastic::ReindexingTask).to receive(:create!)
+      expect(::Search::Elastic::ReindexingTask).to receive(:create!)
       expect(::ElasticClusterReindexingCronWorker).to receive(:perform_async)
 
       expect(logger).to receive(:info).with(/Reindexing job was successfully scheduled/)
@@ -1081,7 +1081,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
     context 'when a reindexing task is in progress' do
       it 'logs an error' do
-        ::Elastic::ReindexingTask.create!
+        ::Search::Elastic::ReindexingTask.create!
 
         expect(::ElasticClusterReindexingCronWorker).not_to receive(:perform_async)
 
@@ -1109,7 +1109,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     it 'calls deletes all reindex records' do
       create(:elastic_reindexing_task)
 
-      expect { clear_reindex_status }.to change { ::Elastic::ReindexingTask.count }.from(1).to(0)
+      expect { clear_reindex_status }.to change { ::Search::Elastic::ReindexingTask.count }.from(1).to(0)
     end
   end
 
