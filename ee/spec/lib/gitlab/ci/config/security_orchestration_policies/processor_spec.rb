@@ -46,7 +46,10 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
   let_it_be(:policy) do
     build(:scan_execution_policy, actions: [
       { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
-      { scan: 'secret_detection' }
+      { scan: 'secret_detection' },
+      { scan: 'container_scanning' },
+      { scan: 'sast_iac' },
+      { scan: 'dependency_scanning' }
     ])
   end
 
@@ -193,6 +196,10 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
       [build(:scan_execution_policy, rules: [{ type: 'pipeline', branches: 'production' }])])
     end
 
+    it 'does not track internal metrics' do
+      expect { perform_service }.not_to trigger_internal_events('enforce_scan_execution_policy_in_project')
+    end
+
     it 'does not modify the config', :aggregate_failures do
       expect(config).not_to receive(:deep_merge)
       expect(perform_service).to eq(config)
@@ -202,6 +209,10 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
   context 'when feature is not licensed' do
     it 'does not modify the config' do
       expect(perform_service).to eq(config)
+    end
+
+    it 'does not track internal metrics' do
+      expect { perform_service }.not_to trigger_internal_events('enforce_scan_execution_policy_in_project')
     end
   end
 
@@ -266,6 +277,30 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
             allow_failure: true,
             script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false'
           })
+        end
+      end
+
+      context 'when sast, dast and secret_detection scans are enforced' do
+        it 'tracks event' do
+          expect { perform_service }
+            .to trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'dast' })
+            .once
+          .and trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'sast' })
+            .once
+          .and trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'secret_detection' })
+            .once
+          .and trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'container_scanning' })
+            .once
+          .and trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'sast_iac' })
+            .once
+          .and trigger_internal_events('enforce_scan_execution_policy_in_project')
+            .with(project: project, additional_properties: { label: 'dependency_scanning' })
+            .once
         end
       end
 
