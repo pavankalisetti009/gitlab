@@ -6,7 +6,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
 
-  let_it_be(:project, reload: true) { create(:project) }
+  let_it_be(:project, reload: true) { create(:project, namespace: group) }
 
   let_it_be(:public_project) { create(:project, :public, :repository, namespace: group) }
 
@@ -391,24 +391,47 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       expect(project.project_setting.cve_id_request_enabled).to eq(true)
     end
 
-    it 'updates duo_features_enabled' do
-      project.project_setting.duo_features_enabled = false
-      project.project_setting.save!
+    context 'when enabling duo features' do
+      let(:params) { { project_setting_attributes: { duo_features_enabled: true } } }
 
-      params = {
-        project_setting_attributes: {
-          duo_features_enabled: true
-        }
-      }
-      put :update,
-        params: {
-          namespace_id: project.namespace,
-          id: project,
-          project: params
-        }
-      project.reload
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, id: project, project: params }
+      end
 
-      expect(project.project_setting.duo_features_enabled).to eq(true)
+      it 'updates duo_features_enabled' do
+        project.project_setting.duo_features_enabled = false
+        project.project_setting.save!
+
+        request
+
+        expect(project.reload.project_setting.duo_features_enabled).to eq(true)
+      end
+
+      context 'when duo features are locked by the ancestor' do
+        before do
+          project.project_setting.duo_features_enabled = false
+          project.project_setting.save!
+
+          project.namespace.namespace_settings.lock_duo_features_enabled = true
+          project.namespace.namespace_settings.duo_features_enabled = false
+          project.namespace.namespace_settings.save!
+        end
+
+        it 'does not update duo feature' do
+          expect { request }.not_to change { project.reload.project_setting.duo_features_enabled }.from(false)
+        end
+
+        context 'with more params passed' do
+          let(:params) do
+            { project_setting_attributes: { duo_features_enabled: true }, description: 'Settings test' }
+          end
+
+          it 'does not update duo feature, but updates other attributes' do
+            expect { request }.not_to change { project.reload.project_setting.duo_features_enabled }.from(false)
+            expect(project.description).to eq('Settings test')
+          end
+        end
+      end
     end
 
     context 'when merge_pipelines_enabled param is specified' do
