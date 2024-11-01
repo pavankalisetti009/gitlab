@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { isEqual, isObject } from 'lodash';
 import { STEPS } from 'ee/subscriptions/constants';
 import { PurchaseEvent } from 'ee/subscriptions/new/constants';
-import activeStepQuery from 'ee/vue_shared/purchase_flow/graphql/queries/active_step.query.graphql';
+import activeStepQuery from 'ee/subscriptions/shared/components/purchase_flow/graphql/queries/active_step.query.graphql';
 import { s__, sprintf } from '~/locale';
 import Api from 'ee/api';
 import { trackTransaction } from 'ee/google_tag_manager';
@@ -15,7 +15,7 @@ import { addExperimentContext } from '~/tracking/utils';
 import { ActiveModelError } from '~/lib/utils/error_utils';
 import { isInvalidPromoCodeError } from 'ee/subscriptions/new/utils';
 import { visitUrl } from '~/lib/utils/url_utility';
-import { extractErrorCode } from 'ee/vue_shared/purchase_flow/zuora_utils';
+import { extractErrorCode } from 'ee/subscriptions/shared/components/purchase_flow/zuora_utils';
 import PrivacyAndTermsConfirm from 'ee/subscriptions/shared/components/privacy_and_terms_confirm.vue';
 
 export default {

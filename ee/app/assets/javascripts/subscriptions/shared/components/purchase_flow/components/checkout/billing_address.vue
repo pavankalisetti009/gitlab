@@ -1,153 +1,126 @@
 <script>
 import { GlAlert, GlButton, GlFormGroup, GlFormInput, GlFormSelect } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
-// eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
 import {
-  STEP_BILLING_ADDRESS,
   COUNTRIES_WITH_STATES_REQUIRED,
   COUNTRY_SELECT_PROMPT,
   STATE_SELECT_PROMPT,
+  STEPS,
 } from 'ee/subscriptions/constants';
+import updateStateMutation from 'ee/subscriptions/graphql/mutations/update_state.mutation.graphql';
+import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
+import stateQuery from 'ee/subscriptions/graphql/queries/state.query.graphql';
+import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
 import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
-import BillingAccountDetails from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/billing_account_details.vue';
+import SprintfWithLinks from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/sprintf_with_links.vue';
 import { s__ } from '~/locale';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import Tracking from '~/tracking';
-import getBillingAccountQuery from 'ee/subscriptions/shared/components/purchase_flow/graphql/queries/get_billing_account.customer.query.graphql';
+import { PurchaseEvent } from 'ee/subscriptions/new/constants';
 import { CUSTOMERSDOT_CLIENT } from 'ee/subscriptions/buy_addons_shared/constants';
+import getBillingAccountQuery from 'ee/subscriptions/shared/components/purchase_flow/graphql/queries/get_billing_account.customer.query.graphql';
 import { logError } from '~/lib/logger';
-import SprintfWithLinks from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/sprintf_with_links.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import BillingAccountDetails from 'ee/subscriptions/shared/components/purchase_flow/components/checkout/billing_account_details.vue';
 
 export default {
   components: {
     BillingAccountDetails,
-    SprintfWithLinks,
     Step,
     GlAlert,
     GlButton,
     GlFormGroup,
     GlFormInput,
     GlFormSelect,
+    SprintfWithLinks,
   },
   directives: {
     autofocusonshow,
   },
-  mixins: [Tracking.mixin(), glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin()],
   data() {
     return {
+      countries: [],
       billingAccount: null,
     };
   },
   apollo: {
     billingAccount: {
-      query: getBillingAccountQuery,
       client: CUSTOMERSDOT_CLIENT,
+      query: getBillingAccountQuery,
       error(error) {
         this.handleError(error);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
+    customer: {
+      query: stateQuery,
+    },
+    countries: {
+      query: countriesQuery,
+    },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
+    states: {
+      query: statesQuery,
+      skip() {
+        return !this.customer.country;
+      },
+      variables() {
+        return {
+          countryId: this.customer.country,
+        };
+      },
+    },
   },
   computed: {
-    ...mapState([
-      'country',
-      'streetAddressLine1',
-      'streetAddressLine2',
-      'city',
-      'countryState',
-      'zipCode',
-      'countryOptions',
-      'stateOptions',
-    ]),
     countryModel: {
       get() {
-        return this.country;
+        return this.customer.country;
       },
       set(country) {
-        this.updateCountry(country);
+        this.updateState({ customer: { country, state: null } });
       },
     },
     streetAddressLine1Model: {
       get() {
-        return this.streetAddressLine1;
+        return this.customer.address1;
       },
-      set(streetAddressLine1) {
-        this.updateStreetAddressLine1(streetAddressLine1);
+      set(address1) {
+        this.updateState({ customer: { address1 } });
       },
     },
     streetAddressLine2Model: {
       get() {
-        return this.streetAddressLine2;
+        return this.customer.address2;
       },
-      set(streetAddressLine2) {
-        this.updateStreetAddressLine2(streetAddressLine2);
+      set(address2) {
+        this.updateState({ customer: { address2 } });
       },
     },
     cityModel: {
       get() {
-        return this.city;
+        return this.customer.city;
       },
       set(city) {
-        this.updateCity(city);
+        this.updateState({ customer: { city } });
       },
     },
     countryStateModel: {
       get() {
-        return this.countryState;
+        return this.customer.state;
       },
-      set(countryState) {
-        this.updateCountryState(countryState);
+      set(state) {
+        this.updateState({ customer: { state } });
       },
     },
     zipCodeModel: {
       get() {
-        return this.zipCode;
+        return this.customer.zipCode;
       },
       set(zipCode) {
-        this.updateZipCode(zipCode);
+        this.updateState({ customer: { zipCode } });
       },
-    },
-    isStateRequired() {
-      return COUNTRIES_WITH_STATES_REQUIRED.includes(this.country);
-    },
-    isStateValid() {
-      return this.isStateRequired ? !isEmpty(this.countryState) : true;
-    },
-    areRequiredFieldsValid() {
-      return (
-        !isEmpty(this.country) &&
-        !isEmpty(this.streetAddressLine1) &&
-        !isEmpty(this.city) &&
-        !isEmpty(this.zipCode)
-      );
-    },
-    isValid() {
-      if (this.shouldShowManageContacts) {
-        return true;
-      }
-
-      return this.isStateValid && this.areRequiredFieldsValid;
-    },
-    countryOptionsWithDefault() {
-      return [
-        {
-          text: COUNTRY_SELECT_PROMPT,
-          value: null,
-        },
-        ...this.countryOptions,
-      ];
-    },
-    stateOptionsWithDefault() {
-      return [
-        {
-          text: STATE_SELECT_PROMPT,
-          value: null,
-        },
-        ...this.stateOptions,
-      ];
     },
     shouldShowManageContacts() {
       return Boolean(this.billingAccount?.zuoraAccountName);
@@ -160,35 +133,65 @@ export default {
         ? this.$options.i18n.contactInformationStepTitle
         : this.$options.i18n.billingAddressStepTitle;
     },
-  },
-  mounted() {
-    this.fetchCountries();
+    isStateRequired() {
+      return COUNTRIES_WITH_STATES_REQUIRED.includes(this.customer.country);
+    },
+    isStateValid() {
+      return this.isStateRequired ? !isEmpty(this.customer.state) : true;
+    },
+    areRequiredFieldsValid() {
+      return (
+        !isEmpty(this.customer.country) &&
+        !isEmpty(this.customer.address1) &&
+        !isEmpty(this.customer.city) &&
+        !isEmpty(this.customer.zipCode)
+      );
+    },
+    isValid() {
+      if (this.shouldShowManageContacts) {
+        return true;
+      }
+
+      return this.isStateValid && this.areRequiredFieldsValid;
+    },
+    countryOptionsWithDefault() {
+      return [
+        {
+          name: COUNTRY_SELECT_PROMPT,
+          id: null,
+        },
+        ...this.countries,
+      ];
+    },
+    stateOptionsWithDefault() {
+      return [
+        {
+          name: STATE_SELECT_PROMPT,
+          id: null,
+        },
+        ...this.states,
+      ];
+    },
+    selectedStateName() {
+      if (!this.customer.state || !this.states) {
+        return '';
+      }
+
+      return this.states.find((state) => state.id === this.customer.state).name;
+    },
   },
   methods: {
-    ...mapActions([
-      'fetchCountries',
-      'fetchStates',
-      'updateCountry',
-      'updateStreetAddressLine1',
-      'updateStreetAddressLine2',
-      'updateCity',
-      'updateCountryState',
-      'updateZipCode',
-    ]),
-    trackStepTransition() {
-      this.track('click_button', { label: 'select_country', property: this.country });
-      this.track('click_button', { label: 'state', property: this.countryState });
-      this.track('click_button', {
-        label: 'saas_checkout_postal_code',
-        property: this.zipCode,
-      });
-      this.track('click_button', { label: 'continue_payment' });
-    },
-    trackStepEdit() {
-      this.track('click_button', {
-        label: 'edit',
-        property: STEP_BILLING_ADDRESS,
-      });
+    updateState(payload) {
+      return this.$apollo
+        .mutate({
+          mutation: updateStateMutation,
+          variables: {
+            input: payload,
+          },
+        })
+        .catch((error) => {
+          this.$emit(PurchaseEvent.ERROR, error);
+        });
     },
     handleError(error) {
       Sentry.captureException(error);
@@ -215,18 +218,17 @@ export default {
       'subscriptions/customers_portal#subscription-and-billing-contacts',
     ),
   },
-  stepId: STEP_BILLING_ADDRESS,
+  stepId: STEPS[1].id,
   billingAccountsUrl: gon.billing_accounts_url,
 };
 </script>
 <template>
   <step
+    v-if="!$apollo.loading.customer"
     :step-id="$options.stepId"
     :title="stepTitle"
     :is-valid="isValid"
     :next-step-button-text="$options.i18n.nextStepButtonText"
-    @nextStep="trackStepTransition"
-    @stepEdit="trackStepEdit"
   >
     <template #body>
       <div v-if="shouldShowManageContacts" class="gl-mb-3">
@@ -244,17 +246,23 @@ export default {
       </div>
 
       <div v-else data-testid="checkout-billing-address-form">
-        <gl-form-group :label="$options.i18n.countryLabel" label-size="sm" class="gl-mb-3">
+        <gl-form-group
+          v-if="!$apollo.loading.countries"
+          :label="$options.i18n.countryLabel"
+          label-size="sm"
+          class="mb-3"
+        >
           <gl-form-select
             v-model="countryModel"
             v-autofocusonshow
             :options="countryOptionsWithDefault"
             class="js-country"
+            value-field="id"
+            text-field="name"
             data-testid="country"
-            @change="fetchStates"
           />
         </gl-form-group>
-        <gl-form-group :label="$options.i18n.streetAddressLabel" label-size="sm" class="gl-mb-3">
+        <gl-form-group :label="$options.i18n.streetAddressLabel" label-size="sm" class="mb-3">
           <gl-form-input
             v-model="streetAddressLine1Model"
             type="text"
@@ -267,14 +275,21 @@ export default {
             class="gl-mt-3"
           />
         </gl-form-group>
-        <gl-form-group :label="$options.i18n.cityLabel" label-size="sm" class="gl-mb-3">
+        <gl-form-group :label="$options.i18n.cityLabel" label-size="sm" class="mb-3">
           <gl-form-input v-model="cityModel" type="text" data-testid="city" />
         </gl-form-group>
         <div class="combined gl-flex">
-          <gl-form-group :label="$options.i18n.stateLabel" label-size="sm" class="mr-3 w-50">
+          <gl-form-group
+            v-if="!$apollo.loading.states && states"
+            :label="$options.i18n.stateLabel"
+            label-size="sm"
+            class="mr-3 w-50"
+          >
             <gl-form-select
               v-model="countryStateModel"
               :options="stateOptionsWithDefault"
+              value-field="id"
+              text-field="name"
               data-testid="state"
             />
           </gl-form-group>
@@ -291,9 +306,11 @@ export default {
       />
 
       <div v-else-if="!shouldShowManageContacts" data-testid="checkout-billing-address-summary">
-        <div class="js-summary-line-1">{{ streetAddressLine1 }}</div>
-        <div class="js-summary-line-2">{{ streetAddressLine2 }}</div>
-        <div class="js-summary-line-3">{{ city }}, {{ countryState }} {{ zipCode }}</div>
+        <div class="js-summary-line-1">{{ customer.address1 }}</div>
+        <div class="js-summary-line-2">{{ customer.address2 }}</div>
+        <div class="js-summary-line-3">
+          {{ customer.city }}, {{ customer.country }} {{ selectedStateName }} {{ customer.zipCode }}
+        </div>
       </div>
     </template>
 

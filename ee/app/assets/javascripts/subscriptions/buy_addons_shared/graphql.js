@@ -1,8 +1,8 @@
 import { merge } from 'lodash';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import purchaseFlowResolvers from 'ee/vue_shared/purchase_flow/graphql/resolvers';
-import typeDefs from 'ee/vue_shared/purchase_flow/graphql/typedefs.graphql';
+import purchaseFlowResolvers from 'ee/subscriptions/shared/components/purchase_flow/graphql/resolvers';
+import typeDefs from 'ee/subscriptions/shared/components/purchase_flow/graphql/typedefs.graphql';
 import createClient from '~/lib/graphql';
 import { createCustomersDotClient } from 'ee/lib/customers_dot_graphql';
 import typeDefsCDot from 'ee/subscriptions/buy_addons_shared/graphql/typedefs.graphql';

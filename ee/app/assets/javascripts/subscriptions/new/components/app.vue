@@ -1,6 +1,6 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import StepOrderApp from 'ee/vue_shared/purchase_flow/components/step_order_app.vue';
+import StepOrderApp from 'ee/subscriptions/shared/components/purchase_flow/components/step_order_app.vue';
 import Checkout from 'jh_else_ee/subscriptions/new/components/checkout.vue';
 import ConfirmOrder from 'ee/subscriptions/new/components/checkout/confirm_order.vue';
 import OrderSummary from 'jh_else_ee/subscriptions/new/components/order_summary.vue';
@@ -8,7 +8,7 @@ import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import {
   PURCHASE_ERROR_DICTIONARY,
   CONTACT_SUPPORT_DEFAULT_MESSAGE,
-} from 'ee/vue_shared/purchase_flow/error_constants';
+} from 'ee/subscriptions/shared/components/purchase_flow/error_constants';
 
 export default {
   components: {

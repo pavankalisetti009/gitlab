@@ -13,7 +13,7 @@ import { isEmpty } from 'lodash';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { QSR_RECONCILIATION_PATH, STEP_SUBSCRIPTION_DETAILS } from 'ee/subscriptions/constants';
 import { PurchaseEvent, NEW_GROUP } from 'ee/subscriptions/new/constants';
-import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
+import Step from 'ee/subscriptions/shared/components/purchase_flow/components/step.vue';
 import { __, s__, sprintf } from '~/locale';
 import autoFocusOnShow from '~/vue_shared/directives/autofocusonshow';
 import Tracking from '~/tracking';

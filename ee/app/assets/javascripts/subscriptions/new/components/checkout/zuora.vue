@@ -4,7 +4,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import Tracking from '~/tracking';
-import { extractErrorCode } from 'ee/vue_shared/purchase_flow/zuora_utils';
+import { extractErrorCode } from 'ee/subscriptions/shared/components/purchase_flow/zuora_utils';
 import { ZUORA_SCRIPT_URL, ZUORA_IFRAME_OVERRIDE_PARAMS } from 'ee/subscriptions/constants';
 
 export default {
