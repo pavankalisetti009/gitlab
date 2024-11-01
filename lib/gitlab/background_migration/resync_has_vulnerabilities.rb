@@ -50,14 +50,13 @@ module Gitlab
 
       def bulk_update!(update_values)
         sql = <<~SQL
-          WITH update_values (project_id, has_vulnerabilities) AS (#{update_values})
           UPDATE
             project_settings
           SET
             has_vulnerabilities = update_values.has_vulnerabilities,
             updated_at = NOW()
           FROM
-            update_values
+            (#{update_values}) AS update_values (project_id, has_vulnerabilities)
           WHERE
             project_settings.project_id = update_values.project_id;
         SQL
