@@ -184,10 +184,10 @@ export default {
             />
           </template>
           <div v-else class="gl-px-4 gl-text-left gl-text-base" data-testid="no-workspaces-message">
-            <p class="gl-mb-0 gl-text-sm gl-text-secondary">
+            <p class="gl-mb-0 gl-text-sm gl-text-subtle">
               {{ $options.i18n.noWorkspacesMessage }}
             </p>
-            <p v-if="!supportsWorkspaces" class="gl-mb-0 gl-mt-2 gl-text-sm gl-text-secondary">
+            <p v-if="!supportsWorkspaces" class="gl-mb-0 gl-mt-2 gl-text-sm gl-text-subtle">
               <gl-sprintf :message="$options.i18n.noWorkspacesSupportMessage">
                 <template #link="{ content }">
                   <gl-link

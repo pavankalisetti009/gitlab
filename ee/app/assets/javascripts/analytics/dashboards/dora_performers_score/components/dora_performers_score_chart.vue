@@ -234,7 +234,7 @@ export default {
 
     <chart-skeleton-loader v-if="isLoading" />
 
-    <div v-else-if="!hasData" class="gl-text-center gl-text-secondary">
+    <div v-else-if="!hasData" class="gl-text-center gl-text-subtle">
       {{ noDataMessage }}
     </div>
 

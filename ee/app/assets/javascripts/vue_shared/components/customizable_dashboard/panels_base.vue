@@ -191,7 +191,7 @@ export default {
           <gl-loading-icon size="lg" class="gl-w-full" />
           <div
             v-if="loadingDelayed"
-            class="gl-w-full gl-text-secondary"
+            class="gl-w-full gl-text-subtle"
             data-testId="panel-loading-delayed-indicator"
           >
             {{ __('Still loading...') }}
