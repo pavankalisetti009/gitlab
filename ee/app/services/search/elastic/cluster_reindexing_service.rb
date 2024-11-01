@@ -28,7 +28,7 @@ module Search
       end
 
       def current_task
-        ::Elastic::ReindexingTask.current
+        ::Search::Elastic::ReindexingTask.current
       end
       strong_memoize_attr :current_task
 

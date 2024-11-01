@@ -241,7 +241,7 @@
 
         = f.submit _('Trigger cluster reindexing'), pajamas_button: true, disabled: @last_elasticsearch_reindexing_task&.in_progress?, data: { confirm: _('Are you sure you want to reindex?') }
         .form-text.gl-text-gray-600
-        - Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|
+        - Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|
           .form-text.gl-text-red-500.gl-mt-0
             = _("Unused, previous indices: %{index_names} will be deleted after %{time} automatically.") % { index_names: task.subtasks.map(&:index_name_from).join(', '), time: task.delete_original_index_at }
             = link_to _('Cancel index deletion'), admin_elasticsearch_cancel_index_deletion_path(task_id: task.id), class: 'gl-mb-2', method: :post

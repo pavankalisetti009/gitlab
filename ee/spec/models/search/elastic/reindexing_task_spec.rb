@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Elastic::ReindexingTask, type: :model do
+RSpec.describe Search::Elastic::ReindexingTask, type: :model, feature_category: :global_search do
   let(:helper) { Gitlab::Elastic::Helper.new }
 
   before do
@@ -26,18 +26,30 @@ RSpec.describe Elastic::ReindexingTask, type: :model do
 
   it 'sets in_progress flag' do
     task = create(:elastic_reindexing_task, state: :success)
-    expect(task.in_progress).to eq(false)
+    expect(task.in_progress).to be(false)
 
     task.update!(state: :reindexing)
-    expect(task.in_progress).to eq(true)
+    expect(task.in_progress).to be(true)
   end
 
   describe '.drop_old_indices!' do
-    let(:task_1) { create(:elastic_reindexing_task, :with_subtask, state: :reindexing, delete_original_index_at: 1.day.ago) }
+    let(:task_1) do
+      create(:elastic_reindexing_task, :with_subtask, state: :reindexing, delete_original_index_at: 1.day.ago)
+    end
+
     let(:task_2) { create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: nil) }
-    let(:task_3) { create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 1.day.ago) }
-    let(:task_4) { create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 5.days.ago) }
-    let(:task_5) { create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 14.days.from_now) }
+    let(:task_3) do
+      create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 1.day.ago)
+    end
+
+    let(:task_4) do
+      create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 5.days.ago)
+    end
+
+    let(:task_5) do
+      create(:elastic_reindexing_task, :with_subtask, state: :success, delete_original_index_at: 14.days.from_now)
+    end
+
     let(:tasks_for_deletion) { [task_3, task_4] }
     let(:other_tasks) { [task_1, task_2, task_5] }
 
@@ -68,7 +80,7 @@ RSpec.describe Elastic::ReindexingTask, type: :model do
     end
 
     it 'returns all classes when targets are empty' do
-      expect(task.target_classes).to eq(::Gitlab::Elastic::Helper::INDEXED_CLASSES)
+      expect(task.target_classes).to be(::Gitlab::Elastic::Helper::INDEXED_CLASSES)
     end
   end
 end

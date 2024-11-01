@@ -16,9 +16,9 @@ class ElasticClusterReindexingCronWorker
 
   def perform
     in_lock(self.class.name.underscore, ttl: 1.hour, retries: 10, sleep_sec: 1) do
-      Elastic::ReindexingTask.drop_old_indices!
+      Search::Elastic::ReindexingTask.drop_old_indices!
 
-      task = Elastic::ReindexingTask.current
+      task = Search::Elastic::ReindexingTask.current
       break false unless task
 
       service.execute

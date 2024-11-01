@@ -2,7 +2,7 @@
 
 class ReindexIssuesToUpdateAnalyzer < Elastic::Migration
   def migrate
-    Elastic::ReindexingTask.create!(targets: %w[Issue], options: { skip_pending_migrations_check: true })
+    Search::Elastic::ReindexingTask.create!(targets: %w[Issue], options: { skip_pending_migrations_check: true })
   end
 
   def completed?

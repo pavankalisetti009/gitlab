@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Admin::ElasticsearchController, feature_category: :global_search do
-  let(:admin) { create(:admin) }
-  let(:helper) { Gitlab::Elastic::Helper.new }
+  let_it_be(:admin) { create(:admin) }
+  let_it_be(:helper) { Gitlab::Elastic::Helper.new }
 
   describe 'POST #enqueue_index' do
     before do
@@ -16,7 +16,8 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       post :enqueue_index
 
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expect(response).to redirect_to expected_redirect
     end
   end
 
@@ -26,30 +27,45 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
     end
 
     it 'creates a reindexing task' do
-      expect_next_instance_of(Elastic::ReindexingTask) do |task|
+      expect_next_instance_of(Search::Elastic::ReindexingTask) do |task|
         expect(task).to receive(:save).and_return(true)
       end
 
-      post :trigger_reindexing, params: { elastic_reindexing_task: { elasticsearch_max_slices_running: 60, elasticsearch_slice_multiplier: 2 } }
+      params = {
+        search_elastic_reindexing_task: { elasticsearch_max_slices_running: 60, elasticsearch_slice_multiplier: 2 }
+      }
+      post :trigger_reindexing, params: params
 
       expect(controller).to set_flash[:notice].to include('reindexing triggered')
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expect(response).to redirect_to expected_redirect
     end
 
     it 'does not create a reindexing task if there is another one' do
-      allow(Elastic::ReindexingTask).to receive(:current).and_return(build(:elastic_reindexing_task))
+      allow(Search::Elastic::ReindexingTask).to receive(:current).and_return(build(:elastic_reindexing_task))
 
-      post :trigger_reindexing, params: { elastic_reindexing_task: { elasticsearch_max_slices_running: 60, elasticsearch_slice_multiplier: 2 } }
+      params = {
+        search_elastic_reindexing_task: { elasticsearch_max_slices_running: 60, elasticsearch_slice_multiplier: 2 }
+      }
+      post :trigger_reindexing, params: params
 
       expect(controller).to set_flash[:warning].to include('already in progress')
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expect(response).to redirect_to expected_redirect
     end
 
     it 'does not create a reindexing task if a required param is nil' do
-      post :trigger_reindexing, params: { elastic_reindexing_task: { elasticsearch_max_slices_running: nil, elasticsearch_slice_multiplier: 2 } }
+      params = {
+        search_elastic_reindexing_task: { elasticsearch_max_slices_running: nil, elasticsearch_slice_multiplier: 2 }
+      }
+      post :trigger_reindexing, params: params
 
       expect(controller).to set_flash[:alert].to include('Elasticsearch reindexing was not started')
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expect(response).to redirect_to expected_redirect
     end
   end
 
@@ -65,7 +81,9 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       expect(task.reload.delete_original_index_at).to be_nil
       expect(controller).to set_flash[:notice].to include('deletion is canceled')
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-reindexing')
+      expect(response).to redirect_to expected_redirect
     end
   end
 
@@ -79,7 +97,8 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
     it 'deletes the migration record and drops the halted cache' do
       allow(Elastic::MigrationRecord).to receive(:new).and_call_original
-      allow(Elastic::MigrationRecord).to receive(:new).with(version: migration.version, name: migration.name, filename: migration.filename).and_return(migration)
+      allow(Elastic::MigrationRecord).to receive(:new)
+        .with(version: migration.version, name: migration.name, filename: migration.filename).and_return(migration)
       allow(Elastic::DataMigrationService).to receive(:migration_halted?).and_return(false)
       allow(Elastic::DataMigrationService).to receive(:migration_halted?).with(migration).and_return(true, false)
       expect(Elastic::DataMigrationService.halted_migrations?).to be_truthy
@@ -88,7 +107,9 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
 
       expect(Elastic::DataMigrationService.halted_migrations?).to be_falsey
       expect(controller).to set_flash[:notice].to include('Migration has been scheduled to be retried')
-      expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+
+      expected_redirect = advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expect(response).to redirect_to expected_redirect
     end
   end
 end
