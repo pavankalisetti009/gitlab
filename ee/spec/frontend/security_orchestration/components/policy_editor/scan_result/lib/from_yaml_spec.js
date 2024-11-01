@@ -12,12 +12,10 @@ import {
   mockGroupApprovalSettingsScanResultObject,
   mockApprovalSettingsPermittedInvalidScanResultManifest,
   mockApprovalSettingsPermittedInvalidScanResultObject,
-  mockPolicyScopeScanResultManifest,
-  mockPolicyScopeScanResultObject,
   mockProjectFallbackClosedScanResultManifest,
   mockProjectFallbackClosedScanResultObject,
-  tooManyActionsScanResultManifest,
-  duplicateActionsScanResultManifest,
+  multipleApproverActionsScanResultManifest,
+  multipleApproverActionsScanResultObject,
   zeroActionsScanResultManifest,
   zeroActionsScanResultObject,
   mockFallbackInvalidScanResultManifest,
@@ -43,7 +41,7 @@ describe('fromYaml', () => {
       ${'without actions'}                                                | ${zeroActionsScanResultManifest}                          | ${zeroActionsScanResultObject}
       ${'with fail: closed'}                                              | ${mockProjectFallbackClosedScanResultManifest}            | ${mockProjectFallbackClosedScanResultObject}
       ${'with `approval_settings` containing permitted invalid settings'} | ${mockApprovalSettingsPermittedInvalidScanResultManifest} | ${mockApprovalSettingsPermittedInvalidScanResultObject}
-      ${'with `policy_scope` by default'}                                 | ${mockPolicyScopeScanResultManifest}                      | ${mockPolicyScopeScanResultObject}
+      ${'with multiple actions'}                                          | ${multipleApproverActionsScanResultManifest}              | ${multipleApproverActionsScanResultObject}
     `('returns the policy object for a manifest $title', ({ manifest, output }) => {
       expect(fromYaml({ manifest, validateRuleMode: true })).toStrictEqual(output);
     });
@@ -53,8 +51,6 @@ describe('fromYaml', () => {
     it.each`
       title                              | manifest
       ${'unsupported fallback behavior'} | ${mockFallbackInvalidScanResultManifest}
-      ${'more than two actions'}         | ${tooManyActionsScanResultManifest}
-      ${'duplicate action types'}        | ${duplicateActionsScanResultManifest}
       ${'an unsupported attribute'}      | ${unsupportedManifest}
       ${'colliding self excluded keys'}  | ${collidingKeysScanResultManifest}
     `('returns the error object for a policy with $title', ({ manifest }) => {

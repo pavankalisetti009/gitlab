@@ -49,10 +49,6 @@ describe('Scan result policy actions', () => {
       .mockReturnValue(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter);
   });
 
-  afterEach(() => {
-    window.gon = {};
-  });
-
   const findApprovalsInput = () => wrapper.findByTestId('approvals-required-input');
   const findAvailableTypeListBox = () => wrapper.findByTestId('available-types');
   const findApproverAction = () => wrapper.findComponent(ApproverAction);
@@ -121,7 +117,7 @@ describe('Scan result policy actions', () => {
 
   describe('groups', () => {
     beforeEach(() => {
-      createWrapper({ provide: { existingPolicy: null, namespaceType: 'group' } });
+      createWrapper({ provide: { namespaceType: 'group', actionApprovers: [] } });
     });
 
     it('selects group approvers', async () => {
