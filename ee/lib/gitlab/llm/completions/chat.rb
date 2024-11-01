@@ -178,6 +178,10 @@ module Gitlab
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
           Gitlab::AiGateway.push_feature_flag(:ai_build_reader_for_chat, user)
+
+          return unless Feature.enabled?(:ci_editor_tool_removed, user)
+
+          Gitlab::AiGateway.push_feature_flag(:ci_editor_tool_removed, user)
         end
       end
     end
