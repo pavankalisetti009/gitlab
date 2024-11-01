@@ -69,9 +69,7 @@ RSpec.describe SnippetsFinder do
               private_project_snippet
             )
         end
-      end
 
-      [:guest, :reporter, :developer, :maintainer].each do |role|
         it 'returns all the authorized project snippets and authored personal ones' do
           project.add_role(user, role)
           other_project.add_role(user, role)
