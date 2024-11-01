@@ -7,7 +7,7 @@ import {
   BRAND_ORANGE_03,
 } from '@gitlab/ui/src/tokens/build/js/tokens';
 
-import CircularProgressBar from 'ee/vue_shared/components/circular_progress_bar/circular_progress_bar.vue';
+import CircularProgressBar from 'ee/pages/projects/learn_gitlab/components/circular_progress_bar/circular_progress_bar.vue';
 
 describe('Learn GitLab', () => {
   let wrapper;

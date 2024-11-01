@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import Cookies from '~/lib/utils/cookies';
 import { visitUrl } from '~/lib/utils/url_utility';
-import CircularProgressBar from 'ee/vue_shared/components/circular_progress_bar/circular_progress_bar.vue';
+import CircularProgressBar from 'ee/pages/projects/learn_gitlab/components/circular_progress_bar/circular_progress_bar.vue';
 import LearnGitlab from 'ee/pages/projects/learn_gitlab/components/learn_gitlab.vue';
 import eventHub from '~/invite_members/event_hub';
 import { INVITE_MODAL_OPEN_COOKIE } from 'ee/pages/projects/learn_gitlab/constants';
