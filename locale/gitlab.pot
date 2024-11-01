@@ -34889,9 +34889,6 @@ msgstr ""
 msgid "MlModelRegistry|Create model version"
 msgstr ""
 
-msgid "MlModelRegistry|Create model, version & import artifacts"
-msgstr ""
-
 msgid "MlModelRegistry|Create new version"
 msgstr ""
 
@@ -34934,6 +34931,9 @@ msgstr ""
 msgid "MlModelRegistry|Drop to start upload"
 msgstr ""
 
+msgid "MlModelRegistry|Edit"
+msgstr ""
+
 msgid "MlModelRegistry|Edit model"
 msgstr ""
 
@@ -34949,22 +34949,13 @@ msgstr ""
 msgid "MlModelRegistry|Enter a model version description"
 msgstr ""
 
-msgid "MlModelRegistry|Enter a semantic version"
-msgstr ""
-
 msgid "MlModelRegistry|Enter a semantic version."
 msgstr ""
 
 msgid "MlModelRegistry|Enter a subfolder name to organize your artifacts."
 msgstr ""
 
-msgid "MlModelRegistry|Enter a version description"
-msgstr ""
-
 msgid "MlModelRegistry|Enter some description"
-msgstr ""
-
-msgid "MlModelRegistry|Example: 1.0.0"
 msgstr ""
 
 msgid "MlModelRegistry|Example: my-model"
@@ -35030,9 +35021,6 @@ msgstr ""
 msgid "MlModelRegistry|Model deleted successfully"
 msgstr ""
 
-msgid "MlModelRegistry|Model has been created but version or artifacts could not be uploaded. Try creating model version."
-msgstr ""
-
 msgid "MlModelRegistry|Model name"
 msgstr ""
 
@@ -35051,13 +35039,7 @@ msgstr ""
 msgid "MlModelRegistry|Must be a semantic version."
 msgstr ""
 
-msgid "MlModelRegistry|Must be a semantic version. Example: 1.0.0"
-msgstr ""
-
 msgid "MlModelRegistry|Must be a semantic version. Latest version is %{latestVersion}"
-msgstr ""
-
-msgid "MlModelRegistry|Must be a semantic version. Leave blank to skip version creation."
 msgstr ""
 
 msgid "MlModelRegistry|Must be unique. May not contain spaces."
@@ -35148,12 +35130,6 @@ msgid "MlModelRegistry|Version card"
 msgstr ""
 
 msgid "MlModelRegistry|Version created %{timeAgo} by %{author}"
-msgstr ""
-
-msgid "MlModelRegistry|Version description"
-msgstr ""
-
-msgid "MlModelRegistry|Version is a valid semantic version."
 msgstr ""
 
 msgid "MlModelRegistry|Version is not a valid semantic version."
