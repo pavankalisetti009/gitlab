@@ -8,7 +8,7 @@ module API
 
     allow_access_with_scope :ai_features
 
-    AVAILABLE_RESOURCES = %w[issue epic group project merge_request commit build].freeze
+    AVAILABLE_RESOURCES = %w[issue epic group project merge_request commit build work_item].freeze
     RESOURCE_TYPE_MAPPING = { 'build' => 'Ci::Build' }.freeze
 
     before do
