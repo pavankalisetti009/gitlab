@@ -9,6 +9,7 @@ import CreateWorkItem from '~/work_items/components/create_work_item.vue';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
+import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
@@ -22,7 +23,7 @@ import {
 
 Vue.use(VueApollo);
 
-describe('Create work item component', () => {
+describe('EE Create work item component', () => {
   let wrapper;
   let mockApollo;
   const workItemTypeEpicId =
@@ -43,6 +44,7 @@ describe('Create work item component', () => {
 
   const findHealthStatusWidget = () => wrapper.findComponent(WorkItemHealthStatus);
   const findIterationWidget = () => wrapper.findComponent(WorkItemIteration);
+  const findWeightWidget = () => wrapper.findComponent(WorkItemWeight);
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
   const findRolledupDatesWidget = () => wrapper.findComponent(WorkItemRolledupDates);
   const findSelect = () => wrapper.findComponent(GlFormSelect);
@@ -85,6 +87,7 @@ describe('Create work item component', () => {
         fullPath: 'full-path',
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
+        hasIssueWeightsFeature: true,
       },
     });
   };
@@ -116,7 +119,7 @@ describe('Create work item component', () => {
     gon.current_user_avatar_url = mockCurrentUser.avatar_url;
   });
 
-  describe('Create work item widgets for epic work item type', () => {
+  describe('Create work item widgets for Epic work item type', () => {
     beforeEach(async () => {
       await initialiseComponentAndSelectWorkItem();
     });
@@ -142,8 +145,16 @@ describe('Create work item component', () => {
       });
     });
 
+    it('renders the work item health status widget', () => {
+      expect(findHealthStatusWidget().exists()).toBe(true);
+    });
+
     it('renders the work item iteration widget', () => {
       expect(findIterationWidget().exists()).toBe(true);
+    });
+
+    it('renders the work item weight widget', () => {
+      expect(findWeightWidget().exists()).toBe(true);
     });
   });
 });

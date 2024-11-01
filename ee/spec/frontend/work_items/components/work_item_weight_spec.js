@@ -16,7 +16,7 @@ describe('WorkItemWeight component', () => {
   let wrapper;
 
   const workItemId = 'gid://gitlab/WorkItem/1';
-  const workItemType = 'Task';
+  const defaultWorkItemType = 'Task';
 
   const findHeader = () => wrapper.find('h3');
   const findEditButton = () => wrapper.find('[data-testid="edit-weight"]');
@@ -29,17 +29,24 @@ describe('WorkItemWeight component', () => {
 
   const createComponent = ({
     canUpdate = true,
+    fullPath = 'gitlab-org/gitlab',
     hasIssueWeightsFeature = true,
     isEditing = false,
-    weight,
+    weight = null,
+    editable = true,
     workItemIid = '1',
+    workItemType = defaultWorkItemType,
     mutationHandler = jest.fn().mockResolvedValue(updateWorkItemMutationResponse),
   } = {}) => {
     wrapper = mountExtended(WorkItemWeight, {
       apolloProvider: createMockApollo([[updateWorkItemMutation, mutationHandler]]),
       propsData: {
         canUpdate,
-        weight,
+        fullPath,
+        widget: {
+          weight,
+          widgetDefinition: { editable },
+        },
         workItemId,
         workItemIid,
         workItemType,
@@ -54,13 +61,25 @@ describe('WorkItemWeight component', () => {
     }
   };
 
-  it('renders nothing if license not available', async () => {
-    createComponent({ hasIssueWeightsFeature: false });
+  describe('rendering widget', () => {
+    it('renders nothing if license not available', async () => {
+      createComponent({ hasIssueWeightsFeature: false });
 
-    await nextTick();
+      await nextTick();
 
-    expect(findHeader().exists()).toBe(false);
-    expect(findForm().exists()).toBe(false);
+      expect(findHeader().exists()).toBe(false);
+      expect(findForm().exists()).toBe(false);
+    });
+
+    // 'editable' property means if it's available for that work item type
+    it('renders nothing if not editable', async () => {
+      createComponent({ editable: false });
+
+      await nextTick();
+
+      expect(findHeader().exists()).toBe(false);
+      expect(findForm().exists()).toBe(false);
+    });
   });
 
   describe('label', () => {
