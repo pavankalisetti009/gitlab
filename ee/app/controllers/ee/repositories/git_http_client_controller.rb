@@ -93,7 +93,7 @@ module EE
         def out_of_date_redirect?
           return false unless project
 
-          git_upload_pack_request? && repository_out_of_date?(project)
+          info_refs_request? && git_upload_pack_request? && repository_out_of_date?(project)
         end
 
         private
