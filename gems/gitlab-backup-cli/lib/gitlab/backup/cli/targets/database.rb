@@ -53,7 +53,7 @@ module Gitlab
 
               raise DatabaseBackupError.new(active_record_config, dump_file_name) unless success
 
-              report_success(success)
+              report_finish_status(success)
             end
           ensure
             if multiple_databases?
@@ -72,8 +72,6 @@ module Gitlab
           end
 
           def restore(destination_dir)
-            @errors = []
-
             base_models_for_backup.each do |database_name, _|
               backup_connection = ::Backup::DatabaseConnection.new(database_name)
 
@@ -94,11 +92,14 @@ module Gitlab
                 return false
               end
 
-              Gitlab::Backup::Cli::Output.warning('Removing all tables.')
+              Gitlab::Backup::Cli::Output.warning("Removing all tables from #{database_name}.")
 
               # Drop all tables Load the schema to ensure we don't have any newer tables
               # hanging out from a failed upgrade
               drop_tables(database_name)
+
+              tracked_errors = []
+
               pg_env = backup_connection.database_configuration.pg_env_variables
               success = with_transient_pg_env(pg_env) do
                 pipeline = Gitlab::Backup::Cli::Shell::Pipeline.new(
@@ -109,10 +110,18 @@ module Gitlab
                 Gitlab::Backup::Cli::Output.print_info "Restoring PostgreSQL database #{database} ... "
 
                 pipeline_status = pipeline.run!(input: db_file_name)
+                tracked_errors = pipeline_status.stderr
+
                 pipeline_status.success?
               end
 
-              report_success(success)
+              unless tracked_errors.empty?
+                Gitlab::Backup::Cli::Output.error "------ BEGIN ERRORS -----"
+                Gitlab::Backup::Cli::Output.print(tracked_errors.join, stderr: true)
+                Gitlab::Backup::Cli::Output.error "------ END ERRORS -------"
+              end
+
+              report_finish_status(success)
 
               raise DatabaseBackupError, 'Restore failed' unless success
             end
@@ -144,8 +153,8 @@ module Gitlab
             Utils::Compression.decompression_command.cmd_args.flatten.first
           end
 
-          def report_success(success)
-            Gitlab::Backup::Cli::Output.print_tag(success ? :success : :failure)
+          def report_finish_status(status)
+            Gitlab::Backup::Cli::Output.print_tag(status ? :success : :failure)
           end
 
           def drop_tables(database_name)
