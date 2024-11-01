@@ -58,7 +58,7 @@ describe('CountryOrRegionSelector', () => {
       });
 
       it('adds track error class for country selector', () => {
-        expect(findFormInput('country-dropdown').attributes('class')).toContain('js-track-error');
+        expect(findFormInput('country-dropdown').props('selectClass')).toContain('js-track-error');
       });
     });
   });
