@@ -92,7 +92,6 @@ module EE
       attributes = %i[
         prevent_merge_without_jira_issue
         cve_id_request_enabled
-        duo_features_enabled
         product_analytics_data_collector_host
         cube_api_base_url
         cube_api_key
@@ -105,6 +104,10 @@ module EE
 
       if project&.licensed_feature_available?(:security_orchestration_policies)
         attributes << :spp_repository_pipeline_access
+      end
+
+      unless project&.project_setting&.duo_features_enabled_locked?
+        attributes << :duo_features_enabled
       end
 
       super + attributes
