@@ -33,6 +33,14 @@ RSpec.describe Issues::BuildService, feature_category: :team_planning do
 
         expect(issue.description).to eq("Work hard, play hard!\nTravailler dur, jouer dur!")
       end
+
+      context 'when passed description in the params is nil' do
+        it 'fills in the template, followed by the query parameter, in the description' do
+          issue = build_issue(description: nil)
+
+          expect(issue.description).to eq("Work hard, play hard!\n")
+        end
+      end
     end
   end
 
