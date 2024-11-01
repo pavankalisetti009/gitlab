@@ -1,5 +1,5 @@
 <script>
-import { isEmpty, uniqBy } from 'lodash';
+import { isEmpty } from 'lodash';
 import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
@@ -17,12 +17,14 @@ import {
   ADD_RULE_LABEL,
   RULES_LABEL,
   MAX_ALLOWED_RULES_LENGTH,
+  MAX_ALLOWED_APPROVER_ACTION_LENGTH,
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ScanFilterSelector from '../scan_filter_selector.vue';
 import SettingsSection from './settings/settings_section.vue';
 import ActionSection from './action/action_section.vue';
+import BotCommentAction from './action/bot_message_action.vue';
 import RuleSection from './rule/rule_section.vue';
 import FallbackSection from './fallback_section.vue';
 import { CLOSED } from './constants';
@@ -79,9 +81,16 @@ export default {
     settingErrorDescription: s__(
       "SecurityOrchestration|This policy doesn't contain any actions or override project approval settings. You cannot create an empty policy.",
     ),
+    approverActionTooltip: s__(
+      'SecurityOrchestration|Merge request approval policies allow a maximum of 5 approver actions.',
+    ),
+    botActionTooltip: s__(
+      'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
+    ),
   },
   components: {
     ActionSection,
+    BotCommentAction,
     DimDisableContainer,
     FallbackSection,
     GlAlert,
@@ -122,6 +131,7 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   inject: [
+    'actionApprovers',
     'disableScanPolicyUpdate',
     'namespaceId',
     'namespacePath',
@@ -167,6 +177,10 @@ export default {
 
     const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
 
+    const existingApprovers = isEmpty(this.scanResultPolicyApprovers)
+      ? this.actionApprovers
+      : [this.scanResultPolicyApprovers];
+
     return {
       errors: { action: [] },
       invalidBranches: [],
@@ -178,7 +192,7 @@ export default {
         'scan-result-policy-editor',
       ),
       mode: EDITOR_MODE_RULE,
-      existingApprovers: this.scanResultPolicyApprovers,
+      existingApprovers,
       yamlEditorValue,
     };
   },
@@ -193,23 +207,26 @@ export default {
 
       return this.errors;
     },
-    actionsForRuleMode() {
-      const actions = this.policy.actions || [];
+    actions() {
+      const actions = this.policy?.actions || [];
+      const hasBotAction = actions.some(({ type }) => type === BOT_MESSAGE_TYPE);
       // If the yaml does not have a bot message action, then the bot message will be created as if
       // the bot message action exists and is enabled. Thus, we add it into the actions for rule
       // mode so the user can remove it
-      const policiesWithBotMessageAction = uniqBy(
-        [...actions, buildAction(BOT_MESSAGE_TYPE)],
-        'type',
-      );
-      // If the bot message action is disabled, it should not appear in rule mode
-      return policiesWithBotMessageAction.filter(
-        (action) => action.type !== BOT_MESSAGE_TYPE || action.enabled,
-      );
+      if (hasBotAction) {
+        return actions;
+      }
+
+      return [...actions, buildAction(BOT_MESSAGE_TYPE)];
     },
-    availableActionListboxItems() {
-      const usedActionTypes = this.actionsForRuleMode.map((action) => action.type);
-      return ACTION_LISTBOX_ITEMS.filter((item) => !usedActionTypes.includes(item.value));
+    approversActions() {
+      return this.actions
+        .filter(({ type }) => type === REQUIRE_APPROVAL_TYPE)
+        .slice(0, MAX_ALLOWED_APPROVER_ACTION_LENGTH);
+    },
+    botActions() {
+      const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
+      return botActions.filter(({ enabled }) => enabled);
     },
     fallbackBehaviorSetting() {
       return this.policy.fallback_behavior?.fail || CLOSED;
@@ -298,42 +315,48 @@ export default {
     },
   },
   methods: {
+    getExistingApprover(index) {
+      return this.existingApprovers[index] || {};
+    },
     ruleHasBranchesProperty(rule) {
       return BRANCHES_KEY in rule;
     },
     addAction(type) {
-      if (type === BOT_MESSAGE_TYPE && this.hasDisabledBotMessageAction) {
-        // If the bot message action is in the yaml and is disabled, then we do not want to add
-        // a new bot message action, but instead enable the existing one
-        this.updateAction(buildAction(BOT_MESSAGE_TYPE));
+      if (type === REQUIRE_APPROVAL_TYPE) {
+        this.addApproverAction();
       } else {
-        const newAction = buildAction(type);
-        this.policy = {
-          ...this.policy,
-          actions: this.policy.actions ? [...this.policy.actions, newAction] : [newAction],
-        };
-        this.updateYamlEditorValue(this.policy);
+        this.addBotAction();
       }
     },
-    removeApproverAction() {
-      const { actions, ...newPolicy } = this.policy;
-      const updatedActions = actions.filter((action) => action.type !== REQUIRE_APPROVAL_TYPE);
-      this.policy = { ...newPolicy, ...(updatedActions.length ? { actions: updatedActions } : {}) };
+    addApproverAction() {
+      const lastApproverActionIndex = this.policy.actions.findLastIndex(
+        ({ type }) => type === REQUIRE_APPROVAL_TYPE,
+      );
+      const nextIndex = lastApproverActionIndex + 1;
+      this.policy.actions.splice(nextIndex, 0, buildAction(REQUIRE_APPROVAL_TYPE));
+    },
+    addBotAction() {
+      if (this.hasDisabledBotMessageAction) {
+        this.updateBotAction(buildAction(BOT_MESSAGE_TYPE));
+      } else {
+        this.policy.actions.push(buildAction(BOT_MESSAGE_TYPE));
+      }
+    },
+    removeApproverAction(index) {
+      this.policy.actions?.splice(index, 1);
       this.updateYamlEditorValue(this.policy);
-      this.updatePolicyApprovers({});
+      this.updatePolicyApprovers({}, index);
     },
-    updateAction(values) {
-      const actionType = values.type;
+    updateAction(values, index) {
+      this.policy.actions.splice(index, 1, values);
+      this.errors.action = [];
+      this.updateYamlEditorValue(this.policy);
+    },
+    updateBotAction(values) {
       const actions = this.policy.actions || [];
-      const indexOfActionToUpdate = actions.findIndex((a) => a.type === actionType);
+      const indexOfActionToUpdate = actions.findIndex((a) => a.type === BOT_MESSAGE_TYPE);
 
-      if (indexOfActionToUpdate >= 0) {
-        actions.splice(indexOfActionToUpdate, 1, values);
-      } else {
-        actions.push(values);
-      }
-
-      this.policy.actions = actions;
+      actions.splice(indexOfActionToUpdate, 1, values);
       this.errors.action = [];
       this.updateYamlEditorValue(this.policy);
     },
@@ -404,13 +427,14 @@ export default {
         }
       }
     },
-    updatePolicyApprovers(values) {
-      this.existingApprovers = values;
+    updatePolicyApprovers(values, index) {
+      this.existingApprovers[index] = values;
     },
     invalidForRuleMode() {
-      const { actions, rules } = this.policy;
-      const approvalAction = actions?.find((action) => action.type === REQUIRE_APPROVAL_TYPE);
-      const invalidApprovers = approversOutOfSync(approvalAction, this.existingApprovers);
+      const { rules } = this.policy;
+      const invalidApprovers = this.existingApprovers.some((existingApprovers, index) =>
+        approversOutOfSync(this.approversActions[index], existingApprovers),
+      );
 
       return (
         invalidApprovers ||
@@ -422,6 +446,20 @@ export default {
         invalidVulnerabilityAge(rules) ||
         invalidVulnerabilityAttributes(rules)
       );
+    },
+    shouldDisableActionSelector(filter) {
+      if (filter === BOT_MESSAGE_TYPE) {
+        return this.botActions.length > 0;
+      }
+
+      return this.approversActions.length >= MAX_ALLOWED_APPROVER_ACTION_LENGTH;
+    },
+    customFilterSelectorTooltip(filter) {
+      if (filter.value === BOT_MESSAGE_TYPE) {
+        return this.$options.i18n.botActionTooltip;
+      }
+
+      return this.$options.i18n.approverActionTooltip;
     },
   },
 };
@@ -488,26 +526,35 @@ export default {
         </template>
 
         <action-section
-          v-for="(action, index) in actionsForRuleMode"
-          :key="action.id"
+          v-for="(action, index) in approversActions"
+          :key="`${action.id}_${index}`"
           :data-testid="`action-${index}`"
           class="gl-mb-4"
           :action-index="index"
           :init-action="action"
           :errors="actionError.action"
-          :existing-approvers="existingApprovers"
+          :existing-approvers="getExistingApprover(index)"
           @error="handleParsingError"
-          @updateApprovers="updatePolicyApprovers"
-          @changed="updateAction"
-          @remove="removeApproverAction"
+          @updateApprovers="updatePolicyApprovers($event, index)"
+          @changed="updateAction($event, index)"
+          @remove="removeApproverAction(index)"
+        />
+
+        <bot-comment-action
+          v-for="action in botActions"
+          :key="action.id"
+          class="gl-mb-4"
+          :init-action="action"
+          @changed="updateBotAction($event)"
         />
 
         <scan-filter-selector
-          v-if="availableActionListboxItems.length"
           class="gl-w-full"
           :button-text="$options.i18n.ADD_ACTION_LABEL"
           :header="$options.i18n.filterHeaderText"
-          :filters="availableActionListboxItems"
+          :custom-filter-tooltip="customFilterSelectorTooltip"
+          :should-disable-filter="shouldDisableActionSelector"
+          :filters="$options.ACTION_LISTBOX_ITEMS"
           @select="addAction"
         />
       </dim-disable-container>

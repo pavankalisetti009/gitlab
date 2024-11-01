@@ -1,18 +1,14 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { ACTION_AND_LABEL } from '../../constants';
-import { REQUIRE_APPROVAL_TYPE, DISABLED_BOT_MESSAGE_ACTION } from '../lib';
 import ApproverAction from './approver_action.vue';
-import BotMessageAction from './bot_message_action.vue';
 
 export default {
   ACTION_AND_LABEL,
-  DISABLED_BOT_MESSAGE_ACTION,
   name: 'ActionSection',
   components: {
     GlButton,
     ApproverAction,
-    BotMessageAction,
   },
   props: {
     actionIndex: {
@@ -34,20 +30,13 @@ export default {
     },
   },
   computed: {
-    isApproverAction() {
-      return this.initAction.type === REQUIRE_APPROVAL_TYPE;
-    },
     isFirstAction() {
       return this.actionIndex === 0;
     },
   },
   methods: {
     remove() {
-      if (this.isApproverAction) {
-        this.$emit('remove');
-      } else {
-        this.$emit('changed', this.$options.DISABLED_BOT_MESSAGE_ACTION);
-      }
+      this.$emit('remove');
     },
   },
 };
@@ -66,7 +55,6 @@ export default {
     <div class="gl-flex gl-w-full">
       <div class="gl-flex-1">
         <approver-action
-          v-if="isApproverAction"
           :init-action="initAction"
           :errors="errors"
           :existing-approvers="existingApprovers"
@@ -74,7 +62,6 @@ export default {
           @updateApprovers="$emit('updateApprovers', $event)"
           @changed="$emit('changed', $event)"
         />
-        <bot-message-action v-else :init-action="initAction" />
       </div>
       <div class="security-policies-bg-subtle">
         <gl-button

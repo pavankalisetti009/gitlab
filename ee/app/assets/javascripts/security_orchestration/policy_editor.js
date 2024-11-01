@@ -31,6 +31,7 @@ export default (el, namespaceType) => {
     scanResultApprovers,
     softwareLicenses,
     timezones,
+    actionApprovers,
     maxScanExecutionPolicyActions,
   } = el.dataset;
 
@@ -54,6 +55,7 @@ export default (el, namespaceType) => {
   }
 
   let scanResultPolicyApprovers;
+  let parsedActionApprovers;
 
   try {
     scanResultPolicyApprovers = decomposeApprovers(
@@ -63,6 +65,12 @@ export default (el, namespaceType) => {
     );
   } catch {
     scanResultPolicyApprovers = {};
+  }
+
+  try {
+    parsedActionApprovers = JSON.parse(actionApprovers);
+  } catch {
+    parsedActionApprovers = [];
   }
 
   try {
@@ -80,6 +88,7 @@ export default (el, namespaceType) => {
     el,
     apolloProvider,
     provide: {
+      actionApprovers: parsedActionApprovers,
       createAgentHelpPath,
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       globalGroupApproversEnabled: parseBoolean(globalGroupApproversEnabled),

@@ -69,6 +69,18 @@ export const mockDefaultBranchesScanResultObject = {
   },
 };
 
+export const mockDefaultBranchesScanResultObjectWithoutBotAction = {
+  ...mockDefaultBranchesScanResultObject,
+  actions: [
+    {
+      type: 'require_approval',
+      approvals_required: 1,
+      user_approvers: ['the.one'],
+      id: actionId,
+    },
+  ],
+};
+
 export const mockDeprecatedScanResultManifest = `type: scan_result_policy
 name: critical vulnerability CS approvals
 description: This policy enforces critical vulnerability CS approvals
@@ -126,21 +138,38 @@ export const zeroActionsScanResultObject = {
   ],
 };
 
-export const tooManyActionsScanResultManifest = zeroActionsScanResultManifest.concat(`
+export const multipleApproverActionsScanResultManifest = zeroActionsScanResultManifest.concat(`
 actions:
   - type: require_approval
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-  - type: other_type
+  - type: require_approval
+    approvals_required: 1
 `);
 
-export const duplicateActionsScanResultManifest = zeroActionsScanResultManifest.concat(`actions:
-  - type: require_approval
-    approvals_required: 1
-  - type: require_approval
-    approvals_required: 1
-`);
+export const multipleApproverActionsScanResultObject = {
+  type: 'approval_policy',
+  name: 'critical vulnerability CS approvals',
+  description: 'This policy enforces critical vulnerability CS approvals',
+  enabled: true,
+  rules: [
+    {
+      type: 'scan_finding',
+      branches: [],
+      scanners: ['container_scanning'],
+      vulnerabilities_allowed: 1,
+      severity_levels: ['critical'],
+      vulnerability_states: ['newly_detected'],
+      id: ruleId,
+    },
+  ],
+  actions: [
+    { type: 'require_approval', approvals_required: 1, id: actionId },
+    { type: 'send_bot_message', enabled: true, id: actionId },
+    { type: 'require_approval', approvals_required: 1, id: actionId },
+  ],
+};
 
 export const enabledSendBotMessageActionScanResultManifest = zeroActionsScanResultManifest.concat(`
 actions:

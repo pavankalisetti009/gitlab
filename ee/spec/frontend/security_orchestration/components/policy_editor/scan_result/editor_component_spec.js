@@ -14,6 +14,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/constants';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
+import BotCommentAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/bot_message_action.vue';
 import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
@@ -36,6 +37,7 @@ import {
 import {
   mockDefaultBranchesScanResultManifest,
   mockDefaultBranchesScanResultObject,
+  mockDefaultBranchesScanResultObjectWithoutBotAction,
   mockDeprecatedScanResultManifest,
   mockDeprecatedScanResultObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
@@ -109,6 +111,7 @@ describe('EditorComponent', () => {
         ...propsData,
       },
       provide: {
+        actionApprovers: [],
         disableScanPolicyUpdate: false,
         policyEditorEmptyStateSvgPath,
         namespaceId: 1,
@@ -155,6 +158,8 @@ describe('EditorComponent', () => {
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
   const findEmptyActionsAlert = () => wrapper.findByTestId('empty-actions-alert');
   const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
+  const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
+  const findBotCommentActions = () => wrapper.findAllComponents(BotCommentAction);
 
   const verifiesParsingError = () => {
     expect(findPolicyEditorLayout().props('hasParsingError')).toBe(true);
@@ -221,8 +226,10 @@ describe('EditorComponent', () => {
         expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
           mockDefaultBranchesScanResultManifest,
         );
+
         expect(findAllRuleSections()).toHaveLength(1);
-        expect(findAllActionSections()).toHaveLength(2);
+        expect(findAllActionSections()).toHaveLength(1);
+        expect(findBotCommentActions()).toHaveLength(1);
       });
 
       it('displays a scan result policy', () => {
@@ -232,7 +239,8 @@ describe('EditorComponent', () => {
           mockDeprecatedScanResultManifest,
         );
         expect(findAllRuleSections()).toHaveLength(1);
-        expect(findAllActionSections()).toHaveLength(2);
+        expect(findAllActionSections()).toHaveLength(1);
+        expect(findBotCommentActions()).toHaveLength(1);
       });
     });
   });
@@ -327,7 +335,8 @@ describe('EditorComponent', () => {
           it('displays the approver action and the add action button on the group-level', () => {
             factory({ provide: { namespaceType } });
             expect(findActionSection().exists()).toBe(true);
-            expect(findAllActionSections()).toHaveLength(2);
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(findBotCommentActions()).toHaveLength(1);
           });
         });
 
@@ -344,28 +353,37 @@ describe('EditorComponent', () => {
           });
 
           it('displays a bot message action section if there is no bot message action in the policy', () => {
-            factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
-            const actionSections = findAllActionSections();
-            expect(actionSections).toHaveLength(2);
-            expect(actionSections.at(1).props('initAction')).toEqual(
-              expect.objectContaining({ type: BOT_MESSAGE_TYPE, enabled: true }),
-            );
+            factoryWithExistingPolicy({
+              policy: mockDefaultBranchesScanResultObjectWithoutBotAction,
+            });
+            expect(findBotCommentActions()).toHaveLength(1);
           });
         });
       });
 
       describe('add', () => {
-        it('hides the scan filter selector by default, when all action types are used', () => {
+        it('always display rule selector with approver option, when all bot message is selected', () => {
           factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
-          expect(findScanFilterSelector().exists()).toBe(false);
+          expect(findScanFilterSelector().exists()).toBe(true);
+          expect(
+            findScanFilterSelector().props('customFilterTooltip')({ value: BOT_MESSAGE_TYPE }),
+          ).toBe('Merge request approval policies allow a maximum 1 bot message action.');
+          expect(findScanFilterSelector().props('filters')).toEqual([
+            { value: REQUIRE_APPROVAL_TYPE, text: 'Require Approvers' },
+            { value: BOT_MESSAGE_TYPE, text: 'Send bot message' },
+          ]);
         });
 
         it('shows the scan filter selector if there are action types not shown', async () => {
           factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
           await findAllActionSections().at(0).vm.$emit('remove');
           expect(findScanFilterSelector().exists()).toBe(true);
+          expect(
+            findScanFilterSelector().props('customFilterTooltip')({ value: REQUIRE_APPROVAL_TYPE }),
+          ).toBe('Merge request approval policies allow a maximum of 5 approver actions.');
           expect(findScanFilterSelector().props('filters')).toEqual([
             { text: 'Require Approvers', value: REQUIRE_APPROVAL_TYPE },
+            { text: 'Send bot message', value: BOT_MESSAGE_TYPE },
           ]);
         });
 
@@ -381,20 +399,59 @@ describe('EditorComponent', () => {
             expect.objectContaining(disabledAction),
           ]);
           await findScanFilterSelector().vm.$emit('select', BOT_MESSAGE_TYPE);
-          expect(findAllActionSections()).toHaveLength(1);
+          expect(findAllActionSections()).toHaveLength(0);
+          expect(findBotCommentActions()).toHaveLength(1);
           const { id, ...action } = buildBotMessageAction();
           expect(findPolicyEditorLayout().props('policy').actions).toEqual([
             expect.objectContaining(action),
           ]);
+        });
+
+        it('adds multiple approval rules', async () => {
+          factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
+
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findBotCommentActions()).toHaveLength(1);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+
+          expect(findAllActionSections()).toHaveLength(2);
+          expect(findBotCommentActions()).toHaveLength(1);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+
+          expect(findAllActionSections()).toHaveLength(3);
+          expect(findBotCommentActions()).toHaveLength(1);
+        });
+
+        it('add maximum of 5 approval actions', async () => {
+          factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
+
+          expect(findAllActionSections()).toHaveLength(1);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(2);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(3);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(4);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(5);
+
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(5);
         });
       });
 
       describe('remove', () => {
         it('removes the approver action', async () => {
           factory();
-          expect(findAllActionSections()).toHaveLength(2);
-          await findActionSection().vm.$emit('remove');
           expect(findAllActionSections()).toHaveLength(1);
+          await findActionSection().vm.$emit('remove');
+          expect(findAllActionSections()).toHaveLength(0);
           expect(findPolicyEditorLayout().props('policy').actions).not.toContainEqual(
             buildApprovalAction(),
           );
@@ -402,9 +459,11 @@ describe('EditorComponent', () => {
 
         it('disables the bot message action', async () => {
           factory();
-          expect(findAllActionSections()).toHaveLength(2);
-          await findActionSection().vm.$emit('changed', DISABLED_BOT_MESSAGE_ACTION);
           expect(findAllActionSections()).toHaveLength(1);
+          expect(findBotCommentActions()).toHaveLength(1);
+          await findBotCommentAction().vm.$emit('changed', DISABLED_BOT_MESSAGE_ACTION);
+          expect(findAllActionSections()).toHaveLength(1);
+          expect(findBotCommentActions()).toHaveLength(0);
           expect(findPolicyEditorLayout().props('policy').actions).toContainEqual(
             DISABLED_BOT_MESSAGE_ACTION,
           );
@@ -418,9 +477,10 @@ describe('EditorComponent', () => {
           );
           await findAllActionSections().at(0).vm.$emit('remove');
           await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+
           expect(removeIdsFromPolicy(findPolicyEditorLayout().props('policy')).actions).toEqual([
-            { type: BOT_MESSAGE_TYPE, enabled: true },
             { approvals_required: 1, type: REQUIRE_APPROVAL_TYPE },
+            { type: BOT_MESSAGE_TYPE, enabled: true },
           ]);
           expect(findActionSection().props('existingApprovers')).toEqual({});
         });
@@ -428,7 +488,12 @@ describe('EditorComponent', () => {
 
       describe('update', () => {
         beforeEach(() => {
-          factory();
+          factory({
+            provide: {
+              scanResultPolicyApprovers: {},
+              actionApprovers: [{ role: ['owner'] }],
+            },
+          });
         });
 
         it('updates policy action when edited', async () => {
@@ -445,12 +510,9 @@ describe('EditorComponent', () => {
         it('updates the policy approvers', async () => {
           const newApprover = ['owner'];
 
-          await findActionSection().vm.$emit('updateApprovers', {
-            ...scanResultPolicyApprovers,
-            role: newApprover,
-          });
+          await findActionSection().vm.$emit('updateApprovers', { role: newApprover });
 
-          expect(findActionSection().props('existingApprovers')).toMatchObject({
+          expect(findActionSection().props('existingApprovers')).toEqual({
             role: newApprover,
           });
         });
