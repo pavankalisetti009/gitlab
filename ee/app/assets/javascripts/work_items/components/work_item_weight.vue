@@ -7,7 +7,9 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import { newWorkItemId } from '~/work_items/utils';
 
 export default {
   inputId: 'weight-widget-input',
@@ -28,10 +30,13 @@ export default {
       required: false,
       default: false,
     },
-    weight: {
-      type: Number,
-      required: false,
-      default: null,
+    fullPath: {
+      type: String,
+      required: true,
+    },
+    widget: {
+      type: Object,
+      required: true,
     },
     workItemId: {
       type: String,
@@ -55,6 +60,9 @@ export default {
     };
   },
   computed: {
+    weight() {
+      return this.widget.weight;
+    },
     hasWeight() {
       return this.weight !== null;
     },
@@ -67,6 +75,16 @@ export default {
         label: 'item_weight',
         property: `type_${this.workItemType}`,
       };
+    },
+    createFlow() {
+      return this.workItemId === newWorkItemId(this.workItemType);
+    },
+    isWorkItemWidgetAvailable() {
+      // `editable` means if it is available for that work item type (not related to user permission)
+      return this.widget?.widgetDefinition?.editable;
+    },
+    displayWeightWidget() {
+      return this.hasIssueWeightsFeature && this.isWorkItemWidgetAvailable;
     },
   },
   methods: {
@@ -97,6 +115,24 @@ export default {
       this.isUpdating = true;
 
       this.track('updated_weight');
+
+      if (this.createFlow) {
+        this.$apollo.mutate({
+          mutation: updateNewWorkItemMutation,
+          variables: {
+            input: {
+              workItemType: this.workItemType,
+              fullPath: this.fullPath,
+              weight,
+            },
+          },
+        });
+
+        this.isUpdating = false;
+        this.isEditing = false;
+        return;
+      }
+
       this.$apollo
         .mutate({
           mutation: updateWorkItemMutation,
@@ -129,7 +165,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="hasIssueWeightsFeature" data-testid="work-item-weight">
+  <div v-if="displayWeightWidget" data-testid="work-item-weight">
     <div class="gl-flex gl-items-center gl-justify-between">
       <!-- hide header when editing, since we then have a form label. Keep it reachable for screenreader nav  -->
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">

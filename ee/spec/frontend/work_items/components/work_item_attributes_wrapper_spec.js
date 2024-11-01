@@ -12,7 +12,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   workItemResponseFactory,
   epicType,
-  issueType,
   mockParticipantWidget,
 } from 'jest/work_items/mock_data';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
@@ -120,42 +119,23 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
 
   describe('weight widget', () => {
-    describe.each`
-      description                               | editableWeightWidget | weightWidgetPresent | exists
-      ${'when widget is returned from API'}     | ${true}              | ${true}             | ${true}
-      ${'when widget is not returned from API'} | ${true}              | ${false}            | ${false}
-      ${'when widget is returned from API'}     | ${false}             | ${true}             | ${false}
-      ${'when widget is not returned from API'} | ${false}             | ${false}            | ${false}
-    `('$description', ({ weightWidgetPresent, exists, editableWeightWidget }) => {
-      it(`when the weight widget is ${editableWeightWidget ? 'editable' : 'not editable'} ${weightWidgetPresent && editableWeightWidget ? 'renders' : 'does not render'} weight component`, async () => {
-        const response = workItemResponseFactory({ weightWidgetPresent, editableWeightWidget });
-        createComponent({ workItem: response.data.workItem });
+    it('allows widget to render if it exists', async () => {
+      const response = workItemResponseFactory({ weightWidgetPresent: true });
+      createComponent({ workItem: response.data.workItem });
 
-        await waitForPromises();
+      await waitForPromises();
 
-        expect(findWorkItemWeight().exists()).toBe(exists);
-      });
+      expect(findWorkItemWeight().exists()).toBe(true);
     });
 
-    it.each`
-      workItemType | typeName   | description          | expected | editableWeightWidget
-      ${epicType}  | ${`Epic`}  | ${'does not render'} | ${false} | ${false}
-      ${issueType} | ${`Issue`} | ${'renders'}         | ${true}  | ${true}
-    `(
-      '$description WorkItemWeight when workItemType is $typeName',
-      async ({ workItemType, expected, editableWeightWidget }) => {
-        const response = workItemResponseFactory({
-          weightWidgetPresent: true,
-          workItemType,
-          editableWeightWidget,
-        });
-        createComponent({ workItem: response.data.workItem });
+    it('hides widget if data doesn"t exist', async () => {
+      const response = workItemResponseFactory({ weightWidgetPresent: false });
+      createComponent({ workItem: response.data.workItem });
 
-        await waitForPromises();
+      await waitForPromises();
 
-        expect(findWorkItemWeight().exists()).toBe(expected);
-      },
-    );
+      expect(findWorkItemWeight().exists()).toBe(false);
+    });
 
     it('emits an error event to the wrapper', async () => {
       const response = workItemResponseFactory({ weightWidgetPresent: true });

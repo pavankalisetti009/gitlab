@@ -7,10 +7,11 @@ import {
   WIDGET_TYPE_ROLLEDUP_DATES,
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_ITERATION,
+  WIDGET_TYPE_WEIGHT,
 } from '~/work_items/constants';
 import { createWorkItemQueryResponse } from 'jest/work_items/mock_data';
 
-describe('work items graphql resolvers', () => {
+describe('EE work items graphql resolvers', () => {
   describe('updateNewWorkItemCache', () => {
     let mockApolloClient;
 
@@ -130,6 +131,36 @@ describe('work items graphql resolvers', () => {
         expect(queryResult).toMatchObject({
           iteration: mockLocalIteration,
         });
+      });
+    });
+
+    describe('with weight input', () => {
+      it('updates weight if value is a number', async () => {
+        await mutate({ weight: 2 });
+
+        const queryResult = await query(WIDGET_TYPE_WEIGHT);
+        expect(queryResult).toMatchObject({ weight: 2 });
+      });
+
+      it('updates weight if value is number 0', async () => {
+        await mutate({ weight: 0 });
+
+        const queryResult = await query(WIDGET_TYPE_WEIGHT);
+        expect(queryResult).toMatchObject({ weight: 0 });
+      });
+
+      it('does not update weight if value is not changed/undefined', async () => {
+        await mutate({ weight: undefined });
+
+        const queryResult = await query(WIDGET_TYPE_WEIGHT);
+        expect(queryResult).toMatchObject({ weight: 2 });
+      });
+
+      it('updates weight if cleared', async () => {
+        await mutate({ weight: null });
+
+        const queryResult = await query(WIDGET_TYPE_WEIGHT);
+        expect(queryResult).toMatchObject({ weight: null });
       });
     });
   });
