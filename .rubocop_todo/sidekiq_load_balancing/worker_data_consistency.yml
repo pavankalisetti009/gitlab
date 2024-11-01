@@ -1,10 +1,6 @@
 ---
 SidekiqLoadBalancing/WorkerDataConsistency:
   Exclude:
-    - 'app/workers/authorized_project_update/periodic_recalculate_worker.rb'
-    - 'app/workers/authorized_project_update/project_recalculate_worker.rb'
-    - 'app/workers/authorized_project_update/user_refresh_from_replica_worker.rb'
-    - 'app/workers/authorized_projects_worker.rb'
     - 'app/workers/bulk_imports/stale_import_worker.rb'
     - 'app/workers/chaos/cpu_spin_worker.rb'
     - 'app/workers/chaos/db_spin_worker.rb'
