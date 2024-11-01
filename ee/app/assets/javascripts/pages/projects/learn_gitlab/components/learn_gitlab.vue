@@ -8,8 +8,8 @@ import { visitUrl } from '~/lib/utils/url_utility';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
 import eventHubNav from '~/super_sidebar/event_hub';
 import { InternalEvents } from '~/tracking';
-import CircularProgressBar from 'ee/vue_shared/components/circular_progress_bar/circular_progress_bar.vue';
 import { ACTION_LABELS, INVITE_MODAL_OPEN_COOKIE } from '../constants';
+import CircularProgressBar from './circular_progress_bar/circular_progress_bar.vue';
 import LearnGitlabSectionCard from './learn_gitlab_section_card.vue';
 
 const trackingMixin = InternalEvents.mixin();
