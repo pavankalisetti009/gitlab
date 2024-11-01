@@ -19,12 +19,6 @@ module Ai
         "issue"
       end
 
-      def current_page_sentence
-        <<~SENTENCE
-          The user is currently on a page that displays an issue with a description, comments, etc., which the user might refer to, for example, as 'current', 'this' or 'that'. The data is provided in <resource></resource> tags, and if it is sufficient in answering the question, utilize it instead of using the 'IssueReader' tool.
-        SENTENCE
-      end
-
       def current_page_short_description
         <<~SENTENCE
           The user is currently on a page that displays an issue with a description, comments, etc., which the user might refer to, for example, as 'current', 'this' or 'that'. The title of the issue is '#{resource.title}'.

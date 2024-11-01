@@ -113,7 +113,7 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
       let(:resource) { create(:issue) }
 
       it 'returns nil' do
-        expect(context.current_page_sentence).to be_nil
+        expect(context.current_page_short_description).to be_nil
       end
     end
 
@@ -121,7 +121,8 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
       let(:resource) { create(:issue, project: project) }
 
       it 'returns sentence about the resource' do
-        expect(context.current_page_sentence).to include("The user is currently on a page that displays an issue")
+        expect(context.current_page_short_description)
+          .to include("The user is currently on a page that displays an issue")
       end
     end
   end

@@ -20,14 +20,6 @@ module Ai
           "build"
         end
 
-        def current_page_sentence
-          return '' unless Feature.enabled?(:ai_build_reader_for_chat, current_user)
-
-          <<~SENTENCE
-          The user is currently on a page that displays a ci build which the user might refer to, for example, as 'current', 'this' or 'that'. The data is provided in <resource></resource> tags, and if it is sufficient in answering the question, utilize it instead of using the 'BuildReader' tool.
-          SENTENCE
-        end
-
         def current_page_short_description
           return '' unless Feature.enabled?(:ai_build_reader_for_chat, current_user)
 

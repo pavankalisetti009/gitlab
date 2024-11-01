@@ -30,24 +30,6 @@ RSpec.describe Ai::AiResource::Commit, feature_category: :duo_chat do
     end
   end
 
-  describe '#current_page_sentence' do
-    it 'returns prompt' do
-      expect(wrapped_commit.current_page_sentence)
-        .to include("utilize it instead of using the 'CommitReader' tool.")
-    end
-
-    context 'with mr for chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_commit_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_commit.current_page_sentence)
-          .to eq("")
-      end
-    end
-  end
-
   describe '#current_page_short_description' do
     it 'returns prompt' do
       expect(wrapped_commit.current_page_short_description)
