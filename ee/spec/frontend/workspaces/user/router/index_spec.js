@@ -9,6 +9,7 @@ import WorkspacesList from 'ee/workspaces/user/pages/list.vue';
 import createRouter from 'ee/workspaces/user/router/index';
 import CreateWorkspace from 'ee/workspaces/user/pages/create.vue';
 import { ROUTES } from 'ee/workspaces/user/constants';
+import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   GET_PROJECTS_DETAILS_QUERY_RESULT,
@@ -26,7 +27,6 @@ describe('workspaces/router/index.js', () => {
   let wrapper;
 
   beforeEach(() => {
-    // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     router = createRouter(ROUTES.index);
   });
 
@@ -76,7 +76,10 @@ describe('workspaces/router/index.js', () => {
     });
 
     it('navigates to /create when clicking New workspace button', async () => {
+      expect(findWorkspacesListPage().exists()).toBe(true);
+
       await findNewWorkspaceButton().trigger('click');
+      await waitForPromises();
 
       expect(findCreateWorkspacePage().exists()).toBe(true);
     });
@@ -93,6 +96,7 @@ describe('workspaces/router/index.js', () => {
 
     it('navigates to / when clicking Cancel button', async () => {
       await findCreateWorkspaceCancelButton().trigger('click');
+      await waitForPromises();
 
       expect(findWorkspacesListPage().exists()).toBe(true);
     });
