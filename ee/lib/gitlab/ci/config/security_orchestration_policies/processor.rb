@@ -6,6 +6,7 @@ module Gitlab
       module SecurityOrchestrationPolicies
         class Processor
           include Gitlab::Utils::StrongMemoize
+          include ::Gitlab::InternalEventsTracking
 
           DEFAULT_ON_DEMAND_STAGE = 'dast'
           DEFAULT_SECURITY_JOB_STAGE = 'test'
@@ -34,6 +35,7 @@ module Gitlab
             merged_config[:stages] = cleanup_stages(merged_config[:stages])
             merged_config.delete(:stages) if merged_config[:stages].blank?
 
+            track_internal_events_for_enforced_scans
             observe_processing_duration(Time.current - @start)
 
             merged_config
@@ -143,6 +145,20 @@ module Gitlab
               end.compact.uniq
           end
           strong_memoize_attr :active_scan_template_actions
+
+          def track_internal_events_for_enforced_scans
+            active_scan_template_actions.each do |action|
+              next unless action[:scan]
+
+              track_internal_event(
+                'enforce_scan_execution_policy_in_project',
+                project: project,
+                additional_properties: {
+                  label: action[:scan]
+                }
+              )
+            end
+          end
 
           def observe_processing_duration(duration)
             ::Gitlab::Ci::Pipeline::Metrics
