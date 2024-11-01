@@ -258,22 +258,22 @@ RSpec.describe "Git HTTP requests (Geo)", :geo, feature_category: :geo_replicati
           it_behaves_like 'a Geo git request'
           it_behaves_like 'a Geo 200 git request'
         end
-      end
 
-      context 'when the repository does not exist' do
-        let_it_be(:project) { project_no_repo }
+        context 'when the repository has been updated' do
+          let(:geo_gl_id) { "key-#{key.id}" }
+          # to avoid "Unexpected actor :geo." error
+          let(:auth_token) { Gitlab::Geo::BaseRequest.new(scope: project.full_path, gl_id: geo_gl_id).authorization }
+          let(:project_with_repo_but_not_synced) { create(:project, :repository, :private) }
+          let(:project) { project_with_repo_but_not_synced }
 
-        let(:endpoint_path) { "/#{project.full_path}.git/git-upload-pack" }
-        let(:redirect_url) { full_redirected_url }
-
-        it_behaves_like 'a Geo 302 redirect to Primary'
-
-        context 'when terms are enforced' do
-          before do
-            enforce_terms
+          subject do
+            post "/#{project_with_repo_but_not_synced.full_path}.git/git-upload-pack", params: {}, headers: env
+            response
           end
 
-          it_behaves_like 'a Geo 302 redirect to Primary'
+          it 'is not redirected' do
+            is_expected.to have_gitlab_http_status(:ok)
+          end
         end
       end
     end
