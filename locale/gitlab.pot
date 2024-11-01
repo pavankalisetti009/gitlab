@@ -38149,6 +38149,9 @@ msgstr ""
 msgid "Only include features new to your current subscription tier."
 msgstr ""
 
+msgid "Only issues can be linked from this form. You can also link this issue from an epic or task."
+msgstr ""
+
 msgid "Only log Akismet verdict, do not prevent issue or snippet creation when spam is detected."
 msgstr ""
 
