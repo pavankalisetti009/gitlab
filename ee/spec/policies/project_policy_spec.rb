@@ -2937,7 +2937,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           :destroy_vulnerability_feedback,
           :read_vulnerability,
           :read_vulnerability_feedback,
-          :update_vulnerability_feedback
+          :update_vulnerability_feedback,
+          :create_vulnerability_state_transition
         ]
       end
 
@@ -3433,6 +3434,24 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
       end
     end
+
+    context 'when security policy bot is on the project' do
+      before do
+        project.add_guest(security_policy_bot)
+      end
+
+      context 'when security_dashboard is not enabled' do
+        it { is_expected.to be_disallowed(:create_vulnerability_state_transition) }
+      end
+
+      context 'when security_dashboard is enabled' do
+        before do
+          stub_licensed_features(security_dashboard: true)
+        end
+
+        it { is_expected.to be_allowed(:create_vulnerability_state_transition) }
+      end
+    end
   end
 
   describe 'download_code_spp_repository policy' do
@@ -3818,6 +3837,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       stub_licensed_features(security_dashboard: true)
     end
 
+    let(:expected_permissions) do
+      [
+        :admin_vulnerability,
+        :read_vulnerability,
+        :create_vulnerability_feedback,
+        :destroy_vulnerability_feedback,
+        :update_vulnerability_feedback,
+        :create_vulnerability_state_transition
+      ]
+    end
+
     context "with guest" do
       let(:current_user) { guest }
 
@@ -3839,13 +3869,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     context "with maintainer" do
       let(:current_user) { maintainer }
 
-      it { is_expected.to be_allowed(:admin_vulnerability) }
+      it { is_expected.to be_allowed(*expected_permissions) }
     end
 
     context "with owner" do
       let(:current_user) { owner }
 
-      it { is_expected.to be_allowed(:admin_vulnerability) }
+      it { is_expected.to be_allowed(*expected_permissions) }
     end
   end
 
