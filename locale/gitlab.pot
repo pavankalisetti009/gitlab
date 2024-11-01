@@ -42752,6 +42752,9 @@ msgstr ""
 msgid "ProjectActivityRSS|Subscribe"
 msgstr ""
 
+msgid "ProjectCreationLevel|Administrators"
+msgstr ""
+
 msgid "ProjectCreationLevel|Default project creation protection"
 msgstr ""
 
