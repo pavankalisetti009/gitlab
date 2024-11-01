@@ -20443,18 +20443,6 @@ msgstr ""
 msgid "DuoEnterprise|You now have access to GitLab Duo Enterprise, the only AI solution that supports developers at every stage of the software development lifecycle."
 msgstr ""
 
-msgid "DuoFreeAccessEndingBanner|Buy Duo Pro"
-msgstr ""
-
-msgid "DuoFreeAccessEndingBanner|Dismiss Free Access Ending banner"
-msgstr ""
-
-msgid "DuoFreeAccessEndingBanner|Free access to GitLab Duo is ending on %{date}"
-msgstr ""
-
-msgid "DuoFreeAccessEndingBanner|Starting %{date}, all GitLab Duo features, including Duo Chat, %{link_start}require a paid add-on subscription.%{link_end} To ensure uninterrupted access to Code Suggestions and Chat, buy Duo Pro and assign seats to your users. Or, for Duo Enterprise options, contact Sales."
-msgstr ""
-
 msgid "DuoProDiscover|A single platform integrates the best AI model for each use case across the entire development workflow."
 msgstr ""
 
