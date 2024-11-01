@@ -24,7 +24,6 @@ describe('EE JobLogTopBar', () => {
         ...props,
       },
       provide: {
-        jobGid: 'gid://gitlab/Ci::Build/123',
         glAbilities: {
           troubleshootJobWithAi: false,
         },

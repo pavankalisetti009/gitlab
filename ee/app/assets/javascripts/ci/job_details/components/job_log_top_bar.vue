@@ -9,7 +9,6 @@ export default {
     CeJobLogTopBar,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['jobGid'],
   props: {
     size: {
       type: Number,

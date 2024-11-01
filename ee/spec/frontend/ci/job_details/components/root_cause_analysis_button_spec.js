@@ -11,22 +11,15 @@ describe('Root cause analysis button', () => {
   let wrapper;
 
   const defaultProps = {
-    jobFailed: true,
+    jobStatusGroup: 'failed',
+    canTroubleshootJob: true,
   };
-
-  const jobGid = 'gid://gitlab/Ci::Build/123';
 
   const createComponent = (props) => {
     wrapper = shallowMountExtended(RootCauseAnalysisButton, {
       propsData: {
         ...defaultProps,
         ...props,
-      },
-      provide: {
-        glAbilities: {
-          troubleshootJobWithAi: true,
-        },
-        jobGid,
       },
     });
   };
@@ -40,19 +33,40 @@ describe('Root cause analysis button', () => {
   });
 
   it('should not display the Troubleshoot button when no failure is detected', () => {
-    createComponent({ jobFailed: false });
+    createComponent({ jobStatusGroup: 'canceled' });
 
     expect(findTroubleshootButton().exists()).toBe(false);
   });
 
-  it('sends a call to the sendDuoChatCommand utility function', () => {
-    createComponent();
+  it('should not display the Troubleshoot button when user cannot troubleshoot', () => {
+    createComponent({ canTroubleshootJob: false });
 
-    wrapper.findComponent(GlButton).vm.$emit('click');
+    expect(findTroubleshootButton().exists()).toBe(false);
+  });
 
-    expect(sendDuoChatCommand).toHaveBeenCalledWith({
-      question: '/troubleshoot',
-      resourceId: jobGid,
+  describe('with jobId', () => {
+    it('sends a call to the sendDuoChatCommand utility function with convereted ID', () => {
+      createComponent({ jobId: 123 });
+
+      wrapper.findComponent(GlButton).vm.$emit('click');
+
+      expect(sendDuoChatCommand).toHaveBeenCalledWith({
+        question: '/troubleshoot',
+        resourceId: 'gid://gitlab/Ci::Build/123',
+      });
+    });
+  });
+
+  describe('with jobGid', () => {
+    it('sends a call to the sendDuoChatCommand utility function with normal GID', () => {
+      createComponent({ jobGid: 'gid://gitlab/Ci::Build/11781' });
+
+      wrapper.findComponent(GlButton).vm.$emit('click');
+
+      expect(sendDuoChatCommand).toHaveBeenCalledWith({
+        question: '/troubleshoot',
+        resourceId: 'gid://gitlab/Ci::Build/11781',
+      });
     });
   });
 });
