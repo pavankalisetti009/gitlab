@@ -128,6 +128,29 @@ export const complianceFrameworksResponse = [
       ],
     },
   },
+  {
+    id: convertToGraphQLId(TYPE_COMPLIANCE_FRAMEWORK, 4),
+    name: 'a4',
+    default: true,
+    description: 'description 4',
+    color: '#cd5b45',
+    pipelineConfigurationFullPath: 'path 4',
+    projects: {
+      nodes: [
+        {
+          id: '1',
+          name: 'project-1',
+        },
+        {
+          id: '2',
+          name: 'project-2',
+        },
+      ],
+      pageInfo: {
+        hasNextPage: true,
+      },
+    },
+  },
 ];
 
 export const mockLinkedSppItemsResponse = ({ projects = [], namespaces = [], groups = [] } = {}) =>

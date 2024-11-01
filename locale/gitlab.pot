@@ -49446,6 +49446,9 @@ msgstr ""
 msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
 msgstr ""
 
+msgid "SecurityOrchestration|%{pageSize}+ projects which have compliance framework:"
+msgstr ""
+
 msgid "SecurityOrchestration|%{scanners}"
 msgstr ""
 

@@ -23,6 +23,10 @@ export const COMPLIANCE_FRAMEWORKS_DESCRIPTION = (projectsCount) =>
     projectsCount,
   );
 
+export const COMPLIANCE_FRAMEWORKS_DESCRIPTION_OVER_MAX_NUMBER_OF_PROJECTS = s__(
+  `SecurityOrchestration|%{pageSize}+ projects which have compliance framework:`,
+);
+
 export const COMPLIANCE_FRAMEWORKS_DESCRIPTION_NO_PROJECTS = s__(
   'SecurityOrchestration|This applies to following compliance frameworks:',
 );

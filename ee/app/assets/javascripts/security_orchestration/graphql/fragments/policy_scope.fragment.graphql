@@ -11,6 +11,9 @@ fragment PolicyScope on PolicyScope {
         nodes {
           id
         }
+        pageInfo {
+          ...PageInfo
+        }
       }
     }
     pageInfo {
