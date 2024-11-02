@@ -6,8 +6,8 @@ RSpec.describe Gitlab::Llm::Tracking, feature_category: :ai_abstraction_layer do
   let(:user) { build(:user) }
   let(:resource) { build(:project) }
   let(:ai_action_name) { 'chat' }
-  let(:user_agent) { nil }
   let(:request_id) { 'uuid' }
+  let(:user_agent) { nil }
 
   let(:ai_message) do
     build(:ai_message,
@@ -32,39 +32,67 @@ RSpec.describe Gitlab::Llm::Tracking, feature_category: :ai_abstraction_layer do
         client: nil
       )
     end
+  end
 
-    context 'with browser user agent' do
+  describe '.client_for_user_agent' do
+    subject { described_class.client_for_user_agent(user_agent) }
+
+    context 'when user agent is from a web browser' do
       let(:user_agent) { 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }
 
-      it 'tracks event with correct params' do
-        event_for_ai_message
-
-        expect_snowplow_event(
-          category: 'Category',
-          action: 'my_action',
-          label: ai_action_name,
-          property: request_id,
-          user: user,
-          client: 'web'
-        )
-      end
+      it { is_expected.to eq('web') }
     end
 
-    context 'with vscode user agent' do
+    context 'when user agent is from VS Code' do
       let(:user_agent) { 'vs-code-gitlab-workflow/3.11.1 VSCode/1.52.1 Node.js/12.14.1 (darwin; x64)' }
 
-      it 'tracks event with correct params' do
-        event_for_ai_message
+      it { is_expected.to eq('vscode') }
+    end
 
-        expect_snowplow_event(
-          category: 'Category',
-          action: 'my_action',
-          label: ai_action_name,
-          property: request_id,
-          user: user,
-          client: 'vscode'
-        )
+    context 'when user agent is from JetBrains plugin' do
+      let(:user_agent) { 'gitlab-jetbrains-plugin/0.0.1 intellij-idea/2021.2.4 java/11.0.13 mac-os-x/aarch64/12.1' }
+
+      it { is_expected.to eq('jetbrains') }
+    end
+
+    context 'when user agent is from JetBrains bundled plugin' do
+      let(:user_agent) do
+        'IntelliJ-GitLab-Plugin PhpStorm/PS-232.6734.11 (JRE 17.0.7+7-b966.2; Linux 6.2.0-20-generic; amd64)'
       end
+
+      it { is_expected.to eq('jetbrains_bundled') }
+    end
+
+    context 'when user agent is from Visual Studio extension' do
+      let(:user_agent) { 'code-completions-language-server-experiment (gl-visual-studio-extension:1.0.0.0; arch:X64;)' }
+
+      it { is_expected.to eq('visual_studio') }
+    end
+
+    context 'when user agent is from Neovim plugin' do
+      let(:user_agent) do
+        'code-completions-language-server-experiment (Neovim:0.9.0; gitlab.vim (v0.1.0); arch:amd64; os:darwin)'
+      end
+
+      it { is_expected.to eq('neovim') }
+    end
+
+    context 'when user agent is from GitLab CLI (old format)' do
+      let(:user_agent) { 'GLab - GitLab CLI' }
+
+      it { is_expected.to eq('gitlab_cli') }
+    end
+
+    context 'when user agent is from GitLab CLI (current format)' do
+      let(:user_agent) { 'glab/v1.25.3-27-g7ec258fb (built 2023-02-16), darwin' }
+
+      it { is_expected.to eq('gitlab_cli') }
+    end
+
+    context 'when user agent is nil' do
+      let(:user_agent) { nil }
+
+      it { is_expected.to be_nil }
     end
   end
 end

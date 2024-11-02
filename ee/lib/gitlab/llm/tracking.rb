@@ -3,6 +3,21 @@
 module Gitlab
   module Llm
     class Tracking
+      USER_AGENT_CLIENTS = {
+        UsageDataCounters::VSCodeExtensionActivityUniqueCounter::VS_CODE_USER_AGENT_REGEX =>
+          'vscode',
+        UsageDataCounters::JetBrainsPluginActivityUniqueCounter::JETBRAINS_USER_AGENT_REGEX =>
+          'jetbrains',
+        UsageDataCounters::JetBrainsBundledPluginActivityUniqueCounter::JETBRAINS_BUNDLED_USER_AGENT_REGEX =>
+          'jetbrains_bundled',
+        UsageDataCounters::VisualStudioExtensionActivityUniqueCounter::VISUAL_STUDIO_EXTENSION_USER_AGENT_REGEX =>
+          'visual_studio',
+        UsageDataCounters::NeovimPluginActivityUniqueCounter::NEOVIM_PLUGIN_USER_AGENT_REGEX =>
+          'neovim',
+        UsageDataCounters::GitLabCliActivityUniqueCounter::GITLAB_CLI_USER_AGENT_REGEX =>
+          'gitlab_cli'
+      }.freeze
+
       def self.event_for_ai_message(category, action, ai_message:)
         ::Gitlab::Tracking.event(
           category,
@@ -17,9 +32,8 @@ module Gitlab
       def self.client_for_user_agent(user_agent)
         return unless user_agent.present?
 
-        user_agent.match?(Gitlab::Regex.vs_code_user_agent_regex) ? 'vscode' : 'web'
+        USER_AGENT_CLIENTS.find { |regex, _client| user_agent.match?(regex) }&.last || 'web'
       end
-      private_class_method :client_for_user_agent
     end
   end
 end
