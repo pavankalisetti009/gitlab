@@ -13,6 +13,7 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
   let(:success) { true }
   let(:request_id) { 'uuid' }
   let(:chat_message) { instance_double(Gitlab::Llm::ChatMessage, request_id: request_id) }
+  let(:client) { nil }
   let(:service_response) do
     instance_double(
       ServiceResponse,
@@ -94,7 +95,8 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
           user: user,
           namespace: group,
           project: project,
-          requestId: 'uuid'
+          requestId: 'uuid',
+          client: nil
         }
       end
 
@@ -102,6 +104,9 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
         allow_next_instance_of(service_class, user, resource, options) do |instance|
           allow(instance).to receive(:execute).and_return(service_response)
         end
+
+        allow(Gitlab::Llm::Tracking).to receive(:client_for_user_agent)
+                                          .and_return(client)
       end
 
       shared_examples 'successful tracking' do
@@ -163,6 +168,13 @@ RSpec.describe Llm::ExecuteMethodService, feature_category: :ai_abstraction_laye
       context 'when request ID is nil' do
         let(:request_id) { nil }
         let(:expected_params) { default_params.merge(requestId: nil) }
+
+        it_behaves_like 'successful tracking'
+      end
+
+      context 'when client is detected' do
+        let(:client) { 'web' }
+        let(:expected_params) { default_params.merge(client: 'web') }
 
         it_behaves_like 'successful tracking'
       end

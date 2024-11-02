@@ -26,6 +26,8 @@ module Llm
     def track_snowplow_event(result)
       request_id = result[:ai_message]&.request_id
 
+      client = Gitlab::Llm::Tracking.client_for_user_agent(options[:user_agent])
+
       Gitlab::Tracking.event(
         self.class.to_s,
         "execute_llm_method",
@@ -34,7 +36,8 @@ module Llm
         user: user,
         namespace: namespace,
         project: project,
-        requestId: request_id
+        requestId: request_id,
+        client: client
       )
     end
   end
