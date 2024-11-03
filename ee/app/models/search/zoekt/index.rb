@@ -96,17 +96,16 @@ module Search
           .where('(used_storage_bytes / reserved_storage_bytes::double precision) < ?', percent)
       end
 
-      def update_used_storage_bytes!
-        update!(used_storage_bytes: zoekt_repositories.sum(:size_bytes))
+      def self.update_used_storage_bytes!
+        all.find_each do |zoekt_index|
+          sum_for_index = 0
 
-      rescue StandardError => err
-        logger.error(build_structured_payload(
-          message: 'Error attempting to update used_storage_bytes',
-          index_id: id,
-          error: err.message
-        ))
+          Search::Zoekt::Repository.where(zoekt_index_id: zoekt_index.id).each_batch do |repo_batch|
+            sum_for_index += repo_batch.sum(:size_bytes)
+          end
 
-        raise err
+          zoekt_index.update!(used_storage_bytes: sum_for_index) if sum_for_index != zoekt_index.used_storage_bytes
+        end
       end
 
       def free_storage_bytes
