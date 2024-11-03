@@ -20,6 +20,7 @@ module Search
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
         report_metrics
+        update_index_used_bytes
         update_replica_states
       ].freeze
 
@@ -307,6 +308,12 @@ module Search
 
         execute_every 2.minutes, cache_key: :update_replica_states do
           ReplicaStateService.execute
+        end
+      end
+
+      def update_index_used_bytes
+        execute_every 5.minutes, cache_key: :update_index_used_bytes do
+          Search::Zoekt::Index.update_used_storage_bytes!
         end
       end
 

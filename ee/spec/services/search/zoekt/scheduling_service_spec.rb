@@ -500,6 +500,21 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
+  describe '#update_index_used_bytes' do
+    let(:task) { :update_index_used_bytes }
+    let_it_be(:index) { create(:zoekt_index, :ready) }
+    let_it_be(:repo) { create(:zoekt_repository, zoekt_index: index) }
+    let_it_be(:another_repo) { create(:zoekt_repository, zoekt_index: index) }
+
+    it 'resizes ready indices used_storage_bytes' do
+      expect do
+        execute_task
+      end.to change {
+        index.reload.used_storage_bytes
+      }.from(0).to(repo.size_bytes + another_repo.size_bytes)
+    end
+  end
+
   describe '#report_metrics' do
     let(:logger) { instance_double(::Search::Zoekt::Logger) }
     let(:task) { :report_metrics }

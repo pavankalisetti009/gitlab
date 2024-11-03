@@ -198,9 +198,6 @@ module EE
           store.subscribe ::Search::Zoekt::InitialIndexingEventWorker,
             to: ::Search::Zoekt::InitialIndexingEvent
 
-          store.subscribe ::Search::Zoekt::UpdateIndexUsedBytesWorker,
-            to: ::Search::Zoekt::TaskSucceededEvent
-
           store.subscribe ::Search::Zoekt::LostNodeEventWorker,
             to: ::Search::Zoekt::LostNodeEvent
         end
