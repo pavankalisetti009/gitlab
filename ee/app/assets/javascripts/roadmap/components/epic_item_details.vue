@@ -209,7 +209,7 @@ export default {
           <a
             :href="epic.webUrl"
             :title="epic.title"
-            class="epic-title text-body gl-font-bold"
+            class="epic-title gl-font-bold gl-text-default"
             data-testid="epic-title"
           >
             {{ epic.title }}
