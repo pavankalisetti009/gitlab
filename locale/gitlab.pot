@@ -48418,6 +48418,9 @@ msgstr ""
 msgid "ScanResultPolicy|Prevent branch modification"
 msgstr ""
 
+msgid "ScanResultPolicy|Prevent group branch modification"
+msgstr ""
+
 msgid "ScanResultPolicy|Prevent pushing and force pushing"
 msgstr ""
 
@@ -49895,7 +49898,7 @@ msgstr ""
 msgid "SecurityOrchestration|Only owners can update Security Policy Project"
 msgstr ""
 
-msgid "SecurityOrchestration|Override the following project settings"
+msgid "SecurityOrchestration|Override the following project settings:"
 msgstr ""
 
 msgid "SecurityOrchestration|Pipeline execution"
@@ -50355,6 +50358,9 @@ msgid "SecurityOrchestration|except groups"
 msgstr ""
 
 msgid "SecurityOrchestration|except projects"
+msgstr ""
+
+msgid "SecurityOrchestration|exceptions: %{exceptions}"
 msgstr ""
 
 msgid "SecurityOrchestration|group level branch input"

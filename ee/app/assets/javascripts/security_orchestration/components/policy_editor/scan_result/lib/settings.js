@@ -55,6 +55,7 @@ export const BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING = s__(
 
 export const SETTINGS_HUMANIZED_STRINGS = {
   [BLOCK_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent branch modification'),
+  [BLOCK_GROUP_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent group branch modification'),
   [PREVENT_PUSHING_AND_FORCE_PUSHING]: s__('ScanResultPolicy|Prevent pushing and force pushing'),
   [PREVENT_APPROVAL_BY_AUTHOR]: s__("ScanResultPolicy|Prevent approval by merge request's author"),
   [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: s__('ScanResultPolicy|Prevent approval by commit author'),

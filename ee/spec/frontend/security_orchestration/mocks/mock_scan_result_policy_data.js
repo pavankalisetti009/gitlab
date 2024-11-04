@@ -295,6 +295,15 @@ export const mockApprovalSettingsScanResultObject = {
   },
 };
 
+export const mockDisabledApprovalSettingsScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  approval_settings: {
+    block_branch_modification: false,
+    prevent_pushing_and_force_pushing: false,
+    block_group_branch_modification: false,
+  },
+};
+
 export const mockApprovalSettingsPermittedInvalidScanResultObject = {
   ...mockDefaultBranchesScanResultObject,
   approval_settings: {
