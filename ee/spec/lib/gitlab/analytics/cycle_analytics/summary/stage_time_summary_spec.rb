@@ -480,9 +480,9 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::StageTimeSummary, fea
       end
 
       it 'returns 3 metrics' do
-        expect(lead_time_for_changes[:value]).to eq((5.0 / 24).round(1).to_s) # median
-        expect(time_to_restore_service[:value]).to eq((8.0 / 24).round(1).to_s) # median
-        expect(change_failure_rate[:value]).to eq((9.0 * 100 / 12).round(1).to_s) # rate
+        expect(lead_time_for_changes[:value]).to eq((4.0 / 24).round(2).to_s) # median
+        expect(time_to_restore_service[:value]).to eq((8.0 / 24).round(2).to_s) # median
+        expect(change_failure_rate[:value]).to eq((9.0 * 100 / 12).round(2).to_s) # rate
       end
 
       context 'when project ids filter is given' do
@@ -491,9 +491,9 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::StageTimeSummary, fea
         end
 
         it 'filters metrics subset by project' do
-          expect(lead_time_for_changes[:value]).to eq((2.0 / 24).round(1).to_s)
-          expect(time_to_restore_service[:value]).to eq((6.0 / 24).round(1).to_s)
-          expect(change_failure_rate[:value]).to eq((1.0 * 100 / 2).round(1).to_s)
+          expect(lead_time_for_changes[:value]).to eq((2.0 / 24).round(2).to_s)
+          expect(time_to_restore_service[:value]).to eq((6.0 / 24).round(2).to_s)
+          expect(change_failure_rate[:value]).to eq((1.0 * 100 / 2).round(2).to_s)
         end
       end
     end

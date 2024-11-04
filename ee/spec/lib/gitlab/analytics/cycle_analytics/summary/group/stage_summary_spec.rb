@@ -239,8 +239,8 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::Group::StageSummary, 
 
       context 'when `to` is nil' do
         it 'includes range until now' do
-          # 1 deployment over 7 days
-          expect(subject[:value]).to eq('0.1')
+          # 1 deployment over 11 days
+          expect(subject[:value]).to eq('0.09')
         end
       end
 
@@ -255,7 +255,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::Group::StageSummary, 
         end
 
         it 'returns deployment frequency within `from` and `to` range' do
-          # 2 deployments over 20 days
+          # 2 deployments over 21 days
           expect(subject[:value]).to eq('0.1')
         end
       end

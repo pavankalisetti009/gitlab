@@ -39,7 +39,7 @@ RSpec.describe Analytics::CycleAnalytics::GroupLevel, feature_category: :value_s
     end
 
     it 'returns medians for each stage for a specific group', :sidekiq_inline do
-      expect(subject.summary.map { |summary| summary[:value] }).to eq(['1', '1', '0.1'])
+      expect(subject.summary.map { |summary| summary[:value] }).to eq(['1', '1', '0.09'])
     end
   end
 
