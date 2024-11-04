@@ -95,8 +95,6 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
         allow(user).to receive(:any_group_with_ai_available?).and_return(true)
         allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
         allow(embedding_service).to receive(:execute).and_return(mock_embedding)
-        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:add_embedding_to_issues).and_return(true)
       end
 
       shared_examples 'without hybrid search query' do
@@ -158,8 +156,6 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
             stub_feature_flags(ai_global_switch: ai_global_switch)
             stub_feature_flags(elasticsearch_issue_embedding: issue_embedding)
             allow(Gitlab::Saas).to receive(:feature_available?).and_return(ai_available)
-            allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-              .with(:add_embedding_to_issues).and_return(migration_done)
           end
 
           it_behaves_like 'without hybrid search query'
