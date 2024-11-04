@@ -37,11 +37,12 @@ module GitlabSubscriptions
           )
         end
 
-        # Currently we do not support iterables and onboarding for SM-instances
-        # Refer to https://gitlab.com/gitlab-org/gitlab/-/issues/461229#note_1965100459
         if gitlab_com_subscription?
           ::Onboarding::AddOnSeatAssignmentIterableTriggerWorker
             .perform_async(namespace.id, eligible_user_ids.to_a, iterable_worker_params)
+        elsif Feature.enabled?(:duo_seat_assignment_email_for_sm, :instance)
+          ::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker
+            .perform_async(eligible_user_ids.to_a, email_variant)
         end
 
         Gitlab::AppLogger.info(log_events(type: 'success',
@@ -59,8 +60,12 @@ module GitlabSubscriptions
       def iterable_worker_params
         {
           'product_interaction' =>
-            ::GitlabSubscriptions::AddOns::PRODUCT_INTERACTION[add_on_purchase.add_on_name.to_sym]
+            ::GitlabSubscriptions::AddOns::VARIANTS[duo_type][:product_interaction]
         }
+      end
+
+      def email_variant
+        ::GitlabSubscriptions::AddOns::VARIANTS[duo_type][:email]
       end
 
       def invalid_user_id_present

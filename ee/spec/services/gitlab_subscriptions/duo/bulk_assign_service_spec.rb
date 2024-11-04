@@ -149,6 +149,13 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             bulk_assign
           end
 
+          it 'does not call the self-managed seat assignment email worker' do
+            expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+               .not_to receive(:perform_async)
+
+            bulk_assign
+          end
+
           context 'when a user is already assigned' do
             let_it_be(:user) { create(:user) }
             let_it_be(:user_2) { create(:user) }
@@ -400,6 +407,26 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             bulk_assign
           end
 
+          context 'with the duo bulk email worker' do
+            it 'calls the mailer for all users', :sidekiq_inline do
+              expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+                .to receive(:perform_async).with(match_array(user_ids), 'duo_pro_email').and_call_original
+
+              expect do
+                bulk_assign
+              end.to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).exactly(3).times
+            end
+
+            it 'does not call the worker when duo_seat_assignment_email_for_sm flag is off' do
+              stub_feature_flags(duo_seat_assignment_email_for_sm: false)
+
+              expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+                .not_to receive(:perform_async)
+
+              bulk_assign
+            end
+          end
+
           context 'when some users are invalid' do
             let(:bot_user) { create(:user, :bot) }
             let(:ghost_user) { create(:user, :ghost) }
@@ -478,6 +505,13 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
 
             expect(response.error?).to be_truthy
             expect(response.message).to eq(error_message)
+          end
+
+          it 'does not call the duo bulk email worker' do
+            expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+              .not_to receive(:perform_async)
+
+            bulk_assign
           end
         end
       end

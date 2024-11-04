@@ -43,7 +43,9 @@ module GitlabSubscriptions
 
         def iterable_params
           ::Onboarding.add_on_seat_assignment_iterable_params(
-            user, ::GitlabSubscriptions::AddOns::PRODUCT_INTERACTION[add_on_purchase.add_on_name.to_sym], namespace
+            user,
+            ::GitlabSubscriptions::AddOns::VARIANTS[add_on_purchase.add_on_name.to_sym][:product_interaction],
+            namespace
           )
         end
       end
