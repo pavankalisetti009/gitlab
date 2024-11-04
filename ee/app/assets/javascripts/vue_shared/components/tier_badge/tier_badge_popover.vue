@@ -44,7 +44,7 @@ export default {
     ),
     projectCopyStart: s__(`TierBadgePopover|This project uses the %{tier} GitLab tier. %{copyEnd}`),
     copyEnd: s__(
-      'TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 30 days. No credit card required.',
+      'TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 60 days. No credit card required.',
     ),
     primaryCtaText: s__('TierBadgePopover|Start a free trial'),
     secondaryCtaText: s__('TierBadgePopover|Explore paid plans'),

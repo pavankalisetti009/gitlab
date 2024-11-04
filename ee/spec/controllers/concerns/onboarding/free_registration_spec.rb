@@ -32,18 +32,8 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
   describe '.setup_for_company_help_text' do
     subject { described_class.setup_for_company_help_text }
 
-    context 'when feature `duo_enterprise_trials_registration` is enabled' do
-      it do
-        is_expected.to eq(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
-      end
-    end
-
-    context 'when feature `duo_enterprise_trials_registration` is disabled' do
-      before do
-        stub_feature_flags(duo_enterprise_trials_registration: false)
-      end
-
-      it { is_expected.to eq(_('Enables a free GitLab Ultimate trial when you create a new project.')) }
+    it do
+      is_expected.to eq(_('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.'))
     end
   end
 

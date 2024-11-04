@@ -9,8 +9,6 @@ module Users
     def execute
       items = user.manageable_namespaces_eligible_for_trial
 
-      return items unless ::Feature.enabled?(:duo_enterprise_trials_registration, ::Feature.current_request)
-
       filter_eligible_namespaces(items)
     end
 

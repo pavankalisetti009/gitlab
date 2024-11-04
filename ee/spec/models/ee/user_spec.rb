@@ -2139,20 +2139,6 @@ RSpec.describe User, feature_category: :system_access do
       it { is_expected.to eq [non_trialed_group_p] }
     end
 
-    context 'When duo_enterprise_trials are disabled' do
-      before do
-        stub_feature_flags(duo_enterprise_trials_registration: false)
-      end
-
-      context 'owner of a non-trialed premium group' do
-        before do
-          non_trialed_group_p.add_owner(user)
-        end
-
-        it { is_expected.to eq [] }
-      end
-    end
-
     context 'owner of a top-level group with a sub-group' do
       before do
         non_trialed_group_a.add_owner(user)

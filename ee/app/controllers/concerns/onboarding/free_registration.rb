@@ -28,11 +28,7 @@ module Onboarding
     end
 
     def self.setup_for_company_help_text
-      if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
-        _('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.')
-      else
-        _('Enables a free GitLab Ultimate trial when you create a new project.')
-      end
+      _('Enables a free Ultimate + GitLab Duo Enterprise trial when you create a new project.')
     end
 
     # predicate methods

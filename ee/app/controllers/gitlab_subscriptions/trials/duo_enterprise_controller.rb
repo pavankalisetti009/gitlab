@@ -71,10 +71,7 @@ module GitlabSubscriptions
       strong_memoize_attr :eligible_namespaces
 
       def check_feature_available!
-        unless ::Gitlab::Saas.feature_available?(:subscriptions_trials) &&
-            Feature.enabled?(:duo_enterprise_trials, current_user)
-          render_404
-        end
+        render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
       end
 
       def track_event(action)

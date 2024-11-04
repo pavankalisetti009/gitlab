@@ -169,20 +169,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             )
             expect(flash[:success]).to have_content(message)
           end
-
-          context 'when duo_enterprise_trials feature flag is disabled' do
-            before do
-              stub_feature_flags(duo_enterprise_trials: false)
-            end
-
-            it { is_expected.to redirect_to(group_path(namespace)) }
-
-            it 'shows valid flash message' do
-              post_create
-
-              expect(flash[:success]).to eq(s_("BillingPlans|Congratulations, your free trial is activated."))
-            end
-          end
         end
 
         context 'when the namespace applying is on the premium plan' do

@@ -6,9 +6,7 @@ module GitlabSubscriptions
       private
 
       def render?
-        duo_enterprise_trials_enabled? &&
-          namespace.free_plan? &&
-          GitlabSubscriptions::DuoEnterprise.no_add_on_purchase_for_namespace?(namespace)
+        namespace.free_plan? && GitlabSubscriptions::DuoEnterprise.no_add_on_purchase_for_namespace?(namespace)
       end
 
       def body

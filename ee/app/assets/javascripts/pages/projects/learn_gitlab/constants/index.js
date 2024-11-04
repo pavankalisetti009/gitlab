@@ -37,7 +37,7 @@ export const ACTION_LABELS = {
   trialStarted: {
     title: s__('LearnGitLab|Start a free trial of GitLab Ultimate'),
     actionLabel: s__('LearnGitLab|Try GitLab Ultimate for free'),
-    description: s__('LearnGitLab|Try all GitLab features for 30 days, no credit card required.'),
+    description: s__('LearnGitLab|Try all GitLab features for 60 days, no credit card required.'),
     trackLabel: 'start_a_free_trial_of_gitlab_ultimate',
     section: 'workspace',
     position: 3,

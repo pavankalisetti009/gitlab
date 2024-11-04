@@ -19,7 +19,7 @@ module Namespaces
           'FreeUserCap|To remove the %{link_start}read-only%{link_end} state and regain write access, ' \
           'you can reduce the number of users in your top-level group to %{free_user_limit} users or less. ' \
           'You can also %{upgrade_start}upgrade%{upgrade_end} to a paid tier, which do not have user limits. ' \
-          'If you need additional time, you can %{trial_start}start a free 30-day trial%{trial_end} which ' \
+          'If you need additional time, you can %{trial_start}start a free 60-day trial%{trial_end} which ' \
           'includes unlimited users.'
         ),
         tag_pair(

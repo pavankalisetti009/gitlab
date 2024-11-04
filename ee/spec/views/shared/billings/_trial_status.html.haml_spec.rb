@@ -68,17 +68,4 @@ RSpec.describe 'shared/billings/_trial_status.html.haml', :saas do
       end
     end
   end
-
-  context 'when eligible for trial' do
-    before do
-      allow(group).to receive(:eligible_for_trial?).and_return(true)
-      stub_feature_flags(duo_enterprise_trials: false)
-    end
-
-    it 'offers a trial' do
-      render 'shared/billings/trial_status', namespace: group
-
-      expect(rendered).to have_content("start a free 30-day trial of GitLab.com Ultimate")
-    end
-  end
 end

@@ -17,10 +17,6 @@ module GitlabSubscriptions
 
       delegate :sprite_icon, to: :helpers
 
-      def duo_enterprise_trials_enabled?
-        Feature.enabled?(:duo_enterprise_trials, user)
-      end
-
       def card_options
         {
           class: 'gl-border gl-border-blue-300 gl-bg-blue-50 gl-rounded-base gl-text-left gl-mt-6 gl-p-3',

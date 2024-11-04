@@ -107,14 +107,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         let(:request) { get_new }
       end
 
-      context 'when feature flag duo_enterprise_trials is disabled' do
-        before do
-          stub_feature_flags(duo_enterprise_trials: false)
-        end
-
-        it { is_expected.to have_gitlab_http_status(:not_found) }
-      end
-
       context 'with tracking page render' do
         it_behaves_like 'internal event tracking' do
           let(:event) { 'render_duo_enterprise_lead_page' }
@@ -250,14 +242,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
             end.and_return(ServiceResponse.success(payload: { namespace: namespace }))
           end
         end
-      end
-
-      context 'when feature flag duo_enterprise_trials is disabled' do
-        before do
-          stub_feature_flags(duo_enterprise_trials: false)
-        end
-
-        it { is_expected.to have_gitlab_http_status(:not_found) }
       end
 
       context 'with create service failures' do
