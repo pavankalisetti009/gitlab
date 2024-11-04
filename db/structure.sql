@@ -31591,6 +31591,8 @@ CREATE INDEX index_sbom_occurrences_on_traversal_ids_and_component_name ON sbom_
 
 CREATE INDEX index_sbom_occurrences_on_traversal_ids_and_id ON sbom_occurrences USING btree (traversal_ids, id) WHERE (archived = false);
 
+CREATE INDEX index_sbom_occurrences_on_traversal_ids_and_package_manager ON sbom_occurrences USING btree (traversal_ids, package_manager COLLATE "C");
+
 CREATE UNIQUE INDEX index_sbom_occurrences_on_uuid ON sbom_occurrences USING btree (uuid);
 
 CREATE INDEX index_sbom_occurrences_vulnerabilities_on_project_id ON sbom_occurrences_vulnerabilities USING btree (project_id);
