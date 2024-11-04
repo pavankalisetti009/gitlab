@@ -108,6 +108,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWo
             .and change { add_on_purchase_stale.reload.last_assigned_users_refreshed_at }
         end
       end
+
+      context 'with exclusive lease' do
+        include ExclusiveLeaseHelpers
+
+        let(:lock_key) { add_on_purchase_stale.lock_key_for_refreshing_user_assignments }
+        let(:timeout) { described_class::LEASE_TTL }
+
+        context 'when exclusive lease has not been taken' do
+          it 'obtains a new exclusive lease' do
+            expect_to_obtain_exclusive_lease(lock_key, timeout: timeout)
+
+            perform_work
+          end
+        end
+
+        context 'when exclusive lease has already been taken' do
+          before do
+            stub_exclusive_lease_taken(lock_key, timeout: timeout)
+          end
+
+          it 'raises an error' do
+            expect { perform_work }
+              .to raise_error(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)
+          end
+        end
+      end
     end
 
     context 'when there are no stale add_on_purchase to refresh' do

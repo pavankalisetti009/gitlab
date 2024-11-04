@@ -5,6 +5,9 @@ module GitlabSubscriptions
     class BulkRefreshUserAssignmentsWorker
       include ApplicationWorker
       include LimitedCapacity::Worker
+      include Gitlab::ExclusiveLeaseHelpers
+
+      LEASE_TTL = 3.minutes
 
       feature_category :seat_cost_management
       data_consistency :sticky
@@ -17,13 +20,16 @@ module GitlabSubscriptions
       def perform_work
         return unless add_on_purchase
 
-        deleted_assignments_count = add_on_purchase.delete_ineligible_user_assignments_in_batches!
+        deleted_assignments_count = 0
+        in_lock(add_on_purchase.lock_key_for_refreshing_user_assignments, ttl: LEASE_TTL, retries: 0) do
+          deleted_assignments_count = add_on_purchase.delete_ineligible_user_assignments_in_batches!
 
-        reconcile_response = GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService.new(
-          add_on_purchase: add_on_purchase
-        ).execute
+          reconcile_response = GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService.new(
+            add_on_purchase: add_on_purchase
+          ).execute
 
-        deleted_assignments_count += reconcile_response.payload[:removed_seats_count]
+          deleted_assignments_count += reconcile_response.payload[:removed_seats_count]
+        end
 
         log_event(deleted_assignments_count) if deleted_assignments_count > 0
       end
