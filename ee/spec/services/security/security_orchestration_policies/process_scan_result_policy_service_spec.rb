@@ -712,6 +712,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
           expect { subject }.not_to change { project.approval_rules.count }
         end
       end
+
+      context 'when rule has only send_bot_message action' do
+        let(:policy) do
+          build(:scan_result_policy, :any_merge_request, commits: 'unsigned',
+            actions: [{ type: 'send_bot_message', enabled: false }])
+        end
+
+        it 'does not create approval rule' do
+          expect { subject }.not_to change { project.approval_rules.count }
+        end
+      end
     end
 
     it 'sets project approval rule based on policy', :aggregate_failures do

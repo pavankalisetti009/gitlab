@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class ProcessScanResultPolicyService
+      include ::Gitlab::Utils::StrongMemoize
+
       REPORT_TYPE_MAPPING = {
         Security::ScanResultPolicy::LICENSE_FINDING => :license_scanning,
         Security::ScanResultPolicy::ANY_MERGE_REQUEST => :any_merge_request
@@ -26,7 +28,6 @@ module Security
       attr_reader :policy_configuration, :policy, :project, :author, :policy_index, :real_policy_index
 
       def create_new_approval_rules
-        action_info = policy[:actions]&.find { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
         send_bot_message_action = policy[:actions]&.find do |action|
           action[:type] == Security::ScanResultPolicy::SEND_BOT_MESSAGE
         end
@@ -35,7 +36,7 @@ module Security
           next unless rule_type_allowed?(rule[:type])
 
           scan_result_policy_read = create_scan_result_policy(
-            rule, action_info, send_bot_message_action, project, rule_index
+            rule, require_approval_action, send_bot_message_action, project, rule_index
           )
 
           approval_policy_rule = if policy_configuration.persist_policies?
@@ -56,10 +57,15 @@ module Security
           next unless create_approval_rule?(rule)
 
           ::ApprovalRules::CreateService.new(project, author,
-            rule_params(rule, rule_index, action_info, scan_result_policy_read, approval_policy_rule)
+            rule_params(rule, rule_index, require_approval_action, scan_result_policy_read, approval_policy_rule)
           ).execute
         end
       end
+
+      def require_approval_action
+        policy[:actions]&.find { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
+      end
+      strong_memoize_attr :require_approval_action
 
       def create_approval_rule?(rule)
         return true if rule[:type] != Security::ScanResultPolicy::ANY_MERGE_REQUEST
@@ -67,7 +73,7 @@ module Security
         # For `any_merge_request` rules, the approval rules can be created without approvers and can override
         # project approval settings in general.
         # The violations in this case are handled via SyncAnyMergeRequestRulesService
-        policy[:actions].present?
+        require_approval_action.present?
       end
 
       def license_finding?(rule)
