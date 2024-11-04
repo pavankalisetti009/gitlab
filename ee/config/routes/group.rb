@@ -31,6 +31,8 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       scope module: 'remote_development' do
         get 'workspaces', action: :show, controller: 'workspaces'
       end
+
+      resource :issues, only: [:show], controller: 'work_items'
     end
 
     resource :early_access_opt_in, only: %i[create show], controller: 'early_access_opt_in'
