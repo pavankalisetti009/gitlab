@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require File.expand_path('ee/elastic/migrate/20240410193847_add_embedding_to_issues.rb')
 
 RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: :global_search do
   let_it_be(:user) { create(:user) }

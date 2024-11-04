@@ -64,7 +64,6 @@ module Search
         return false unless Feature.enabled?(:search_issues_hybrid_search)
         return false unless Feature.enabled?(:ai_global_switch, type: :ops)
         return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
-        return false unless ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_issues)
 
         project = Project.id_in(options[:project_ids])&.first
         user = options[:current_user]
