@@ -86,6 +86,17 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
     let(:agent) { nil }
     let(:lsp_version) { nil }
+    let(:cloud_connector_headers) do
+      {
+        'X-Gitlab-Host-Name' => 'hostname',
+        'X-Gitlab-Instance-Id' => 'ABCDEF',
+        'X-Gitlab-Global-User-Id' => '123ABC',
+        'X-Gitlab-Realm' => 'self-managed',
+        'X-Gitlab-Version' => '17.1.0',
+        'X-Gitlab-Duo-Seat-Count' => "50"
+      }
+    end
+
     let(:expected_headers) do
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
@@ -94,14 +105,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'Content-Type' => 'application/json',
         'X-Request-ID' => an_instance_of(String),
         'X-Gitlab-Rails-Send-Start' => an_instance_of(String),
-        'X-Gitlab-Global-User-Id' => an_instance_of(String),
-        'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-        'X-Gitlab-Instance-Id' => an_instance_of(String),
-        'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Version' => Gitlab.version_info.to_s,
-        'X-Gitlab-Duo-Seat-Count' => "0",
         'x-gitlab-enabled-feature-flags' => an_instance_of(String)
-      }
+      }.merge(cloud_connector_headers)
     end
 
     subject(:headers) { described_class.headers(user: user, service: service, agent: agent, lsp_version: lsp_version) }
@@ -109,6 +114,9 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     before do
       allow(service).to receive(:access_token).with(user).and_return(token)
       allow(user).to receive(:allowed_to_use?).with(service_name).and_yield(enabled_by_namespace_ids)
+      allow(Gitlab::CloudConnector).to(
+        receive(:ai_headers).with(user, namespace_ids: enabled_by_namespace_ids).and_return(cloud_connector_headers)
+      )
     end
 
     it { is_expected.to match(expected_headers) }

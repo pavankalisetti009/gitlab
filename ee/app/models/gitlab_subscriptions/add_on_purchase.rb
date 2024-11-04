@@ -75,8 +75,10 @@ module GitlabSubscriptions
       pluck(:namespace_id).compact.uniq
     end
 
-    def self.maximum_duo_seat_count
-      active.for_duo_pro_or_duo_enterprise.pluck(:quantity).max || 0
+    def self.maximum_duo_seat_count(namespace_ids: [])
+      scope = active.for_duo_pro_or_duo_enterprise
+      scope = scope.by_namespace(namespace_ids) if namespace_ids.any?
+      scope.pluck(:quantity).max || 0
     end
 
     def already_assigned?(user)
