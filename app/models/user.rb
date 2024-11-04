@@ -1308,6 +1308,16 @@ class User < ApplicationRecord
     end
   end
 
+  # Used to search on the user's authorized_groups effeciently by using a CTE
+  def search_on_authorized_groups(query, use_minimum_char_limit: true)
+    authorized_groups_cte = Gitlab::SQL::CTE.new(:authorized_groups, authorized_groups)
+    authorized_groups_cte_alias = authorized_groups_cte.table.alias(Group.table_name)
+    Group
+      .with(authorized_groups_cte.to_arel)
+      .from(authorized_groups_cte_alias)
+      .search(query, use_minimum_char_limit: use_minimum_char_limit)
+  end
+
   # Returns the groups a user is a member of, either directly or through a parent group
   def membership_groups
     groups.self_and_descendants
