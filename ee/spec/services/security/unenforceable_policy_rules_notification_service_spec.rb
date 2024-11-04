@@ -100,15 +100,22 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           scan_result_policy_read: scan_result_policy_read)
       end
 
+      let!(:violation) do
+        create(:scan_result_policy_violation, :running, merge_request: merge_request,
+          scan_result_policy_read: scan_result_policy_read, project: project)
+      end
+
       before do
         create(:report_approver_rule, report_type, merge_request: merge_request,
           approval_project_rule: approval_project_rule, approvals_required: approvals_required,
           scan_result_policy_read: scan_result_policy_read)
-        create(:scan_result_policy_violation, merge_request: merge_request,
-          scan_result_policy_read: scan_result_policy_read, project: project)
       end
 
       it_behaves_like 'triggers policy bot comment', report_type, true
+
+      it 'updates violation status' do
+        expect { execute }.to change { violation.reload.status }.from('running').to('completed')
+      end
 
       context 'without required approvals' do
         let(:approvals_required) { 0 }
@@ -137,6 +144,10 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         end
 
         it_behaves_like 'triggers policy bot comment', report_type, false, requires_approval: false
+
+        it 'updates violation status' do
+          expect { execute }.to change { violation.reload.status }.from('running').to('completed')
+        end
       end
     end
 

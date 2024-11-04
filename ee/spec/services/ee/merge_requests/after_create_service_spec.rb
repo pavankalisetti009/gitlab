@@ -14,6 +14,7 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
     before do
       allow(Ci::SyncReportsToReportApprovalRulesWorker).to receive(:perform_async)
       allow(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to receive(:perform_async)
+      allow(Security::UnenforceablePolicyRulesPipelineNotificationWorker).to receive(:perform_async)
       allow(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to receive(:perform_async)
       allow(Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker).to receive(:perform_async)
       allow(::Security::UnenforceablePolicyRulesNotificationWorker).to receive(:perform_async)
@@ -38,12 +39,14 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
         allow(merge_request).to receive(:update_head_pipeline).and_return(true)
       end
 
-      it 'schedules a background job to sync security reports and findngs to approval rules' do
+      it 'schedules a background job to sync policy approval rules' do
         execute
 
         expect(merge_request).to have_received(:update_head_pipeline).ordered
         expect(Ci::SyncReportsToReportApprovalRulesWorker).to have_received(:perform_async).ordered.with(pipeline_id)
         expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
+          .to have_received(:perform_async).ordered.with(pipeline_id)
+        expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker)
           .to have_received(:perform_async).ordered.with(pipeline_id)
       end
 
@@ -55,11 +58,12 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
     end
 
     context 'when the merge request does not have diff_head_pipeline' do
-      it 'does not schedule a background job to sync security reports and findings to approval rules' do
+      it 'does not schedule a background job to sync policy approval rules' do
         execute
 
         expect(Ci::SyncReportsToReportApprovalRulesWorker).not_to have_received(:perform_async)
         expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to have_received(:perform_async)
+        expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker).not_to have_received(:perform_async)
       end
 
       it 'schedules background job to check for unenforceable policy rules' do
