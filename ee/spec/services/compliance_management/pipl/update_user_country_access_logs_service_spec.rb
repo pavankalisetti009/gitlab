@@ -39,10 +39,6 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
       let!(:pipl_log1) { create(:country_access_log, user: user, access_count: 1) }
       let!(:pipl_log2) { create(:country_access_log, country_code: 'HK', user: user, access_count: 1) }
 
-      before do
-        user.touch(:last_access_from_pipl_country_at)
-      end
-
       it "resets the access counts of access log records from #{ComplianceManagement::Pipl::COVERED_COUNTRY_CODES}" do
         service.execute
 
@@ -55,8 +51,15 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
 
         expect(log2.access_count).to eq 0
         expect(log2.access_count_reset_at).to eq Time.zone.now
+      end
 
-        expect(user.last_access_from_pipl_country_at).to be_nil
+      context 'when the user was previously tracked' do
+        let!(:pipl_user) { create(:pipl_user, user: user) }
+
+        it 'destroys the related pipl_user record' do
+          expect { service.execute }.to change { ComplianceManagement::PiplUser.count }.by(-1)
+          expect(user.reload.pipl_user).to be_nil
+        end
       end
 
       it_behaves_like 'does not enqueue job to check if user is paid'
@@ -64,12 +67,16 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
 
     describe "when country_code is in #{ComplianceManagement::Pipl::COVERED_COUNTRY_CODES}" do
       context 'when user access was tracked within the past 24 hours' do
-        before do
-          user.update!(last_access_from_pipl_country_at: 12.hours.ago)
+        let!(:pipl_user) do
+          create(:pipl_user, user: user, last_access_from_pipl_country_at: 12.hours.ago)
         end
 
         it 'does not create a new access log' do
           expect { service.execute }.not_to change { user.country_access_logs.count }
+        end
+
+        it 'does not create a new pipl_user' do
+          expect { service.execute }.not_to change { user.pipl_user.persisted? }
         end
 
         context 'when user has existing access logs' do
@@ -82,7 +89,7 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
           end
 
           it "does not update the user's last_access_from_pipl_country_at" do
-            expect { service.execute }.not_to change { user.last_access_from_pipl_country_at }
+            expect { service.execute }.not_to change { pipl_user.reload.last_access_from_pipl_country_at }
           end
 
           it_behaves_like 'does not enqueue job to check if user is paid'
@@ -97,15 +104,25 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
           expect(log.first_access_at).to eq Time.zone.now
           expect(log.last_access_at).to eq Time.zone.now
           expect(log.access_count).to eq 1
+        end
 
-          expect(user.last_access_from_pipl_country_at).to eq Time.zone.now
+        it 'creates a new pipl_user and sets the last access timestamp' do
+          expect { service.execute }.to change { user.reload.pipl_user.present? }.from(false).to(true)
+
+          expect(user.pipl_user.last_access_from_pipl_country_at).to eq Time.zone.now
         end
       end
 
       context 'when user has existing logs' do
+        let!(:pipl_user) { create(:pipl_user, user: user) }
+
         let!(:other_log) { create(:country_access_log, country_code: 'HK', user: user, access_count: 1) }
         let!(:target_log) do
           create(:country_access_log, user: user, first_access_at: 25.hours.ago, access_count: 1)
+        end
+
+        before do
+          pipl_user.update!(last_access_from_pipl_country_at: 25.hours.ago)
         end
 
         it 'updates the existing log record correctly' do
@@ -115,8 +132,12 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
           expect(target_log.first_access_at).to eq 25.hours.ago
           expect(target_log.last_access_at).to eq Time.zone.now
           expect(target_log.access_count).to eq 2
+        end
 
-          expect(user.last_access_from_pipl_country_at).to eq Time.zone.now
+        it 'updates the existing pipl_user correctly', :freeze_time do
+          expect { service.execute }.not_to change { pipl_user.reload.persisted? }
+
+          expect(pipl_user.last_access_from_pipl_country_at).to eq Time.zone.now
         end
       end
 
