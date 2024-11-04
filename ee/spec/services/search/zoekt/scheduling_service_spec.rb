@@ -697,4 +697,17 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         .with(expected_high_watermarked)
     end
   end
+
+  describe '#repo_to_index_check' do
+    let(:task) { :repo_to_index_check }
+    let_it_be(:pending_repo) { create(:zoekt_repository) }
+    let_it_be(:initializing_repo) { create(:zoekt_repository, state: :initializing) }
+    let_it_be(:ready_repo) { create(:zoekt_repository, state: :ready) }
+    let_it_be(:failed_repo) { create(:zoekt_repository, state: :failed) }
+
+    it 'publishes an RepoToIndexEvent with initializing or pending repos' do
+      expected_data = { zoekt_repo_ids: [pending_repo.id, initializing_repo.id] }
+      expect { execute_task }.to publish_event(Search::Zoekt::RepoToIndexEvent).with(expected_data)
+    end
+  end
 end

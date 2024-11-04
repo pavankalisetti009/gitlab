@@ -9,6 +9,7 @@ module Search
 
       idempotent!
 
+      # Create the pending zoekt_repositories and move the index to initializing
       def handle_event(event)
         index = Index.find_by_id(event.data[:index_id])
         return if index.nil? || !index.pending?
@@ -16,7 +17,10 @@ module Search
         namespace = ::Namespace.find_by_id(index.namespace_id)
         return if namespace.nil?
 
-        namespace.all_project_ids.find_each { |project| IndexingTaskService.execute(project.id, :index_repo) }
+        namespace.all_project_ids.each_batch do |batch|
+          data = batch.map { |p| { zoekt_index_id: index.id, project_id: p.id, project_identifier: p.id } }
+          Repository.insert_all(data)
+        end
         index.initializing!
       end
     end

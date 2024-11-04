@@ -9,6 +9,7 @@ module Search
         auto_index_self_managed
         dot_com_rollout
         eviction
+        index_over_watermark_check
         index_should_be_marked_as_orphaned_check
         index_to_delete_check
         initial_indexing
@@ -16,9 +17,9 @@ module Search
         mark_indices_as_ready
         node_assignment
         remove_expired_subscriptions
-        index_over_watermark_check
         repo_should_be_marked_as_orphaned_check
         repo_to_delete_check
+        repo_to_index_check
         report_metrics
         update_index_used_bytes
         update_replica_states
@@ -379,6 +380,16 @@ module Search
               Search::Zoekt::RepoMarkedAsToDeleteEvent.new(
                 data: { zoekt_repo_ids: batch.pluck_primary_key }
               )
+            )
+          end
+        end
+      end
+
+      def repo_to_index_check
+        execute_every 10.minutes, cache_key: :repo_to_index_check do
+          Search::Zoekt::Repository.pending_or_initializing.each_batch do |batch|
+            Gitlab::EventStore.publish(
+              Search::Zoekt::RepoToIndexEvent.new(data: { zoekt_repo_ids: batch.pluck_primary_key })
             )
           end
         end

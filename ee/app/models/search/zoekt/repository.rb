@@ -37,6 +37,8 @@ module Search
 
       scope :non_ready, -> { where.not(state: :ready) }
 
+      scope :pending_or_initializing, -> { where(state: %i[pending initializing]) }
+
       scope :for_project_id, ->(project_id) { where(project_identifier: project_id) }
 
       scope :for_replica_id, ->(replica_id) { joins(:zoekt_index).where(zoekt_index: { zoekt_replica_id: replica_id }) }
@@ -58,6 +60,7 @@ module Search
           break if item.tasks.pending.exists?(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type)
           break if item.failed? && task_type != :delete_repo
 
+          item.initializing! if item.pending?
           item.tasks.create!(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type, perform_at: perform_at)
         end
       end

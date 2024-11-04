@@ -7,5 +7,9 @@ FactoryBot.define do
     project_identifier { project.id }
     state { Search::Zoekt::Repository.states.fetch(:pending) }
     size_bytes { 10.megabytes }
+
+    trait :with_repo do
+      project { association(:project_with_repo) }
+    end
   end
 end

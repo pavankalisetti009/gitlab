@@ -2334,6 +2334,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: search_zoekt_repo_to_index_event
+  :worker_name: Search::Zoekt::RepoToIndexEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: search_zoekt_task_failed_event
   :worker_name: Search::Zoekt::TaskFailedEventWorker
   :feature_category: :global_search

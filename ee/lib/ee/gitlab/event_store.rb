@@ -200,6 +200,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::LostNodeEventWorker,
             to: ::Search::Zoekt::LostNodeEvent
+
+          store.subscribe ::Search::Zoekt::RepoToIndexEventWorker,
+            to: ::Search::Zoekt::RepoToIndexEvent
         end
 
         def subscribe_to_members_added_event(store)

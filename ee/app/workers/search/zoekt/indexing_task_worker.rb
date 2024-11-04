@@ -13,8 +13,8 @@ module Search
       urgency :low
 
       def perform(project_id, task_type, options = {})
-        return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return unless ::License.feature_available?(:zoekt_code_search)
+        return false unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
+        return false unless ::License.feature_available?(:zoekt_code_search)
 
         options = options.with_indifferent_access
         keyword_args = {
