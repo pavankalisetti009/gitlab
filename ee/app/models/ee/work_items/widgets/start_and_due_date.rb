@@ -16,6 +16,7 @@ module EE
 
         def start_date
           return super if fixed?
+          return work_item&.start_date unless dates_source_present?
 
           dates_source.start_date
         end
@@ -34,6 +35,7 @@ module EE
 
         def due_date
           return super if fixed?
+          return work_item&.due_date unless dates_source_present?
 
           dates_source.due_date
         end
