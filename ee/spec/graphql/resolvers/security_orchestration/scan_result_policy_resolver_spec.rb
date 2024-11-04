@@ -11,6 +11,10 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
   let(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [policy]) }
 
   let(:deprecated_properties) { ['scan_result_policy'] }
+  let(:all_group_approvers) { [] }
+  let(:role_approvers) { [] }
+  let(:user_approvers) { [] }
+  let(:action_approvers) { [{ all_groups: [], groups: [], roles: [], users: [] }] }
 
   let(:expected_resolved) do
     [
@@ -30,10 +34,11 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
         },
         yaml: YAML.dump(policy.deep_stringify_keys),
         updated_at: policy_last_updated_at,
+        action_approvers: action_approvers,
         user_approvers: [],
-        all_group_approvers: [],
+        all_group_approvers: all_group_approvers,
         deprecated_properties: deprecated_properties,
-        role_approvers: [],
+        role_approvers: role_approvers,
         source: {
           inherited: false,
           namespace: nil,
@@ -62,6 +67,48 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
     end
 
     let(:deprecated_properties) { %w[newly_detected scan_result_policy] }
+
+    it_behaves_like 'as an orchestration policy'
+  end
+
+  context 'when the policy contains multiple approvers' do
+    let!(:group) { create(:group) }
+    let(:all_group_approvers) { [group] }
+    let(:role_approvers) { ['maintainer'] }
+    let!(:user) { create(:user) }
+    let(:user_approvers) { [user] }
+
+    let(:action_approvers) do
+      [
+        { all_groups: all_group_approvers,
+          groups: all_group_approvers,
+          roles: role_approvers,
+          users: [] },
+        { all_groups: [],
+          groups: [],
+          roles: [],
+          users: user_approvers }
+      ]
+    end
+
+    let(:action_1) do
+      {
+        type: "require_approval",
+        approvals_required: 1,
+        group_approvers: [group.name],
+        role_approvers: role_approvers
+      }
+    end
+
+    let(:action_2) do
+      {
+        type: "require_approval",
+        approvals_required: 1,
+        user_approvers_ids: [user.id]
+      }
+    end
+
+    let(:policy) { build(:scan_result_policy, name: 'Require security approvals', actions: [action_1, action_2]) }
 
     it_behaves_like 'as an orchestration policy'
   end

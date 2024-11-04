@@ -11,6 +11,8 @@ module Types
 
       implements OrchestrationPolicyType
 
+      field :action_approvers, [::Types::SecurityOrchestration::PolicyApproversType], null: true,
+        description: 'Multiple approvers action.'
       field :all_group_approvers, [::Types::SecurityOrchestration::ApprovalGroupType],
         null: true,
         description: 'All potential approvers of the group type, including groups inaccessible to the user.'
