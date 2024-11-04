@@ -1,4 +1,4 @@
-- group_saml_identities.each do |identity|
+- group_saml_identities&.each do |identity|
   - group = identity.saml_provider.group
   .provider-btn-group
     .provider-btn-image
