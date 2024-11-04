@@ -222,6 +222,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
 
           let(:vulnerability_states) { %w[new_needs_triage new_dismissed] }
+          let(:unblock_enabled) { true }
           let(:scan_execution_policy) do
             build(:scan_execution_policy,
               rules: [{ type: 'pipeline', branch_type: 'all' }],
@@ -229,6 +230,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
 
           before do
+            scan_result_policy_read.update!(policy_tuning: { unblock_rules_using_execution_policies: unblock_enabled })
             allow_next_instance_of(Repository) do |repository|
               allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
             end
@@ -240,6 +242,12 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             before do
               stub_feature_flags(unblock_rules_using_execution_policies: false)
             end
+
+            it_behaves_like 'does not update approvals_required'
+          end
+
+          context 'when toggle "unblock_rules_using_execution_policies" is disabled' do
+            let(:unblock_enabled) { false }
 
             it_behaves_like 'does not update approvals_required'
           end

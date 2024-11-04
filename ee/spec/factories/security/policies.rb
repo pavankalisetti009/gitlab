@@ -254,7 +254,7 @@ FactoryBot.define do
 
   factory :scan_result_policy,
     class: Struct.new(:name, :description, :enabled, :actions, :rules, :approval_settings, :policy_scope,
-      :fallback_behavior, :metadata),
+      :fallback_behavior, :metadata, :policy_tuning),
     aliases: %i[approval_policy] do
     skip_create
 
@@ -267,9 +267,11 @@ FactoryBot.define do
       approval_settings = attributes[:approval_settings]
       policy_scope = attributes[:policy_scope]
       fallback_behavior = attributes[:fallback_behavior]
+      policy_tuning = attributes[:policy_tuning]
       metadata = attributes[:metadata]
 
-      new(name, description, enabled, actions, rules, approval_settings, policy_scope, fallback_behavior, metadata).to_h
+      new(name, description, enabled, actions, rules, approval_settings, policy_scope, fallback_behavior, metadata,
+        policy_tuning).to_h
     end
 
     transient do
@@ -300,6 +302,7 @@ FactoryBot.define do
     approval_settings { {} }
     policy_scope { {} }
     fallback_behavior { {} }
+    policy_tuning { {} }
 
     trait :license_finding do
       rules do

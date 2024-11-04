@@ -39,6 +39,7 @@ module Security
       allow_blank: true
     validates :fallback_behavior, json_schema: { filename: 'approval_policies_fallback_behavior' },
       allow_blank: true
+    validates :policy_tuning, json_schema: { filename: 'approval_policies_policy_tuning' }
 
     scope :for_project, ->(project) { where(project: project) }
     scope :targeting_commits, -> { where.not(commits: nil) }
@@ -52,6 +53,11 @@ module Security
 
     def fail_open?
       fallback_behavior["fail"] == FALLBACK_BEHAVIORS[:open]
+    end
+
+    def unblock_rules_using_execution_policies?
+      (::Feature.enabled?(:unblock_rules_using_execution_policies, project.group) &&
+        policy_tuning['unblock_rules_using_execution_policies']) || false
     end
 
     def newly_detected?

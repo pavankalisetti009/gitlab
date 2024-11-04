@@ -15,6 +15,15 @@
         }
       }
     },
+    "policy_tuning": {
+      "type": "object",
+      "properties": {
+        "unblock_rules_using_execution_policies": {
+          "type": "boolean",
+          "description": "Experimental: Unblock policy approval rules with missing scans of scanners which are enforced by Scan execution policies. If scan does not produce artifacts because it is not applicable to the given project, approval rules are automatically unblocked and do not require approvals."
+        }
+      }
+    },
     "actions": {
       "description": "Specifies a list of actions that should be enforced in this policy. For `require_approval` action, at least one of `user_approvers`, `user_approvers_ids`, `group_approvers`, `group_approvers_ids`, `role_approvers` should be provided.",
       "type": "array",

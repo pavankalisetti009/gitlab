@@ -10,7 +10,7 @@ module Security
     ignore_columns %i[actions approval_settings], remove_with: '17.5', remove_after: '2024-10-17'
 
     POLICY_CONTENT_FIELDS = {
-      approval_policy: %i[actions approval_settings fallback_behavior],
+      approval_policy: %i[actions approval_settings fallback_behavior policy_tuning],
       scan_execution_policy: %i[actions],
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix],
       vulnerability_management_policy: %i[actions]

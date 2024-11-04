@@ -5,7 +5,7 @@ module ConstructSecurityPolicies
   include Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChecker
 
   POLICY_YAML_ATTRIBUTES = %i[name description enabled actions rules approval_settings policy_scope
-    fallback_behavior metadata].freeze
+    fallback_behavior metadata policy_tuning].freeze
 
   def construct_vulnerability_management_policies(policies)
     policies.map do |policy|

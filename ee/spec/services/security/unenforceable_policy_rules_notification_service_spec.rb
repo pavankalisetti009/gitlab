@@ -223,12 +223,14 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     let(:policy_scans) { %w[dependency_scanning container_scanning] }
     let(:scan_execution_policy) { build(:scan_execution_policy, actions: policy_scans.map { |scan| { scan: scan } }) }
 
+    let(:unblock_enabled) { true }
     let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
     let_it_be(:security_orchestration_policy_configuration) do
       create(:security_orchestration_policy_configuration, project: project)
     end
 
     before do
+      scan_result_policy_read.update!(policy_tuning: { unblock_rules_using_execution_policies: unblock_enabled })
       create(:scan_result_policy_violation, merge_request: merge_request,
         scan_result_policy_read: scan_result_policy_read, project: project)
 
@@ -246,6 +248,14 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       before do
         stub_feature_flags(unblock_rules_using_execution_policies: false)
       end
+
+      it 'does not unblock the rules' do
+        expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
+      end
+    end
+
+    context 'when toggle "unblock_rules_using_execution_policies" is disabled' do
+      let(:unblock_enabled) { false }
 
       it 'does not unblock the rules' do
         expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }

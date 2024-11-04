@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class PolicyRuleEvaluationService
       include Gitlab::Utils::StrongMemoize
+      include Gitlab::InternalEventsTracking
       include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
       include ::Security::ScanResultPolicies::VulnerabilityStatesHelper
 
@@ -62,9 +63,13 @@ module Security
 
       def excluded?(rule)
         return true if rule.scan_result_policy_read&.fail_open?
-        return false if ::Feature.disabled?(:unblock_rules_using_execution_policies, project.group)
+        return false unless rule.scan_result_policy_read&.unblock_rules_using_execution_policies?
         return false unless rule_excludable?(rule)
-        return true if scan_execution_policy_scan_enforced?(rule)
+
+        if scan_execution_policy_scan_enforced?(rule)
+          track_unblock_event(rule)
+          return true
+        end
 
         false
       end
@@ -113,6 +118,16 @@ module Security
 
       def violations
         @violations ||= Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, report_type)
+      end
+
+      def track_unblock_event(rule)
+        track_internal_event(
+          'unblock_approval_rule_using_scan_execution_policy',
+          project: project,
+          additional_properties: {
+            label: rule.scanners.join(',')
+          }
+        )
       end
     end
   end
