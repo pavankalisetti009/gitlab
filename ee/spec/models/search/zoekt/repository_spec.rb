@@ -46,6 +46,22 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       end
     end
 
+    describe '.pending_or_initializing' do
+      let_it_be(:pending_repo) { create(:zoekt_repository, state: :pending) }
+      let_it_be(:pending_repo2) { create(:zoekt_repository, state: :pending) }
+      let_it_be(:initializing_repo) { create(:zoekt_repository, state: :initializing) }
+      let_it_be(:initializing_repo2) { create(:zoekt_repository, state: :initializing) }
+      let_it_be(:ready_repo) { create(:zoekt_repository, state: :ready) }
+      let_it_be(:failed_repo) { create(:zoekt_repository, state: :failed) }
+
+      subject(:collection) { described_class.pending_or_initializing }
+
+      it 'returns only pending or initializing records' do
+        expect(collection).to include pending_repo, pending_repo2, initializing_repo, initializing_repo2
+        expect(collection).not_to include ready_repo, failed_repo
+      end
+    end
+
     describe '.for_zoekt_indices' do
       let_it_be(:zoekt_index) { create(:zoekt_index) }
       let_it_be(:zoekt_index2) { create(:zoekt_index) }
@@ -85,7 +101,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       let_it_be(:project) { create(:project) }
       let_it_be(:index) { create(:zoekt_index) }
 
-      it 'creates a new repository and task' do
+      it 'creates a new initializing repository and task' do
         perform_at = Time.zone.now
         expect do
           described_class.create_tasks(project_id: project.id, zoekt_index: index, task_type: task_type,
@@ -93,6 +109,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
           )
         end.to change { described_class.count }.by(1).and change { Search::Zoekt::Task.count }.by(1)
         repo = described_class.last
+        expect(repo).to be_initializing
         expect(repo.project).to eq project
         expect(repo.zoekt_index).to eq index
         task = Search::Zoekt::Task.last

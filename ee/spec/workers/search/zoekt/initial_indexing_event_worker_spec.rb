@@ -21,12 +21,12 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
   it_behaves_like 'subscribes to event'
 
   it_behaves_like 'an idempotent worker' do
-    it 'calls IndexingTaskService on each project of the indexed namespace and move the index to initializing' do
-      namespace.all_projects.each do |project|
-        expect(::Search::Zoekt::IndexingTaskService).to receive(:execute).with(project.id, :index_repo)
-      end
+    it 'creates pending zoekt_repositories for each project move the index to initializing' do
+      expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
       expect { consume_event(subscriber: described_class, event: event) }
         .to change { zoekt_index.reload.state }.from('pending').to('initializing')
+      expect(zoekt_repositories_for_index(zoekt_index).count).to eq namespace.all_project_ids.count
+      expect(zoekt_repositories_for_index(zoekt_index).pluck(:state).uniq).to contain_exactly 'pending'
     end
 
     context 'when index is not in pending' do
@@ -38,9 +38,9 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
         zoekt_index.initializing!
       end
 
-      it 'does not calls IndexingTaskService' do
-        expect(::Search::Zoekt::IndexingTaskService).not_to receive(:execute)
+      it 'does not creates zoekt_repositories' do
         consume_event(subscriber: described_class, event: event)
+        expect(zoekt_repositories_for_index(zoekt_index).count).to eq 0
       end
     end
 
@@ -49,10 +49,14 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
         { index_id: non_existing_record_id }
       end
 
-      it 'does not calls IndexingTaskService' do
-        expect(::Search::Zoekt::IndexingTaskService).not_to receive(:execute)
+      it 'does not creates zoekt_repositories' do
         consume_event(subscriber: described_class, event: event)
+        expect(zoekt_repositories_for_index(zoekt_index).count).to eq 0
       end
     end
+  end
+
+  def zoekt_repositories_for_index(index)
+    Search::Zoekt::Repository.where(zoekt_index_id: index.id)
   end
 end
