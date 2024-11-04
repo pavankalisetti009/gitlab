@@ -18,7 +18,7 @@ module RemoteDevelopment
           max_hours_before_termination_limit: [120, Integer],
           project_cloner_image: ["alpine/git:2.45.2", String],
           tools_injector_image: [
-            "registry.gitlab.com/gitlab-org/remote-development/gitlab-workspaces-tools:2.0.0", String
+            "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:3.0.0", String
           ],
           full_reconciliation_interval_seconds: [3600, Integer],
           partial_reconciliation_interval_seconds: [10, Integer],
