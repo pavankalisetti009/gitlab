@@ -31,8 +31,7 @@ module Security
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
                             .new(merge_request, approval_rules, report_type)
 
-      applicable_rules = approval_rules.applicable_to_branch(merge_request.target_branch)
-      applicable_rules.each do |rule|
+      approval_rules.each do |rule|
         policy_evaluation.error!(rule, :artifacts_missing,
           context: related_pipelines_context(pipeline, merge_request, report_type))
       end
