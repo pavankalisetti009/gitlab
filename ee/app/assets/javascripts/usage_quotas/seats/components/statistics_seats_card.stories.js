@@ -3,7 +3,7 @@ import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_sea
 
 export default {
   component: StatisticsSeatsCard,
-  title: 'ee/usage_quotas/statistics_seats_card',
+  title: 'ee/usage_quotas/seats/statistics_seats_card',
 };
 
 const Template = (_, { argTypes }) => ({
