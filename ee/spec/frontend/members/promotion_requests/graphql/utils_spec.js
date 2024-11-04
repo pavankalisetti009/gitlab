@@ -1,14 +1,11 @@
+import projectPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/project_pending_member_approvals.json';
+import groupPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/group_pending_member_approvals.json';
 import GroupPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/group_pending_member_approvals.query.graphql';
 import ProjectPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/project_pending_member_approvals.query.graphql';
 import { evictCache, fetchCount } from 'ee/members/promotion_requests/graphql/utils';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import graphqlClientModule from '~/members/graphql_client';
-import {
-  groupDefaultProvide,
-  groupPendingMemberApprovalsQueryMockData,
-  projectDefaultProvide,
-  projectPendingMemberApprovalsQueryMockData,
-} from '../mock_data';
+import { groupDefaultProvide, projectDefaultProvide } from '../mock_data';
 
 jest.mock('~/members/graphql_client', () => ({}));
 
