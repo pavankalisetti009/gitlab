@@ -13,6 +13,12 @@ RSpec.describe GroupDestroyWorker, feature_category: :groups_and_projects do
   subject(:worker) { described_class.new }
 
   context 'with protective settings', :request_store do
+    before do
+      stub_ee_application_setting(
+        default_project_deletion_protection: true
+      )
+    end
+
     where(:admin_mode_enabled, :user_is_admin, :should_delete) do
       true  | true   | true
       true  | false  | false
@@ -22,10 +28,7 @@ RSpec.describe GroupDestroyWorker, feature_category: :groups_and_projects do
 
     with_them do
       it do
-        stub_ee_application_setting(
-          admin_mode: admin_mode_enabled,
-          default_project_deletion_protection: true
-        )
+        stub_application_setting(admin_mode: admin_mode_enabled)
         worker_user = user_is_admin ? admin : user
 
         if should_delete
