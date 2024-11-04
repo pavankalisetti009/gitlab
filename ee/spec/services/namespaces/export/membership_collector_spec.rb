@@ -84,5 +84,11 @@ RSpec.describe Namespaces::Export::MembershipCollector, feature_category: :syste
         group_owner_1.id, sub_sub_group_owner_4.id, shared_maintainer_5.id,
         group_project_1_owner_5.id, sub_group_1_project_maintainer_4.id])
     end
+
+    it 'logs progress' do
+      expect(Gitlab::AppLogger).to receive(:info).exactly(17).times
+
+      prepare_data
+    end
   end
 end

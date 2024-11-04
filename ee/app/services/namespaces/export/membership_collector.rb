@@ -18,19 +18,34 @@ module Namespaces
         cursor = { current_id: target_group.id, depth: [target_group.id] }
         iterator = Gitlab::Database::NamespaceEachBatch.new(namespace_class: Group, cursor: cursor)
 
+        log_progress("Collection of memberships starting")
+
         iterator.each_batch(of: 100) do |ids|
           groups = Group.id_in(ids).in_order_of(:id, ids)
 
           groups.each do |group|
+            log_progress("Detailed export started for a group", group)
             process_group(group)
+            log_progress("Detailed export started for group projects", group)
             process_group_projects(group)
+            log_progress("Detailed export ended for a group", group)
           end
         end
+
+        log_progress("Collection of memberships ended")
 
         order
       end
 
       private
+
+      def log_progress(message, group = nil)
+        Gitlab::AppLogger.info(
+          class: self.class,
+          message: message,
+          group: group&.id
+        )
+      end
 
       def order
         result.sort_by do |member|
