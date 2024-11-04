@@ -31,9 +31,9 @@ module Security
 
       def exceptions_permit_group?(setting)
         return false unless setting[:enabled]
-        return true unless setting[:exceptions]
+        return true if setting[:exceptions].blank?
 
-        setting[:exceptions].exclude?(group.full_path)
+        setting[:exceptions].all? { |exception| exception[:id] != group.id }
       end
     end
   end

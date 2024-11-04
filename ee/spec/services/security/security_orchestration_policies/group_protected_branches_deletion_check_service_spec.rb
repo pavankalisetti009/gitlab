@@ -48,15 +48,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
     nil  | { enabled: true }  | true
     nil  | { enabled: false } | false
 
-    true  | { enabled: true, exceptions: [lazy { group.full_path }] }  | false
-    true  | { enabled: false, exceptions: [lazy { group.full_path }] } | false
-    false | { enabled: true, exceptions: [lazy { group.full_path }] }  | false
-    false | { enabled: false, exceptions: [lazy { group.full_path }] } | false
+    true  | { enabled: true, exceptions: [{ id: lazy { group.id } }] }  | false
+    true  | { enabled: false, exceptions: [{ id: lazy { group.id } }] } | false
+    false | { enabled: true, exceptions: [{ id: lazy { group.id } }] }  | false
+    false | { enabled: false, exceptions: [{ id: lazy { group.id } }] } | false
 
-    true  | { enabled: true, exceptions: [lazy { group.full_path.reverse }] }  | true
-    true  | { enabled: false, exceptions: [lazy { group.full_path.reverse }] } | false
-    false | { enabled: true, exceptions: [lazy { group.full_path.reverse }] }  | true
-    false | { enabled: false, exceptions: [lazy { group.full_path.reverse }] } | false
+    true  | { enabled: true, exceptions: [{ id: lazy { non_existing_record_id } }] }  | true
+    true  | { enabled: false, exceptions: [{ id: lazy { non_existing_record_id } }] } | false
+    false | { enabled: true, exceptions: [{ id: lazy { non_existing_record_id } }] }  | true
+    false | { enabled: false, exceptions: [{ id: lazy { non_existing_record_id } }] } | false
   end
 
   with_them do

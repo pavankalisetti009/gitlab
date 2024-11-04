@@ -1182,7 +1182,12 @@
                       "exceptions": {
                         "type": "array",
                         "items": {
-                          "type": "string"
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            }
+                          }
                         }
                       }
                     },
