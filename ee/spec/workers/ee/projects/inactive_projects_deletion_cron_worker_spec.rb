@@ -59,8 +59,7 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
       end
     end
 
-    it 'invokes Projects::InactiveProjectsDeletionNotificationWorker for inactive projects and logs audit event',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/501375' do
+    it 'invokes Projects::InactiveProjectsDeletionNotificationWorker for inactive projects and logs audit event' do
       audit_context = {
         name: "inactive_project_scheduled_for_deletion",
         message: "Project is scheduled to be deleted on #{deletion_date} due to inactivity.",
@@ -92,8 +91,7 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
       end
 
-      it 'invokes Projects::DestroyService for projects that are inactive even after being notified',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/501376' do
+      it 'invokes Projects::DestroyService for projects that are inactive even after being notified' do
         Gitlab::Redis::SharedState.with do |redis|
           redis.hset(
             'inactive_projects_deletion_warning_email_notified',
