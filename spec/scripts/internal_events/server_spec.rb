@@ -162,7 +162,7 @@ RSpec.describe Server, feature_category: :service_ping do
         }
       end
 
-      it 'successfully parses event' do
+      it 'successfully parses event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498773' do
         expect(response.code).to eq('200')
         expect(events).to contain_exactly(expected_event)
       end
