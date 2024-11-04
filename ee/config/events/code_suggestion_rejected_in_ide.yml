@@ -13,6 +13,8 @@ additional_properties:
     description: timestamp of the event
   language:
     description: programming language used for the suggestion
+  suggestion_size:
+    description: size of the suggestion
 identifiers:
   - user
 product_group: code_creation
