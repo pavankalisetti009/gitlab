@@ -154,7 +154,7 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
           end
 
           context 'when issue description has an attachment' do
-            let(:image_uploader) { build(:file_uploader, project: project) }
+            let(:image_uploader) { build(:file_uploader, container: project) }
             let(:new_description) { "A description and image: #{image_uploader.markdown_link}" }
 
             it 'copies the description, rewriting the attachment' do
