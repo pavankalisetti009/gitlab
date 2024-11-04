@@ -1,5 +1,4 @@
 <script>
-import { GlSkeletonLoader } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import SelfHostedModelsTable from '../self_hosted_models/components/self_hosted_models_table.vue';
@@ -9,7 +8,6 @@ export default {
   name: 'SelfHostedModelsPage',
   components: {
     SelfHostedModelsTable,
-    GlSkeletonLoader,
   },
   i18n: {
     errorMessage: s__(
@@ -45,12 +43,5 @@ export default {
 </script>
 
 <template>
-  <div>
-    <div v-if="isLoading" class="gl-pt-5">
-      <gl-skeleton-loader />
-    </div>
-    <div v-else>
-      <self-hosted-models-table :models="selfHostedModels" />
-    </div>
-  </div>
+  <self-hosted-models-table :models="selfHostedModels" :loading="isLoading" />
 </template>

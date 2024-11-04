@@ -1,5 +1,4 @@
 <script>
-import { GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import FeatureSettingsTable from '../feature_settings/components/feature_settings_table.vue';
@@ -9,7 +8,6 @@ export default {
   name: 'AiFeatureSettingsPage',
   components: {
     FeatureSettingsTable,
-    GlSkeletonLoader,
   },
   i18n: {
     errorMessage: s__(
@@ -45,12 +43,5 @@ export default {
 </script>
 
 <template>
-  <div>
-    <div v-if="isLoading" class="gl-pt-5">
-      <gl-skeleton-loader />
-    </div>
-    <div v-else>
-      <feature-settings-table :ai-feature-settings="aiFeatureSettings" />
-    </div>
-  </div>
+  <feature-settings-table :ai-feature-settings="aiFeatureSettings" :loading="isLoading" />
 </template>

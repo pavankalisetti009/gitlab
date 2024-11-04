@@ -1,4 +1,11 @@
-import { GlTable, GlDisclosureDropdown, GlLink, GlTruncate, GlSearchBoxByType } from '@gitlab/ui';
+import {
+  GlTable,
+  GlDisclosureDropdown,
+  GlLink,
+  GlTruncate,
+  GlSearchBoxByType,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SelfHostedModelsTable from 'ee/pages/admin/ai/self_hosted_models/components/self_hosted_models_table.vue';
 import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
@@ -23,6 +30,7 @@ describe('SelfHostedModelsTable', () => {
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
+  const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findTableHeaders = () => findTable().findAllComponents('th');
   const findTableRows = () => findTable().findAllComponents('tbody > tr');
   const findNthTableRow = (idx) => findTableRows().at(idx);
@@ -53,6 +61,14 @@ describe('SelfHostedModelsTable', () => {
     ];
 
     expect(findTableHeaders().wrappers.map((h) => h.text())).toEqual(expectedTableHeaderNames);
+  });
+
+  describe('when model data is loading', () => {
+    it('renders skeleton loaders', () => {
+      createComponent({ props: { loading: true, models: mockSelfHostedModelsList } });
+
+      expect(findLoaders().exists()).toBe(true);
+    });
   });
 
   it('renders self-hosted model entries', () => {
