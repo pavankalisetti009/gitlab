@@ -61,14 +61,7 @@ module EE
           if current_user&.can_read_all_resources?
             :any
           elsif current_user
-            ::Search::Cache.lookup(
-              resource: current_user,
-              action: :authorized_projects,
-              expires_in: 1.minute,
-              enabled: ::Feature.enabled?(:search_cache_authorizations, current_user)
-            ) do
-              current_user.authorized_projects.pluck_primary_key
-            end
+            current_user.authorized_projects.pluck_primary_key
           else
             []
           end
