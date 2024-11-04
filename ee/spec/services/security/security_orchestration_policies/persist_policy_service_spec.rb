@@ -137,7 +137,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(scan_finding_policy),
                   enabled: true,
                   content: scan_finding_policy.slice(:actions, :approval_settings,
-                    :fallback_behavior).deep_stringify_keys,
+                    :fallback_behavior, :policy_tuning).deep_stringify_keys,
                   scope: scan_finding_policy[:policy_scope].deep_stringify_keys
                 },
                 {
@@ -149,7 +149,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(license_finding_policy),
                   enabled: true,
                   content: license_finding_policy.slice(:actions, :approval_settings,
-                    :fallback_behavior).deep_stringify_keys,
+                    :fallback_behavior, :policy_tuning).deep_stringify_keys,
                   scope: {}
                 },
                 {
@@ -161,7 +161,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(any_merge_request_policy),
                   enabled: true,
                   content: any_merge_request_policy.slice(:actions, :approval_settings,
-                    :fallback_behavior).deep_stringify_keys,
+                    :fallback_behavior, :policy_tuning).deep_stringify_keys,
                   scope: any_merge_request_policy[:policy_scope].deep_stringify_keys
                 }
               ]

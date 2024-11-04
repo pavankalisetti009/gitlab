@@ -114,7 +114,8 @@ module Security
           commits: rule[:commits],
           project_approval_settings: policy[:approval_settings] || {},
           send_bot_message: send_bot_message_action&.slice(:enabled) || {},
-          fallback_behavior: policy.fetch(:fallback_behavior, {})
+          fallback_behavior: policy.fetch(:fallback_behavior, {}),
+          policy_tuning: policy.fetch(:policy_tuning, {})
         )
       end
 

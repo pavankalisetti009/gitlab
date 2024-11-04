@@ -166,6 +166,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           end
 
           let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
+          let(:unblock_enabled) { true }
 
           subject(:execute_with_error) do
             service.error!(approval_rule_1, :scan_removed, missing_scans: rule_scanners)
@@ -173,6 +174,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           end
 
           before do
+            policy_a.update!(policy_tuning: { unblock_rules_using_execution_policies: unblock_enabled })
             allow_next_instance_of(Repository) do |repository|
               allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
             end
@@ -183,6 +185,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
             expect(violated_policies).to be_empty
           end
 
+          describe 'events' do
+            subject { service.error!(approval_rule_1, :scan_removed, missing_scans: rule_scanners) }
+
+            it_behaves_like 'internal event tracking' do
+              let(:category) { described_class.name }
+              let(:event) { 'unblock_approval_rule_using_scan_execution_policy' }
+              let(:additional_properties) do
+                {
+                  label: 'dependency_scanning,container_scanning'
+                }
+              end
+            end
+          end
+
           context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
             before do
               stub_feature_flags(unblock_rules_using_execution_policies: false)
@@ -190,6 +206,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
 
             it 'updates violations' do
               execute_with_error
+
+              expect(violated_policies).to contain_exactly policy_a
+            end
+          end
+
+          context 'when the unblocking is not enabled by the policy' do
+            let(:unblock_enabled) { false }
+
+            it 'updates violations' do
+              execute_with_error
+
               expect(violated_policies).to contain_exactly policy_a
             end
           end

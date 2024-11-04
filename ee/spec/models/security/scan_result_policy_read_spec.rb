@@ -35,6 +35,12 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     it { is_expected.to allow_value({ fail: described_class::FALLBACK_BEHAVIORS[:closed] }).for(:fallback_behavior) }
     it { is_expected.not_to allow_value({ fail: "foo" }).for(:fallback_behavior) }
 
+    it { is_expected.not_to allow_value("string").for(:policy_tuning) }
+    it { is_expected.to allow_value({}).for(:policy_tuning) }
+    it { is_expected.to allow_value({ unblock_rules_using_execution_policies: true }).for(:policy_tuning) }
+    it { is_expected.to allow_value({ unblock_rules_using_execution_policies: false }).for(:policy_tuning) }
+    it { is_expected.not_to allow_value({ unblock_rules_using_execution_policies: "foo" }).for(:policy_tuning) }
+
     it do
       is_expected.to allow_value(
         { prevent_approval_by_author: true, prevent_approval_by_commit_author: false,
@@ -327,6 +333,51 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
 
     context "without fallback_behavior" do
       let(:read) { create(:scan_result_policy_read) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe "#unblock_rules_using_execution_policies?" do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let(:read) do
+      create(:scan_result_policy_read,
+        project: project,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+        **read_attributes)
+    end
+
+    subject { read.unblock_rules_using_execution_policies? }
+
+    context "when unblock_rules_using_execution_policies is set as true" do
+      let(:read_attributes) { { policy_tuning: { unblock_rules_using_execution_policies: true } } }
+
+      it { is_expected.to be(true) }
+
+      context "when feature flag unblock_rules_using_execution_policies is disabled" do
+        before do
+          stub_feature_flags(unblock_rules_using_execution_policies: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context "when unblock_rules_using_execution_policies is set as false" do
+      let(:read_attributes) { { policy_tuning: { unblock_rules_using_execution_policies: false } } }
+
+      it { is_expected.to be(false) }
+    end
+
+    context "without unblock_rules_using_execution_policies" do
+      let(:read_attributes) { { policy_tuning: {} } }
+
+      it { is_expected.to be(false) }
+    end
+
+    context "without policy_tuning" do
+      let(:read_attributes) { {} }
 
       it { is_expected.to be(false) }
     end

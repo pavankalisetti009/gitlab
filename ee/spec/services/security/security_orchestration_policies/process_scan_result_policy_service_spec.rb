@@ -757,5 +757,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         expect(read.fallback_behavior).to eq("fail" => "open")
       end
     end
+
+    context 'with policy_tuning' do
+      let(:policy) { build(:scan_result_policy, policy_tuning: { unblock_rules_using_execution_policies: true }) }
+
+      it 'persists it on scan_result_policy_read' do
+        subject
+
+        read = project.approval_rules.first.scan_result_policy_read
+
+        expect(read.policy_tuning).to eq("unblock_rules_using_execution_policies" => true)
+      end
+    end
   end
 end

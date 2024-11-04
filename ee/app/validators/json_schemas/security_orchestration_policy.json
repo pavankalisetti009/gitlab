@@ -721,6 +721,15 @@
               }
             }
           },
+          "policy_tuning": {
+            "type": "object",
+            "properties": {
+              "unblock_rules_using_execution_policies": {
+                "type": "boolean",
+                "description": "Experimental: Unblock policy approval rules with missing scans of scanners which are enforced by Scan execution policies. If scan does not produce artifacts because it is not applicable to the given project, approval rules are automatically unblocked and do not require approvals."
+              }
+            }
+          },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },
