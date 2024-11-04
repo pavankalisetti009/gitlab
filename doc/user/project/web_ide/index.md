@@ -23,8 +23,6 @@ The Web IDE is an advanced editor with commit staging.
 You can use the Web IDE to make changes to multiple files directly from the GitLab UI.
 For a more basic implementation, see [Web Editor](../repository/web_editor.md).
 
-To pair the Web IDE with a remote development environment, see [Remote development](../remote_development/index.md).
-
 Support for [GitLab Flavored Markdown](../../markdown.md) preview in the Web IDE is proposed in
 [issue 645](https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/issues/645).
 
