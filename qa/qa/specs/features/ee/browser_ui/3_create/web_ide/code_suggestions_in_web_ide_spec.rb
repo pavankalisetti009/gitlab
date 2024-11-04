@@ -81,7 +81,7 @@ module QA
 
       context 'on Self-managed', :orchestrated do
         context 'with a valid license' do
-          context 'with a Duo Pro add-on' do
+          context 'with a Duo Enterprise add-on' do
             context 'when seat is assigned', :blocking, :ai_gateway do
               it_behaves_like 'a code completion suggestion',
                 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/439625'
@@ -92,7 +92,7 @@ module QA
             end
           end
 
-          context 'with no Duo Pro add-on', :blocking, :ai_gateway_no_add_on do
+          context 'with no Duo Enterprise add-on', :blocking, :ai_gateway_no_add_on do
             it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452450'
           end
         end
