@@ -3,7 +3,7 @@ import StatisticsCard from './statistics_card.vue';
 
 export default {
   component: StatisticsCard,
-  title: 'usage_quotas/statistics_card',
+  title: 'ee/usage_quotas/statistics_card',
 };
 
 const Template = (_, { argTypes }) => ({
