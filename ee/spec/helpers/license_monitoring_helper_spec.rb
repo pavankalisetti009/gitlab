@@ -8,6 +8,10 @@ RSpec.describe LicenseMonitoringHelper, feature_category: :plan_provisioning do
   let(:user) { build_stubbed(:user) }
   let(:license) { build_stubbed(:gitlab_license) }
 
+  before do
+    stub_feature_flags(sm_seat_control_block_overages: false)
+  end
+
   describe '#show_active_user_count_threshold_banner?' do
     subject { helper.show_active_user_count_threshold_banner? }
 

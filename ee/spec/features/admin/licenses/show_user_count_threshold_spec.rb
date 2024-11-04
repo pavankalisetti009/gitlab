@@ -32,8 +32,21 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
     end
   end
 
+  shared_examples_for 'a visible block seats overages banner' do
+    it 'shows the banner' do
+      visit visit_path
+
+      expect(page).to have_content('Your instance is approaching its licensed user count')
+      expect(page).to have_content('users cannot be invited or added to the instance.')
+      expect(page).to have_link('Purchase more seats', href: help_page_path('subscriptions/gitlab_com/index.md',
+        anchor: 'add-seats-to-subscription'))
+    end
+  end
+
   before do
     create_list(:user, active_user_count)
+
+    stub_feature_flags(sm_seat_control_block_overages: false)
   end
 
   context 'with reached user count threshold' do
@@ -52,6 +65,28 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
         let(:visit_path) { admin_root_path }
 
         it_behaves_like 'a visible banner'
+
+        context 'with seat control block seats overages enabled' do
+          before do
+            stub_feature_flags(sm_seat_control_block_overages: true)
+          end
+
+          it_behaves_like 'a visible block seats overages banner'
+        end
+
+        context 'when remaining users are 0' do
+          let(:active_user_count) { license_seats_limit - 2 }
+
+          it_behaves_like 'a visible banner'
+
+          context 'with seat control block seats overages enabled' do
+            before do
+              stub_feature_flags(sm_seat_control_block_overages: true)
+            end
+
+            it_behaves_like 'a visible block seats overages banner'
+          end
+        end
 
         context 'when banner was dismissed' do
           before do
