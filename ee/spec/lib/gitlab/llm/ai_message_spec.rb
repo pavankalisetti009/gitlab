@@ -41,7 +41,8 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
     end
 
     it 'generates id' do
-      allow(SecureRandom).to receive(:uuid).once.and_return('123')
+      # TODO: revert changes to .once when removing use_load_balancing_session_map feature flag https://gitlab.com/gitlab-org/gitlab/-/issues/496505
+      allow(SecureRandom).to receive(:uuid).at_least(:once).and_return('123')
 
       expect(described_class.new(data.except(:id)).id).to eq('123')
     end
