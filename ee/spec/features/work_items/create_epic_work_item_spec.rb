@@ -16,11 +16,8 @@ RSpec.describe 'Create work item epic', :js, feature_category: :team_planning do
     before do
       stub_licensed_features(epics: true, subepics: true, issuable_health_status: true, epic_colors: true)
       sign_in(user)
-      wait_for_all_requests
       visit group_work_items_path(group)
-      wait_for_all_requests
       click_link 'New epic'
-      wait_for_all_requests
     end
 
     it 'shows the modal' do
@@ -28,6 +25,7 @@ RSpec.describe 'Create work item epic', :js, feature_category: :team_planning do
     end
 
     it 'has the expected widgets', :aggregate_failures do
+      expect(page).to have_selector('[data-testid="work-item-description-wrapper"]')
       expect(page).to have_selector('[data-testid="work-item-assignees"]')
       expect(page).to have_selector('[data-testid="work-item-labels"]')
       expect(page).to have_selector('[data-testid="work-item-rolledup-dates"]')

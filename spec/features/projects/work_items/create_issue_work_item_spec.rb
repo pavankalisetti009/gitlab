@@ -8,15 +8,17 @@ RSpec.describe 'Create issuable work item', :js, feature_category: :team_plannin
 
   context 'when we go to new work item path in project and select issue from dropdown' do
     before do
-      stub_licensed_features(issuable_health_status: true, iterations: true)
       sign_in(user)
       visit "#{project_path(project)}/-/work_items/new"
       select 'Issue', from: 'Type'
     end
 
-    it 'has the expected `ee` widgets', :aggregate_failures do
-      expect(page).to have_selector('[data-testid="work-item-health-status"]')
-      expect(page).to have_selector('[data-testid="work-item-iteration"]')
+    it 'has the expected widgets', :aggregate_failures do
+      expect(page).to have_selector('[data-testid="work-item-title-input"]')
+      expect(page).to have_selector('[data-testid="work-item-labels"]')
+      expect(page).to have_selector('[data-testid="work-item-assignees"]')
+      expect(page).to have_selector('[data-testid="work-item-description-wrapper"]')
+      expect(page).to have_selector('[data-testid="work-item-milestone"]')
     end
   end
 end
