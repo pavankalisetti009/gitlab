@@ -38350,6 +38350,9 @@ msgstr ""
 msgid "Organization|An error occurred loading user organizations. Please refresh the page to try again."
 msgstr ""
 
+msgid "Organization|An error occurred updating the organization role. Please try again."
+msgstr ""
+
 msgid "Organization|An error occurred updating your organization. Please try again."
 msgstr ""
 
@@ -38447,6 +38450,9 @@ msgid "Organization|Organization overview"
 msgstr ""
 
 msgid "Organization|Organization role"
+msgstr ""
+
+msgid "Organization|Organization role was updated successfully."
 msgstr ""
 
 msgid "Organization|Organization settings"
