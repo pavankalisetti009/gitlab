@@ -6748,6 +6748,9 @@ msgstr ""
 msgid "Application was successfully updated."
 msgstr ""
 
+msgid "Application: %{application_name}"
+msgstr ""
+
 msgid "Application: %{name}"
 msgstr ""
 
