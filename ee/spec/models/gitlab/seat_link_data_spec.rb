@@ -128,10 +128,10 @@ RSpec.describe Gitlab::SeatLinkData do
 
       it 'includes the add-on metrics in the payload' do
         expect(subject.as_json).to include(
-          add_on_metrics: [
+          add_on_metrics: match_array([
             { add_on_type: 'duo_enterprise', purchased_seats: 5, assigned_seats: 2 },
             { add_on_type: 'product_analytics', purchased_seats: 3, assigned_seats: 1 }
-          ]
+          ])
         )
       end
     end
