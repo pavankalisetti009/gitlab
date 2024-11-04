@@ -45,52 +45,38 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     let(:response) { { success: true } }
 
     context 'when trial is applied successfully', :saas do
-      context 'when `duo_enterprise_trials_registration` feature flag is enabled' do
-        let(:trial_user_information) do
-          {
-            namespace_id: namespace.id,
-            add_on_name: 'duo_enterprise'
-          }
-        end
+      let(:trial_user_information) do
+        {
+          namespace_id: namespace.id,
+          add_on_name: 'duo_enterprise'
+        }
+      end
 
-        context 'when namespace has a free plan' do
-          it 'with expected parameters' do
-            expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-              .with({
+      context 'when namespace has a free plan' do
+        it 'with expected parameters' do
+          expect(Gitlab::SubscriptionPortal::Client)
+            .to receive(:generate_trial).with(
+              {
                 uid: user.id,
                 trial_user: trial_user_information.merge(trial_type: :ultimate_with_gitlab_duo_enterprise)
-              }).and_return(response)
+              }
+            ).and_return(response)
 
-            expect(execute).to be_success
-          end
-        end
-
-        context 'when namespace has a premium plan' do
-          let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
-
-          it 'with expected parameters' do
-            expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-              .with({
-                uid: user.id,
-                trial_user: trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
-              }).and_return(response)
-
-            expect(execute).to be_success
-          end
+          expect(execute).to be_success
         end
       end
 
-      context 'when `duo_enterprise_trials_registration` feature flag is disabled' do
-        let(:trial_user_information) { { namespace_id: namespace.id } }
-
-        before do
-          stub_feature_flags(duo_enterprise_trials_registration: false)
-        end
+      context 'when namespace has a premium plan' do
+        let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
 
         it 'with expected parameters' do
-          expect(Gitlab::SubscriptionPortal::Client).to receive(:generate_trial)
-            .with({ uid: user.id, trial_user: trial_user_information.without(:add_on_name, :trial_type) })
-            .and_return(response)
+          expect(Gitlab::SubscriptionPortal::Client)
+            .to receive(:generate_trial).with(
+              {
+                uid: user.id,
+                trial_user: trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
+              }
+            ).and_return(response)
 
           expect(execute).to be_success
         end
@@ -155,21 +141,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
           expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
         end
       end
-
-      context 'when duo_enterprise_trials_registration feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_enterprise_trials_registration: false)
-        end
-
-        context 'when namespace has already had a trial', :saas do
-          let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
-          let_it_be(:user) { create(:user, owner_of: namespace) }
-
-          it 'returns success: false with errors' do
-            expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
-          end
-        end
-      end
     end
   end
 
@@ -200,7 +171,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
     end
 
     context 'with valid plans', :saas do
-      where(plan: ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL)
+      where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
 
       with_them do
         let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
@@ -215,19 +186,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be false }
-    end
-
-    context 'when duo_enterprise_trials_registration feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_enterprise_trials_registration: false)
-      end
-
-      context 'when namespace is already on a trial', :saas do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :free_plan, trial_ends_on: 1.year.ago) }
-        let_it_be(:user) { create(:user, owner_of: namespace) }
-
-        it { is_expected.to be false }
-      end
     end
   end
 end

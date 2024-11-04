@@ -91,12 +91,6 @@ module BillingPlansHelper
     end
   end
 
-  def show_start_free_trial_messages?(namespace)
-    return false if Feature.enabled?(:duo_enterprise_trials, current_user)
-
-    !namespace.free_personal? && namespace.eligible_for_trial?
-  end
-
   def plan_purchase_url(group, plan)
     GitlabSubscriptions::PurchaseUrlBuilder.new(
       plan_id: plan.id,
@@ -149,8 +143,6 @@ module BillingPlansHelper
   end
 
   def show_duo_enterprise_trial_alert?(namespace)
-    return false if Feature.disabled?(:duo_enterprise_trials, current_user)
-
     if namespace.ultimate_plan?
       GitlabSubscriptions::DuoEnterprise.no_add_on_purchase_for_namespace?(namespace)
     elsif namespace.premium_plan?

@@ -271,8 +271,7 @@ module Features
 
       service_params = {
         trial_user_information: trial_user_params,
-        uid: user.id,
-        user: user # TODO: remove with duo_enterprise_trials cleanup
+        uid: user.id
       }
 
       expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoProService, service_params) do |instance|

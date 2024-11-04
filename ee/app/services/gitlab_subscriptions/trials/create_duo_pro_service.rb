@@ -22,12 +22,6 @@ module GitlabSubscriptions
       def tracking_prefix
         'duo_pro'
       end
-
-      override :apply_trial_params
-      def apply_trial_params
-        # TODO: remove with duo_enterprise_trials cleanup
-        super.merge(user: user)
-      end
     end
   end
 end

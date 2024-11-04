@@ -125,39 +125,20 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
     end
   end
 
-  describe '.namespace_eligible?' do
-    let(:namespace) { build_stubbed(:namespace) }
-    let(:user) { build_stubbed(:user) }
+  describe '.namespace_eligible?', :saas do
+    context 'when namespace has an eligible plan' do
+      let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
 
-    context 'when duo_enterprise_trials feature is disabled' do
-      before do
-        stub_feature_flags(duo_enterprise_trials: false)
-      end
-
-      it 'returns true regardless of the namespace plan' do
-        expect(described_class.namespace_eligible?(namespace, user)).to be true
+      it 'returns true' do
+        expect(described_class.namespace_eligible?(namespace)).to be true
       end
     end
 
-    context 'when duo_enterprise_trials feature is enabled', :saas do
-      before do
-        stub_feature_flags(duo_enterprise_trials: true)
-      end
+    context 'when namespace does not have an eligible plan' do
+      let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
 
-      context 'when namespace has an eligible plan' do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
-
-        it 'returns true' do
-          expect(described_class.namespace_eligible?(namespace, user)).to be true
-        end
-      end
-
-      context 'when namespace does not have an eligible plan' do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
-
-        it 'returns false' do
-          expect(described_class.namespace_eligible?(namespace, user)).to be false
-        end
+      it 'returns false' do
+        expect(described_class.namespace_eligible?(namespace)).to be false
       end
     end
   end

@@ -73,10 +73,8 @@ module GitlabSubscriptions
     def trial_success_path(namespace)
       if discover_group_security_flow?
         group_security_dashboard_path(namespace)
-      elsif Feature.enabled?(:duo_enterprise_trials, current_user)
-        group_settings_gitlab_duo_seat_utilization_index_path(namespace)
       else
-        group_path(namespace)
+        group_settings_gitlab_duo_seat_utilization_index_path(namespace)
       end
     end
 
@@ -115,7 +113,7 @@ module GitlabSubscriptions
     end
 
     def success_flash_message(add_on_purchase)
-      if discover_group_security_flow? || Feature.disabled?(:duo_enterprise_trials, current_user)
+      if discover_group_security_flow?
         s_("BillingPlans|Congratulations, your free trial is activated.")
       else
         # Added due to this issue we do not know why it happens for premium subscription cases

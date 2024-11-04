@@ -67,16 +67,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
 
       it { is_expected.to render_lead_form }
 
-      context 'when feature flag duo_enterprise_trials is disabled' do
-        let(:base_params) { { namespace_id: ineligible_paid_group.id } }
-
-        before do
-          stub_feature_flags(duo_enterprise_trials: false)
-        end
-
-        it { is_expected.to render_lead_form }
-      end
-
       context 'with tracking page render' do
         it_behaves_like 'internal event tracking' do
           let(:event) { 'render_duo_pro_lead_page' }
@@ -210,17 +200,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
             )
             expect(flash[:success]).to have_content(message)
           end
-        end
-
-        context 'when feature flag duo_enterprise_trials is disabled' do
-          let(:group_for_trial) { ineligible_paid_group }
-
-          before do
-            expect_create_success(group_for_trial)
-            stub_feature_flags(duo_enterprise_trials: false)
-          end
-
-          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
         end
 
         def expect_create_success(namespace)

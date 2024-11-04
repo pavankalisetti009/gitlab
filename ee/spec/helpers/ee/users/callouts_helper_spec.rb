@@ -14,7 +14,6 @@ RSpec.describe EE::Users::CalloutsHelper do
     let(:user_default_dashboard?) { true }
     let(:owns_paid_namespace?) { false }
     let(:owns_group_without_trial?) { true }
-    let(:duo_enterprise_trials_enabled?) { true }
 
     let(:render) { helper.render_dashboard_ultimate_trial(user) }
 
@@ -23,21 +22,11 @@ RSpec.describe EE::Users::CalloutsHelper do
       allow(helper).to receive(:user_default_dashboard?).with(user).and_return(user_default_dashboard?)
       allow(user).to receive(:owns_paid_namespace?).and_return(owns_paid_namespace?)
       allow(user).to receive(:owns_group_without_trial?).and_return(owns_group_without_trial?)
-      stub_feature_flags(duo_enterprise_trials: duo_enterprise_trials_enabled?)
     end
 
     context 'when all conditions are met' do
       it 'renders the ultimate_with_enterprise_trial_callout_content' do
         expect(helper).to receive(:render).with('shared/ultimate_with_enterprise_trial_callout_content')
-        render
-      end
-    end
-
-    context 'when duo_enterprise_trials feature flag is disabled' do
-      let(:duo_enterprise_trials_enabled?) { false }
-
-      it 'renders the ultimate_trial_callout_content' do
-        expect(helper).to receive(:render).with('shared/ultimate_trial_callout_content')
         render
       end
     end

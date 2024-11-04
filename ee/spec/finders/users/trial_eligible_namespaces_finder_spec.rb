@@ -22,24 +22,50 @@ RSpec.describe Users::TrialEligibleNamespacesFinder, feature_category: :subscrip
       let_it_be(:namespace_with_premium_plan) { create(:group_with_plan, plan: :premium_plan, owners: user) }
       let_it_be(:namespace_with_ultimate_trial) { create(:group_with_plan, plan: :ultimate_trial_plan, owners: user) }
 
-      context 'when duo_enterprise_trials_registration is enabled' do
-        let(:eligible_namespaces) do
-          [
-            regular_namespace,
-            namespace_with_free_plan,
-            namespace_with_premium_plan
-          ]
-        end
+      let(:eligible_namespaces) do
+        [
+          regular_namespace,
+          namespace_with_free_plan,
+          namespace_with_premium_plan
+        ]
+      end
 
+      it { is_expected.to match_array(eligible_namespaces) }
+
+      context 'when a duo enterprise add on exists on a namespace' do
         before do
-          stub_feature_flags(duo_enterprise_trials_registration: true)
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: regular_namespace)
         end
 
-        it { is_expected.to match_array(eligible_namespaces) }
+        it 'is not eligible for the trial' do
+          is_expected.to match_array([namespace_with_free_plan, namespace_with_premium_plan])
+        end
+      end
 
-        context 'when a duo enterprise add on exists on a namespace' do
+      context 'when a duo pro add on exists on a namespace' do
+        context 'and a namespace has an active purchase' do
           before do
-            create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: regular_namespace)
+            create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: regular_namespace)
+          end
+
+          it 'is eligible for the trial' do
+            is_expected.to match_array(eligible_namespaces)
+          end
+        end
+
+        context 'and a namespace has an expired purchase' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: regular_namespace)
+          end
+
+          it 'is eligible for the trial' do
+            is_expected.to match_array(eligible_namespaces)
+          end
+        end
+
+        context 'and a namespace has an active trial' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: regular_namespace)
           end
 
           it 'is not eligible for the trial' do
@@ -47,81 +73,30 @@ RSpec.describe Users::TrialEligibleNamespacesFinder, feature_category: :subscrip
           end
         end
 
-        context 'when a duo pro add on exists on a namespace' do
-          context 'and a namespace has an active purchase' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: regular_namespace)
-            end
-
-            it 'is eligible for the trial' do
-              is_expected.to match_array(eligible_namespaces)
-            end
+        context 'and a namespace has an expired trial' do
+          before do
+            create(
+              :gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: regular_namespace
+            )
           end
 
-          context 'and a namespace has an expired purchase' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: regular_namespace)
-            end
-
-            it 'is eligible for the trial' do
-              is_expected.to match_array(eligible_namespaces)
-            end
-          end
-
-          context 'and a namespace has an active trial' do
-            before do
-              create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: regular_namespace)
-            end
-
-            it 'is not eligible for the trial' do
-              is_expected.to match_array([namespace_with_free_plan, namespace_with_premium_plan])
-            end
-          end
-
-          context 'and a namespace has an expired trial' do
-            before do
-              create(
-                :gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: regular_namespace
-              )
-            end
-
-            it 'is eligible for the trial' do
-              is_expected.to match_array(eligible_namespaces)
-            end
-          end
-
-          context 'and a namespace has a future active trial' do
-            before do
-              create(
-                :gitlab_subscription_add_on_purchase,
-                :gitlab_duo_pro, :future_dated, trial: true, namespace: regular_namespace
-              )
-            end
-
-            it 'is eligible for the trial' do
-              is_expected.to match_array(eligible_namespaces)
-            end
+          it 'is eligible for the trial' do
+            is_expected.to match_array(eligible_namespaces)
           end
         end
-      end
 
-      context 'when duo_enterprise_trials_registration is disabled' do
-        let(:eligible_namespaces) do
-          [
-            regular_namespace,
-            namespace_with_free_plan
-          ]
+        context 'and a namespace has a future active trial' do
+          before do
+            create(
+              :gitlab_subscription_add_on_purchase,
+              :gitlab_duo_pro, :future_dated, trial: true, namespace: regular_namespace
+            )
+          end
+
+          it 'is eligible for the trial' do
+            is_expected.to match_array(eligible_namespaces)
+          end
         end
-
-        before do
-          stub_feature_flags(duo_enterprise_trials_registration: false)
-        end
-
-        before_all do
-          create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.yesterday, owners: user)
-        end
-
-        it { is_expected.to match_array(eligible_namespaces) }
       end
     end
   end

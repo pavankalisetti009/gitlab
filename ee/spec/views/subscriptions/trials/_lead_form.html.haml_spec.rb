@@ -16,16 +16,4 @@ RSpec.describe 'gitlab_subscriptions/trials/_lead_form.html.haml', feature_categ
 
     expect(rendered).to have_content(_('Start your Free Ultimate and GitLab Duo Enterprise Trial'))
   end
-
-  context 'with the duo_enterprise_trials feature flag off' do
-    before do
-      stub_feature_flags(duo_enterprise_trials: false)
-    end
-
-    it 'renders lead for and trial only referenced Ultimate verbage' do
-      render 'gitlab_subscriptions/trials/lead_form'
-
-      expect(rendered).to have_content(_('Start your Free Ultimate Trial'))
-    end
-  end
 end

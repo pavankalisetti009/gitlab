@@ -39,49 +39,6 @@ RSpec.describe Users::AddOnTrialEligibleNamespacesFinder, feature_category: :sub
           it { is_expected.to eq [namespace_with_other_addon, namespace_with_middle_name, namespace_with_paid_plan] }
         end
       end
-
-      context 'when duo_enterprise_trials feature is disabled' do
-        let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, name: 'Zed', plan: :ultimate_plan) }
-        let_it_be(:namespace_with_duo) { create(:group_with_plan, plan: :ultimate_plan) }
-        let_it_be(:namespace_with_other_addon) { create(:group_with_plan, name: 'Alpha', plan: :ultimate_plan) }
-        let_it_be(:namespace_with_middle_name) { create(:group_with_plan, name: 'Beta', plan: :ultimate_plan) }
-        let_it_be(:namespace_with_premium_plan) { create(:group_with_plan, name: 'Gama', plan: :premium_plan) }
-
-        before_all do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace_with_duo)
-          create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
-        end
-
-        before do
-          stub_feature_flags(duo_enterprise_trials: false)
-        end
-
-        context 'when user does not own groups' do
-          it { is_expected.to eq [] }
-        end
-
-        context 'when user owns groups' do
-          before_all do
-            namespace_with_paid_plan.add_owner(user)
-            namespace_with_duo.add_owner(user)
-            namespace_with_free_plan.add_owner(user)
-            namespace_with_other_addon.add_owner(user)
-            namespace_with_middle_name.add_owner(user)
-            namespace_with_premium_plan.add_owner(user)
-          end
-
-          it do
-            result = [
-              namespace_with_other_addon,
-              namespace_with_middle_name,
-              namespace_with_premium_plan,
-              namespace_with_paid_plan
-            ]
-
-            is_expected.to eq result
-          end
-        end
-      end
     end
 
     context 'for duo_enterprise' do

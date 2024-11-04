@@ -1,6 +1,3 @@
-- faq_link          = link_to s_("BillingPlans|frequently asked questions"), Gitlab::Saas.about_pricing_faq_url
-- pricing_page_link = link_to s_("BillingPlans|Pricing page"), Gitlab::Saas.about_pricing_url
-
 - if namespace.trial_active?
   .billing-plan-divider.gl-mx-auto.gl-text-left.-gl-mb-3.gl-mt-5
     = render Pajamas::AlertComponent.new(variant: :warning,
@@ -8,9 +5,7 @@
       = c.with_body do
         = s_("BillingPlans|You can retain access to the %{plan} features by upgrading below.") % { plan: namespace.gitlab_subscription&.plan_title&.remove(' Trial') }
 - else
+  - pricing_page_link = link_to s_("BillingPlans|Pricing page"), Gitlab::Saas.about_pricing_url
   %p.gl-text-secondary
-    - if show_start_free_trial_messages?(namespace)
-      = html_escape(s_("BillingPlans|Learn more about each plan by reading our %{faq_link}, or start a free 30-day trial of GitLab.com Ultimate.")) % { faq_link: faq_link.html_safe }
-    - else
-      = html_escape(s_("BillingPlans|Learn more about each plan by visiting our %{pricing_page_link}.")) % { pricing_page_link: pricing_page_link.html_safe }
+    = html_escape(s_("BillingPlans|Learn more about each plan by visiting our %{pricing_page_link}.")) % { pricing_page_link: pricing_page_link.html_safe }
 

@@ -472,7 +472,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       allow(GitlabSubscriptions::DuoPro)
         .to receive(:no_add_on_purchase_for_namespace?).with(group).and_return(include_trial_link)
       allow(GitlabSubscriptions::DuoPro)
-        .to receive(:namespace_eligible?).with(group, current_user).and_return(include_trial_link)
+        .to receive(:namespace_eligible?).with(group).and_return(include_trial_link)
     end
 
     context 'when duo pro bulk assignment is available' do
@@ -489,13 +489,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
 
       it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'false')) }
-    end
-
-    context 'when duo_enterprise_trials is disabled' do
-      let(:include_trial_link) { false }
-      let(:trial_link) { {} }
-
-      it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'true')) }
     end
   end
 

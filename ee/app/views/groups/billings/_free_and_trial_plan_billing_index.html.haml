@@ -16,15 +16,6 @@
 
   .gl-flex-row.gl-flex.gl-flex-wrap.gl-justify-center.gl-mb-7.gl-ml-7{ data: { track_action: 'render', testid: 'billing-plans' } }
     = render Billing::PlanComponent.with_collection(plans_data, namespace: namespace, current_plan: current_plan)
-  - if namespace.never_had_trial? && Feature.disabled?(:duo_enterprise_trials, current_user)
-    .gl-text-left.gl-my-9.gl-mx-auto.gl-p-6.gl-bg-gray-10.gl-rounded-base.gl-border.billing-plan-divider
-      .gl-mb-2.gl-text-lg.gl-font-bold
-        = s_("BillingPlans|Ready to explore the value of paid features today?")
-      .gl-mb-5
-        = s_("BillingPlans|Start a free Ultimate trial. No credit card required.")
-      .gl-flex.gl-flex-wrap.gl-gap-3
-        = render Pajamas::ButtonComponent.new(href: new_trial_path(namespace_id: namespace.id), category: 'primary', variant: 'confirm', button_options: { data: start_free_trial_data }) do
-          = s_("BillingPlans|Start a free Ultimate trial")
 
   - if namespace.trial_active?
     .gl-mb-9.gl-mx-auto.billing-plan-divider

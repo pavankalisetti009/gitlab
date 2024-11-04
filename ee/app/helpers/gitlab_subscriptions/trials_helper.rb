@@ -5,17 +5,11 @@ module GitlabSubscriptions
     TRIAL_ONBOARDING_SOURCE_URLS = %w[about.gitlab.com docs.gitlab.com learn.gitlab.com].freeze
 
     def create_lead_form_data
-      submit_button_text = if Feature.enabled?(:duo_enterprise_trials, current_user)
-                             _('Continue')
-                           else
-                             s_('Trial|Start free GitLab Ultimate trial')
-                           end
-
       _lead_form_data.merge(
         submit_path: trials_path(
           step: GitlabSubscriptions::Trials::CreateService::LEAD, **params.permit(:namespace_id).merge(glm_params)
         ),
-        submit_button_text: submit_button_text
+        submit_button_text: s_('Trial|Continue')
       )
     end
 
@@ -80,15 +74,9 @@ module GitlabSubscriptions
 
     def trial_selection_intro_text(namespaces)
       if namespaces.any?
-        if Feature.enabled?(:duo_enterprise_trials, current_user)
-          s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
-        else
-          s_('Trials|You can apply your trial to a new group or an existing group.')
-        end
-      elsif Feature.enabled?(:duo_enterprise_trials, current_user)
-        s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
+        s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
       else
-        s_('Trials|Create a new group to start your GitLab Ultimate trial.')
+        s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
       end
     end
 

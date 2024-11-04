@@ -37,19 +37,6 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     it_behaves_like 'for tracking the trial step', :premium_plan, :duo_pro
 
     it_behaves_like 'creating add-on when namespace_id is provided', :premium_plan, :ultimate_plan
-
-    context 'when feature flag duo_enterprise_trials is disabled and namespace_id is provided' do
-      let(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
-      let(:trial_params) { { namespace_id: namespace.id.to_s } }
-
-      before do
-        expect_create_lead_success(trial_user_params)
-        expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
-        stub_feature_flags(duo_enterprise_trials: false)
-      end
-
-      it { is_expected.to be_success }
-    end
   end
 
   def lead_params(user, extra_lead_params)

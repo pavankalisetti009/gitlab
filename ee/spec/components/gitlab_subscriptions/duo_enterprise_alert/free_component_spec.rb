@@ -15,14 +15,6 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::FreeComponent, :saas, :a
     build(:gitlab_subscription, :free, namespace: namespace)
   end
 
-  context 'when duo_enterprise_trials is disabled' do
-    before do
-      stub_feature_flags(duo_enterprise_trials: false)
-    end
-
-    it { is_expected.to have_content('') }
-  end
-
   context 'when ultimate_trial plan' do
     before do
       build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace)

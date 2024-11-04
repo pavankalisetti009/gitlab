@@ -388,21 +388,6 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     with_them do
       it { is_expected.to eq(text) }
     end
-
-    context 'with the duo_enterprise_trials feature flag off' do
-      before do
-        stub_feature_flags(duo_enterprise_trials: false)
-      end
-
-      where(:namespaces, :text) do
-        [ref(:namespace)] | 'You can apply your trial to a new group or an existing group.'
-        []                | s_('Trials|Create a new group to start your GitLab Ultimate trial.')
-      end
-
-      with_them do
-        it { is_expected.to eq(text) }
-      end
-    end
   end
 
   describe '#trial_namespace_selector_data' do

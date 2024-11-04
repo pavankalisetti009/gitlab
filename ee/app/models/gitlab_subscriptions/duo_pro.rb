@@ -22,9 +22,7 @@ module GitlabSubscriptions
       GitlabSubscriptions::NamespaceAddOnPurchasesFinder.new(namespace, add_on: :duo_pro).execute.none?
     end
 
-    def self.namespace_eligible?(namespace, user)
-      return true unless Feature.enabled?(:duo_enterprise_trials, user)
-
+    def self.namespace_eligible?(namespace)
       namespace.actual_plan_name == ELIGIBLE_PLAN
     end
   end

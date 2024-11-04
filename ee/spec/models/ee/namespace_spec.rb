@@ -497,7 +497,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       context 'when there is a subscription' do
         context 'with a plan that is eligible for a trial' do
-          where(plan: ::Plan::PLANS_ELIGIBLE_FOR_COMBINED_TRIAL)
+          where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
 
           with_them do
             before do
@@ -517,54 +517,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
 
             it { is_expected.to be_empty }
-          end
-        end
-
-        context 'with duo_enterprise_trials disabled' do
-          before do
-            stub_feature_flags(duo_enterprise_trials_registration: false)
-          end
-
-          context 'with a plan that is eligible for a trial' do
-            where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
-
-            with_them do
-              context 'and has not yet been trialed' do
-                before do
-                  create :gitlab_subscription, plan, namespace: namespace
-                end
-
-                it { is_expected.to contain_exactly(namespace) }
-              end
-
-              context 'and has already had a trial' do
-                before do
-                  create :gitlab_subscription, plan, :expired_trial, namespace: namespace
-                end
-
-                it { is_expected.to be_empty }
-              end
-
-              context 'and has already had a trial that has been downgraded correctly' do
-                before do
-                  create :gitlab_subscription, plan, :expired_trial, trial: false, namespace: namespace
-                end
-
-                it { is_expected.to be_empty }
-              end
-            end
-          end
-
-          context 'with a plan that is ineligible for a trial' do
-            where(plan: ::Plan::PAID_HOSTED_PLANS)
-
-            with_them do
-              before do
-                create :gitlab_subscription, plan, namespace: namespace
-              end
-
-              it { is_expected.to be_empty }
-            end
           end
         end
       end
@@ -1319,33 +1271,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     with_them do
       it "#{params[:plan]} is #{params[:eligible] && 'not'} eligible for trial" do
         expect(subject).to eq(eligible)
-      end
-    end
-  end
-
-  context 'When duo_enterprise_trials are disabled' do
-    before do
-      stub_feature_flags(duo_enterprise_trials_registration: false)
-    end
-
-    describe '#plan_eligible_for_trial?', :saas do
-      let(:namespace) { create(:namespace_with_plan, plan: plan) }
-
-      subject { namespace.eligible_for_trial? }
-
-      where(:plan, :eligible) do
-        [
-          [:ultimate_plan, false],
-          [:premium_plan, false],
-          [:free_plan, true],
-          [:default_plan, true]
-        ]
-      end
-
-      with_them do
-        it "#{params[:plan]} is #{params[:eligible] && 'not'} eligible for trial" do
-          expect(subject).to eq(eligible)
-        end
       end
     end
   end

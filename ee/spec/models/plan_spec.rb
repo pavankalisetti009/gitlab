@@ -24,9 +24,9 @@ RSpec.describe Plan, feature_category: :subscription_management do
   end
 
   describe '::PLANS_ELIGIBLE_FOR_TRIAL' do
-    subject { ::Plan::PLANS_ELIGIBLE_FOR_TRIAL }
+    subject { described_class::PLANS_ELIGIBLE_FOR_TRIAL }
 
-    it { is_expected.to eq(%w[default free]) }
+    it { is_expected.to match_array(%w[default free premium]) }
   end
 
   describe '.with_subscriptions' do

@@ -62,7 +62,6 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
 
     context 'when eligible for duo enterprise widget' do
       let(:current_group) { build(:group) }
-      let(:duo_enterprise_trials_enabled) { true }
       let(:duo_enterprise_trial_widget_attribute_keys) { [:trial_widget_data_attrs] }
       let(:add_on_purchase) do
         build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: current_group)

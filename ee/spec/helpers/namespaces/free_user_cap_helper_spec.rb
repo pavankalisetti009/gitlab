@@ -17,7 +17,7 @@ RSpec.describe Namespaces::FreeUserCapHelper, feature_category: :seat_cost_manag
       result = helper.over_limit_body_secondary_text('_trial_url_', '_upgrade_url_')
 
       expect(result).to have_text(s_('FreeUserCap|To remove the'))
-      expect(result).to have_text(s_('FreeUserCap|start a free 30-day trial'))
+      expect(result).to have_text(s_('FreeUserCap|start a free 60-day trial'))
       expect(result).to have_text(s_('FreeUserCap|You can also'))
     end
 

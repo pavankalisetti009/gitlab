@@ -22,11 +22,7 @@ module EE
           !user.owns_paid_namespace? &&
           user.owns_group_without_trial?
 
-        if ::Feature.enabled?(:duo_enterprise_trials, user)
-          render 'shared/ultimate_with_enterprise_trial_callout_content'
-        else
-          render 'shared/ultimate_trial_callout_content'
-        end
+        render 'shared/ultimate_with_enterprise_trial_callout_content'
       end
 
       def render_two_factor_auth_recovery_settings_check

@@ -23,7 +23,7 @@ module Namespaces
           body: _("To remove the %{link_start}read-only%{link_end} state and regain write access, " \
                   "you can reduce the number of users in your top-level group to %{free_limit} users or " \
                   "less. You can also upgrade to a paid tier, which do not have user limits. If you " \
-                  "need additional time, you can start a free 30-day trial which includes unlimited " \
+                  "need additional time, you can start a free 60-day trial which includes unlimited " \
                   "users.").html_safe % {
                     link_start: free_user_limit_link_start,
                     link_end: link_end,

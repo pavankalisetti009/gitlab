@@ -11,9 +11,6 @@ module Registrations
 
     before_action :verify_onboarding_enabled!
     before_action :authenticate_user!
-    before_action do
-      push_frontend_feature_flag(:duo_enterprise_trials_registration, Feature.current_request)
-    end
 
     feature_category :onboarding
 

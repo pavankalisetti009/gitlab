@@ -19,7 +19,7 @@ module GitlabSubscriptions
     delegate :sprite_icon, to: :helpers
 
     def render?
-      GitlabSubscriptions::DuoPro.namespace_eligible?(namespace, user) &&
+      GitlabSubscriptions::DuoPro.namespace_eligible?(namespace) &&
         GitlabSubscriptions::DuoPro.no_active_add_on_purchase_for_namespace?(namespace)
     end
 

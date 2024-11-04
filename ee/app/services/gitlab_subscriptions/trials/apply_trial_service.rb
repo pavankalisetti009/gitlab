@@ -10,9 +10,7 @@ module GitlabSubscriptions
       private
 
       def execute_trial_request
-        if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
-          trial_user_information.merge!(add_on_name: 'duo_enterprise', trial_type: trial_type)
-        end
+        trial_user_information.merge!(add_on_name: 'duo_enterprise', trial_type: trial_type)
 
         client.generate_trial(uid: uid, trial_user: trial_user_information)
       end

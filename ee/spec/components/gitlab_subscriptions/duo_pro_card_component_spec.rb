@@ -23,7 +23,7 @@ RSpec.describe GitlabSubscriptions::DuoProCardComponent, :saas, :aggregate_failu
         allow(GitlabSubscriptions::DuoPro)
           .to receive(:no_active_add_on_purchase_for_namespace?).with(namespace).and_return(active_add_on_purchase?)
         allow(GitlabSubscriptions::DuoPro)
-          .to receive(:namespace_eligible?).with(namespace, user).and_return(namespace_eligible?)
+          .to receive(:namespace_eligible?).with(namespace).and_return(namespace_eligible?)
       end
 
       it 'does not render' do
@@ -36,7 +36,7 @@ RSpec.describe GitlabSubscriptions::DuoProCardComponent, :saas, :aggregate_failu
 
   context 'when there is no active add-on purchase for the namespace' do
     before do
-      allow(GitlabSubscriptions::DuoPro).to receive(:namespace_eligible?).with(namespace, user).and_return(true)
+      allow(GitlabSubscriptions::DuoPro).to receive(:namespace_eligible?).with(namespace).and_return(true)
     end
 
     it 'renders the component' do
