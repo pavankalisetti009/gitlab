@@ -27,6 +27,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ApprovalPolicyResolver, feature
         },
         yaml: YAML.dump(policy.deep_stringify_keys),
         updated_at: policy_last_updated_at,
+        action_approvers: [{ all_groups: [], groups: [], roles: [], users: [] }],
         user_approvers: [],
         all_group_approvers: [],
         deprecated_properties: [],
