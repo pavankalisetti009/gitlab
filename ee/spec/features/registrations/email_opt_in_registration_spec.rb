@@ -75,7 +75,7 @@ RSpec.describe 'Registration with the email opt in value', :js, :saas_registrati
 
     def email_opt_in_text
       _(
-        'By selecting Continue or registering through a third party, I agree that GitLab can contact me by email or ' \
+        'I agree that GitLab can contact me by email or ' \
           'telephone about its product, services, or events.'
       )
     end
