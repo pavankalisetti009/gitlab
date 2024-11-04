@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
@@ -34,16 +33,7 @@ describe('SelfHostedModelsPage', () => {
     wrapper = shallowMount(SelfHostedModelsPage, { apolloProvider: mockApollo });
   };
 
-  const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findSelfHostedModelsTable = () => wrapper.findComponent(SelfHostedModelsTable);
-
-  describe('when model data is loading', () => {
-    it('renders skeleton loader', () => {
-      createComponent();
-
-      expect(findLoader().exists()).toBe(true);
-    });
-  });
 
   describe('when the API query is successful', () => {
     beforeEach(async () => {
@@ -53,6 +43,7 @@ describe('SelfHostedModelsPage', () => {
     });
 
     it('renders the self-hosted models table and passes the correct props', () => {
+      expect(findSelfHostedModelsTable().props('loading')).toEqual(false);
       expect(findSelfHostedModelsTable().props('models')).toEqual(mockSelfHostedModelsList);
     });
   });

@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
@@ -36,16 +35,7 @@ describe('AiFeatureSettingsPage', () => {
     });
   };
 
-  const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findAiFeatureSettingsTable = () => wrapper.findComponent(AiFeatureSettingsTable);
-
-  describe('when feature settings data is loading', () => {
-    it('renders skeleton loader', () => {
-      createComponent();
-
-      expect(findLoader().exists()).toBe(true);
-    });
-  });
 
   describe('when the API query is successful', () => {
     beforeEach(async () => {
@@ -54,6 +44,7 @@ describe('AiFeatureSettingsPage', () => {
     });
 
     it('renders the feature settings table and passes the correct props', () => {
+      expect(findAiFeatureSettingsTable().props('loading')).toEqual(false);
       expect(findAiFeatureSettingsTable().props('aiFeatureSettings')).toEqual(
         mockAiFeatureSettings,
       );
@@ -61,7 +52,7 @@ describe('AiFeatureSettingsPage', () => {
   });
 
   describe('when the API request is unsuccessful', () => {
-    describe('due to of a general error', () => {
+    describe('due to a general error', () => {
       it('displays an error message', async () => {
         createComponent({
           apolloHandlers: [[getAiFeatureSettingsQuery, jest.fn().mockRejectedValue('ERROR')]],

@@ -1,5 +1,5 @@
 <script>
-import { GlTableLite } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import ModelSelectDropdown from './model_select_dropdown.vue';
 
@@ -8,10 +8,15 @@ export default {
   components: {
     GlTableLite,
     ModelSelectDropdown,
+    GlSkeletonLoader,
   },
   props: {
     aiFeatureSettings: {
       type: Array,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
       required: true,
     },
   },
@@ -19,40 +24,77 @@ export default {
     {
       key: 'main_feature',
       label: s__('AdminAIPoweredFeatures|Main feature'),
-      thClass: 'w-15p',
+      thClass: 'gl-w-1/3',
       tdClass: 'gl-content-center',
     },
     {
       key: 'sub_feature',
       label: s__('AdminAIPoweredFeatures|Sub feature'),
-      thClass: 'w-15p',
+      thClass: 'gl-w-1/3',
       tdClass: 'gl-content-center',
     },
     {
       key: 'model_name',
       label: s__('AdminAIPoweredFeatures|Model name'),
-      thClass: 'w-15p',
+      thClass: 'gl-w-1/3',
       tdClass: 'gl-content-center',
     },
   ],
+  computed: {
+    loaderItems() {
+      return [
+        {
+          loaderWidth: {
+            mainFeature: '225',
+            subFeature: '200',
+            modelName: '375',
+          },
+        },
+        {
+          loaderWidth: {
+            mainFeature: '225',
+            subFeature: '200',
+            modelName: '375',
+          },
+        },
+        {
+          loaderWidth: {
+            mainFeature: '200',
+            subFeature: '75',
+            modelName: '375',
+          },
+        },
+      ];
+    },
+  },
 };
 </script>
 <template>
   <gl-table-lite
     :fields="$options.fields"
-    :items="aiFeatureSettings"
+    :items="loading ? loaderItems : aiFeatureSettings"
     stacked="md"
     :hover="true"
     :selectable="false"
+    fixed
   >
     <template #cell(main_feature)="{ item }">
-      {{ item.mainFeature }}
+      <gl-skeleton-loader v-if="loading" :height="46" :width="600">
+        <rect y="8" :width="item.loaderWidth.mainFeature" height="32" rx="10" />
+      </gl-skeleton-loader>
+      <span v-else>{{ item.mainFeature }}</span>
     </template>
     <template #cell(sub_feature)="{ item }">
-      {{ item.title }}
+      <gl-skeleton-loader v-if="loading" :height="46" :width="600">
+        <rect y="8" :width="item.loaderWidth.subFeature" height="32" rx="10" />
+      </gl-skeleton-loader>
+      <span v-else>{{ item.title }}</span>
     </template>
     <template #cell(model_name)="{ item }">
-      <model-select-dropdown :ai-feature-setting="item" />
+      <gl-skeleton-loader v-if="loading" :height="46" :width="600">
+        <rect y="8" :width="item.loaderWidth.modelName" height="32" rx="10" />
+      </gl-skeleton-loader>
+      <model-select-dropdown v-else :ai-feature-setting="item" />
     </template>
   </gl-table-lite>
 </template>
