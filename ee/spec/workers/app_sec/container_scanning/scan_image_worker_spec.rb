@@ -7,9 +7,8 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
 
   let(:worker) { described_class.new }
   let(:project_id) { project.id }
-  let(:user_id) { project.owner.id }
   let(:image) { "registry.gitlab.com/gitlab-org/security-products/dast/webgoat-8.0@test:latest" }
-  let(:data) { { project_id: project_id, user_id: user_id, image: image } }
+  let(:data) { { project_id: project_id, image: image } }
   let(:image_pushed_event) { ContainerRegistry::ImagePushedEvent.new(data: data) }
 
   before do
@@ -18,6 +17,15 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
   end
 
   describe '#handle_event' do
+    before do
+      allow_next_instance_of(
+        AppSec::ContainerScanning::ScanImageService,
+        image: image, project_id: project_id
+      ) do |service|
+        allow(service).to receive(:execute)
+      end
+    end
+
     it_behaves_like 'subscribes to event' do
       let(:event) { image_pushed_event }
     end
@@ -25,7 +33,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
     it 'calls ScanImageService' do
       expect_next_instance_of(
         AppSec::ContainerScanning::ScanImageService,
-        image: image, project_id: project_id, user_id: user_id
+        image: image, project_id: project_id
       ) do |service|
         expect(service).to receive(:execute)
       end
