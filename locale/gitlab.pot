@@ -42527,7 +42527,7 @@ msgstr ""
 msgid "Profiles|You must transfer ownership or delete groups you are an owner of before you can delete your account"
 msgstr ""
 
-msgid "Profiles|You must transfer ownership or delete these groups before you can delete your account."
+msgid "Profiles|You must transfer ownership or delete these before you can delete your account."
 msgstr ""
 
 msgid "Profiles|Your Discord user ID."
@@ -42536,7 +42536,7 @@ msgstr ""
 msgid "Profiles|Your LinkedIn profile name from linkedin.com/in/profilename"
 msgstr ""
 
-msgid "Profiles|Your account is currently an owner in these groups:"
+msgid "Profiles|Your account is currently the sole owner in the following:"
 msgstr ""
 
 msgid "Profiles|Your email address was automatically set based on your %{provider_label} account"
