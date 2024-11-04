@@ -14,8 +14,7 @@ module AppSec
       def handle_event(event)
         ScanImageService.new(
           image: event.data.fetch(:image),
-          project_id: event.data.fetch(:project_id),
-          user_id: event.data.fetch(:user_id)
+          project_id: event.data.fetch(:project_id)
         ).execute
       end
 

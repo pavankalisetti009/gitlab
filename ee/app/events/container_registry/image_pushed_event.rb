@@ -7,7 +7,7 @@ module ContainerRegistry
     def schema
       {
         'type' => 'object',
-        'required' => %w[project_id user_id image],
+        'required' => %w[project_id image],
         'properties' => {
           'project_id' => { 'type' => 'integer' },
           'user_id' => { 'type' => 'integer' },

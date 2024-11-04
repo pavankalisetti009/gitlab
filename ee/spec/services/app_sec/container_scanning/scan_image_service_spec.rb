@@ -3,10 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :software_composition_analysis do
-  let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, developers: user) }
+  let_it_be(:bot_user) { create(:user, :security_policy_bot) }
+  let_it_be(:project) { create(:project, :repository, developers: bot_user) }
 
-  let(:user_id) { user.id }
   let(:project_id) { project.id }
   let(:image) { "registry.gitlab.com/gitlab-org/security-products/dast/webgoat-8.0@test:latest" }
 
@@ -20,7 +19,6 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
         a_hash_including(
           class: described_class.name,
           project_id: project_id,
-          user_id: user_id,
           image: image,
           scan_type: :container_scanning,
           pipeline_source: described_class::SOURCE,
@@ -45,13 +43,12 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
     subject(:pipeline_config) do
       described_class.new(
         image: image,
-        project_id: project_id,
-        user_id: user_id
+        project_id: project_id
       ).pipeline_config
     end
 
     it 'generates a valid yaml ci config' do
-      lint = Gitlab::Ci::Lint.new(project: project, current_user: user)
+      lint = Gitlab::Ci::Lint.new(project: project, current_user: bot_user)
       result = lint.validate(pipeline_config)
 
       expect(result).to be_valid
@@ -62,8 +59,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
     subject(:execute) do
       described_class.new(
         image: image,
-        project_id: project_id,
-        user_id: user_id
+        project_id: project_id
       ).execute
     end
 
@@ -75,15 +71,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
       it_behaves_like 'does not creates a throttled log entry'
     end
 
-    context 'when a user is not present' do
-      let(:user_id) { nil }
-
-      it { is_expected.to be_nil }
-
-      it_behaves_like 'does not creates a throttled log entry'
-    end
-
-    context 'when a valid project and user is present' do
+    context 'with a valid project' do
       let(:pipeline) { execute.payload }
       let(:build) { pipeline.builds.find_by(name: :container_scanning) }
       let(:metadata) { build.metadata }
@@ -109,6 +97,8 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
             property: 'success'
           }
         end
+
+        let(:user) { bot_user }
       end
 
       it 'sets correct artifacts configuration' do
@@ -139,6 +129,18 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
       it { is_expected.to be_nil }
 
       it_behaves_like 'creates a throttled log entry'
+    end
+
+    context 'when the project does not have a security policy bot' do
+      let_it_be(:project) { create(:project, :repository) }
+      let(:service_response) { instance_double(Member, user: bot_user) }
+
+      it 'creates the security policy bot' do
+        expect(Security::Orchestration::CreateBotService).to receive(:new)
+                  .with(project, nil, skip_authorization: true).and_return(
+                    instance_double(Security::Orchestration::CreateBotService, execute: service_response))
+        execute
+      end
     end
   end
 end

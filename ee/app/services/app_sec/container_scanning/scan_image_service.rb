@@ -3,18 +3,18 @@
 module AppSec
   module ContainerScanning
     class ScanImageService
-      attr_reader :image, :project_id, :user_id
+      include ::Gitlab::Utils::StrongMemoize
+
+      attr_reader :image, :project_id
 
       SOURCE = :container_registry_push
 
-      def initialize(image:, project_id:, user_id:)
+      def initialize(image:, project_id:)
         @image = image
         @project_id = project_id
-        @user_id = user_id
       end
 
       def execute
-        project = Project.find_by_id(project_id)
         return unless project
 
         if daily_limit_reached_for?(project)
@@ -22,8 +22,7 @@ module AppSec
           return
         end
 
-        user = User.find_by_id(user_id)
-        return unless user
+        user = security_policy_bot
 
         service = ::Ci::CreatePipelineService.new(project, user, ref: project.default_branch_or_main)
         result = service.execute(SOURCE, content: pipeline_config)
@@ -60,7 +59,6 @@ module AppSec
         ::Gitlab::AppJsonLogger.info(
           class: self.class.name,
           project_id: project_id,
-          user_id: user_id,
           image: image,
           scan_type: :container_scanning,
           pipeline_source: SOURCE,
@@ -78,6 +76,21 @@ module AppSec
             property: result&.status&.to_s
           }
         )
+      end
+
+      def project
+        Project.find_by_id(project_id)
+      end
+      strong_memoize_attr :project
+
+      def security_policy_bot
+        return project.security_policy_bot if project.security_policy_bot.present?
+
+        response = Security::Orchestration::CreateBotService
+          .new(project, nil, skip_authorization: true)
+          .execute
+
+        response.user
       end
     end
   end
