@@ -7,7 +7,6 @@ module Gitlab
         module RefactorCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = 'RefactorCode'
             HUMAN_NAME = 'Refactor Code'
@@ -65,6 +64,14 @@ module Gitlab
 
             def self.slash_commands
               SLASH_COMMANDS
+            end
+
+            def use_ai_gateway_agent_prompt?
+              true
+            end
+
+            def unit_primitive
+              'refactor_code'
             end
 
             private

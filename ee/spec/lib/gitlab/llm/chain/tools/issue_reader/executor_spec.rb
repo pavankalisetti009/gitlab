@@ -294,11 +294,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             expect(tool.execute.content).to eq(response)
           end
         end
-
-        it_behaves_like 'uses ai gateway agent prompt' do
-          let(:prompt_class) { Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic }
-          let(:unit_primitive) { 'issue_reader' }
-        end
       end
     end
   end

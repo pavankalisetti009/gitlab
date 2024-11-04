@@ -312,11 +312,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
             end
           end
         end
-
-        it_behaves_like 'uses ai gateway agent prompt' do
-          let(:prompt_class) { Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic }
-          let(:unit_primitive) { 'epic_reader' }
-        end
       end
 
       describe '#get_resources' do
