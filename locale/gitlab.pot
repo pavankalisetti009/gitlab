@@ -65058,6 +65058,9 @@ msgstr ""
 msgid "ciReport|Generic Report"
 msgstr ""
 
+msgid "ciReport|GitLab Duo Vulnerability Resolution, an AI feature, can suggest a possible fix."
+msgstr ""
+
 msgid "ciReport|License Compliance"
 msgstr ""
 
