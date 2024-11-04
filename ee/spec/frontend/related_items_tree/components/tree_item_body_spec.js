@@ -375,10 +375,6 @@ describe('RelatedItemsTree', () => {
         expect(findAllIcons().at(0).props('name')).toBe('issues');
       });
 
-      it('renders item state tooltip for large screens', () => {
-        expect(findStateTooltip().at(0).props('state')).toBe(mockItem.state);
-      });
-
       it('renders item path in tooltip for large screens', () => {
         const path = 'gitlab-org/gitlab-shell#8';
 
@@ -396,10 +392,6 @@ describe('RelatedItemsTree', () => {
       it('renders item link', () => {
         expect(findLink().attributes('href')).toBe(mockItem.webPath);
         expect(findLink().text()).toBe(mockItem.title);
-      });
-
-      it('renders item state tooltip for medium and small screens', () => {
-        expect(findStateTooltip().at(0).props('state')).toBe(mockItem.state);
       });
 
       it('renders item milestone when it has milestone', () => {

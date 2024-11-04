@@ -23,10 +23,6 @@ export default {
       type: Boolean,
       required: true,
     },
-    state: {
-      type: String,
-      required: true,
-    },
     createdAt: {
       type: String,
       required: true,
