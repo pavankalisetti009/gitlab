@@ -830,7 +830,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
       it 'returns the total capacity' do
         allow(described_class).to receive(:verification_enabled_replicator_classes).and_return(['a replicator class'])
 
-        expect(described_class.verification_max_capacity_per_replicator_class).to eq(verification_max_capacity / 1)
+        expect(described_class.verification_max_capacity_per_replicator_class).to eq(verification_max_capacity)
       end
     end
 
