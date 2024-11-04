@@ -58,7 +58,7 @@ export default {
       <template #heading>
         <span class="gl-flex gl-items-center gl-gap-3">
           <span data-testid="self-hosted-title">{{ $options.i18n.title }}</span>
-          <gl-experiment-badge type="beta" class="gl-mx-0" />
+          <gl-experiment-badge type="beta" class="!gl-mx-0" />
         </span>
       </template>
       <template #description>{{ $options.i18n.description }}</template>
