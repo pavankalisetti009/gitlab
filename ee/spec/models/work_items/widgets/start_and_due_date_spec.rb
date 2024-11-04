@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_planning do
   using RSpec::Parameterized::TableSyntax
 
-  let(:work_item) { build_stubbed(:work_item, start_date: 1.month.ago, due_date: 1.month.from_now) }
+  let(:work_item) { build_stubbed(:work_item) }
 
   subject(:widget) { described_class.new(work_item) }
 
@@ -26,11 +26,11 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
     end
 
     describe '#can_rollup?' do
-      specify { expect(widget.can_rollup?).to eq(false) }
+      specify { expect(widget.can_rollup?).to be(false) }
     end
 
     describe '#fixed?' do
-      specify { expect(widget.fixed?).to eq(true) }
+      specify { expect(widget.fixed?).to be(true) }
     end
 
     describe '#start_date' do
@@ -38,11 +38,11 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
     end
 
     describe '#start_date_sourcing_work_item' do
-      specify { expect(widget.start_date_sourcing_work_item).to eq(nil) }
+      specify { expect(widget.start_date_sourcing_work_item).to be_nil }
     end
 
     describe '#start_date_sourcing_milestone' do
-      specify { expect(widget.start_date_sourcing_milestone).to eq(nil) }
+      specify { expect(widget.start_date_sourcing_milestone).to be_nil }
     end
 
     describe '#due_date' do
@@ -50,11 +50,11 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
     end
 
     describe '#due_date_sourcing_work_item' do
-      specify { expect(widget.due_date_sourcing_work_item).to eq(nil) }
+      specify { expect(widget.due_date_sourcing_work_item).to be_nil }
     end
 
     describe '#due_date_sourcing_milestone' do
-      specify { expect(widget.due_date_sourcing_milestone).to eq(nil) }
+      specify { expect(widget.due_date_sourcing_milestone).to be_nil }
     end
   end
 
@@ -64,24 +64,46 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
     end
 
     describe '#can_rollup?' do
-      specify { expect(widget.can_rollup?).to eq(true) }
+      specify { expect(widget.can_rollup?).to be(true) }
     end
 
     describe '#fixed?' do
       # Rules defined on https://gitlab.com/groups/gitlab-org/-/epics/11409#rules
-      where(:start_date_is_fixed, :start_date_fixed, :due_date_is_fixed, :due_date_fixed, :expected) do
-        false | nil | false | nil | false
-        false | nil | true | nil | false
-        true | nil | false | nil | false
-        true | nil | true | nil | true
-        false | 1.day.ago | false | 1.day.from_now | false
-        false | 1.day.ago | true | 1.day.from_now | true
-        true | 1.day.ago | false | 1.day.from_now | true
-        true | 1.day.ago | true | 1.day.from_now | true
+      where(
+        :wi_start_date,
+        :wi_due_date,
+        :start_date_is_fixed,
+        :start_date_fixed,
+        :due_date_is_fixed,
+        :due_date_fixed,
+        :expected
+      ) do
+        # when nothing is set, it's not fixed
+        nil | nil | false | nil | false | nil | false
+        # when either work item dates are set,
+        # but dates source is empty, it's not fixed
+        1.day.ago | nil | false | nil | false | nil | false
+        nil | 1.day.from_now | false | nil | false | nil | false
+        1.day.ago | 1.day.from_now | false | nil | false | nil | false
+        # when dates_source dates are set, ignore work_item dates and
+        # calculate based only on dates sources values
+        1.day.ago | 1.day.from_now | false | nil | false | 2.days.from_now | false
+        1.day.ago | 1.day.from_now | false | 2.days.ago | false | nil | false
+        1.day.ago | 1.day.from_now | false | 2.days.ago | false | 2.days.from_now | false
+        # if only one _is_fixed is true and has value, it's fixed
+        1.day.ago | 1.day.from_now | true | 2.days.ago | false | nil | true
+        1.day.ago | 1.day.from_now | false | nil | true | 2.days.from_now | true
+        # if both _is_fixed is true, it's fixed
+        1.day.ago | 1.day.from_now | true | nil | true | nil | true
       end
 
       with_them do
         before do
+          work_item.assign_attributes(
+            start_date: wi_start_date,
+            due_date: wi_due_date
+          )
+
           work_item.build_dates_source(
             start_date_is_fixed: start_date_is_fixed,
             start_date_fixed: start_date_fixed,
@@ -144,7 +166,7 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
       let(:child_work_item) { build_stubbed(:work_item, :task) }
 
       before do
-        work_item.build_dates_source(start_date_sourcing_work_item: child_work_item)
+        work_item.build_dates_source(start_date: Time.zone.today, start_date_sourcing_work_item: child_work_item)
       end
 
       describe '#start_date_sourcing_work_item' do
@@ -156,7 +178,7 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
       let(:child_work_item) { build_stubbed(:work_item, :task) }
 
       before do
-        work_item.build_dates_source(due_date_sourcing_work_item: child_work_item)
+        work_item.build_dates_source(due_date: Time.zone.today, due_date_sourcing_work_item: child_work_item)
       end
 
       describe '#due_date_sourcing_work_item' do
@@ -168,7 +190,7 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
       let(:milestone) { build_stubbed(:milestone) }
 
       before do
-        work_item.build_dates_source(start_date_sourcing_milestone: milestone)
+        work_item.build_dates_source(start_date: Time.zone.today, start_date_sourcing_milestone: milestone)
       end
 
       describe '#start_date_sourcing_milestone' do
@@ -180,7 +202,7 @@ RSpec.describe WorkItems::Widgets::StartAndDueDate, feature_category: :team_plan
       let(:milestone) { build_stubbed(:milestone) }
 
       before do
-        work_item.build_dates_source(due_date_sourcing_milestone: milestone)
+        work_item.build_dates_source(due_date: Time.zone.today, due_date_sourcing_milestone: milestone)
       end
 
       describe '#due_date_sourcing_milestone' do
