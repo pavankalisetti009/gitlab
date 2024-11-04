@@ -30,7 +30,7 @@ module ComplianceManagement
       attr_reader :user, :country_code
 
       def accessed_from_pipl_covered_country(country_code)
-        return if updated_today?
+        return if recently_tracked?
 
         # User can only have one country_access_log for each unique country
         # code. Access from the same country code reuses an existing record.
@@ -47,7 +47,7 @@ module ComplianceManagement
 
           if log.valid?
             log.save
-            user.touch(:last_access_from_pipl_country_at)
+            ComplianceManagement::PiplUser.track_access(user)
           end
         end
       end
@@ -57,7 +57,7 @@ module ComplianceManagement
 
         Users::CountryAccessLog.transaction do
           access_logs.update_all(access_count_reset_at: Time.zone.now, access_count: 0)
-          user.update(last_access_from_pipl_country_at: nil)
+          ComplianceManagement::PiplUser.untrack_access!(user)
         end
       end
 
@@ -86,11 +86,9 @@ module ComplianceManagement
       end
       strong_memoize_attr :access_logs
 
-      def updated_today?
-        last_access_at = user.last_access_from_pipl_country_at
-        return false unless last_access_at
-
-        last_access_at.after?(24.hours.ago)
+      def recently_tracked?
+        pipl_user = ComplianceManagement::PiplUser.for_user(user)
+        pipl_user&.recently_tracked?
       end
     end
   end

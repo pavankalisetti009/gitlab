@@ -29,6 +29,7 @@ class User < ApplicationRecord
   include RestrictedSignup
   include StripAttribute
   include EachBatch
+  include IgnorableColumns
   include CrossDatabaseIgnoredTables
   include UseSqlFunctionForPrimaryKeyLookups
 
@@ -44,6 +45,8 @@ class User < ApplicationRecord
     url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424285',
     on: :destroy
   )
+
+  ignore_column :last_access_from_pipl_country_at, remove_after: '2024-11-17', remove_with: '17.7'
 
   DEFAULT_NOTIFICATION_LEVEL = :participating
 

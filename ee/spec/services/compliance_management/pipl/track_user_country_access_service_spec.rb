@@ -76,14 +76,15 @@ RSpec.describe ComplianceManagement::Pipl::TrackUserCountryAccessService, featur
     context "when country_code is not in %w[CN HK MO]" do
       let(:country_code) { 'US' }
 
-      context 'when user.last_access_from_pipl_country_at is nil' do
+      context 'when the user has not been using gitlab from a PIPL country' do
         it_behaves_like 'does not enqueue an UpdateUserCountryAccessLogsWorker job'
-        it_behaves_like 'does not execute any queries'
       end
 
-      context 'when user.last_access_from_pipl_country_at is not nil' do
+      context 'when the user has been using gitlab from a PIPL country' do
+        let!(:pipl_user) { create(:pipl_user, user: user) }
+
         before do
-          user.update!(last_access_from_pipl_country_at: 2.hours.ago)
+          user.pipl_user.update!(last_access_from_pipl_country_at: 2.hours.ago)
         end
 
         it_behaves_like 'enqueues an UpdateUserCountryAccessLogsWorker job'
@@ -93,16 +94,15 @@ RSpec.describe ComplianceManagement::Pipl::TrackUserCountryAccessService, featur
     describe "when country_code is in %w[CN HK MO]" do
       context "when user accessed within the past 24 hours" do
         before do
-          user.update!(last_access_from_pipl_country_at: 12.hours.ago)
+          create(:pipl_user, user: user, last_access_from_pipl_country_at: 12.hours.ago)
         end
 
         it_behaves_like 'does not enqueue an UpdateUserCountryAccessLogsWorker job'
-        it_behaves_like 'does not execute any queries'
       end
 
       context 'when user accessed more than 24 hours in the past' do
         before do
-          user.update!(last_access_from_pipl_country_at: 25.hours.ago)
+          create(:pipl_user, user: user, last_access_from_pipl_country_at: 25.hours.ago)
         end
 
         it_behaves_like 'enqueues an UpdateUserCountryAccessLogsWorker job'

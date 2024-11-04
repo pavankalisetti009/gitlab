@@ -3,6 +3,8 @@
 module ComplianceManagement
   module Pipl
     class TrackUserCountryAccessService
+      include ::Gitlab::Utils::StrongMemoize
+
       def initialize(user, country_code)
         @user = user
         @country_code = country_code
@@ -20,9 +22,9 @@ module ComplianceManagement
         # from from a PIPL-covered country (either the user never accessed from
         # PIPL-covered country or their access logs have been reset), there is
         # nothing to do to the user nor their country_access_log records
-        return if !access_from_pipl_country && last_access_at.nil?
+        return unless access_from_pipl_country || last_pipl_access
 
-        return if access_from_pipl_country && tracked_today?
+        return if access_from_pipl_country && last_pipl_access&.recently_tracked?
 
         UpdateUserCountryAccessLogsWorker.perform_async(user.id, country_code)
       end
@@ -31,15 +33,10 @@ module ComplianceManagement
 
       attr_reader :user, :country_code
 
-      def tracked_today?
-        return false unless last_access_at
-
-        last_access_at.after?(24.hours.ago)
+      def last_pipl_access
+        ComplianceManagement::PiplUser.for_user(user)
       end
-
-      def last_access_at
-        @last_access_at ||= user.last_access_from_pipl_country_at
-      end
+      strong_memoize_attr :last_pipl_access
     end
   end
 end

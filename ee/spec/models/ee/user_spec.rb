@@ -66,6 +66,8 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user) }
     it { is_expected.to have_many(:group_saml_identities).class_name('::Identity') }
     it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
+
+    it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
   end
 
   describe 'nested attributes' do
