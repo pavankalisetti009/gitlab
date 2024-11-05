@@ -151,11 +151,15 @@ module EE
           description: 'List of all customizable permissions.',
           alpha: { milestone: '16.4' }
         field :member_role, ::Types::MemberRoles::MemberRoleType,
-          null: true, description: 'Finds a single custom role.',
+          null: true, description: 'Finds a single custom role for the instance. Available only for self-managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver.single,
           alpha: { milestone: '16.6' }
+        field :standard_role, ::Types::Members::StandardRoleType,
+          null: true, description: 'Finds a single default role for the instance. Available only for self-managed.',
+          resolver: ::Resolvers::Members::StandardRolesResolver.single,
+          alpha: { milestone: '17.6' }
         field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
-          null: true, description: 'Standard roles available for the instance, available only for self-managed.',
+          null: true, description: 'Default roles available for the instance. Available only for self-managed.',
           resolver: ::Resolvers::Members::StandardRolesResolver,
           alpha: { milestone: '17.3' }
         field :self_managed_add_on_eligible_users,
@@ -178,7 +182,7 @@ module EE
           description: 'Instance-level Amazon S3 configurations for audit events.',
           resolver: ::Resolvers::AuditEvents::Instance::AmazonS3ConfigurationsResolver
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
-          null: true, description: 'Member roles available for the instance.',
+          null: true, description: 'Custom roles available for the instance. Available only for self-managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
           alpha: { milestone: '16.7' }
         field :google_cloud_artifact_registry_repository_artifact,

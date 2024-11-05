@@ -9,14 +9,21 @@ module Resolvers
 
       type Types::Members::StandardRoleType, null: true
 
-      def resolve_with_lookahead
-        result = Gitlab::Access.options_with_minimal_access.map do |name, access_level|
-          members_row = member_counts.find { |c| c.access_level == access_level } if selects_field?(:members_count)
-          users_row = user_counts.find { |c| c.access_level == access_level } if selects_field?(:users_count)
+      argument :access_level, [Types::MemberAccessLevelEnum],
+        required: false,
+        description: 'Access level or levels to filter by.'
+
+      def resolve_with_lookahead(access_level: nil)
+        options = Gitlab::Access.options_with_minimal_access
+        options = options.select { |_, level| access_level.include?(level) } if access_level.present?
+
+        result = options.map do |name, access_level_id|
+          members_row = member_counts.find { |c| c.access_level == access_level_id } if selects_field?(:members_count)
+          users_row = user_counts.find { |c| c.access_level == access_level_id } if selects_field?(:users_count)
 
           {
             name: name,
-            access_level: access_level,
+            access_level: access_level_id,
             members_count: members_row&.members_count || 0,
             users_count: users_row&.users_count || 0,
             group: object
