@@ -11,8 +11,11 @@ module ComplianceManagement
     idempotent!
 
     def perform(merge_request_id, project_id, diff_head_sha)
-      merge_request = MergeRequest.find(merge_request_id)
-      project = Project.find(project_id)
+      merge_request = MergeRequest.find_by_id(merge_request_id)
+      project = Project.find_by_id(project_id)
+
+      return unless project && merge_request
+
       status_checks = project.external_status_checks
 
       status_checks.each_batch do |relation|
