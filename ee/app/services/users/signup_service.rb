@@ -2,9 +2,9 @@
 
 module Users
   class SignupService < BaseService
-    def initialize(current_user, session:, params: {})
+    def initialize(current_user, user_return_to:, params: {})
       @user = current_user
-      @session = session
+      @user_return_to = user_return_to
       @params = params.dup
       set_onboarding_status
     end
@@ -34,14 +34,14 @@ module Users
 
     private
 
-    attr_reader :user, :session, :onboarding_status
+    attr_reader :user, :user_return_to, :onboarding_status
 
     def payload
       { user: user }
     end
 
     def set_onboarding_status
-      @onboarding_status = Onboarding::Status.new({}, session, user)
+      @onboarding_status = Onboarding::Status.new({}, user_return_to, user)
     end
     alias_method :reset_onboarding_status, :set_onboarding_status
 

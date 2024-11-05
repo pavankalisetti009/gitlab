@@ -5,12 +5,12 @@ require 'spec_helper'
 RSpec.describe Users::SignupService, feature_category: :system_access do
   let_it_be(:user) { create(:user, setup_for_company: true) }
   let(:params) { {} }
-  let(:session) { {} }
+  let(:user_return_to) { nil }
 
   describe '#execute' do
     let(:updated_user) { execute[:user].reset }
 
-    subject(:execute) { described_class.new(user, params: params, session: session).execute }
+    subject(:execute) { described_class.new(user, params: params, user_return_to: user_return_to).execute }
 
     context 'when updating name' do
       let(:params) { { name: 'New Name' } }
@@ -138,7 +138,7 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
         end
 
         context 'when it is in oauth flow' do
-          let(:session) { { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path } }
+          let(:user_return_to) { ::Gitlab::Routing.url_helpers.oauth_authorization_path }
 
           before do
             user.update!(onboarding_in_progress: true, onboarding_status_registration_type: 'free')

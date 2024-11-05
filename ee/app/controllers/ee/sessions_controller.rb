@@ -93,7 +93,8 @@ module EE
     end
 
     def onboarding_status
-      ::Onboarding::Status.new(params.permit(:invite_email).to_h.deep_symbolize_keys, session, resource)
+      ::Onboarding::Status
+        .new(params.permit(:invite_email).to_h.deep_symbolize_keys, session['user_return_to'], resource)
     end
     strong_memoize_attr :onboarding_status
   end

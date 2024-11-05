@@ -125,7 +125,7 @@ module Users
     end
 
     def onboarding_status
-      Onboarding::Status.new({}, session, @user)
+      Onboarding::Status.new({}, session['user_return_to'], @user)
     end
     strong_memoize_attr :onboarding_status
 
@@ -133,7 +133,7 @@ module Users
       @redirect_url = if onboarding_status.read_from_stored_user_location?
                         # Since we need this value to stay in the stored_location_for(user) in order for
                         # us to be properly redirected for subscription signups.
-                        onboarding_status.stored_user_location
+                        onboarding_status.user_return_to
                       else
                         after_sign_in_path_for(@user)
                       end
