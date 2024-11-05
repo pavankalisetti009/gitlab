@@ -266,7 +266,7 @@ export default {
         <div v-safe-html="highlightSearchTerm(item.text)"></div>
       </template>
       <template v-if="isMaxProjectsSelected" #footer>
-        <div class="gl-py-3 gl-pl-7 gl-pr-5 gl-text-gray-600" data-testid="max-projects-message">
+        <div class="gl-py-3 gl-pl-7 gl-pr-5 gl-text-subtle" data-testid="max-projects-message">
           {{ $options.i18n.maxProjectsSelected }}
         </div>
       </template>

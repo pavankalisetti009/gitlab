@@ -10,7 +10,7 @@
     .form-group
       = f.label :throttle_incident_management_notification_per_period, 'Rate limit period', class: 'gl-font-bold'
       = f.number_field :throttle_incident_management_notification_per_period, class: 'form-control gl-form-input'
-      .form-text.gl-text-gray-600
+      .form-text.gl-text-subtle
         = _("The time period in seconds that the maximum requests per project limit applies to.")
 
   = f.submit _('Save changes'), pajamas_button: true

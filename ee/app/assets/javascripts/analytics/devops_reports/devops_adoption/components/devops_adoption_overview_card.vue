@@ -84,7 +84,7 @@ export default {
         data-testid="card-meta-row"
       >
         <devops-adoption-table-cell-flag :enabled="feature.adopted" class="gl-mr-3" />
-        <span class="gl-text-sm gl-text-gray-600" data-testid="card-meta-row-title">{{
+        <span class="gl-text-sm gl-text-subtle" data-testid="card-meta-row-title">{{
           feature.title
         }}</span>
       </div>

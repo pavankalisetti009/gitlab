@@ -41,7 +41,7 @@ export default {
         <gl-icon
           :size="16"
           name="bulb"
-          class="gl-ml-2 gl-mr-4 gl-mt-1 gl-shrink-0 gl-text-gray-600"
+          class="gl-ml-2 gl-mr-4 gl-mt-1 gl-shrink-0 gl-text-subtle"
         />
         <div>
           <div class="gl-font-bold">{{ $options.i18n.title }}</div>
