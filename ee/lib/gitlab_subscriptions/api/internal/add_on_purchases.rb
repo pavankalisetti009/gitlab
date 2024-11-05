@@ -9,15 +9,17 @@ module GitlabSubscriptions
 
         namespace :internal do
           namespace :gitlab_subscriptions do
-            resource :namespaces do
+            resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
               before do
                 @namespace = find_namespace(params[:id])
                 not_found!('Namespace') unless @namespace
+
+                @add_on = find_or_create_subscription_add_on!(params[:add_on_name], @namespace) if params[:add_on_name]
               end
 
               desc 'Create multiple add-on purchases for the namespace' do
                 detail 'Creates multiple subscription add-on records for the given namespace'
-                success ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+                success Entities::Internal::GitlabSubscriptions::AddOnPurchase
                 failure [
                   { code: 400, message: 'Bad request' },
                   { code: 401, message: 'Unauthorized' },
@@ -60,12 +62,27 @@ module GitlabSubscriptions
                 add_on_purchases = result[:add_on_purchases]
 
                 if result.success?
-                  present add_on_purchases, with: ::EE::API::Entities::GitlabSubscriptions::AddOnPurchase
+                  present add_on_purchases, with: Entities::Internal::GitlabSubscriptions::AddOnPurchase
                 elsif !add_on_purchases || add_on_purchases.empty?
                   bad_request!(result[:message])
                 else
                   render_validation_error!(result[:add_on_purchases])
                 end
+              end
+
+              desc 'Returns an add-on purchase for the namespace' do
+                detail 'Gets the add-on purchase record for the given namespace and add-on'
+                success Entities::Internal::GitlabSubscriptions::AddOnPurchase
+                failure [
+                  { code: 400, message: 'Bad request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 404, message: 'Not found' }
+                ]
+              end
+              get ":id/subscription_add_on_purchases/:add_on_name" do
+                add_on_purchase = find_subscription_add_on_purchase!(@namespace, @add_on)
+
+                present add_on_purchase, with: Entities::Internal::GitlabSubscriptions::AddOnPurchase
               end
             end
           end
