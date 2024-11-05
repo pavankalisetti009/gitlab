@@ -61,10 +61,11 @@ module Vulnerabilities
         # database triggers to keep tables up to date.
         Vulnerabilities::Read
           .by_vulnerabilities(vulnerabilities)
-          .update_all(dismissal_reason: dismissal_reason)
+          .update_all(dismissal_reason: dismissal_reason, auto_resolved: false)
 
         vulnerabilities.update_all(
           state: :dismissed,
+          auto_resolved: false,
           dismissed_by_id: user.id,
           dismissed_at: now,
           updated_at: now

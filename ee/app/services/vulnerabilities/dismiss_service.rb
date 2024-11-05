@@ -16,7 +16,8 @@ module Vulnerabilities
     def execute
       raise Gitlab::Access::AccessDeniedError unless authorized?
 
-      update_vulnerability_with(state: :dismissed, dismissed_by: @user, dismissed_at: Time.current) do
+      update_vulnerability_with(state: :dismissed, dismissed_by: @user, dismissed_at: Time.current,
+        auto_resolved: false) do
         begin
           Vulnerabilities::StateTransition.create!(
             vulnerability: @vulnerability,
