@@ -7,7 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import SettingsSection from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_section.vue';
-import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/fallback_section.vue';
+import FallbackAndEdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/fallback_and_edge_cases_section.vue';
 import {
   CLOSED,
   OPEN,
@@ -148,7 +148,7 @@ describe('EditorComponent', () => {
   };
 
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findFallbackSection = () => wrapper.findComponent(FallbackSection);
+  const findFallbackAndEdgeCasesSection = () => wrapper.findComponent(FallbackAndEdgeCasesSection);
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findAllActionSections = () => wrapper.findAllComponents(ActionSection);
@@ -890,23 +890,37 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('fallback section', () => {
-    it('renders the fallback section with "property: closed" for a policy without fallback section', () => {
+  describe('fallback and edge cases section', () => {
+    it('renders the section without properties in the yaml', () => {
       factory();
-      expect(findFallbackSection().props()).toEqual({
-        disabled: false,
-        property: CLOSED,
-      });
+      expect(findFallbackAndEdgeCasesSection().props('policy')).toMatchObject(
+        expect.objectContaining({
+          fallback_behavior: { fail: CLOSED },
+        }),
+      );
     });
 
     it('renders the fallback section with the fallback property in the yaml', () => {
       factoryWithExistingPolicy({
         policy: { fallback_behavior: { fail: OPEN } },
       });
-      expect(findFallbackSection().props()).toEqual({
-        disabled: false,
-        property: OPEN,
+      expect(findFallbackAndEdgeCasesSection().props('policy')).toMatchObject(
+        expect.objectContaining({
+          fallback_behavior: { fail: OPEN },
+        }),
+      );
+    });
+
+    it('handles update event', () => {
+      factory();
+      findFallbackAndEdgeCasesSection().vm.$emit('changed', 'fallback_behavior', {
+        fail: OPEN,
       });
+      expect(findFallbackAndEdgeCasesSection().props('policy')).toMatchObject(
+        expect.objectContaining({
+          fallback_behavior: { fail: OPEN },
+        }),
+      );
     });
   });
 });

@@ -19,6 +19,8 @@ import {
   zeroActionsScanResultManifest,
   zeroActionsScanResultObject,
   mockFallbackInvalidScanResultManifest,
+  mockProjectPolicyTuningScanResultManifest,
+  mockProjectPolicyTuningScanResultObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
   unsupportedManifest,
@@ -40,6 +42,7 @@ describe('fromYaml', () => {
       ${'with the `BLOCK_GROUP_BRANCH_MODIFICATION` approval_setting'}    | ${mockGroupApprovalSettingsScanResultManifest}            | ${mockGroupApprovalSettingsScanResultObject}
       ${'without actions'}                                                | ${zeroActionsScanResultManifest}                          | ${zeroActionsScanResultObject}
       ${'with fail: closed'}                                              | ${mockProjectFallbackClosedScanResultManifest}            | ${mockProjectFallbackClosedScanResultObject}
+      ${'with policy_tuning'}                                             | ${mockProjectPolicyTuningScanResultManifest}              | ${mockProjectPolicyTuningScanResultObject}
       ${'with `approval_settings` containing permitted invalid settings'} | ${mockApprovalSettingsPermittedInvalidScanResultManifest} | ${mockApprovalSettingsPermittedInvalidScanResultObject}
       ${'with multiple actions'}                                          | ${multipleApproverActionsScanResultManifest}              | ${multipleApproverActionsScanResultObject}
     `('returns the policy object for a manifest $title', ({ manifest, output }) => {
