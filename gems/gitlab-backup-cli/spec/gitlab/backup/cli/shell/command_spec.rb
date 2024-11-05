@@ -48,5 +48,11 @@ RSpec.describe Gitlab::Backup::Cli::Shell::Command do
 
       expect(result.duration).to be > 0.1
     end
+
+    it 'sets the provided env variables as part of process execution' do
+      result = command.new("echo \"variable value ${CUSTOM}\"", env: envdata).capture
+
+      expect(result.stdout.chomp).to eq('variable value data')
+    end
   end
 end
