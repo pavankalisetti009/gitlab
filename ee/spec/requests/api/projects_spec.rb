@@ -591,6 +591,16 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       expect(response).to have_gitlab_http_status(:bad_request)
       expect(json_response['message']['template_project_id']).to eq(["#{new_project.id} is unknown or invalid"])
     end
+
+    context 'When template_name and template_project_id both are missing while use_custom_template is true' do
+      let(:project_params) { super().merge(use_custom_template: true).except(:template_name, :template_project_id) }
+
+      it 'return 400 error with missing template_name and template_project_id error' do
+        expect { api_call }.not_to change { Project.count }
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['message']['use_custom_template']).to eq(["must be used with template_name or template_project_id"])
+      end
+    end
   end
 
   shared_context 'base instance template models' do

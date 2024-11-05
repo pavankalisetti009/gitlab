@@ -19,7 +19,8 @@ module EE
       override :execute
       def execute
         return super unless use_custom_template?
-        return project unless validate_group_template!
+
+        return project unless validate_template_request! && validate_group_template!
 
         override_params = params.dup
         params[:custom_template] = template_project if template_project
@@ -28,6 +29,13 @@ module EE
       end
 
       private
+
+      def validate_template_request!
+        return true if template_requested?
+
+        project.errors.add(:use_custom_template, 'must be used with template_name or template_project_id')
+        false
+      end
 
       def validate_group_template!
         if subgroup_id && !valid_project_namespace?
@@ -49,9 +57,7 @@ module EE
 
       def use_custom_template?
         strong_memoize(:use_custom_template) do
-          template_requested? &&
-            ::Gitlab::Utils.to_boolean(params.delete(:use_custom_template)) &&
-            ::Gitlab::CurrentSettings.custom_project_templates_enabled?
+          ::Gitlab::Utils.to_boolean(params.delete(:use_custom_template)) && ::Gitlab::CurrentSettings.custom_project_templates_enabled?
         end
       end
 
