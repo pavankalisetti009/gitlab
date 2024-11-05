@@ -80,6 +80,12 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
       end
     end
 
+    context 'with an invalid use_case' do
+      subject(:result) { described_class.new(request, use_case: 'invalid').build }
+
+      it { is_expected.to be_nil }
+    end
+
     context 'when arkose_labs_data_exchange feature flag is disabled' do
       before do
         stub_feature_flags(arkose_labs_data_exchange: false)

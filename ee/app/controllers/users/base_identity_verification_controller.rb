@@ -6,7 +6,6 @@ module Users
     include Arkose::TokenVerifiable
     include ActionView::Helpers::DateHelper
     include IdentityVerificationHelper
-    include ::Gitlab::RackLoadBalancingHelpers
 
     EVENT_CATEGORIES = %i[email phone credit_card error toggle_phone_exemption].freeze
     PHONE_VERIFICATION_ACTIONS = %i[send_phone_verification_code verify_phone_verification_code].freeze
@@ -122,7 +121,9 @@ module Users
       redirect_to root_path
     end
 
-    def find_verification_user; end
+    def find_verification_user
+      raise NotImplementedError
+    end
 
     def redirect_banned_user
       return unless @user.banned?
