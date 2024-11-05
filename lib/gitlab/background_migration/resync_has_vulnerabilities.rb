@@ -24,7 +24,7 @@ module Gitlab
       private
 
       def update_values_sql(project_ids)
-        project_ids_values = Arel::Nodes::ValuesList.new(project_ids.map { |p| [p] }).to_sql
+        project_ids_values = Arel::Nodes::ValuesList.new(project_ids.zip).to_sql
 
         results = Vulnerability
           .select('project_ids.id AS project_id', exists_select)
