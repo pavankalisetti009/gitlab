@@ -326,7 +326,6 @@ export default {
           title: TOKEN_TITLE_MILESTONE,
           icon: 'milestone',
           token: MilestoneToken,
-          operators: OPERATORS_IS,
           recentSuggestionsStorageKey: `${this.fullPath}-merge-requests-recent-tokens-milestone`,
           shouldSkipSort: true,
           fullPath: this.fullPath,
