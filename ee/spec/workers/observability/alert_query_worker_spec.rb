@@ -49,7 +49,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
     allow(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
       :access_token).and_return(expected_access_token)
 
-    stub_licensed_features(observability: true)
+    stub_licensed_features(observability: true, observability_alerts: true)
     stub_feature_flags(observability_features: true)
   end
 
@@ -57,7 +57,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
     let(:expected_response) { [] }
 
     it 'calls alerts API' do
-      expect(Gitlab::HTTP_V2).to receive(:get).and_call_original
+      expect(Gitlab::HTTP).to receive(:get).and_call_original
 
       worker.perform
     end
@@ -104,6 +104,17 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
           status: 200,
           body: "malformed-json"
         )
+      expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
+    end
+  end
+
+  context 'when alerts API is blocked' do
+    it 'does not create any alerts' do
+      stub_request(:get, ::Gitlab::Observability.alerts_url)
+        .with(
+          headers: expected_request_headers
+        )
+        .to_raise(Gitlab::HTTP_V2::BlockedUrlError)
       expect { worker.perform }.not_to change { ::AlertManagement::Alert.count }
     end
   end
@@ -158,7 +169,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
 
   context 'when not licensed' do
     before do
-      stub_licensed_features(observability: false)
+      stub_licensed_features(observability_alerts: false, observability: false)
     end
 
     it 'does not create any alert' do
