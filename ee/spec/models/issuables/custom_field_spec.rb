@@ -19,7 +19,7 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       option_1 = create(:custom_field_select_option, custom_field: custom_field, position: 2)
       option_2 = create(:custom_field_select_option, custom_field: custom_field, position: 1)
 
-      expect(custom_field.select_options).to eq([option_2, option_1])
+      expect(custom_field.reload.select_options).to eq([option_2, option_1])
     end
 
     it 'orders work_item_types by name' do
@@ -42,6 +42,23 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_uniqueness_of(:name).scoped_to(:namespace_id).case_insensitive }
+
+    describe 'max select options' do
+      let(:limit) { described_class::MAX_SELECT_OPTIONS }
+
+      it 'is valid when select options are at the limit' do
+        limit.times { custom_field.select_options.build(value: SecureRandom.hex) }
+
+        expect(custom_field).to be_valid
+      end
+
+      it 'is not valid when select options exceed the limit' do
+        (limit + 1).times { custom_field.select_options.build(value: SecureRandom.hex) }
+
+        expect(custom_field).not_to be_valid
+        expect(custom_field.errors[:select_options]).to include("exceeds the limit of #{limit}.")
+      end
+    end
 
     describe '#namespace_is_root_group' do
       subject(:custom_field) { build(:custom_field, namespace: namespace) }
@@ -126,6 +143,41 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
           end
 
           it_behaves_like 'an invalid record'
+        end
+      end
+    end
+
+    describe '#selectable_field_type_with_select_options' do
+      context 'when a select option exists' do
+        before do
+          custom_field.select_options.build(value: SecureRandom.hex)
+        end
+
+        it 'is valid when field_type is select' do
+          custom_field.field_type = :single_select
+
+          expect(custom_field).to be_valid
+        end
+
+        it 'is valid when field_type is multi_select' do
+          custom_field.field_type = :multi_select
+
+          expect(custom_field).to be_valid
+        end
+
+        it 'is invalid for non-select field types' do
+          custom_field.field_type = :text
+
+          expect(custom_field).not_to be_valid
+          expect(custom_field.errors[:field_type]).to include('does not support select options.')
+        end
+      end
+
+      context 'when there are no select options' do
+        it 'is valid for non-select field types' do
+          custom_field.field_type = :text
+
+          expect(custom_field).to be_valid
         end
       end
     end

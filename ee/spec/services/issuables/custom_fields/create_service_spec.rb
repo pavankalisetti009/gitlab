@@ -22,6 +22,28 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
       expect(custom_field.field_type).to eq('text')
       expect(custom_field.created_by_id).to eq(user.id)
     end
+
+    context 'when setting select options' do
+      let(:params) do
+        {
+          name: 'my custom field',
+          field_type: 'single_select',
+          select_options: [
+            { value: 'option1' },
+            { value: 'option2' }
+          ]
+        }
+      end
+
+      it 'creates the custom field with the options' do
+        expect(response).to be_success
+        expect(custom_field).to be_persisted
+        expect(custom_field.select_options).to match([
+          have_attributes(id: a_kind_of(Integer), value: 'option1', position: 0),
+          have_attributes(id: a_kind_of(Integer), value: 'option2', position: 1)
+        ])
+      end
+    end
   end
 
   context 'when user does not have access' do
@@ -50,6 +72,17 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
     it 'returns the validation error' do
       expect(response).to be_error
       expect(response.message).to include('Name is too long (maximum is 255 characters)')
+    end
+  end
+
+  context 'when select option is invalid' do
+    let(:params) do
+      { name: 'Select field', field_type: 'single_select', select_options: [{ value: 'a' * 256 }] }
+    end
+
+    it 'returns the validation error' do
+      expect(response).to be_error
+      expect(response.message).to include('Select options value is too long (maximum is 255 characters)')
     end
   end
 end

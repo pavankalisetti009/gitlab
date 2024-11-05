@@ -20,11 +20,22 @@ module Issuables
         )
 
         custom_field.assign_attributes(params.slice(:field_type, :name))
+        handle_select_options(custom_field)
 
         if custom_field.save
           ServiceResponse.success(payload: { custom_field: custom_field })
         else
           ServiceResponse.error(message: custom_field.errors.full_messages)
+        end
+      end
+
+      private
+
+      def handle_select_options(custom_field)
+        return unless params[:select_options]
+
+        params[:select_options].each_with_index do |option, i|
+          custom_field.select_options.build(value: option[:value], position: i)
         end
       end
     end
