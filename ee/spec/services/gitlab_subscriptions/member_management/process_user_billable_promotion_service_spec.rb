@@ -59,7 +59,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
         end
       end
 
-      context 'when promotion_management_applicable? returns false' do
+      context 'when member_promotion_management_enabled? returns false' do
         before do
           stub_feature_flags(member_promotion_management: false)
         end

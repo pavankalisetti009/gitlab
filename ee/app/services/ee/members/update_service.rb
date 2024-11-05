@@ -81,7 +81,7 @@ module EE
       def non_admin_and_member_promotion_management_enabled?
         return false if current_user.can_admin_all_resources?
 
-        promotion_management_applicable?
+        member_promotion_management_enabled?
       end
 
       def validate_update_permission!(members, permission)

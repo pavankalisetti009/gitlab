@@ -158,7 +158,8 @@ RSpec.describe Admin::ApplicationSettingsController do
 
           before do
             allow_next_instance_of(::ApplicationSettings::UpdateService) do |instance|
-              allow(instance).to receive(:promotion_management_available?).and_return(promotion_management_available)
+              allow(instance).to receive(:member_promotion_management_feature_available?)
+                                   .and_return(promotion_management_available)
             end
           end
 

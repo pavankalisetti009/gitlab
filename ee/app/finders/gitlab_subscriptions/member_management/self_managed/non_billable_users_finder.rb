@@ -12,7 +12,7 @@ module GitlabSubscriptions
         end
 
         def execute
-          return User.none unless current_user.present? && user_ids.present? && promotion_management_applicable?
+          return User.none unless current_user.present? && user_ids.present? && member_promotion_management_enabled?
 
           User.non_billable_users_for_billable_management(user_ids)
         end

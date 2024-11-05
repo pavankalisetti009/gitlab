@@ -23,7 +23,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::Us
   let_it_be(:feature_flag) { true }
   let_it_be(:feature_setting) { true }
   let_it_be(:current_user) { admin_user }
-  let_it_be(:promotion_management_applicable) { true }
 
   describe '#resolve' do
     subject(:result) { resolve(described_class, ctx: { current_user: current_user }) }

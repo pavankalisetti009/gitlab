@@ -47,11 +47,11 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::NonBillableUs
       end
     end
 
-    context 'when promotion_management_applicable? returns false' do
+    context 'when member_promotion_management_enabled? returns false' do
       it_behaves_like 'returns empty'
     end
 
-    context 'when promotion_management_applicable? returns true' do
+    context 'when member_promotion_management_enabled? returns true' do
       before do
         stub_feature_flags(member_promotion_management: true)
         stub_application_setting(enable_member_promotion_management: true)

@@ -120,7 +120,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     let(:promotion_management_available) { true }
 
     before do
-      allow(helper).to receive(:promotion_management_available?).and_return(promotion_management_available)
+      allow(helper).to receive(:member_promotion_management_feature_available?).and_return(promotion_management_available)
       application_setting.enable_member_promotion_management = true
       helper.instance_variable_set(:@application_setting, application_setting)
     end

@@ -253,7 +253,7 @@ module EE
       end
 
       def should_publish_admin_events?
-        promotion_management_applicable? &&
+        member_promotion_management_enabled? &&
           current_user&.can_admin_all_resources? &&
           at_least_one_member_created?
       end

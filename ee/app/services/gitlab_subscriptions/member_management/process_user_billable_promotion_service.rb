@@ -37,7 +37,7 @@ module GitlabSubscriptions
       attr_accessor :failed_member_approvals, :successful_promotion_count
 
       def authorized?
-        return false unless promotion_management_applicable?
+        return false unless member_promotion_management_enabled?
 
         (current_user.present? &&
           current_user.can_admin_all_resources?) || skip_authorization

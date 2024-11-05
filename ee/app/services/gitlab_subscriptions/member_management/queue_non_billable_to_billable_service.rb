@@ -131,7 +131,7 @@ module GitlabSubscriptions
       def promotion_management_required?
         return false if current_user.can_admin_all_resources?
 
-        promotion_management_applicable?
+        member_promotion_management_enabled?
       end
 
       def billable_role_change?

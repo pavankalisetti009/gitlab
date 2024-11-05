@@ -6,34 +6,32 @@ module GitlabSubscriptions
       include ::GitlabSubscriptions::SubscriptionHelper
       include ::GitlabSubscriptions::BillableUsersUtils
 
-      def promotion_management_applicable?
-        return false unless promotion_management_active?
-        return false unless promotion_management_available?
+      def member_promotion_management_enabled?
+        return false unless promotion_management_settings_enabled?
 
-        true
+        member_promotion_management_feature_available?
       end
 
-      def promotion_management_available?
-        return false unless promotion_management_feature_enabled?
+      def member_promotion_management_feature_available?
+        return false unless promotion_management_feature_flag_enabled?
         return false if gitlab_com_subscription?
-        return false unless exclude_guests?
 
-        true
+        exclude_guests?
       end
 
       def promotion_management_required_for_role?(new_access_level:, member_role_id: nil)
-        return false unless promotion_management_applicable?
+        return false unless member_promotion_management_enabled?
 
         sm_billable_role_change?(role: new_access_level, member_role_id: member_role_id)
       end
 
       private
 
-      def promotion_management_feature_enabled?
+      def promotion_management_feature_flag_enabled?
         ::Feature.enabled?(:member_promotion_management, type: :beta)
       end
 
-      def promotion_management_active?
+      def promotion_management_settings_enabled?
         ::Gitlab::CurrentSettings.enable_member_promotion_management?
       end
 

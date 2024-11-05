@@ -253,7 +253,7 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
       context 'when the feature is available' do
         before do
           allow_next_instance_of(::ApplicationSettings::UpdateService) do |instance|
-            allow(instance).to receive(:promotion_management_available?).and_return(true)
+            allow(instance).to receive(:member_promotion_management_feature_available?).and_return(true)
           end
         end
 
