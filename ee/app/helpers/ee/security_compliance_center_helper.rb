@@ -19,7 +19,9 @@ module EE
           vueroute: 'frameworks'),
 
         feature_adherence_report_enabled: adherence_report.to_s,
-        feature_violations_report_enabled: violations_report.to_s
+        feature_violations_report_enabled: violations_report.to_s,
+
+        active_compliance_frameworks: group.active_compliance_frameworks?.to_s
       }
 
       if container.is_a?(Group)

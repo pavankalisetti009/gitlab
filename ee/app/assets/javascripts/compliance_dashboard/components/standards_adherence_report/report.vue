@@ -1,4 +1,5 @@
 <script>
+import Tracking from '~/tracking';
 import ComplianceStandardsAdherenceTable from './standards_adherence_table.vue';
 
 export default {
@@ -6,6 +7,8 @@ export default {
   components: {
     ComplianceStandardsAdherenceTable,
   },
+  mixins: [Tracking.mixin()],
+  inject: ['activeComplianceFrameworks'],
   props: {
     groupPath: {
       type: String,
@@ -17,6 +20,11 @@ export default {
       required: false,
       default: null,
     },
+  },
+  mounted() {
+    this.track('visit_standards_adherence', {
+      property: this.activeComplianceFrameworks ? 'with_active_compliance_frameworks' : '',
+    });
   },
 };
 </script>

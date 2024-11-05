@@ -9,7 +9,8 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
   let_it_be(:base_data) do
     {
       root_ancestor_path: group.root_ancestor.full_path,
-      root_ancestor_name: group.root_ancestor.name
+      root_ancestor_name: group.root_ancestor.name,
+      active_compliance_frameworks: "false"
     }
   end
 
