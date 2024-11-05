@@ -65,7 +65,7 @@ export default {
     </template>
 
     <template #list-item="{ item }">
-      <span class="gl-flex gl-items-center gl-text-gray-600">
+      <span class="gl-flex gl-items-center gl-text-subtle">
         <gl-icon
           :size="12"
           :name="item.name"

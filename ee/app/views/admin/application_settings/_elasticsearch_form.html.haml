@@ -55,18 +55,18 @@
             .form-group
               = f.label :elasticsearch_url, 'URL', class: 'label-bold'
               = f.text_field :elasticsearch_url, value: @application_setting.elasticsearch_url.join(', '), class: 'form-control gl-form-input', placeholder: 'http://localhost:9200, http://localhost:9201', data: { testid: 'url-field' }
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('The URLs for connecting to Elasticsearch. For clustering, add the URLs separated by commas.')
 
             .form-group
               = f.label :elasticsearch_username, _('Username'), class: 'label-bold'
               = f.text_field :elasticsearch_username, value: @application_setting.elasticsearch_username, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Enter the username for password-protected Elasticsearch servers.')
             .form-group
               = f.label :elasticsearch_password, _('Password'), class: 'label-bold'
               = f.password_field :elasticsearch_password, value: (@application_setting.elasticsearch_password.present? ? ApplicationSetting::MASK_PASSWORD : ''), class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Enter the password for password-protected Elasticsearch servers.')
 
             .form-group
@@ -87,7 +87,7 @@
                     %td
                       = f.number_field :elasticsearch_replicas, name: "application_setting[elasticsearch_replicas][#{setting.alias_name}]", value: setting.number_of_replicas, min: 0, class: 'form-control gl-form-input', id: "application_setting_elasticsearch_replicas[#{setting.alias_name}]"
             .form-group
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 - configuration_link_url = help_page_url('integration/advanced_search/elasticsearch.md', anchor: 'advanced-search-configuration')
                 - configuration_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: configuration_link_url }
                 - recreated_link_url = help_page_url('integration/advanced_search/elasticsearch.md', anchor: 'zero-downtime-reindexing')
@@ -97,52 +97,52 @@
             .form-group
               = f.label :elasticsearch_worker_number_of_shards, _('Number of shards for non-code indexing'), class: 'label-bold'
               = f.number_field :elasticsearch_worker_number_of_shards, value: @application_setting.elasticsearch_worker_number_of_shards, max: Elastic::ProcessBookkeepingService::SHARDS_MAX, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Improve indexing performance by increasing Sidekiq load. Values greater than the current shard limit (%{limit}) are not allowed.') % { limit: Elastic::ProcessBookkeepingService::SHARDS_MAX }
 
             - if Feature.enabled?(:sidekiq_concurrency_limit_middleware, type: :ops)
               .form-group
                 = f.label :elasticsearch_max_code_indexing_concurrency, _('Code indexing concurrency'), class: 'label-bold'
                 = f.number_field :elasticsearch_max_code_indexing_concurrency, value: @application_setting.elasticsearch_max_code_indexing_concurrency, class: 'form-control gl-form-input'
-                .form-text.gl-text-gray-600.gl-mt-0
+                .form-text.gl-text-subtle.gl-mt-0
                   = _('How many code indexing jobs are allowed to run concurrently. A higher value improves repository indexing performance by increasing Sidekiq and Elasticsearch load. Setting it to 0 allows an unlimited number of indexing jobs.')
 
             .form-group
               = f.label :elasticsearch_indexed_file_size_limit_kb, _('Maximum file size indexed (KiB)'), class: 'label-bold'
               = f.number_field :elasticsearch_indexed_file_size_limit_kb, value: @application_setting.elasticsearch_indexed_file_size_limit_kb, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('For files larger than this limit, only index the file name. The file content is neither indexed nor searchable.')
 
             .form-group
               = f.label :elasticsearch_indexed_field_length_limit, _('Maximum field length'), class: 'label-bold'
               = f.number_field :elasticsearch_indexed_field_length_limit, value: @application_setting.elasticsearch_indexed_field_length_limit, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('If any indexed field exceeds this limit, it is truncated to this number of characters. The rest of the content is neither indexed nor searchable. This does not apply to repository and wiki indexing. For unlimited characters, set this to 0.')
 
             .form-group
               = f.label :elasticsearch_max_bulk_size_mb, _('Maximum bulk request size (MiB)'), class: 'label-bold'
               = f.number_field :elasticsearch_max_bulk_size_mb, value: @application_setting.elasticsearch_max_bulk_size_mb, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Maximum size of Elasticsearch bulk indexing requests.')
 
             .form-group
               = f.label :elasticsearch_max_bulk_concurrency, _('Bulk request concurrency'), class: 'label-bold'
               = f.number_field :elasticsearch_max_bulk_concurrency, value: @application_setting.elasticsearch_max_bulk_concurrency, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Maximum concurrency of Elasticsearch bulk requests per indexing operation.')
                 = _('This only applies to repository indexing operations.')
 
             .form-group
               = f.label :elasticsearch_client_request_timeout, _('Client request timeout'), class: 'label-bold'
               = f.number_field :elasticsearch_client_request_timeout, value: @application_setting.elasticsearch_client_request_timeout, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Elasticsearch HTTP client timeout value in seconds.')
                 = _('To use the system\'s default, set this value to 0.')
 
             .form-group
               = f.label :elasticsearch_retry_on_failure, _('Retry on failure'), class: 'label-bold'
               = f.number_field :elasticsearch_retry_on_failure, value: @application_setting.elasticsearch_retry_on_failure, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Maximum number of possible retries for Elasticsearch search requests.')
                 = _('To disable the setting, set this value to 0.')
 
@@ -195,13 +195,13 @@
             .form-group
               = f.label :elasticsearch_aws_region, 'AWS region', class: 'label-bold'
               = f.text_field :elasticsearch_aws_region, value: @application_setting.elasticsearch_aws_region, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('OpenSearch\'s region.')
 
             .form-group
               = f.label :elasticsearch_aws_access_key, _('AWS Access Key'), class: 'label-bold'
               = f.text_field :elasticsearch_aws_access_key, value: @application_setting.elasticsearch_aws_access_key, class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Required only if you are not using role instance credentials.')
 
             - secret_access_key_label = @application_setting.elasticsearch_aws_secret_access_key.present? ? _('Enter new AWS Secret Access Key') : _('AWS Secret Access Key')
@@ -209,7 +209,7 @@
             .form-group
               = f.label :elasticsearch_aws_secret_access_key, secret_access_key_label, class: 'label-bold'
               = f.password_field :elasticsearch_aws_secret_access_key, value: secret_access_key_value, autocomplete: 'new-password', class: 'form-control gl-form-input'
-              .form-text.gl-text-gray-600.gl-mt-0
+              .form-text.gl-text-subtle.gl-mt-0
                 = _('Required only if you are not using role instance credentials.')
 
       = f.submit _('Save changes'), data: { testid: 'submit-button' }, pajamas_button: true
@@ -226,7 +226,7 @@
         .form-group
           = f.label :slice_multiplier, _('Slice multiplier'), class: 'label-bold'
           = f.number_field :elasticsearch_slice_multiplier, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.slice_multiplier
-          .form-text.gl-text-gray-600.gl-mt-0
+          .form-text.gl-text-subtle.gl-mt-0
             - slice_multiplier_link_url = help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'slice-multiplier')
             - slice_multiplier_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: slice_multiplier_link_url }
             = html_escape(_('Calculate the number of slices during reindexing. The multiplier is applied to the number of shards per index. Learn more about %{slice_multiplier_link_start}slice multiplier configuration%{slice_multiplier_link_end}.')) % { slice_multiplier_link_start: slice_multiplier_link_start, slice_multiplier_link_end: '</a>'.html_safe }
@@ -234,13 +234,13 @@
         .form-group
           = f.label :max_slices_running, _('Maximum running slices'), class: 'label-bold'
           = f.number_field :elasticsearch_max_slices_running, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.max_slices_running
-          .form-text.gl-text-gray-600.gl-mt-0
+          .form-text.gl-text-subtle.gl-mt-0
             - max_slices_running_link_url = help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'maximum-running-slices')
             - max_slices_running_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: max_slices_running_link_url }
             = html_escape(_('Set the maximum number of slices allowed to run concurrently during Elasticsearch reindexing. Learn more about %{max_slices_running_link_start}maximum running slices configuration%{max_slices_link_end}.')) % { max_slices_running_link_start: max_slices_running_link_start, max_slices_link_end: '</a>'.html_safe }
 
         = f.submit _('Trigger cluster reindexing'), pajamas_button: true, disabled: @last_elasticsearch_reindexing_task&.in_progress?, data: { confirm: _('Are you sure you want to reindex?') }
-        .form-text.gl-text-gray-600
+        .form-text.gl-text-subtle
         - Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|
           .form-text.gl-text-red-500.gl-mt-0
             = _("Unused, previous indices: %{index_names} will be deleted after %{time} automatically.") % { index_names: task.subtasks.map(&:index_name_from).join(', '), time: task.delete_original_index_at }

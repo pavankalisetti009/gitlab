@@ -299,7 +299,7 @@ export default {
 
                 {{ vulnerabilityItem.fileDescription }}
               </span>
-              <span class="align-content-center gl-pr-3 gl-text-gray-600">{{
+              <span class="align-content-center gl-pr-3 gl-text-subtle">{{
                 vulnerabilityItem.fileLocation.lineStart
               }}</span>
             </gl-link>

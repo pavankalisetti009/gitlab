@@ -129,7 +129,7 @@ export default {
       </div>
       <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
         <div class="gl-w-full">
-          <div data-testid="widget-title" class="gl-w-9/10 gl-text-sm gl-text-gray-600">
+          <div data-testid="widget-title" class="gl-w-9/10 gl-text-sm gl-text-subtle">
             {{ expiredWidgetTitleText }}
           </div>
           <div class="gl-mt-4 gl-text-center">

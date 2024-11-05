@@ -186,7 +186,7 @@ export default {
       <h4 data-testid="test-coverage-header">
         {{ $options.i18n.codeCoverageHeader }}
       </h4>
-      <strong class="gl-ml-3 gl-text-gray-600" data-testid="test-coverage-last-updated">
+      <strong class="gl-ml-3 gl-text-subtle" data-testid="test-coverage-last-updated">
         <gl-sprintf v-if="!isChartEmpty" :message="$options.i18n.lastUpdated">
           <template #timeAgo>{{ latestCoverageTimeAgo }}</template>
         </gl-sprintf>
@@ -217,7 +217,7 @@ export default {
       <template #header>
         <div class="gl-flex gl-items-center">
           <h5>{{ $options.i18n.graphCardHeader }}</h5>
-          <strong class="gl-ml-3 gl-text-sm gl-text-gray-600">{{
+          <strong class="gl-ml-3 gl-text-sm gl-text-subtle">{{
             $options.i18n.graphCardSubheader
           }}</strong>
         </div>

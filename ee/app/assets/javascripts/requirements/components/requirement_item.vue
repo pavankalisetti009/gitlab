@@ -96,11 +96,11 @@ export default {
     @click="$emit('show-click', requirement)"
   >
     <div class="issuable-info-container">
-      <span class="issuable-reference gl-mr-3 gl-hidden gl-text-gray-600 sm:!gl-block">{{
+      <span class="issuable-reference gl-mr-3 gl-hidden gl-text-subtle sm:!gl-block">{{
         reference
       }}</span>
       <div class="issuable-main-info">
-        <span class="issuable-reference gl-block gl-text-gray-600 sm:!gl-hidden">{{
+        <span class="issuable-reference gl-block gl-text-subtle sm:!gl-hidden">{{
           reference
         }}</span>
         <div class="issue-title title">
