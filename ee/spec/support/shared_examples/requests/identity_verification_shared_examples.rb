@@ -82,7 +82,7 @@ RSpec.shared_examples 'logs and tracks the event' do |category, event, reason = 
   end
 end
 
-RSpec.shared_examples 'it requires a signed in user' do
+RSpec.shared_examples 'it requires a signed-in verified user' do
   let_it_be(:confirmed_user) { create(:user, :identity_verification_eligible) }
 
   before do

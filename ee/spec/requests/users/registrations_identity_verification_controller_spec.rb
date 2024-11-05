@@ -9,7 +9,6 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
   let_it_be_with_reload(:unconfirmed_user) { create(:user, :unconfirmed, :low_risk) }
   let_it_be(:confirmed_user, reload: true) { create(:user, :low_risk) }
-  let_it_be(:invalid_verification_user_id) { non_existing_record_id }
 
   before do
     stub_saas_features(identity_verification: true)
@@ -24,54 +23,31 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     end
   end
 
-  shared_examples 'it requires a valid verification_user_id' do |expected_response_code|
+  shared_examples 'it requires a signed-in user' do |expected_response_code|
     let(:response_code) { expected_response_code || :ok }
 
-    context 'when session contains an invalid `verification_user_id`' do
-      before do
-        stub_session(session_data: { verification_user_id: invalid_verification_user_id })
-      end
+    context 'with a signed-in IdentityVerificationUser' do
+      let(:verification_user_id) { unconfirmed_user.id }
 
-      it 'handles sticking' do
-        allow(User.sticking).to receive(:find_caught_up_replica)
-        .and_call_original
+      include_context 'with a signed-in IdentityVerificationUser'
 
-        expect(User.sticking)
-          .to receive(:find_caught_up_replica)
-          .with(:user, invalid_verification_user_id)
-
+      it 'sets the user instance variable and returns the expected response', :aggregate_failures do
         do_request
 
-        stick_object = request.env[::Gitlab::Database::LoadBalancing::RackMiddleware::STICK_OBJECT].first
-        expect(stick_object[0]).to eq(User.sticking)
-        expect(stick_object[1]).to eq(:user)
-        expect(stick_object[2]).to eq(invalid_verification_user_id)
+        expect(assigns(:user)).to eq(unconfirmed_user)
+        expect(response).to have_gitlab_http_status(response_code)
       end
+    end
 
-      it 'redirects to root path' do
+    it_behaves_like 'it handles absence of a signed-in IdentityVerificationUser' do
+      it 'redirects to root_path' do
         do_request
 
         expect(response).to redirect_to(root_path)
       end
     end
 
-    context 'when session contains a valid `verification_user_id`' do
-      before do
-        stub_session(session_data: { verification_user_id: unconfirmed_user.id })
-
-        do_request
-      end
-
-      it 'sets the user instance variable' do
-        expect(assigns(:user)).to eq(unconfirmed_user)
-      end
-
-      it 'renders identity verification page' do
-        expect(response).to have_gitlab_http_status(response_code)
-      end
-    end
-
-    it_behaves_like 'it requires a signed in user'
+    it_behaves_like 'it requires a signed-in verified user'
   end
 
   shared_examples 'it requires an unconfirmed user' do |expected_response_code|
@@ -140,7 +116,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       stub_session(session_data: { verification_user_id: unconfirmed_user.id })
     end
 
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'it requires an unconfirmed user'
     it_behaves_like 'it requires oauth users to go through ArkoseLabs challenge'
 
@@ -186,7 +162,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
   describe 'GET verification_state' do
     subject(:do_request) { get verification_state_signup_identity_verification_path }
 
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
 
     context 'with an unverified user' do
       let_it_be(:user) { unconfirmed_user }
@@ -254,7 +230,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       stub_session(session_data: { verification_user_id: user.id })
     end
 
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'it requires an unconfirmed user'
     it_behaves_like 'it requires oauth users to go through ArkoseLabs challenge'
 
@@ -290,7 +266,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
     subject(:do_request) { post resend_email_code_signup_identity_verification_path }
 
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'it requires an unconfirmed user'
     it_behaves_like 'it requires oauth users to go through ArkoseLabs challenge'
 
@@ -370,7 +346,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         mock_send_phone_number_verification_code(success: true)
       end
 
-      it_behaves_like 'it requires a valid verification_user_id'
+      it_behaves_like 'it requires a signed-in user'
       it_behaves_like 'it requires an unconfirmed user'
       it_behaves_like 'it requires oauth users to go through ArkoseLabs challenge'
       it_behaves_like 'it ensures verification attempt is allowed', 'phone'
@@ -402,7 +378,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         mock_verify_phone_number_verification_code(success: true)
       end
 
-      it_behaves_like 'it requires a valid verification_user_id'
+      it_behaves_like 'it requires a signed-in user'
       it_behaves_like 'it requires an unconfirmed user'
       it_behaves_like 'it requires oauth users to go through ArkoseLabs challenge'
       it_behaves_like 'it ensures verification attempt is allowed', 'phone'
@@ -454,7 +430,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       mock_arkose_token_verification(success: true)
     end
 
-    it_behaves_like 'it requires a valid verification_user_id', :redirect
+    it_behaves_like 'it requires a signed-in user', :redirect
     it_behaves_like 'it requires an unconfirmed user', :redirect
 
     describe 'token verification' do
@@ -520,7 +496,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
     let(:do_request) { get arkose_labs_challenge_signup_identity_verification_path }
 
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'it requires an unconfirmed user'
 
     it 'renders arkose_labs_challenge template' do
@@ -658,7 +634,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     end
 
     it_behaves_like 'it requires an unconfirmed user'
-    it_behaves_like 'it requires a valid verification_user_id'
+    it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'toggles phone number verification exemption for the user'
   end
 end
