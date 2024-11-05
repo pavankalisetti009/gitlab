@@ -32,9 +32,15 @@ module EE
 
       jsonb_accessor :duo_workflow, duo_workflow_oauth_application_id: [:integer]
 
+      jsonb_accessor :integrations,
+        allow_all_integrations: [:boolean, { default: true }],
+        allowed_integrations: [:string, { array: true, default: [] }]
+
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
 
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
+
+      validates :integrations, json_schema: { filename: "application_setting_integrations" }
 
       jsonb_accessor :cluster_agents,
         receptive_cluster_agents_enabled: [:boolean, { default: false }]
@@ -80,6 +86,8 @@ module EE
       validates :elasticsearch_password, length: { maximum: 255 }
 
       validate :check_elasticsearch_url_scheme, if: :elasticsearch_url_changed?
+
+      validate :check_allowed_integrations, if: :allowed_integrations_changed?
 
       validates :elasticsearch_aws_region,
         presence: { message: "can't be blank when using aws hosted elasticsearch" },
@@ -632,6 +640,15 @@ module EE
       end
     rescue ::Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError
       errors.add(:elasticsearch_url, "only supports valid HTTP(S) URLs.")
+    end
+
+    def check_allowed_integrations
+      available_integrations = ::Integration.available_integration_names(include_disabled: true)
+      unknown_integrations = allowed_integrations - available_integrations
+
+      return if unknown_integrations.blank?
+
+      errors.add(:allowed_integrations, 'contains unknown integration names')
     end
   end
 end
