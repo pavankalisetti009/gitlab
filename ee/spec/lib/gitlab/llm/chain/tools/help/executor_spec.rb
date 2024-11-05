@@ -6,12 +6,13 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
   let_it_be(:user) { build_stubbed(:user) }
   let(:command_name) { '/help' }
   let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
-
   let(:context) do
     Gitlab::Llm::Chain::GitlabContext.new(
-      current_user: user, container: nil, resource: nil, ai_request: ai_request_double
+      current_user: user, container: nil, resource: resource, ai_request: ai_request_double
     )
   end
+
+  let(:resource) { create(:issue) }
 
   let(:expected_slash_commands) do
     {
@@ -41,6 +42,17 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
     )
   end
 
+  shared_examples_for 'track internal event' do
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'request_ask_help' }
+      let(:category) { described_class.to_s }
+      let(:project) { resource.resource_parent }
+      let(:namespace) { resource.resource_parent.group }
+
+      subject(:track_event) { tool.execute }
+    end
+  end
+
   describe '#name' do
     it 'returns tool name' do
       expect(described_class::NAME).to eq('Help')
@@ -67,6 +79,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
         expect_streaming
         expect(tool.execute.content).to eq(copy)
       end
+
+      it_behaves_like 'track internal event'
     end
 
     context 'when request is from web' do
@@ -76,6 +90,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::Help::Executor, feature_category: :duo
         expect_streaming
         expect(tool.execute.content).to eq(copy)
       end
+
+      it_behaves_like 'track internal event'
     end
 
     context 'when streaming feature is disabled' do

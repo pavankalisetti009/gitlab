@@ -7,6 +7,8 @@ module Gitlab
         module Help
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
+            include Gitlab::InternalEventsTracking
+            include Gitlab::DuoChatResourceHelper
 
             NAME = 'Help'
             HUMAN_NAME = 'Help'
@@ -90,6 +92,13 @@ Learn more about GitLab Duo Chat can do in the [documentation](#{::Gitlab::Routi
               if Feature.enabled?(:duo_chat_stream_help_answer, context.current_user)
                 streamed_request_handler(StreamedAnswer.new).call(content)
               end
+
+              track_internal_event(
+                'request_ask_help',
+                namespace: namespace,
+                project: project,
+                user: context.current_user
+              )
 
               Answer.new(status: :ok, context: context, content: content, tool: nil)
             end
