@@ -18,9 +18,10 @@ module Gitlab
             end
           end
 
+          # List of Shell::Commands that are part of the pipeline
           attr_reader :shell_commands
 
-          # @param [Array<Shell::Command>] shell_commands
+          # @param [Array<Shell::Command>] shell_commands list of commands
           def initialize(*shell_commands)
             @shell_commands = shell_commands
           end
@@ -59,7 +60,11 @@ module Gitlab
           private
 
           def build_command_list
-            @shell_commands.map(&:cmd_args)
+            @shell_commands.map do |command|
+              args = command.cmd_args
+              args.prepend(command.env) if command.env.any?
+              args
+            end
           end
         end
       end
