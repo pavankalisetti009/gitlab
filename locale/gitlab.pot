@@ -17163,6 +17163,9 @@ msgstr ""
 msgid "DAST profiles"
 msgstr ""
 
+msgid "DEPRECATED: This parameter has no effect because SSL verification is always enabled."
+msgstr ""
+
 msgid "DNS"
 msgstr ""
 
@@ -39999,6 +40002,9 @@ msgstr ""
 msgid "Pipeline URL"
 msgstr ""
 
+msgid "Pipeline URL (for example, `https://buildkite.com/example/pipeline`)."
+msgstr ""
+
 msgid "Pipeline creation rate limits"
 msgstr ""
 
@@ -43114,9 +43120,6 @@ msgid "ProjectService|TeamCity server URL"
 msgstr ""
 
 msgid "ProjectService|The build configuration ID of the TeamCity project."
-msgstr ""
-
-msgid "ProjectService|The token you get after you create a Buildkite pipeline with a GitLab repository."
 msgstr ""
 
 msgid "ProjectService|To configure this integration, you should:"
@@ -57677,6 +57680,9 @@ msgid "Token name"
 msgstr ""
 
 msgid "Token valid until revoked"
+msgstr ""
+
+msgid "Token you get after you create a Buildkite pipeline with a GitLab repository."
 msgstr ""
 
 msgid "TokenRevocation|This personal access token has been automatically revoked on detection. Consider investigating and rotating before marking this vulnerability as resolved."
