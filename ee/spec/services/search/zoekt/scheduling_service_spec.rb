@@ -273,10 +273,8 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
                                                           'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
           )
           expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
-                                                          'message' => 'Space is not available in Node',
-                                                          'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id,
-                                                          'meta' => node.metadata_json }
-          )
+                                                          'message' => 'Namespace is too big even for multiple indices',
+                                                          'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id })
           expect { execute_task }.not_to change { Search::Zoekt::Index.count }
           expect(zkt_enabled_namespace.indices).to be_empty
           expect(zkt_enabled_namespace2.indices).to be_empty
@@ -300,9 +298,8 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
             )
             expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
-                                                    'message' => 'Space is not available in Node',
-                                                    'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id,
-                                                    'meta' => node.metadata_json }
+                                                    'message' => 'Namespace is too big even for multiple indices',
+                                                    'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id }
             )
             expect { execute_task }.not_to change { Search::Zoekt::Index.count }
             expect(zkt_enabled_namespace.indices).to be_empty
@@ -386,6 +383,79 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
           index = zkt_enabled_namespace2.indices.last
           expect(index.replica).to be_present
+        end
+      end
+
+      context 'for a big namespace when it can not be accommodated in a single node' do
+        let_it_be(:project) { create(:project, :repository, namespace: namespace_with_statistics) }
+        let_it_be(:project2) { create(:project, :repository, namespace: namespace_with_statistics.children.first) }
+        let_it_be_with_reload(:project_stat1) { create(:project_statistics, project: project, with_data: true) }
+        let_it_be_with_reload(:project_stat2) do
+          create(:project_statistics, project: project2, with_data: true, size_multiplier: 18)
+        end
+
+        before do
+          node.update_column(:total_bytes, 100)
+        end
+
+        context 'when all projects repository_size is 0' do
+          before do
+            ProjectStatistics.where(id: [project_stat1.id, project_stat2.id]).update_all(repository_size: 0)
+          end
+
+          it 'creates single index in ready state' do
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => "RootStorageStatistics isn't available",
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
+            )
+            expect { execute_task }.to change { Search::Zoekt::Index.count }.by(1)
+            indices = zkt_enabled_namespace2.indices
+            expect(indices.count).to eq 1
+            expect(indices.first.metadata['project_id_from']).to eq namespace_with_statistics.all_projects.first.id
+            expect(indices.first).to be_ready
+          end
+        end
+
+        context 'when a namespace can be accommodated within 5 nodes' do
+          before do
+            create_list(:zoekt_node, 4)
+          end
+
+          it 'creates multiple indices in pending state' do
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => "RootStorageStatistics isn't available",
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
+            )
+
+            expect { execute_task }.to change { Search::Zoekt::Index.count }.by(2)
+            indices = zkt_enabled_namespace2.indices
+            expect(indices.count).to eq 2
+            expect(indices.first.metadata['project_id_from']).to eq namespace_with_statistics.all_projects.first.id
+            expect(indices.first.metadata['project_id_to']).to eq namespace_with_statistics.all_projects.first.id
+            expect(indices.last.metadata['project_id_from']).to eq namespace_with_statistics.all_projects.last.id
+            expect(indices.first).to be_pending
+            expect(indices.last).to be_pending
+          end
+        end
+
+        context 'when a namespace can not be accommodated within 5 nodes' do
+          before do
+            project_stat1.update_column(:repository_size, 100)
+            project_stat2.update_column(:repository_size, 100)
+          end
+
+          it 'does not create any indices and log error' do
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => "RootStorageStatistics isn't available",
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
+            )
+
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => 'Namespace is too big even for multiple indices',
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id }
+            )
+            expect { execute_task }.not_to change { Search::Zoekt::Index.count }
+          end
         end
       end
     end

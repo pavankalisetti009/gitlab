@@ -1,0 +1,13 @@
+{
+  "description": "Zoekt Index metadata",
+  "type": "object",
+  "properties": {
+    "project_id_from": {
+      "type": "integer"
+    },
+    "project_id_to": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true
+}

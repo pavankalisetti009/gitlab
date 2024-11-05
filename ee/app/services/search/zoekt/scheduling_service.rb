@@ -103,8 +103,8 @@ module Search
 
             node.indices.each_batch do |batch|
               scope = Namespace.includes(:root_storage_statistics) # rubocop:disable CodeReuse/ActiveRecord -- this is a temporary incident mitigation task
-                                .by_parent(nil)
-                                .id_in(batch.select(:namespace_id))
+                               .by_parent(nil)
+                               .id_in(batch.select(:namespace_id))
 
               scope.each do |group|
                 sizes[group.id] = group.root_storage_statistics&.repository_size || 0
@@ -207,8 +207,9 @@ module Search
         end
       end
 
+      # rubocop: disable Metrics/AbcSize -- After removal of FFs metrics will be fine
       def node_assignment
-        return false if Feature.disabled?(:zoekt_node_assignment) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- this is a global feature flag
+        return false if Feature.disabled?(:zoekt_node_assignment, Feature.current_request)
 
         execute_every 1.hour, cache_key: :node_assignment do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
@@ -244,6 +245,17 @@ module Search
               zoekt_index.state = :ready if space_required == 0
               zoekt_indices << zoekt_index
               node.used_bytes += space_required
+            elsif Feature.enabled?(:zoekt_create_multiple_indices, zoekt_enabled_namespace.namespace)
+              multiple_indices = NamespaceAssignmentService.new(zoekt_enabled_namespace).execute
+              if multiple_indices.empty?
+                logger.error(build_structured_payload(
+                  task: :node_assignment,
+                  message: 'Namespace is too big even for multiple indices',
+                  zoekt_enabled_namespace_id: zoekt_enabled_namespace.id
+                ))
+              else
+                zoekt_indices.concat(multiple_indices)
+              end
             else
               logger.error(build_structured_payload(
                 task: :node_assignment,
@@ -261,6 +273,7 @@ module Search
           end
         end
       end
+      # rubocop: enable Metrics/AbcSize
 
       # indices that don't have zoekt_repositories are already in `ready` state
       def mark_indices_as_ready
