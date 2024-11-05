@@ -55,7 +55,7 @@ export default {
         : this.$options.trialWidget.i18n.learnMore;
     },
     isTrialActive() {
-      return this.percentageComplete <= 100;
+      return this.daysRemaining > 0;
     },
     isDismissable() {
       return this.groupId && this.featureId && this.dismissEndpoint;

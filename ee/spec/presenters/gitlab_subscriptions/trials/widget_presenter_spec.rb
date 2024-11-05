@@ -68,6 +68,8 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       end
 
       before do
+        build(:gitlab_subscription, :ultimate, namespace: current_group)
+
         allow(GitlabSubscriptions::Trials::DuoEnterprise)
           .to receive(:any_add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
       end
@@ -109,6 +111,21 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
 
       context 'when not eligible for either widget' do
         let(:current_group) { build(:group) }
+
+        it { is_expected.to match_array([]) }
+      end
+
+      context 'when duo enterprise widget on a free group' do
+        let(:current_group) { build(:group) }
+
+        let(:add_on_purchase) do
+          build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active_trial, namespace: current_group)
+        end
+
+        before do
+          allow(GitlabSubscriptions::Trials::DuoEnterprise)
+            .to receive(:any_add_on_purchase_for_namespace).with(current_group).and_return(add_on_purchase)
+        end
 
         it { is_expected.to match_array([]) }
       end
