@@ -33,6 +33,8 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       is_expected.to have_css('form[action="/users/sign_up/welcome?glm_content=_glm_content_&glm_source=_glm_source_"]')
     end
 
+    it { is_expected.to have_tracking(action: 'render', label: 'free_registration') }
+
     it 'the text for the :setup_for_company label' do
       is_expected.to have_selector('label[for="user_setup_for_company"]', text: '_text_')
     end

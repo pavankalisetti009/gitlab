@@ -30,6 +30,28 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     subject { described_class.glm_tracking_params(params) }
 
     it { is_expected.to eq(params.slice(:glm_source, :glm_content).permit!) }
+
+    context 'when not all are present' do
+      let(:params) { ActionController::Parameters.new(glm_content: 'content') }
+
+      it { is_expected.to eq(params.slice(:glm_content).permit!) }
+    end
+  end
+
+  describe '.passed_through_params' do
+    let(:params) do
+      ActionController::Parameters.new(role: '_role_', registration_objective: '_ro_', jobs_to_be_done_other: 'jtbd_o')
+    end
+
+    subject { described_class.passed_through_params(params) }
+
+    it { is_expected.to eq(params.slice(:role, :registration_objective, :jobs_to_be_done_other).permit!) }
+
+    context 'when not all are present' do
+      let(:params) { ActionController::Parameters.new(role: '_role_', registration_objective: '_ro_') }
+
+      it { is_expected.to eq(params.slice(:role, :registration_objective).permit!) }
+    end
   end
 
   describe '.registration_path_params' do

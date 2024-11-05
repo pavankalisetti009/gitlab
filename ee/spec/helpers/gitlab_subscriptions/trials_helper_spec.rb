@@ -198,7 +198,6 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     let(:user) { build_stubbed(:user) }
     let(:extra_params) do
       {
-        trial: 'true',
         role: '_params_role_',
         registration_objective: '_params_registration_objective_',
         jobs_to_be_done_other: '_params_jobs_to_be_done_other'
