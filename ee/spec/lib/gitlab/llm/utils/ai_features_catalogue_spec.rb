@@ -60,4 +60,21 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
         .not_to include(:experimental, :beta)
     end
   end
+
+  describe '#search_by_name' do
+    it 'returns defined value if name matches' do
+      expect(described_class.search_by_name(:explain_code))
+        .to eq(described_class::LIST[:explain_code])
+    end
+
+    it 'returns value found by alternate name if name does not match' do
+      expect(described_class.search_by_name(:duo_chat))
+        .to eq(described_class::LIST[:chat])
+    end
+
+    it 'returns nil if nothing matches' do
+      expect(described_class.search_by_name(:test))
+        .to be_nil
+    end
+  end
 end

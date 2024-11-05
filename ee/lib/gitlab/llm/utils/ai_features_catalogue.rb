@@ -77,7 +77,8 @@ module Gitlab
             execute_method: ::Llm::ChatService,
             maturity: :ga,
             self_managed: true,
-            internal: false
+            internal: false,
+            alternate_name: :duo_chat
           },
           summarize_new_merge_request: {
             service_class: ::Gitlab::Llm::VertexAi::Completions::SummarizeNewMergeRequest,
@@ -191,6 +192,12 @@ module Gitlab
 
         def self.ga
           LIST.select { |_, v| v[:maturity] == :ga }
+        end
+
+        def self.search_by_name(name)
+          return LIST[name] if LIST.key?(name)
+
+          LIST.select { |_, v| v[:alternate_name] == name }.values.first
         end
       end
     end
