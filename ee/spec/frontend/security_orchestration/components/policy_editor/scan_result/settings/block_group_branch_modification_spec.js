@@ -1,4 +1,7 @@
-import { GlCollapsibleListbox, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
+import Api from '~/api';
+import { createAlert } from '~/alert';
+import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   EXCEPT_GROUPS,
@@ -6,8 +9,12 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
 
+jest.mock('~/alert');
+
 describe('BlockGroupBranchModification', () => {
   let wrapper;
+  const TOP_LEVEL_GROUPS_MOCK = [{ id: 1, full_name: 'group-1', full_path: 'Group-1' }];
+
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(BlockGroupBranchModification, {
       propsData: {
@@ -20,8 +27,12 @@ describe('BlockGroupBranchModification', () => {
   };
 
   const findLink = () => wrapper.findComponent(GlLink);
-  const findExceptionDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findInput = () => wrapper.findComponent(GlFormInput);
+  const findHasExceptionsDropdown = () => wrapper.findByTestId('has-exceptions-selector');
+  const findExceptionsDropdown = () => wrapper.findByTestId('exceptions-selector');
+
+  beforeEach(() => {
+    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS_MOCK));
+  });
 
   describe('rendering', () => {
     it('renders the default', () => {
@@ -29,9 +40,9 @@ describe('BlockGroupBranchModification', () => {
       expect(findLink().attributes('href')).toBe(
         '/help/user/project/repository/branches/protected#for-all-projects-in-a-group',
       );
-      expect(findExceptionDropdown().exists()).toBe(true);
-      expect(findExceptionDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
-      expect(findInput().exists()).toBe(false);
+      expect(findHasExceptionsDropdown().exists()).toBe(true);
+      expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
+      expect(findExceptionsDropdown().exists()).toBe(false);
     });
 
     it('renders when enabled', () => {
@@ -39,61 +50,58 @@ describe('BlockGroupBranchModification', () => {
       expect(findLink().attributes('href')).toBe(
         '/help/user/project/repository/branches/protected#for-all-projects-in-a-group',
       );
-      expect(findExceptionDropdown().exists()).toBe(true);
-      expect(findExceptionDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
-      expect(findInput().exists()).toBe(false);
+      expect(findHasExceptionsDropdown().exists()).toBe(true);
+      expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
+      expect(findExceptionsDropdown().exists()).toBe(false);
     });
 
     it('renders when not enabled and without exceptions', () => {
       createComponent({ enabled: false });
-      expect(findExceptionDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
-      expect(findInput().exists()).toBe(false);
+      expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
+      expect(findHasExceptionsDropdown().props('disabled')).toBe(true);
+      expect(findExceptionsDropdown().exists()).toBe(false);
     });
 
     it('renders when enabled and with exceptions', () => {
-      createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_GROUPS);
-      expect(findInput().exists()).toBe(true);
-      expect(findInput().attributes('value')).toBe('releases/*,main');
+      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      expect(findHasExceptionsDropdown().props('selected')).toBe(EXCEPT_GROUPS);
+      expect(findExceptionsDropdown().exists()).toBe(true);
+      expect(findExceptionsDropdown().props('selected')).toEqual(['group-1', 'group-2']);
     });
   });
 
   describe('events', () => {
     it('updates the policy when exceptions are added', async () => {
-      createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      await findExceptionDropdown().vm.$emit('select', WITHOUT_EXCEPTIONS);
+      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      await findHasExceptionsDropdown().vm.$emit('select', WITHOUT_EXCEPTIONS);
       expect(wrapper.emitted('change')[0][0]).toEqual(true);
     });
 
-    it('updates thie policy when exceptions are changed', async () => {
-      createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      await findInput().vm.$emit('input', 'releases/*');
+    it('updates the policy when exceptions are changed', async () => {
+      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      await findExceptionsDropdown().vm.$emit('select', ['group-2']);
       expect(wrapper.emitted('change')[0][0]).toEqual({
         enabled: true,
-        exceptions: ['releases/*'],
+        exceptions: ['group-2'],
       });
     });
 
     it('does not update the policy when exceptions are changed and the setting is not enabled', async () => {
       createComponent({ enabled: false });
-      await findExceptionDropdown().vm.$emit('select', EXCEPT_GROUPS);
+      await findHasExceptionsDropdown().vm.$emit('select', EXCEPT_GROUPS);
       expect(wrapper.emitted('change')).toEqual(undefined);
     });
   });
 
-  describe('when enabled', () => {
-    it('resets to default state when disabled', async () => {
-      createComponent({ enabled: true, exceptions: ['releases/*', 'main'] });
-      expect(findExceptionDropdown().props('selected')).toBe(EXCEPT_GROUPS);
-      expect(findInput().attributes('value')).toBe('releases/*,main');
-
-      await wrapper.setProps({ enabled: false });
-
-      expect(findExceptionDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
-      expect(findInput().exists()).toBe(false);
-
-      await findExceptionDropdown().vm.$emit('select', EXCEPT_GROUPS);
-      expect(findInput().attributes('value')).toBe('');
+  describe('error', () => {
+    it('handles error', async () => {
+      jest.spyOn(Api, 'groups').mockRejectedValue();
+      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      await waitForPromises();
+      expect(findExceptionsDropdown().props('items')).toEqual([]);
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Something went wrong, unable to fetch groups',
+      });
     });
   });
 });

@@ -1,11 +1,14 @@
 <script>
 import {
+  GlAvatarLabeled,
   GlCollapsibleListbox,
-  GlFormInput,
   GlLink,
   GlSprintf,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import { createAlert } from '~/alert';
+import Api from '~/api';
+import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING,
@@ -17,12 +20,13 @@ import {
   EXCEPTION_GROUPS_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
 } from '../lib/settings';
+import { renderMultiSelectText } from '../../utils';
 
 export default {
   name: 'BlockGroupBranchModification',
   components: {
+    GlAvatarLabeled,
     GlCollapsibleListbox,
-    GlFormInput,
     GlLink,
     GlSprintf,
   },
@@ -42,15 +46,30 @@ export default {
   },
   data() {
     return {
+      groups: [],
+      loading: false,
       selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
-      groupExceptionValue: this.exceptions.join(','),
     };
   },
   computed: {
+    groupItems() {
+      return this.groups.reduce((acc, { full_name: fullName, full_path: fullPath }) => {
+        acc[fullPath] = fullName;
+        return acc;
+      }, {});
+    },
     text() {
       return this.selectedExceptionType === WITHOUT_EXCEPTIONS
         ? BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING
         : BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING;
+    },
+    toggleText() {
+      return renderMultiSelectText({
+        selected: this.exceptions,
+        items: this.groupItems,
+        itemTypeName: __('groups'),
+        useAllSelected: false,
+      });
     },
   },
   watch: {
@@ -62,12 +81,30 @@ export default {
       }
     },
   },
+  async mounted() {
+    await this.fetchGroups();
+  },
   methods: {
+    createGroupObject(group) {
+      return { ...group, text: group.full_name, value: group.full_path };
+    },
+    async fetchGroups() {
+      this.loading = true;
+
+      try {
+        const topLevelGroups = await Api.groups('', { top_level_only: true });
+        this.groups = topLevelGroups.map((group) => this.createGroupObject(group));
+      } catch {
+        this.groups = [];
+        createAlert({
+          message: s__('SecurityOrchestration|Something went wrong, unable to fetch groups'),
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
     selectExceptionType(type) {
       this.selectedExceptionType = type;
-      if (type === WITHOUT_EXCEPTIONS) {
-        this.resetGroupExceptionValue();
-      }
 
       if (this.enabled) {
         const value =
@@ -77,13 +114,9 @@ export default {
         this.emitChangeEvent(value);
       }
     },
-    resetGroupExceptionValue() {
-      this.groupExceptionValue = '';
-    },
     updateGroupExceptionValue(value) {
-      this.groupExceptionValue = value;
       if (this.enabled) {
-        this.emitChangeEvent({ enabled: this.enabled, exceptions: value.split(',') });
+        this.emitChangeEvent({ enabled: this.enabled, exceptions: value });
       }
     },
     emitChangeEvent(value) {
@@ -108,19 +141,36 @@ export default {
       </template>
       <template #exceptSelection>
         <gl-collapsible-listbox
+          data-testid="has-exceptions-selector"
           class="gl-my-3 gl-mr-2 md:gl-my-0"
+          :disabled="!enabled"
           :items="$options.EXCEPTION_GROUPS_LISTBOX_ITEMS"
           :selected="selectedExceptionType"
           @select="selectExceptionType"
         />
       </template>
       <template #groupSelection>
-        <gl-form-input
-          class="gl-inline-block md:gl-max-w-20"
-          :value="groupExceptionValue"
-          :placeholder="s__('SecurityOrchestration|Ex: top_level_group')"
-          @input="updateGroupExceptionValue"
-        />
+        <gl-collapsible-listbox
+          data-testid="exceptions-selector"
+          is-check-centered
+          multiple
+          :items="groups"
+          :loading="loading"
+          :selected="exceptions"
+          :toggle-text="toggleText"
+          @select="updateGroupExceptionValue"
+        >
+          <template #list-item="{ item }">
+            <gl-avatar-labeled
+              shape="circle"
+              :size="32"
+              :src="item.avatar_url"
+              :entity-name="item.text"
+              :label="item.text"
+              :sub-label="item.full_path"
+            />
+          </template>
+        </gl-collapsible-listbox>
       </template>
     </gl-sprintf>
   </div>
