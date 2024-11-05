@@ -31,13 +31,14 @@ module Sbom
     end
 
     def execute
+      return Sbom::Occurrence.none if non_admin_user?
+
       @collection = occurrences
       filter_by_source_types
       filter_by_package_managers
       filter_by_component_names
       filter_by_component_ids
       filter_by_licences
-      filter_by_visibility
       sort
     end
 
@@ -77,12 +78,6 @@ module Sbom
       @collection = @collection.by_licenses(params[:licenses])
     end
 
-    def filter_by_visibility
-      return if current_user.blank?
-
-      @collection = @collection.visible_to(current_user)
-    end
-
     def sort_direction
       params[:sort]&.downcase == 'desc' ? 'desc' : 'asc'
     end
@@ -119,6 +114,10 @@ module Sbom
         .id_in(params[:project_ids])
         .for_group_and_its_subgroups(dependable)
         .select(:id)
+    end
+
+    def non_admin_user?
+      current_user && !current_user.can_read_all_resources?
     end
 
     def project?

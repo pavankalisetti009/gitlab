@@ -165,14 +165,6 @@ module Sbom
       order(highest_severity_arel_nodes(direction))
     end
 
-    scope :visible_to, ->(user) do
-      return self if user.can_read_all_resources?
-
-      joins(project: [:project_authorizations])
-        .where(project_authorizations: { user_id: user.id })
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
-    end
-
     scope :in_parent_group_after_and_including, ->(sbom_occurrence) do
       where(arel_grouping_by_traversal_ids_and_id.gteq(sbom_occurrence.arel_grouping_by_traversal_ids_and_id))
     end

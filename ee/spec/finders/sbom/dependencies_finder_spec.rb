@@ -297,19 +297,32 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
 
     include_examples 'filter and sorting'
 
-    context 'with current user' do
+    context 'for visibility' do
       subject(:dependencies) { described_class.new(organization, current_user: current_user).execute }
 
-      let_it_be(:current_user) { create(:user) }
-      let_it_be(:other_project) do
-        create(:project, organization: organization, group: group).tap do |project|
-          project.add_developer(current_user)
+      let_it_be(:other_project) { create(:project, organization: organization, group: group) }
+      let_it_be(:visible_occurrence) { create(:sbom_occurrence, project: other_project) }
+
+      context 'as current user' do
+        let(:current_user) { create(:user) }
+
+        it 'returns no occurrences' do
+          other_project.add_developer(current_user)
+          expect(dependencies).to be_empty
         end
       end
 
-      let_it_be(:visible_occurrence) { create(:sbom_occurrence, project: other_project) }
+      context 'as admin', :enable_admin_mode do
+        let(:current_user) { create(:user, :admin) }
 
-      it { is_expected.to match_array([visible_occurrence]) }
+        it { is_expected.to match_array([occurrence_1, occurrence_2, occurrence_3, visible_occurrence]) }
+      end
+
+      context 'as a user without project authorizations' do
+        let_it_be(:current_user) { create(:user) }
+
+        it { is_expected.to be_empty }
+      end
     end
   end
 end
