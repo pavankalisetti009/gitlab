@@ -86,14 +86,6 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
         end
 
         it { is_expected.to eq({ status: :error, message: 'Group deletion is in progress' }) }
-
-        context 'with pending_delete' do
-          before do
-            group.namespace_details.update!(pending_delete: true)
-          end
-
-          it { is_expected.to eq({ status: :error, message: 'Group deletion is in progress' }) }
-        end
       end
     end
 

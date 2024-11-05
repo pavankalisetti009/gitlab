@@ -5,7 +5,7 @@ module Groups
     def execute
       return error(_('You are not authorized to perform this action')) unless can?(current_user, :remove_group, group)
       return error(_('Group has not been marked for deletion')) unless group.marked_for_deletion?
-      return error(_('Group deletion is in progress')) if group.namespace_details.pending_delete? || group.deleted?
+      return error(_('Group deletion is in progress')) if group.deleted?
 
       result = remove_deletion_schedule
 
