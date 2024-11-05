@@ -19,7 +19,7 @@ module GitlabSubscriptions
       attr_reader :add_on_purchase
 
       def active_or_recently_expired?
-        Date.current <= add_on_purchase.expires_on + TIME_FRAME_AFTER_EXPIRATION
+        add_on_purchase.expires_on > TIME_FRAME_AFTER_EXPIRATION.ago
       end
     end
   end

@@ -6,6 +6,7 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
   include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
+
   let_it_be(:group) do
     create(
       :group_with_plan,
@@ -16,16 +17,16 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
     )
   end
 
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: group)
+  end
+
   before do
     stub_saas_features(subscriptions_trials: true)
     sign_in(user)
   end
 
   context 'when duo enterprise is available' do
-    before do
-      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: group)
-    end
-
     it 'shows the correct days remaining on the first day of trial' do
       freeze_time do
         visit group_path(group)
@@ -43,27 +44,48 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         expect(page).to have_content('45 days left in trial')
       end
 
-      travel_to(60.days.from_now) do
+      travel_to(59.days.from_now) do
         visit group_path(group)
 
         expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
-        expect(page).to have_content('0 days left in trial')
+        expect(page).to have_content('1 days left in trial')
       end
     end
 
     context 'when widget is expired' do
-      it 'shows upgrade options after trial expiration' do
-        travel_to(62.days.from_now) do
-          visit group_path(group)
+      let_it_be(:group_with_expired_trial) do
+        create(
+          :group_with_plan,
+          plan: :free_plan,
+          trial_starts_on: Date.current,
+          trial_ends_on: 60.days.from_now,
+          owners: user
+        )
+      end
 
+      before_all do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          :trial,
+          namespace: group_with_expired_trial,
+          add_on: add_on_purchase.add_on
+        )
+      end
+
+      it 'shows upgrade options after trial expiration' do
+        travel_to(60.days.from_now) do
+          visit group_path(group_with_expired_trial)
+
+          expect_widget_to_have_content('Your trial of Ultimate with GitLab Duo Enterprise has ended')
           expect(page).to have_content('See upgrade options')
         end
       end
 
       it 'and allows dismissal on the first day after trial expiration' do
-        travel_to(62.days.from_now) do
-          visit group_path(group)
+        travel_to(60.days.from_now) do
+          visit group_path(group_with_expired_trial)
 
+          expect_widget_to_have_content('Your trial of Ultimate with GitLab Duo Enterprise has ended')
           expect(page).to have_content('See upgrade options')
 
           dismiss_widget

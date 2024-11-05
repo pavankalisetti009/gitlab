@@ -59,7 +59,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
       end
 
       it 'shows expired widget and dismisses it' do
-        travel_to(61.days.from_now) do
+        travel_to(60.days.from_now) do
           visit group_usage_quotas_path(group)
 
           expect_widget_title_to_be('Your trial of GitLab Duo Pro has ended')

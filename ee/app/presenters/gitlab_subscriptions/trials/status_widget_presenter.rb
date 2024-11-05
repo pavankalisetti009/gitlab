@@ -12,9 +12,9 @@ module GitlabSubscriptions
       private_constant :TIME_FRAME_AFTER_EXPIRATION
 
       def eligible_for_widget?
-        return true if namespace.trial_active?
+        return true if trial_active?
 
-        !namespace.paid? &&
+        GitlabSubscriptions::Trials.namespace_eligible?(namespace) &&
           namespace.trial_ends_on &&
           namespace.trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago &&
           !user_dismissed_widget?
@@ -60,6 +60,14 @@ module GitlabSubscriptions
 
       def trial_status
         @trial_status ||= GitlabSubscriptions::TrialStatus.new(namespace.trial_starts_on, namespace.trial_ends_on)
+      end
+
+      # CDot considers trials on the current day expired. However, in the GitLab
+      # codebase, the current day is still regarded as active. This is the fixing
+      # for the trial widget. Globally, it should be addressed here:
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/502449
+      def trial_active?
+        namespace.trial_active? && namespace.trial_ends_on > Date.current
       end
 
       def user_dismissed_widget?

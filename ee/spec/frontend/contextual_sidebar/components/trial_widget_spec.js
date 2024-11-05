@@ -90,7 +90,7 @@ describe('TrialWidget component', () => {
 
     describe('when on the last day of the trial', () => {
       beforeEach(() => {
-        createComponent({ daysRemaining: 0, percentageComplete: 100 });
+        createComponent({ daysRemaining: 1, percentageComplete: 98 });
       });
 
       it('renders the progress bar', () => {
@@ -104,7 +104,7 @@ describe('TrialWidget component', () => {
 
     describe('when trial has expired', () => {
       beforeEach(() => {
-        createComponent({ daysRemaining: -1, percentageComplete: 110 });
+        createComponent({ daysRemaining: 0, percentageComplete: 100 });
       });
 
       it('shows correct title and body', () => {
@@ -218,7 +218,7 @@ describe('TrialWidget component', () => {
       createComponent({ trialType, daysRemaining: 30, percentageComplete: 50 });
       expect(findWidgetTitle().text()).toBe(activeTitle);
 
-      createComponent({ trialType, daysRemaining: -1, percentageComplete: 110 });
+      createComponent({ trialType, daysRemaining: 0, percentageComplete: 100 });
       expect(findWidgetTitle().text()).toBe(expiredTitle);
     });
   });
@@ -251,12 +251,12 @@ describe('TrialWidget component', () => {
     });
 
     it('renders the progress bar', () => {
-      createComponent({ daysRemaining: -1, percentageComplete: 110 });
+      createComponent({ daysRemaining: 0, percentageComplete: 100 });
       expect(findProgressBar().exists()).toBe(true);
     });
 
     it('renders the dismiss button', () => {
-      createComponent({ daysRemaining: -1, percentageComplete: 110 });
+      createComponent({ daysRemaining: 0, percentageComplete: 100 });
       expect(findDismissButton().exists()).toBe(true);
     });
   });

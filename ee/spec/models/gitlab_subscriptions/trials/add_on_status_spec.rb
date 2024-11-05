@@ -21,17 +21,17 @@ RSpec.describe GitlabSubscriptions::Trials::AddOnStatus, :saas, feature_category
     end
 
     context 'with an expired duo pro trial add on' do
-      context 'when 10 days ago' do
+      context 'when on 10th day of expiration' do
         it 'returns true' do
-          add_on_purchase.expires_on = 10.days.ago
+          add_on_purchase.expires_on = 9.days.ago
 
           is_expected.to be(true)
         end
       end
 
-      context 'when 11 days ago' do
+      context 'when on 11th day of expiration' do
         it 'returns false' do
-          add_on_purchase.expires_on = 11.days.ago
+          add_on_purchase.expires_on = 10.days.ago
 
           is_expected.to be(false)
         end

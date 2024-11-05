@@ -30,7 +30,7 @@ module GitlabSubscriptions
         @presenter ||=
           if widget_presenter.eligible_for_widget?
             widget_presenter
-          elsif duo_enterprise_presenter.eligible_for_widget? && !namespace.ultimate_trial_paid_customer_plan?
+          elsif namespace.ultimate_plan? && duo_enterprise_presenter.eligible_for_widget?
             duo_enterprise_presenter
           else
             DuoProStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
