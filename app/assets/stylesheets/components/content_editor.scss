@@ -172,7 +172,7 @@
 
       &[data-inapplicable] * {
         text-decoration: line-through;
-        color: $gl-text-color-disabled;
+        @apply gl-text-disabled;
       }
     }
   }
