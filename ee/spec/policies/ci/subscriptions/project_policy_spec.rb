@@ -25,9 +25,17 @@ RSpec.describe ::Ci::Subscriptions::ProjectPolicy, feature_category: :compliance
       project.add_maintainer(user)
     end
 
-    it { is_expected.to be_disallowed(:read_project_subscription) }
-
+    it { is_expected.to be_allowed(:read_project_subscription) }
     it { is_expected.to be_allowed(:delete_project_subscription) }
+  end
+
+  context 'when user is maintainer for the upstream project' do
+    before_all do
+      upstream_project.add_maintainer(user)
+    end
+
+    it { is_expected.to be_allowed(:read_project_subscription) }
+    it { is_expected.to be_disallowed(:delete_project_subscription) }
   end
 
   context 'when user is a developer for the upstream project' do
@@ -45,16 +53,6 @@ RSpec.describe ::Ci::Subscriptions::ProjectPolicy, feature_category: :compliance
     end
 
     it { is_expected.to be_disallowed(:read_project_subscription) }
-  end
-
-  context 'when user does have access to project' do
-    context 'when user is a developer on the upstream project' do
-      before_all do
-        project.add_maintainer(user)
-        upstream_project.add_developer(user)
-      end
-
-      it { is_expected.to be_allowed(:read_project_subscription) }
-    end
+    it { is_expected.to be_disallowed(:delete_project_subscription) }
   end
 end

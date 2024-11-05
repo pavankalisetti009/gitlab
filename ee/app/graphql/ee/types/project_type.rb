@@ -388,13 +388,31 @@ module EE
 
         field :ci_subscriptions_projects,
           type: ::Types::Ci::Subscriptions::ProjectType.connection_type,
+          deprecated: { reason: 'Use `ciUpstreamProjectSubscriptions`', milestone: '17.6' },
           method: :upstream_project_subscriptions,
           description: 'Pipeline subscriptions for the project.'
 
+        field :ci_upstream_project_subscriptions,
+          type: ::Types::Ci::ProjectSubscriptionType.connection_type,
+          method: :upstream_project_subscriptions,
+          description: 'Pipeline subscriptions where this project is the downstream project.' \
+                       'When an upstream project\'s pipeline completes, a pipeline is triggered ' \
+                       'in the downstream project (this project).',
+          alpha: { milestone: '17.6' }
+
         field :ci_subscribed_projects,
           type: ::Types::Ci::Subscriptions::ProjectType.connection_type,
+          deprecated: { reason: 'Use `ciDownstreamProjectSubscriptions`', milestone: '17.6' },
           method: :downstream_project_subscriptions,
           description: 'Pipeline subscriptions for projects subscribed to the project.'
+
+        field :ci_downstream_project_subscriptions,
+          type: ::Types::Ci::ProjectSubscriptionType.connection_type,
+          method: :downstream_project_subscriptions,
+          description: 'Pipeline subscriptions where this project is the upstream project.' \
+                       'When this project\'s pipeline completes, a pipeline is triggered ' \
+                       'in the downstream project.',
+          alpha: { milestone: '17.6' }
 
         field :runner_cloud_provisioning,
           ::Types::Ci::RunnerCloudProvisioningType,
