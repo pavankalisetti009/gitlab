@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SubscriptionsController, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :subscription_management do
   let_it_be(:user) { create(:user) }
 
   describe 'GET #new' do
@@ -273,7 +273,11 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
       before do
         sign_in(user)
         client_response = { success: true, data: { signature: 'x', token: 'y' } }
-        allow(Gitlab::SubscriptionPortal::Client).to receive(:payment_form_params).with('cc', user.id).and_return(client_response)
+
+        allow(Gitlab::SubscriptionPortal::Client)
+          .to receive(:payment_form_params)
+          .with('cc', user.id)
+          .and_return(client_response)
       end
 
       it { is_expected.to have_gitlab_http_status(:ok) }
@@ -476,7 +480,8 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             group.valid?
             subject
 
-            expect(Gitlab::Json.parse(response.body)['name']).to match_array([Gitlab::Regex.group_name_regex_message, HtmlSafetyValidator.error_message])
+            expect(Gitlab::Json.parse(response.body)['name'])
+              .to match_array([Gitlab::Regex.group_name_regex_message, HtmlSafetyValidator.error_message])
           end
 
           it 'tracks errors' do
@@ -484,7 +489,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             subject
 
             expect_snowplow_event(
-              category: 'SubscriptionsController',
+              category: 'GitlabSubscriptions::SubscriptionsController',
               label: 'confirm_purchase',
               action: 'click_button',
               property: group.errors.full_messages.to_s,
@@ -501,7 +506,9 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
         it 'returns the group edit location in JSON format' do
           subject
 
-          expect(response.body).to eq({ location: "/-/subscriptions/groups/#{group.path}/edit?plan_id=x&quantity=2" }.to_json)
+          expect(response.body).to eq({
+            location: "/-/subscriptions/groups/#{group.path}/edit?plan_id=x&quantity=2"
+          }.to_json)
         end
       end
 
@@ -515,7 +522,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
 
           expect(response.body).to eq('{"errors":"error message"}')
           expect_snowplow_event(
-            category: 'SubscriptionsController',
+            category: 'GitlabSubscriptions::SubscriptionsController',
             label: 'confirm_purchase',
             action: 'click_button',
             property: 'error message',
@@ -552,7 +559,11 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
               allow(instance)
                 .to receive(:execute)
                 .and_return(
-                  instance_double(ServiceResponse, success?: true, payload: [{ namespace: selected_group, account_id: nil }])
+                  instance_double(
+                    ServiceResponse,
+                    success?: true,
+                    payload: [{ namespace: selected_group, account_id: nil }]
+                  )
                 )
             end
 
@@ -571,7 +582,9 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             plan_id = params[:subscription][:plan_id]
             quantity = params[:subscription][:quantity]
 
-            expect(response.body).to eq({ location: "#{group_billings_path(selected_group)}?plan_id=#{plan_id}&purchased_quantity=#{quantity}" }.to_json)
+            expect(response.body).to eq({
+              location: "#{group_billings_path(selected_group)}?plan_id=#{plan_id}&purchased_quantity=#{quantity}"
+            }.to_json)
           end
 
           context 'when having an explicit redirect' do
@@ -589,7 +602,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
               subject
 
               expect_snowplow_event(
-                category: 'SubscriptionsController',
+                category: 'GitlabSubscriptions::SubscriptionsController',
                 label: 'confirm_purchase',
                 action: 'click_button',
                 property: 'Success: subscription',
@@ -599,7 +612,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             end
           end
 
-          context 'purchasing an addon' do
+          context 'when purchasing an addon' do
             before do
               params[:subscription][:is_addon] = true
             end
@@ -608,7 +621,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
               subject
 
               expect_snowplow_event(
-                category: 'SubscriptionsController',
+                category: 'GitlabSubscriptions::SubscriptionsController',
                 label: 'confirm_purchase',
                 action: 'click_button',
                 property: 'Success: add-on',
