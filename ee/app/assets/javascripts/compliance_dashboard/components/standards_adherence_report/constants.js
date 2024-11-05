@@ -7,6 +7,7 @@ const PREVENT_APPROVAL_BY_MERGE_REQUEST_AUTHOR = 'PREVENT_APPROVAL_BY_MERGE_REQU
 const PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS = 'PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS';
 const AT_LEAST_TWO_APPROVALS = 'AT_LEAST_TWO_APPROVALS';
 const AT_LEAST_ONE_NON_AUTHOR_APPROVAL = 'AT_LEAST_ONE_NON_AUTHOR_APPROVAL';
+const SAST = 'SAST';
 
 export const NONE = s__('ComplianceStandardsAdherence|None');
 export const CHECKS = s__('ComplianceStandardsAdherence|Checks');
@@ -32,6 +33,7 @@ export const STANDARDS_ADHERENCE_CHECK_LABELS = {
   [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: s__(
     'ComplianceStandardsAdherence|At least one non-author approval',
   ),
+  [SAST]: s__('ComplianceStandardsAdherence|SAST scan'),
 };
 
 export const STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS = {
@@ -46,6 +48,9 @@ export const STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS = {
   ),
   [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: s__(
     'ComplianceStandardsAdherence|Have a valid rule that prevents merge requests with less than one non-author approval from being merged',
+  ),
+  [SAST]: s__(
+    'ComplianceStandardsAdherence|Have SAST scanner configured in pipeline configuration',
   ),
 };
 
@@ -62,6 +67,9 @@ export const STANDARDS_ADHERENCE_CHECK_FAILURE_REASONS = {
   [AT_LEAST_ONE_NON_AUTHOR_APPROVAL]: s__(
     'ComplianceStandardsAdherence|No rule is configured to require at least one non-author approval.',
   ),
+  [SAST]: s__(
+    'ComplianceStandardsAdherence|SAST scanner is not configured in the pipeline configuration for the default branch.',
+  ),
 };
 
 export const STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS = {
@@ -73,6 +81,9 @@ export const STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS = {
   ),
   [AT_LEAST_TWO_APPROVALS]: s__(
     'ComplianceStandardsAdherence|A rule is configured to require two approvals.',
+  ),
+  [SAST]: s__(
+    'ComplianceStandardsAdherence|SAST scanner is not configured in the pipeline configuration for the default branch.',
   ),
 };
 
@@ -110,6 +121,7 @@ export const ALLOWED_FILTER_TOKENS = {
     PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS,
     AT_LEAST_TWO_APPROVALS,
     AT_LEAST_ONE_NON_AUTHOR_APPROVAL,
+    SAST,
   ],
   standards: [GITLAB, SOC2],
 };
