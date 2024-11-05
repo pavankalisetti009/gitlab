@@ -60,6 +60,7 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagerInitialize
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretCreate
         mount_mutation ::Mutations::Security::Finding::CreateIssue
         mount_mutation ::Mutations::Security::Finding::CreateMergeRequest
         mount_mutation ::Mutations::Security::Finding::CreateVulnerability, alpha: { milestone: '17.5' }

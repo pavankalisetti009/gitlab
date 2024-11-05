@@ -5,6 +5,7 @@ module SecretsManagement
     include Gitlab::Utils::StrongMemoize
 
     SERVER_VERSION_FILE = 'GITLAB_OPENBAO_VERSION'
+    KV_VALUE_FIELD = 'value'
 
     ApiError = Class.new(StandardError)
 
@@ -28,18 +29,30 @@ module SecretsManagement
       end
     end
 
-    def read_secrets_engine_configuration(mount_path)
+    def create_kv_secret(mount_path, secret_path, value, custom_metadata = {})
       handle_request do
-        system_api.mounts_read_configuration(mount_path)
-      end
-    end
+        secrets_api.kv_write_data_path(
+          secret_path,
+          mount_path,
+          OpenbaoClient::KvWriteDataPathRequest.new(
+            data: { KV_VALUE_FIELD => value },
+            options: {
+              cas: 0
+            }
+          )
+        )
 
-    def each_secrets_engine
-      handle_request do
-        body, _, _ = system_api.mounts_list_secrets_engines_with_http_info(debug_return_type: "String")
-        data = Gitlab::Json.parse(body)["data"]
-        data.each do |path, info|
-          yield(path, info)
+        # NOTE: This is only temporary. Once OpenBao has the endpoint for
+        # creating a secret and its metadata in one transaction, we will
+        # use that instead.
+        if custom_metadata&.any?
+          secrets_api.kv_write_metadata_path(
+            secret_path,
+            mount_path,
+            OpenbaoClient::KvWriteMetadataPathRequest.new(
+              custom_metadata: custom_metadata
+            )
+          )
         end
       end
     end
@@ -56,5 +69,10 @@ module SecretsManagement
       OpenbaoClient::SystemApi.new
     end
     strong_memoize_attr(:system_api)
+
+    def secrets_api
+      OpenbaoClient::SecretsApi.new
+    end
+    strong_memoize_attr(:secrets_api)
   end
 end
