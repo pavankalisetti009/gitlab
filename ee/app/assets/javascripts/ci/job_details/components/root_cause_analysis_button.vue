@@ -27,6 +27,11 @@ export default {
       required: false,
       default: '',
     },
+    isBuild: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     resourceId() {
@@ -36,6 +41,9 @@ export default {
       const failedGroups = ['failed', 'failed-with-warnings'];
 
       return failedGroups.includes(this.jobStatusGroup);
+    },
+    shouldDisplayButton() {
+      return this.jobFailed && this.canTroubleshootJob && this.isBuild;
     },
   },
   methods: {
@@ -50,7 +58,7 @@ export default {
 </script>
 <template>
   <gl-button
-    v-if="jobFailed && canTroubleshootJob"
+    v-if="shouldDisplayButton"
     icon="duo-chat"
     variant="confirm"
     data-testid="rca-duo-button"

@@ -13,6 +13,7 @@ describe('Root cause analysis button', () => {
   const defaultProps = {
     jobStatusGroup: 'failed',
     canTroubleshootJob: true,
+    isBuild: true,
   };
 
   const createComponent = (props) => {
@@ -40,6 +41,12 @@ describe('Root cause analysis button', () => {
 
   it('should not display the Troubleshoot button when user cannot troubleshoot', () => {
     createComponent({ canTroubleshootJob: false });
+
+    expect(findTroubleshootButton().exists()).toBe(false);
+  });
+
+  it('should not display the Troubleshoot button when job is not a build', () => {
+    createComponent({ isBuild: false });
 
     expect(findTroubleshootButton().exists()).toBe(false);
   });
