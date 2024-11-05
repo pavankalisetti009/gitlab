@@ -57,7 +57,7 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
       end
 
       it 'tries to obtain a lease' do
-        ttl = (Time.current.end_of_day - Time.current).to_i
+        ttl = 24.hours.to_i
         expect_to_obtain_exclusive_lease(lease_key, timeout: ttl)
 
         expect(execute).to be_success
