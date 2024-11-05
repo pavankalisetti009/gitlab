@@ -12,6 +12,8 @@ module Observability
     worker_has_external_dependencies!
 
     def perform
+      return unless License.feature_available?(:observability_alerts)
+
       api_response = fetch_alerts
       return unless api_response
 
@@ -39,7 +41,7 @@ module Observability
     def fetch_alerts
       access_token = CloudConnector::AvailableServices.find_by_name(:observability_all).access_token
 
-      result = Gitlab::HTTP_V2.get(
+      result = Gitlab::HTTP.get(
         ::Gitlab::Observability.alerts_url,
         headers: Gitlab::CloudConnector.headers(nil).merge({
           "Authorization" => "Bearer #{access_token}"
@@ -50,8 +52,7 @@ module Observability
       return [] unless result.success?
 
       Gitlab::Json.parse(result.body) || []
-    rescue JSON::ParserError => error
-      logger.error("parsing #{result.body}: #{error.message}")
+    rescue JSON::ParserError, Gitlab::HTTP_V2::BlockedUrlError
       []
     end
   end

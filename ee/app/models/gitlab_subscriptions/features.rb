@@ -42,6 +42,7 @@ module GitlabSubscriptions
       product_analytics_usage_quotas
       zoekt_code_search
       disable_private_profiles
+      observability_alerts
     ].freeze
 
     STARTER_FEATURES = %i[
@@ -273,6 +274,7 @@ module GitlabSubscriptions
       container_scanning_for_registry
       security_exclusions
       security_scans_api
+      observability_alerts
     ].freeze
 
     STARTER_FEATURES_WITH_USAGE_PING = %i[
