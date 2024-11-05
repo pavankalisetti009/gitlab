@@ -18906,9 +18906,6 @@ msgstr ""
 msgid "DeployTokens|Your new project deploy token has been created."
 msgstr ""
 
-msgid "Deployed"
-msgstr ""
-
 msgid "Deployed %{timeago}"
 msgstr ""
 
@@ -21760,6 +21757,9 @@ msgstr ""
 msgid "Environment|Cluster agent not found."
 msgstr ""
 
+msgid "Environment|Created on"
+msgstr ""
+
 msgid "Environment|Dashboard"
 msgstr ""
 
@@ -21770,6 +21770,9 @@ msgid "Environment|Environment status"
 msgstr ""
 
 msgid "Environment|External IP"
+msgstr ""
+
+msgid "Environment|Finished on"
 msgstr ""
 
 msgid "Environment|Flux Sync"
