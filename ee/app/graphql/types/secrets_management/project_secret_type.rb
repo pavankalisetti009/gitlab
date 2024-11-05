@@ -1,0 +1,27 @@
+# frozen_string_literal: true
+
+module Types
+  module SecretsManagement
+    class ProjectSecretType < BaseObject
+      graphql_name 'ProjectSecret'
+      description 'Representation of a project secret.'
+
+      authorize :admin_project_secrets_manager
+
+      field :project,
+        Types::ProjectType,
+        null: false,
+        description: 'Project the secret belong to.'
+
+      field :name,
+        type: GraphQL::Types::String,
+        null: false,
+        description: 'Name of the project secret.'
+
+      field :description,
+        type: GraphQL::Types::String,
+        null: false,
+        description: 'Description of the project secret.'
+    end
+  end
+end

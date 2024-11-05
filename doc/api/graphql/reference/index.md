@@ -8284,6 +8284,28 @@ Input type: `ProjectSavedReplyUpdateInput`
 | <a id="mutationprojectsavedreplyupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationprojectsavedreplyupdatesavedreply"></a>`savedReply` | [`ProjectSavedReply`](#projectsavedreply) | Saved reply after mutation. |
 
+### `Mutation.projectSecretCreate`
+
+Input type: `ProjectSecretCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectsecretcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectsecretcreatedescription"></a>`description` | [`String`](#string) | Description of the project secret. |
+| <a id="mutationprojectsecretcreatename"></a>`name` | [`String!`](#string) | Name of the project secret. |
+| <a id="mutationprojectsecretcreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project of the secret. |
+| <a id="mutationprojectsecretcreatevalue"></a>`value` | [`String!`](#string) | Value of the project secret. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectsecretcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectsecretcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationprojectsecretcreateprojectsecret"></a>`projectSecret` | [`ProjectSecret`](#projectsecret) | Project secret. |
+
 ### `Mutation.projectSecretsManagerInitialize`
 
 Input type: `ProjectSecretsManagerInitializeInput`
@@ -32731,6 +32753,18 @@ Represents the Geo replication and verification state of a project repository.
 | <a id="projectsavedreplycontent"></a>`content` | [`String!`](#string) | Content of the saved reply. |
 | <a id="projectsavedreplyid"></a>`id` | [`ProjectsSavedReplyID!`](#projectssavedreplyid) | Global ID of the project-level saved reply. |
 | <a id="projectsavedreplyname"></a>`name` | [`String!`](#string) | Name of the saved reply. |
+
+### `ProjectSecret`
+
+Representation of a project secret.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectsecretdescription"></a>`description` | [`String!`](#string) | Description of the project secret. |
+| <a id="projectsecretname"></a>`name` | [`String!`](#string) | Name of the project secret. |
+| <a id="projectsecretproject"></a>`project` | [`Project!`](#project) | Project the secret belong to. |
 
 ### `ProjectSecretsManager`
 
