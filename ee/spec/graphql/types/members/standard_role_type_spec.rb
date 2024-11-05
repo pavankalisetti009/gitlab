@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['StandardRole'], feature_category: :system_access do
-  let(:fields) { %w[accessLevel name membersCount usersCount detailsPath] }
+  let(:fields) { %w[id accessLevel name description membersCount usersCount detailsPath] }
 
   specify { expect(described_class.graphql_name).to eq('StandardRole') }
 

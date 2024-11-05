@@ -14,16 +14,6 @@ module Types
 
       implements Types::Members::RoleInterface
 
-      field :id,
-        ::Types::GlobalIDType[::MemberRole],
-        null: false,
-        description: 'ID of the member role.'
-
-      field :description,
-        GraphQL::Types::String,
-        null: true,
-        description: 'Description of the member role.'
-
       field :base_access_level,
         Types::AccessLevelType,
         null: false,

@@ -32,6 +32,15 @@ module EE
         def human_access(access, member_role = nil)
           member_role&.name || options_with_minimal_access.key(access)
         end
+
+        override :option_descriptions
+        def option_descriptions
+          super.merge({
+            minimal_access: s_('MemberRole|The Minimal Access role is for users who need the least amount of access ' \
+              'into groups and projects. You can assign this role as a default, before giving a user another role ' \
+              'with more permissions.')
+          })
+        end
       end
 
       override :human_access

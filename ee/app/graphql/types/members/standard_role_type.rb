@@ -17,20 +17,31 @@ module Types
         null: false,
         description: 'Access level as a number.'
 
-      def details_path
-        access_level = object[:access_level]
-        access_enum = access_enums[access_level].upcase
-
-        group = object[:group]
-        access_enum.define_singleton_method(:namespace) { group }
-
-        member_role_details_path(access_enum)
+      def id
+        "gid://gitlab/StandardRole/#{access_level_enum}"
       end
 
-      def access_enums
+      def description
+        Types::MemberAccessLevelEnum.values[access_level_enum].description
+      end
+
+      def details_path
+        enum = access_level_enum
+        group = object[:group]
+        enum.define_singleton_method(:namespace) { group }
+
+        member_role_details_path(enum)
+      end
+
+      def access_level_enum
+        access_level = object[:access_level]
+        access_level_enums[access_level].upcase
+      end
+
+      def access_level_enums
         Types::MemberAccessLevelEnum.enum.invert
       end
-      strong_memoize_attr :access_enums
+      strong_memoize_attr :access_level_enums
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

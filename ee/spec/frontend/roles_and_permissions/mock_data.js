@@ -47,7 +47,7 @@ export const standardRoles = [
     usersCount: 3,
     detailsPath: 'role/DEVELOPER',
     description:
-      'The Developer role strikes a balance between giving users the necessary access to contribute code while restricting sensitive administrative actions.',
+      'The Developer role gives users access to contribute code while restricting sensitive administrative actions.',
   },
   {
     accessLevel: 40,

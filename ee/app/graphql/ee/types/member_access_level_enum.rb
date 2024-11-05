@@ -6,7 +6,8 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
-        value 'MINIMAL_ACCESS', value: ::Gitlab::Access::MINIMAL_ACCESS, description: 'Minimal access.'
+        value 'MINIMAL_ACCESS', value: ::Gitlab::Access::MINIMAL_ACCESS,
+          description: ::Gitlab::Access.option_descriptions[:minimal_access]
       end
     end
   end

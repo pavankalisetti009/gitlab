@@ -244,12 +244,17 @@ module EE
           authorize: :admin_external_audit_events
 
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
-          null: true, description: 'Member roles available for the group.',
+          null: true, description: 'Custom roles available for the group.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
           alpha: { milestone: '16.5' }
 
+        field :standard_role, ::Types::Members::StandardRoleType,
+          null: true, description: 'Finds a single default role for the group. Available only for SaaS.',
+          resolver: ::Resolvers::Members::StandardRolesResolver.single,
+          alpha: { milestone: '17.6' }
+
         field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
-          null: true, description: 'Standard roles available for the instance, available only for self-managed.',
+          null: true, description: 'Default roles available for the group. Available only for SaaS.',
           resolver: ::Resolvers::Members::StandardRolesResolver,
           alpha: { milestone: '17.4' }
 
