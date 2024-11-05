@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'User with read_dependency custom role', feature_category: :system_access do
-  let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, :in_group, :security_and_compliance_enabled) }
   let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_dependency_list_report, project: project) }
 
@@ -18,6 +17,7 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
   end
 
   describe Projects::DependenciesController do
+    let_it_be(:user) { create(:user) }
     let_it_be(:role) { create(:member_role, :guest, namespace: project.group, read_dependency: true) }
     let_it_be(:member) { create(:project_member, :guest, member_role: role, user: user, project: project) }
 
@@ -32,6 +32,7 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
   end
 
   describe Groups::DependenciesController do
+    let_it_be(:user) { create(:user) }
     let_it_be(:role) { create(:member_role, :guest, namespace: project.group, read_dependency: true) }
     let_it_be(:member) { create(:group_member, :guest, member_role: role, user: user, source: project.group) }
 
@@ -45,7 +46,8 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
     end
   end
 
-  describe Explore::DependenciesController do
+  describe Explore::DependenciesController, :enable_admin_mode do
+    let_it_be(:user) { create(:user, :admin) }
     let_it_be(:organization) { create(:organization, :default) }
     let_it_be(:role) { create(:member_role, :guest, namespace: project.group, read_dependency: true) }
 
@@ -58,12 +60,6 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
 
       context "on a group level" do
         let_it_be(:membership) { create(:group_member, :guest, source: project.group, member_role: role, user: user) }
-
-        include_examples 'returning response status', :ok
-      end
-
-      context "on a project level" do
-        let_it_be(:membership) { create(:project_member, :guest, source: project, member_role: role, user: user) }
 
         include_examples 'returning response status', :ok
       end

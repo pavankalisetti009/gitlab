@@ -26,8 +26,7 @@ module Explore
     def index
       paginator = dependencies.keyset_paginate(
         cursor: finder_params[:cursor],
-        per_page: per_page,
-        keyset_order_options: keyset_order_options
+        per_page: per_page
       )
       respond_to do |format|
         format.html do
@@ -84,7 +83,7 @@ module Explore
       return render_404 unless current_user.present?
       return render_404 unless Feature.enabled?(:explore_dependencies, current_user)
 
-      render_403 unless can?(current_user, :read_dependency, organization)
+      render_403 unless can?(current_user, :read_dependency, organization) && current_user.can_read_all_resources?
     end
 
     def page_info(paginator)
@@ -100,20 +99,6 @@ module Explore
 
     def formatted_page_info(paginator)
       Gitlab::Json.generate(page_info(paginator))
-    end
-
-    def keyset_order_options(relation = ::Sbom::Occurrence)
-      return {} if current_user.can_read_all_resources?
-
-      # rubocop: disable CodeReuse/ActiveRecord -- where clause
-      {
-        in_operator_optimization_options: in_operator_optimization_options(
-          current_user.project_authorizations.select(:project_id),
-          ->(id) { relation.where(relation.arel_table[:project_id].eq(id)) },
-          ->(id) { relation.where(relation.arel_table[:id].eq(id)) }
-        )
-      }
-      # rubocop: enable CodeReuse/ActiveRecord -- where clause
     end
 
     def in_operator_optimization_options(array_scope, array_mapping_scope, finder_query)
