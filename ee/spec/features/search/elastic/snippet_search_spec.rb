@@ -27,7 +27,7 @@ RSpec.describe 'Snippet elastic search', :js, :clean_gitlab_redis_rate_limiting,
 
       context 'when block_anonymous_global_searches is enabled' do
         it 'redirects to login page' do
-          expect(page).to have_content('You must be logged in to search across all of GitLab')
+          expect(page).to have_content('You need to sign in or sign up before continuing.')
         end
       end
 
