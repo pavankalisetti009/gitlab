@@ -9,7 +9,8 @@ export default (el) => {
     return null;
   }
 
-  const { canViewFalsePositive, projectFullPath, customizeJiraIssueEnabled } = el.dataset;
+  const { canViewFalsePositive, projectFullPath, defaultBranch, customizeJiraIssueEnabled } =
+    el.dataset;
 
   const vulnerabilityJson = JSON.parse(el.dataset.vulnerability);
   const dismissalDescriptions = vulnerabilityJson.dismissal_descriptions;
@@ -40,6 +41,7 @@ export default (el) => {
       canViewFalsePositive: parseBoolean(canViewFalsePositive),
       customizeJiraIssueEnabled: parseBoolean(customizeJiraIssueEnabled),
       projectFullPath,
+      defaultBranch,
       dismissalDescriptions,
     },
     render: (h) =>
