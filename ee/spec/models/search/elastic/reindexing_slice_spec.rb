@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Elastic::ReindexingSlice, type: :model do
+RSpec.describe Search::Elastic::ReindexingSlice, type: :model, feature_category: :global_search do
   describe 'relations' do
     it { is_expected.to belong_to(:elastic_reindexing_subtask) }
   end
