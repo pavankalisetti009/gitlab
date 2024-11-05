@@ -111,7 +111,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
       BatchLoader::Executor.clear_current
 
       # +2 as we do extra queries for:
-      # MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService
+      # MergeRequests::Mergeability::CheckSecurityPolicyViolationService
       # MergeRequests::Mergeability::CheckPathLocksService
       expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(2)
     end

@@ -95,7 +95,7 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
 
         it "returns a check result with status success" do
           expect(result.status)
-            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::SUCCESS_STATUS
+            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::CHECKING_STATUS
         end
       end
     end

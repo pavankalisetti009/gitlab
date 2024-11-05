@@ -216,7 +216,6 @@ module EE
           ::MergeRequests::Mergeability::CheckApprovedService,
           ::MergeRequests::Mergeability::CheckBlockedByOtherMrsService,
           ::MergeRequests::Mergeability::CheckJiraStatusService,
-          ::MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService,
           ::MergeRequests::Mergeability::CheckSecurityPolicyViolationsService,
           ::MergeRequests::Mergeability::CheckExternalStatusChecksPassedService,
           ::MergeRequests::Mergeability::CheckPathLocksService
