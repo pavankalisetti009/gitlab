@@ -979,7 +979,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
 
     context 'when the two factor is disabled' do
       before do
-        allow_any_instance_of(User).to receive(:two_factor_enabled?).and_return(false)  # rubocop:disable RSpec/AnyInstanceOf
+        allow_any_instance_of(User).to receive(:two_factor_enabled?).and_return(false) # rubocop:disable RSpec/AnyInstanceOf
       end
 
       it 'returns an error message' do

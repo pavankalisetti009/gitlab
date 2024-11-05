@@ -6,7 +6,7 @@ RSpec.describe ::AppSec::Fuzzing::API::CiConfigurationCreateService do
   let(:service) { described_class.new(container: double(Project), current_user: double(User), params: params) }
 
   describe '#create' do
-    subject { service.create[:yaml] }  # rubocop: disable Rails/SaveBang
+    subject { service.create[:yaml] } # rubocop: disable Rails/SaveBang
 
     context 'when given an OPENAPI specification file' do
       let(:params) do

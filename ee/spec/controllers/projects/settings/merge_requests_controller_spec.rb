@@ -118,7 +118,7 @@ RSpec.describe Projects::Settings::MergeRequestsController, feature_category: :c
       end
 
       it 'updates the attribute' do
-        allow_any_instance_of(Project).to receive(:suggested_reviewers_available?).and_return(true)  # rubocop:disable RSpec/AnyInstanceOf
+        allow_any_instance_of(Project).to receive(:suggested_reviewers_available?).and_return(true) # rubocop:disable RSpec/AnyInstanceOf
 
         request
         expect(project.reload.suggested_reviewers_enabled).to be(true)
