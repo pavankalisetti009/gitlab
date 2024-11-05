@@ -55553,6 +55553,9 @@ msgstr ""
 msgid "The source topic and the target topic are identical."
 msgstr ""
 
+msgid "The source topic and the target topic must belong to the same organization."
+msgstr ""
+
 msgid "The source topic is not a topic."
 msgstr ""
 
