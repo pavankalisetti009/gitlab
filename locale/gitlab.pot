@@ -38814,6 +38814,9 @@ msgstr ""
 msgid "PackageRegistry|%{linkStart}Wildcards%{linkEnd} such as `my-package-*` are supported."
 msgstr ""
 
+msgid "PackageRegistry|%{message}. Delete this package and try again."
+msgstr ""
+
 msgid "PackageRegistry|%{name} version %{version} was first created %{datetime}"
 msgstr ""
 
@@ -39330,9 +39333,6 @@ msgid "PackageRegistry|There are security risks if packages are deleted while re
 msgstr ""
 
 msgid "PackageRegistry|There was a problem fetching the details for this package."
-msgstr ""
-
-msgid "PackageRegistry|There was a timeout and the package was not published. Delete this package and try again."
 msgstr ""
 
 msgid "PackageRegistry|There was an error publishing %{count} packages"
