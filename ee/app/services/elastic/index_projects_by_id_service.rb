@@ -7,7 +7,7 @@ module Elastic
       Elastic::ProcessInitialBookkeepingService.backfill_projects!(*projects)
 
       namespace_ids.each do |namespace_id|
-        ElasticNamespaceIndexerWorker.perform_async(namespace_id, :index)
+        ElasticNamespaceIndexerWorker.perform_async(namespace_id, 'index')
       end
     end
   end

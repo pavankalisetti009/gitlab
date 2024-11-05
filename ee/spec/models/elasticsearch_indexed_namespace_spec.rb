@@ -26,11 +26,11 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
     let(:required_attribute) { :namespace_id }
 
     let(:index_action) do
-      expect(ElasticNamespaceIndexerWorker).to receive(:perform_async).with(subject.namespace_id, :index)
+      expect(ElasticNamespaceIndexerWorker).to receive(:perform_async).with(subject.namespace_id, 'index')
     end
 
     let(:delete_action) do
-      expect(ElasticNamespaceIndexerWorker).to receive(:perform_async).with(subject.namespace_id, :delete)
+      expect(ElasticNamespaceIndexerWorker).to receive(:perform_async).with(subject.namespace_id, 'delete')
     end
   end
 
@@ -65,9 +65,9 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
 
         ids = namespaces.map(&:id)
 
-        expect_worker_args(ids[0], :index)
-        expect_worker_args(ids[2], :index)
-        expect_worker_args(ids[1], :index)
+        expect_worker_args(ids[0], 'index')
+        expect_worker_args(ids[2], 'index')
+        expect_worker_args(ids[1], 'index')
 
         described_class.index_first_n_namespaces_of_plan('ultimate', 1)
 
@@ -94,9 +94,9 @@ RSpec.describe ElasticsearchIndexedNamespace, :saas, feature_category: :global_s
 
         ids = namespaces.map(&:id)
 
-        expect_worker_args(ids[2], :delete)
-        expect_worker_args(ids[1], :delete)
-        expect_worker_args(ids[0], :delete)
+        expect_worker_args(ids[2], 'delete')
+        expect_worker_args(ids[1], 'delete')
+        expect_worker_args(ids[0], 'delete')
 
         expect(get_indexed_namespaces).to contain_exactly(ids[0], ids[2], ids[1])
 
