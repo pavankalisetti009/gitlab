@@ -11,6 +11,8 @@ module QA
         "Authentication bypass via incorrect DOM traversal and canonicalization in saml2-js"
       end
 
+      let(:source_branch) { "secure-mr-#{SecureRandom.hex(6)}" }
+
       # rubocop:disable RSpec/InstanceVariable
       after do
         @runner.remove_via_api! if @runner
@@ -34,12 +36,12 @@ module QA
           push.project = @project
           push.directory = Pathname.new(EE::Runtime::Path.fixture('secure_premade_reports'))
           push.commit_message = 'Create Secure compatible application to serve premade reports'
-          push.branch_name = 'secure-mr'
+          push.branch_name = source_branch
         end
 
         merge_request = create(:merge_request,
           project: @project,
-          source_branch: 'secure-mr',
+          source_branch: source_branch,
           target_branch: @project.default_branch,
           source: @source,
           target: @project.default_branch,
