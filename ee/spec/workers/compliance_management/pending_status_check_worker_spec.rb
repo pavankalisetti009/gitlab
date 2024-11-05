@@ -44,5 +44,13 @@ RSpec.describe ComplianceManagement::PendingStatusCheckWorker, feature_category:
         expect { worker.perform(*job_args) }.not_to raise_exception
       end
     end
+
+    context 'when merge_request and project are missing' do
+      let(:job_args) { [non_existing_record_id, non_existing_record_id, diff_head_sha] }
+
+      it 'does not raise exception' do
+        expect { worker.perform(*job_args) }.not_to raise_exception
+      end
+    end
   end
 end
