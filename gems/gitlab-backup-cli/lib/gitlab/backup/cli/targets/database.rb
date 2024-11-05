@@ -98,22 +98,17 @@ module Gitlab
               # hanging out from a failed upgrade
               drop_tables(database_name)
 
-              tracked_errors = []
-
               pg_env = backup_connection.database_configuration.pg_env_variables
-              success = with_transient_pg_env(pg_env) do
-                pipeline = Gitlab::Backup::Cli::Shell::Pipeline.new(
-                  decompression_cmd,
-                  pg_restore_cmd(database)
-                )
 
-                Gitlab::Backup::Cli::Output.print_info "Restoring PostgreSQL database #{database} ... "
+              pipeline = Gitlab::Backup::Cli::Shell::Pipeline.new(
+                Utils::Compression.decompression_command,
+                pg_restore_cmd(database, pg_env)
+              )
 
-                pipeline_status = pipeline.run!(input: db_file_name)
-                tracked_errors = pipeline_status.stderr
+              Gitlab::Backup::Cli::Output.print_info "Restoring PostgreSQL database #{database} ... "
 
-                pipeline_status.success?
-              end
+              pipeline_status = pipeline.run!(input: db_file_name)
+              tracked_errors = pipeline_status.stderr
 
               unless tracked_errors.empty?
                 Gitlab::Backup::Cli::Output.error "------ BEGIN ERRORS -----"
@@ -121,9 +116,9 @@ module Gitlab
                 Gitlab::Backup::Cli::Output.error "------ END ERRORS -------"
               end
 
-              report_finish_status(success)
+              report_finish_status(pipeline_status.success?)
 
-              raise DatabaseBackupError, 'Restore failed' unless success
+              raise DatabaseBackupError, 'Restore failed' unless pipeline_status.success?
             end
           end
 
@@ -148,10 +143,6 @@ module Gitlab
           end
 
           private
-
-          def decompression_cmd
-            Utils::Compression.decompression_command.cmd_args.flatten.first
-          end
 
           def report_finish_status(status)
             Gitlab::Backup::Cli::Output.print_tag(status ? :success : :failure)
@@ -179,8 +170,8 @@ module Gitlab
             result
           end
 
-          def pg_restore_cmd(database)
-            ['psql', database]
+          def pg_restore_cmd(database, pg_env)
+            Shell::Command.new('psql', database, env: pg_env)
           end
 
           def each_database(destination_dir, &block)
