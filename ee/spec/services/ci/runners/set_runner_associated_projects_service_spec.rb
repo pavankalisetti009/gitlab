@@ -34,7 +34,7 @@ RSpec.describe ::Ci::Runners::SetRunnerAssociatedProjectsService, '#execute', fe
       it 'calls audit on Auditor and returns success response', :aggregate_failures do
         expect(project_runner).to receive(:assign_to).with(new_project, user).once.and_return(true)
         expected_runner_url = ::Gitlab::Routing.url_helpers.project_runner_path(
-          project_runner.owner_project,
+          project_runner.owner,
           project_runner)
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
           a_hash_including(

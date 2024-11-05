@@ -36,7 +36,7 @@ module EE
         def runner_path
           url_helpers = ::Gitlab::Routing.url_helpers
 
-          runner.owner_project ? url_helpers.project_runner_path(runner.owner_project, runner) : nil
+          runner.owner ? url_helpers.project_runner_path(runner.owner, runner) : nil
         end
       end
     end
