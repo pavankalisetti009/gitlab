@@ -8,7 +8,7 @@ import {
   activeTrain,
   mergedTrain,
   trainWithPagination,
-  trainWitoutPermissions,
+  trainWithoutPermissions,
 } from '../mock_data';
 
 describe('MergeTrainsTable', () => {
@@ -154,7 +154,7 @@ describe('MergeTrainsTable', () => {
 
     it('does not display remove button on active tab without permissions', () => {
       createComponent({
-        train: trainWitoutPermissions.data.project.mergeTrains.nodes[0],
+        train: trainWithoutPermissions.data.project.mergeTrains.nodes[0],
         cursor: DEFAULT_CURSOR,
         isActiveTab: true,
       });
