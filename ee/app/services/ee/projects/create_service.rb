@@ -52,6 +52,10 @@ module EE
 
       private
 
+      def create_from_template?
+        super || ::Gitlab::Utils.to_boolean(params[:use_custom_template])
+      end
+
       attr_reader :mirror, :mirror_trigger_builds
 
       def remove_unallowed_params

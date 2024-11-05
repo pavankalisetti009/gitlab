@@ -91,6 +91,22 @@ RSpec.describe Projects::CreateFromTemplateService, feature_category: :importers
           expect(::Projects::GitlabProjectsImportService).not_to receive(:new)
         end
       end
+
+      context 'when use_custom_template is true but template_name and template_project_id are nil' do
+        let(:template_name) { nil }
+
+        before do
+          project_params[:template_project_id] = nil
+        end
+
+        it 'return a project with error' do
+          project = subject.execute
+          expect(project).not_to be_saved
+          expect(project.errors.messages).to eq(
+            use_custom_template: ['must be used with template_name or template_project_id']
+          )
+        end
+      end
     end
 
     where(:use_template_name) { [true, false] }
