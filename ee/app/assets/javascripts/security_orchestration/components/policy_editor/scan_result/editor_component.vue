@@ -26,8 +26,7 @@ import SettingsSection from './settings/settings_section.vue';
 import ActionSection from './action/action_section.vue';
 import BotCommentAction from './action/bot_message_action.vue';
 import RuleSection from './rule/rule_section.vue';
-import FallbackSection from './fallback_section.vue';
-import { CLOSED } from './constants';
+import FallbackAndEdgeCasesSection from './fallback_and_edge_cases_section.vue';
 import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
@@ -92,7 +91,7 @@ export default {
     ActionSection,
     BotCommentAction,
     DimDisableContainer,
-    FallbackSection,
+    FallbackAndEdgeCasesSection,
     GlAlert,
     GlButton,
     GlEmptyState,
@@ -227,9 +226,6 @@ export default {
     botActions() {
       const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
-    },
-    fallbackBehaviorSetting() {
-      return this.policy.fallback_behavior?.fail || CLOSED;
     },
     isProject() {
       return isProject(this.namespaceType);
@@ -571,8 +567,8 @@ export default {
 
         <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
       </dim-disable-container>
-      <fallback-section
-        :property="fallbackBehaviorSetting"
+      <fallback-and-edge-cases-section
+        :policy="policy"
         :disabled="hasParsingError"
         @changed="handleUpdateProperty"
       />

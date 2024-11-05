@@ -32,6 +32,7 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
         'actions',
         'approval_settings',
         'fallback_behavior',
+        'policy_tuning',
       ];
 
       const rulesKeys = [

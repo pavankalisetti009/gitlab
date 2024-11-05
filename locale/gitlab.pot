@@ -48371,6 +48371,9 @@ msgstr ""
 msgid "ScanResultPolicy|Attributes are automatically applied by the scanners"
 msgstr ""
 
+msgid "ScanResultPolicy|Automatically make approval rules optional when scan artifacts are missing from the target branch and a scan is required by a scan execution policy. This option only works with an existing scan execution policy that has matching scanners."
+msgstr ""
+
 msgid "ScanResultPolicy|Block the merge request until all criteria are met"
 msgstr ""
 
@@ -48384,6 +48387,9 @@ msgid "ScanResultPolicy|Customized CI Variables"
 msgstr ""
 
 msgid "ScanResultPolicy|Don't show me this again"
+msgstr ""
+
+msgid "ScanResultPolicy|Edge case settings"
 msgstr ""
 
 msgid "ScanResultPolicy|Except"
@@ -48404,7 +48410,10 @@ msgstr ""
 msgid "ScanResultPolicy|Failure cases:"
 msgstr ""
 
-msgid "ScanResultPolicy|Fallback behavior in case of policy failure"
+msgid "ScanResultPolicy|Fallback behavior"
+msgstr ""
+
+msgid "ScanResultPolicy|Fallback behavior and edge case settings"
 msgstr ""
 
 msgid "ScanResultPolicy|False positive"
@@ -48435,6 +48444,9 @@ msgid "ScanResultPolicy|License is:"
 msgstr ""
 
 msgid "ScanResultPolicy|License scanning allows only one criteria: Status"
+msgstr ""
+
+msgid "ScanResultPolicy|Make approval rules optional using scan execution policies"
 msgstr ""
 
 msgid "ScanResultPolicy|Matching"

@@ -399,6 +399,18 @@ export const mockProjectFallbackClosedScanResultObject = {
   },
 };
 
+export const mockProjectPolicyTuningScanResultManifest =
+  mockDefaultBranchesScanResultManifest.concat(
+    `policy_tuning:\n  unblock_rules_using_execution_policies: true`,
+  );
+
+export const mockProjectPolicyTuningScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  policy_tuning: {
+    unblock_rules_using_execution_policies: true,
+  },
+};
+
 export const mockProjectApprovalSettingsScanResultManifest = mockDefaultBranchesScanResultManifest
   .concat(
     `
