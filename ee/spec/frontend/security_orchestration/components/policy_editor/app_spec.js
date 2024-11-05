@@ -1,4 +1,3 @@
-import { GlPath } from '@gitlab/ui';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -13,7 +12,6 @@ describe('App component', () => {
 
   const findPolicySelection = () => wrapper.findComponent(PolicyTypeSelector);
   const findPolicyEditor = () => wrapper.findComponent(EditorWrapper);
-  const findPath = () => wrapper.findComponent(GlPath);
   const findTitle = () => wrapper.findByTestId('page-heading').text();
 
   const factory = ({ provide = {} } = {}) => {
@@ -37,20 +35,6 @@ describe('App component', () => {
         expect(findTitle()).toBe('New policy');
       });
 
-      it('should display the path items correctly', () => {
-        expect(findPath().props('items')).toMatchObject([
-          {
-            selected: true,
-            title: 'Step 1: Choose a policy type',
-          },
-          {
-            disabled: true,
-            selected: false,
-            title: 'Step 2: Policy details',
-          },
-        ]);
-      });
-
       it('should display the correct view', () => {
         expect(findPolicySelection().exists()).toBe(true);
         expect(findPolicyEditor().exists()).toBe(false);
@@ -69,20 +53,6 @@ describe('App component', () => {
       it('should display the correct view', () => {
         expect(findPolicySelection().exists()).toBe(true);
         expect(findPolicyEditor().exists()).toBe(false);
-      });
-
-      it('should display the path items correctly', () => {
-        expect(findPath().props('items')).toMatchObject([
-          {
-            selected: true,
-            title: 'Step 1: Choose a policy type',
-          },
-          {
-            disabled: true,
-            selected: false,
-            title: 'Step 2: Policy details',
-          },
-        ]);
       });
     });
 
@@ -121,10 +91,6 @@ describe('App component', () => {
 
       it('should display the title correctly', () => {
         expect(findTitle()).toBe('Edit merge request approval policy');
-      });
-
-      it('should not display the GlPath component when there is an existing policy', () => {
-        expect(findPath().exists()).toBe(false);
       });
 
       it('should display the correct view according to the selected policy', () => {
