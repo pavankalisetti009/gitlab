@@ -41,6 +41,8 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         node: zoekt_node, namespace_id: 0)
       expect(zoekt_index).to be_invalid
     end
+
+    it { expect(described_class).to validate_jsonb_schema(['zoekt_indices_metadata']) }
   end
 
   describe 'callbacks' do

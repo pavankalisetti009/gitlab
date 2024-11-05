@@ -44,6 +44,15 @@ module Search
                   .merge(Repository.searchable)
                   .where(zoekt_repositories: { project: project })
       end
+      scope :with_unclaimed_storage_bytes, -> do
+        sql = <<~SQL
+          zoekt_nodes.*, (zoekt_nodes.total_bytes - zoekt_nodes.used_bytes + zoekt_nodes.indexed_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0)) AS unclaimed_storage_bytes
+        SQL
+        left_joins(:indices).group(:id).select(sql)
+      end
+      scope :order_by_unclaimed_space, -> do
+        with_unclaimed_storage_bytes.order('unclaimed_storage_bytes')
+      end
 
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
@@ -134,6 +143,16 @@ module Search
         return true if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
 
         save
+      end
+
+      def unclaimed_storage_bytes
+        total_bytes - used_bytes + indexed_bytes - reserved_storage_bytes
+      end
+
+      private
+
+      def reserved_storage_bytes
+        indices.sum(:reserved_storage_bytes)
       end
     end
   end
