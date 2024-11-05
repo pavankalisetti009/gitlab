@@ -16,6 +16,8 @@ module Users
 
     private
 
+    def find_verification_user; end
+
     def redirect_path
       @redirect_path ||= session.delete(:identity_verification_referer) || root_path
     end
