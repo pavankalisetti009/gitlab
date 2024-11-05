@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Work items list filters', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
+  include WorkItemFeedbackHelpers
 
   let_it_be(:user) { create(:user) }
 
@@ -21,9 +22,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
       sign_in(user)
       visit group_work_items_path(group)
 
-      within_testid('work-item-feedback-popover') do
-        find_by_testid('close-button').click
-      end
+      close_work_item_feedback_popover_if_present
     end
 
     describe 'type' do
