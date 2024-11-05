@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Work item', :js, feature_category: :team_planning do
+  include WorkItemFeedbackHelpers
   include ListboxHelpers
 
   let_it_be_with_reload(:user) { create(:user) }
@@ -58,9 +59,7 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
         before do
           visit group_epic_path(group, work_item.iid)
 
-          within_testid('work-item-feedback-popover') do
-            find_by_testid('close-button').click
-          end
+          close_work_item_feedback_popover_if_present
         end
 
         it 'shows the correct breadcrumbs' do
