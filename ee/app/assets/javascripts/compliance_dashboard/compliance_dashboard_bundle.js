@@ -6,6 +6,7 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 import createDefaultClient from '~/lib/graphql';
 
 import { createRouter } from 'ee/compliance_dashboard/router';
+import { resolvers } from './graphql/resolvers';
 import {
   ROUTE_FRAMEWORKS,
   ROUTE_STANDARDS_ADHERENCE,
@@ -48,7 +49,7 @@ export default () => {
   Vue.use(VueRouter);
 
   const apolloProvider = new VueApollo({
-    defaultClient: createDefaultClient(),
+    defaultClient: createDefaultClient(resolvers),
   });
 
   const routes = Object.entries({

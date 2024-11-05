@@ -7,7 +7,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import { createFramework } from '../../../../mock_data';
 
-describe('Basic information section', () => {
+describe('Projects section', () => {
   let wrapper;
 
   const framework = createFramework({ id: 1, projects: 3 });

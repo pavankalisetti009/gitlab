@@ -5,6 +5,7 @@ import getComplianceFrameworkQuery from 'ee/compliance_dashboard/components/fram
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
 import EditFramework from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/edit_framework.vue';
 import BasicInformationSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/basic_information_section.vue';
+import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section.vue';
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
@@ -27,6 +28,7 @@ jest.mock('~/lib/utils/url_utility');
 
 describe('Edit Framework Form', () => {
   let wrapper;
+  const adherenceV2Enabled = true;
   const propsData = {
     id: '1',
   };
@@ -39,6 +41,7 @@ describe('Edit Framework Form', () => {
     featurePipelineMaintenanceModeEnabled: true,
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineExecutionPolicyPath: '/policypath',
+    adherenceV2Enabled,
   };
 
   const showDeleteModal = jest.fn();
@@ -370,6 +373,30 @@ describe('Edit Framework Form', () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
       expect(wrapper.findComponent(BasicInformationSection).props('isExpanded')).toBe(false);
+    });
+  });
+
+  describe('Requirements section', () => {
+    it('renders requirements section if creating new framework', async () => {
+      wrapper = createComponent(shallowMountExtended, { routeParams: {} });
+      await waitForPromises();
+      expect(wrapper.findComponent(RequirementsSection).exists()).toBe(true);
+    });
+
+    it('render requiremnts section if editing framework', async () => {
+      wrapper = createComponent(shallowMountExtended);
+      await waitForPromises();
+      expect(wrapper.findComponent(RequirementsSection).exists()).toBe(true);
+    });
+
+    it('does not render policies section if feature is disabled', async () => {
+      wrapper = createComponent(shallowMountExtended, {
+        provide: {
+          adherenceV2Enabled: false,
+        },
+      });
+      await waitForPromises();
+      expect(wrapper.findComponent(RequirementsSection).exists()).toBe(false);
     });
   });
 
