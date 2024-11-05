@@ -114,7 +114,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       it_behaves_like 'triggers policy bot comment', report_type, true
 
       it 'updates violation status' do
-        expect { execute }.to change { violation.reload.status }.from('running').to('completed')
+        expect { execute }.to change { violation.reload.status }.from('running').to('failed')
       end
 
       context 'without required approvals' do
@@ -146,7 +146,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         it_behaves_like 'triggers policy bot comment', report_type, false, requires_approval: false
 
         it 'updates violation status' do
-          expect { execute }.to change { violation.reload.status }.from('running').to('completed')
+          expect { execute }.to change { violation.reload.status }.from('running').to('failed')
         end
       end
     end
@@ -187,14 +187,15 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           scan_result_policy_read: create(:scan_result_policy_read, :fail_open, project: project))
       end
 
-      let_it_be_with_reload(:fail_closed_rule) do
+      let_it_be_with_reload(:fail_closed_policy) { create(:scan_result_policy_read, project: project) }
+      let!(:fail_closed_rule) do
         create(
           :report_approver_rule,
           report_type,
           name: "#{report_type} Fail Closed",
           merge_request: merge_request,
           approvals_required: 1,
-          scan_result_policy_read: create(:scan_result_policy_read, project: project))
+          scan_result_policy_read: fail_closed_policy)
       end
 
       it "unblocks fail-open rules" do
@@ -202,14 +203,22 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         .and not_change { fail_closed_rule.reload.approvals_required }
       end
 
-      it_behaves_like 'triggers policy bot comment', report_type, true, requires_approval: true
+      it "persists the violations", :aggregate_failures do
+        expect { subject }.to change { merge_request.scan_result_policy_violations.count }.by(2)
+        expect(merge_request.scan_result_policy_violations.map(&:status)).to contain_exactly('warn', 'failed')
+      end
+
+      it_behaves_like 'triggers policy bot comment', report_type, true
 
       context "when all rules fail open" do
-        before do
-          fail_closed_rule.delete
-        end
+        let(:fail_closed_rule) { nil }
 
-        it_behaves_like 'triggers policy bot comment', report_type, false, requires_approval: false
+        it_behaves_like 'triggers policy bot comment', report_type, true, requires_approval: false
+
+        it 'updates violation status' do
+          execute
+          expect(merge_request.scan_result_policy_violations).to all(be_warn)
+        end
       end
 
       context "without persisted policy" do

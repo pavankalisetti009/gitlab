@@ -5,8 +5,8 @@ module Security
     class PolicyViolationDetails
       include Gitlab::Utils::StrongMemoize
 
-      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, keyword_init: true)
-      ViolationError = Struct.new(:report_type, :error, :data, :message, keyword_init: true)
+      Violation = Struct.new(:report_type, :name, :scan_result_policy_id, :data, :warning, keyword_init: true)
+      ViolationError = Struct.new(:report_type, :error, :data, :message, :warning, keyword_init: true)
       ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, keyword_init: true)
       AnyMergeRequestViolation = Struct.new(:name, :commits, keyword_init: true)
       LicenseScanningViolation = Struct.new(:license, :dependencies, :url, keyword_init: true)
@@ -19,6 +19,8 @@ module Security
         'UNKNOWN' => 'Unknown error: %{error}',
         'SCAN_REMOVED' => 'There is a mismatch between the scans of the source and target pipelines. ' \
                           'The following scans are missing: %{scans}',
+        'TARGET_PIPELINE_MISSING' => 'Pipeline configuration error: SBOM reports required by policy `%{policy}` ' \
+          'could not be found on the target branch.',
         'ARTIFACTS_MISSING' => {
           'scan_finding' => 'Pipeline configuration error: Security reports required by policy `%{policy}` ' \
                             'could not be found.',
@@ -26,6 +28,21 @@ module Security
                                 'could not be found.',
           ERROR_UNKNOWN => 'Pipeline configuration error: Artifacts required by policy `%{policy}` ' \
                                  'could not be found (%{report_type}).'
+        }
+      }.freeze
+
+      # These messages correspond to the possible errors above and are shown when a policy is configured to fail open
+      FAIL_OPEN_MESSAGES = {
+        'SCAN_REMOVED' => 'Confirm that all scanners from the target branch are present on the source branch.',
+        'TARGET_PIPELINE_MISSING' => 'Confirm that dependency scanning is properly configured on the target branch ' \
+          'pipeline and is producing results. License scanning depends on SBOM reports.',
+        'ARTIFACTS_MISSING' => {
+          'scan_finding' => 'Confirm that scanners are properly configured and producing results. ' \
+            'Vulnerability detection depends on successful execution of security scan jobs in the ' \
+            'target and source branches.',
+          'license_scanning' => 'Confirm that dependency scanning is properly configured and is producing results. ' \
+            'License detection depends on SBOM reports produced by the dependency scanning job ' \
+            'in the target and source branches.'
         }
       }.freeze
 
@@ -42,14 +59,15 @@ module Security
             report_type: rule.report_type,
             name: rule.policy_name,
             scan_result_policy_id: rule.scan_result_policy_id,
-            data: violation.violation_data
+            data: violation.violation_data,
+            warning: violation.warn?
           )
         end
       end
       strong_memoize_attr :violations
 
-      def unique_policy_names(report_type = nil)
-        filtered_violations = violations
+      def fail_closed_policies(report_type = nil)
+        filtered_violations = violations.reject(&:warning)
 
         if report_type
           filtered_violations = filtered_violations.select { |violation| violation.report_type == report_type.to_s }
@@ -57,6 +75,11 @@ module Security
 
         filtered_violations.pluck(:name).compact.uniq.sort # rubocop:disable CodeReuse/ActiveRecord -- Pluck used on hashes
       end
+
+      def fail_open_policies
+        violations.select(&:warning).pluck(:name).compact.uniq.sort # rubocop:disable CodeReuse/ActiveRecord -- Pluck used on hashes
+      end
+      strong_memoize_attr :fail_open_policies
 
       def new_scan_finding_violations
         uuids = extract_from_violation_data(%w[violations scan_finding uuids newly_detected])
@@ -107,12 +130,21 @@ module Security
               report_type: violation.report_type,
               error: ERROR_MESSAGES.key?(error['error']) ? error['error'] : ERROR_UNKNOWN,
               data: error.except('error'),
-              message: error_message(violation, error)
+              message: error_message(violation, error),
+              warning: violation.warning
             )
           end
         end
       end
       strong_memoize_attr :errors
+
+      def fail_open_messages
+        errors.select(&:warning).filter_map do |error|
+          message = FAIL_OPEN_MESSAGES[error.error]
+          message.is_a?(Hash) ? message[error.report_type] : message
+        end
+      end
+      strong_memoize_attr :fail_open_messages
 
       def comparison_pipelines
         violations.group_by(&:report_type).filter_map do |report_type, report_violations|
@@ -194,6 +226,8 @@ module Security
                    { scans: error['missing_scans']&.map(&:humanize)&.join(', ') }
                  when 'ARTIFACTS_MISSING'
                    { policy: violation.name, report_type: violation.report_type }
+                 when 'TARGET_PIPELINE_MISSING'
+                   { policy: violation.name }
                  else
                    { error: error_key }
                  end

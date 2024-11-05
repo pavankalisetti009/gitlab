@@ -213,6 +213,12 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
             execute
           end
+
+          it 'creates a violation as warning' do
+            execute
+
+            expect(last_violation).to be_warn
+          end
         end
 
         context 'when there are active scan execution policies' do

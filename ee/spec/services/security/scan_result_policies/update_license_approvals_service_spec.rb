@@ -58,6 +58,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
   end
 
+  shared_examples 'persists a violation as warning' do
+    it 'persists a violation as warning' do
+      execute
+
+      expect(merge_request.scan_result_policy_violations.last).to be_warn
+    end
+  end
+
   context 'when merge request is merged' do
     before do
       merge_request.update!(state: 'merged')
@@ -166,7 +174,8 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         end
 
         it_behaves_like 'does not require approvals'
-        it_behaves_like 'triggers policy bot comment', :license_scanning, false
+        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+        it_behaves_like 'persists a violation as warning'
       end
     end
   end
@@ -230,7 +239,8 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         end
 
         it_behaves_like 'does not require approvals'
-        it_behaves_like 'triggers policy bot comment', :license_scanning, false
+        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+        it_behaves_like 'persists a violation as warning'
       end
     end
   end

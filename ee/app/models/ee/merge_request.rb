@@ -86,7 +86,7 @@ module EE
       has_many :running_scan_result_policy_violations, -> { running }, class_name:
         'Security::ScanResultPolicyViolation', inverse_of: :merge_request
 
-      has_many :completed_scan_result_policy_violations, -> { completed }, class_name:
+      has_many :failed_scan_result_policy_violations, -> { failed }, class_name:
         'Security::ScanResultPolicyViolation', inverse_of: :merge_request
 
       has_many :merge_request_stage_events, class_name: 'Analytics::CycleAnalytics::MergeRequestStageEvent'

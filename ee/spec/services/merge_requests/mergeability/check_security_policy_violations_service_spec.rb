@@ -54,9 +54,9 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
         end
       end
 
-      context 'when scan result violations are completed' do
+      context 'when scan result violations are failed' do
         before do
-          create(:scan_result_policy_violation, :completed, project: project, merge_request: merge_request,
+          create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
             scan_result_policy_read: policy, violation_data: nil)
         end
 
@@ -96,6 +96,18 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
         it "returns a check result with status success" do
           expect(result.status)
             .to eq Gitlab::MergeRequests::Mergeability::CheckResult::CHECKING_STATUS
+        end
+      end
+
+      context 'when scan result violations are only warning' do
+        before do
+          create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy, violation_data: nil)
+        end
+
+        it "returns a check result with status success" do
+          expect(result.status)
+            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::SUCCESS_STATUS
         end
       end
     end

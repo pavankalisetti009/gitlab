@@ -48,13 +48,13 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           scan_result_policy_read: policy_2, violation_data: nil)
       end
 
-      let!(:completed_violation_1) do
-        create(:scan_result_policy_violation, :completed, project: project, merge_request: merge_request,
+      let!(:failed_violation_1) do
+        create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
           scan_result_policy_read: policy_3, violation_data: nil)
       end
 
-      let!(:completed_violation_2) do
-        create(:scan_result_policy_violation, :completed, project: project, merge_request: merge_request,
+      let!(:failed_violation_2) do
+        create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
           scan_result_policy_read: policy_4, violation_data: nil)
       end
 
@@ -65,10 +65,10 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
       end
 
-      describe '.completed_scan_result_policy_violations' do
+      describe '.failed_scan_result_policy_violations' do
         it 'returns only the completed violations' do
-          expect(merge_request.completed_scan_result_policy_violations).to contain_exactly(completed_violation_1,
-            completed_violation_2)
+          expect(merge_request.failed_scan_result_policy_violations).to contain_exactly(failed_violation_1,
+            failed_violation_2)
         end
       end
     end

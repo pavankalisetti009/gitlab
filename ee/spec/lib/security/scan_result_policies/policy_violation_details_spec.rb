@@ -54,8 +54,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
   let(:details) { described_class.new(merge_request) }
 
-  def build_violation_details(policy, data)
-    create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+  def build_violation_details(policy, data, status = :failed)
+    create(:scan_result_policy_violation, status, project: project, merge_request: merge_request,
       scan_result_policy_read: policy, violation_data: data)
   end
 
@@ -74,15 +74,16 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       { 'violations' => { 'any_merge_request' => { 'commits' => true } } }
     end
 
-    where(:policy, :name, :report_type, :data) do
-      ref(:policy1) | 'Policy 1' | 'scan_finding' | ref(:scan_finding_violation_data)
-      ref(:policy2) | 'Policy 2' | 'license_scanning' | ref(:license_scanning_violation_data)
-      ref(:policy3) | 'Policy 3' | 'any_merge_request' | ref(:any_merge_request_violation_data)
+    where(:policy, :name, :report_type, :data, :status, :is_warning) do
+      ref(:policy1) | 'Policy 1' | 'scan_finding'      | ref(:scan_finding_violation_data)      | :failed | false
+      ref(:policy2) | 'Policy 2' | 'license_scanning'  | ref(:license_scanning_violation_data)  | :failed | false
+      ref(:policy3) | 'Policy 3' | 'any_merge_request' | ref(:any_merge_request_violation_data) | :failed | false
+      ref(:policy1) | 'Policy 1' | 'scan_finding'      | ref(:scan_finding_violation_data)      | :warn | true
     end
 
     with_them do
       before do
-        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+        create(:scan_result_policy_violation, status, project: project, merge_request: merge_request,
           scan_result_policy_read: policy, violation_data: data)
       end
 
@@ -94,6 +95,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(violation.report_type).to eq report_type
         expect(violation.data).to eq data
         expect(violation.scan_result_policy_id).to eq policy.id
+        expect(violation.warning).to eq is_warning
       end
     end
 
@@ -114,14 +116,20 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     end
   end
 
-  describe '#unique_policy_names' do
-    subject(:unique_policy_names) { details.unique_policy_names }
+  describe '#fail_closed_policies' do
+    subject(:fail_closed_policies) { details.fail_closed_policies }
 
-    before do
+    let!(:policy1_violation) do
       create(:scan_result_policy_violation, project: project, merge_request: merge_request,
         scan_result_policy_read: policy1)
+    end
+
+    let!(:policy2_violation) do
       create(:scan_result_policy_violation, project: project, merge_request: merge_request,
         scan_result_policy_read: policy2)
+    end
+
+    before do
       create(:scan_result_policy_violation, project: project, merge_request: merge_request,
         scan_result_policy_read: policy3)
       create(:report_approver_rule, :scan_finding, merge_request: merge_request,
@@ -133,10 +141,43 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     it { is_expected.to contain_exactly 'Policy', 'Other' }
 
     context 'when filtered by report_type' do
-      subject(:unique_policy_names) { details.unique_policy_names(:license_scanning) }
+      subject(:fail_closed_policies) { details.fail_closed_policies(:license_scanning) }
 
       it { is_expected.to contain_exactly 'Policy' }
     end
+
+    context 'when violation has status warn' do
+      let!(:policy1_violation) do
+        create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy1)
+      end
+
+      let!(:policy2_violation) do
+        create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2)
+      end
+
+      it('is excluded') { is_expected.to contain_exactly 'Other' }
+    end
+  end
+
+  describe '#fail_open_policies' do
+    subject(:fail_open_policies) { details.fail_open_policies }
+
+    before do
+      create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy1)
+      create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy2)
+      create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy3)
+      create(:report_approver_rule, :scan_finding, merge_request: merge_request,
+        scan_result_policy_read: policy3, name: 'Other')
+      create(:report_approver_rule, :scan_finding, merge_request: merge_request,
+        scan_result_policy_read: policy3, name: 'Other 2')
+    end
+
+    it { is_expected.to contain_exactly 'Other' }
   end
 
   describe 'scan finding violations' do
@@ -416,6 +457,19 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
+    context 'with TARGET_PIPELINE_MISSING error' do
+      let_it_be(:violation1) do
+        build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:target_pipeline_missing])
+      end
+
+      it 'returns associated error messages' do
+        expect(errors.pluck(:message)).to contain_exactly(
+          'Pipeline configuration error: SBOM reports required by policy `Policy` ' \
+          'could not be found on the target branch.'
+        )
+      end
+    end
+
     context 'with ARTIFACTS_MISSING error' do
       context 'with scan_finding report_type' do
         let_it_be(:violation1) do
@@ -462,6 +516,58 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(errors.pluck(:error)).to contain_exactly('UNKNOWN')
         expect(errors.pluck(:message)).to contain_exactly('Unknown error: unsupported')
       end
+    end
+  end
+
+  describe '#fail_open_messages' do
+    subject(:fail_open_messages) { details.fail_open_messages }
+
+    def build_violation_with_error(policy, error, status)
+      build_violation_details(policy, { 'errors' => [{ 'error' => error }] }, status)
+    end
+
+    context 'with a supported error' do
+      context 'when violation is warn' do
+        context 'when error maps to a string' do
+          let_it_be(:violation1) do
+            build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:scan_removed], :warn)
+          end
+
+          it 'returns associated fail-open message' do
+            expect(fail_open_messages).to contain_exactly(
+              'Confirm that all scanners from the target branch are present on the source branch.'
+            )
+          end
+        end
+
+        context 'when error maps to a hash' do
+          let_it_be(:violation1) do
+            build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:artifacts_missing], :warn)
+          end
+
+          it 'returns associated fail-open message for the policy report_type' do
+            expect(fail_open_messages).to contain_exactly(
+              'Confirm that scanners are properly configured and producing results. ' \
+              'Vulnerability detection depends on successful execution of security scan jobs in the ' \
+              'target and source branches.'
+            )
+          end
+        end
+      end
+
+      context 'when violation is failed' do
+        let_it_be(:violation1) do
+          build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:scan_removed], :failed)
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
+
+    context 'with unsupported error' do
+      let_it_be(:violation1) { build_violation_with_error(policy2, 'unsupported', :failed) }
+
+      it { is_expected.to be_empty }
     end
   end
 

@@ -144,81 +144,91 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
         comment.add_report_type('scan_finding', report_requires_approval)
       end
 
-      it { is_expected.to include violations_title_detailed_body }
-      it { is_expected.to include unblock_mr_text }
-
-      context 'when approvals are optional' do
-        let(:report_requires_approval) { false }
-
-        it { is_expected.not_to include unblock_mr_text }
-        it { is_expected.to include 'Consider including optional reviewers' }
-      end
-
       describe 'summary' do
+        let_it_be(:policy1) { create(:scan_result_policy_read, project: project) }
+        let_it_be(:policy2) { create(:scan_result_policy_read, project: project) }
+        let_it_be(:policy3) { create(:scan_result_policy_read, project: project) }
+        let_it_be(:scan_finding_rule_policy1) do
+          create(:report_approver_rule, :scan_finding, merge_request: merge_request,
+            scan_result_policy_read: policy1, name: 'Scan')
+        end
+
+        let_it_be(:license_scanning_rule_policy2) do
+          create(:report_approver_rule, :license_scanning, merge_request: merge_request,
+            scan_result_policy_read: policy2, name: 'License')
+        end
+
+        let_it_be(:non_violated_rule_policy3) do
+          create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
+            scan_result_policy_read: policy3, name: 'Any merge request')
+        end
+
+        before do
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy1)
+          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy2,
+            violation_data: { 'violations' => { 'license_scanning' => { 'MIT' => ['A'] } } })
+        end
+
+        it { is_expected.to include violations_title_detailed_body }
+        it { is_expected.to include unblock_mr_text }
+
+        context 'when approvals are optional' do
+          let(:report_requires_approval) { false }
+
+          it { is_expected.not_to include unblock_mr_text }
+          it { is_expected.to include 'Consider including optional reviewers' }
+        end
+
         it { is_expected.to include 'Resolve all violations' }
 
-        context 'with policies' do
-          let_it_be(:policy1) { create(:scan_result_policy_read, project: project) }
-          let_it_be(:policy2) { create(:scan_result_policy_read, project: project) }
-          let_it_be(:policy3) { create(:scan_result_policy_read, project: project) }
-          let_it_be(:scan_finding_rule_policy1) do
-            create(:report_approver_rule, :scan_finding, merge_request: merge_request,
-              scan_result_policy_read: policy1, name: 'Scan')
-          end
+        it 'includes violated policy names' do
+          expect(body)
+            .to include 'Resolve all violations in the following merge request approval policies: License, Scan'
+          expect(body).not_to include 'Any merge request'
+        end
 
-          let_it_be(:license_scanning_rule_policy2) do
-            create(:report_approver_rule, :license_scanning, merge_request: merge_request,
-              scan_result_policy_read: policy2, name: 'License')
-          end
+        it 'includes a bullet point for licenses' do
+          expect(body)
+            .to include('Remove all denied licenses identified by the following merge request approval policies: ' \
+              'License')
+        end
 
-          let_it_be(:non_violated_rule_policy3) do
-            create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
-              scan_result_policy_read: policy3, name: 'Any merge request')
-          end
-
+        context 'with "any_merge_request" rule violations' do
           before do
             create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-              scan_result_policy_read: policy1)
+              scan_result_policy_read: policy3)
+          end
+
+          it 'includes information about acquiring approvals' do
+            expect(body).to include('Resolve all violations in the following merge request approval policies: ' \
+              'Any merge request, License, Scan')
+            expect(body).to include('Acquire approvals from eligible approvers defined in the following ' \
+              'merge request approval policies: Any merge request')
+          end
+        end
+
+        context 'with errors' do
+          before do
             create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-              scan_result_policy_read: policy2,
-              violation_data: { 'violations' => { 'license_scanning' => { 'MIT' => ['A'] } } })
+              scan_result_policy_read: policy3, violation_data: { 'errors' => [{ 'error' => 'error' }] })
           end
 
-          it 'includes violated policy names' do
-            expect(body)
-              .to include 'Resolve all violations in the following merge request approval policies: License, Scan'
-            expect(body).not_to include 'Any merge request'
+          it 'includes information about errors' do
+            expect(body).to include 'Resolve the errors and re-run the pipeline'
+          end
+        end
+
+        context 'with fail-open policies' do
+          before do
+            create(:scan_result_policy_violation, :warn, project: project, merge_request: merge_request,
+              scan_result_policy_read: policy3, violation_data: { 'errors' => [{ 'error' => 'SCAN_REMOVED' }] })
           end
 
-          it 'includes a bullet point for licenses' do
-            expect(body)
-              .to include('Remove all denied licenses identified by the following merge request approval policies: ' \
-                'License')
-          end
-
-          context 'with "any_merge_request" rule violations' do
-            before do
-              create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-                scan_result_policy_read: policy3)
-            end
-
-            it 'includes information about acquiring approvals' do
-              expect(body).to include('Resolve all violations in the following merge request approval policies: ' \
-                'Any merge request, License, Scan')
-              expect(body).to include('Acquire approvals from eligible approvers defined in the following ' \
-                'merge request approval policies: Any merge request')
-            end
-          end
-
-          context 'with errors' do
-            before do
-              create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-                scan_result_policy_read: policy3, violation_data: { 'errors' => [{ 'error' => 'error' }] })
-            end
-
-            it 'includes information about errors' do
-              expect(body).to include 'Resolve the errors and re-run the pipeline'
-            end
+          it 'includes information about fail-open policies' do
+            expect(body).to include 'The following policies enforced on your project were skipped because they are ' \
+              'configured to fail open: Any merge request.'
           end
         end
       end

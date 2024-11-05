@@ -49,7 +49,12 @@ module Security
           return
         end
 
-        failed_rules.add(approval_rule)
+        if approval_rule.scan_result_policy_read&.fail_open?
+          passed_rules.add(approval_rule)
+        else
+          failed_rules.add(approval_rule)
+        end
+
         return unless approval_rule.scan_result_policy_read
 
         violations.add_error(approval_rule.scan_result_policy_read, error, **extra_data)
@@ -62,7 +67,6 @@ module Security
       delegate :project, to: :merge_request
 
       def excluded?(rule)
-        return true if rule.scan_result_policy_read&.fail_open?
         return false unless rule.scan_result_policy_read&.unblock_rules_using_execution_policies?
         return false unless rule_excludable?(rule)
 

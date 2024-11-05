@@ -74,12 +74,17 @@ module Security
             merge_request_id: merge_request.id,
             project_id: merge_request.project_id,
             violation_data: violation_data[policy.id],
-            status: ScanResultPolicyViolation.statuses[:completed]
+            status: ScanResultPolicyViolation.statuses[violation_status(policy)]
           }
         end
         return unless attrs.any?
 
         Security::ScanResultPolicyViolation.upsert_all(attrs, unique_by: %w[scan_result_policy_id merge_request_id])
+      end
+
+      # We only warn for errored fail-open policies, in other cases (when we have actual `violations`), we should fail.
+      def violation_status(policy)
+        policy.fail_open? && !violation_data[policy.id]&.key?(:violations) ? :warn : :failed
       end
 
       def publish_violations_updated_event
