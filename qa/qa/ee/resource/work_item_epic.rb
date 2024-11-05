@@ -119,6 +119,18 @@ module QA
                 upvotes
                 downvotes
               }
+              ... on WorkItemWidgetHierarchy
+              {
+                type
+                children
+                {
+                  nodes
+                  {
+                    id
+                    name
+                  }
+                }
+              }
               ... on WorkItemWidgetColor
               {
                 type
@@ -225,6 +237,112 @@ module QA
         def process_work_item_type_api_response(parsed_response)
           self.api_response = parsed_response
           self.api_resource = transform_api_resource(parsed_response.deep_dup)
+        end
+
+        # Graphql mutation for updating work item epic isFixed argument
+        #
+        # @param fixed [Boolean] what to set isFixed to. Defaults to true
+        # @return [String]
+        def set_is_fixed(fixed: true)
+          mutation = <<~GQL
+            mutation {
+              workItemUpdate(input: {
+                id: "#{gid}"
+                startAndDueDateWidget: {
+                  isFixed: #{fixed}
+                }
+
+              }) {
+              workItem {
+                #{gql_attributes}
+              }
+              errors
+              }
+            }
+          GQL
+          api_post_to(api_post_path, mutation)
+        end
+
+        # Graphql mutation for adding child items to work item epic
+        #
+        # @param item_id [String] id of work item to link
+        # @return [String]
+        def add_child_item(item_id)
+          mutation = <<~GQL
+            mutation {
+              workItemUpdate(input: {
+                id: "#{gid}"
+                hierarchyWidget: {
+                  childrenIds: "#{"gid://gitlab/WorkItem/#{item_id}"}"
+                }
+              }) {
+              workItem {
+                #{gql_attributes}
+              }
+              errors
+              }
+            }
+          GQL
+          api_post_to(api_post_path, mutation)
+        end
+
+        # Graphql mutation for removing child items from work item epic
+        #
+        # @param item_id [String] id of work item to link
+        # @return [String]
+        def remove_child_items(item_id)
+          mutation = <<~GQL
+            mutation {
+              workItemUpdate(input: {
+                id: "#{item_id}"
+                hierarchyWidget: {
+                  parentId: null
+                }
+              }) {
+              workItem {
+                #{gql_attributes}
+              }
+              errors
+              }
+            }
+          GQL
+          api_post_to(api_post_path, mutation)
+        end
+
+        def child_items
+          reload! if api_response.nil?
+
+          get_widget('HIERARCHY')&.dig(:children, :nodes)
+        end
+
+        def start_date
+          reload! if api_response.nil?
+
+          get_widget('START_AND_DUE_DATE')&.dig(:start_date)
+        end
+
+        def due_date
+          reload! if api_response.nil?
+
+          get_widget('START_AND_DUE_DATE')&.dig(:due_date)
+        end
+
+        def due_date_sourcing_milestone
+          reload! if api_response.nil?
+
+          get_widget('START_AND_DUE_DATE')&.dig(:due_date_sourcing_milestone)
+        end
+
+        def start_date_sourcing_milestone
+          reload! if api_response.nil?
+
+          get_widget('START_AND_DUE_DATE')&.dig(:start_date_sourcing_milestone)
+        end
+
+        def fixed?
+          reload! if api_response.nil?
+
+          get_widget('START_AND_DUE_DATE')&.dig(:is_fixed)
         end
 
         # Return subset of variable date fields for comparing work item epics with legacy epics
