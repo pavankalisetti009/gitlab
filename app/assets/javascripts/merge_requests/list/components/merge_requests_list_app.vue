@@ -340,7 +340,6 @@ export default {
           title: TOKEN_TITLE_TARGET_BRANCH,
           icon: 'arrow-right',
           token: BranchToken,
-          operators: OPERATORS_IS,
           fullPath: this.fullPath,
           isProject: true,
           fetchBranches: this.fetchTargetBranches,
