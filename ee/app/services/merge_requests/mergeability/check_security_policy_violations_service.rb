@@ -14,6 +14,8 @@ module MergeRequests
           return inactive
         end
 
+        return checking if merge_request.running_scan_result_policy_violations.any?
+
         # When the MR is approved, it is considered to 'override' the violations
         if merge_request.completed_scan_result_policy_violations.any? && !merge_request.approved?
           failure
