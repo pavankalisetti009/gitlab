@@ -97,20 +97,13 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       it 'has tracking items set as expected' do
         render
 
-        expect_to_have_tracking(action: 'render')
-        expect_to_have_tracking(action: 'click_button', label: 'view_all_groups')
+        expect(rendered).to have_tracking(action: 'render')
+        expect(rendered).to have_tracking(action: 'click_button', label: 'view_all_groups')
       end
 
       it_behaves_like 'without duo pro component'
       it_behaves_like 'with duo enterprise trial alert'
       it_behaves_like 'without ultimate trial cta alert'
-
-      def expect_to_have_tracking(action:, label: nil)
-        css = "[data-track-action='#{action}']"
-        css += "[data-track-label='#{label}']" if label
-
-        expect(rendered).to have_css(css)
-      end
 
       context 'with an expired trial' do
         let_it_be(:group) do

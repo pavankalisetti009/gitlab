@@ -2,9 +2,11 @@
 
 module Users
   class SignupService < BaseService
-    def initialize(current_user, params = {})
+    def initialize(current_user, session:, params: {})
       @user = current_user
+      @session = session
       @params = params.dup
+      set_onboarding_status
     end
 
     def execute
@@ -12,13 +14,16 @@ module Users
       inject_validators
 
       if @user.save
+        reset_onboarding_status # needed in case registration_type is changed on update
+        trigger_iterable_creation if onboarding_status.eligible_for_iterable_trigger?
+
         ServiceResponse.success(payload: payload)
       else
-        user_errors = @user.errors.full_messages.join('. ')
+        user_errors = user.errors.full_messages.join('. ')
 
         msg = <<~MSG.squish
           #{self.class.name}: Could not save user with errors: #{user_errors} and
-          onboarding_status: #{@user.onboarding_status}
+          onboarding_status: #{user.onboarding_status}
         MSG
 
         log_error(msg)
@@ -29,12 +34,42 @@ module Users
 
     private
 
+    attr_reader :user, :session, :onboarding_status
+
     def payload
-      { user: @user.reset }
+      { user: user }
+    end
+
+    def set_onboarding_status
+      @onboarding_status = Onboarding::Status.new({}, session, user)
+    end
+    alias_method :reset_onboarding_status, :set_onboarding_status
+
+    def trigger_iterable_creation
+      ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys)
+    end
+
+    def iterable_params
+      {
+        provider: 'gitlab',
+        work_email: user.email,
+        uid: user.id,
+        comment: params[:jobs_to_be_done_other],
+        jtbd: user.registration_objective,
+        product_interaction: onboarding_status.product_interaction,
+        opt_in: user.onboarding_status_email_opt_in,
+        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
+        setup_for_company: user.setup_for_company,
+        role: user.role
+      }
     end
 
     def assign_attributes
-      @user.assign_attributes(params) unless params.empty?
+      @user.assign_attributes(user_params) unless user_params.empty?
+    end
+
+    def user_params
+      params.except(:jobs_to_be_done_other).merge(onboarding_in_progress: onboarding_status.continue_full_onboarding?)
     end
 
     def inject_validators

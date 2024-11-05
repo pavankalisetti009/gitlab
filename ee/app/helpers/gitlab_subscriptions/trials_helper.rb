@@ -34,7 +34,7 @@ module GitlabSubscriptions
     end
 
     def create_company_form_data(onboarding_status)
-      submit_params = glm_params.merge(passed_through_params.to_unsafe_h)
+      submit_params = glm_params.merge(::Onboarding::Status.passed_through_params(params))
       {
         submit_path: users_sign_up_company_path(submit_params),
         first_name: current_user.first_name,
@@ -133,16 +133,6 @@ module GitlabSubscriptions
 
     def current_namespaces_for_selector(namespaces)
       namespaces.map { |n| { text: n.name, value: n.id.to_s } }
-    end
-
-    def passed_through_params
-      params.slice(
-        :trial,
-        :role,
-        :registration_objective,
-        :jobs_to_be_done_other,
-        :opt_in
-      )
     end
 
     def _lead_form_data

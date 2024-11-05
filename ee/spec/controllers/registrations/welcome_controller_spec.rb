@@ -29,69 +29,13 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
       it { is_expected.to render_template(:show) }
 
-      it 'tracks render event' do
-        get_show
-
-        expect_snowplow_event(
-          category: 'registrations:welcome:show',
-          action: 'render',
-          user: user,
-          label: 'free_registration'
-        )
-      end
-
       context 'when onboarding feature is not available' do
         let(:onboarding_enabled?) { false }
 
         it { is_expected.to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when in invitation flow' do
-        it 'tracks render event' do
-          user.update!(onboarding_status_registration_type: 'invite')
-
-          get_show
-
-          expect_snowplow_event(
-            category: 'registrations:welcome:show',
-            action: 'render',
-            user: user,
-            label: 'invite_registration'
-          )
-        end
-      end
-
-      context 'when in trial flow' do
-        it 'tracks render event' do
-          user.update!(onboarding_status_registration_type: 'trial')
-
-          get_show
-
-          expect_snowplow_event(
-            category: 'registrations:welcome:show',
-            action: 'render',
-            user: user,
-            label: 'trial_registration'
-          )
-        end
-      end
-
       context 'when completed welcome step' do
-        context 'when setup_for_company is set to true' do
-          let_it_be(:user) { create(:user, setup_for_company: true) }
-
-          it 'does not track render event' do
-            get_show
-
-            expect_no_snowplow_event(
-              category: 'registrations:welcome:show',
-              action: 'render',
-              user: user,
-              label: 'free_registration'
-            )
-          end
-        end
-
         context 'when setup_for_company is set to false' do
           before do
             user.update!(setup_for_company: false)
@@ -252,50 +196,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 expect(user.onboarding_in_progress).to be(true)
                 expect(response).to redirect_to path
               end
-            end
-          end
-
-          context 'when eligible for iterable trigger' do
-            let(:params) do
-              {
-                comment: '_jobs_to_be_done_other_',
-                jtbd: 'code_storage',
-                opt_in: user.onboarding_status_email_opt_in,
-                preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-                product_interaction: 'Personal SaaS Registration',
-                provider: 'gitlab',
-                role: 'software_developer',
-                setup_for_company: false,
-                uid: user.id,
-                work_email: user.email
-              }.stringify_keys
-            end
-
-            before do
-              allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_iterable)
-                                                             .with(params)
-                                                             .and_return({ success: true })
-            end
-
-            it 'initiates iterable trigger creation', :sidekiq_inline do
-              expect(::Onboarding::CreateIterableTriggerWorker)
-                .to receive(:perform_async).with(params).and_call_original
-
-              patch_update
-            end
-          end
-
-          context 'when not eligible for iterable trigger' do
-            before do
-              allow_next_instance_of(::Onboarding::Status) do |instance|
-                allow(instance).to receive(:eligible_for_iterable_trigger?).and_return(false)
-              end
-            end
-
-            it 'does not initiate iterable trigger creation' do
-              expect(::Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
-
-              patch_update
             end
           end
 

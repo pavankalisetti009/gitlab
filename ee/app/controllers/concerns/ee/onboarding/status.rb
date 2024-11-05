@@ -13,6 +13,7 @@ module EE
       }.freeze
 
       GLM_PARAMS = [:glm_source, :glm_content].freeze
+      PASSED_THROUGH_PARAMS = [:role, :registration_objective, :jobs_to_be_done_other].freeze
 
       attr_reader :registration_type
 
@@ -31,6 +32,10 @@ module EE
 
         def glm_tracking_params(params)
           params.permit(*GLM_PARAMS)
+        end
+
+        def passed_through_params(params)
+          params.permit(*PASSED_THROUGH_PARAMS)
         end
 
         override :registration_path_params

@@ -12,25 +12,21 @@ module Registrations
     layout 'minimal'
 
     before_action :verify_onboarding_enabled!
+    before_action :verify_welcome_needed!, only: :show
 
     helper_method :onboarding_status
 
     feature_category :onboarding
 
-    def show
-      return redirect_to path_for_signed_in_user if completed_welcome_step?
-
-      track_event('render')
-    end
+    def show; end
 
     def update
-      result = ::Users::SignupService.new(current_user, update_params).execute
+      result = ::Users::SignupService.new(current_user, session: session, params: update_params).execute
 
       if result.success?
         clear_memoization(:onboarding_status) # needed in case registration_type is changed on update
         track_event('successfully_submitted_form')
         track_joining_a_project_event
-        successful_update_hooks
 
         redirect_to update_success_path
       else
@@ -48,16 +44,20 @@ module Registrations
       redirect_to new_user_registration_path
     end
 
+    def verify_welcome_needed!
+      return unless completed_welcome_step?
+
+      redirect_to path_for_signed_in_user
+    end
+
     def completed_welcome_step?
       !current_user.setup_for_company.nil?
     end
 
     def update_params
-      # TODO: this is getting hit 3 times at least due to calls to it.
-      # There likely isn't any perf impact, but should we look to memoize in a
-      # future step in https://gitlab.com/gitlab-org/gitlab/-/issues/465532?
       params.require(:user)
             .permit(:role, :setup_for_company, :registration_objective)
+            .merge(params.permit(:jobs_to_be_done_other))
             .merge(user_onboarding_status_params)
     end
 
@@ -70,23 +70,8 @@ module Registrations
     end
 
     def passed_through_params
-      update_params.slice(:role, :registration_objective)
-                   .merge(params.permit(:jobs_to_be_done_other))
+      update_params.slice(*::Onboarding::Status::PASSED_THROUGH_PARAMS)
                    .merge(::Onboarding::Status.glm_tracking_params(params))
-    end
-
-    def iterable_params
-      {
-        provider: 'gitlab',
-        work_email: current_user.email,
-        uid: current_user.id,
-        comment: params[:jobs_to_be_done_other],
-        jtbd: update_params[:registration_objective],
-        product_interaction: onboarding_status.product_interaction,
-        opt_in: current_user.onboarding_status_email_opt_in,
-        preferred_language: ::Gitlab::I18n.trimmed_language_name(current_user.preferred_language),
-        setup_for_company: current_user.setup_for_company
-      }.merge(update_params.slice(:role).to_h)
     end
 
     def update_success_path
@@ -100,14 +85,6 @@ module Registrations
         # Invites will come here too if there is more than 1.
         path_for_signed_in_user
       end
-    end
-
-    def successful_update_hooks
-      ::Onboarding::FinishService.new(current_user).execute unless onboarding_status.continue_full_onboarding?
-
-      return unless onboarding_status.eligible_for_iterable_trigger?
-
-      ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys) # rubocop:todo CodeReuse/Worker -- this should be moved into a service layer https://gitlab.com/gitlab-org/gitlab/-/issues/465532
     end
 
     def signup_onboarding_path
