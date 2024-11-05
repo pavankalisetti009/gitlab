@@ -94,8 +94,8 @@ RSpec.describe 'admin/users/show.html.haml', feature_category: :system_access do
     let(:timestamp) { page.at("[data-testid=\"#{test_id}\"]") }
 
     where(:sent_at_attr, :test_id, :displayed, :label) do
-      :confirmation_sent_at | 'email-confirmation-code-last-sent-at' | lazy { timestamp } | 'Email confirmation code last sent at' # rubocop:disable Layout/LineLength -- should be in a single line
-      :locked_at            | 'email-verification-code-last-sent-at' | lazy { timestamp } | 'Locked account email verification code last sent at' # rubocop:disable Layout/LineLength -- should be in a single line
+      :confirmation_sent_at | 'email-confirmation-code-last-sent-at' | lazy { timestamp } | 'Email confirmation code last sent at' # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective -- should be in a single line
+      :locked_at            | 'email-verification-code-last-sent-at' | lazy { timestamp } | 'Locked account email verification code last sent at' # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective -- should be in a single line
     end
 
     with_them do

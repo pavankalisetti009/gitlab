@@ -45,13 +45,11 @@ class IssuePolicy < IssuablePolicy
     end
   end
 
-  # rubocop:disable Gitlab/FeatureFlagWithoutActor -- this is a on/off toggle
   # group level issues license for now is equivalent to epics license. We'll have to migrate epics license to
   # work items context once epics are fully migrated to work items.
   condition(:group_level_issues_license_available) do
     epics_license_available?
   end
-  # rubocop:enable Gitlab/FeatureFlagWithoutActor
 
   rule { group_issue & can?(:read_group) }.policy do
     enable :create_note

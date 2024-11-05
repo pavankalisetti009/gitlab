@@ -112,7 +112,9 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountSecurePipelinesMet
       let(:start) { 30.days.ago.to_fs(:db) }
       let(:finish) { 2.days.ago.to_fs(:db) }
       let(:expected_query) do
-        %{SELECT COUNT(DISTINCT "security_scans"."pipeline_id") FROM "security_scans" WHERE "security_scans"."created_at" BETWEEN '#{start}' AND '#{finish}' AND "security_scans"."scan_type" = #{scan_type}} # rubocop:disable Layout/LineLength
+        "SELECT COUNT(DISTINCT \"security_scans\".\"pipeline_id\") FROM \"security_scans\" WHERE " \
+          "\"security_scans\".\"created_at\" BETWEEN '#{start}' AND '#{finish}' AND " \
+          "\"security_scans\".\"scan_type\" = #{scan_type}"
       end
 
       it 'has correct value' do

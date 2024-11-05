@@ -114,7 +114,8 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
       end
 
       let(:meta_string) do
-        "es=#{Elasticsearch::VERSION},rb=#{RUBY_VERSION},t=#{Elasticsearch::Transport::VERSION},fd=#{Faraday::VERSION},ty=#{Typhoeus::VERSION}" # rubocop:disable Layout/LineLength -- This is just a long string
+        "es=#{Elasticsearch::VERSION},rb=#{RUBY_VERSION},t=#{Elasticsearch::Transport::VERSION}," \
+          "fd=#{Faraday::VERSION},ty=#{Typhoeus::VERSION}"
       end
 
       it 'signs_requests' do

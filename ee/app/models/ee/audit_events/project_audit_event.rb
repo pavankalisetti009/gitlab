@@ -28,7 +28,7 @@ module EE
       end
 
       def present
-        AuditEventPresenter.new(self) # rubocop:disable CodeReuse/Presenter  -- This is called in AuditEventSerializer
+        AuditEventPresenter.new(self)
       end
 
       def root_group_entity

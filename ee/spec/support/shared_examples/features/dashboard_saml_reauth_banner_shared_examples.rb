@@ -24,7 +24,7 @@ RSpec.shared_examples_for 'dashboard SAML reauthentication banner' do
       visit page_path
 
       expect(page).to have_content(
-        s_('GroupSAML|Some items may be hidden because your SAML session has expired. Select the group’s path to reauthenticate and view any hidden items.') # rubocop:disable Layout/LineLength -- Single string
+        s_('GroupSAML|Some items may be hidden because your SAML session has expired. Select the group’s path to reauthenticate and view any hidden items.')
       )
 
       link = page.find_link(restricted_group.path)
@@ -48,7 +48,7 @@ RSpec.shared_examples_for 'dashboard SAML reauthentication banner' do
       visit page_path
 
       expect(page).not_to have_content(
-        s_('GroupSAML|Some items may be hidden because your SAML session has expired. Select the group’s path to reauthenticate and view any hidden items.') # rubocop:disable Layout/LineLength -- Single string
+        s_('GroupSAML|Some items may be hidden because your SAML session has expired. Select the group’s path to reauthenticate and view any hidden items.')
       )
     end
   end

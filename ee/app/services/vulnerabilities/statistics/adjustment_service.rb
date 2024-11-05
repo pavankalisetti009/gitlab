@@ -92,11 +92,9 @@ module Vulnerabilities
 
       delegate :connection, to: ApplicationRecord, private: true
 
-      # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- already limited by caller BulkDismissService
       def filter_project_ids
         self.project_ids = Project.id_in(project_ids).pluck_primary_key
       end
-      # rubocop: enable Database/AvoidUsingPluckWithoutLimit
 
       def upsert_sql
         UPSERT_SQL % { stats_sql: stats_sql }
