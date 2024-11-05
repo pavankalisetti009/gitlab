@@ -23,6 +23,7 @@ import getComplianceFrameworkQuery from './graphql/get_compliance_framework.quer
 
 import DeleteModal from './components/delete_modal.vue';
 import BasicInformationSection from './components/basic_information_section.vue';
+import RequirementsSection from './components/requirements_section.vue';
 import PoliciesSection from './components/policies_section.vue';
 import ProjectsSection from './components/projects_section.vue';
 
@@ -33,6 +34,7 @@ export default {
     BasicInformationSection,
     PoliciesSection,
     ProjectsSection,
+    RequirementsSection,
     DeleteModal,
     GlAlert,
     GlButton,
@@ -40,11 +42,17 @@ export default {
     GlLoadingIcon,
     GlTooltip,
   },
-  inject: ['pipelineConfigurationFullPathEnabled', 'groupPath', 'featureSecurityPoliciesEnabled'],
+  inject: [
+    'pipelineConfigurationFullPathEnabled',
+    'groupPath',
+    'featureSecurityPoliciesEnabled',
+    'adherenceV2Enabled',
+  ],
   data() {
     return {
       errorMessage: '',
       formData: initialiseFormData(),
+      complianceRequirements: [],
       originalName: '',
       isBasicInformationValid: true,
       isSaving: false,
@@ -65,7 +73,9 @@ export default {
       result({ data }) {
         const [complianceFramework] = data?.namespace?.complianceFrameworks?.nodes || [];
         if (complianceFramework) {
-          this.formData = { ...complianceFramework };
+          const { mockRequirements, ...rest } = complianceFramework;
+          this.formData = { ...rest };
+          this.complianceRequirements = mockRequirements?.nodes || [];
           this.originalName = complianceFramework.name;
           const policyBlob =
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
@@ -274,6 +284,13 @@ export default {
           :is-expanded="isNewFramework"
           :has-migrated-pipeline="hasMigratedPipeline"
           @valid="isBasicInformationValid = $event"
+        />
+
+        <requirements-section
+          v-if="adherenceV2Enabled"
+          :requirements="complianceRequirements"
+          :full-path="groupPath"
+          :graphql-id="graphqlId"
         />
 
         <policies-section

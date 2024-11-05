@@ -1,5 +1,4 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
-
 query getComplianceFrameworkWithPolicies(
   $fullPath: ID!
   $complianceFramework: ComplianceManagementFrameworkID
@@ -38,6 +37,22 @@ query getComplianceFrameworkWithPolicies(
         description
         color
         pipelineConfigurationFullPath
+        mockRequirements @client {
+          ... on LocalRequirements {
+            nodes {
+              id
+              name
+              description
+              requirementType
+              controlExpression {
+                nodes {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
         projects {
           nodes {
             id
