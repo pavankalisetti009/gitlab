@@ -339,29 +339,6 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
         it_behaves_like 'empty state'
       end
     end
-
-    context 'when `vsa_standalone_settings_page` feature flag is disabled' do
-      before do
-        stub_feature_flags(vsa_standalone_settings_page: false)
-        select_group(group, empty_state_selector)
-      end
-
-      it_behaves_like 'empty state'
-
-      context '`New value stream...` button is selected' do
-        before do
-          find_by_testid('create-value-stream-button').click
-        end
-
-        it 'opens the create value stream form modal' do
-          expect(page).to have_selector('[data-testid="value-stream-form-modal"]')
-        end
-
-        it 'does not navigate to the new value stream settings page' do
-          expect(page).to have_current_path(group_analytics_cycle_analytics_path(group), ignore_query: true)
-        end
-      end
-    end
   end
 
   context 'with a value stream' do
@@ -397,15 +374,6 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
       it_behaves_like 'create group value streams', true, true
       it_behaves_like 'create sub group value streams', true, true
-
-      context 'when `vsa_standalone_settings_page` feature flag is disabled' do
-        before do
-          stub_feature_flags(vsa_standalone_settings_page: false)
-        end
-
-        it_behaves_like 'create group value streams', true
-        it_behaves_like 'create sub group value streams', true
-      end
     end
   end
 end

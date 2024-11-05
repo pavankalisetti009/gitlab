@@ -24,20 +24,12 @@ export const createValueStream = ({ commit, dispatch, getters }, data) => {
     });
 };
 
-export const updateValueStream = (
-  { state, commit, dispatch, getters },
-  { id: valueStreamId, ...data },
-) => {
+export const updateValueStream = ({ commit, getters }, { id: valueStreamId, ...data }) => {
   const { namespacePath } = getters;
   commit(types.REQUEST_UPDATE_VALUE_STREAM);
 
   return apiUpdateValueStream({ namespacePath, valueStreamId, data })
     .then(({ data: newValueStream }) => {
-      if (!state.features.vsaStandaloneSettingsPage) {
-        commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
-        return dispatch('fetchCycleAnalyticsData');
-      }
-
       return commit(types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, newValueStream);
     })
     .catch(({ response } = {}) => {
