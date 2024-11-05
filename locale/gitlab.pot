@@ -6338,6 +6338,9 @@ msgstr[1] ""
 msgid "An unauthenticated user"
 msgstr ""
 
+msgid "An unexpected error occurred trying to submit your comment. Please try again."
+msgstr ""
+
 msgid "An unexpected error occurred while checking the project environment."
 msgstr ""
 
@@ -7405,6 +7408,9 @@ msgid "Are you sure you want to approve %{user}?"
 msgstr ""
 
 msgid "Are you sure you want to attempt to merge?"
+msgstr ""
+
+msgid "Are you sure you want to cancel %{actionText} this comment?"
 msgstr ""
 
 msgid "Are you sure you want to cancel editing this %{commentType}?"
@@ -19759,6 +19765,9 @@ msgid "Disabled mirrors can only be enabled by instance owners. It is recommende
 msgstr ""
 
 msgid "Discard"
+msgstr ""
+
+msgid "Discard Changes"
 msgstr ""
 
 msgid "Discard all changes"
@@ -41085,6 +41094,9 @@ msgstr ""
 msgid "Please %{link_to_register} or %{link_to_sign_in} to comment"
 msgstr ""
 
+msgid "Please %{registerLinkStart}register%{registerLinkEnd} or %{signInLinkStart}sign in%{signInLinkEnd} to add a comment."
+msgstr ""
+
 msgid "Please %{registerLinkStart}register%{registerLinkEnd} or %{signInLinkStart}sign in%{signInLinkEnd} to reply."
 msgstr ""
 
@@ -52702,6 +52714,9 @@ msgstr ""
 msgid "Something went wrong while fetching branches"
 msgstr ""
 
+msgid "Something went wrong while fetching comments. Please refresh the page."
+msgstr ""
+
 msgid "Something went wrong while fetching comments. Please try again."
 msgstr ""
 
@@ -55189,6 +55204,9 @@ msgstr ""
 msgid "The discussion in this %{noteableTypeText} is locked."
 msgstr ""
 
+msgid "The discussion in this Wiki is locked. Only project members can comment."
+msgstr ""
+
 msgid "The discussion in this merge request is locked."
 msgstr ""
 
@@ -56289,6 +56307,9 @@ msgid "This group cannot be invited to a project inside a group with enforced SS
 msgstr ""
 
 msgid "This group does not have any group runners yet."
+msgstr ""
+
+msgid "This group has been scheduled for deletion and cannot be commented on."
 msgstr ""
 
 msgid "This group has no active access tokens."
@@ -62164,6 +62185,9 @@ msgstr ""
 msgid "Wiki"
 msgstr ""
 
+msgid "Wiki comment form"
+msgstr ""
+
 msgid "Wiki page"
 msgstr ""
 
@@ -63349,6 +63373,9 @@ msgid "Would you like to try auto-generating a branch name?"
 msgstr ""
 
 msgid "Write"
+msgstr ""
+
+msgid "Write a comment or drag your files here..."
 msgstr ""
 
 msgid "Write a comment or drag your files here…"
@@ -65311,6 +65338,9 @@ msgid "contains URLs that exceed the 1024 character limit (%{urls})"
 msgstr ""
 
 msgid "contains invalid URLs (%{urls})"
+msgstr ""
+
+msgid "continue %{actionText}"
 msgstr ""
 
 msgid "contribute to this project."
