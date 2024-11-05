@@ -50,11 +50,12 @@ describe('GroupAdherences component', () => {
     });
 
     it('lists all checks', () => {
-      expect(findCheckGroupHeaders().length).toBe(4);
+      expect(findCheckGroupHeaders().length).toBe(5);
       expect(findCheckGroupHeaders().at(0).text()).toMatch('Prevent authors as approvers');
       expect(findCheckGroupHeaders().at(1).text()).toMatch('Prevent committers as approvers');
       expect(findCheckGroupHeaders().at(2).text()).toMatch('At least two approvals');
       expect(findCheckGroupHeaders().at(3).text()).toMatch('At least one non-author approval');
+      expect(findCheckGroupHeaders().at(4).text()).toMatch('SAST scan');
     });
 
     it('contains correct `check` prop to AdherenceBaseTable component', () => {
@@ -87,6 +88,14 @@ describe('GroupAdherences component', () => {
           groupPath: 'example-group-path',
           filters: {},
           check: 'AT_LEAST_ONE_NON_AUTHOR_APPROVAL',
+        },
+      );
+
+      expect(findCheckGroupHeaders().at(4).findComponent(AdherenceBaseTable).props()).toMatchObject(
+        {
+          groupPath: 'example-group-path',
+          filters: {},
+          check: 'SAST',
         },
       );
     });

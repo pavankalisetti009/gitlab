@@ -14498,6 +14498,9 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Group by"
 msgstr ""
 
+msgid "ComplianceStandardsAdherence|Have SAST scanner configured in pipeline configuration"
+msgstr ""
+
 msgid "ComplianceStandardsAdherence|Have a valid rule that prevents author-approved merge requests from being merged"
 msgstr ""
 
@@ -14559,6 +14562,12 @@ msgid "ComplianceStandardsAdherence|Raw text search is not currently supported. 
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Requirement"
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|SAST scan"
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|SAST scanner is not configured in the pipeline configuration for the default branch."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Standard"
