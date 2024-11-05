@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe AntiAbuse::ArkoseController, feature_category: :instance_resiliency do
+RSpec.describe AntiAbuse::ArkoseController, :clean_gitlab_redis_sessions, feature_category: :instance_resiliency do
   include SessionHelpers
 
   describe 'GET #data_exchange_payload' do
@@ -36,10 +36,10 @@ RSpec.describe AntiAbuse::ArkoseController, feature_category: :instance_resilien
       end
     end
 
-    context 'when user is not arkose_verified?', :clean_gitlab_redis_sessions do
-      before do
-        stub_session(session_data: { verification_user_id: user.id })
-      end
+    context 'when user is not arkose_verified?' do
+      let(:verification_user_id) { user.id }
+
+      include_context 'with a signed-in IdentityVerificationUser'
 
       it_behaves_like 'returns an Arkose Data exchange payload for the correct use case',
         Arkose::DataExchangePayload::USE_CASE_SIGN_UP
@@ -57,16 +57,14 @@ RSpec.describe AntiAbuse::ArkoseController, feature_category: :instance_resilien
     end
 
     context 'when there is no signed-in user' do
-      it 'returns 401', :aggregate_failures do
+      it 'returns 401' do
         do_request
 
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
 
-      context 'with session[:verification_user_id] not associated to any user', :clean_gitlab_redis_sessions do
-        it 'returns 401', :aggregate_failures do
-          stub_session(session_data: { verification_user_id: non_existing_record_id })
-
+      it_behaves_like 'it handles absence of a signed-in IdentityVerificationUser' do
+        it 'returns 401' do
           do_request
 
           expect(response).to have_gitlab_http_status(:unauthorized)

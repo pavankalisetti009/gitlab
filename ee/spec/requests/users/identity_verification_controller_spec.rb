@@ -62,7 +62,7 @@ RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessio
 
     subject(:do_request) { get identity_verification_path, params: {}, headers: { referer: referer } }
 
-    it_behaves_like 'it requires a signed in user'
+    it_behaves_like 'it requires a signed-in verified user'
     it_behaves_like 'it redirects to root_path when user is already verified'
 
     it 'renders show template with minimal layout' do
@@ -109,7 +109,7 @@ RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessio
   describe 'GET verification_state' do
     subject(:do_request) { get verification_state_identity_verification_path }
 
-    it_behaves_like 'it requires a signed in user'
+    it_behaves_like 'it requires a signed-in verified user'
     it_behaves_like 'it redirects to root_path when user is already verified'
     it_behaves_like 'it sets poll interval header'
 
