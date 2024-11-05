@@ -348,9 +348,7 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
       context 'if the group is added to limited index list', :sidekiq_inline do
         it 'tracks the epic via ElasticNamespaceIndexerWorker' do
           allow(ElasticWikiIndexerWorker).to receive(:perform_in)
-          expect(ElasticNamespaceIndexerWorker).to receive(:perform_async)
-            .with(group.id, :index)
-            .and_call_original
+          expect(ElasticNamespaceIndexerWorker).to receive(:perform_async).with(group.id, 'index').and_call_original
 
           expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
 

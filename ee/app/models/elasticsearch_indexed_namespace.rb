@@ -42,7 +42,7 @@ class ElasticsearchIndexedNamespace < ApplicationRecord
       ApplicationRecord.legacy_bulk_insert(table_name, insert_rows) # rubocop:disable Gitlab/BulkInsert
       invalidate_elasticsearch_indexes_cache!
 
-      jobs = batch_ids.map { |id| [id, :index] }
+      jobs = batch_ids.map { |id| [id, 'index'] }
 
       ElasticNamespaceIndexerWorker.bulk_perform_async(jobs) # rubocop:disable Scalability/BulkPerformWithContext, CodeReuse/Worker
     end
@@ -60,7 +60,7 @@ class ElasticsearchIndexedNamespace < ApplicationRecord
       where(namespace_id: batch_ids).delete_all
       invalidate_elasticsearch_indexes_cache!
 
-      jobs = batch_ids.map { |id| [id, :delete] }
+      jobs = batch_ids.map { |id| [id, 'delete'] }
 
       ElasticNamespaceIndexerWorker.bulk_perform_async(jobs) # rubocop:disable Scalability/BulkPerformWithContext, CodeReuse/Worker
     end
@@ -69,10 +69,10 @@ class ElasticsearchIndexedNamespace < ApplicationRecord
   private
 
   def index
-    ElasticNamespaceIndexerWorker.perform_async(namespace_id, :index)
+    ElasticNamespaceIndexerWorker.perform_async(namespace_id, 'index')
   end
 
   def delete_from_index
-    ElasticNamespaceIndexerWorker.perform_async(namespace_id, :delete)
+    ElasticNamespaceIndexerWorker.perform_async(namespace_id, 'delete')
   end
 end
