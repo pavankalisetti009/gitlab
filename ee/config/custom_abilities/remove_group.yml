@@ -1,7 +1,7 @@
 ---
 title: Delete group
 name: remove_group
-description: Ability to delete or restore a group. This ability does not allow deleting top level groups. Review the Retention period settings to prevent accidental deletion.
+description: Ability to delete or restore a group. This ability does not allow deleting top-level groups. Review the Retention period settings to prevent accidental deletion.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/425962
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145166
 feature_category: groups_and_projects
