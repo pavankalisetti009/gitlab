@@ -16,7 +16,7 @@ import CreateMemberRole from 'ee/roles_and_permissions/components/create_member_
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
-import memberRoleQuery from 'ee/roles_and_permissions/graphql/member_role.query.graphql';
+import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
 import { BASE_ROLES } from '~/access_level/constants';

@@ -1,8 +1,8 @@
-#import "./member_role.fragment.graphql"
+#import "../fragments/role.fragment.graphql"
 
 query memberRole($id: MemberRoleID!) {
   memberRole(id: $id) {
-    ...MemberRole
+    ...Role
     createdAt
     baseAccessLevel {
       stringValue

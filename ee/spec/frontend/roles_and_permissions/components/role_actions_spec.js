@@ -3,24 +3,15 @@ import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
+import { mockMemberRole } from '../mock_data';
 
 describe('Role actions', () => {
   let wrapper;
 
   const mockToastShow = jest.fn();
   const defaultRole = { accessLevel: 10 };
-  const customRole = {
-    id: 1,
-    usersCount: 0,
-    detailsPath: 'role/path/1',
-    editPath: 'role/path/1/edit',
-  };
-  const customRoleWithMembers = {
-    id: 2,
-    usersCount: 2,
-    detailsPath: 'role/path/2',
-    editPath: 'role/path/2/edit',
-  };
+  const customRole = { ...mockMemberRole, detailsPath: 'role/path/1' };
+  const customRoleWithMembers = { ...customRole, usersCount: 2 };
 
   const createComponent = ({ role = customRole } = {}) => {
     wrapper = mountExtended(RoleActions, {
@@ -95,7 +86,7 @@ describe('Role actions', () => {
   });
 
   describe('for custom role', () => {
-    beforeEach(() => createComponent({ role: customRole }));
+    beforeEach(() => createComponent());
 
     it('shows Edit role item', () => {
       expect(findEditRoleItem().props('item')).toMatchObject({

@@ -18,14 +18,8 @@ export const mockPermissionsResponse = {
 
 export const standardRoles = [
   {
-    accessLevel: 5,
-    name: 'Minimal Access',
-    usersCount: 0,
-    detailsPath: 'role/MINIMAL_ACCESS',
-    description:
-      'The Minimal Access role is for users who need the least amount of access into groups and projects. You can assign this role as a default, before giving a user another role with more permissions.',
-  },
-  {
+    __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/GUEST',
     accessLevel: 10,
     name: 'Guest',
     usersCount: 1,
@@ -34,6 +28,8 @@ export const standardRoles = [
       'The Guest role is for users who need visibility into a project or group but should not have the ability to make changes, such as external stakeholders.',
   },
   {
+    __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/REPORTER',
     accessLevel: 20,
     name: 'Reporter',
     usersCount: 2,
@@ -42,6 +38,8 @@ export const standardRoles = [
       'The Reporter role is suitable for team members who need to stay informed about a project or group but do not actively contribute code.',
   },
   {
+    __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/DEVELOPER',
     accessLevel: 30,
     name: 'Developer',
     usersCount: 3,
@@ -50,6 +48,8 @@ export const standardRoles = [
       'The Developer role gives users access to contribute code while restricting sensitive administrative actions.',
   },
   {
+    __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/MAINTAINER',
     accessLevel: 40,
     name: 'Maintainer',
     usersCount: 4,
@@ -58,6 +58,8 @@ export const standardRoles = [
       'The Maintainer role is primarily used for managing code reviews, approvals, and administrative settings for projects. This role can also manage project memberships.',
   },
   {
+    __typename: 'StandardRole',
+    id: 'gid://gitlab/StandardRole/OWNER',
     accessLevel: 50,
     name: 'Owner',
     usersCount: 5,
@@ -88,20 +90,19 @@ export const memberRoles = [
   },
 ];
 
-export const groupMemberRolesResponse = {
+export const groupRolesResponse = {
   data: {
     group: {
       id: 'gid://gitlab/Group/1',
-      standardRoles: { nodes: standardRoles, __typename: 'StandardRoleConnection' },
+      standardRoles: { nodes: standardRoles },
       memberRoles: { nodes: memberRoles },
-      __typename: 'Group',
     },
   },
 };
 
-export const instanceMemberRolesResponse = {
+export const instanceRolesResponse = {
   data: {
-    standardRoles: { nodes: standardRoles, __typename: 'StandardRoleConnection' },
+    standardRoles: { nodes: standardRoles },
     memberRoles: { nodes: memberRoles },
   },
 };
@@ -111,7 +112,7 @@ export const mockMemberRole = {
   name: 'Custom role',
   description: 'Custom role description',
   createdAt: '2024-08-04T12:20:43Z',
-  editPath: 'role/edit/path',
+  editPath: 'role/path/1/edit',
   usersCount: 0,
   baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
   enabledPermissions: { nodes: [{ value: 'A' }, { value: 'B' }] },

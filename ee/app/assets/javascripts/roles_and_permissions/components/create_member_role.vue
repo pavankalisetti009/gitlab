@@ -19,7 +19,7 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import createMemberRoleMutation from '../graphql/create_member_role.mutation.graphql';
 import updateMemberRoleMutation from '../graphql/update_member_role.mutation.graphql';
-import memberRoleQuery from '../graphql/member_role.query.graphql';
+import memberRoleQuery from '../graphql/role_details/member_role.query.graphql';
 import PermissionsSelector from './permissions_selector.vue';
 
 export default {

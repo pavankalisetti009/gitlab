@@ -5,7 +5,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import memberRolePermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
-import { isCustomRole } from '../utils';
+import { isCustomRole } from '../../utils';
 
 export default {
   components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader },
