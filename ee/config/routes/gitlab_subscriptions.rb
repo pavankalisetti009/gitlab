@@ -7,4 +7,12 @@ scope module: :gitlab_subscriptions do
   end
 
   resources :trials, only: [:new, :create]
+
+  resource :subscriptions, only: [:new, :create] do
+    get :buy_minutes
+    get :buy_storage
+    get :payment_form
+    get :payment_method
+    post :validate_payment_method
+  end
 end
