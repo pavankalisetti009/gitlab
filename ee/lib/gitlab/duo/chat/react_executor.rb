@@ -174,12 +174,10 @@ module Gitlab
             ai_event: event
           )
 
-          input = Feature.enabled?(:duo_chat_use_tool_input, context.current_user) ? event.tool_input : user_input
-
           tool = tool_class.new(
             context: context,
             options: {
-              input: input,
+              input: event.tool_input,
               suggestions: event.thought
             },
             stream_response_handler: stream_response_handler
