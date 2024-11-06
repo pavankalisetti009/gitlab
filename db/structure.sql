@@ -3117,7 +3117,7 @@ CREATE TABLE p_ci_build_sources (
     build_id bigint NOT NULL,
     partition_id bigint NOT NULL,
     project_id bigint NOT NULL,
-    source smallint NOT NULL,
+    source smallint,
     pipeline_source smallint
 )
 PARTITION BY LIST (partition_id);
