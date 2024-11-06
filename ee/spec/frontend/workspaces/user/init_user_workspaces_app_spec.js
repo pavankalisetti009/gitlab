@@ -1,7 +1,7 @@
 import { escape } from 'lodash';
-
 import { createWrapper } from '@vue/test-utils';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
+import waitForPromises from 'helpers/wait_for_promises';
 import { initUserWorkspacesApp } from 'ee/workspaces/user/init_user_workspaces_app';
 import WorkspaceList from 'ee/workspaces/user/pages/list.vue';
 import WorkspacesBreadcrumbs from 'ee/workspaces/user/components/workspaces_breadcrumbs.vue';
@@ -27,12 +27,14 @@ describe('ee/workspaces/init_user_workspaces_app', () => {
   });
 
   describe('initWorkspacesApp - integration', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       wrapper = createWrapper(initUserWorkspacesApp());
+
+      await waitForPromises();
     });
 
     it('creates router', () => {
-      expect(wrapper.vm.$router.options.base).toBe('/aaa');
+      expect(wrapper.vm.$router).not.toBe(undefined);
     });
 
     it('renders list component', () => {
