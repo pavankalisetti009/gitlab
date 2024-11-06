@@ -51,7 +51,7 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
 
     it do
       is_expected.to allow_value(
-        { block_group_branch_modification: { enabled: true, exceptions: %w[foobar] } }
+        { block_group_branch_modification: { enabled: true, exceptions: [{ id: 1231 }] } }
       ).for(:project_approval_settings)
     end
 
