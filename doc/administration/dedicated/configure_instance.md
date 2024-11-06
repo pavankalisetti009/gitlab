@@ -201,9 +201,40 @@ Consider the following:
 - The connection requires the [Availability Zone IDs (AZ IDs)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#az-ids) for the two Availability Zones (AZs) in the regions that you selected during onboarding.
 - If you did not specify any AZs during onboarding to Dedicated, GitLab randomly selects both AZ IDs.
 
-You can view the `Reverse Private Link IAM Principal` attribute in the **Tenant Details** section of Switchboard.
+### Add an outbound private link with Switchboard
 
-To enable an Outbound Private Link:
+Prerequisites:
+
+- [Create the endpoint service](https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html) for your internal service to be available to GitLab Dedicated.
+- Configure a Network Load Balancer (NLB) for the endpoint service in the Availability Zones (AZs) where your Dedicated instance is deployed. Either:
+  - Use the AZs listed in the Outbound private link configuration in Switchboard.
+  - Enable the NLB in every AZ in the region.
+- Add the ARN of the role that GitLab Dedicated uses to connect to your endpoint service to the Allowed Principals list on the Endpoint Service. You can find this ARN in Switchboard under Outbound private link IAM principal. For more information, see [Manage permissions](https://docs.aws.amazon.com/vpc/latest/privatelink/configure-endpoint-service.html#add-remove-permissions).
+- Recommended. Set **Acceptance required** to **No** to enable GitLab Dedicated to connect in a single operation. If set to **Yes**, you must manually accept the connection after it's initiated.
+
+  NOTE:
+  If you set **Acceptance required** to **Yes**, Switchboard cannot accurately determine when the link is accepted. After you manually accept the link, the status shows as **Pending** instead of **Active** until next scheduled maintenance. After maintenance, the link status refreshes and shows as connected.
+
+- Once the endpoint service is created, note the Service Name and if you have enabled Private DNS or not.
+
+1. Sign in to [Switchboard](https://console.gitlab-dedicated.com/).
+1. At the top of the page, select **Configuration**.
+1. Expand **Outbound private link**.
+1. Complete the fields.
+1. To add endpoint services, select **Add endpoint service**. You can add up to ten endpoint services per region. At least one endpoint service is required to save the region.
+1. Select **Save**.
+1. Optional. To add an outbound private link for a second region, select **Add outbound connection**, then repeat the previous steps.
+
+### Delete an outbound private link with Switchboard
+
+1. Sign in to [Switchboard](https://console.gitlab-dedicated.com/).
+1. At the top of the page, select **Configuration**.
+1. Expand **Outbound private link**.
+1. Go to the outbound private link you want to delete, then select **Delete** (**{remove}**).
+1. Select **Delete**.
+1. Optional. To delete all the links in a region, from the region header, select **Delete** (**{remove}**). This also deletes the region configuration.
+
+### Add an outbound private link with a support request
 
 1. [Create the Endpoint service](https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html) through which your internal service
    will be available to GitLab Dedicated. Provide the associated `Service Endpoint Name` on a new
@@ -222,7 +253,8 @@ To enable an Outbound Private Link:
      required validation, and let GitLab know in the support ticket that you are using this option. If `Acceptance Required` is set to Yes on your
      Endpoint Service, also note this on the support ticket because Dedicated will need to initiate the connection without Private DNS, wait for you
      to confirm it has been accepted, and then update the connection to enable the use of Private DNS.
-   - Dedicated can manage a private hosted zone (PHZ) within the Dedicated AWS account and alias DNS names to the endpoint, directing requests for those names to your endpoint service. These aliases are often referred to as PHZ entries. For more information, see [Private hosted zones](#private-hosted-zones).
+   - Dedicated can manage a Private Hosted Zone (PHZ) within the Dedicated AWS Account and alias any arbitrary DNS names to the endpoint, directing
+     requests for those names to your endpoint service. These aliases are known as PHZ entries. For more information, see [Private hosted zones](#private-hosted-zones).
 
 GitLab then configures the tenant instance to create the necessary Endpoint Interfaces based on the service names you provided. Any matching outbound
 connections made from the tenant instance are directed through the PrivateLink into your VPC.
@@ -516,5 +548,5 @@ If you have trouble establishing a connection after the Outbound Private Link ha
 - Ensure that cross-zone load balancing is turned on in your Network Load Balancer (NLB).
 - Ensure that the Inbound Rules section of the appropriate Security Groups permits traffic from the correct IP ranges.
 - Ensure that the inbound traffic is mapped to the correct port on the Endpoint Service.
-- In Switchboard, expand **Reverse Private Link Config** and confirm that the details appear as you expect.
+- In Switchboard, expand **Outbound private link** and confirm that the details appear as you expect.
 - Ensure that you have [allowed requests to the local network from webhooks and integrations](../../security/webhooks.md#allow-requests-to-the-local-network-from-webhooks-and-integrations).
