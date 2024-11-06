@@ -371,6 +371,26 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
+    context 'when identifer_name is given' do
+      let_it_be(:identifier_name) { 'CVE-2024-1234' }
+
+      let_it_be(:vuln_read_with_identifier_name_first) do
+        create(:vulnerability_read, :with_identifer_name, identifier_names: [identifier_name], project: project)
+      end
+
+      let_it_be(:vuln_read_with_identifier_name_second) do
+        create(:vulnerability_read, :with_identifer_name, identifier_names: ['CVE-2024-1235'], project: project)
+      end
+
+      let_it_be(:vuln_read) { create(:vulnerability_read, severity: :medium) }
+
+      let(:params) { { identifier_name: identifier_name } }
+
+      it 'only returns vulnerabilities with matching identifier_name alone' do
+        is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
+      end
+    end
+
     describe 'before and after cursors' do
       let(:vulnerable) { group }
       let(:cursor) { Base64.urlsafe_encode64({ severity: 'high' }.to_json) }

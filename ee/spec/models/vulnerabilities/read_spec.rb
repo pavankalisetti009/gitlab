@@ -355,6 +355,38 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe '.with_identifier_names' do
+    let_it_be(:vulnerability_read_with_identifier) do
+      create(:vulnerability_read, :with_identifer_name, identifier_names: ['CVE-2018-1234'])
+    end
+
+    let_it_be(:vulnerability_read_with_different_identifier) do
+      create(:vulnerability_read, :with_identifer_name, identifier_names: ['CVE-2019-5678'])
+    end
+
+    let_it_be(:vulnerability_read_without_identifier) { create(:vulnerability_read) }
+
+    subject(:vulnerability_reads) { described_class.with_identifier_name(identifier_name) }
+
+    context 'when a matching identifier exists' do
+      let(:identifier_name) { vulnerability_read_with_different_identifier.identifier_names.first }
+
+      it { is_expected.to contain_exactly(vulnerability_read_with_different_identifier) }
+    end
+
+    context 'when no matching identifier exists' do
+      let(:identifier_name) { 'CVE-2020-9999' }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when identifier name is nil' do
+      let(:identifier_name) { nil }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
   describe '.with_scanner_external_ids' do
     let!(:vulnerability_1) { create(:vulnerability, :with_finding, project: project) }
     let!(:vulnerability_2) { create(:vulnerability, :with_finding, project: project) }

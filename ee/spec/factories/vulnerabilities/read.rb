@@ -30,4 +30,14 @@ FactoryBot.define do
       vulnerability_read.owasp_top_10 = evaluator.owasp_top_10
     end
   end
+
+  trait :with_identifer_name do
+    transient do
+      identifier_names { ["CVE-2018-1234"] }
+    end
+
+    after(:build) do |vulnerability_read, evaluator|
+      vulnerability_read.identifier_names = evaluator.identifier_names
+    end
+  end
 end
