@@ -4,9 +4,12 @@ module EE
   module TestEnv
     extend ::Gitlab::Utils::Override
 
-    override :setup_methods
-    def setup_methods
-      (super + [:setup_indexer, :setup_openbao]).freeze
+    override :setup_go_projects
+    def setup_go_projects
+      super
+
+      setup_indexer
+      setup_openbao
     end
 
     override :post_init
