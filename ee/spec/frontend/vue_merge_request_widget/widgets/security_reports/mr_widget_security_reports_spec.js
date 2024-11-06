@@ -275,44 +275,98 @@ describe('MR Widget Security Reports', () => {
       expect(findDismissedBadge().text()).toBe('Dismissed');
     });
 
-    it.each`
-      resolveVulnerabilityWithAi | aiResolutionEnabled | shouldShowAiBadge
-      ${true}                    | ${true}             | ${true}
-      ${false}                   | ${true}             | ${false}
-      ${true}                    | ${false}            | ${false}
-    `(
-      'with the resolveVulnerabilityWithAi ability set to "$resolveVulnerabilityWithAi" and the vulnerability has ai_resolution_enabled set to "$aiResolutionEnabled" it should show the AI-Badge: "$shouldShowAiBadge"',
-      async ({ resolveVulnerabilityWithAi, aiResolutionEnabled, shouldShowAiBadge }) => {
-        await createComponentAndExpandWidget({
-          mockDataFn: () =>
-            mockWithData({
-              findings: {
-                sast: {
-                  added: [
-                    {
-                      uuid: '1',
-                      severity: 'critical',
-                      name: 'Password leak',
-                      state: 'dismissed',
-                      ai_resolution_enabled: aiResolutionEnabled,
-                    },
-                  ],
+    describe('resolve with AI badge', () => {
+      const findingUuid = '1';
+      const getResolvableFinding = (aiResolutionEnabled = false) =>
+        mockWithData({
+          findings: {
+            sast: {
+              added: [
+                {
+                  uuid: findingUuid,
+                  severity: 'critical',
+                  name: 'Password leak',
+                  state: 'dismissed',
+                  ai_resolution_enabled: aiResolutionEnabled,
                 },
-              },
-            }),
-          provide: {
-            glAbilities: {
-              resolveVulnerabilityWithAi,
-            },
-            glFeatures: {
-              resolveVulnerabilityInMr: true,
+              ],
             },
           },
         });
 
-        expect(wrapper.findByTestId('ai-resolvable-badge').exists()).toBe(shouldShowAiBadge);
-      },
-    );
+      const findAiResolvableBadge = () => wrapper.findByTestId('ai-resolvable-badge');
+      const findAiResolvableBadgePopover = () =>
+        wrapper.findByTestId(`ai-resolvable-badge-popover-${findingUuid}`);
+
+      describe.each`
+        resolveVulnerabilityWithAi | aiResolutionEnabled
+        ${false}                   | ${true}
+        ${true}                    | ${false}
+      `(
+        'with "resolveVulnerabilityWithAi" ability set to "$resolveVulnerabilityWithAi" and the vulnerability has "ai_resolution_enabled" set to: "$aiResolutionEnabled"',
+        ({ resolveVulnerabilityWithAi, aiResolutionEnabled }) => {
+          beforeEach(() =>
+            createComponentAndExpandWidget({
+              mockDataFn: () => getResolvableFinding(aiResolutionEnabled),
+              provide: {
+                glAbilities: {
+                  resolveVulnerabilityWithAi,
+                },
+                glFeatures: {
+                  resolveVulnerabilityInMr: true,
+                },
+              },
+            }),
+          );
+
+          it('should not show the AI-Badge', () => {
+            expect(findAiResolvableBadge().exists()).toBe(false);
+          });
+
+          it('should not show the AI-Badge popover', () => {
+            expect(findAiResolvableBadgePopover().exists()).toBe(false);
+          });
+        },
+      );
+
+      describe('with "resolveVulnerabilityWithAi" ability set to "true" and the vulnerability has "ai_resolution_enabled" set to: "true"', () => {
+        beforeEach(() =>
+          createComponentAndExpandWidget({
+            mockDataFn: () => getResolvableFinding(true),
+            provide: {
+              glAbilities: {
+                resolveVulnerabilityWithAi: true,
+              },
+              glFeatures: {
+                resolveVulnerabilityInMr: true,
+              },
+            },
+          }),
+        );
+
+        it('should show the AI-Badge', () => {
+          expect(findAiResolvableBadge().exists()).toBe(true);
+        });
+
+        it('should add the correct id-attribute to the AI-Badge', () => {
+          expect(findAiResolvableBadge().attributes('id')).toBe(
+            `ai-resolvable-badge-${findingUuid}`,
+          );
+        });
+
+        it('should show a popover for the AI-Badge', () => {
+          expect(findAiResolvableBadgePopover().exists()).toBe(true);
+        });
+
+        it('should pass the correct props to the AI-Badge popover', () => {
+          expect(wrapper.findByTestId('ai-resolvable-badge-popover-1').props()).toMatchObject({
+            target: `ai-resolvable-badge-${findingUuid}`,
+            // the popover and target are within a dynamic scroller, so this needs to be set to make it work correctly
+            boundary: 'viewport',
+          });
+        });
+      });
+    });
 
     it.each`
       resolveVulnerabilityWithAi | aiResolutionEnabled

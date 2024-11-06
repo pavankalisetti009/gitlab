@@ -1,5 +1,5 @@
 <script>
-import { GlBadge, GlButton, GlIcon } from '@gitlab/ui';
+import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
@@ -30,6 +30,8 @@ export default {
     GlBadge,
     GlButton,
     GlIcon,
+    GlLink,
+    GlPopover,
     DynamicScroller,
     DynamicScrollerItem,
   },
@@ -327,6 +329,10 @@ export default {
         this.glAbilities.resolveVulnerabilityWithAi
       );
     },
+
+    getAiResolvableBadgeId(uuid) {
+      return `ai-resolvable-badge-${uuid}`;
+    },
   },
   SEVERITY_LEVELS,
   widgetHelpPopover: {
@@ -337,6 +343,14 @@ export default {
         anchor: 'ultimate',
       }),
     },
+  },
+  aiResolutionHelpPopOver: {
+    text: s__(
+      'ciReport|GitLab Duo Vulnerability Resolution, an AI feature, can suggest a possible fix.',
+    ),
+    learnMorePath: helpPagePath('user/application_security/vulnerabilities/index', {
+      anchor: 'vulnerability-resolution-in-a-merge-request',
+    }),
   },
   testId: {
     SAST: 'sast-scan-report',
@@ -463,14 +477,28 @@ export default {
                       <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3">{{
                         $options.i18n.dismissed
                       }}</gl-badge>
-                      <gl-badge
-                        v-if="isAiResolvable(vuln)"
-                        variant="info"
-                        class="gl-ml-3"
-                        data-testid="ai-resolvable-badge"
-                      >
-                        <gl-icon :size="12" name="tanuki-ai" />
-                      </gl-badge>
+                      <template v-if="isAiResolvable(vuln)">
+                        <gl-badge
+                          :id="getAiResolvableBadgeId(vuln.uuid)"
+                          variant="info"
+                          class="gl-ml-3"
+                          data-testid="ai-resolvable-badge"
+                        >
+                          <gl-icon :size="12" name="tanuki-ai" />
+                        </gl-badge>
+                        <gl-popover
+                          trigger="hover focus"
+                          placement="top"
+                          boundary="viewport"
+                          :target="getAiResolvableBadgeId(vuln.uuid)"
+                          :data-testid="`ai-resolvable-badge-popover-${vuln.uuid}`"
+                        >
+                          {{ $options.aiResolutionHelpPopOver.text }}
+                          <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath">{{
+                            __('Learn more')
+                          }}</gl-link>
+                        </gl-popover>
+                      </template>
                     </template>
                   </mr-widget-row>
                 </dynamic-scroller-item>
