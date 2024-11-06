@@ -50,14 +50,12 @@ RSpec.describe Namespaces::FreeUserCap::EnforcementAlertComponent, :saas, :aggre
       it 'renders all the expected tracking items' do
         render_inline(component)
 
-        expect(page).to have_css('.js-user-over-limit-free-plan-alert[data-track-action="render"]' \
-                                 '[data-track-label="user_limit_banner"]')
-        expect(page).to have_css('[data-testid="user-over-limit-primary-cta"]' \
-                                 '[data-track-action="click_button"]' \
-                                 '[data-track-label="manage_members"]')
-        expect(page).to have_css('[data-testid="user-over-limit-secondary-cta"]' \
-                                 '[data-track-action="click_button"]' \
-                                 '[data-track-label="explore_paid_plans"]')
+        expect(page)
+          .to have_tracking(testid: 'user-over-limit-free-plan-alert', action: 'render', label: 'user_limit_banner')
+        expect(page)
+          .to have_tracking(testid: 'user-over-limit-primary-cta', action: 'click_button', label: 'manage_members')
+        attributes = { testid: 'user-over-limit-secondary-cta', action: 'click_button', label: 'explore_paid_plans' }
+        expect(page).to have_tracking(attributes)
       end
     end
 

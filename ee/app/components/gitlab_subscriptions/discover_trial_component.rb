@@ -52,6 +52,7 @@ module GitlabSubscriptions
               link_to(
                 '', 'https://about.gitlab.com/ai-transparency-center/',
                 data: {
+                  testid: 'ai-transparency-link',
                   track_action: documentation_link_track_action,
                   track_label: 'ai_transparency_center_feature'
                 },

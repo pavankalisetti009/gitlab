@@ -20,9 +20,13 @@ RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, fe
 
   shared_examples 'plan tracking' do
     it 'has expected tracking attributes' do
-      css = "[data-track-action='click_button'][data-track-label='plan_cta'][data-track-property='#{plan_name}']"
-
-      expect(page).to have_css(css)
+      attributes = {
+        testid: "upgrade-to-#{plan_name}",
+        action: 'click_button',
+        label: 'plan_cta',
+        property: plan_name
+      }
+      expect(page).to have_tracking(attributes)
     end
   end
 
@@ -70,12 +74,6 @@ RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, fe
       expect(page).to have_link('Upgrade to Premium', href: '_purchase_url_', class: 'btn-confirm')
     end
 
-    it 'adds testid selector to cta link' do
-      css = "[data-track-label='plan_cta'][data-testid='upgrade-to-#{plan_name}']"
-
-      expect(page).to have_css(css)
-    end
-
     it 'has primary button as cta' do
       expect(page).to have_selector('.btn-confirm')
       expect(page).not_to have_selector('.btn-confirm-secondary')
@@ -111,12 +109,6 @@ RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, fe
         href: '_purchase_url_',
         class: 'btn-confirm btn-confirm-secondary'
       )
-    end
-
-    it 'adds testid selector to cta link' do
-      css = "[data-track-label='plan_cta'][data-testid='upgrade-to-#{plan_name}']"
-
-      expect(page).to have_css(css)
     end
 
     it 'has outline secondary button as cta' do

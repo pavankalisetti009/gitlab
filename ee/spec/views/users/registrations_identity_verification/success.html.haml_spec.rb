@@ -11,15 +11,15 @@ RSpec.describe 'users/registrations_identity_verification/success.html.haml', fe
     it 'assigns the tracking items' do
       render
 
-      expect(rendered).to have_css("[data-track-action='render'][data-track-label='_tracking_label_']")
+      expect(rendered).to have_tracking(action: 'render', label: '_tracking_label_')
     end
   end
 
   context 'when tracking_label is not set' do
-    it 'assigns the tracking items' do
+    it 'does not assign the tracking items' do
       render
 
-      expect(rendered).not_to have_css("[data-track-action='render'][data-track-label='_tracking_label_']")
+      expect(rendered).not_to have_tracking(action: 'render', label: '_tracking_label_')
     end
   end
 end

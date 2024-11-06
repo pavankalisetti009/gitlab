@@ -89,14 +89,20 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
       end
 
       it 'has the correct track action for AI transparency link for the trial status' do
-        selector = 'a[href="https://about.gitlab.com/ai-transparency-center/"]' \
-          '[data-track-action="click_documentation_link_duo_enterprise_trial_active"]'
-
-        is_expected.to have_selector(selector)
+        is_expected.to have_selector('a[href="https://about.gitlab.com/ai-transparency-center/"]')
+        attributes = {
+          testid: 'ai-transparency-link',
+          action: 'click_documentation_link_duo_enterprise_trial_active',
+          label: 'ai_transparency_center_feature'
+        }
+        is_expected.to have_tracking(attributes)
       end
 
       it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{duo_buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
+        is_expected.to have_selector("a[href='#{duo_buy_now_url}']", count: 2)
+        attributes = { action: 'click_buy_now', label: cta_tracking_label }
+        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-top'))
+        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-bottom'))
       end
     end
 
@@ -109,14 +115,20 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
       end
 
       it 'has the correct track action for AI transparency link for the trial status' do
-        selector = 'a[href="https://about.gitlab.com/ai-transparency-center/"]' \
-          '[data-track-action="click_documentation_link_duo_enterprise_trial_expired"]'
-
-        is_expected.to have_selector(selector)
+        is_expected.to have_selector('a[href="https://about.gitlab.com/ai-transparency-center/"]')
+        attributes = {
+          testid: 'ai-transparency-link',
+          action: 'click_documentation_link_duo_enterprise_trial_expired',
+          label: 'ai_transparency_center_feature'
+        }
+        is_expected.to have_tracking(attributes)
       end
 
       it 'has correct track label for the buy now links for the trial status' do
-        is_expected.to have_selector("a[href='#{duo_buy_now_url}'][data-track-label='#{cta_tracking_label}']", count: 2)
+        is_expected.to have_selector("a[href='#{duo_buy_now_url}']", count: 2)
+        attributes = { action: 'click_buy_now', label: cta_tracking_label }
+        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-top'))
+        is_expected.to have_tracking(attributes.merge(testid: 'buy-now-bottom'))
       end
     end
 

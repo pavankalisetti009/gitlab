@@ -45,8 +45,7 @@ RSpec.describe Namespaces::CombinedStorageUsers::NonOwnerAlertComponent, :saas, 
       it 'renders all the expected tracking items' do
         render_inline(component)
 
-        expect(page).to have_css('[data-track-action="render"]' \
-                                 '[data-track-label="storage_users_limit_banner"]')
+        expect(page).to have_tracking(action: 'render', label: 'storage_users_limit_banner')
       end
 
       context 'when the user dismissed the alert under 14 days ago', :freeze_time do

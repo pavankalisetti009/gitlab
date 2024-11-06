@@ -41,12 +41,9 @@ RSpec.describe Namespaces::CombinedStorageUsers::OwnerAlertComponent, :saas, typ
       it 'renders all the expected tracking items' do
         render_inline(component)
 
-        expect(page).to have_css('[data-track-action="render"]' \
-                                 '[data-track-label="storage_users_limit_banner"]')
-        expect(page).to have_css('[data-track-action="click_button"]' \
-                                 '[data-track-label="manage_users_storage_limits"]')
-        expect(page).to have_css('[data-track-action="click_button"]' \
-                                 '[data-track-label="explore_paid_plans"]')
+        expect(page).to have_tracking(action: 'render', label: 'storage_users_limit_banner')
+        expect(page).to have_tracking(action: 'click_button', label: 'manage_users_storage_limits')
+        expect(page).to have_tracking(action: 'click_button', label: 'explore_paid_plans')
       end
 
       context 'when the user dismissed the alert under 14 days ago', :freeze_time do
