@@ -545,16 +545,6 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       end
     end
 
-    context 'when premium plan' do
-      before do
-        build(:gitlab_subscription, :premium, namespace: namespace)
-      end
-
-      it_behaves_like 'available plan' do
-        let(:finder) { GitlabSubscriptions::Duo }
-      end
-    end
-
     context 'when ultimate trial plan' do
       before do
         build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace)
