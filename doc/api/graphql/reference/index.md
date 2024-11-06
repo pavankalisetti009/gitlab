@@ -15400,6 +15400,7 @@ The connection type for [`Organization`](#organization).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="organizationconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="organizationconnectionedges"></a>`edges` | [`[OrganizationEdge]`](#organizationedge) | A list of edges. |
 | <a id="organizationconnectionnodes"></a>`nodes` | [`[Organization]`](#organization) | A list of nodes. |
 | <a id="organizationconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
