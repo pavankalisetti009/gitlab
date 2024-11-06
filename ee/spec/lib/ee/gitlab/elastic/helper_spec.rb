@@ -522,17 +522,17 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           work_item_type_id: :all,
           noteable_id: :all,
           owner_id: :all
-        }
+        }.with_indifferent_access
       end
 
       it 'has correct foreign key types' do
         standalone_indices_proxies.each do |proxy|
-          mappings = proxy.mappings.to_hash
+          mappings = proxy.mappings.to_hash.with_indifferent_access
 
-          mappings[:properties].select { |k, _| k =~ /(^id$)|(_id$)/ }.each do |key, value|
+          mappings['properties'].select { |k, _| k =~ /(^id$)|(_id$)/ }.each do |key, value|
             next if ignore_columns[key] == :all || ignore_columns[key]&.include?(proxy.target)
 
-            expect(value[:type]).to eq(:long), "#{proxy.target}.#{key} is not a long"
+            expect([:long, 'long']).to include(value[:type]), "#{proxy.target}.#{key} is not a long"
           end
         end
       end

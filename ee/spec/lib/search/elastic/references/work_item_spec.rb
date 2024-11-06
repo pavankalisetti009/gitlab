@@ -275,6 +275,75 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         )
       end
     end
+
+    context 'when add_work_item_type_correct_id migration is not complete' do
+      before do
+        set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
+      end
+
+      it 'serializes the object as a hash' do
+        expect(result).to match(
+          project_id: work_item.reload.project_id,
+          id: work_item.id,
+          iid: work_item.iid,
+          namespace_id: group.id,
+          root_namespace_id: parent_group.id,
+          created_at: work_item.created_at,
+          updated_at: work_item.updated_at,
+          title: work_item.title,
+          description: work_item.description,
+          state: work_item.state,
+          upvotes: work_item.upvotes_count,
+          hidden: work_item.hidden?,
+          work_item_type_id: work_item.work_item_type_id,
+          confidential: work_item.confidential,
+          author_id: work_item.author_id,
+          label_ids: [label.id.to_s],
+          assignee_id: work_item.issue_assignee_user_ids,
+          due_date: work_item.due_date,
+          traversal_ids: "#{parent_group.id}-#{group.id}-",
+          hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
+          namespace_visibility_level: group.visibility_level,
+          schema_version: described_class::SCHEMA_VERSION,
+          type: 'work_item'
+        )
+      end
+    end
+
+    context 'when add_work_item_type_correct_id migration is complete' do
+      before do
+        set_elasticsearch_migration_to :add_work_item_type_correct_id, including: true
+      end
+
+      it 'serializes the object as a hash' do
+        expect(result).to match(
+          project_id: work_item.reload.project_id,
+          id: work_item.id,
+          iid: work_item.iid,
+          namespace_id: group.id,
+          root_namespace_id: parent_group.id,
+          created_at: work_item.created_at,
+          updated_at: work_item.updated_at,
+          title: work_item.title,
+          description: work_item.description,
+          state: work_item.state,
+          upvotes: work_item.upvotes_count,
+          hidden: work_item.hidden?,
+          work_item_type_id: work_item.work_item_type_id,
+          correct_work_item_type_id: work_item.correct_work_item_type_id,
+          confidential: work_item.confidential,
+          author_id: work_item.author_id,
+          label_ids: [label.id.to_s],
+          assignee_id: work_item.issue_assignee_user_ids,
+          due_date: work_item.due_date,
+          traversal_ids: "#{parent_group.id}-#{group.id}-",
+          hashed_root_namespace_id: ::Search.hash_namespace_id(parent_group.id),
+          namespace_visibility_level: group.visibility_level,
+          schema_version: described_class::SCHEMA_VERSION,
+          type: 'work_item'
+        )
+      end
+    end
   end
 
   describe '#instantiate' do
