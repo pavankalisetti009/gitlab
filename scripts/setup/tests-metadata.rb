@@ -48,7 +48,10 @@ class TestsMetadata < Struct.new( # rubocop:disable Style/StructInheritance -- O
   end
 
   def verify_flaky_report
-    JSON.parse(File.read(flaky_report_path))
+    # This requires activesupport
+    require_relative '../../gems/gitlab-rspec_flaky/lib/gitlab/rspec_flaky/report'
+
+    Gitlab::RspecFlaky::Report.load(flaky_report_path).flaky_examples.to_h
   rescue JSON::ParserError
     abort("#{flaky_report_path} is not valid JSON")
   end
