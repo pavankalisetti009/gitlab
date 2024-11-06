@@ -38,6 +38,27 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       end
     end
 
+    context 'with add_on concerns' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+      context 'when eligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when ineligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+
     context 'with a plan that is ineligible for a trial' do
       where(plan: ::Plan::PAID_HOSTED_PLANS.without(::Plan::PREMIUM))
 
@@ -46,6 +67,37 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
 
         it { is_expected.to be(false) }
       end
+    end
+  end
+
+  describe '.namespace_add_on_eligible?' do
+    subject(:execute) { described_class.namespace_add_on_eligible?(namespace) }
+
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+    context 'when namespace is nil' do
+      let(:namespace) { nil }
+
+      it 'raises an error' do
+        expect { execute }.to raise_error(ArgumentError, 'User or Namespace must be provided')
+      end
+    end
+
+    context 'when eligible' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when ineligible' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to be false }
     end
   end
 end

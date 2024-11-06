@@ -14,7 +14,7 @@ module GitlabSubscriptions
       def eligible_for_widget?
         return true if trial_active?
 
-        GitlabSubscriptions::Trials.namespace_eligible?(namespace) &&
+        GitlabSubscriptions::Trials.namespace_plan_eligible?(namespace) &&
           namespace.trial_ends_on &&
           namespace.trial_ends_on > TIME_FRAME_AFTER_EXPIRATION.ago &&
           !user_dismissed_widget?

@@ -145,6 +145,8 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
   end
 
   describe '#valid_to_generate_trial?' do
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
     subject(:valid_to_generate_trial) { described_class.new(**apply_trial_params).valid_to_generate_trial? }
 
     context 'when it is valid to generate a trial' do
@@ -168,6 +170,22 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, feature_category:
       let_it_be(:user) { create(:user, owner_of: namespace) }
 
       it { is_expected.to be true }
+    end
+
+    context 'when eligible with add_on concerns' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when ineligible due to add_on concerns' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to be false }
     end
 
     context 'with valid plans', :saas do
