@@ -11,6 +11,7 @@ module Security
       DEFAULT_VALIDATION_ERROR_FIELD = :base
 
       # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
+      # rubocop:disable Metrics/PerceivedComplexity -- policy validation
       def execute
         return error_with_title(s_('SecurityOrchestration|Empty policy name')) if blank_name?
 
@@ -18,6 +19,8 @@ module Security
 
         return error_with_title(s_('SecurityOrchestration|Invalid policy type')) if invalid_policy_type?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions'), limit: Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT)) if exceeds_approver_action_limit?
+
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled for non-existing branches (%{branches})') % { branches: missing_branch_names.join(', ') }, field: :branches) if missing_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|This merge request approval policy targets the default branch, but the default branch is not protected in this project. To set up this policy, the default branch must be protected.'), field: :branches) if default_branch_unprotected?
@@ -32,6 +35,7 @@ module Security
         success
       end
       # rubocop:enable Metrics/CyclomaticComplexity
+      # rubocop:enable Metrics/PerceivedComplexity
 
       private
 
@@ -60,6 +64,16 @@ module Security
         return true if policy[:type].blank?
 
         Security::OrchestrationPolicyConfiguration::AVAILABLE_POLICY_TYPES.exclude?(policy_type)
+      end
+
+      def exceeds_approver_action_limit?
+        return false unless scan_result_policy?
+
+        approver_actions_count = policy[:actions]&.count do |action|
+          action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL
+        end || 0
+
+        approver_actions_count >= Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT
       end
 
       def exceeds_action_limit?
