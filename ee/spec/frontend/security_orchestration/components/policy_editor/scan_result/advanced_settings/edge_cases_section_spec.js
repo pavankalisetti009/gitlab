@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlFormCheckbox, GlPopover } from '@gitlab/ui';
-import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/edge_cases_section.vue';
+import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/edge_cases_section.vue';
 
 describe('EdgeCasesSection', () => {
   let wrapper;

@@ -26,7 +26,7 @@ import SettingsSection from './settings/settings_section.vue';
 import ActionSection from './action/action_section.vue';
 import BotCommentAction from './action/bot_message_action.vue';
 import RuleSection from './rule/rule_section.vue';
-import FallbackAndEdgeCasesSection from './fallback_and_edge_cases_section.vue';
+import FallbackAndEdgeCasesSection from './advanced_settings/fallback_and_edge_cases_section.vue';
 import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
