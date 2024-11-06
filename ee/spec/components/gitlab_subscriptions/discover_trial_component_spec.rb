@@ -5,19 +5,15 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:buy_now_url) { '_purchase_url_' }
+  let(:buy_now_url) { group_billings_path(namespace) }
 
-  subject(:component) do
-    component = described_class.new(namespace: namespace)
-    allow(component).to receive(:buy_now_link).and_return(buy_now_url)
-    render_inline(component) && page_scope
-  end
+  subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
 
   context 'when rendering the hero section' do
     let(:page_scope) { find_by_testid('hero-section') }
 
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Ship software faster')) }
-    it { is_expected.to have_link(_('Buy now'), href: "_purchase_url_") }
+    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
     it { is_expected.to have_link(href: 'https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479') }
   end
 

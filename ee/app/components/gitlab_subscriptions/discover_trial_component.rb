@@ -4,8 +4,6 @@ module GitlabSubscriptions
   class DiscoverTrialComponent < BaseDiscoverComponent
     extend ::Gitlab::Utils::Override
 
-    delegate :plan_purchase_url, to: :helpers
-
     private
 
     override :trial_type
@@ -227,12 +225,7 @@ module GitlabSubscriptions
 
     override :buy_now_link
     def buy_now_link
-      plan = GitlabSubscriptions::FetchSubscriptionPlansService
-        .new(plan: :ultimate)
-        .execute
-        .find { |plan| plan.code == "ultimate" } # rubocop:disable Gitlab/FinderWithFindBy -- FetchSubscriptionPlansService is not a finder
-
-      plan_purchase_url(namespace, plan)
+      group_billings_path(namespace)
     end
 
     override :hero_video
