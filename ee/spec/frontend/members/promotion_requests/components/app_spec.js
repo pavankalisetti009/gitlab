@@ -1,23 +1,20 @@
 import { GlLink, GlAlert, GlKeysetPagination, GlTable } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import projectPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/project_pending_member_approvals.json';
+import groupPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/group_pending_member_approvals.json';
+import GroupPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/group_pending_member_approvals.query.graphql';
+import ProjectPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/project_pending_member_approvals.query.graphql';
 import { CONTEXT_TYPE } from 'ee/members/constants';
 import PromotionRequestsApp from 'ee/members/promotion_requests/components/app.vue';
 import UserAvatar from 'ee/members/promotion_requests/components/user_avatar.vue';
-import GroupPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/group_pending_member_approvals.query.graphql';
-import ProjectPendingMemberApprovalsQuery from 'ee/members/promotion_requests/graphql/project_pending_member_approvals.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { DEFAULT_PER_PAGE } from '~/api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import UserDate from '~/vue_shared/components/user_date.vue';
-import {
-  groupDefaultProvide,
-  groupPendingMemberApprovalsQueryMockData,
-  projectDefaultProvide,
-  projectPendingMemberApprovalsQueryMockData,
-} from '../mock_data';
+import { groupDefaultProvide, projectDefaultProvide } from '../mock_data';
 
 Vue.use(VueApollo);
 

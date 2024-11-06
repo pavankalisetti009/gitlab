@@ -1,7 +1,7 @@
+import projectPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/project_pending_member_approvals.json';
+import groupPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/group_pending_member_approvals.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
-  groupPendingMemberApprovalsQueryMockData,
-  projectPendingMemberApprovalsQueryMockData,
   groupDefaultProvide,
   projectDefaultProvide,
 } from 'ee_jest/members/promotion_requests/mock_data';

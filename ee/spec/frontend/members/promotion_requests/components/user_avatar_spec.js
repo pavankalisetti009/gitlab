@@ -1,9 +1,9 @@
 import { GlAvatarLabeled, GlAvatarLink } from '@gitlab/ui';
+import groupPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/group_pending_member_approvals.json';
 import UserAvatar from 'ee/members/promotion_requests/components/user_avatar.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TEST_HOST } from 'helpers/test_constants';
-import { groupPendingMemberApprovalsQueryMockData } from '../mock_data';
 
 describe('UserAvatar', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -34,7 +34,6 @@ describe('UserAvatar', () => {
       href: user.webUrl,
       'data-user-id': `${getIdFromGraphQLId(user.id)}`,
       'data-username': user.username,
-      'data-email': user.publicEmail,
     });
   });
 

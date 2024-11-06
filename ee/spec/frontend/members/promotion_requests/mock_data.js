@@ -1,4 +1,7 @@
+import projectPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/project_pending_member_approvals.json';
+import groupPendingMemberApprovalsQueryMockData from 'test_fixtures/graphql/members/promotion_requests/group_pending_member_approvals.json';
 import { CONTEXT_TYPE } from '~/members/constants';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 export const pagination = {
   totalItems: 1,
@@ -8,7 +11,7 @@ export const groupDefaultProvide = {
   canManageMembers: true,
   context: CONTEXT_TYPE.GROUP,
   group: {
-    id: 24,
+    id: getIdFromGraphQLId(groupPendingMemberApprovalsQueryMockData.data.group.id),
     name: 'gitlab',
     path: 'gitlab-org',
   },
@@ -25,102 +28,7 @@ export const projectDefaultProvide = {
     path: 'gitlab-org',
   },
   project: {
-    id: 24,
+    id: getIdFromGraphQLId(projectPendingMemberApprovalsQueryMockData.data.project.id),
     path: 'gitlab-org/gitlab-test',
-  },
-};
-
-const pendingMemberApprovalsMockData = {
-  count: 2,
-  nodes: [
-    {
-      user: {
-        id: 'gid://gitlab/User/49',
-        name: 'Liberty Bartell',
-        username: 'reported_user_3',
-        avatarUrl:
-          'https://www.gravatar.com/avatar/7df6adb62d7df6d8d27593fe4e308a8485293007d44f56aba1be402f9f9a859a?s=80\u0026d=identicon',
-        webUrl: 'http://localhost:3000/reported_user_3',
-        publicEmail: 'liberty_bartell@example.com',
-        lastActivityOn: null,
-        __typename: 'UserCore',
-      },
-      member: {
-        id: 'gid://gitlab/GroupMember/97',
-        accessLevel: {
-          stringValue: 'GUEST',
-          __typename: 'AccessLevel',
-        },
-        __typename: 'GroupMember',
-      },
-      requestedBy: {
-        id: 'gid://gitlab/User/19',
-        username: 'christal',
-        webUrl: 'http://localhost:3000/christal',
-        name: 'Kassandra Lebsack',
-        __typename: 'UserCore',
-      },
-      newAccessLevel: {
-        stringValue: 'DEVELOPER',
-        __typename: 'AccessLevel',
-      },
-      oldAccessLevel: {
-        stringValue: 'GUEST',
-        __typename: 'AccessLevel',
-      },
-      status: 'pending',
-      createdAt: '2024-07-29T11:18:52Z',
-      __typename: 'MemberApproval',
-    },
-    {
-      user: null,
-      member: null,
-      requestedBy: {
-        id: 'gid://gitlab/User/19',
-        username: 'christal',
-        webUrl: 'http://localhost:3000/christal',
-        name: 'Kassandra Lebsack',
-        __typename: 'UserCore',
-      },
-      newAccessLevel: {
-        stringValue: 'DEVELOPER',
-        __typename: 'AccessLevel',
-      },
-      oldAccessLevel: {
-        stringValue: 'GUEST',
-        __typename: 'AccessLevel',
-      },
-      status: 'pending',
-      createdAt: '2024-07-22T16:25:54Z',
-      __typename: 'MemberApproval',
-    },
-  ],
-  pageInfo: {
-    hasNextPage: false,
-    hasPreviousPage: false,
-    startCursor: 'eyJpZCI6IjMifQ',
-    endCursor: 'eyJpZCI6IjIifQ',
-    __typename: 'PageInfo',
-  },
-  __typename: 'MemberApprovalConnection',
-};
-
-export const groupPendingMemberApprovalsQueryMockData = {
-  data: {
-    group: {
-      id: 'gid://gitlab/Group/24',
-      pendingMemberApprovals: pendingMemberApprovalsMockData,
-      __typename: 'Group',
-    },
-  },
-};
-
-export const projectPendingMemberApprovalsQueryMockData = {
-  data: {
-    project: {
-      id: 'gid://gitlab/Project/24',
-      pendingMemberApprovals: pendingMemberApprovalsMockData,
-      __typename: 'Project',
-    },
   },
 };
