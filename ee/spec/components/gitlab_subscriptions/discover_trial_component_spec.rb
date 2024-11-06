@@ -5,15 +5,19 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:buy_now_url) { group_settings_gitlab_duo_seat_utilization_index_path(namespace) }
+  let(:buy_now_url) { '_purchase_url_' }
 
-  subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
+  subject(:component) do
+    component = described_class.new(namespace: namespace)
+    allow(component).to receive(:buy_now_link).and_return(buy_now_url)
+    render_inline(component) && page_scope
+  end
 
   context 'when rendering the hero section' do
     let(:page_scope) { find_by_testid('hero-section') }
 
     it { is_expected.to have_content(s_('DuoEnterpriseDiscover|Ship software faster')) }
-    it { is_expected.to have_link(_('Buy now'), href: buy_now_url) }
+    it { is_expected.to have_link(_('Buy now'), href: "_purchase_url_") }
     it { is_expected.to have_link(href: 'https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479') }
   end
 
@@ -63,7 +67,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
   end
 
   context 'with trial active and expired concerns' do
-    let(:cta_tracking_label) { 'duo_enterprise_active_trial' }
+    let(:cta_tracking_label) { 'ultimate_active_trial' }
     let(:trial_active?) { true }
     let(:expected_data_attributes) do
       {
@@ -82,8 +86,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
     end
 
     before do
-      allow(GitlabSubscriptions::Trials::DuoEnterprise)
-        .to receive(:active_add_on_purchase_for_namespace?).with(namespace).and_return(trial_active?)
+      allow(namespace).to receive(:ultimate_trial_plan?).and_return(trial_active?)
     end
 
     context 'when trial is active' do
@@ -93,7 +96,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
 
       it 'has the correct track action for AI transparency link for the trial status' do
         selector = 'a[href="https://about.gitlab.com/ai-transparency-center/"]' \
-          '[data-track-action="click_documentation_link_duo_enterprise_trial_active"]'
+          '[data-track-action="click_documentation_link_ultimate_trial_active"]'
 
         is_expected.to have_selector(selector)
       end
@@ -104,7 +107,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
     end
 
     context 'when trial is expired' do
-      let(:cta_tracking_label) { 'duo_enterprise_expired_trial' }
+      let(:cta_tracking_label) { 'ultimate_expired_trial' }
       let(:trial_active?) { false }
 
       it 'has expected hand raise lead data attributes' do
@@ -113,7 +116,7 @@ RSpec.describe GitlabSubscriptions::DiscoverTrialComponent, :aggregate_failures,
 
       it 'has the correct track action for AI transparency link for the trial status' do
         selector = 'a[href="https://about.gitlab.com/ai-transparency-center/"]' \
-          '[data-track-action="click_documentation_link_duo_enterprise_trial_expired"]'
+          '[data-track-action="click_documentation_link_ultimate_trial_expired"]'
 
         is_expected.to have_selector(selector)
       end

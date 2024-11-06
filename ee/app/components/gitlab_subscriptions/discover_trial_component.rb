@@ -4,16 +4,18 @@ module GitlabSubscriptions
   class DiscoverTrialComponent < BaseDiscoverComponent
     extend ::Gitlab::Utils::Override
 
+    delegate :plan_purchase_url, to: :helpers
+
     private
 
     override :trial_type
     def trial_type
-      'duo_enterprise'
+      'ultimate'
     end
 
     override :trial_active?
     def trial_active?
-      GitlabSubscriptions::Trials::DuoEnterprise.active_add_on_purchase_for_namespace?(namespace)
+      namespace.ultimate_trial_plan?
     end
 
     override :discover_card_collection
@@ -212,7 +214,6 @@ module GitlabSubscriptions
 
     override :hero_logo
     def hero_logo
-      # TODO
       'duo_pro/logo.svg'
     end
 
@@ -225,7 +226,12 @@ module GitlabSubscriptions
 
     override :buy_now_link
     def buy_now_link
-      group_settings_gitlab_duo_seat_utilization_index_path(namespace)
+      plan = GitlabSubscriptions::FetchSubscriptionPlansService
+        .new(plan: :ultimate)
+        .execute
+        .find { |plan| plan.code == "ultimate" } # rubocop:disable Gitlab/FinderWithFindBy -- FetchSubscriptionPlansService is not a finder
+
+      plan_purchase_url(namespace, plan)
     end
 
     override :hero_video
