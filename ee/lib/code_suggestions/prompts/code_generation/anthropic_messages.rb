@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# TODO: this class is not used anymore, we can remove it
+# https://gitlab.com/gitlab-org/gitlab/-/work_items/490583
 module CodeSuggestions
   module Prompts
     module CodeGeneration

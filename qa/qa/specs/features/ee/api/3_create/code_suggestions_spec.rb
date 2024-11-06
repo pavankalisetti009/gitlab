@@ -8,8 +8,31 @@ module QA
     # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
     # https://docs.gitlab.com/ee/api/code_suggestions.html
     describe 'Code Suggestions' do
-      let(:expected_response_data) do
+      let(:expected_v3_response_data) do
         {
+          metadata: {
+            model: {
+              engine: anything,
+              name: anything,
+              lang: 'ruby'
+            },
+            timestamp: anything
+          },
+          choices: [anything]
+        }
+      end
+
+      let(:expected_v2_response_data) do
+        {
+          id: 'id',
+          model: {
+            engine: anything,
+            name: anything,
+            lang: 'ruby',
+            tokens_consumption_metadata: anything
+          },
+          object: 'text_completion',
+          created: anything,
           choices: [anything]
         }
       end
@@ -24,12 +47,20 @@ module QA
         ]
       end
 
-      shared_examples 'code suggestions API' do |testcase|
+      shared_examples 'indirect code generation' do |testcase|
         it 'returns a suggestion', testcase: testcase do
-          response = get_suggestion(prompt_data)
+          response = get_indirect_suggestion(prompt_data)
+          expect_status_code(200, response)
+          verify_suggestion(response, expected_v3_response_data)
+        end
+      end
+
+      shared_examples 'indirect code completion' do |testcase|
+        it 'returns a suggestion', testcase: testcase do
+          response = get_indirect_suggestion(prompt_data)
 
           expect_status_code(200, response)
-          verify_suggestion(response, expected_response_data)
+          verify_suggestion(response, expected_v2_response_data)
         end
       end
 
@@ -38,7 +69,7 @@ module QA
           response = get_direct_suggestion(prompt_data)
 
           expect_status_code(200, response)
-          verify_suggestion(response, expected_response_data)
+          verify_suggestion(response, expected_v2_response_data)
         end
       end
 
@@ -52,7 +83,7 @@ module QA
 
       shared_examples 'code suggestions API using streaming' do |testcase|
         it 'streams a suggestion', testcase: testcase do
-          response = get_suggestion(prompt_data)
+          response = get_indirect_suggestion(prompt_data)
 
           expect_status_code(200, response)
 
@@ -63,7 +94,7 @@ module QA
 
       shared_examples 'unauthorized' do |testcase|
         it 'returns no suggestion', testcase: testcase do
-          response = get_suggestion(prompt_data)
+          response = get_indirect_suggestion(prompt_data)
 
           expect_status_code(401, response)
         end
@@ -110,13 +141,13 @@ module QA
 
         context 'on SaaS', :smoke, :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
-          it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
+          it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
           it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
           it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'
           context 'with context' do
             let(:prompt_data) { super().merge(context: context) }
 
-            it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500005'
+            it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500005'
             it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491518'
           end
         end
@@ -125,14 +156,14 @@ module QA
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
-                it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
+                it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
                 it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
                 it_behaves_like 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487951'
 
                 context 'with context' do
                   let(:prompt_data) { super().merge(context: context) }
 
-                  it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500006'
+                  it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/500006'
                   it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/491519'
                 end
               end
@@ -161,14 +192,14 @@ module QA
 
         context 'on SaaS', :smoke, :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
-          it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/420973'
+          it_behaves_like 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/420973'
         end
 
         context 'on Self-managed', :orchestrated do
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
-                it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462967'
+                it_behaves_like 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/462967'
               end
 
               context 'when seat is not assigned', :blocking, :ai_gateway_no_seat_assigned do
@@ -206,7 +237,7 @@ module QA
         end
       end
 
-      def get_suggestion(prompt_data)
+      def get_indirect_suggestion(prompt_data)
         request_code_suggestion(url: "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
           token: token, prompt_data: prompt_data)
       end

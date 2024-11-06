@@ -659,34 +659,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               ]
             end
 
-            context 'when FF `anthropic_code_gen_aigw_migration` is disabled' do
-              before do
-                stub_feature_flags(anthropic_code_gen_aigw_migration: false)
-              end
-
-              it 'sends requests to the code generation v2 endpoint' do
-                expected_body = body.merge(
-                  model_provider: 'anthropic',
-                  model_name: 'claude-3-5-sonnet-20240620',
-                  prompt_version: 3,
-                  prompt: prompt,
-                  current_file: {
-                    file_name: file_name,
-                    content_above_cursor: content_above_cursor,
-                    content_below_cursor: ''
-                  }
-                )
-                expect(Gitlab::Workhorse)
-                  .to receive(:send_url)
-                        .with(
-                          "#{::Gitlab::AiGateway.url}/v2/code/generations",
-                          hash_including(body: expected_body.to_json)
-                        )
-
-                post_api
-              end
-            end
-
             it 'sends requests to the code generation v3 endpoint' do
               expected_body = body.merge(v3_saas_code_generation_prompt_components)
               expect(Gitlab::Workhorse)
