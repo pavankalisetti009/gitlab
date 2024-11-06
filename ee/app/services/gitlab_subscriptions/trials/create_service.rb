@@ -52,7 +52,7 @@ module GitlabSubscriptions
       end
 
       def namespaces_eligible_for_trial
-        Users::TrialEligibleNamespacesFinder.new(user).execute
+        Namespaces::TrialEligibleFinder.new(user: user).execute
       end
     end
   end

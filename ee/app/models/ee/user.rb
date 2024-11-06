@@ -453,10 +453,6 @@ module EE
         .any?
     end
 
-    def manageable_namespaces_eligible_for_trial
-      owned_groups.eligible_for_trial.ordered_by_name
-    end
-
     override :has_current_license?
     def has_current_license?
       License.current.present?
