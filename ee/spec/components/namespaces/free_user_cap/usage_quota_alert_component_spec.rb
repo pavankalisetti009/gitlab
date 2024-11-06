@@ -51,15 +51,10 @@ RSpec.describe Namespaces::FreeUserCap::UsageQuotaAlertComponent, :saas, :aggreg
     it 'renders all the expected tracking items' do
       render_inline(component)
 
-      expect(page).to have_css('[data-testid="free-group-limited-alert"]' \
-                               '[data-track-action="render"]' \
-                               '[data-track-property="free_group_limited_usage_quota_banner"]')
-      expect(page).to have_css('[data-testid="free-group-limited-dismiss"]' \
-                               '[data-track-action="dismiss_banner"]' \
-                               '[data-track-property="free_group_limited_usage_quota_banner"]')
-      expect(page).to have_css('[data-track-action="click_link"]' \
-                               '[data-track-label="upgrade"]' \
-                               '[data-track-property="free_group_limited_usage_quota_banner"]')
+      property = 'free_group_limited_usage_quota_banner'
+      expect(page).to have_tracking(testid: 'free-group-limited-alert', action: 'render', property: property)
+      expect(page).to have_tracking(testid: 'free-group-limited-dismiss', action: 'dismiss_banner', property: property)
+      expect(page).to have_tracking(action: 'click_link', label: 'upgrade', property: property)
     end
   end
 

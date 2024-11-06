@@ -38,10 +38,8 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
         href: new_trials_duo_enterprise_path(namespace_id: group.id)
       )
 
-      expect(rendered).to have_css(
-        '[data-event-tracking="click_duo_enterprise_trial_billing_page"]' \
-          '[data-event-label="duo_enterprise_trial"]'
-      )
+      expect(rendered)
+        .to have_internal_tracking(event: 'click_duo_enterprise_trial_billing_page', label: 'duo_enterprise_trial')
     end
 
     it 'contains the hand raise lead selector' do

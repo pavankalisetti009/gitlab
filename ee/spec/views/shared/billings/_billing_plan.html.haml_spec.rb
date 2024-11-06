@@ -21,11 +21,7 @@ RSpec.describe 'shared/billings/_billing_plan.html.haml', :saas do
     end
 
     it 'contains tracking' do
-      css = "[data-track-action='click_link']"
-      css += "[data-track-label='plan_features']"
-      css += "[data-track-property='#{plan.code}']"
-
-      expect(rendered).to have_css(css)
+      expect(rendered).to have_tracking(action: 'click_link', label: 'plan_features', property: plan.code)
     end
   end
 

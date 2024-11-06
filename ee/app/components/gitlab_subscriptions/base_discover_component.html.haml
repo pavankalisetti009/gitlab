@@ -9,7 +9,7 @@
       = render Pajamas::ButtonComponent.new(href: buy_now_link,
         category: :primary, variant: :confirm,
         button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0',
-        data: { track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
+        data: { testid: 'buy-now-top', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
         = _('Buy now')
       .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
   .container.gl-p-0.lg:ml-6
@@ -55,6 +55,6 @@
     = render Pajamas::ButtonComponent.new(href: buy_now_link,
       category: :primary, variant: :confirm,
       button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0',
-      data: { track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
+      data: { testid: 'buy-now-bottom', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
       = _('Buy now')
     .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }

@@ -54,10 +54,8 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::FreeComponent, :saas, :a
         href: new_trial_path(namespace_id: namespace.id)
       )
 
-      is_expected.to have_css(
-        '[data-event-tracking="click_duo_enterprise_trial_billing_page"]' \
-          '[data-event-label="ultimate_and_duo_enterprise_trial"]'
-      )
+      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'ultimate_and_duo_enterprise_trial' }
+      is_expected.to have_internal_tracking(attributes)
     end
 
     it 'has the hand raise lead selector' do

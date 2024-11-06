@@ -2,9 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'shared/billings/_billing_plans.html.haml', :saas do
-  include SubscriptionPortalHelpers
-
+RSpec.describe 'shared/billings/_billing_plans.html.haml' do
   before do
     allow(view).to receive(:show_plans?).and_return(true)
     allow(view).to receive(:billing_available_plans).and_return({})
@@ -14,12 +12,8 @@ RSpec.describe 'shared/billings/_billing_plans.html.haml', :saas do
   end
 
   it 'contains the feature link and tracking' do
-    css = "[data-testid='billing-plans']"
-    css += "[data-track-action='render']"
-    css += "[data-track-label='billing']"
-
     render
 
-    expect(rendered).to have_css(css)
+    expect(rendered).to have_tracking(testid: 'billing-plans', action: 'render', label: 'billing')
   end
 end
