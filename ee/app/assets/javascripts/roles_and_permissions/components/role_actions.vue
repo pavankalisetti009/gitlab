@@ -8,7 +8,7 @@ import {
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { isCustomRole } from './utils';
+import { isCustomRole } from '../utils';
 
 export default {
   i18n: {

@@ -4,8 +4,8 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import groupMemberRolesQuery from 'ee/roles_and_permissions/graphql/group_member_roles.query.graphql';
-import instanceMemberRolesQuery from 'ee/roles_and_permissions/graphql/instance_member_roles.query.graphql';
+import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.graphql';
+import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
 import RolesApp from 'ee/roles_and_permissions/components/app.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
@@ -13,8 +13,8 @@ import { createAlert } from '~/alert';
 import {
   standardRoles,
   memberRoles,
-  groupMemberRolesResponse,
-  instanceMemberRolesResponse,
+  groupRolesResponse,
+  instanceRolesResponse,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -25,8 +25,8 @@ describe('Roles app', () => {
   let wrapper;
 
   const mockToastShow = jest.fn();
-  const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(groupMemberRolesResponse);
-  const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(instanceMemberRolesResponse);
+  const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(groupRolesResponse);
+  const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(instanceRolesResponse);
 
   const createComponent = ({
     groupRolesQueryHandler = groupRolesSuccessQueryHandler,
@@ -36,8 +36,8 @@ describe('Roles app', () => {
   } = {}) => {
     wrapper = shallowMountExtended(RolesApp, {
       apolloProvider: createMockApollo([
-        [groupMemberRolesQuery, groupRolesQueryHandler],
-        [instanceMemberRolesQuery, instanceRolesQueryHandler],
+        [groupRolesQuery, groupRolesQueryHandler],
+        [instanceRolesQuery, instanceRolesQueryHandler],
       ]),
       propsData: { groupFullPath, newRolePath },
       stubs: { GlSprintf },

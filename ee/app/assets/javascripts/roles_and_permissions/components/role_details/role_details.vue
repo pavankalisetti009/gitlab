@@ -14,7 +14,7 @@ import { visitUrl } from '~/lib/utils/url_utility';
 import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import DeleteRoleModal from '../delete_role_modal.vue';
-import memberRoleQuery from '../../graphql/member_role.query.graphql';
+import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
 import DetailsTab from './details_tab.vue';
 
 export default {

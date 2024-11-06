@@ -1,18 +1,12 @@
 <script>
 import { GlSprintf, GlLink, GlButton } from '@gitlab/ui';
-import { keyBy } from 'lodash';
 import { s__ } from '~/locale';
-import { ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER, BASE_ROLES } from '~/access_level/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
-import groupMemberRolesQuery from '../graphql/group_member_roles.query.graphql';
-import instanceMemberRolesQuery from '../graphql/instance_member_roles.query.graphql';
+import groupRolesQuery from '../graphql/group_roles.query.graphql';
+import instanceRolesQuery from '../graphql/instance_roles.query.graphql';
 import RolesTable from './roles_table.vue';
 import DeleteRoleModal from './delete_role_modal.vue';
-
-// keyBy creates an object where the key is the access level integer and the value is the base role object. We use this
-// to get the description for a base role.
-const BASE_ROLES_BY_ACCESS_LEVEL = keyBy(BASE_ROLES, 'accessLevel');
 
 export default {
   name: 'RolesApp',
@@ -56,7 +50,7 @@ export default {
   apollo: {
     rolesData: {
       query() {
-        return this.groupFullPath ? groupMemberRolesQuery : instanceMemberRolesQuery;
+        return this.groupFullPath ? groupRolesQuery : instanceRolesQuery;
       },
       variables() {
         return this.groupFullPath ? { fullPath: this.groupFullPath } : {};
@@ -74,14 +68,7 @@ export default {
       return this.$apollo.queries.rolesData.loading;
     },
     defaultRoles() {
-      // Don't show the Minimal Access role (business requirement) and add the description to each role (backend doesn't
-      // have descriptions for default roles).
-      return (this.rolesData?.standardRoles.nodes || [])
-        .filter((role) => role.accessLevel > ACCESS_LEVEL_MINIMAL_ACCESS_INTEGER)
-        .map((role) => ({
-          ...role,
-          description: BASE_ROLES_BY_ACCESS_LEVEL[role.accessLevel].description,
-        }));
+      return this.rolesData?.standardRoles.nodes || [];
     },
     customRoles() {
       return this.rolesData?.memberRoles.nodes || [];

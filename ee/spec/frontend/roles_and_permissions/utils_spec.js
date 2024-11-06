@@ -1,5 +1,5 @@
-import { isCustomRole } from 'ee/roles_and_permissions/components/utils';
-import { standardRoles, memberRoles } from '../mock_data';
+import { isCustomRole } from 'ee/roles_and_permissions/utils';
+import { standardRoles, memberRoles } from './mock_data';
 
 describe('Roles and permissions utils', () => {
   describe('isCustomRole', () => {

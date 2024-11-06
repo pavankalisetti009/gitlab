@@ -1,7 +1,0 @@
-fragment MemberRole on MemberRole {
-  id
-  name
-  description
-  usersCount
-  editPath
-}

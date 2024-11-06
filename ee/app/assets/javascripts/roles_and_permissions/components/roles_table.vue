@@ -1,8 +1,8 @@
 <script>
 import { GlTable, GlBadge, GlLoadingIcon, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { isCustomRole } from '../utils';
 import RoleActions from './role_actions.vue';
-import { isCustomRole } from './utils';
 
 export const TABLE_FIELDS = [
   { key: 'name', label: s__('MemberRole|Name') },

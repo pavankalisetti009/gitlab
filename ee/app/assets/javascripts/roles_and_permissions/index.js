@@ -3,7 +3,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
-import CustomRolesApp from './components/app.vue';
+import RolesApp from './components/app.vue';
 
 Vue.use(GlToast);
 Vue.use(VueApollo);
@@ -23,14 +23,14 @@ export const initCustomRolesApp = () => {
 
   return new Vue({
     el,
-    name: 'CustomRolesRoot',
+    name: 'RolesRoot',
     apolloProvider,
     mixins: [InternalEvents.mixin()],
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
     render(createElement) {
-      return createElement(CustomRolesApp, {
+      return createElement(RolesApp, {
         props: { groupFullPath, newRolePath },
       });
     },

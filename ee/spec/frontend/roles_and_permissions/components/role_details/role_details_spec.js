@@ -9,7 +9,7 @@ import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { visitUrl } from '~/lib/utils/url_utility';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import memberRoleQuery from 'ee/roles_and_permissions/graphql/member_role.query.graphql';
+import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockMemberRole, getMemberRoleQueryResponse } from '../../mock_data';
 
@@ -133,7 +133,7 @@ describe('Role details', () => {
     beforeEach(() => createWrapper());
 
     it('shows button', () => {
-      expect(findEditButton().attributes('href')).toBe('role/edit/path');
+      expect(findEditButton().attributes('href')).toBe('role/path/1/edit');
       expect(findEditButton().props('icon')).toBe('pencil');
     });
 
