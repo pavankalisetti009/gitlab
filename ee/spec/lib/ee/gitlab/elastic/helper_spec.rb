@@ -525,6 +525,8 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         }
       end
 
+      # document mapping type must match database column type
+      # see https://docs.gitlab.com/ee/development/advanced_search.html#create-the-index
       it 'has correct foreign key types' do
         standalone_indices_proxies.each do |proxy|
           mappings = proxy.mappings.to_hash
