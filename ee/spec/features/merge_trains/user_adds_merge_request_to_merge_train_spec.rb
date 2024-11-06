@@ -94,7 +94,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
             stub_feature_flags(merge_when_checks_pass_merge_train: false)
           end
 
-          it 'displays the expected content', :js do
+          it 'displays the expected content', :js, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471186' do
             expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
 
             find_by_testid('pipeline-mini-graph-dropdown-toggle').click
