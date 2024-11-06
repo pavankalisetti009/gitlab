@@ -856,6 +856,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               allow(client).to receive(:direct_access_token)
                 .and_return({ status: :success, token: token, expires_at: expected_expiration })
             end
+            stub_feature_flags(fireworks_qwen_code_completion: false)
           end
 
           let(:expected_response) do
