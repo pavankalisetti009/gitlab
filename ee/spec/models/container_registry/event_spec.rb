@@ -131,71 +131,13 @@ RSpec.describe ContainerRegistry::Event do
         context 'when project is present' do
           include_context 'with project present'
 
-          context 'when originator is a user' do
-            let(:event_data) { { project_id: project.id, user_id: originator.id, image: image_path } }
+          let(:event_data) { { project_id: project.id, image: image_path } }
 
-            where(:user_type) do
-              %w[
-                personal_access_token
-                build
-                gitlab_or_ldap
-              ]
-            end
-
-            with_them do
-              let_it_be(:originator) { create(:user, username: 'username') }
-
-              let(:user_info) do
-                {
-                  token_type: user_type,
-                  username: originator.username,
-                  user_id: originator.id
-                }
-              end
-
-              let(:token) do
-                JSONWebToken::RSAToken.new(rsa_key).tap do |token|
-                  token[:user_info] = user_info
-                end
-              end
-
-              let(:raw_event) do
-                {
-                  'action' => action,
-                  'target' => target,
-                  'actor' => { 'user_type' => user_type, 'name' => originator.username, 'user' => token.encoded }
-                }
-              end
-
-              include_examples 'publishing event'
-            end
-          end
-
-          context 'when originator is not a user' do
-            let(:event_data) { { project_id: project.id, user_id: project.owner.id, image: image_path } }
-            let_it_be(:originator) { create(:deploy_token, username: 'username', id: 3) }
-            let(:raw_event) do
-              {
-                'action' => action,
-                'target' => target,
-                'actor' => { 'user_type' => 'deploy_token', 'name' => originator.username }
-              }
-            end
-
-            include_examples 'publishing event'
-          end
+          include_examples 'publishing event'
         end
 
         context 'when project is not present' do
           let(:repository) { 'does/not/exist' }
-          let_it_be(:originator) { create(:deploy_token, username: 'username', id: 3) }
-          let(:raw_event) do
-            {
-              'action' => action,
-              'target' => target,
-              'actor' => { 'user_type' => 'deploy_token', 'name' => originator.username }
-            }
-          end
 
           it 'does not publish an event' do
             expect { handle! }
