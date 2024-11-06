@@ -14,4 +14,12 @@ RSpec.describe WikiPage::Meta, feature_category: :wiki do
     let(:container) { group }
     let(:other_container) { other_group }
   end
+
+  describe '#resource_parent' do
+    subject(:meta) { described_class.new(title: 'some title', namespace: group) }
+
+    it 'returns container' do
+      expect(meta.resource_parent).to eq(group)
+    end
+  end
 end
