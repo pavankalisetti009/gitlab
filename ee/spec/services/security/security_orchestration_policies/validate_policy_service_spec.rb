@@ -602,7 +602,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
       context 'when exceeding limit' do
         before do
-          policy[:actions] = Array.new(limit + 1) { action }
+          policy[:actions] = [action] * (limit + 1)
         end
 
         it { expect(result[:status]).to eq(:error) }
@@ -621,6 +621,52 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
               scan_execution_policy_action_limit: false,
               scan_execution_policy_action_limit_group: false)
           end
+
+          it { expect(result[:status]).to eq(:success) }
+        end
+      end
+    end
+
+    shared_examples 'checks merge request approval policy action limit' do
+      let(:policy_type) { 'approval_policy' }
+      let(:limit) { Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT }
+      let_it_be(:group) { create(:group) }
+      let_it_be(:other_user) { create(:user) }
+      let(:action) do
+        {
+          type: 'require_approval',
+          group_approvers: [group.name],
+          user_approvers: [other_user.username]
+        }
+      end
+
+      context 'when below limit' do
+        before do
+          policy[:actions] = [action]
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
+      context 'without actions' do
+        before do
+          policy[:actions] = nil
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
+      context 'when exceeding limit' do
+        before do
+          policy[:actions] = [action] * (limit + 1)
+        end
+
+        it { expect(result[:status]).to eq(:error) }
+
+        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 5 approver actions"
+
+        context 'with scan execution policy' do
+          let(:policy_type) { 'scan_execution_policy' }
 
           it { expect(result[:status]).to eq(:success) }
         end
@@ -647,6 +693,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if vulnerability_age is valid'
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks scan execution policy action limit'
+      it_behaves_like 'checks merge request approval policy action limit'
     end
 
     context 'when project is provided' do
@@ -702,6 +749,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
         it_behaves_like 'checks scan execution policy action limit'
+        it_behaves_like 'checks merge request approval policy action limit'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
           where(:policy_type, :branch_type, :status) do
             :scan_execution_policy | 'all' | :success
@@ -800,6 +848,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
       it_behaves_like 'checks scan execution policy action limit'
+      it_behaves_like 'checks merge request approval policy action limit'
 
       it_behaves_like 'pipeline execution policy validation'
 
