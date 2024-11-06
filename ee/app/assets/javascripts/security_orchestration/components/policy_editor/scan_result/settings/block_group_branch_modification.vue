@@ -9,6 +9,7 @@ import {
 import { createAlert } from '~/alert';
 import Api from '~/api';
 import { __, s__ } from '~/locale';
+import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING,
@@ -20,7 +21,6 @@ import {
   EXCEPTION_GROUPS_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
 } from '../lib/settings';
-import { renderMultiSelectText } from '../../utils';
 
 export default {
   name: 'BlockGroupBranchModification',
@@ -52,11 +52,8 @@ export default {
     };
   },
   computed: {
-    groupItems() {
-      return this.groups.reduce((acc, { full_name: fullName, full_path: fullPath }) => {
-        acc[fullPath] = fullName;
-        return acc;
-      }, {});
+    exceptionItems() {
+      return this.exceptions.map(({ id }) => id);
     },
     text() {
       return this.selectedExceptionType === WITHOUT_EXCEPTIONS
@@ -64,11 +61,11 @@ export default {
         : BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING;
     },
     toggleText() {
-      return renderMultiSelectText({
-        selected: this.exceptions,
-        items: this.groupItems,
-        itemTypeName: __('groups'),
-        useAllSelected: false,
+      return getSelectedOptionsText({
+        options: this.groups,
+        selected: this.exceptionItems,
+        placeholder: __('Select groups'),
+        maxOptionsShown: 2,
       });
     },
   },
@@ -86,7 +83,7 @@ export default {
   },
   methods: {
     createGroupObject(group) {
-      return { ...group, text: group.full_name, value: group.full_path };
+      return { ...group, text: group.full_name, value: group.id };
     },
     async fetchGroups() {
       this.loading = true;
@@ -116,7 +113,7 @@ export default {
     },
     updateGroupExceptionValue(value) {
       if (this.enabled) {
-        this.emitChangeEvent({ enabled: this.enabled, exceptions: value });
+        this.emitChangeEvent({ enabled: this.enabled, exceptions: value.map((id) => ({ id })) });
       }
     },
     emitChangeEvent(value) {
@@ -156,7 +153,7 @@ export default {
           multiple
           :items="groups"
           :loading="loading"
-          :selected="exceptions"
+          :selected="exceptionItems"
           :toggle-text="toggleText"
           @select="updateGroupExceptionValue"
         >
