@@ -49855,6 +49855,9 @@ msgstr ""
 msgid "SecurityOrchestration|If %{scanners} of the default branch finds %{severity_level} vulnerabilities are no longer detected."
 msgstr ""
 
+msgid "SecurityOrchestration|If any of the following occur:"
+msgstr ""
+
 msgid "SecurityOrchestration|If any scanner finds a newly detected critical vulnerability in an open merge request targeting the main branch, then require two approvals from any two members of the application security team."
 msgstr ""
 
@@ -50049,7 +50052,7 @@ msgstr ""
 msgid "SecurityOrchestration|Policy type"
 msgstr ""
 
-msgid "SecurityOrchestration|Require %{approvals} %{plural} from %{approvers} if any of the following occur:"
+msgid "SecurityOrchestration|Require %{approvals} %{plural} from %{approvers}"
 msgstr ""
 
 msgid "SecurityOrchestration|Require Approvers"
