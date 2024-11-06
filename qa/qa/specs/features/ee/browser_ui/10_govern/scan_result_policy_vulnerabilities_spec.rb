@@ -54,6 +54,11 @@ module QA
 
       before do
         project.add_member(approver)
+        QA::Support::Waiter.wait_until(sleep_interval: 1,
+          message: "Waiting for approver user to be added as project member") do
+          project.find_member(approver.username)
+        end
+
         scan_result_policy_commit # fabricate scan result policy commit
 
         Flow::Login.sign_in
