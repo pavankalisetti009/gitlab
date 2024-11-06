@@ -11,8 +11,8 @@ module Elastic
 
       settings Elastic::Latest::Config.settings.to_hash.deep_merge(
         index: {
-          number_of_shards: Elastic::AsJSON.new { Elastic::IndexSetting[self.index_name].number_of_shards },
-          number_of_replicas: Elastic::AsJSON.new { Elastic::IndexSetting[self.index_name].number_of_replicas }
+          number_of_shards: Elastic::AsJSON.new { Elastic::IndexSetting[index_name].number_of_shards },
+          number_of_replicas: Elastic::AsJSON.new { Elastic::IndexSetting[index_name].number_of_replicas }
         }
       )
 
