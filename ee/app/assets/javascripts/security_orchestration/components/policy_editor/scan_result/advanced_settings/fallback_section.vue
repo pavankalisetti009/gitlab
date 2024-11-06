@@ -1,7 +1,7 @@
 <script>
 import { GlIcon, GlFormRadioGroup, GlFormRadio, GlPopover, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { CLOSED, OPEN } from './constants';
+import { CLOSED, OPEN } from '../constants';
 
 export default {
   i18n: {

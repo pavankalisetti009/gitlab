@@ -3,9 +3,9 @@ import {
   CLOSED,
   OPEN,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/constants';
-import FallbackAndEdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/fallback_and_edge_cases_section.vue';
-import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/fallback_section.vue';
-import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/edge_cases_section.vue';
+import FallbackAndEdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_and_edge_cases_section.vue';
+import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_section.vue';
+import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/edge_cases_section.vue';
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 
 describe('FallbackAndEdgeCasesSection', () => {
