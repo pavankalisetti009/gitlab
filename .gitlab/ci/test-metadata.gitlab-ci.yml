@@ -57,14 +57,10 @@ update-tests-metadata:
 verify-tests-metadata:
   extends:
     - .default-retry
-    - .ruby-cache
     - .test-metadata:rules:update-tests-metadata
   image: ${GITLAB_DEPENDENCY_PROXY_ADDRESS}ruby:${RUBY_VERSION}
   stage: post-test
   needs:
     - update-tests-metadata
-  before_script:
-    - source scripts/utils.sh
-    - bundle_install_script
   script:
-    - bundle exec scripts/setup/tests-metadata.rb verify
+    - scripts/setup/tests-metadata.rb verify
