@@ -95,3 +95,5 @@ export const generateMockGroups = (ids) =>
     name: `${id}`,
     fullPath: `group-${id}-full-path`,
   }));
+
+export const TOP_LEVEL_GROUPS = [{ id: 1, full_name: 'Group-1', full_path: 'group-1' }];

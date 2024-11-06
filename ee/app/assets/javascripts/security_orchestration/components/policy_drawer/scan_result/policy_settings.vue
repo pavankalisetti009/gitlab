@@ -1,6 +1,7 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import Api from '~/api';
+import { s__, sprintf } from '~/locale';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION,
   SETTINGS_HUMANIZED_STRINGS,
@@ -21,6 +22,12 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      groups: [],
+      loading: false,
+    };
+  },
   computed: {
     hasSettings() {
       return Boolean(this.settingsList.length);
@@ -29,7 +36,30 @@ export default {
       return Object.entries(this.settings).filter(this.isValidSetting).map(this.formatSettingItem);
     },
   },
+  async mounted() {
+    await this.fetchGroups();
+  },
   methods: {
+    async fetchGroups() {
+      this.loading = true;
+      try {
+        this.groups = await Api.groups('', { top_level_only: true });
+      } catch {
+        this.groups = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    getGroupName(id) {
+      const defaultName = sprintf(s__('SecurityOrchestration|Group with id: %{id}'), { id });
+
+      if (this.loading) {
+        return defaultName;
+      }
+
+      const group = this.groups.find((g) => g.id === id);
+      return group?.full_name ?? defaultName;
+    },
     isGroupBranchModSettingWithExceptions(key, value) {
       return key === BLOCK_GROUP_BRANCH_MODIFICATION && value?.enabled;
     },
@@ -63,8 +93,8 @@ export default {
           <gl-sprintf :message="$options.i18n.blockGroupBranchModificationExceptions">
             <template #exceptions>
               <ul data-testid="group-branch-exceptions">
-                <li v-for="exception in value.exceptions" :key="exception" class="gl-mt-2">
-                  {{ exception }}
+                <li v-for="exception in value.exceptions" :key="exception.id" class="gl-mt-2">
+                  {{ getGroupName(exception.id) }}
                 </li>
               </ul>
             </template>
