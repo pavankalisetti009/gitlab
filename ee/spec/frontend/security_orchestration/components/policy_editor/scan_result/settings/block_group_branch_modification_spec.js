@@ -63,26 +63,26 @@ describe('BlockGroupBranchModification', () => {
     });
 
     it('renders when enabled and with exceptions', () => {
-      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
       expect(findHasExceptionsDropdown().props('selected')).toBe(EXCEPT_GROUPS);
       expect(findExceptionsDropdown().exists()).toBe(true);
-      expect(findExceptionsDropdown().props('selected')).toEqual(['group-1', 'group-2']);
+      expect(findExceptionsDropdown().props('selected')).toEqual([1, 2]);
     });
   });
 
   describe('events', () => {
     it('updates the policy when exceptions are added', async () => {
-      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
       await findHasExceptionsDropdown().vm.$emit('select', WITHOUT_EXCEPTIONS);
       expect(wrapper.emitted('change')[0][0]).toEqual(true);
     });
 
     it('updates the policy when exceptions are changed', async () => {
-      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
-      await findExceptionsDropdown().vm.$emit('select', ['group-2']);
+      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      await findExceptionsDropdown().vm.$emit('select', [1]);
       expect(wrapper.emitted('change')[0][0]).toEqual({
         enabled: true,
-        exceptions: ['group-2'],
+        exceptions: [{ id: 1 }],
       });
     });
 
@@ -96,7 +96,7 @@ describe('BlockGroupBranchModification', () => {
   describe('error', () => {
     it('handles error', async () => {
       jest.spyOn(Api, 'groups').mockRejectedValue();
-      createComponent({ enabled: true, exceptions: ['group-1', 'group-2'] });
+      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
       await waitForPromises();
       expect(findExceptionsDropdown().props('items')).toEqual([]);
       expect(createAlert).toHaveBeenCalledWith({
