@@ -9,9 +9,7 @@ const THRESHOLD_FOR_APPROVERS = 3;
 
 export default {
   i18n: {
-    actionText: s__(
-      'SecurityOrchestration|Require %{approvals} %{plural} from %{approvers} if any of the following occur:',
-    ),
+    actionText: s__('SecurityOrchestration|Require %{approvals} %{plural} from %{approvers}'),
     noActionText: s__('SecurityOrchestration|Requires no approvals if any of the following occur:'),
     additional_approvers: s__('SecurityOrchestration|, and %{count} more'),
     and: __(' and '),
@@ -31,6 +29,11 @@ export default {
       type: Array,
       required: true,
     },
+    isLastItem: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     approvalsRequired() {
@@ -42,8 +45,14 @@ export default {
     displayedApprovers() {
       return this.approvers.slice(0, THRESHOLD_FOR_APPROVERS);
     },
+    isEmptyAction() {
+      return isEmpty(this.action);
+    },
+    showSeparator() {
+      return !this.isLastItem && !this.isEmptyAction;
+    },
     message() {
-      return isEmpty(this.action) ? this.$options.i18n.noActionText : this.$options.i18n.actionText;
+      return this.isEmptyAction ? this.$options.i18n.noActionText : this.$options.i18n.actionText;
     },
   },
   methods: {
@@ -116,5 +125,9 @@ export default {
         </span>
       </template>
     </gl-sprintf>
+
+    <span v-if="showSeparator" class="action-separator gl-my-1 gl-block gl-text-subtle">{{
+      $options.i18n.and
+    }}</span>
   </span>
 </template>

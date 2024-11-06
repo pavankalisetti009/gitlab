@@ -27,6 +27,7 @@ describe('DetailsDrawer component', () => {
   const findToggleList = () => wrapper.findComponent(ToggleList);
   const findSettings = () => wrapper.findComponent(Settings);
   const findBotMessage = () => wrapper.findByTestId('policy-bot-message');
+  const findApprovalSubheader = () => wrapper.findByTestId('approvals-subheader');
 
   const factory = ({ props } = {}) => {
     wrapper = shallowMountExtended(DetailsDrawer, {
@@ -86,12 +87,14 @@ describe('DetailsDrawer component', () => {
       it('renders the "Approvals" component correctly', () => {
         factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
         expect(findPolicyApprovals().exists()).toBe(true);
+        expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+        expect(findApprovalSubheader().exists()).toBe(true);
         expect(findPolicyApprovals().props('approvers')).toStrictEqual([
-          ...mockProjectWithAllApproverTypesScanResultPolicy.allGroupApprovers,
-          ...mockProjectWithAllApproverTypesScanResultPolicy.roleApprovers.map((r) =>
+          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].allGroups,
+          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].roles.map((r) =>
             convertToTitleCase(r.toLowerCase()),
           ),
-          ...mockProjectWithAllApproverTypesScanResultPolicy.userApprovers,
+          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].users,
         ]);
       });
 
@@ -112,6 +115,7 @@ describe('DetailsDrawer component', () => {
           },
         });
         expect(findBotMessage().exists()).toBe(false);
+        expect(findApprovalSubheader().exists()).toBe(false);
       });
 
       it('shows the message when the action is not included', () => {
@@ -141,6 +145,7 @@ describe('DetailsDrawer component', () => {
           },
         });
         expect(findBotMessage().exists()).toBe(true);
+        expect(findApprovalSubheader().exists()).toBe(false);
       });
     });
   });

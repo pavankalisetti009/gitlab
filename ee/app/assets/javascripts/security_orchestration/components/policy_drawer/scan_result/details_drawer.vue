@@ -2,7 +2,11 @@
 import { GlSprintf } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import { BOT_MESSAGE_TYPE, fromYaml } from '../../policy_editor/scan_result/lib';
+import {
+  BOT_MESSAGE_TYPE,
+  fromYaml,
+  REQUIRE_APPROVAL_TYPE,
+} from '../../policy_editor/scan_result/lib';
 import { SUMMARY_TITLE } from '../constants';
 import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
@@ -13,6 +17,7 @@ import { humanizeRules } from './utils';
 
 export default {
   i18n: {
+    approvalsSubheader: s__('SecurityOrchestration|If any of the following occur:'),
     fallbackTitle: s__('SecurityOrchestration|Fallback behavior in case of policy failure'),
     summary: SUMMARY_TITLE,
     scanResult: s__('SecurityOrchestration|Merge request approval'),
@@ -58,26 +63,17 @@ export default {
     parsedYaml() {
       return fromYaml({ manifest: this.policy.yaml });
     },
-    requireApproval() {
-      return this.actions?.find((action) => action.type === 'require_approval');
+    hasRequireApprovals() {
+      return this.requireApprovals.length > 0;
+    },
+    requireApprovals() {
+      return this.actions?.filter((action) => action.type === REQUIRE_APPROVAL_TYPE) || [];
     },
     policyScope() {
       return this.policy?.policyScope;
     },
-    approvers() {
-      return [
-        ...this.policy.allGroupApprovers,
-        ...this.policy.roleApprovers.map((r) => {
-          return {
-            GUEST: __('Guest'),
-            REPORTER: __('Reporter'),
-            DEVELOPER: __('Developer'),
-            MAINTAINER: __('Maintainer'),
-            OWNER: __('Owner'),
-          }[r];
-        }),
-        ...this.policy.userApprovers,
-      ];
+    actionApprovers() {
+      return this.policy?.actionApprovers || [];
     },
     settings() {
       return this.parsedYaml?.approval_settings || {};
@@ -93,6 +89,30 @@ export default {
     showBranchExceptions(exceptions) {
       return exceptions?.length > 0;
     },
+    isLastApproverItem(index) {
+      return this.actionApprovers.length - 1 === index;
+    },
+    mapApproversToArray(index) {
+      const approvers = this.actionApprovers[index];
+
+      if (approvers === undefined) {
+        return [];
+      }
+
+      return [
+        ...approvers.allGroups,
+        ...approvers.roles.map((role) => {
+          return {
+            GUEST: __('Guest'),
+            REPORTER: __('Reporter'),
+            DEVELOPER: __('Developer'),
+            MAINTAINER: __('Maintainer'),
+            OWNER: __('Owner'),
+          }[role];
+        }),
+        ...approvers.users,
+      ];
+    },
   },
 };
 </script>
@@ -107,7 +127,27 @@ export default {
   >
     <template v-if="parsedYaml" #summary>
       <info-row data-testid="policy-summary" :label="$options.i18n.summary">
-        <approvals :action="requireApproval" :approvers="approvers" />
+        <approvals
+          v-for="(action, index) in requireApprovals"
+          :key="action.id"
+          class="gl-mb-2 gl-block"
+          :action="action"
+          :is-last-item="!shouldRenderBotMessage"
+          :approvers="mapApproversToArray(index)"
+        />
+
+        <div v-if="shouldRenderBotMessage" class="gl-mt-2" data-testid="policy-bot-message">
+          {{ s__('SecurityOrchestration|Send a bot message when the conditions match.') }}
+        </div>
+
+        <p
+          v-if="hasRequireApprovals"
+          data-testid="approvals-subheader"
+          class="gl-mb-0 gl-mt-6 gl-block"
+        >
+          {{ $options.i18n.approvalsSubheader }}
+        </p>
+
         <div
           v-for="(
             { summary, branchExceptions, licenses, criteriaMessage, criteriaList }, idx
@@ -133,9 +173,6 @@ export default {
               {{ criteria }}
             </li>
           </ul>
-          <div v-if="shouldRenderBotMessage" class="gl-mt-5" data-testid="policy-bot-message">
-            {{ s__('SecurityOrchestration|Send a bot message when the conditions match.') }}
-          </div>
           <settings :settings="settings" />
         </div>
       </info-row>

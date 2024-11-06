@@ -18,6 +18,19 @@ query projectScanResultPolicies(
           ...PolicyScope
         }
         deprecatedProperties
+        actionApprovers {
+          allGroups {
+            id
+            webUrl
+            fullPath
+          }
+          roles
+          users {
+            id
+            webUrl
+            name
+          }
+        }
         userApprovers {
           id
           name

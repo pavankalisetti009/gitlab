@@ -8,6 +8,7 @@ describe('PolicyApprovals component', () => {
 
   const findApprovers = () => wrapper.findAll('[data-testid]');
   const findLinks = () => wrapper.findAllComponents(GlLink);
+  const findSeparator = () => wrapper.find('.action-separator');
 
   const factory = (propsData) => {
     wrapper = mount(PolicyApprovals, {
@@ -51,6 +52,10 @@ describe('PolicyApprovals component', () => {
         });
       });
 
+      it('renders separator for all approvers', () => {
+        expect(findSeparator().exists()).toBe(true);
+      });
+
       it('renders link with proper attributes for all approvers', () => {
         findApprovers().wrappers.forEach((link, index) => {
           const expectedAttribute = expectedTestIds[index][0];
@@ -61,10 +66,29 @@ describe('PolicyApprovals component', () => {
     },
   );
 
+  describe('not last item text', () => {
+    it('does not render last item text if it is not a last item', () => {
+      factory({ action: { approvals_required: 1 }, approvers: createRequiredApprovers(5) });
+
+      expect(wrapper.text()).toContain('approval');
+      expect(wrapper.text()).not.toContain('if any of the following occur:');
+    });
+  });
+
   describe('zero approvers', () => {
     it('shows no approval text', () => {
       factory({ approvers: [] });
       expect(wrapper.text()).toBe('Requires no approvals if any of the following occur:');
+      expect(findSeparator().exists()).toBe(false);
+    });
+  });
+
+  describe('last item', () => {
+    it('does not render separator for last item', () => {
+      const action = { approvals_required: 1 };
+      factory({ action, approvers: createRequiredApprovers(3), isLastItem: true });
+
+      expect(findSeparator().exists()).toBe(false);
     });
   });
 });

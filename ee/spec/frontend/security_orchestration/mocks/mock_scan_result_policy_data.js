@@ -217,6 +217,7 @@ export const mockProjectScanResultPolicy = {
   deprecatedProperties: [],
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: false,
+  actionApprovers: [],
   userApprovers: [],
   allGroupApprovers: [],
   roleApprovers: [],
@@ -237,6 +238,7 @@ export const mockGroupScanResultPolicy = {
   deprecatedProperties: [],
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: mockDefaultBranchesScanResultObject.enabled,
+  actionApprovers: [],
   userApprovers: [],
   allGroupApprovers: [],
   roleApprovers: [],
@@ -360,6 +362,7 @@ export const mockProjectWithBranchesScanResultPolicy = {
   yaml: mockWithBranchesScanResultManifest,
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: true,
+  actionApprovers: [],
   userApprovers: [{ name: 'the.one' }],
   allGroupApprovers: [],
   roleApprovers: [],
@@ -378,9 +381,13 @@ export const mockProjectWithAllApproverTypesScanResultPolicy = {
   yaml: mockDefaultBranchesScanResultManifest,
   editPath: '/policies/policy-name/edit?type="approval_policy"',
   enabled: false,
-  userApprovers: [{ name: 'the.one' }],
-  allGroupApprovers: [{ fullPath: 'the.one.group' }],
-  roleApprovers: ['OWNER'],
+  actionApprovers: [
+    {
+      users: [{ name: 'the.one' }],
+      allGroups: [{ fullPath: 'the.one.group' }],
+      roles: ['OWNER'],
+    },
+  ],
   source: {
     __typename: 'ProjectSecurityPolicySource',
     project: {
