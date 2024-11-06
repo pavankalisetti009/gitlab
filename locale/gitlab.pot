@@ -11701,6 +11701,9 @@ msgstr ""
 msgid "CiCatalog|Partner"
 msgstr ""
 
+msgid "CiCatalog|Private - This component project can only be viewed by project members."
+msgstr ""
+
 msgid "CiCatalog|Publish the CI/CD components in this project to the CI/CD Catalog"
 msgstr ""
 
@@ -11747,6 +11750,9 @@ msgid "CiCatalog|There was an error fetching CI/CD Catalog projects."
 msgstr ""
 
 msgid "CiCatalog|There was an error fetching the CI/CD Catalog project count."
+msgstr ""
+
+msgid "CiCatalog|This component project can only be viewed by project members."
 msgstr ""
 
 msgid "CiCatalog|This project is no longer a CI/CD Catalog project."
