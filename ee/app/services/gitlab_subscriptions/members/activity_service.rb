@@ -6,6 +6,7 @@ module GitlabSubscriptions
       include ExclusiveLeaseGuard
 
       LEASE_KEY_FORMAT = "gitlab_subscriptions:members_activity_event:%s:%s"
+      LEASE_TIMEOUT = 24.hours.to_i
 
       def self.lease_taken?(namespace_id, user_id)
         Gitlab::ExclusiveLease.get_uuid(format(LEASE_KEY_FORMAT, namespace_id, user_id))
@@ -37,7 +38,7 @@ module GitlabSubscriptions
       attr_reader :user, :namespace
 
       def lease_timeout
-        (Time.current.end_of_day - Time.current).to_i
+        LEASE_TIMEOUT
       end
 
       # Used by ExclusiveLeaseGuard
