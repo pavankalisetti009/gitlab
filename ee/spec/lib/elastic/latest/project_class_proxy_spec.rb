@@ -80,35 +80,6 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
           )
         end
       end
-
-      context 'when search_project_query_builder flag is false' do
-        before do
-          stub_feature_flags(search_project_query_builder: false)
-        end
-
-        it 'has the correct named queries' do
-          result.response
-
-          assert_named_queries(
-            'project:match:search_terms',
-            'doc:is_a:project',
-            'project:archived:false'
-          )
-        end
-
-        context 'when include_archived is set' do
-          it 'does not have a filter for archived' do
-            options[:include_archived] = true
-            result.response
-
-            assert_named_queries(
-              'project:match:search_terms',
-              'doc:is_a:project',
-              without: %w[project:archived:false]
-            )
-          end
-        end
-      end
     end
   end
 
