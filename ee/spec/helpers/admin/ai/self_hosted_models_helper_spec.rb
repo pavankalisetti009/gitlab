@@ -4,19 +4,30 @@ require "spec_helper"
 
 RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hosted_models" do
   describe '#model_choices_as_options' do
-    it 'returns an array of hashes with model options' do
+    it 'returns an array of hashes with model options sorted alphabetically' do
       expected_result = [
-        { modelValue: "MISTRAL", modelName: "Mistral" },
-        { modelValue: "LLAMA3", modelName: "Llama3" },
-        { modelValue: "CODEGEMMA", modelName: "Codegemma" },
-        { modelValue: "CODESTRAL", modelName: "Codestral" },
-        { modelValue: "CODELLAMA", modelName: "Codellama" },
-        { modelValue: "DEEPSEEKCODER", modelName: "Deepseekcoder" },
         { modelValue: "CLAUDE_3", modelName: "Claude 3" },
-        { modelValue: "GPT", modelName: "Gpt" }
+        { modelValue: "CODELLAMA", modelName: "Code Llama" },
+        { modelValue: "CODEGEMMA", modelName: "CodeGemma" },
+        { modelValue: "DEEPSEEKCODER", modelName: "DeepSeek Coder" },
+        { modelValue: "GPT", modelName: "GPT" },
+        { modelValue: "LLAMA3", modelName: "Llama 3" },
+        { modelValue: "MISTRAL", modelName: "Mistral" },
+        { modelValue: "CODESTRAL", modelName: "Mistral Codestral" }
       ]
 
-      expect(helper.model_choices_as_options).to match_array(expected_result)
+      expect(helper.model_choices_as_options).to eq(expected_result)
+    end
+
+    it 'humanizes the model name when there is no mapped name available' do
+      allow(::Ai::SelfHostedModel).to receive(:models).and_return(["unmapped_model"])
+
+      expect(helper.model_choices_as_options).to eq([
+        {
+          modelValue: "UNMAPPED_MODEL",
+          modelName: "Unmapped model"
+        }
+      ])
     end
   end
 end
