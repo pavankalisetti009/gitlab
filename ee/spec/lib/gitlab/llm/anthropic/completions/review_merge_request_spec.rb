@@ -120,22 +120,34 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     context 'when the chat client returns a successful response' do
       let(:first_review_response) { { content: [{ text: first_review_answer }] } }
       let(:first_review_answer) do
-        %(
+        <<~RESPONSE
           <review>
-            <comment priority="3" line="2">First comment with suggestions</comment>
-          </review>'
-        )
+          <comment priority="3" line="2">
+          First comment with suggestions
+          With additional line
+          <from>
+              first offending line
+                second offending line
+          </from>
+          <to>
+              first improved line
+                second improved line
+          </to>
+          Some more comments
+          </comment>
+          </review>
+        RESPONSE
       end
 
       let(:second_review_response) { { content: [{ text: second_review_answer }] } }
       let(:second_review_answer) do
-        %(
+        <<~RESPONSE
           <review>
-            <comment priority="3" line="1">Second comment with suggestions</comment>
-            <comment priority="3" line="2">Third comment with suggestions</comment>
-            <comment priority="2" line="2">Fourth comment with suggestions</comment>
-          </review>'
-        )
+          <comment priority="3" line="1">Second comment with suggestions</comment>
+          <comment priority="3" line="2">Third comment with suggestions</comment>
+          <comment priority="2" line="2">Fourth comment with suggestions</comment>
+          </review>
+        RESPONSE
       end
 
       let(:summary_answer) { 'Helpful review summary' }
@@ -178,7 +190,16 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
 
         third_note = diff_notes[2]
-        expect(third_note.note).to eq 'First comment with suggestions'
+        expect(third_note.note).to eq <<~NOTE_CONTENT
+          First comment with suggestions
+          With additional line
+          ```suggestion:-0+1
+              first improved line
+                second improved line
+          ```
+          Some more comments
+        NOTE_CONTENT
+
         expect(third_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
@@ -208,25 +229,141 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
+      context 'when the content includes other elements' do
+        let(:first_review_answer) do
+          <<~RESPONSE
+            <review>
+            <comment priority="3" line="2">
+            First comment with suggestions
+            <from>
+                <div>first offending line</div>
+                  <p>second offending line</p>
+            </from>
+            <to>
+                <div>first improved line</div>
+                  <p>second improved line</p>
+            </to>
+            Some more comments
+            </comment>
+            </review>
+          RESPONSE
+        end
+
+        let(:second_review_response) { {} }
+
+        it 'returns the correctly formatted suggestion block' do
+          completion.execute
+
+          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
+          expect(diff_note.note).to eq <<~NOTE_CONTENT
+            First comment with suggestions
+            ```suggestion:-0+1
+                <div>first improved line</div>
+                  <p>second improved line</p>
+            ```
+            Some more comments
+          NOTE_CONTENT
+        end
+
+        context 'when the content contains additional <from> and <to>' do
+          # This format of response is intentional.
+          # It is to represent actual code changes in an MR wherein the diff
+          # actually includes `<from>` and `<to>` elements.
+          let(:first_review_answer) do
+            <<~RESPONSE
+              <review>
+              <comment priority="3" line="2">
+              First comment with suggestions
+              <from>
+                  something fishy
+                  </from>
+                  <to>
+                     something fishy
+                  </to>
+                  <from>
+              </from>
+              <to>
+                  something better
+              </to>
+              </comment>
+              </review>
+            RESPONSE
+          end
+
+          it 'returns the content as is' do
+            completion.execute
+
+            diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
+            expect(diff_note.note).to eq <<~NOTE_CONTENT
+              First comment with suggestions
+              <from>
+                  something fishy
+                  </from>
+                  <to>
+                     something fishy
+                  </to>
+                  <from>
+              </from>
+              <to>
+                  something better
+              </to>
+            NOTE_CONTENT
+          end
+        end
+      end
+
+      context 'when LLM returns incorrecly formatted XML' do
+        let(:first_review_answer) do
+          <<~RESPONSE
+            <review>
+            <comment priority="3" line="2">
+            First comment with suggestions
+            <to>
+                first improved line
+                  second improved line
+            </to>
+            Some more comments
+            </comment>
+            </review>
+          RESPONSE
+        end
+
+        let(:second_review_response) { {} }
+
+        it 'returns the content as is' do
+          completion.execute
+
+          diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).last
+          expect(diff_note.note).to eq <<~NOTE_CONTENT
+            First comment with suggestions
+            <to>
+                first improved line
+                  second improved line
+            </to>
+            Some more comments
+          NOTE_CONTENT
+        end
+      end
+
       context 'when the chat client response includes invalid comments' do
         let(:first_review_response) { { content: [{ text: first_review_answer }] } }
         let(:first_review_answer) do
-          %(
+          <<~RESPONSE
             <review>
-              <comment>First comment with suggestions</comment>
-              <comment priority="3" line="2">Second comment with suggestions</comment>
-            </review>'
-          )
+            <comment>First comment with suggestions</comment>
+            <comment priority="3" line="2">Second comment with suggestions</comment>
+            </review>
+          RESPONSE
         end
 
         let(:second_review_response) { { content: [{ text: second_review_answer }] } }
         let(:second_review_answer) do
-          %(
+          <<~RESPONSE
             <review>
-              <comment priority="" line="1">Third comment with suggestions</comment>
-              <comment priority="3" line="">Fourth comment with suggestions</comment>
-            </review>'
-          )
+            <comment priority="" line="1">Third comment with suggestions</comment>
+            <comment priority="3" line="">Fourth comment with suggestions</comment>
+            </review>
+          RESPONSE
         end
 
         it 'creates a valid comment only' do
@@ -244,22 +381,22 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       context 'when the chat client decides to return contents outside of <review> tag' do
         let(:first_review_response) { { content: [{ text: first_review_answer }] } }
         let(:first_review_answer) do
-          %(
+          <<~RESPONSE
             Let me explain how awesome this review is.
 
             <review>
-              <comment priority="3" line="2">First comment with suggestions</comment>
-            </review>'
-          )
+            <comment priority="3" line="2">First comment with suggestions</comment>
+            </review>
+          RESPONSE
         end
 
         let(:second_review_response) { { content: [{ text: second_review_answer }] } }
         let(:second_review_answer) do
-          %(
+          <<~RESPONSE
             <review>
-              <comment priority="3" line="1">Second comment with suggestions</comment>
-            </review>'
-          )
+            <comment priority="3" line="1">Second comment with suggestions</comment>
+            </review>
+          RESPONSE
         end
 
         it 'creates a valid comment only' do

@@ -54,7 +54,20 @@ module Gitlab
                - Wrap each comment in a <comment> element
                - Include a 'priority' attribute with the assigned priority (1, 2, or 3)
                - Include a 'line' attribute with the most relevant `new_line` number from the git diff
-               - When suggesting a code change, use code block format ```[your code suggestion]```
+               - When suggesting a change, use the following format:
+
+                 <from>
+                   [existing lines that you are suggesting to change]
+                 </from>
+                 <to>
+                   [your suggestion]
+                 </to>
+
+                 - <from> tag must contain existings lines before applying your suggestion
+                 - <to> tag must contain your suggestion
+                 - Your suggestion must match the indentation of the existing lines as the suggestion will be applied directly in place of existing line
+                 - Your suggestion must only include the lines that are actually changing from the existing lines
+
                - Wrap your entire response in `<review></review>` tag.
                - Just return `<review></review>` as your entire response, if the change is acceptable
 

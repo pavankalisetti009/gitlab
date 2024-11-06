@@ -75,16 +75,18 @@ module Gitlab
             return if note_not_required?(response_modifier)
 
             response = Nokogiri::XML.parse(response_modifier.response_body)
+
             response.css('review comment').each do |comment|
               next unless comment['line'].present? && comment['priority'].present?
 
-              # Occasionally LLM gets the line number wrong and it seems that
-              # it's be safer for us to try to match them as much as we can.
+              # NOTE: Occasionally LLM gets the line number wrong and it seems that
+              # it'd be safer for us to match them if possible.
               new_line = comment['line'].to_i
               line = diff_file.diff_lines.find { |line| line.new_line == new_line }
               next unless line.present?
 
-              draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
+              note_content = parsed_note_content(comment)
+              draft_note_params = build_draft_note_params(note_content, diff_file, line, diff_refs)
               next unless draft_note_params.present?
 
               @draft_notes_by_priority << [
@@ -92,6 +94,32 @@ module Gitlab
                 draft_note_params
               ]
             end
+          end
+
+          def parsed_note_content(comment)
+            # NOTE: We should avoid parsing the content if it is not in an expected suggestion format.
+            return comment.inner_html.delete_prefix("\n") unless comment.element_children.map(&:name) == %w[from to]
+
+            line_offset_below = 0
+
+            comment.children.map do |element|
+              case element.name
+              when 'from'
+                # NOTE: We're just interested in counting the existing lines as LLM doesn't
+                # seem to be able to reliably set this by itself.
+                # We need to remove the starting line breaks to count content lines correctly
+                # as the element.inner_html includes the initial line break as in `<from>\n`.
+                line_offset_below = element.inner_html.delete_prefix("\n").lines.count - 1
+                ''
+              when 'to'
+                "```suggestion:-0+#{line_offset_below}#{element.inner_html}```\n"
+              when 'text'
+                element.inner_text.delete_prefix("\n")
+              else
+                # NOTE: Just return as is if it is an unknown element type
+                element.to_html
+              end
+            end.join
           end
 
           def build_draft_note_params(comment, diff_file, line, diff_refs)
