@@ -2,6 +2,14 @@ import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const maxNameLength = 255;
+export const emptyRequirement = {
+  name: '',
+  description: '',
+};
+export const requirementDefaultValidationState = {
+  name: null,
+  description: null,
+};
 export const i18n = {
   basicInformation: s__('ComplianceFrameworks|Basic information'),
   basicInformationDescription: s__(

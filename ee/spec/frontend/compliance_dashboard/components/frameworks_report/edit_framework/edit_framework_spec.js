@@ -12,6 +12,7 @@ import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/ed
 import createComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
+import createComplianceRequirement from 'ee/compliance_dashboard/graphql/mutations/create_compliance_requirement.mutation.graphql';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -53,6 +54,7 @@ describe('Edit Framework Form', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findDeleteButtonTooltip = () => wrapper.findComponent(GlTooltip);
+  const findRequirementsSection = () => wrapper.findComponent(RequirementsSection);
 
   const invalidFeedback = (input) =>
     input.closest('[role=group]').querySelector('.invalid-feedback')?.textContent ?? '';
@@ -236,6 +238,78 @@ describe('Edit Framework Form', () => {
     expect(successHandler).toHaveBeenCalled();
   });
 
+  describe('Creating requirements', () => {
+    it('calls create requirement mutation after creating the framework if new requirements are added', async () => {
+      const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
+
+      const createFrameworkMutationMock = jest
+        .fn()
+        .mockResolvedValue(
+          createComplianceFrameworkMutationResponse('createComplianceFramework', 'framework'),
+        );
+
+      const createRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          createComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+            },
+            errors: [],
+          },
+        },
+      });
+
+      const stubHandlers = [
+        [createComplianceFrameworkMutation, createFrameworkMutationMock],
+        [createComplianceRequirement, createRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [
+          [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+          ...stubHandlers,
+        ],
+        routeParams: {},
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+      await waitForPromises();
+
+      const requirements = [
+        { name: 'Requirement 1', description: 'Description 1' },
+        { name: 'Requirement 2', description: 'Description 2' },
+      ];
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      requirements.forEach((requirement) => {
+        requirementsSection.vm.$emit('save', requirement);
+      });
+
+      const form = wrapper.find('form');
+      await form.trigger('submit');
+      await waitForPromises();
+
+      expect(createFrameworkMutationMock).toHaveBeenCalledTimes(1);
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirements.length);
+
+      requirements.forEach((requirement) => {
+        expect(createRequirementMutationMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            input: {
+              complianceFrameworkId: mockFrameworkId,
+              params: {
+                name: requirement.name,
+                description: requirement.description,
+              },
+            },
+          }),
+        );
+      });
+    });
+  });
+
   describe('Delete button', () => {
     it('does not render delete button if creating new framework', async () => {
       wrapper = createComponent(shallowMountExtended, { routeParams: {} });
@@ -380,7 +454,7 @@ describe('Edit Framework Form', () => {
     it('renders requirements section if creating new framework', async () => {
       wrapper = createComponent(shallowMountExtended, { routeParams: {} });
       await waitForPromises();
-      expect(wrapper.findComponent(RequirementsSection).exists()).toBe(true);
+      expect(findRequirementsSection().exists()).toBe(true);
     });
 
     it('render requiremnts section if editing framework', async () => {

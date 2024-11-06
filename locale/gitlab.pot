@@ -14164,6 +14164,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Action"
 msgstr ""
 
+msgid "ComplianceFrameworks|Add a new control"
+msgstr ""
+
 msgid "ComplianceFrameworks|Add framework"
 msgstr ""
 
@@ -14177,6 +14180,9 @@ msgid "ComplianceFrameworks|Basic information"
 msgstr ""
 
 msgid "ComplianceFrameworks|Cancel"
+msgstr ""
+
+msgid "ComplianceFrameworks|Choose a standard control"
 msgstr ""
 
 msgid "ComplianceFrameworks|Compliance framework created"
@@ -14206,7 +14212,16 @@ msgstr ""
 msgid "ComplianceFrameworks|Controls"
 msgstr ""
 
+msgid "ComplianceFrameworks|Controls are pre-defined rules that are configured for GitLab resources."
+msgstr ""
+
 msgid "ComplianceFrameworks|Create framework"
+msgstr ""
+
+msgid "ComplianceFrameworks|Create new requirement"
+msgstr ""
+
+msgid "ComplianceFrameworks|Create requirement"
 msgstr ""
 
 msgid "ComplianceFrameworks|Default framework will be applied automatically to any new project created in the group or sub group."
@@ -14228,6 +14243,9 @@ msgid "ComplianceFrameworks|Edit compliance framework"
 msgstr ""
 
 msgid "ComplianceFrameworks|Edit compliance framework: %{frameworkName}"
+msgstr ""
+
+msgid "ComplianceFrameworks|Edit requirement"
 msgstr ""
 
 msgid "ComplianceFrameworks|Error fetching compliance frameworks data. Please refresh the page or try a different framework"
@@ -14285,6 +14303,9 @@ msgid "ComplianceFrameworks|Project name"
 msgstr ""
 
 msgid "ComplianceFrameworks|Projects"
+msgstr ""
+
+msgid "ComplianceFrameworks|Remove control"
 msgstr ""
 
 msgid "ComplianceFrameworks|Required"

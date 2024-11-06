@@ -57,6 +57,7 @@ describe('Requirements section', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
+  const findNewRequirementButton = () => wrapper.findByTestId('add-requirement-button');
 
   const createComponent = () => {
     wrapper = mountExtended(RequirementsSection, {
@@ -66,12 +67,12 @@ describe('Requirements section', () => {
     });
   };
 
-  describe('when loaded', () => {
+  describe('Rendering', () => {
     beforeEach(() => {
       createComponent();
     });
 
-    it('renders title', () => {
+    it('Has title', () => {
       const title = wrapper.findByText('Requirements');
       expect(title.exists()).toBe(true);
     });
@@ -96,6 +97,15 @@ describe('Requirements section', () => {
       expect(frameworkRequirements[2]).toMatch(
         mockRequirements[idx].controlExpression.nodes[0].name,
       );
+    });
+  });
+  describe('Create requirement button', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders create requirement', () => {
+      expect(findNewRequirementButton().text()).toBe('New requirement');
     });
   });
 });
