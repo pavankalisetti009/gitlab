@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     countryClass() {
-      return this.trackActionForErrors ? 'js-track-error-gl-select' : '';
+      return this.trackActionForErrors ? 'js-track-error' : '';
     },
     countryOptionsWithDefault() {
       return [
@@ -126,7 +126,7 @@ export default {
         id="country"
         v-model="selectedCountry"
         name="country"
-        :class="countryClass"
+        :select-class="countryClass"
         :options="countryOptionsWithDefault"
         value-field="id"
         text-field="name"
