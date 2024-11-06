@@ -8,7 +8,9 @@ module EE
     override :visible_attributes
     def visible_attributes
       super + [
+        :allow_all_integrations,
         :allow_group_owners_to_manage_ldap,
+        :allowed_integrations,
         :automatic_purchased_storage_allocation,
         :check_namespace_plan,
         :elasticsearch_aws_access_key,

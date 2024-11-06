@@ -31,6 +31,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.zoekt_indexing_paused).to eq(false) }
     it { expect(setting.zoekt_search_enabled).to eq(false) }
     it { expect(setting.scan_execution_policies_action_limit).to be(10) }
+    it { expect(setting.allow_all_integrations).to eq(true) }
+    it { expect(setting.allowed_integrations).to eq([]) }
   end
 
   describe 'validations' do
@@ -565,6 +567,25 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
     describe 'zoekt settings', feature_category: :global_search do
       it { expect(described_class).to validate_jsonb_schema(['application_setting_zoekt_settings']) }
+    end
+
+    describe 'integrations settings', feature_category: :integrations do
+      it { expect(described_class).to validate_jsonb_schema(['application_setting_integrations']) }
+      it { is_expected.to allow_values(%w[jira jenkins beyond_identity]).for(:allowed_integrations) }
+      it { is_expected.not_to allow_values(['unknown_integration']).for(:allowed_integrations) }
+
+      context 'when allowed_integrations has not changed' do
+        before do
+          setting.allowed_integrations = ['unknown_integration']
+          setting.save!(validate: false)
+          setting.reset
+        end
+
+        it 'allows unknown integrations' do
+          is_expected.to be_valid
+          expect(setting.allowed_integrations).to eq(['unknown_integration'])
+        end
+      end
     end
   end
 
