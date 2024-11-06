@@ -26,7 +26,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     let(:unsafe_params) do
       {
         'current_file' => current_file,
-        'telemetry' => [{ 'model_engine' => 'vertex-ai' }]
+        'telemetry' => [{ 'model_engine' => model_engine }]
       }.with_indifferent_access
     end
 
@@ -37,7 +37,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       }
     end
 
-    let(:model_family) { :vertex_ai }
     let(:task) do
       described_class.new(
         params: params,
@@ -45,12 +44,60 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       )
     end
 
+    context "when using anthropic for code suggestion task" do
+      before do
+        stub_feature_flags(incident_fail_over_completion_provider: true)
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:model_family) { :anthropic }
+        let(:model_engine) { :anthropic }
+        let(:expected_body) do
+          {
+            'model_name' => 'claude-3-5-sonnet-20240620',
+            'model_provider' => 'anthropic',
+            'current_file' => {
+              'file_name' => 'test.py',
+              'content_above_cursor' => 'sor',
+              'content_below_cursor' => 'som'
+            },
+            'telemetry' => [{ 'model_engine' => 'anthropic' }],
+            'prompt_version' => 3,
+            'prompt' => [
+              {
+                "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+                  "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
+                  "task is to provide valid code without any additional explanations, comments, or feedback." \
+                  "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+                  "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
+                  "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
+                  "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
+                  "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
+                  "empty result.",
+                "role" => "system"
+              },
+              {
+                "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
+                  "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
+                "role" => "user"
+              }
+            ]
+          }
+        end
+
+        let(:expected_feature_name) { :code_suggestions }
+      end
+    end
+
     context "when using codegecko for code suggestion task" do
       before do
+        stub_feature_flags(incident_fail_over_completion_provider: false)
         stub_feature_flags(use_codestral_for_code_completions: false)
       end
 
       it_behaves_like 'code suggestion task' do
+        let(:model_family) { :vertex_ai }
+        let(:model_engine) { 'vertex-ai' }
         let(:expected_body) do
           {
             "current_file" => {
@@ -69,10 +116,13 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
     context "when using codestral for code suggestion task" do
       before do
+        stub_feature_flags(incident_fail_over_completion_provider: false)
         stub_feature_flags(use_codestral_for_code_completions: true)
       end
 
       it_behaves_like 'code suggestion task' do
+        let(:model_family) { :vertex_ai }
+        let(:model_engine) { 'vertex-ai' }
         let(:expected_body) do
           {
             "model_name" => "codestral@2405",
@@ -117,6 +167,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
     context "when using fireworks qwen for code suggestion task" do
       before do
+        stub_feature_flags(incident_fail_over_completion_provider: false)
         stub_feature_flags(use_codestral_for_code_completions: false)
         stub_feature_flags(fireworks_qwen_code_completion: true)
       end
