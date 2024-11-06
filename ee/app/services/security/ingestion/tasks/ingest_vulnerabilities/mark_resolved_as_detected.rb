@@ -18,7 +18,7 @@ module Security
           private
 
           def mark_as_resolved
-            ApplicationRecord.transaction do
+            Gitlab::Database::SecApplicationRecord.transaction do
               create_state_transitions
               update_vulnerability_records
             end
