@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::ProjectPushRule, 'ProjectPushRule', api: true, feature_category: :source_code_management do
+RSpec.describe API::ProjectPushRule, 'ProjectPushRule', :api, feature_category: :source_code_management do
   include ApiHelpers
 
   let_it_be(:project) { create(:project) }

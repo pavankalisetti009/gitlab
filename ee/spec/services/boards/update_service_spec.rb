@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::UpdateService, services: true do
+RSpec.describe Boards::UpdateService, :services do
   describe '#execute' do
     let_it_be(:parent_group) { create(:group) }
     let_it_be_with_refind(:group) { create(:group, parent: parent_group) }

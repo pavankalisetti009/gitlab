@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::Access, models: true, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::Access, :models, feature_category: :cloud_connector do
   describe 'validations' do
     let_it_be(:cloud_connector_access) { create(:cloud_connector_access) }
 

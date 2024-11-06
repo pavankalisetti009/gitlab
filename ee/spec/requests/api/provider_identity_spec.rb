@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe API::ProviderIdentity, api: true, feature_category: :system_access do
+RSpec.describe API::ProviderIdentity, :api, feature_category: :system_access do
   include ApiHelpers
 
   let_it_be(:owner) { create(:user) }

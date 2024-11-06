@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ComplianceManagement::Framework, models: true, feature_category: :compliance_management do
+RSpec.describe ComplianceManagement::Framework, :models, feature_category: :compliance_management do
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to have_many(:projects).through(:project_settings) }

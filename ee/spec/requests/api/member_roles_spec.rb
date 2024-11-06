@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe API::MemberRoles, api: true, feature_category: :system_access do
+RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
   include ApiHelpers
   include AdminModeHelper
 
