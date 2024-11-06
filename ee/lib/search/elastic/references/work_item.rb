@@ -6,7 +6,7 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 24_08
+        SCHEMA_VERSION = 24_11
 
         override :serialize
         def self.serialize(record)
@@ -67,6 +67,7 @@ module Search
 
         private
 
+        # rubocop: disable Metrics/AbcSize -- it's above the limit because we have feature flags that we will remove
         def build_indexed_json(target)
           data = {}
 
@@ -95,6 +96,10 @@ module Search
           data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
           data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
           data['work_item_type_id'] = target.work_item_type_id
+          if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_type_correct_id)
+            data['correct_work_item_type_id'] = target.correct_work_item_type_id
+          end
+
           data['upvotes'] = target.upvotes_count
           data['namespace_visibility_level'] = target.namespace.visibility_level
 
@@ -117,6 +122,7 @@ module Search
 
           data
         end
+        # rubocop: enable Metrics/AbcSize
       end
     end
   end
