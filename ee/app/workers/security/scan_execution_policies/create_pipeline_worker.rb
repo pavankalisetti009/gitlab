@@ -8,6 +8,7 @@ module Security
       include Gitlab::InternalEventsTracking
 
       CACHE_EXPIRES_IN = 1.second
+      BATCH_SIZE = 250
 
       feature_category :security_policy_management
       deduplicate :until_executing
@@ -41,32 +42,27 @@ module Security
 
       private
 
-      def defer_job?(_, _, schedule_id, _)
-        return false unless Feature.enabled?(:scan_execution_pipeline_concurrency_control)
+      def defer_job?(project_id, _, schedule_id, _)
+        project = Project.find_by_id(project_id)
+        return false unless project
 
         schedule = Security::OrchestrationPolicyRuleSchedule.find_by_id(schedule_id)
         return false unless schedule
 
-        schedule_builds_count = actions_for(schedule).count
-        project_ids = project_ids(schedule)
-
-        max_scheduled_scans_concurrency > 0 && reached_limit?(limit: max_scheduled_scans_concurrency,
-          schedule_builds_count: schedule_builds_count, project_ids: project_ids, schedule_id: schedule_id)
-      end
-
-      def project_ids(schedule)
         policy_configuration = schedule.security_orchestration_policy_configuration
 
-        project = policy_configuration.project
-        if project.present?
-          project_ids = [project.id]
-        else
-          namespace = policy_configuration.namespace
-          project_ids = namespace.all_projects.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- avoids cross-schema error
-        end
+        return false if policy_configuration.project?
+        return false unless feature_enabled?(policy_configuration)
 
-        project_ids
+        schedule_builds_count = actions_for(schedule).count
+
+        max_scheduled_scans_concurrency > 0 && reached_limit?(limit: max_scheduled_scans_concurrency,
+          schedule_builds_count: schedule_builds_count, project: project, schedule_id: schedule_id)
       end
+
+      # def project_ids(project)
+      #   project.root_namespace.all_projects
+      # end
 
       def max_scheduled_scans_concurrency
         Gitlab::CurrentSettings.security_policy_scheduled_scans_max_concurrency
@@ -76,15 +72,28 @@ module Security
         "security_policy_concurrency_control:#{schedule_id}"
       end
 
-      def reached_limit?(limit:, schedule_builds_count:, project_ids:, schedule_id:)
+      def reached_limit?(limit:, schedule_builds_count:, project:, schedule_id:)
         active_builds = Rails.cache.fetch(cache_key(schedule_id), expires_in: CACHE_EXPIRES_IN) do
-          ::Ci::Build.with_pipeline_source_type('security_orchestration_policy')
-                     .for_project_ids(project_ids)
-                     .with_status(*::Ci::HasStatus::ALIVE_STATUSES)
-                     .created_after(1.hour.ago)
-                     .updated_after(1.hour.ago)
-                     .limit(limit)
-                     .count
+          active_builds_in_all_projects = 0
+
+          project.root_namespace.all_projects.each_batch(of: BATCH_SIZE) do |batch|
+            project_ids = batch.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- avoids cross-schema error
+
+            active_builds_in_batch =
+              ::Ci::Build.with_pipeline_source_type('security_orchestration_policy')
+                         .for_project_ids(project_ids)
+                         .with_status(*::Ci::HasStatus::ALIVE_STATUSES)
+                         .created_after(1.hour.ago)
+                         .updated_after(1.hour.ago)
+                         .limit(limit)
+                         .count
+
+            active_builds_in_all_projects += active_builds_in_batch
+
+            break if active_builds_in_all_projects + schedule_builds_count >= limit
+          end
+
+          active_builds_in_all_projects
         end
 
         active_builds + schedule_builds_count >= limit
@@ -117,6 +126,10 @@ module Security
             message: message
           )
         )
+      end
+
+      def feature_enabled?(policy_configuration)
+        Feature.enabled?(:scan_execution_pipeline_concurrency_control, policy_configuration.namespace)
       end
     end
   end
