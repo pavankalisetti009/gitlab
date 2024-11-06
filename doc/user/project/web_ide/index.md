@@ -315,6 +315,19 @@ To update the OAuth callback URL:
 1. Enter the OAuth callback URL.
    You can enter multiple URLs separated by newlines.
 
+### Workhorse dependency
+
+DETAILS:
+**Offering:** Self-managed
+
+On self-managed GitLab, [Workhorse](../../../development/workhorse/index.md) must be installed
+and running in front of the GitLab Rails server.
+Otherwise, you might encounter issues when you open the Web IDE or
+use certain features like Markdown preview.
+
+For more information about this dependency,
+see [features that rely on Workhorse](../../../development/workhorse/gitlab_features.md#5-web-ide).
+
 ### Report a problem
 
 To report a problem, [create a new issue](https://gitlab.com/gitlab-org/gitlab-web-ide/-/issues/new)
