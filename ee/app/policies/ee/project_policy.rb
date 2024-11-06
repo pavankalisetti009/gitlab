@@ -445,6 +445,10 @@ module EE
         enable :create_on_demand_dast_scan
       end
 
+      rule { security_dashboard_enabled & security_policy_bot }.policy do
+        enable :create_vulnerability_state_transition
+      end
+
       # If licensed but not reporter+, prevent access
       rule { can?(:read_merge_request) & can?(:read_issue) & licensed_cycle_analytics_available }.policy do
         enable :read_cycle_analytics
@@ -478,6 +482,7 @@ module EE
         enable :create_vulnerability_feedback
         enable :destroy_vulnerability_feedback
         enable :update_vulnerability_feedback
+        enable :create_vulnerability_state_transition
       end
 
       rule { can?(:read_vulnerability) }.policy do
