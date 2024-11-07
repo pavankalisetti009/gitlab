@@ -75,6 +75,47 @@ RSpec.describe 'Updating a custom field', feature_category: :team_planning do
     end
   end
 
+  context 'with work item types' do
+    let_it_be(:issue_type) { create(:work_item_type, :issue) }
+    let_it_be(:task_type) { create(:work_item_type, :task) }
+
+    let(:params) do
+      {
+        work_item_type_ids: [
+          task_type.to_global_id.to_s,
+          issue_type.to_global_id.to_s
+        ]
+      }
+    end
+
+    before do
+      create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: issue_type)
+    end
+
+    it 'updates the custom field with the associated work item types' do
+      post_graphql_mutation(mutation, current_user: maintainer)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect_graphql_errors_to_be_empty
+
+      expect(mutation_response['customField']).to match(
+        a_hash_including(
+          'workItemTypes' => [
+            a_hash_including(
+              'id' => issue_type.to_global_id.to_s
+            ),
+            a_hash_including(
+              'id' => task_type.to_global_id.to_s
+            )
+          ],
+          'updatedBy' => a_hash_including(
+            'id' => maintainer.to_global_id.to_s
+          )
+        )
+      )
+    end
+  end
+
   context 'when user does not have access' do
     it 'returns an error' do
       guest = create(:user, guest_of: group)

@@ -44,6 +44,31 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
         ])
       end
     end
+
+    context 'when setting work item types' do
+      let_it_be(:issue_type) { create(:work_item_type, :issue) }
+      let_it_be(:task_type) { create(:work_item_type, :task) }
+
+      let(:params) do
+        {
+          name: 'my custom field',
+          field_type: 'single_select',
+          work_item_type_ids: [
+            task_type.correct_id,
+            issue_type.correct_id
+          ]
+        }
+      end
+
+      it 'creates the custom field and associates with the work item types' do
+        expect(response).to be_success
+        expect(custom_field).to be_persisted
+        expect(custom_field.work_item_types).to match([
+          have_attributes(id: issue_type.id),
+          have_attributes(id: task_type.id)
+        ])
+      end
+    end
   end
 
   context 'when user does not have access' do

@@ -67,6 +67,13 @@ module Issuables
       archived_at.nil?
     end
 
+    # These associations have ordering scopes. We need to reset these when mutated
+    # so that the cache is cleared and they are fetched again in the correct order.
+    def reset_ordered_associations
+      select_options.reset
+      work_item_types.reset
+    end
+
     private
 
     def namespace_is_root_group

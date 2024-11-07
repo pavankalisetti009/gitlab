@@ -30,13 +30,14 @@ module Issuables
 
         custom_field_saved = custom_field.with_transaction_returning_status do
           handle_select_options
+          custom_field.work_item_type_ids = params[:work_item_type_ids] if params[:work_item_type_ids]
 
           custom_field.updated_by = current_user if has_changes?
           custom_field.save
         end
 
         if custom_field_saved
-          reset_associations!
+          custom_field.reset_ordered_associations
 
           ServiceResponse.success(payload: { custom_field: custom_field })
         else
@@ -69,17 +70,14 @@ module Issuables
 
       def store_old_associations!
         @old_select_options = custom_field.select_options.to_a
+        @old_work_item_type_ids = custom_field.work_item_type_ids.to_a
       end
 
       def has_changes?
         custom_field.changed? ||
+          @old_work_item_type_ids.sort != custom_field.work_item_type_ids.sort ||
           @old_select_options != custom_field.select_options ||
           custom_field.select_options.any?(&:changed?)
-      end
-
-      def reset_associations!
-        # These associations are ordered but Rails does not ensure association order after the collection is mutated
-        custom_field.select_options.reset
       end
     end
   end

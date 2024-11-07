@@ -120,6 +120,57 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
     end
   end
 
+  context 'with work item types' do
+    let_it_be(:issue_type) { create(:work_item_type, :issue) }
+    let_it_be(:task_type) { create(:work_item_type, :task) }
+
+    context 'when adding work item types' do
+      let(:params) { { work_item_type_ids: [task_type.correct_id, issue_type.correct_id] } }
+
+      it 'updates the custom field with the work item types' do
+        expect(response).to be_success
+        expect(updated_custom_field).to be_persisted
+        expect(updated_custom_field.work_item_types).to match([
+          have_attributes(id: issue_type.id),
+          have_attributes(id: task_type.id)
+        ])
+        expect(updated_custom_field.updated_by_id).to eq(user.id)
+      end
+    end
+
+    context 'with existing work item types' do
+      before do
+        create(:work_item_type_custom_field, custom_field: custom_field, work_item_type: issue_type)
+      end
+
+      context 'when work_item_type_ids param is not provided' do
+        let(:params) { { name: 'new field name' } }
+
+        it 'does not remove the work item types' do
+          expect(response).to be_success
+          expect(updated_custom_field).to be_persisted
+          expect(updated_custom_field.name).to eq('new field name')
+          expect(updated_custom_field.work_item_types).to match([
+            have_attributes(id: issue_type.id)
+          ])
+        end
+      end
+
+      context 'when replacing work item types' do
+        let(:params) { { work_item_type_ids: [task_type.correct_id] } }
+
+        it 'updates the custom field with the work item types' do
+          expect(response).to be_success
+          expect(updated_custom_field).to be_persisted
+          expect(updated_custom_field.work_item_types).to match([
+            have_attributes(id: task_type.id)
+          ])
+          expect(updated_custom_field.updated_by_id).to eq(user.id)
+        end
+      end
+    end
+  end
+
   context 'when there are no changes' do
     let(:params) { { name: custom_field.name } }
 
