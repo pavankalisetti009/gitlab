@@ -3,6 +3,8 @@
 module Gitlab
   module LicenseScanning
     class PackageLicenses
+      include Gitlab::InternalEventsTracking
+
       BATCH_SIZE = 700
       UNKNOWN_LICENSE = {
         spdx_identifier: "unknown",
@@ -17,6 +19,17 @@ module Gitlab
         @component_data = Hash.new { |h, k| h[k] = [] }
         @all_records = {}
         @project = project
+
+        # collect PURL types and initialize counters for event tracking
+        @purl_types = components.map(&:purl_type).uniq
+        @count_of_components = @purl_types.index_with do
+          {
+            all: 0,
+            with_licenses_from_sbom: 0,
+            with_scan_results: 0,
+            without_scan_results: 0
+          }
+        end
       end
 
       def self.url_for(spdx_id)
@@ -53,6 +66,8 @@ module Gitlab
             end
           end
 
+          track_events
+
           all_records.values
         end
       end
@@ -67,9 +82,12 @@ module Gitlab
           .use_replicas_for_read_queries(&block)
       end
 
-      # set the default license of all components to an unknown license.
+      # set the default license of all components to an unknown license,
+      # and increment the count of components with unknown licenses.
       # If a license is eventually found for the component, we'll overwrite
-      # the unknown entry with the valid license.
+      # the unknown entry with the valid license, decrement the count
+      # of components with unknown licenses, and increment the count of
+      # components with known licenses.
       # Initializing all records with an unknown license allows us to ensure
       # that the packages and licenses we return from the fetch method are the
       # same order as the components that were initially passed to the fetch
@@ -78,7 +96,12 @@ module Gitlab
       def init_all_records_to_unknown_licenses
         components.each do |component|
           add_record_with_unknown_license(component)
+
           yield component if block_given?
+
+          counts = @count_of_components[component.purl_type]
+          counts[:all] += 1
+          counts[:without_scan_results] += 1
         end
       end
 
@@ -115,8 +138,14 @@ module Gitlab
           requested_data_for_package(package).each do |component|
             license_ids = package.license_ids_for(version: component[:version])
 
+            next if license_ids.empty?
+
             add_record_with_known_licenses(purl_type: package.purl_type, name: package.name,
               version: component[:version], license_ids: license_ids, path: component[:path])
+
+            counts = @count_of_components[package.purl_type]
+            counts[:with_scan_results] += 1
+            counts[:without_scan_results] -= 1
           end
         end
       end
@@ -169,6 +198,10 @@ module Gitlab
       def add_components_with_license(components_with_licenses)
         components_with_licenses.each do |component|
           add_record_with_ingested_licenses(component) if supported_for_license_scanning?(component.purl_type)
+
+          counts = @count_of_components[component.purl_type]
+          counts[:with_licenses_from_sbom] += 1
+          counts[:without_scan_results] -= 1
         end
       end
 
@@ -194,6 +227,38 @@ module Gitlab
 
       def supported_for_license_scanning?(purl_type)
         ::Enums::Sbom.dependency_scanning_purl_type?(purl_type)
+      end
+
+      def track_events
+        @purl_types.each do |purl_type|
+          counts = @count_of_components[purl_type]
+
+          additional_properties = {
+            label: purl_type,
+            property: scan_type_for_purl_type(purl_type),
+            value: counts[:all],
+            components_with_licenses_from_sbom: counts[:with_licenses_from_sbom],
+            components_with_scan_results: counts[:with_scan_results],
+            components_without_scan_results: counts[:without_scan_results]
+          }
+
+          track_internal_event(
+            'license_scanning_scan',
+            project: project,
+            additional_properties: additional_properties
+          )
+        end
+      end
+
+      def scan_type_for_purl_type(purl_type)
+        case purl_type
+        when *Enums::Sbom::CONTAINER_SCANNING_PURL_TYPES
+          'container_scanning'
+        when *Enums::Sbom::DEPENDENCY_SCANNING_PURL_TYPES
+          'dependency_scanning'
+        else
+          'unknown'
+        end
       end
     end
   end

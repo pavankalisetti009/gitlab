@@ -13,14 +13,17 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
     ]
   end
 
+  let(:project) { nil }
+
   subject(:fetch) do
-    described_class.new(components: components_to_fetch).fetch
+    described_class.new(components: components_to_fetch, project: project).fetch
   end
 
   describe '#fetch' do
     before_all do
       create(:pm_package, name: "beego", purl_type: "golang",
         other_licenses: [{ license_names: %w[OLDAP-2.1 OLDAP-2.2], versions: ["v1.10.0"] }])
+
       create(:pm_package, name: "camelcase", purl_type: "npm", other_licenses: [
         { license_names: ["OLDAP-2.1"], versions: ["1.2.1"] },
         { license_names: ["OLDAP-2.2"], versions: ["4.1.0"] }
@@ -46,6 +49,10 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
       let_it_be(:components_to_fetch) { [] }
 
       it { is_expected.to be_empty }
+
+      it 'does not track scan events' do
+        expect { fetch }.not_to trigger_internal_events('license_scanning_scan')
+      end
     end
 
     context 'when components to fetch are not empty' do
@@ -104,6 +111,31 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         )
       end
 
+      it 'tracks scan events', :freeze_time do
+        expect { fetch }.to trigger_internal_events('license_scanning_scan')
+          .with(project: project,
+            additional_properties: {
+              label: 'npm',
+              property: 'dependency_scanning',
+              value: 3,
+              components_with_licenses_from_sbom: 0,
+              components_with_scan_results: 3,
+              components_without_scan_results: 0
+            }
+          ).exactly(:once)
+          .and trigger_internal_events('license_scanning_scan')
+          .with(project: project,
+            additional_properties: {
+              label: 'golang',
+              property: 'dependency_scanning',
+              value: 2,
+              components_with_licenses_from_sbom: 0,
+              components_with_scan_results: 2,
+              components_without_scan_results: 0
+            }
+          ).exactly(:once)
+      end
+
       context 'and components to fetch contains entries that do not have licenses' do
         let_it_be(:components_to_fetch) do
           [
@@ -112,7 +144,9 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
             Hashie::Mash.new({ name: "camelcase", purl_type: "npm", version: "4.1.0" }),
             Hashie::Mash.new({ name: "package2-without-license", purl_type: "npm", version: "2.1.0" }),
             Hashie::Mash.new({ name: "cliui", purl_type: "golang", version: "2.1.0" }),
-            Hashie::Mash.new({ name: "package3-without-license", purl_type: "golang", version: "2.1.0" })
+            Hashie::Mash.new({ name: "package3-without-license", purl_type: "golang", version: "2.1.0" }),
+            Hashie::Mash.new({ name: "curl", purl_type: "deb", version: "7.88.1-10+deb12u7" }),
+            Hashie::Mash.new({ name: "alpine", purl_type: "docker", version: "3.20.3" })
           ]
         end
 
@@ -174,8 +208,75 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
                 spdx_identifier: "unknown",
                 url: nil
               })
+            ),
+            have_attributes(
+              name: "curl",
+              purl_type: "deb",
+              version: "7.88.1-10+deb12u7",
+              licenses: contain_exactly({
+                name: "unknown",
+                spdx_identifier: "unknown",
+                url: nil
+              })
+            ),
+            have_attributes(
+              name: "alpine",
+              purl_type: "docker",
+              version: "3.20.3",
+              licenses: contain_exactly({
+                name: "unknown",
+                spdx_identifier: "unknown",
+                url: nil
+              })
             )
           ])
+        end
+
+        it 'tracks scan events', :freeze_time do
+          expect { fetch }.to trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'npm',
+                property: 'dependency_scanning',
+                value: 3,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 1,
+                components_without_scan_results: 2
+              }
+            ).exactly(:once)
+            .and trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'golang',
+                property: 'dependency_scanning',
+                value: 3,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 2,
+                components_without_scan_results: 1
+              }
+            ).exactly(:once)
+            .and trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'deb',
+                property: 'container_scanning',
+                value: 1,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 0,
+                components_without_scan_results: 1
+              }
+            ).exactly(:once)
+            .and trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'docker',
+                property: 'unknown',
+                value: 1,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 0,
+                components_without_scan_results: 1
+              }
+            ).exactly(:once)
         end
       end
 
@@ -389,6 +490,31 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
             }))
           )
         end
+
+        it 'tracks scan events' do
+          expect { fetch }.to trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'gem',
+                property: 'dependency_scanning',
+                value: 1,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 0,
+                components_without_scan_results: 1
+              }
+            ).exactly(:once)
+            .and trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'maven',
+                property: 'dependency_scanning',
+                value: 1,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 0,
+                components_without_scan_results: 1
+              }
+            ).exactly(:once)
+        end
       end
 
       context 'when no packages match the given criteria' do
@@ -410,6 +536,20 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
               "name" => name, "path" => "", "purl_type" => purl_type, "version" => version,
               "licenses" => [{ "name" => "unknown", "spdx_identifier" => "unknown", "url" => nil }]
             ])
+          end
+
+          it 'tracks scan events' do
+            expect { fetch }.to trigger_internal_events('license_scanning_scan')
+              .with(project: project,
+                additional_properties: {
+                  label: purl_type,
+                  property: 'dependency_scanning',
+                  value: 1,
+                  components_with_licenses_from_sbom: 0,
+                  components_with_scan_results: 0,
+                  components_without_scan_results: 1
+                }
+              ).exactly(:once)
           end
         end
       end
@@ -459,9 +599,10 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
 
     context 'when component contains license information' do
       subject(:fetch) do
-        described_class.new(components: components_to_fetch, project: create(:project)).fetch
+        described_class.new(components: components_to_fetch, project: project).fetch
       end
 
+      let_it_be(:project) { create(:project) }
       let(:license) { { "name" => 'Custom License', "spdx_identifier" => 'Custom-License', "url" => 'https://custom-license.com' } }
       let(:component_licenses) { [license] }
 
@@ -492,6 +633,20 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
                 "url" => "https://spdx.org/licenses/OLDAP-2.2.html"
               }])
           )
+        end
+
+        it 'tracks scan events' do
+          expect { fetch }.to trigger_internal_events('license_scanning_scan')
+            .with(project: project,
+              additional_properties: {
+                label: 'golang',
+                property: 'dependency_scanning',
+                value: 1,
+                components_with_licenses_from_sbom: 0,
+                components_with_scan_results: 1,
+                components_without_scan_results: 0
+              }
+            ).exactly(:once)
         end
       end
 
