@@ -50,20 +50,20 @@ module Types
         field :location,
           type: VulnerabilityLocationType,
           null: true,
-          alpha: { milestone: '16.3' },
+          experiment: { milestone: '16.3' },
           description: 'Location of the vulnerability finding.'
 
         field :identifiers,
           type: [VulnerabilityIdentifierType],
           null: true,
-          alpha: { milestone: '16.3' },
+          experiment: { milestone: '16.3' },
           description: 'Identifiers of the vulnerability finding.',
           hash_key: "identifiers"
 
         field :details,
           type: [VulnerabilityDetailType],
           null: false,
-          alpha: { milestone: '17.6' },
+          experiment: { milestone: '17.6' },
           description: 'Details of the vulnerability finding.',
           resolver: Resolvers::Vulnerabilities::DetailsResolver
 

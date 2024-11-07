@@ -8,9 +8,9 @@ module Types
         graphql_name 'SearchBlobChunk'
         description 'JSON structure of a matched chunk'
 
-        field :lines, [::Types::Search::Blob::LineType], null: true, alpha: { milestone: '17.2' },
+        field :lines, [::Types::Search::Blob::LineType], null: true, experiment: { milestone: '17.2' },
           description: 'Path of the file.'
-        field :match_count_in_chunk, GraphQL::Types::Int, null: true, alpha: { milestone: '17.2' },
+        field :match_count_in_chunk, GraphQL::Types::Int, null: true, experiment: { milestone: '17.2' },
           description: 'Number of matches in the chunk.'
         # rubocop: enable Graphql/AuthorizeTypes
       end

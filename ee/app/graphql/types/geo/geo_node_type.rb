@@ -18,7 +18,7 @@ module Types
         description: 'Find Container Repository registries on this Geo node.'
       field :dependency_proxy_blob_registries, ::Types::Geo::DependencyProxyBlobRegistryType.connection_type,
         null: true,
-        alpha: { milestone: '15.6' },
+        experiment: { milestone: '15.6' },
         resolver: ::Resolvers::Geo::DependencyProxyBlobRegistriesResolver,
         description: 'Find Dependency Proxy Blob registries on this Geo node.'
       field :dependency_proxy_manifest_registries, ::Types::Geo::DependencyProxyManifestRegistryType.connection_type,
@@ -29,7 +29,7 @@ module Types
         null: true,
         resolver: ::Resolvers::Geo::DesignManagementRepositoryRegistriesResolver,
         description: 'Find Design Management Repository registries on this Geo node.',
-        alpha: { milestone: '16.1' }
+        experiment: { milestone: '16.1' }
       field :enabled, GraphQL::Types::Boolean, null: true, description: 'Indicates whether this Geo node is enabled.'
       field :files_max_capacity, GraphQL::Types::Int, null: true, description: 'Maximum concurrency of LFS/attachment backfill for this secondary node.'
       field :group_wiki_repository_registries, ::Types::Geo::GroupWikiRepositoryRegistryType.connection_type,

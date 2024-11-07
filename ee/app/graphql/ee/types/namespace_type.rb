@@ -12,7 +12,7 @@ module EE
           description: 'Users in the namespace hierarchy that add ons are applicable for. This only applies to ' \
                        'root namespaces.',
           resolver: ::Resolvers::GitlabSubscriptions::AddOnEligibleUsersResolver,
-          alpha: { milestone: '16.5' }
+          experiment: { milestone: '16.5' }
 
         field :add_on_purchase,
           ::Types::GitlabSubscriptions::AddOnPurchaseType,
@@ -123,7 +123,7 @@ module EE
           ::GraphQL::Types::Int,
           null: true,
           description: 'Number of product analytics events namespace is permitted to store per cycle.',
-          alpha: { milestone: '16.9' },
+          experiment: { milestone: '16.9' },
           authorize: :modify_product_analytics_settings
 
         field :remote_development_cluster_agents,
@@ -137,7 +137,7 @@ module EE
           ::Types::GitlabSubscriptions::SubscriptionHistoryType.connection_type,
           null: true,
           description: 'Find subscription history records.',
-          alpha: { milestone: '17.3' },
+          experiment: { milestone: '17.3' },
           method: :gitlab_subscription_histories
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit

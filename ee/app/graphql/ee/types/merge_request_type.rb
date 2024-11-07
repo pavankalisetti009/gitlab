@@ -16,7 +16,7 @@ module EE
 
         field :merge_train_car, ::Types::MergeTrains::CarType,
           null: true,
-          alpha: { milestone: '17.2' },
+          experiment: { milestone: '17.2' },
           description: 'Represents the merge request in a merge train.'
 
         field :merge_trains_count, GraphQL::Types::Int,
@@ -56,19 +56,19 @@ module EE
 
         field :blocking_merge_requests, ::Types::MergeRequests::BlockingMergeRequestsType,
           null: true,
-          alpha: { milestone: '16.5' },
+          experiment: { milestone: '16.5' },
           description: 'Merge requests that block another merge request from merging.',
           resolver_method: :base_merge_request # processing is done in the GraphQL type
 
         field :merge_request_diffs, ::Types::MergeRequestDiffType.connection_type,
           null: true,
-          alpha: { milestone: '16.2' },
+          experiment: { milestone: '16.2' },
           description: 'Diff versions of a merge request.'
 
         field :finding_reports_comparer,
           type: ::Types::Security::FindingReportsComparerType,
           null: true,
-          alpha: { milestone: '16.1' },
+          experiment: { milestone: '16.1' },
           description: 'Vulnerability finding reports comparison reported on the merge request.',
           resolver: ::Resolvers::SecurityReport::FindingReportsComparerResolver
 

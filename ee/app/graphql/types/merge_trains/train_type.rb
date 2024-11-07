@@ -16,7 +16,7 @@ module Types
         null: false,
         resolver: Resolvers::MergeTrains::CarsResolver,
         description: "Cars queued in the train.",
-        alpha: { milestone: '17.1' }
+        experiment: { milestone: '17.1' }
       field :target_branch,
         GraphQL::Types::String,
         null: false,

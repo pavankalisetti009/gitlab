@@ -10,7 +10,7 @@ module EE
         prepended do
           argument :failure_reason, ::Types::Ci::JobFailureReasonEnum,
             required: false,
-            alpha: { milestone: '16.4' },
+            experiment: { milestone: '16.4' },
             description: 'Filter jobs by failure reason. Currently only `RUNNER_SYSTEM_FAILURE` together with ' \
                          '`runnerTypes: INSTANCE_TYPE` is supported.'
         end

@@ -14,7 +14,7 @@ module EE
                 resolver_method: :object,
                 type: ::Types::Analytics::CycleAnalytics::ValueStreams::SeriesType,
                 null: false,
-                alpha: { milestone: '17.4' }
+                experiment: { milestone: '17.4' }
             end
           end
         end

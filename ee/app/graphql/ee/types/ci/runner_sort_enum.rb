@@ -10,7 +10,7 @@ module EE
           value 'MOST_ACTIVE_DESC',
             'Ordered by number of running jobs in descending order (only available on Ultimate plans).',
             value: :most_active_desc,
-            alpha: { milestone: '16.2' }
+            experiment: { milestone: '16.2' }
         end
       end
     end

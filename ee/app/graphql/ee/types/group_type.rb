@@ -44,7 +44,7 @@ module EE
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
-          alpha: { milestone: '16.11' },
+          experiment: { milestone: '16.11' },
           description: "Time taken for CI jobs to be picked up by this group's runners by percentile. " \
                        "Available to users with Maintainer role for the group.",
           resolver: ::Resolvers::Ci::GroupQueueingHistoryResolver,
@@ -53,7 +53,7 @@ module EE
         field :runner_cloud_provisioning,
           ::Types::Ci::RunnerCloudProvisioningType,
           null: true,
-          alpha: { milestone: '16.10' },
+          experiment: { milestone: '16.10' },
           description: 'Information used for provisioning the runner on a cloud provider. ' \
                        'Returns `null` if the GitLab instance is not a SaaS instance.' do
           argument :provider, ::Types::Ci::RunnerCloudProviderEnum, required: true,
@@ -130,7 +130,7 @@ module EE
           null: true,
           description: 'External destinations that receive audit events belonging to the group.',
           authorize: :admin_external_audit_events,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :google_cloud_logging_configurations,
           ::Types::AuditEvents::GoogleCloudLoggingConfigurationType.connection_type,
@@ -186,7 +186,7 @@ module EE
           description: 'Flow metrics for value stream analytics.',
           method: :itself,
           authorize: :read_cycle_analytics,
-          alpha: { milestone: '15.10' }
+          experiment: { milestone: '15.10' }
 
         field :ai_metrics,
           ::Types::Analytics::AiMetrics::NamespaceMetricsType,
@@ -194,20 +194,20 @@ module EE
           description: 'AI-related metrics.',
           resolver: ::Resolvers::Analytics::AiMetrics::NamespaceMetricsResolver,
           extras: [:lookahead],
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :ai_usage_data,
           ::Types::Analytics::AiUsage::AiUsageDataType,
           description: 'AI-related data.',
           resolver_method: :object,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         field :ai_user_metrics,
           ::Types::Analytics::AiMetrics::UserMetricsType.connection_type,
           null: true,
           description: 'AI-related user metrics.',
           resolver: ::Resolvers::Analytics::AiMetrics::UserMetricsResolver,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         field :project_compliance_standards_adherence,
           ::Types::Projects::ComplianceStandards::AdherenceType.connection_type,
@@ -222,7 +222,7 @@ module EE
           resolver: ::Resolvers::Analytics::ValueStreamDashboard::CountResolver,
           description: 'Aggregated usage counts within the group',
           authorize: :read_group_analytics_dashboards,
-          alpha: { milestone: '16.4' }
+          experiment: { milestone: '16.4' }
 
         field :customizable_dashboards,
           ::Types::ProductAnalytics::DashboardType.connection_type,
@@ -246,24 +246,24 @@ module EE
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
           null: true, description: 'Custom roles available for the group.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
-          alpha: { milestone: '16.5' }
+          experiment: { milestone: '16.5' }
 
         field :standard_role, ::Types::Members::StandardRoleType,
           null: true, description: 'Finds a single default role for the group. Available only for SaaS.',
           resolver: ::Resolvers::Members::StandardRolesResolver.single,
-          alpha: { milestone: '17.6' }
+          experiment: { milestone: '17.6' }
 
         field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
           null: true, description: 'Default roles available for the group. Available only for SaaS.',
           resolver: ::Resolvers::Members::StandardRolesResolver,
-          alpha: { milestone: '17.4' }
+          experiment: { milestone: '17.4' }
 
         field :pending_members,
           ::Types::Members::PendingMemberInterface.connection_type,
           null: true,
           description: 'A pending membership of a user within this group.',
           resolver: Resolvers::PendingGroupMembersResolver,
-          alpha: { milestone: '16.6' }
+          experiment: { milestone: '16.6' }
 
         field :value_streams,
           description: 'Value streams available to the group.',
@@ -278,14 +278,14 @@ module EE
           description: 'Saved replies available to the group. Available only when feature flag ' \
                        '`group_saved_replies_flag` is enabled. This field can only be resolved ' \
                        'for one group in any single request.',
-          alpha: { milestone: '16.10' }
+          experiment: { milestone: '16.10' }
 
         field :saved_reply,
           resolver: ::Resolvers::Groups::SavedReplyResolver,
           description: 'Saved reply in the group. Available only when feature flag ' \
                        '`group_saved_replies_flag` is enabled. This field can only ' \
                        'be resolved for one group in any single request.',
-          alpha: { milestone: '16.10' }
+          experiment: { milestone: '16.10' }
 
         field :value_stream_analytics,
           ::Types::Analytics::ValueStreamAnalyticsType,
@@ -300,33 +300,33 @@ module EE
           resolver: ::Resolvers::SecurityOrchestration::SecurityPolicyProjectSuggestionsResolver
 
         field :duo_features_enabled, GraphQL::Types::Boolean,
-          alpha: { milestone: '16.10' },
+          experiment: { milestone: '16.10' },
           description: 'Indicates whether GitLab Duo features are enabled for the group.'
 
         field :lock_duo_features_enabled, GraphQL::Types::Boolean,
-          alpha: { milestone: '16.10' },
+          experiment: { milestone: '16.10' },
           description: 'Indicates if the GitLab Duo features enabled setting is enforced for all subgroups.'
 
         field :marked_for_deletion_on, ::Types::TimeType,
           null: true,
           description: 'Date when group was scheduled to be deleted.',
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :is_adjourned_deletion_enabled, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates if delayed group deletion is enabled.',
           method: :adjourned_deletion?,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :permanent_deletion_date, GraphQL::Types::String,
           null: true,
           description: 'Date when group will be deleted if delayed group deletion is enabled.',
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :pending_member_approvals,
           EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
           null: true,
-          alpha: { milestone: '17.3' },
+          experiment: { milestone: '17.3' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the group.'
 
@@ -341,14 +341,14 @@ module EE
           authorize: :read_dependency,
           description: 'Find software dependencies by name.',
           resolver: ::Resolvers::Sbom::ComponentResolver,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         field :custom_fields, ::Types::Issuables::CustomFieldType.connection_type,
           null: true,
           description: 'Custom fields configured for the group. ' \
             'Available only when feature flag `custom_fields_feature` is enabled.',
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         def epics_enabled
           object.licensed_feature_available?(:epics)

@@ -18,7 +18,7 @@ module Types
         field :rolled_up_health_status, [::Types::WorkItems::Widgets::HealthStatusCountType],
           null: true,
           description: 'Rolled up health status of the work item.',
-          alpha: { milestone: '17.3' }
+          experiment: { milestone: '17.3' }
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

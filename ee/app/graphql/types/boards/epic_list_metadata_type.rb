@@ -14,7 +14,7 @@ module Types
 
       field :total_weight, GraphQL::Types::Int, null: true,
         description: 'Total weight of all issues in the list.',
-        alpha: { milestone: '14.7' }
+        experiment: { milestone: '14.7' }
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

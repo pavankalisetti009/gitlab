@@ -31,7 +31,7 @@ module Types
         type: GraphQL::Types::String,
         null: true,
         description: 'Status of the dashboard.',
-        alpha: { milestone: '17.0' }
+        experiment: { milestone: '17.0' }
 
       field :panels,
         type: Types::ProductAnalytics::PanelType.connection_type,

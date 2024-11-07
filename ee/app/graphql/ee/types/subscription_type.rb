@@ -14,7 +14,7 @@ module EE
           subscription: ::Subscriptions::AiCompletionResponse, null: true,
           scopes: [:api, :read_api, :ai_features],
           description: 'Triggered when a response from AI integration is received.',
-          alpha: { milestone: '15.11' }
+          experiment: { milestone: '15.11' }
 
         field :issuable_weight_updated,
           subscription: Subscriptions::IssuableUpdated, null: true,
@@ -39,7 +39,7 @@ module EE
         field :security_policy_project_created,
           subscription: Subscriptions::Security::PolicyProjectCreated, null: true,
           description: 'Triggered when the security policy project is created for a specific group or project.',
-          alpha: { milestone: '17.3' }
+          experiment: { milestone: '17.3' }
       end
     end
   end

@@ -18,7 +18,7 @@ module Types
         description: 'All potential approvers of the group type, including groups inaccessible to the user.'
       field :deprecated_properties, [::GraphQL::Types::String], null: true,
         description: 'All deprecated properties in the policy.',
-        alpha: { milestone: '16.10' }
+        experiment: { milestone: '16.10' }
       field :role_approvers, [::Types::MemberAccessLevelNameEnum],
         null: true,
         description: 'Approvers of the role type. Users belonging to these role(s) alone will be approvers.'
