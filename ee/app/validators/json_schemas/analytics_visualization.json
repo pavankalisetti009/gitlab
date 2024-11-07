@@ -18,6 +18,7 @@
             "DORAChart",
             "UsageOverview",
             "DoraPerformersScore",
+            "DoraProjectsComparison",
             "AiImpactTable"
           ]
         },
@@ -46,6 +47,7 @@
             "value_stream",
             "usage_overview",
             "dora_metrics_over_time",
+            "dora_metrics_by_project",
             "ai_impact_over_time"
           ]
         },
