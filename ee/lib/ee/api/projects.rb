@@ -106,6 +106,7 @@ module EE
             attrs.delete(:include_hidden) unless current_user&.can_admin_all_resources?
           end
 
+          # Deprecated: https://gitlab.com/gitlab-org/gitlab/-/issues/494294
           def verify_mirror_attrs!(project, attrs)
             unless can?(current_user, :admin_mirror, project)
               ::Projects::UpdateService::PULL_MIRROR_ATTRIBUTES.each do |attr_name|

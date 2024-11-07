@@ -18,8 +18,8 @@ module EE
           params :optional_project_params_ee do
             optional :only_allow_merge_if_all_status_checks_passed, type: Grape::API::Boolean, desc: 'Blocks merge requests from merging unless all status checks have passed'
             optional :approvals_before_merge, type: Integer, desc: 'How many approvers should approve merge request by default', allow_blank: false
-            optional :mirror, type: Grape::API::Boolean, desc: 'Enables pull mirroring in a project'
-            optional :mirror_trigger_builds, type: Grape::API::Boolean, desc: 'Pull mirroring triggers builds'
+            optional :mirror, type: Grape::API::Boolean, desc: '[Deprecated] Enables pull mirroring in a project'
+            optional :mirror_trigger_builds, type: Grape::API::Boolean, desc: '[Deprecated] Pull mirroring triggers builds'
             optional :external_authorization_classification_label, type: String, desc: 'The classification label for the project'
             optional :requirements_access_level, type: String, values: %w[disabled private enabled], desc: 'Requirements feature access level. One of `disabled`, `private` or `enabled`'
             optional :prevent_merge_without_jira_issue, type: Grape::API::Boolean, desc: 'Require an associated issue from Jira'
@@ -34,11 +34,11 @@ module EE
 
           params :optional_update_params_ee do
             optional :allow_pipeline_trigger_approve_deployment, type: Grape::API::Boolean, desc: 'Allow pipeline triggerer to approve deployments'
-            optional :mirror_user_id, type: Integer, desc: 'User responsible for all the activity surrounding a pull mirror event. Can only be set by admins'
-            optional :only_mirror_protected_branches, type: Grape::API::Boolean, desc: 'Only mirror protected branches'
-            optional :mirror_branch_regex, type: String, desc: 'Only mirror branches match regex'
+            optional :mirror_user_id, type: Integer, desc: '[Deprecated] User responsible for all the activity surrounding a pull mirror event. Can only be set by admins'
+            optional :only_mirror_protected_branches, type: Grape::API::Boolean, desc: '[Deprecated] Only mirror protected branches'
+            optional :mirror_branch_regex, type: String, desc: '[Deprecated] Only mirror branches match regex'
             mutually_exclusive :only_mirror_protected_branches, :mirror_branch_regex
-            optional :mirror_overwrites_diverged_branches, type: Grape::API::Boolean, desc: 'Pull mirror overwrites diverged branches'
+            optional :mirror_overwrites_diverged_branches, type: Grape::API::Boolean, desc: '[Deprecated] Pull mirror overwrites diverged branches'
             optional :import_url, type: String, desc: 'URL from which the project is imported'
             optional :fallback_approvals_required, type: Integer, desc: 'Overall approvals required when no rule is present'
             optional :issues_template, type: String, desc: 'Default description for Issues. Description is parsed with GitLab Flavored Markdown.'
