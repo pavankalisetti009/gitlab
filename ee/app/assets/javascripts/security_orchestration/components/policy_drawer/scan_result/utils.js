@@ -1,4 +1,5 @@
 import { sprintf, s__, n__, __ } from '~/locale';
+
 import {
   ANY_COMMIT,
   ANY_UNSIGNED_COMMIT,
@@ -387,4 +388,33 @@ export const humanizeRules = (rules) => {
     return [...acc, humanizeRule(curr)];
   }, []);
   return humanizedRules.length ? humanizedRules : [{ summary: NO_RULE_MESSAGE }];
+};
+
+/**
+ * Map approver object to flat array
+ * @param approvers
+ * @returns {*[]}
+ */
+export const mapApproversToArray = (approvers) => {
+  if (approvers === undefined) {
+    return [];
+  }
+
+  const { allGroups = [], roles = [], users = [] } = approvers || {};
+
+  return [
+    ...allGroups,
+    ...roles
+      .map((role) => {
+        return {
+          GUEST: __('Guest'),
+          REPORTER: __('Reporter'),
+          DEVELOPER: __('Developer'),
+          MAINTAINER: __('Maintainer'),
+          OWNER: __('Owner'),
+        }[role];
+      })
+      .filter(Boolean),
+    ...users,
+  ];
 };

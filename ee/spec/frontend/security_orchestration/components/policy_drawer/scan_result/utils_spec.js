@@ -1,4 +1,7 @@
-import { humanizeRules } from 'ee/security_orchestration/components/policy_drawer/scan_result/utils';
+import {
+  humanizeRules,
+  mapApproversToArray,
+} from 'ee/security_orchestration/components/policy_drawer/scan_result/utils';
 import {
   anyMergeRequestBuildRule,
   securityScanBuildRule,
@@ -379,5 +382,19 @@ describe('humanizeRules', () => {
         expect(humanizeRules([expectedRule.rule])).toStrictEqual([expectedRule.humanized]);
       },
     );
+  });
+
+  describe('mapApproversToArray', () => {
+    it.each`
+      approvers                                                        | expectedResult
+      ${undefined}                                                     | ${[]}
+      ${{}}                                                            | ${[]}
+      ${{ allGroups: [{ id: 1, name: 'group-1' }] }}                   | ${[{ id: 1, name: 'group-1' }]}
+      ${{ roles: ['invalid-role'] }}                                   | ${[]}
+      ${{ roles: ['MAINTAINER'], users: [{ id: 1, name: 'user-1' }] }} | ${['Maintainer', { id: 1, name: 'user-1' }]}
+      ${{ roles: undefined, users: undefined, allGroups: undefined }}  | ${[]}
+    `('returns flat array of approvers', ({ approvers, expectedResult }) => {
+      expect(mapApproversToArray(approvers)).toEqual(expectedResult);
+    });
   });
 });
