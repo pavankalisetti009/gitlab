@@ -4,6 +4,19 @@ module GitlabSubscriptions
   class UserAddOnAssignment < ApplicationRecord
     include EachBatch
 
+    has_paper_trail(
+      versions: {
+        class_name: 'GitlabSubscriptions::UserAddOnAssignmentVersion'
+      },
+      meta: {
+        organization_id: :add_on_purchase_organization_id,
+        namespace_path: :namespace_traversal_path,
+        user_id: :user_id,
+        add_on_name: :add_on_name,
+        purchase_id: :add_on_purchase_id
+      }
+    )
+
     belongs_to :user, inverse_of: :assigned_add_ons
     belongs_to :add_on_purchase, class_name: 'GitlabSubscriptions::AddOnPurchase', inverse_of: :assigned_users
 
@@ -29,6 +42,24 @@ module GitlabSubscriptions
 
     def self.pluck_user_ids
       pluck(:user_id)
+    end
+
+    def namespace_traversal_path
+      add_on_purchase.namespace&.traversal_path
+    end
+
+    # Get organization_id from add_on_purchase association for paper trail versioning record.
+    #
+    # We cannot rely on this model because its organization_id
+    # is set using a database before INSERT trigger, at the
+    # time paper trail version record is created this model is dirty with
+    # organization_id as nil.
+    def add_on_purchase_organization_id
+      add_on_purchase.organization_id
+    end
+
+    def add_on_name
+      add_on_purchase.add_on.name
     end
   end
 end
