@@ -9,7 +9,10 @@ module API
 
         feature_category :duo_workflow
 
-        before { authenticate! }
+        before do
+          authenticate!
+          set_current_organization
+        end
 
         helpers do
           def find_workflow!(id)
@@ -27,7 +30,9 @@ module API
 
           def gitlab_oauth_token
             gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
-              current_user: current_user).execute
+              current_user: current_user,
+              organization: ::Current.organization
+            ).execute
 
             if gitlab_oauth_token_result[:status] == :error
               render_api_error!(gitlab_oauth_token_result[:message], gitlab_oauth_token_result[:http_status])
