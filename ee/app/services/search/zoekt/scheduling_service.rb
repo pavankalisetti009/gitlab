@@ -142,13 +142,7 @@ module Search
         )
 
         namespaces_to_move.each_slice(100) do |namespace_ids|
-          scope = node.indices.for_root_namespace_id(namespace_ids)
-
-          # Mark namespaces as not searchable so that it has enough time to re-index these
-          Search::Zoekt::EnabledNamespace.id_in(scope.select(:zoekt_enabled_namespace_id))
-                                         .update_all(search: false, updated_at: Time.zone.now)
-
-          scope.each_batch do |batch|
+          node.indices.for_root_namespace_id(namespace_ids).each_batch do |batch|
             batch.update_all(state: :pending_deletion)
           end
         end

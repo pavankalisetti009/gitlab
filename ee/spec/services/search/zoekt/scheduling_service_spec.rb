@@ -144,7 +144,11 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           )
 
           expect { execute_task }.to change { Search::Zoekt::Index.pending_deletion.count }.from(0).to(1)
-          expect(zoekt_index2.zoekt_enabled_namespace.reload.search).to be(false)
+        end
+
+        it 'keeps search enabled for the enabled namespace' do
+          allow(logger).to receive(:info)
+          expect { execute_task }.not_to change { zoekt_index2.zoekt_enabled_namespace.reload.search }
         end
       end
 
