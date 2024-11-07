@@ -3,15 +3,16 @@
 module Search
   module Zoekt
     class UpdateIndexUsedBytesWorker
-      include Gitlab::EventStore::Subscriber
+      include ApplicationWorker
       include Search::Worker
       prepend ::Geo::SkipSecondary
 
+      data_consistency :delayed
       urgency :low
       idempotent!
 
       # https://gitlab.com/gitlab-org/gitlab/-/issues/499620
-      def handle_event(event); end
+      def perform(*); end
     end
   end
 end
