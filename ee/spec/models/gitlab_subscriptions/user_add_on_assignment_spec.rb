@@ -206,4 +206,18 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
       expect(described_class.where(id: assignment).pluck_user_ids).to match_array([user.id])
     end
   end
+
+  it_behaves_like 'a model with paper trail configured' do
+    let(:factory) { :gitlab_subscription_user_add_on_assignment }
+    let(:attributes_to_update) { { created_at: Time.current } }
+    let(:additional_properties) do
+      {
+        organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID,
+        add_on_name: object.add_on_name,
+        user_id: object.user_id,
+        namespace_path: object.add_on_purchase.namespace.traversal_path,
+        purchase_id: object.add_on_purchase_id
+      }
+    end
+  end
 end
