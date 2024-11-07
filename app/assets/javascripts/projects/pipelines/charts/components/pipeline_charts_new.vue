@@ -3,6 +3,12 @@ import { GlCollapsibleListbox, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui'
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
+import {
+  DATE_RANGE_LAST_WEEK,
+  DATE_RANGE_LAST_30_DAYS,
+  DATE_RANGE_LAST_90_DAYS,
+  DATE_RANGE_LAST_180_DAYS,
+} from '../constants';
 import getPipelineAnalytics from '../graphql/queries/get_pipeline_analytics.query.graphql';
 import StatisticsList from './statistics_list.vue';
 
@@ -21,12 +27,11 @@ export default {
   },
   data() {
     return {
-      dateRange: 7,
+      dateRange: DATE_RANGE_LAST_WEEK,
       pipelineAnalytics: {
         count: null,
         successCount: null,
         failedCount: null,
-        otherCount: null,
         durationStatistics: {
           p50: null,
         },
@@ -68,20 +73,20 @@ export default {
   },
   dateRangeItems: [
     {
-      value: 7,
       text: s__('PipelineCharts|Last week'),
+      value: DATE_RANGE_LAST_WEEK,
     },
     {
-      value: 30,
       text: s__('PipelineCharts|Last 30 days'),
+      value: DATE_RANGE_LAST_30_DAYS,
     },
     {
-      value: 90,
       text: s__('PipelineCharts|Last 90 days'),
+      value: DATE_RANGE_LAST_90_DAYS,
     },
     {
-      value: 180,
       text: s__('PipelineCharts|Last 180 days'),
+      value: DATE_RANGE_LAST_180_DAYS,
     },
   ],
 };
