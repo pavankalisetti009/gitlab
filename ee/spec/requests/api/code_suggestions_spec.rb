@@ -269,8 +269,66 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
 
+        context 'when incident_fail_over_completion_provider is disabled' do
+          before do
+            stub_feature_flags(incident_fail_over_completion_provider: false)
+          end
+
+          it 'delegates downstream service call to Workhorse with correct auth token' do
+            post_api
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response.body).to eq("".to_json)
+            command, params = workhorse_send_data
+            expect(command).to eq('send-url')
+            expect(params).to include(
+              'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
+              'AllowRedirects' => false,
+              'Body' => body.merge(prompt_version: 1).to_json,
+              'Method' => 'POST',
+              'ResponseHeaderTimeout' => '55s'
+            )
+            expect(params['Header']).to include(
+              'X-Gitlab-Authentication-Type' => ['oidc'],
+              'X-Gitlab-Instance-Id' => [global_instance_id],
+              'X-Gitlab-Global-User-Id' => [global_user_id],
+              'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
+              'X-Gitlab-Realm' => [gitlab_realm],
+              'Authorization' => ["Bearer #{token}"],
+              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
+              'Content-Type' => ['application/json'],
+              'User-Agent' => ['Super Awesome Browser 43.144.12']
+            )
+          end
+        end
+
         it 'delegates downstream service call to Workhorse with correct auth token' do
           post_api
+          expected_body = body.merge(
+            'model_provider' => 'anthropic',
+            'model_name' => 'claude-3-5-sonnet-20240620',
+            'prompt_version' => 3,
+            'prompt' => [
+              {
+                "role" => "system",
+                "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+                  "complete the Python code between the given prefix and suffix inside the file 'test.py'.\n" \
+                  "Your task is to provide valid code without any additional explanations, comments, or feedback." \
+                  "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+                  "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
+                  "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
+                  "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
+                  "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
+                  "empty result."
+              },
+              {
+                "role" => "user",
+                "content" => "<SUFFIX>\ndef add(x, y):\n  return x + y\n\ndef sub(x, y):\n  return x - " \
+                  "y\n\ndef multiple(x, y):\n  return x * y\n\ndef divide(x, y):\n  return x / y\n\ndef is_even(n: " \
+                  "int) ->\n\n</SUFFIX>\n<PREFIX>\n\n</PREFIX>"
+              }
+            ]
+          )
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.body).to eq("".to_json)
@@ -279,7 +337,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           expect(params).to include(
             'URL' => "#{::Gitlab::AiGateway.url}/v2/code/completions",
             'AllowRedirects' => false,
-            'Body' => body.merge(prompt_version: 1).to_json,
+            'Body' => expected_body.to_json,
             'Method' => 'POST',
             'ResponseHeaderTimeout' => '55s'
           )

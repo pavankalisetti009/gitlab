@@ -19,10 +19,23 @@ module CodeSuggestions
 
       def prompt
         if self_hosted?
-          CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
-            feature_setting: feature_setting, params: params)
+          self_hosted_prompt
+        else
+          saas_prompt
+        end
+      end
+
+      def self_hosted_prompt
+        CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
+          feature_setting: feature_setting, params: params)
+      end
+
+      def saas_prompt
+        if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
+          # claude hosted on anthropic
+          CodeSuggestions::Prompts::CodeCompletion::Anthropic.new(params)
         elsif Feature.enabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
-          # codestral hosted on vertex
+          # qwen 2.5 hosted on fireworks
           CodeSuggestions::Prompts::CodeCompletion::FireworksQwen.new(params)
         elsif Feature.enabled?(:use_codestral_for_code_completions, current_user, type: :beta)
           # codestral hosted on vertex
