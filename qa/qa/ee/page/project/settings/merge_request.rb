@@ -36,9 +36,14 @@ module QA
               check_element('merge-trains-checkbox', true)
             end
 
-            def enable_merge_train
+            def enable_merge_trains
               click_pipelines_for_merged_results_checkbox
               click_merge_trains_checkbox
+              click_save_changes
+            end
+
+            def enable_merged_results
+              click_pipelines_for_merged_results_checkbox
               click_save_changes
             end
 

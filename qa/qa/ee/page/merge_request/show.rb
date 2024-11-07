@@ -43,10 +43,6 @@ module QA
                 element 'approvals-summary-content'
               end
 
-              view 'ee/app/assets/javascripts/vue_merge_request_widget/components/merge_immediately_confirmation_dialog.vue' do
-                element 'merge-immediately-confirmation-button'
-              end
-
               view 'ee/app/assets/javascripts/security_dashboard/components/pipeline/vulnerability_finding_modal.vue' do
                 element 'vulnerability-modal-content'
                 element 'dismiss-button'
@@ -225,20 +221,8 @@ module QA
             approvals_content.match(/Requires (\d+) approvals/)[1].to_i
           end
 
-          def skip_merge_train_and_merge_immediately
-            click_element 'merge-immediately-dropdown'
-            click_element 'merge-immediately-button'
-
-            # Wait for the warning modal dialog to appear
-            wait_for_animated_element 'merge-immediately-confirmation-button'
-
-            click_element 'merge-immediately-confirmation-button'
-
-            finished_loading?
-          end
-
           def merge_via_merge_train
-            try_to_merge!
+            try_to_merge!(wait_for_no_auto_merge: false)
 
             finished_loading?
           end
