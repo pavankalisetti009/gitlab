@@ -128,6 +128,14 @@ module Search
         used_bytes / total_bytes.to_f
       end
 
+      def unclaimed_storage_bytes
+        free_bytes - (reserved_storage_bytes - indexed_bytes)
+      end
+
+      def free_bytes
+        total_bytes - used_bytes
+      end
+
       def lost?
         last_seen_at <= LOST_DURATION_THRESHOLD.ago
       end
@@ -143,10 +151,6 @@ module Search
         return true if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
 
         save
-      end
-
-      def unclaimed_storage_bytes
-        total_bytes - used_bytes + indexed_bytes - reserved_storage_bytes
       end
 
       private

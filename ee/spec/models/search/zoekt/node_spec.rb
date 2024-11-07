@@ -352,6 +352,18 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
   end
 
+  describe '#unclaimed_storage_bytes' do
+    it 'returns reservable storage' do
+      allow(node).to receive(:reserved_storage_bytes).and_return(500)
+
+      node.total_bytes = 1000
+      node.used_bytes = 100
+      node.indexed_bytes = 200
+
+      expect(node.unclaimed_storage_bytes).to eq(600)
+    end
+  end
+
   describe '#watermark_exceeded_critical?' do
     it 'returns true when over critical limit' do
       node.used_bytes = 0

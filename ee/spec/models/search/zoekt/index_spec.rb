@@ -173,6 +173,21 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.should_have_overprovisioned_watermark' do
+      it 'returns indices that have too much storage' do
+        zoekt_index.update!(reserved_storage_bytes: 100_000_000, state: :ready)
+        expect(described_class.should_have_overprovisioned_watermark).to match_array(zoekt_index)
+
+        zoekt_index.update!(reserved_storage_bytes: 0)
+        expect(described_class.should_have_overprovisioned_watermark).to be_empty
+      end
+
+      it 'does not returns indices that already have overprovisioned watermark level' do
+        zoekt_index.update!(reserved_storage_bytes: 100_000_000, watermark_level: :overprovisioned, state: :ready)
+        expect(described_class.should_have_overprovisioned_watermark).to be_empty
+      end
+    end
+
     describe '.should_have_low_watermark' do
       it 'returns indices that have over low watermark of storage' do
         saturated_storage = zoekt_index.reserved_storage_bytes * Search::Zoekt::Index::STORAGE_LOW_WATERMARK
@@ -243,6 +258,81 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
         zoekt_index.update!(reserved_storage_bytes: nil)
         expect(described_class.with_reserved_storage_bytes.pluck_primary_key).to be_empty
+      end
+    end
+  end
+
+  describe '#update_reserved_storage_bytes!' do
+    let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 100_000) }
+    let_it_be(:idx) do
+      create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+    end
+
+    it 'updates indices with the sum of size_bytes for all associated repositories' do
+      ideal_reserved_storage = idx.used_storage_bytes / described_class::STORAGE_IDEAL_PERCENT_USED
+
+      expect do
+        idx.update_reserved_storage_bytes!
+      end.to change {
+        idx.reload.reserved_storage_bytes
+      }.from(100).to(ideal_reserved_storage)
+
+      expect(
+        idx.used_storage_bytes / idx.reserved_storage_bytes.to_f
+      ).to eq(described_class::STORAGE_IDEAL_PERCENT_USED)
+    end
+
+    context 'when the node only has a little bit more storage' do
+      let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 102, used_bytes: 0) }
+
+      let_it_be(:idx) do
+        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+      end
+
+      it 'increases the node reservation as much as possible' do
+        expect do
+          idx.update_reserved_storage_bytes!
+        end.to change {
+          idx.reload.reserved_storage_bytes
+        }.from(100).to(102)
+      end
+    end
+
+    context 'when the node does not have any more storage' do
+      let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 100, used_bytes: 0) }
+
+      let_it_be(:idx) do
+        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+      end
+
+      it 'does not do anything' do
+        expect do
+          idx.update_reserved_storage_bytes!
+        end.not_to change {
+          idx.reload.reserved_storage_bytes
+        }
+      end
+    end
+
+    context 'when an exception occurs' do
+      it 'logs the error and re-raises the exception' do
+        stubbed_logger = instance_double(::Search::Zoekt::Logger)
+        expect(::Search::Zoekt::Logger).to receive(:build).and_return stubbed_logger
+
+        expected_error_message = 'Ka-Boom'
+
+        expect(stubbed_logger).to receive(:error).with({
+          class: 'Search::Zoekt::Index',
+          message: 'Error attempting to update reserved_storage_bytes',
+          error: expected_error_message,
+          new_reserved_bytes: anything,
+          reserved_storage_bytes: anything,
+          index_id: idx.id
+        }.with_indifferent_access)
+
+        expect(idx).to receive(:used_storage_bytes).and_raise expected_error_message
+
+        expect { idx.update_reserved_storage_bytes! }.to raise_error expected_error_message
       end
     end
   end

@@ -749,26 +749,36 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#index_over_watermark_check' do
     let(:task) { :index_over_watermark_check }
 
-    it 'publishes an IndexOverWatermarkEvent with indices that use too much storage' do
+    it 'publishes an IndexWatermarkChangedEvent with indices that use too much storage' do
       stubbed_low_watermark_indices = Search::Zoekt::Index.all
       stubbed_high_watermark_indices = Search::Zoekt::Index.all
+      stubbed_overprovisioned_indices = Search::Zoekt::Index.all
+      stubbed_batch = Search::Zoekt::Index.all
 
-      expect(Search::Zoekt::Index).to receive_message_chain(:should_have_low_watermark,
-        :each_batch).and_yield(stubbed_low_watermark_indices)
+      expect(Search::Zoekt::Index).to receive_message_chain(:with_reserved_storage_bytes,
+        :each_batch).and_yield(stubbed_batch)
+
+      expect(stubbed_batch).to receive(
+        :should_have_overprovisioned_watermark
+      ).and_return(stubbed_overprovisioned_indices)
+      expect(stubbed_batch).to receive(:should_have_low_watermark).and_return(stubbed_low_watermark_indices)
+      expect(stubbed_batch).to receive(:should_have_high_watermark).and_return(stubbed_high_watermark_indices)
+
       expect(stubbed_low_watermark_indices).to receive(:pluck_primary_key).and_return([1, 2, 3])
-
-      expect(Search::Zoekt::Index).to receive_message_chain(:should_have_high_watermark,
-        :each_batch).and_yield(stubbed_high_watermark_indices)
       expect(stubbed_high_watermark_indices).to receive(:pluck_primary_key).and_return([4, 5, 6])
+      expect(stubbed_overprovisioned_indices).to receive(:pluck_primary_key).and_return([7, 8, 9])
 
-      expected_low_watermarked = { index_ids: [1, 2, 3], watermark: Search::Zoekt::Index::STORAGE_LOW_WATERMARK }
-      expected_high_watermarked = { index_ids: [4, 5, 6], watermark: Search::Zoekt::Index::STORAGE_HIGH_WATERMARK }
+      expected_low_watermarked = { index_ids: [1, 2, 3], watermark_level: 'low_watermark_exceeded' }
+      expected_high_watermarked = { index_ids: [4, 5, 6], watermark_level: 'high_watermark_exceeded' }
+      expected_overprovisioned = { index_ids: [7, 8, 9], watermark_level: 'overprovisioned' }
 
       expect { execute_task }
-        .to publish_event(Search::Zoekt::IndexOverWatermarkEvent)
+        .to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
         .with(expected_low_watermarked)
-        .and publish_event(Search::Zoekt::IndexOverWatermarkEvent)
+        .and publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
         .with(expected_high_watermarked)
+        .and publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
+        .with(expected_overprovisioned)
     end
   end
 
