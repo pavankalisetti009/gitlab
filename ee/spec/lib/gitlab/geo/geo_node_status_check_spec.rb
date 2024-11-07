@@ -25,7 +25,7 @@ RSpec.describe Gitlab::Geo::GeoNodeStatusCheck, :geo, feature_category: :geo_rep
       context 'replication' do
         let(:replicators) { Gitlab::Geo.replication_enabled_replicator_classes }
         let(:checks) do
-          replicators.map { |k| /#{k.replicable_title_plural}:/ }
+          replicators.map { |k| /#{k.replicable_title_plural} replicated:/ }
         end
 
         it 'prints messages for replication' do
@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Geo::GeoNodeStatusCheck, :geo, feature_category: :geo_rep
       context 'verification' do
         let(:replicators) { Gitlab::Geo.verification_enabled_replicator_classes }
         let(:checks) do
-          replicators.map { |k| /#{k.replicable_title_plural} Verified:/ }
+          replicators.map { |k| /#{k.replicable_title_plural} verified:/ }
         end
 
         context 'when verification is enabled' do

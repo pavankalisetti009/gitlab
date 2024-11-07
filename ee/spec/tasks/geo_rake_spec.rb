@@ -164,8 +164,8 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
       let!(:geo_event_log) { create(:geo_event_log) }
       let!(:geo_node_status) { build(:geo_node_status, :healthy, geo_node: secondary_node) }
       let(:self_service_framework_checks) do
-        Gitlab::Geo.verification_enabled_replicator_classes.map { |k| /#{k.replicable_title_plural} Verified:/ } +
-          Gitlab::Geo.replication_enabled_replicator_classes.map { |k| /#{k.replicable_title_plural}:/ }
+        Gitlab::Geo.verification_enabled_replicator_classes.map { |k| /#{k.replicable_title_plural} verified:/ } +
+          Gitlab::Geo.replication_enabled_replicator_classes.map { |k| /#{k.replicable_title_plural} replicated:/ }
       end
 
       before do
@@ -197,7 +197,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
           checks = [
             /Name: /,
             /URL: /,
-            /GitLab Version: /,
+            /This Node's GitLab Version: /,
             /Geo Role: /,
             /Health Status: /,
             /Sync Settings: /,
