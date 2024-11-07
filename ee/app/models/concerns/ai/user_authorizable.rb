@@ -109,7 +109,7 @@ module Ai
       end
 
       def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features, &block)
-        feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[ai_feature]
+        feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return false unless feature_data
 
         service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
