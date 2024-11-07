@@ -115,9 +115,6 @@ module Gitlab
                 "```suggestion:-0+#{line_offset_below}#{element.inner_html}```\n"
               when 'text'
                 element.inner_text.delete_prefix("\n")
-              else
-                # NOTE: Just return as is if it is an unknown element type
-                element.to_html
               end
             end.join
           end
