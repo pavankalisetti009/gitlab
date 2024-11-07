@@ -1462,7 +1462,7 @@ GEM
       pry (>= 0.13.0)
       tty-markdown
       tty-prompt
-    psych (5.1.2)
+    psych (5.2.0)
       stringio
     public_suffix (6.0.1)
     puma (6.4.3)
@@ -1812,7 +1812,7 @@ GEM
     state_machines-activerecord (0.8.0)
       activerecord (>= 5.1)
       state_machines-activemodel (>= 0.8.0)
-    stringio (3.1.1)
+    stringio (3.1.2)
     strings (0.2.1)
       strings-ansi (~> 0.2)
       unicode-display_width (>= 1.5, < 3.0)
@@ -1828,7 +1828,8 @@ GEM
       ffi (~> 1.1)
     sysexits (1.2.0)
     table_print (1.5.7)
-    tanuki_emoji (0.9.0)
+    tanuki_emoji (0.13.0)
+      i18n (~> 1.14)
     telesign (2.2.4)
       net-http-persistent (>= 3.0.0, < 5.0)
     telesignenterprise (2.2.2)
@@ -2323,7 +2324,7 @@ DEPENDENCIES
   stackprof (~> 0.2.26)
   state_machines-activerecord (~> 0.8.0)
   sys-filesystem (~> 1.4.3)
-  tanuki_emoji (~> 0.9)
+  tanuki_emoji (~> 0.13)
   telesignenterprise (~> 2.2)
   terser (= 1.0.2)
   test-prof (~> 1.4.0)
