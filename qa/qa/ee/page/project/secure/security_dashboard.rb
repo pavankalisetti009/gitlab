@@ -87,6 +87,7 @@ module QA
             end
 
             def wait_for_vuln_report_to_load
+              wait_for_requests
               wait_until(max_duration: 60, sleep_interval: 10, message: "Vulnerabilities not loaded yet") do
                 page.has_no_content?('No vulnerabilities to report')
               end
