@@ -135,13 +135,14 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
       tool.request
     end
 
-    it 'logs the request', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463465' do
+    it 'logs the request' do
       expected_prompt = tool.prompt[:prompt]
 
       tool.request
 
       expect(logger).to have_received(:conditional_info).with(context.current_user, a_hash_including(
-        message: "Content of the prompt from chat request", klass: tool.class.to_s, prompt: expected_prompt))
+        message: "Content of the prompt from chat request", event_name: "prompt_content", ai_component: "duo_chat",
+        prompt: expected_prompt))
     end
 
     context 'when prompt_migration_issue_reader feature flag is disabled' do
