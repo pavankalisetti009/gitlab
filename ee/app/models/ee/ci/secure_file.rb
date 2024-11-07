@@ -49,11 +49,6 @@ module EE
         def verification_state_object
           ci_secure_file_state
         end
-
-        def log_geo_deleted_event
-          # Keep empty for now. Should be addressed in future
-          # by https://gitlab.com/gitlab-org/gitlab/-/issues/259694
-        end
       end
 
       class_methods do

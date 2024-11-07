@@ -76,10 +76,5 @@ module EE
     def pages_deployment_state
       super || build_pages_deployment_state
     end
-
-    def log_geo_deleted_event
-      # Keep empty for now. Should be addressed in future
-      # by https://gitlab.com/gitlab-org/gitlab/-/issues/232917
-    end
   end
 end
