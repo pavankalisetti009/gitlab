@@ -176,7 +176,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
             first('.dropdown-menu-user .gl-avatar-labeled').click
 
-            expect(page).to have_selector('.dropdown-menu', visible: false)
+            expect(page).to have_selector('.dropdown-menu', visible: :hidden)
           end
         end
       end
