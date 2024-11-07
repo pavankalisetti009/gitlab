@@ -20,7 +20,7 @@ module Security
         return unless pipeline_complete
         return unless pipeline.can_store_security_reports?
 
-        approval_rules_with_newly_detected_states = approval_rules.select { |rule| include_newly_detected?(rule) }
+        approval_rules_with_newly_detected_states = filter_newly_detected_rules(:scan_finding, approval_rules)
         return if approval_rules_with_newly_detected_states.empty?
 
         evaluate_rules(approval_rules_with_newly_detected_states)

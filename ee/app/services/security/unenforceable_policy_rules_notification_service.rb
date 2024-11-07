@@ -4,6 +4,7 @@ module Security
   class UnenforceablePolicyRulesNotificationService
     include Gitlab::Utils::StrongMemoize
     include ::Security::ScanResultPolicies::RelatedPipelines
+    include ::Security::ScanResultPolicies::VulnerabilityStatesHelper
 
     def initialize(merge_request)
       @merge_request = merge_request
@@ -28,10 +29,15 @@ module Security
 
       unblock_fail_open_rules(report_type)
 
+      # We only evaluate newly detected states. Pre-existing states don't require pipeline to evaluate.
+      # Pre-existing rules are evaluated by `Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker`
+      applicable_rules = filter_newly_detected_rules(report_type, approval_rules)
+      return if applicable_rules.blank?
+
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
                             .new(merge_request, approval_rules, report_type)
 
-      approval_rules.each do |rule|
+      applicable_rules.each do |rule|
         policy_evaluation.error!(rule, :artifacts_missing,
           context: related_pipelines_context(pipeline, merge_request, report_type))
       end

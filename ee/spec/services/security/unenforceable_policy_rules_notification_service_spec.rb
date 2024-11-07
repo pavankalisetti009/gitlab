@@ -18,7 +18,10 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     )
   end
 
-  let_it_be(:scan_result_policy_read, reload: true) { create(:scan_result_policy_read, project: project) }
+  let_it_be(:scan_result_policy_read, reload: true) do
+    create(:scan_result_policy_read, project: project, license_states: %w[newly_detected])
+  end
+
   let_it_be(:protected_branch) do
     create(:protected_branch, name: merge_request.target_branch, project: project)
   end
@@ -29,23 +32,79 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     stub_licensed_features(security_orchestration_policies: true, dependency_scanning: true)
   end
 
-  shared_examples_for 'triggers policy bot comment for both report types' do
-    it 'enqueues Security::GeneratePolicyViolationCommentWorker for both report types' do
-      %i[scan_finding license_scanning].each do |report_type|
-        expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
-          merge_request.id,
-          { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
-            'violated_policy' => false,
-            'requires_approval' => false }
-        )
+  shared_examples_for 'does not block enforceable rules' do
+    let!(:approval_scan_finding_rule) { create_approval_rule(:scan_finding, approvals_required: 0) }
+    let!(:approval_license_scanning_rule) { create_approval_rule(:license_scanning, approvals_required: 0) }
+
+    it_behaves_like 'does not trigger policy bot comment'
+
+    it 'does not reset approvals', :aggregate_failures do
+      execute
+
+      expect(approval_scan_finding_rule.reload.approvals_required).to eq 0
+      expect(approval_license_scanning_rule.reload.approvals_required).to eq 0
+    end
+  end
+
+  shared_examples_for 'blocks newly detected unenforceable approval rules' do
+  |unenforceable_reports = %i[scan_finding license_scanning]|
+    context 'without approval rules' do
+      it_behaves_like 'does not trigger policy bot comment'
+    end
+
+    context 'with approval rules' do
+      context 'when approval rules target newly_detected states' do
+        let!(:approval_scan_finding_rule) { create_approval_rule(:scan_finding) }
+        let!(:approval_license_scanning_rule) { create_approval_rule(:license_scanning) }
+
+        it 'enqueues Security::GeneratePolicyViolationCommentWorker for unenforceable report types' do
+          unenforceable_reports.each do |report_type|
+            expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
+              merge_request.id,
+              { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
+                'violated_policy' => true,
+                'requires_approval' => true }
+            )
+          end
+
+          execute
+        end
+
+        it 'resets approvals', :aggregate_failures do
+          execute
+
+          expect(approval_scan_finding_rule.reload.approvals_required).to eq 1
+          expect(approval_license_scanning_rule.reload.approvals_required).to eq 1
+        end
       end
 
-      execute
+      context 'when approval rules target only pre-existing states' do
+        before do
+          scan_result_policy_read.update!(license_states: %w[detected])
+        end
+
+        let!(:approval_scan_finding_rule) do
+          create_approval_rule(:scan_finding, vulnerability_states: %w[detected], approvals_required: 0)
+        end
+
+        let!(:approval_license_scanning_rule) do
+          create_approval_rule(:license_scanning, approvals_required: 0)
+        end
+
+        it_behaves_like 'does not trigger policy bot comment'
+
+        it 'does not reset approvals', :aggregate_failures do
+          execute
+
+          expect(approval_scan_finding_rule.reload.approvals_required).to eq 0
+          expect(approval_license_scanning_rule.reload.approvals_required).to eq 0
+        end
+      end
     end
   end
 
   context 'without report approver rules' do
-    it_behaves_like 'triggers policy bot comment for both report types'
+    it_behaves_like 'does not trigger policy bot comment'
   end
 
   context 'when all reports are enforceable' do
@@ -54,7 +113,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       create(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: pipeline.project)
     end
 
-    it_behaves_like 'does not trigger policy bot comment'
+    it_behaves_like 'does not block enforceable rules'
   end
 
   context 'when merge request has no head pipeline' do
@@ -62,7 +121,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       merge_request.update!(head_pipeline: nil)
     end
 
-    it_behaves_like 'triggers policy bot comment for both report types'
+    it_behaves_like 'blocks newly detected unenforceable approval rules'
   end
 
   context 'when merge request has multiple pipelines for diff_head_sha' do
@@ -76,7 +135,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     end
 
     context 'when there are no security reports' do
-      it_behaves_like 'triggers policy bot comment for both report types'
+      it_behaves_like 'blocks newly detected unenforceable approval rules'
     end
 
     context 'when there are security reports for non head pipeline' do
@@ -85,12 +144,12 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         create(:ee_ci_build, :cyclonedx, pipeline: merge_request_pipeline, project: project)
       end
 
-      it_behaves_like 'does not trigger policy bot comment'
+      it_behaves_like 'does not block enforceable rules'
     end
   end
 
   shared_examples_for 'unenforceable report' do |report_type|
-    it_behaves_like 'triggers policy bot comment', report_type, false, requires_approval: false
+    it_behaves_like 'blocks newly detected unenforceable approval rules', [report_type]
 
     context 'with violated approval rules' do
       let(:approvals_required) { 1 }
@@ -169,7 +228,9 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           scan_result_policy_read: closed_scan_result_policy_read)
       end
 
-      let(:closed_scan_result_policy_read) { create(:scan_result_policy_read, :fail_closed, project: project) }
+      let(:closed_scan_result_policy_read) do
+        create(:scan_result_policy_read, :fail_closed, project: project, license_states: %w[newly_detected])
+      end
 
       it 'resets the approvals required to the source rule' do
         expect { subject }.to change { fail_closed_rule.reload.approvals_required }.from(1).to(2)
@@ -177,6 +238,10 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     end
 
     describe 'fail-open rules' do
+      let_it_be_with_reload(:fail_open_policy) do
+        create(:scan_result_policy_read, :fail_open, project: project, license_states: %w[newly_detected])
+      end
+
       let_it_be_with_reload(:fail_open_rule) do
         create(
           :report_approver_rule,
@@ -184,10 +249,13 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           name: "#{report_type} Fail Open",
           merge_request: merge_request,
           approvals_required: 1,
-          scan_result_policy_read: create(:scan_result_policy_read, :fail_open, project: project))
+          scan_result_policy_read: fail_open_policy)
       end
 
-      let_it_be_with_reload(:fail_closed_policy) { create(:scan_result_policy_read, project: project) }
+      let_it_be_with_reload(:fail_closed_policy) do
+        create(:scan_result_policy_read, project: project, license_states: %w[newly_detected])
+      end
+
       let!(:fail_closed_rule) do
         create(
           :report_approver_rule,
@@ -371,5 +439,18 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         end
       end
     end
+  end
+
+  private
+
+  def create_approval_rule(report_type, vulnerability_states: [], approvals_required: 1)
+    project_rule = create(:approval_project_rule, report_type, project: project,
+      approvals_required: 1, vulnerability_states: vulnerability_states,
+      applies_to_all_protected_branches: true, protected_branches: [protected_branch],
+      scan_result_policy_read: scan_result_policy_read)
+
+    create(:report_approver_rule, report_type, merge_request: merge_request, approvals_required: approvals_required,
+      vulnerability_states: vulnerability_states,
+      scan_result_policy_read: scan_result_policy_read, approval_project_rule: project_rule)
   end
 end
