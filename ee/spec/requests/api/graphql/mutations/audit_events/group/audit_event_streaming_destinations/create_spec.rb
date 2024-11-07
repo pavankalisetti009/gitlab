@@ -22,7 +22,7 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
       groupPath: group.full_path,
       config: config,
       category: 'http',
-      secret_token: 'some_secret_token'
+      secretToken: 'some_secret_token'
     }
   end
 
@@ -175,7 +175,34 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
           }
         end
 
-        it_behaves_like 'a mutation that does not create a destination'
+        it 'creates the destination' do
+          expect { mutate }
+            .to change { AuditEvents::Group::ExternalStreamingDestination.count }.by(1)
+
+          destination = AuditEvents::Group::ExternalStreamingDestination.last
+          expect(destination.group).to eq(group)
+          expect(destination.config).to eq(config)
+          expect(destination.name).not_to be_empty
+          expect(destination.category).to eq('http')
+          expect(destination.secret_token).to be_present
+        end
+      end
+
+      context 'when secret_token is not provided for required destination' do
+        let(:input) do
+          {
+            groupPath: group.full_path,
+            config: config,
+            category: 'aws'
+          }
+        end
+
+        it 'returns an error' do
+          mutate
+
+          expect(mutation_response["errors"]).to eq(["Secret token is required for category"])
+          expect(mutation_response["externalAuditEventDestination"]).to be_nil
+        end
       end
 
       context 'for config' do

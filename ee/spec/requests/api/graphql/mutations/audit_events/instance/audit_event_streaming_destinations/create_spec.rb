@@ -20,7 +20,7 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
     {
       config: config,
       category: 'http',
-      secret_token: 'random_secret_token'
+      secretToken: 'random_secret_token'
     }
   end
 
@@ -70,7 +70,7 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
             {
               config: config,
               category: 'invalid',
-              secret_token: 'random_secret_token'
+              secretToken: 'random_secret_token'
             }
           end
 
@@ -81,7 +81,7 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
           let(:input) do
             {
               config: config,
-              secret_token: 'random_secret_token'
+              secretToken: 'random_secret_token'
             }
           end
 
@@ -89,7 +89,18 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
         end
       end
 
-      context 'when secret_token is not provided' do
+      context 'when secret_token is not provided for non http category' do
+        let(:input) do
+          {
+            config: config,
+            category: 'aws'
+          }
+        end
+
+        it_behaves_like 'a mutation that does not create a destination'
+      end
+
+      context 'when secret_token is not provided for http category' do
         let(:input) do
           {
             config: config,
@@ -97,7 +108,18 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
           }
         end
 
-        it_behaves_like 'a mutation that does not create a destination'
+        it 'creates a destination with an auto-generated secret token' do
+          expect { mutate }
+          .to change { AuditEvents::Instance::ExternalStreamingDestination.count }.by(1)
+
+          destination = AuditEvents::Instance::ExternalStreamingDestination.last
+
+          expect(destination.secret_token).not_to be_empty
+          expect(destination.secret_token).not_to eq('random_secret_token')
+          expect(mutation_response['externalAuditEventDestination']['secretToken']).to eq(destination.secret_token)
+        end
+
+        it_behaves_like 'creates an audit event'
       end
 
       context 'for config' do
@@ -106,7 +128,7 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
             {
               config: "string_value",
               category: 'http',
-              secret_token: 'random_secret_token'
+              secretToken: 'random_secret_token'
             }
           end
 
@@ -117,7 +139,7 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
           let(:input) do
             {
               category: 'http',
-              secret_token: 'random_secret_token'
+              secretToken: 'random_secret_token'
             }
           end
 
