@@ -30,6 +30,19 @@ RSpec.describe Security::Configuration::SetPreReceiveSecretDetection, feature_ca
           .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
       end
 
+      context 'when security_setting record does not yet exist' do
+        let_it_be(:project_without_security_setting) { create(:project) }
+
+        before do
+          project_without_security_setting.security_setting.delete
+        end
+
+        it 'creates the necessary record and updates the record appropriately' do
+          expect(described_class.execute(current_user: current_user, namespace: project_without_security_setting.reload,
+            enable: true)).to have_attributes(errors: be_blank, payload: include(enabled: true))
+        end
+      end
+
       context 'when attribute changes from false to true' do
         it 'creates an audit event with the correct message' do
           expect { described_class.execute(current_user: current_user, namespace: namespace, enable: true) }
