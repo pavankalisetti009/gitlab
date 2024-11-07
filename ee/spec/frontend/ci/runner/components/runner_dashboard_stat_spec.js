@@ -1,5 +1,4 @@
 import { GlSingleStat } from '@gitlab/ui/dist/charts';
-import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import { INSTANCE_TYPE, GROUP_TYPE } from '~/ci/runner/constants';
@@ -17,13 +16,16 @@ describe('RunnerDashboardStat', () => {
       propsData: {
         scope: INSTANCE_TYPE,
         variables: {},
+        title: '',
         ...props,
       },
       stubs: {
         RunnerCount: {
-          ...stubComponent(RunnerCount),
-          render() {
-            return this.$scopedSlots.default({ count });
+          ...RunnerCount,
+          data() {
+            return {
+              count,
+            };
           },
         },
         GlSingleStat,
