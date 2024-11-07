@@ -1,7 +1,6 @@
 <script>
-import { GlPath } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { getParameterByName, removeParams, visitUrl } from '~/lib/utils/url_utility';
+import { getParameterByName } from '~/lib/utils/url_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -10,7 +9,6 @@ import PolicyTypeSelector from './policy_type_selector.vue';
 
 export default {
   components: {
-    GlPath,
     EditorWrapper,
     PolicyTypeSelector,
     PageHeading,
@@ -26,24 +24,6 @@ export default {
     };
   },
   computed: {
-    enableWizard() {
-      return !this.existingPolicy;
-    },
-    glPathItems() {
-      const hasPolicy = Boolean(this.selectedPolicy);
-
-      return [
-        {
-          title: this.$options.i18n.choosePolicyType,
-          selected: !hasPolicy,
-        },
-        {
-          title: this.$options.i18n.policyDetails,
-          selected: hasPolicy,
-          disabled: !hasPolicy,
-        },
-      ];
-    },
     title() {
       if (this.existingPolicy) {
         return (
@@ -59,11 +39,6 @@ export default {
     this.policyFromUrl(getParameterByName('type'));
   },
   methods: {
-    handlePathSelection({ title }) {
-      if (title === this.$options.i18n.choosePolicyType) {
-        visitUrl(removeParams(['type'], window.location.href));
-      }
-    },
     policyFromUrl() {
       const policyType = getParameterByName('type');
 
@@ -91,19 +66,12 @@ export default {
       ),
       fallBack: s__('SecurityOrchestration|Edit policy'),
     },
-    choosePolicyType: s__('SecurityOrchestration|Step 1: Choose a policy type'),
-    policyDetails: s__('SecurityOrchestration|Step 2: Policy details'),
   },
 };
 </script>
 <template>
   <div>
-    <page-heading :heading="title">
-      <template #description>
-        <gl-path v-if="enableWizard" :items="glPathItems" @selected="handlePathSelection" />
-      </template>
-    </page-heading>
-
+    <page-heading :heading="title" />
     <policy-type-selector v-if="!selectedPolicy" />
     <editor-wrapper v-else :selected-policy-type="selectedPolicy.value" />
   </div>
