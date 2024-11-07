@@ -60,6 +60,9 @@ module QA
 
       it 'checks that dismissed vulnerabilities do not show up',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415291' do
+        Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
+        Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: project, status: 'success')
+
         Page::Project::Menu.perform(&:go_to_vulnerability_report)
 
         EE::Page::Project::Secure::SecurityDashboard.perform do |security_dashboard|
