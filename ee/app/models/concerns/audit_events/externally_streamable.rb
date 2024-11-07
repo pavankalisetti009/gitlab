@@ -6,6 +6,7 @@ module AuditEvents
 
     MAXIMUM_NAMESPACE_FILTER_COUNT = 5
     MAXIMUM_DESTINATIONS_PER_ENTITY = 5
+    STREAMING_TOKEN_HEADER_KEY = "X-Gitlab-Event-Streaming-Token"
 
     included do
       before_validation :assign_default_name
@@ -44,6 +45,15 @@ module AuditEvents
       scope :configs_of_parent, ->(record_id, category) {
         where.not(id: record_id).where(category: category).limit(MAXIMUM_DESTINATIONS_PER_ENTITY).pluck(:config)
       }
+
+      def headers_hash
+        return {} unless http?
+
+        (config['headers'] || {})
+          .select { |_, h| h['active'] == true }
+          .transform_values { |h| h['value'] }
+          .merge(STREAMING_TOKEN_HEADER_KEY => secret_token)
+      end
 
       private
 

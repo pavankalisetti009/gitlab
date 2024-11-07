@@ -17,18 +17,20 @@
         "null"
       ],
       "patternProperties": {
-        "^.{1,255}$": {
+        "^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,255}$": {
           "type": "object",
           "properties": {
             "value": {
               "type": "string",
+              "pattern": "^[!-~¡-ÿ]([!-~¡-ÿ]| |\t)*[!-~¡-ÿ]$|^[!-~¡-ÿ]$|^$",
               "maxLength": 255
             },
             "active": {
               "type": "boolean",
               "default": true
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "minProperties": 1,

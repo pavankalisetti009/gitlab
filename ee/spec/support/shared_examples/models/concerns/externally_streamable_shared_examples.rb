@@ -132,6 +132,9 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
         let(:large_url) { "http://#{large_string}.com" }
         let(:header_hash1) { { key1: { value: 'value1', active: true }, key2: { value: 'value2', active: false } } }
         let(:header_hash2) { { key1: { value: 'value1', active: true }, key2: { value: 'value2', active: false } } }
+        let(:invalid_properties) { { key1: { value: 'value1', extra: 'extra key value' } } }
+        let(:invalid_characters) { { key1: { value: ' leading or trailing space ', active: true } } }
+        let(:valid_special_characters) { { 'X-Meta-Custom_header': { value: '"value",commas,' } } }
 
         before do
           21.times do |i|
@@ -154,6 +157,9 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
           'http://example.com'  | { key1: 'value1' }                                    | false
           'http://example.com'  | ref(:header_hash2)                                    | true
           'http://example.com'  | ref(:more_than_allowed_headers)                       | false
+          'http://example.com'  | ref(:invalid_properties)                              | false
+          'http://example.com'  | ref(:invalid_characters)                              | false
+          'http://example.com'  | ref(:valid_special_characters)                        | true
         end
 
         with_them do
@@ -286,6 +292,65 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
 
           expect(destination).to be_valid
           expect(destination.config.keys).not_to include('logIdName')
+        end
+      end
+    end
+
+    describe '#headers_hash' do
+      subject(:destination) do
+        create(model_factory_name, config: { url: 'https://example.com', headers: http_headers })
+      end
+
+      context 'when there are no headers' do
+        let(:http_headers) { nil }
+
+        it 'returns a hash with only secret token' do
+          headers_hash = destination.headers_hash
+
+          expect(headers_hash.length).to eq(1)
+          expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+            .to eq(destination.secret_token)
+        end
+      end
+
+      context 'when there is no active header' do
+        let(:http_headers) { { key1: { value: 'value1', active: false }, key2: { value: 'value2', active: false } } }
+
+        it 'returns a hash with only secret token' do
+          headers_hash = destination.headers_hash
+
+          expect(headers_hash.length).to eq(1)
+          expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+            .to eq(destination.secret_token)
+        end
+      end
+
+      context 'when there are active and inactive headers' do
+        let(:http_headers) { { key1: { value: 'value1', active: true }, key2: { value: 'value2', active: false } } }
+
+        it 'returns a hash with active headers and secret token header' do
+          headers_hash = destination.headers_hash
+
+          expect(headers_hash.length).to eq(2)
+
+          expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+            .to eq(destination.secret_token)
+          expect(headers_hash["key1"]).to eq('value1')
+        end
+      end
+
+      context 'when secret token header is overwritten' do
+        let(:http_headers) do
+          { AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY => { value: 'custom_token_overwrite',
+                                                                               active: true } }
+        end
+
+        it 'returns a hash with original secret token header' do
+          headers_hash = destination.headers_hash
+
+          expect(headers_hash.length).to eq(1)
+          expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
+          .to eq(destination.secret_token)
         end
       end
     end
