@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acquisition do
   describe '#hand_raise_modal_dataset' do
     it 'provides the expected dataset' do
       user = build_stubbed(:user)
@@ -16,7 +16,7 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
           last_name: user.last_name,
           company_name: user.organization
         }.to_json,
-        submit_path: subscriptions_hand_raise_leads_path
+        submit_path: gitlab_subscriptions_hand_raise_leads_path
       }
 
       expect(helper.hand_raise_modal_dataset(root_namespace)).to eq(result)

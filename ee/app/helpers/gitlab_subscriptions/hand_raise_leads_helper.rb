@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Subscriptions
+module GitlabSubscriptions
   module HandRaiseLeadsHelper
     def hand_raise_modal_dataset(root_namespace)
       {
@@ -11,7 +11,7 @@ module Subscriptions
           last_name: current_user.last_name,
           company_name: current_user.organization
         }.to_json,
-        submit_path: subscriptions_hand_raise_leads_path
+        submit_path: gitlab_subscriptions_hand_raise_leads_path
       }
     end
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Subscriptions
+module GitlabSubscriptions
   class HandRaiseLeadsController < ApplicationController
     before_action :check_if_gl_com_or_dev
     before_action :authenticate_user!

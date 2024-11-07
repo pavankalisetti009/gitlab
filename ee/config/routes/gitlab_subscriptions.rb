@@ -7,7 +7,6 @@ scope module: :gitlab_subscriptions do
   end
 
   resources :trials, only: [:new, :create]
-
   resource :subscriptions, only: [:new, :create] do
     get :buy_minutes
     get :buy_storage
@@ -15,4 +14,6 @@ scope module: :gitlab_subscriptions do
     get :payment_method
     post :validate_payment_method
   end
+  resources :hand_raise_leads, only: :create, path: 'gitlab_subscriptions/hand_raise_leads',
+    as: 'gitlab_subscriptions_hand_raise_leads'
 end
