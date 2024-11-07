@@ -8,10 +8,8 @@ module GitlabSubscriptions
       private
 
       def trial_flow
-        # The value of 0 is the option in the select for creating a new group
-        create_new_group_selected = trial_params[:namespace_id] == '0'
-
-        if trial_params[:namespace_id].present? && !create_new_group_selected
+        if trial_params[:namespace_id].present? &&
+            !GitlabSubscriptions::Trials.creating_group_trigger?(trial_params[:namespace_id])
           existing_namespace_flow
         elsif trial_params.key?(:new_group_name)
           create_group_flow

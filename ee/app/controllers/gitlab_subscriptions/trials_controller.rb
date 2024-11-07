@@ -11,17 +11,16 @@ module GitlabSubscriptions
     layout 'minimal'
 
     skip_before_action :set_confirm_warning
-    before_action :check_feature_available!
     before_action :authenticate_user!
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/500686 will likely move this to being performed
-    # during an eligibility check similar to Trials::DuoEnterpriseController.
-    before_action :eligible_namespaces
+    before_action :check_feature_available!
+    before_action :check_trial_eligibility!
+    before_action :eligible_namespaces # needed when namespace_id isn't provided or is 0(new group)
 
     feature_category :plan_provisioning
     urgency :low
 
     def new
-      if params[:step] == GitlabSubscriptions::Trials::CreateService::TRIAL
+      if general_params[:step] == GitlabSubscriptions::Trials::CreateService::TRIAL
         render :step_namespace
       else
         render :step_lead
@@ -30,7 +29,7 @@ module GitlabSubscriptions
 
     def create
       @result = GitlabSubscriptions::Trials::CreateService.new(
-        step: params[:step], lead_params: lead_params, trial_params: trial_params, user: current_user
+        step: general_params[:step], lead_params: lead_params, trial_params: trial_params, user: current_user
       ).execute
 
       if @result.success?
@@ -57,12 +56,12 @@ module GitlabSubscriptions
         render :step_lead_failed
       elsif @result.reason == GitlabSubscriptions::Trials::CreateService::NAMESPACE_CREATE_FAILED
         # namespace creation failed
-        params[:namespace_id] = @result.payload[:namespace_id]
+        params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
         render :step_namespace_failed
       else
         # trial creation failed
-        params[:namespace_id] = @result.payload[:namespace_id]
+        params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
         render :trial_failed
       end
@@ -82,9 +81,13 @@ module GitlabSubscriptions
       return if current_user
 
       redirect_to(
-        new_trial_registration_path(::Onboarding::Status.glm_tracking_params(params)),
+        new_trial_registration_path(::Onboarding::Status.glm_tracking_params(params)), # rubocop:disable Rails/StrongParams -- method performs strong params
         alert: I18n.t('devise.failure.unauthenticated')
       )
+    end
+
+    def general_params
+      params.permit(:step)
     end
 
     def lead_params
@@ -105,11 +108,27 @@ module GitlabSubscriptions
     end
 
     def discover_group_security_flow?
-      %w[discover-group-security discover-project-security].include?(params[:glm_content])
+      %w[discover-group-security discover-project-security].include?(trial_params[:glm_content])
     end
 
     def check_feature_available!
       render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+    end
+
+    def check_trial_eligibility!
+      return unless should_check_eligibility?
+      return if eligible_for_trial?
+
+      render 'gitlab_subscriptions/trials/duo/access_denied', status: :forbidden
+    end
+
+    def should_check_eligibility?
+      namespace_id = trial_params[:namespace_id]
+      namespace_id.present? && !GitlabSubscriptions::Trials.creating_group_trigger?(namespace_id)
+    end
+
+    def eligible_for_trial?
+      GitlabSubscriptions::Trials.eligible_namespace?(trial_params[:namespace_id], eligible_namespaces)
     end
 
     def success_flash_message(add_on_purchase)

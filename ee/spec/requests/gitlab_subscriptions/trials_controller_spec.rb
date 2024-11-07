@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_provisioning do
+RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :plan_provisioning do
   let_it_be(:user, reload: true) { create(:user) }
   let(:glm_params) { { glm_source: '_glm_source_', glm_content: '_glm_content_' } }
   let(:subscriptions_trials_enabled) { true }
@@ -11,8 +11,29 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
     stub_saas_features(subscriptions_trials: subscriptions_trials_enabled, marketing_google_tag_manager: false)
   end
 
+  shared_examples 'namespace_id is passed' do
+    context 'when namespace_id is 0' do
+      let(:namespace_id) { { namespace_id: 0 } }
+
+      it { is_expected.to have_gitlab_http_status(:ok) }
+    end
+
+    context 'for an ineligible group due to subscription level' do
+      let(:namespace_id) { { namespace_id: create(:group_with_plan, plan: :ultimate_plan, owners: user) } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+
+    context 'for an ineligible group due to user permissions' do
+      let(:namespace_id) { { namespace_id: create(:group) } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+  end
+
   describe 'GET new' do
-    let(:base_params) { glm_params }
+    let(:namespace_id) { {} }
+    let(:base_params) { glm_params.merge(namespace_id) }
 
     subject(:get_new) do
       get new_trial_path, params: base_params
@@ -30,23 +51,13 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
       it { is_expected.to have_gitlab_http_status(:ok) }
 
-      context 'with eligible_namespaces' do
-        context 'and there are no eligible namespaces' do
-          it 'is empty' do
-            get_new
+      it_behaves_like 'namespace_id is passed'
 
-            expect(assigns(:eligible_namespaces)).to be_empty
-          end
-        end
+      context 'when there are no eligible namespaces' do
+        it 'is empty' do
+          get_new
 
-        context 'and there are eligible namespaces' do
-          it 'assigns eligible_namespaces with namespace' do
-            namespace = create(:group, owners: user)
-
-            get_new
-
-            expect(assigns(:eligible_namespaces)).to match_array([namespace])
-          end
+          expect(assigns(:eligible_namespaces)).to be_empty
         end
       end
 
@@ -69,13 +80,19 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
       context 'when on the trial step' do
         let(:base_params) { { step: 'trial' } }
 
+        before_all do
+          create(:group, owners: user)
+        end
+
         it { is_expected.to render_select_namespace }
       end
     end
   end
 
   describe 'POST create' do
+    let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :free_plan, owners: user) }
     let(:step) { 'lead' }
+    let(:namespace_id) { { namespace_id: namespace.id.to_s } }
     let(:lead_params) do
       {
         company_name: '_company_name_',
@@ -91,10 +108,9 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
     let(:trial_params) do
       {
-        namespace_id: non_existing_record_id.to_s,
         trial_entity: '_trial_entity_',
         organization_id: anything
-      }.with_indifferent_access
+      }.merge(namespace_id).with_indifferent_access
     end
 
     let(:base_params) { lead_params.merge(trial_params).merge(glm_params).merge(step: step) }
@@ -129,6 +145,15 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
         login_as(user)
       end
 
+      it_behaves_like 'namespace_id is passed' do
+        before do
+          allow_next_instance_of(GitlabSubscriptions::Trials::CreateService) do |instance|
+            response = ServiceResponse.error(message: '_message_', payload: { namespace: namespace })
+            allow(instance).to receive(:execute).and_return(response)
+          end
+        end
+      end
+
       context 'when user is then banned' do
         before do
           user.ban!
@@ -142,8 +167,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
         end
       end
 
-      context 'when successful', :saas do
-        let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :free_plan) }
+      context 'when successful' do
         let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
         let_it_be(:ultimate_trial_plan) { create(:ultimate_trial_plan) }
 
@@ -172,7 +196,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
         end
 
         context 'when the namespace applying is on the premium plan' do
-          let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan) }
+          let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan, owners: user) }
           let_it_be(:ultimate_trial_paid_customer_plan) { create(:ultimate_trial_paid_customer_plan) }
 
           context 'when add_on_purchase exists' do
@@ -354,31 +378,10 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
             expect(response).to redirect_to(new_trial_path(payload[:trial_selection_params]))
           end
-
-          context 'with eligible_namespaces' do
-            context 'and there are no eligible namespaces' do
-              it 'is empty' do
-                post_create
-
-                expect(assigns(:eligible_namespaces)).to be_empty
-              end
-            end
-
-            context 'and there are eligible namespaces' do
-              it 'assigns eligible_namespaces with namespace' do
-                namespace = create(:group, owners: user)
-
-                post_create
-
-                expect(assigns(:eligible_namespaces)).to match_array([namespace])
-              end
-            end
-          end
         end
 
         context 'with namespace creation failure' do
           let(:failure_reason) { :namespace_create_failed }
-          let(:namespace) { build_stubbed(:namespace) }
           let(:payload) { { namespace_id: namespace.id } }
 
           it 'renders the select namespace form again with namespace creation errors only' do
@@ -391,7 +394,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
         context 'with trial failure' do
           let(:failure_reason) { :trial_failed }
-          let(:namespace) { build_stubbed(:namespace) }
           let(:payload) { { namespace_id: namespace.id } }
 
           it 'renders the select namespace form again with trial creation errors only' do
@@ -403,7 +405,6 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
 
         context 'with random failure' do
           let(:failure_reason) { :random_error }
-          let(:namespace) { build_stubbed(:namespace) }
           let(:payload) { { namespace_id: namespace.id } }
 
           it { is_expected.to render_select_namespace }
@@ -429,7 +430,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
   RSpec::Matchers.define :render_select_namespace do
     match do |response|
       expect(response).to have_gitlab_http_status(:ok)
-      expect(response.body).to include(_('Apply your trial to a new group'))
+      expect(response.body).to include(_('Apply your trial to a new or existing group'))
       expect(response.body).to include(_('Activate my trial'))
     end
   end
