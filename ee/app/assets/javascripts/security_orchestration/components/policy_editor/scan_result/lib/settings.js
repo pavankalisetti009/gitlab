@@ -47,7 +47,7 @@ export const mergeRequestConfiguration = {
 };
 
 export const BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING = s__(
-  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} matching the full paths: %{groupSelection}',
+  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} %{groupSelection}',
 );
 export const BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING = s__(
   'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection}',
