@@ -8,7 +8,7 @@ module Gitlab
       include ActionView::Helpers::DateHelper
       include ActionView::Helpers::NumberHelper
 
-      GEO_STATUS_COLUMN_WIDTH = 35
+      GEO_STATUS_COLUMN_WIDTH = 44
 
       attr_reader :current_node_status, :geo_node
 
@@ -20,18 +20,18 @@ module Gitlab
       def print_status
         print_current_node_info
 
-        print_gitlab_version
         print_geo_role
         print_node_health_status
-
-        print_replicators_status
-        print_repositories_checked_status
-        print_replicators_verification_status
+        print_gitlab_version
 
         print_sync_settings
         print_db_replication_lag
         print_last_event_id
         print_last_status_report_time
+
+        print_replicators_status
+        print_repositories_checked_status
+        print_replicators_verification_status
 
         puts
       end
@@ -83,13 +83,16 @@ module Gitlab
 
       def print_current_node_info
         puts
-        puts "Name: #{GeoNode.current_node_name}"
-        puts "URL: #{GeoNode.current_node_url}"
-        puts Rainbow('-----------------------------------------------------').yellow
+        puts Rainbow('Geo Site Information'.rjust(GEO_STATUS_COLUMN_WIDTH)).yellow
+        puts Rainbow('-' * GEO_STATUS_COLUMN_WIDTH).yellow
+        print 'Name: '.rjust(GEO_STATUS_COLUMN_WIDTH)
+        puts GeoNode.current_node_name
+        print 'URL: '.rjust(GEO_STATUS_COLUMN_WIDTH)
+        puts GeoNode.current_node_url
       end
 
       def print_gitlab_version
-        print 'GitLab Version: '.rjust(GEO_STATUS_COLUMN_WIDTH)
+        print 'This Node\'s GitLab Version: '.rjust(GEO_STATUS_COLUMN_WIDTH)
         puts Gitlab::VERSION
       end
 
@@ -121,6 +124,9 @@ module Gitlab
       end
 
       def print_sync_settings
+        puts
+        puts Rainbow('Replication Information'.rjust(GEO_STATUS_COLUMN_WIDTH)).yellow
+        puts Rainbow('-' * GEO_STATUS_COLUMN_WIDTH).yellow
         print 'Sync Settings: '.rjust(GEO_STATUS_COLUMN_WIDTH)
         puts  geo_node.namespaces.any? ? 'Selective' : 'Full'
       end
@@ -175,9 +181,13 @@ module Gitlab
       end
 
       def print_replicators_status
+        puts
+        puts Rainbow('Replication Status'.rjust(GEO_STATUS_COLUMN_WIDTH)).yellow
+        puts Rainbow('-' * GEO_STATUS_COLUMN_WIDTH).yellow
+
         Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
           print_counts_row(
-            description: replicator_class.replicable_title_plural.to_s,
+            description: "#{replicator_class.replicable_title_plural} replicated",
             failed: replicator_class.failed_count,
             succeeded: replicator_class.synced_count,
             total: replicator_class.registry_count,
@@ -200,11 +210,15 @@ module Gitlab
       end
 
       def print_replicators_verification_status
+        puts
+        puts Rainbow('Verification Status'.rjust(GEO_STATUS_COLUMN_WIDTH)).yellow
+        puts Rainbow('-' * GEO_STATUS_COLUMN_WIDTH).yellow
+
         verifiable_replicator_classes = Gitlab::Geo.verification_enabled_replicator_classes
 
         verifiable_replicator_classes.each do |replicator_class|
           print_counts_row(
-            description: "#{replicator_class.replicable_title_plural} Verified",
+            description: "#{replicator_class.replicable_title_plural} verified",
             failed: replicator_class.verification_failed_count,
             succeeded: replicator_class.verified_count,
             total: replicator_class.registry_count,
