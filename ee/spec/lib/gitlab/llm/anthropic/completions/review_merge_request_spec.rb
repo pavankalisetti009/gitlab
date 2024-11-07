@@ -312,7 +312,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         end
       end
 
-      context 'when LLM returns incorrecly formatted XML' do
+      context 'when LLM returns incorrectly formatted XML' do
         let(:first_review_answer) do
           <<~RESPONSE
             <review>
