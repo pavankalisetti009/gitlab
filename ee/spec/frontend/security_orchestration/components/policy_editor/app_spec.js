@@ -1,7 +1,6 @@
 import * as urlUtils from '~/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import PolicyTypeSelector from 'ee/security_orchestration/components/policy_editor/policy_type_selector.vue';
@@ -16,125 +15,64 @@ describe('App component', () => {
 
   const factory = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(App, {
-      provide: {
-        assignedPolicyProject: {},
-        namespaceType: NAMESPACE_TYPES.GROUP,
-        ...provide,
-      },
-      stubs: { GlPath: true, PageHeading },
+      provide: { assignedPolicyProject: {}, ...provide },
+      stubs: { PageHeading },
     });
   };
 
-  describe('when there is no type query parameter', () => {
-    describe('projects', () => {
-      beforeEach(() => {
-        factory({ provide: { namespaceType: NAMESPACE_TYPES.PROJECT } });
-      });
-
-      it('should display the title correctly', () => {
-        expect(findTitle()).toBe('New policy');
-      });
-
-      it('should display the correct view', () => {
-        expect(findPolicySelection().exists()).toBe(true);
-        expect(findPolicyEditor().exists()).toBe(false);
-      });
+  describe('rendering', () => {
+    it('displays the policy selection when there is no query parameter', () => {
+      factory();
+      expect(findPolicySelection().exists()).toBe(true);
+      expect(findPolicyEditor().exists()).toBe(false);
     });
 
-    describe('groups', () => {
-      beforeEach(() => {
-        factory({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
-      });
-
-      it('should display the title correctly', () => {
-        expect(findTitle()).toBe('New policy');
-      });
-
-      it('should display the correct view', () => {
-        expect(findPolicySelection().exists()).toBe(true);
-        expect(findPolicyEditor().exists()).toBe(false);
-      });
-    });
-
-    describe('when existing policy selected', () => {
-      it('should display correct title', () => {
-        factory({
-          provide: {
-            existingPolicy: {
-              id: 'policy-id',
-              value: 'approval',
-            },
-          },
-        });
-
-        expect(findTitle()).toBe('Edit policy');
-      });
+    it('displays the policy editor when there is a type query parameter', () => {
+      jest
+        .spyOn(urlUtils, 'getParameterByName')
+        .mockReturnValue(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter);
+      factory({ provide: { existingPolicy: { id: 'policy-id', value: 'approval' } } });
+      expect(findPolicySelection().exists()).toBe(false);
+      expect(findPolicyEditor().exists()).toBe(true);
     });
   });
 
-  describe('when there is a type query parameter', () => {
-    describe('approval', () => {
+  describe('page title', () => {
+    describe.each`
+      value                  | titleSuffix
+      ${'approval'}          | ${'merge request approval policy'}
+      ${'scanExecution'}     | ${'scan execution policy'}
+      ${'pipelineExecution'} | ${'pipeline execution policy'}
+    `('$titleSuffix', ({ titleSuffix, value }) => {
       beforeEach(() => {
         jest
           .spyOn(urlUtils, 'getParameterByName')
-          .mockReturnValue(POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter);
-        factory({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.PROJECT,
-            existingPolicy: {
-              id: 'policy-id',
-              value: 'approval',
-            },
-          },
-        });
+          .mockReturnValue(POLICY_TYPE_COMPONENT_OPTIONS[value].urlParameter);
       });
 
-      it('should display the title correctly', () => {
-        expect(findTitle()).toBe('Edit merge request approval policy');
+      it('displays for a new policy', () => {
+        factory();
+        expect(findTitle()).toBe(`New ${titleSuffix}`);
       });
 
-      it('should display the correct view according to the selected policy', () => {
-        expect(findPolicySelection().exists()).toBe(false);
-        expect(findPolicyEditor().exists()).toBe(true);
-      });
-    });
-
-    describe('scan execution', () => {
-      beforeEach(() => {
-        jest
-          .spyOn(urlUtils, 'getParameterByName')
-          .mockReturnValue(POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter);
-        factory({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.PROJECT,
-            existingPolicy: {
-              id: 'policy-id',
-              value: 'scanExecution',
-            },
-          },
-        });
-      });
-
-      it('should display the title correctly', () => {
-        expect(findTitle()).toBe('Edit scan execution policy');
+      it('displays for an existing policy', () => {
+        factory({ provide: { existingPolicy: { id: 'policy-id', value } } });
+        expect(findTitle()).toBe(`Edit ${titleSuffix}`);
       });
     });
 
     describe('invalid url parameter', () => {
       beforeEach(() => {
         jest.spyOn(urlUtils, 'getParameterByName').mockReturnValue('invalid');
-        factory({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.PROJECT,
-            existingPolicy: {
-              id: 'policy-id',
-              value: 'scanResult',
-            },
-          },
-        });
       });
 
-      it('should display the title correctly', () => {
+      it('displays for a new policy', () => {
+        factory();
+        expect(findTitle()).toBe('New policy');
+      });
+
+      it('displays for an existing policy', () => {
+        factory({ provide: { existingPolicy: { id: 'policy-id', value: 'scanResult' } } });
         expect(findTitle()).toBe('Edit policy');
       });
     });
