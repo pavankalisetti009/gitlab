@@ -28455,6 +28455,9 @@ msgstr ""
 msgid "ImportProjects|Imported files will be kept. You can import this repository again later."
 msgstr ""
 
+msgid "ImportProjects|Importing a project into a personal namespace results in all contributions being mapped to the same bot user. To map contributions to real users, import projects into a group instead."
+msgstr ""
+
 msgid "ImportProjects|Importing the project failed"
 msgstr ""
 
