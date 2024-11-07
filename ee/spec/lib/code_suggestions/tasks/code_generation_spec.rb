@@ -141,47 +141,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
 
       let(:expected_feature_name) { :code_suggestions }
     end
-
-    context 'when FF `anthropic_code_gen_aigw_migration` is disabled' do
-      let(:anthropic_request_params) { { prompt_version: 2, prompt: 'Anthropic prompt' } }
-      let(:anthropic_messages_prompt) do
-        instance_double(
-          CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages,
-          request_params: anthropic_request_params
-        )
-      end
-
-      before do
-        allow(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages)
-          .to receive(:new).and_return(anthropic_messages_prompt)
-        stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
-        stub_feature_flags(anthropic_code_gen_aigw_migration: false)
-      end
-
-      it 'calls code creation Anthropic' do
-        task.body
-        expect(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages)
-          .to have_received(:new).with(params)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:endpoint_path) { 'v2/code/generations' }
-        let(:expected_body) do
-          {
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [{ "model_engine" => "anthropic" }],
-            "prompt_version" => 2,
-            "prompt" => "Anthropic prompt"
-          }
-        end
-
-        let(:expected_feature_name) { :code_suggestions }
-      end
-    end
   end
 
   context 'when using self hosted model' do

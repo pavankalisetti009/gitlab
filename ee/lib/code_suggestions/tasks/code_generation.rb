@@ -21,10 +21,8 @@ module CodeSuggestions
         if self_hosted?
           CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
             feature_setting: feature_setting, params: params)
-        elsif ::Feature.enabled?(:anthropic_code_gen_aigw_migration, current_user)
-          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params)
         else
-          CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages.new(params)
+          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params)
         end
       end
 
