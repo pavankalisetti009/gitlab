@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup, feature_category: :"self-hosted_models" do
+RSpec.describe 'Code suggestions', :api, :js, :requires_custom_models_setup,
+  feature_category: :"self-hosted_models", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/502971' do
   include_context 'file upload requests helpers'
 
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
