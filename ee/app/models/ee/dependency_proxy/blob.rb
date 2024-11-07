@@ -80,11 +80,6 @@ module EE
         end
       end
 
-      def log_geo_deleted_event
-        # Keep empty for now. Should be addressed in future
-        # by https://gitlab.com/gitlab-org/gitlab/-/issues/259694
-      end
-
       def dependency_proxy_blob_state
         super || build_dependency_proxy_blob_state
       end

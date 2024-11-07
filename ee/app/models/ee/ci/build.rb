@@ -96,12 +96,6 @@ module EE
         runner&.cost_factor_enabled?(project)
       end
 
-      def log_geo_deleted_event
-        # It is not needed to generate a Geo deleted event
-        # since Legacy Artifacts are migrated to multi-build artifacts
-        # See https://gitlab.com/gitlab-org/gitlab-foss/issues/46652
-      end
-
       def has_artifact?(name)
         options.dig(:artifacts, :paths)&.include?(name) &&
           artifacts_metadata?

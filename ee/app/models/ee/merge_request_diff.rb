@@ -79,10 +79,5 @@ module EE
     def merge_request_diff_detail
       super || build_merge_request_diff_detail
     end
-
-    def log_geo_deleted_event
-      # Keep empty for now. Should be addressed in future
-      # by https://gitlab.com/gitlab-org/gitlab/issues/33817
-    end
   end
 end

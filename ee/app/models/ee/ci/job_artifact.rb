@@ -117,11 +117,6 @@ module EE
       job_artifact_state
     end
 
-    def log_geo_deleted_event
-      # Keep empty for now. Should be addressed in future
-      # by https://gitlab.com/gitlab-org/gitlab/-/issues/232917
-    end
-
     # Ideally we would have a method to return an instance of
     # parsed report regardless of the `file_type` but this will
     # require more effort so we can have this security reports

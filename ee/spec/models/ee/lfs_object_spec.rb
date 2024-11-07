@@ -14,8 +14,6 @@ RSpec.describe ::LfsObject do
     stub_primary_node
   end
 
-  it { is_expected.to respond_to(:log_geo_deleted_event) }
-
   context 'when model_record is part of available_verifiables scope' do
     let(:verifiable_model_record) { build(:lfs_object) }
     let(:verification_state_table_class) { verifiable_model_record.class.verification_state_table_class }

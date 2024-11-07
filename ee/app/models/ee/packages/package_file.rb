@@ -53,11 +53,6 @@ module EE
               .where(packages_packages: { project_id: ::Gitlab::Geo.current_node.projects.select(:id) })
         end
       end
-
-      def log_geo_deleted_event
-        # Keep empty for now. Should be addressed in future
-        # by https://gitlab.com/gitlab-org/gitlab/issues/7891
-      end
     end
   end
 end
