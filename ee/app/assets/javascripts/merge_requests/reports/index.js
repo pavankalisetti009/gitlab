@@ -10,11 +10,12 @@ export default () => {
   Vue.use(VueApollo);
 
   const el = document.getElementById('js-reports-tab');
+  const { projectPath, iid, basePath } = el.dataset;
   const apolloProvider = new VueApollo({
     defaultClient: createDefaultClient(),
   });
   const router = new VueRouter({
-    base: el.dataset.basePath,
+    base: basePath,
     mode: 'history',
     routes,
   });
@@ -24,6 +25,10 @@ export default () => {
     el,
     router,
     apolloProvider,
+    provide: {
+      projectPath,
+      iid,
+    },
     render(createElement) {
       return createElement(MergeRequestReportsApp);
     },

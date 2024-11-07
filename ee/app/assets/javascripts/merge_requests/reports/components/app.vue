@@ -28,10 +28,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-col md:gl-min-h-31 md:gl-flex-row">
+  <div class="gl-grid gl-grid-cols-[1fr] gl-gap-5 md:gl-min-h-31 md:gl-grid-cols-[200px,1fr]">
     <h2 class="gl-sr-only">{{ s__('MrReports|Reports') }}</h2>
     <aside
-      class="gl-border-b gl-border-gray-100 gl-pb-3 gl-pt-5 md:gl-border-r md:gl-w-[200px] md:gl-flex-none md:gl-border-0 md:gl-pr-5"
+      class="gl-border-b gl-border-gray-100 gl-pb-3 gl-pt-5 md:gl-border-r md:gl-border-0 md:gl-pr-5"
     >
       <nav>
         <router-link
@@ -106,6 +106,8 @@ export default {
         </div>
       </nav>
     </aside>
-    <router-view />
+    <section class="md:gl-pt-5">
+      <router-view />
+    </section>
   </div>
 </template>
