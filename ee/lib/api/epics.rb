@@ -221,7 +221,6 @@ module API
 
         # Setting created_at is allowed only for admins and owners
         params.delete(:created_at) unless current_user.can?(:set_epic_created_at, user_group)
-        params.delete(:color) unless Feature.enabled?(:epic_color_highlight)
 
         create_params = declared_params(include_missing: false)
 
@@ -318,7 +317,6 @@ module API
 
         # Setting updated_at is allowed only for admins and owners
         params.delete(:updated_at) unless current_user.can?(:set_epic_updated_at, user_group)
-        params.delete(:color) unless Feature.enabled?(:epic_color_highlight)
 
         update_params = declared_params(include_missing: false)
         update_params.delete(:epic_iid)

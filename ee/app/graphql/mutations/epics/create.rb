@@ -17,10 +17,9 @@ module Mutations
 
       def resolve(args)
         group_path = args.delete(:group_path)
-
         group = authorized_find!(group_path: group_path)
 
-        validate_arguments!(args, group)
+        validate_arguments!(args)
 
         epic = ::Epics::CreateService.new(group: group, current_user: current_user, params: args).execute
 
