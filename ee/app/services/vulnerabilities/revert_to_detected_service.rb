@@ -4,7 +4,7 @@ require_dependency 'vulnerabilities/base_state_transition_service'
 
 module Vulnerabilities
   class RevertToDetectedService < BaseStateTransitionService
-    REVERT_PARAMS = { resolved_by: nil, resolved_at: nil, dismissed_by: nil, dismissed_at: nil, confirmed_by: nil, confirmed_at: nil }.freeze
+    REVERT_PARAMS = { resolved_by: nil, resolved_at: nil, dismissed_by: nil, dismissed_at: nil, confirmed_by: nil, confirmed_at: nil, auto_resolved: false }.freeze
 
     private
 

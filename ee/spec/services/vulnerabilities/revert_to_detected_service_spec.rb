@@ -25,7 +25,7 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
         revert_vulnerability_to_detected
 
         expect(vulnerability.reload).to(
-          have_attributes(state: 'detected', dismissed_by: nil, dismissed_at: nil, resolved_by: nil, resolved_at: nil, confirmed_by: nil, confirmed_at: nil))
+          have_attributes(state: 'detected', dismissed_by: nil, dismissed_at: nil, resolved_by: nil, resolved_at: nil, confirmed_by: nil, confirmed_at: nil, auto_resolved: false))
       end
     end
 

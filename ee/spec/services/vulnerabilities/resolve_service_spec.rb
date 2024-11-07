@@ -16,7 +16,8 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
   let(:vulnerability) { create(:vulnerability, project: project) }
   let(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
   let(:last_state_transition) { vulnerability.state_transitions.last }
-  let(:service) { described_class.new(user, vulnerability, comment) }
+  let(:auto_resolved) { false }
+  let(:service) { described_class.new(user, vulnerability, comment, auto_resolved: auto_resolved) }
 
   subject(:resolve_vulnerability) { service.execute }
 
@@ -36,6 +37,16 @@ RSpec.describe Vulnerabilities::ResolveService, feature_category: :vulnerability
 
           expect(vulnerability.reload).to(
             have_attributes(state: 'resolved', resolved_by: user, resolved_at: be_like_time(Time.current)))
+        end
+      end
+
+      context 'when marking a Vulnerability as auto-resolved' do
+        let(:auto_resolved) { true }
+
+        it 'sets the auto_resolved mark' do
+          resolve_vulnerability
+
+          expect(vulnerability.reload).to(have_attributes(state: 'resolved', auto_resolved: true))
         end
       end
 

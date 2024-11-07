@@ -38,6 +38,7 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
 
         vulnerability.reload
         expect(vulnerability).to be_dismissed
+        expect(vulnerability.auto_resolved).to be_falsey
         expect(vulnerability.dismissed_by).to eq(user)
         expect(vulnerability.dismissed_at).to eq(Time.current)
       end
