@@ -119,4 +119,63 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
       it { is_expected.to be false }
     end
   end
+
+  describe '#trigger_event_to_promote_pending_members!' do
+    let(:user) { create(:user) }
+    let(:member) { create(:group_member, :developer, user: user) }
+    let!(:member_approval) { create(:member_approval, :to_maintainer, user: user) }
+
+    subject(:trigger_event) { trigger_event_to_promote_pending_members!(member) }
+
+    shared_examples 'does not publish any event' do
+      it 'does not publish any event' do
+        expect(::Gitlab::EventStore).not_to receive(:publish)
+
+        trigger_event
+      end
+    end
+
+    context 'when member promotion management is disabled' do
+      let(:setting_enabled) { false }
+
+      it_behaves_like 'does not publish any event'
+    end
+
+    context 'when member is not eligible for admin event' do
+      before do
+        allow(self).to receive(:member_eligible_for_admin_event?).with(member).and_return(false)
+      end
+
+      it_behaves_like 'does not publish any event'
+    end
+
+    context 'when there are no pending member approvals' do
+      before do
+        pending_approvals = instance_double(ActiveRecord::Relation, exists?: false)
+        allow(::Members::MemberApproval).to receive(:pending_member_approvals_for_user)
+                                            .with(member.user_id)
+                                            .and_return(pending_approvals)
+      end
+
+      it_behaves_like 'does not publish any event'
+    end
+
+    context 'when all conditions are met' do
+      it 'publishes a MembershipModifiedByAdminEvent' do
+        expect(::Gitlab::EventStore).to receive(:publish).with(
+          an_instance_of(::Members::MembershipModifiedByAdminEvent)
+        )
+
+        trigger_event
+      end
+
+      it 'includes the correct member user ID in the event data' do
+        expect(::Members::MembershipModifiedByAdminEvent).to receive(:new)
+                                                             .with(data: { member_user_id: member.user_id })
+                                                             .and_call_original
+
+        trigger_event
+      end
+    end
+  end
 end
