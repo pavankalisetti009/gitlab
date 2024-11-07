@@ -4,7 +4,7 @@ module WorkItems
   class ValidateEpicWorkItemSyncWorker
     include Gitlab::EventStore::Subscriber
 
-    data_consistency :always
+    data_consistency :delayed
     feature_category :team_planning
     urgency :low
     idempotent!
