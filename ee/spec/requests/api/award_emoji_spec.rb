@@ -136,7 +136,7 @@ RSpec.describe API::AwardEmoji, feature_category: :shared do
       expect(todo.reload).to be_done
     end
 
-    it "normalizes +1 as thumbs_up award" do
+    it "normalizes +1 as thumbsup award" do
       post api("/groups/#{group.id}/epics/#{epic.iid}/notes/#{note.id}/award_emoji", user), params: { name: '+1' }
 
       expect(note.award_emoji.last.name).to eq(AwardEmoji::THUMBS_UP)
