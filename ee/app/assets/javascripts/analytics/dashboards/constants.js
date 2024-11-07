@@ -43,7 +43,7 @@ export const SUPPORTED_VULNERABILITY_METRICS = [
 
 export const SUPPORTED_CONTRIBUTOR_METRICS = [CONTRIBUTOR_METRICS.COUNT];
 
-export const TABLE_METRICS = {
+export const DORA_TABLE_METRICS = {
   [DORA_METRICS.DEPLOYMENT_FREQUENCY]: {
     label: s__('DORA4Metrics|Deployment frequency'),
     units: UNITS.PER_DAY,
@@ -63,6 +63,10 @@ export const TABLE_METRICS = {
     invertTrendColor: true,
     units: UNITS.PERCENT,
   },
+};
+
+export const TABLE_METRICS = {
+  ...DORA_TABLE_METRICS,
   [FLOW_METRICS.LEAD_TIME]: {
     label: s__('DORA4Metrics|Lead time'),
     invertTrendColor: true,

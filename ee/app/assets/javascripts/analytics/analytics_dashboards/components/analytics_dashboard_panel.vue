@@ -33,6 +33,10 @@ export default {
       import(
         'ee/analytics/analytics_dashboards/components/visualizations/dora_performers_score.vue'
       ),
+    DoraProjectsComparison: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/dora_projects_comparison.vue'
+      ),
     AiImpactTable: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/ai_impact_table.vue'),
   },

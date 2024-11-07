@@ -119,7 +119,8 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
             :panels, :nodes, 0, :visualization, :errors, 0))
           .to eq("property '/type' is not one of: " \
                  "[\"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
-                 "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"AiImpactTable\"]")
+                 "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
+                 "\"DoraProjectsComparison\", \"AiImpactTable\"]")
       end
     end
   end

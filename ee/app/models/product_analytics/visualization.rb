@@ -35,6 +35,7 @@ module ProductAnalytics
       vsd_security_metrics_table
       usage_overview
       dora_performers_score
+      dora_projects_comparison
       deployment_frequency_over_time
       lead_time_for_changes_over_time
       time_to_restore_service_over_time
