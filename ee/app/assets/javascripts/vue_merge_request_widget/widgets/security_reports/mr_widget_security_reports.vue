@@ -1,6 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import axios from '~/lib/utils/axios_utils';

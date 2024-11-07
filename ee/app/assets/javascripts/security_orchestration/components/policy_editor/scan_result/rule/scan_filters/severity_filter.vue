@@ -1,6 +1,6 @@
 <script>
 import { s__ } from '~/locale';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 

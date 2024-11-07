@@ -2,7 +2,7 @@
 import { GlCollapsibleListbox, GlLoadingIcon } from '@gitlab/ui';
 import { escapeRegExp, debounce } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';

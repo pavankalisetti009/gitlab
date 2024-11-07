@@ -2,7 +2,12 @@
 import { GlTooltipDirective, GlTableLite } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { set } from 'lodash';
-import { SEVERITY_LEVELS, DAYS } from 'ee/security_dashboard/store/constants';
+import {
+  SEVERITY_LEVEL_CRITICAL,
+  SEVERITY_LEVEL_HIGH,
+  SEVERITY_LEVEL_MEDIUM,
+  SEVERITY_LEVEL_LOW,
+} from 'ee/security_dashboard/constants';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { firstAndLastY } from '~/lib/utils/chart_utils';
 import {
@@ -21,12 +26,14 @@ const TD_CLASS = '!gl-border-none';
 const CLASS_TEXT_RIGHT = `gl-text-right`;
 const TD_CLASS_TEXT_RIGHT = `${TD_CLASS} ${CLASS_TEXT_RIGHT}`;
 
+const DAYS = { thirty: 30, sixty: 60, ninety: 90 };
+
 const severityLevels = [
-  SEVERITY_LEVELS.critical,
-  SEVERITY_LEVELS.high,
-  SEVERITY_LEVELS.medium,
-  SEVERITY_LEVELS.low,
-].map((l) => l.toLowerCase());
+  SEVERITY_LEVEL_CRITICAL,
+  SEVERITY_LEVEL_HIGH,
+  SEVERITY_LEVEL_MEDIUM,
+  SEVERITY_LEVEL_LOW,
+];
 
 export default {
   components: {

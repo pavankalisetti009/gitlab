@@ -1,4 +1,4 @@
-import { REPORT_TYPES_ALL } from 'ee/security_dashboard/store/constants';
+import { REPORT_TYPES_ALL } from 'ee/security_dashboard/constants';
 import { humanize } from '~/lib/utils/text_utility';
 
 /**

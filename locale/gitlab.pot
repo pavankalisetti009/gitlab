@@ -66654,9 +66654,6 @@ msgstr ""
 msgid "severity|Minor"
 msgstr ""
 
-msgid "severity|None"
-msgstr ""
-
 msgid "severity|Unknown"
 msgstr ""
 

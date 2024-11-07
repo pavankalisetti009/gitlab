@@ -1,5 +1,5 @@
 import { parseBoolean } from '~/lib/utils/common_utils';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findings.query.graphql';
 
 export const getPipelineReportOptions = (data) => {
