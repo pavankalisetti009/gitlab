@@ -127,8 +127,8 @@ export default {
         return 'gl-text-red-500';
       }
       return this.isOpen
-        ? 'issue-token-state-icon-open gl-text-green-500'
-        : 'issue-token-state-icon-closed gl-text-blue-500';
+        ? 'issue-token-state-icon-open gl-fill-icon-success'
+        : 'issue-token-state-icon-closed gl-fill-icon-info';
     },
     itemId() {
       return this.itemReference.split(this.item.pathIdSeparator).pop();

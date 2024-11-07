@@ -161,7 +161,7 @@ export default {
     },
     iconClass() {
       if (this.childItemType === WORK_ITEM_TYPE_VALUE_TASK) {
-        return this.isItemOpen ? 'gl-text-green-500' : 'gl-text-blue-500';
+        return this.isItemOpen ? 'gl-fill-icon-success' : 'gl-fill-icon-info';
       }
       return '';
     },

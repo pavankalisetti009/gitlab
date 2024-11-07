@@ -247,7 +247,7 @@ describe('RelatedItemsTree', () => {
           });
 
           expect(findIssueIcon().attributes('class')).toContain(
-            'issue-token-state-icon-open gl-text-green-500',
+            'issue-token-state-icon-open gl-fill-icon-success',
           );
         });
 
@@ -265,7 +265,7 @@ describe('RelatedItemsTree', () => {
           });
 
           expect(findIssueIcon().attributes('class')).toContain(
-            'issue-token-state-icon-closed gl-text-blue-500',
+            'issue-token-state-icon-closed gl-fill-icon-info',
           );
         });
       });
