@@ -1,7 +1,7 @@
 import { isEmpty, uniqueId } from 'lodash';
 import { s__, sprintf } from '~/locale';
 import Api from 'ee/api';
-import { REPORT_TYPES_DEFAULT, SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import {
   ALL_PROTECTED_BRANCHES,

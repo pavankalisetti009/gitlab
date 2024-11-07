@@ -3,7 +3,7 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import {
   REPORT_TYPES_WITH_MANUALLY_ADDED,
   REPORT_TYPES_WITH_CLUSTER_IMAGE,
-} from 'ee/security_dashboard/store/constants';
+} from 'ee/security_dashboard/constants';
 import { s__ } from '~/locale';
 import { REPORT_TYPE_PRESETS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';

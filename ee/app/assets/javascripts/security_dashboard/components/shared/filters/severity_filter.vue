@@ -2,7 +2,7 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import QuerystringSync from './querystring_sync.vue';
 import { ALL_ID } from './constants';
 

@@ -2,7 +2,7 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ToolWithVendorFilter from 'ee/security_dashboard/components/shared/filters/tool_with_vendor_filter.vue';
-import { REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/store/constants';
+import { REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 import {

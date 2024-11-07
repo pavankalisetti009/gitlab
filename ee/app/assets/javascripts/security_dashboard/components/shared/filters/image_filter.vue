@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images.query.graphql';
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import QuerystringSync from './querystring_sync.vue';
 import { ALL_ID } from './constants';
 

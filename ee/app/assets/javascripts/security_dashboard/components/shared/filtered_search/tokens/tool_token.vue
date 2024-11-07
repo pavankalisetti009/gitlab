@@ -4,7 +4,7 @@ import { groupBy } from 'lodash';
 import {
   REPORT_TYPES_DEFAULT,
   REPORT_TYPES_WITH_MANUALLY_ADDED,
-} from 'ee/security_dashboard/store/constants';
+} from 'ee/security_dashboard/constants';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import SearchSuggestion from '../components/search_suggestion.vue';

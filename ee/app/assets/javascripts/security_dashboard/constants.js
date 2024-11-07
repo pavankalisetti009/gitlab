@@ -1,6 +1,66 @@
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
+export const DASHBOARD_TYPES = {
+  PROJECT: 'project',
+  PIPELINE: 'pipeline',
+  GROUP: 'group',
+  INSTANCE: 'instance',
+};
+
+export const SEVERITY_LEVEL_CRITICAL = 'critical';
+export const SEVERITY_LEVEL_HIGH = 'high';
+export const SEVERITY_LEVEL_UNKNOWN = 'unknown';
+export const SEVERITY_LEVEL_MEDIUM = 'medium';
+export const SEVERITY_LEVEL_LOW = 'low';
+export const SEVERITY_LEVEL_INFO = 'info';
+
+export const SEVERITY_LEVELS = {
+  [SEVERITY_LEVEL_CRITICAL]: s__('severity|Critical'),
+  [SEVERITY_LEVEL_HIGH]: s__('severity|High'),
+  [SEVERITY_LEVEL_MEDIUM]: s__('severity|Medium'),
+  [SEVERITY_LEVEL_LOW]: s__('severity|Low'),
+  [SEVERITY_LEVEL_INFO]: s__('severity|Info'),
+  [SEVERITY_LEVEL_UNKNOWN]: s__('severity|Unknown'),
+};
+
+export const SEVERITY_LEVELS_KEYS = Object.keys(SEVERITY_LEVELS);
+
+// The GraphQL type (`VulnerabilitySeverity`) for severities is an enum with uppercase values
+export const SEVERITY_LEVELS_GRAPHQL = Object.keys(SEVERITY_LEVELS).map((k) => k.toUpperCase());
+
+export const REPORT_TYPES_DEFAULT = {
+  api_fuzzing: s__('ciReport|API Fuzzing'),
+  container_scanning: s__('ciReport|Container Scanning'),
+  coverage_fuzzing: s__('ciReport|Coverage Fuzzing'),
+  dast: s__('ciReport|DAST'),
+  dependency_scanning: s__('ciReport|Dependency Scanning'),
+  sast: s__('ciReport|SAST'),
+  secret_detection: s__('ciReport|Secret Detection'),
+};
+
+export const REPORT_TYPES_DEFAULT_KEYS = Object.keys(REPORT_TYPES_DEFAULT);
+
+export const REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY = {
+  container_scanning_for_registry: s__('ciReport|Container Scanning for Registry'),
+};
+
+export const REPORT_TYPES_WITH_CLUSTER_IMAGE = {
+  ...REPORT_TYPES_DEFAULT,
+  cluster_image_scanning: s__('ciReport|Cluster Image Scanning'),
+};
+
+export const REPORT_TYPES_WITH_MANUALLY_ADDED = {
+  ...REPORT_TYPES_DEFAULT,
+  generic: s__('ciReport|Manually added'),
+};
+
+export const REPORT_TYPES_ALL = {
+  ...REPORT_TYPES_DEFAULT,
+  ...REPORT_TYPES_WITH_CLUSTER_IMAGE,
+  ...REPORT_TYPES_WITH_MANUALLY_ADDED,
+};
+
 export const COLLAPSE_SECURITY_REPORTS_SUMMARY_LOCAL_STORAGE_KEY =
   'hide_pipelines_security_reports_summary_details';
 
@@ -31,71 +91,42 @@ export const DOC_PATH_PROJECT_SECURITY_DASHBOARD = helpPagePath(
   { anchor: 'project-security-dashboard' },
 );
 
-export const severityLevels = {
-  CRITICAL: 'critical',
-  HIGH: 'high',
-  UNKNOWN: 'unknown',
-  MEDIUM: 'medium',
-  LOW: 'low',
-  NONE: 'none',
-};
-
-export const severityLevelsTranslations = {
-  [severityLevels.CRITICAL]: s__('severity|Critical'),
-  [severityLevels.HIGH]: s__('severity|High'),
-  [severityLevels.UNKNOWN]: s__('severity|Unknown'),
-  [severityLevels.MEDIUM]: s__('severity|Medium'),
-  [severityLevels.LOW]: s__('severity|Low'),
-  [severityLevels.NONE]: s__('severity|None'),
-};
-
-export const SEVERITY_LEVELS_ORDERED_BY_SEVERITY = [
-  severityLevels.CRITICAL,
-  severityLevels.HIGH,
-  severityLevels.UNKNOWN,
-  severityLevels.MEDIUM,
-  severityLevels.LOW,
-  severityLevels.NONE,
-];
-
-export const severityGroupTypes = {
-  F: 'F',
-  D: 'D',
-  C: 'C',
-  B: 'B',
-  A: 'A',
-};
+export const SEVERITY_GROUP_F = 'F';
+export const SEVERITY_GROUP_D = 'D';
+export const SEVERITY_GROUP_C = 'C';
+export const SEVERITY_GROUP_B = 'B';
+export const SEVERITY_GROUP_A = 'A';
 
 export const SEVERITY_GROUPS = [
   {
-    type: severityGroupTypes.F,
+    type: SEVERITY_GROUP_F,
     description: __('Projects with critical vulnerabilities'),
     warning: __('Critical vulnerabilities present'),
-    severityLevels: [severityLevels.CRITICAL],
+    severityLevels: [SEVERITY_LEVEL_CRITICAL],
   },
   {
-    type: severityGroupTypes.D,
+    type: SEVERITY_GROUP_D,
     description: __('Projects with high or unknown vulnerabilities'),
     warning: __('High or unknown vulnerabilities present'),
-    severityLevels: [severityLevels.HIGH, severityLevels.UNKNOWN],
+    severityLevels: [SEVERITY_LEVEL_HIGH, SEVERITY_LEVEL_UNKNOWN],
   },
   {
-    type: severityGroupTypes.C,
+    type: SEVERITY_GROUP_C,
     description: __('Projects with medium vulnerabilities'),
     warning: __('Medium vulnerabilities present'),
-    severityLevels: [severityLevels.MEDIUM],
+    severityLevels: [SEVERITY_LEVEL_MEDIUM],
   },
   {
-    type: severityGroupTypes.B,
+    type: SEVERITY_GROUP_B,
     description: __('Projects with low vulnerabilities'),
     warning: __('Low vulnerabilities present'),
-    severityLevels: [severityLevels.LOW],
+    severityLevels: [SEVERITY_LEVEL_LOW],
   },
   {
-    type: severityGroupTypes.A,
+    type: SEVERITY_GROUP_A,
     description: __('Projects with no vulnerabilities and security scanning enabled'),
     warning: __('No vulnerabilities present'),
-    severityLevels: [severityLevels.NONE],
+    severityLevels: [],
   },
 ];
 

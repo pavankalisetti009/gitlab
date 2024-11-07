@@ -2,7 +2,7 @@
 import { xor } from 'lodash';
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { REPORT_TYPES_DEFAULT, SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import {
   ANY_OPERATOR,

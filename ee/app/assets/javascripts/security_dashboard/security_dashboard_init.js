@@ -2,7 +2,7 @@ import Vue from 'vue';
 import ReportNotConfiguredProject from 'ee/security_dashboard/components/project/report_not_configured_project.vue';
 import ReportNotConfiguredGroup from 'ee/security_dashboard/components/group/report_not_configured_group.vue';
 import ReportNotConfiguredInstance from 'ee/security_dashboard/components/instance/report_not_configured_instance.vue';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import groupVulnerabilityGradesQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_grades.query.graphql';
 import groupVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_history.query.graphql';

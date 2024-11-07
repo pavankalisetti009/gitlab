@@ -3,7 +3,7 @@ import SeverityFilter from 'ee/security_orchestration/components/policy_editor/s
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 
 describe('FilterSpec', () => {
   let wrapper;

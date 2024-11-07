@@ -1,5 +1,5 @@
 import initSecurityDashboard from 'ee/security_dashboard/security_dashboard_init';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 

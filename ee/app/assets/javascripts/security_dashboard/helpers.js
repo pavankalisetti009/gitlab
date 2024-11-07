@@ -1,5 +1,5 @@
 import isPlainObject from 'lodash/isPlainObject';
-import { REPORT_TYPES_ALL } from 'ee/security_dashboard/store/constants';
+import { REPORT_TYPES_ALL } from 'ee/security_dashboard/constants';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import { __ } from '~/locale';
 

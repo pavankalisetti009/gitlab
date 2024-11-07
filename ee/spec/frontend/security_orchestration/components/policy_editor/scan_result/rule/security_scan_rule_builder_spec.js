@@ -13,7 +13,7 @@ import AttributeFilters from 'ee/security_orchestration/components/policy_editor
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import {
   securityScanBuildRule,
   SCAN_FINDING,

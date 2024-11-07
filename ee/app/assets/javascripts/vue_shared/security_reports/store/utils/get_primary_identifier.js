@@ -1,4 +1,5 @@
-import { PRIMARY_IDENTIFIER_TYPE } from 'ee/security_dashboard/store/constants';
+const PRIMARY_IDENTIFIER_TYPE = 'cve';
+
 /**
  * Finds the name of the primary identifier or returns the name of the first identifier
  *

@@ -4,7 +4,7 @@ import VueApollo from 'vue-apollo';
 import ProjectFilter from 'ee/security_dashboard/components/shared/filters/project_filter.vue';
 import groupProjectsQuery from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';

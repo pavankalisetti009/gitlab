@@ -1,6 +1,6 @@
 <script>
 import { GlFilteredSearchToken } from '@gitlab/ui';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/store/constants';
+import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
 import QuerystringSync from '../../filters/querystring_sync.vue';

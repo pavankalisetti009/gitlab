@@ -1,5 +1,5 @@
 import { createAppOptions } from 'ee/ci/pipeline_details/pipeline_tabs';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/store/constants';
+import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
 import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findings.query.graphql';
 import { dataset } from 'ee_jest/security_dashboard/mock_data/pipeline_report_dataset';
 import { createAlert } from '~/alert';

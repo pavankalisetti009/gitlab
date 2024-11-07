@@ -2,32 +2,46 @@
 import { GlLink, GlTooltipDirective, GlIcon } from '@gitlab/ui';
 import { keyBy } from 'lodash';
 import {
-  severityGroupTypes,
-  severityLevels,
-  severityLevelsTranslations,
-  SEVERITY_LEVELS_ORDERED_BY_SEVERITY,
+  SEVERITY_LEVEL_CRITICAL,
+  SEVERITY_LEVEL_HIGH,
+  SEVERITY_LEVEL_UNKNOWN,
+  SEVERITY_LEVEL_MEDIUM,
+  SEVERITY_LEVEL_LOW,
+  SEVERITY_LEVELS,
+  SEVERITY_GROUP_F,
+  SEVERITY_GROUP_D,
+  SEVERITY_GROUP_C,
+  SEVERITY_GROUP_B,
+  SEVERITY_GROUP_A,
   SEVERITY_GROUPS,
 } from 'ee/security_dashboard/constants';
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import { s__, n__, sprintf } from '~/locale';
 import SecurityDashboardCard from './security_dashboard_card.vue';
 
+const SEVERITY_LEVELS_ORDERED_BY_SEVERITY = [
+  SEVERITY_LEVEL_CRITICAL,
+  SEVERITY_LEVEL_HIGH,
+  SEVERITY_LEVEL_UNKNOWN,
+  SEVERITY_LEVEL_MEDIUM,
+  SEVERITY_LEVEL_LOW,
+];
+
 export default {
   css: {
     severityGroups: {
-      [severityGroupTypes.F]: 'gl-text-red-800',
-      [severityGroupTypes.D]: 'gl-text-red-700',
-      [severityGroupTypes.C]: 'gl-text-orange-600',
-      [severityGroupTypes.B]: 'gl-text-orange-400',
-      [severityGroupTypes.A]: 'gl-text-green-500',
+      [SEVERITY_GROUP_F]: 'gl-text-red-800',
+      [SEVERITY_GROUP_D]: 'gl-text-red-700',
+      [SEVERITY_GROUP_C]: 'gl-text-orange-600',
+      [SEVERITY_GROUP_B]: 'gl-text-orange-400',
+      [SEVERITY_GROUP_A]: 'gl-text-green-500',
     },
     severityLevels: {
-      [severityLevels.CRITICAL]: 'gl-text-red-800',
-      [severityLevels.HIGH]: 'gl-text-red-700',
-      [severityLevels.UNKNOWN]: 'gl-text-gray-300',
-      [severityLevels.MEDIUM]: 'gl-text-orange-600',
-      [severityLevels.LOW]: 'gl-text-orange-500',
-      [severityLevels.NONE]: 'gl-text-green-500',
+      [SEVERITY_LEVEL_CRITICAL]: 'gl-text-red-800',
+      [SEVERITY_LEVEL_HIGH]: 'gl-text-red-700',
+      [SEVERITY_LEVEL_UNKNOWN]: 'gl-text-gray-300',
+      [SEVERITY_LEVEL_MEDIUM]: 'gl-text-orange-600',
+      [SEVERITY_LEVEL_LOW]: 'gl-text-orange-500',
     },
   },
   accordionItemsContentMaxHeight: '445px',
@@ -133,7 +147,7 @@ export default {
       return this.$options.css.severityLevels[level] || [];
     },
     severityText(severityLevel) {
-      return severityLevelsTranslations[severityLevel];
+      return SEVERITY_LEVELS[severityLevel];
     },
     getProjectCountString({ count, projects }) {
       // The backend only returns the first 100 projects, so if the project count is greater than

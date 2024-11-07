@@ -6,7 +6,13 @@ import VulnerabilitySeverity from 'ee/security_dashboard/components/shared/proje
 import { Accordion, AccordionItem } from 'ee/security_dashboard/components/shared/accordion';
 import groupVulnerabilityGradesQuery from 'ee/security_dashboard/graphql/queries/group_vulnerability_grades.query.graphql';
 import instanceVulnerabilityGradesQuery from 'ee/security_dashboard/graphql/queries/instance_vulnerability_grades.query.graphql';
-import { severityGroupTypes } from 'ee/security_dashboard/constants';
+import {
+  SEVERITY_GROUP_F,
+  SEVERITY_GROUP_D,
+  SEVERITY_GROUP_C,
+  SEVERITY_GROUP_B,
+  SEVERITY_GROUP_A,
+} from 'ee/security_dashboard/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { trimText } from 'helpers/text_helper';
@@ -135,12 +141,12 @@ describe('Vulnerability Severity component', () => {
   });
 
   describe.each`
-    grade                   | relatedProjects               | correspondingMostSevereVulnerability                            | levels
-    ${severityGroupTypes.F} | ${[projects[0]]}              | ${['2 Critical']}                                               | ${'Critical'}
-    ${severityGroupTypes.D} | ${[projects[1]]}              | ${['2 High']}                                                   | ${'High or unknown'}
-    ${severityGroupTypes.C} | ${[projects[0], projects[1]]} | ${['1 Medium', '1 Medium']}                                     | ${'Medium'}
-    ${severityGroupTypes.B} | ${[projects[1]]}              | ${['1 Low']}                                                    | ${'Low'}
-    ${severityGroupTypes.A} | ${[projects[2], projects[3]]} | ${['No vulnerabilities present', 'No vulnerabilities present']} | ${'No'}
+    grade               | relatedProjects               | correspondingMostSevereVulnerability                            | levels
+    ${SEVERITY_GROUP_F} | ${[projects[0]]}              | ${['2 Critical']}                                               | ${'Critical'}
+    ${SEVERITY_GROUP_D} | ${[projects[1]]}              | ${['2 High']}                                                   | ${'High or unknown'}
+    ${SEVERITY_GROUP_C} | ${[projects[0], projects[1]]} | ${['1 Medium', '1 Medium']}                                     | ${'Medium'}
+    ${SEVERITY_GROUP_B} | ${[projects[1]]}              | ${['1 Low']}                                                    | ${'Low'}
+    ${SEVERITY_GROUP_A} | ${[projects[2], projects[3]]} | ${['No vulnerabilities present', 'No vulnerabilities present']} | ${'No'}
   `(
     'for grade $grade',
     ({ grade, relatedProjects, correspondingMostSevereVulnerability, levels }) => {
