@@ -20257,6 +20257,12 @@ msgstr ""
 msgid "Drag your designs here or %{linkStart}click to upload%{linkEnd}."
 msgstr ""
 
+msgid "Drone CI URL (for example, `http://drone.example.com`)."
+msgstr ""
+
+msgid "Drone CI token."
+msgstr ""
+
 msgid "Drop or %{linkStart}upload%{linkEnd} an avatar."
 msgstr ""
 
