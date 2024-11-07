@@ -9,14 +9,15 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     let(:namespace) { top_level_group }
     let(:model) { Issue }
 
-    subject(:service_response) { described_class.new(group: namespace, model: model).execute }
+    subject(:service_response) { described_class.new(namespace: namespace, model: model).execute }
 
     context 'when wrong model is passed' do
       let(:model) { Project }
 
-      it 'returns service error response' do
-        expect(service_response).to be_error
-        expect(service_response.payload[:reason]).to eq(:invalid_model)
+      it 'raises an exception' do
+        expect do
+          service_response
+        end.to raise_error("Model #{model} is not supported")
       end
     end
 
@@ -61,7 +62,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
 
       it 'returns a successful response' do
-        service_response = described_class.new(group: namespace, model: MergeRequest).execute
+        service_response = described_class.new(namespace: namespace, model: MergeRequest).execute
 
         expect(service_response).not_to be_error
         expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -70,19 +71,8 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
       it 'creates some aggregated data in the personal namespace project' do
         expect do
-          described_class.new(group: namespace, model: MergeRequest).execute
+          described_class.new(namespace: namespace, model: MergeRequest).execute
         end.to change { Analytics::CycleAnalytics::MergeRequestStageEvent.count }.by(1)
-      end
-    end
-
-    context 'when sub-group is given' do
-      let(:namespace) { create(:group, parent: top_level_group, organization_id: top_level_group.organization_id) }
-
-      it 'returns service error response' do
-        stub_licensed_features(cycle_analytics_for_groups: true)
-
-        expect(service_response).to be_error
-        expect(service_response.payload[:reason]).to eq(:requires_top_level_group)
       end
     end
 
@@ -94,8 +84,8 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         })
 
         expect do
-          described_class.new(group: namespace, stages: [stage], model: MergeRequest)
-        end.to raise_error('Incorrect stage detected. Stages must match group and model')
+          described_class.new(namespace: namespace, stages: [stage], model: MergeRequest)
+        end.to raise_error('Incorrect stage detected. Stages must match namespace and model')
       end
 
       it 'raises exception for specified stage belongs to different model' do
@@ -106,8 +96,8 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         })
 
         expect do
-          described_class.new(group: namespace, stages: [stage], model: MergeRequest)
-        end.to raise_error('Incorrect stage detected. Stages must match group and model')
+          described_class.new(namespace: namespace, stages: [stage], model: MergeRequest)
+        end.to raise_error('Incorrect stage detected. Stages must match namespace and model')
       end
     end
   end
@@ -156,7 +146,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     it 'loads nothing for Issue model' do
-      service_response = described_class.new(group: top_level_group, model: Issue).execute
+      service_response = described_class.new(namespace: top_level_group, model: Issue).execute
 
       expect(service_response).to be_success
       expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -165,7 +155,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     it 'loads nothing for MergeRequest model' do
-      service_response = described_class.new(group: top_level_group, model: MergeRequest).execute
+      service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
       expect(service_response).to be_success
       expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -200,7 +190,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           ]
         end
 
-        described_class.new(group: top_level_group, model: MergeRequest).execute
+        described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
         events = Analytics::CycleAnalytics::MergeRequestStageEvent.all
         event_data = events.map do |event|
@@ -220,7 +210,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       it 'inserts nothing for group outside of the hierarchy' do
         mr = create(:merge_request, :unique_branches, :with_merged_metrics, source_project: project_outside)
 
-        described_class.new(group: top_level_group, model: MergeRequest).execute
+        described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
         record_count = Analytics::CycleAnalytics::MergeRequestStageEvent.where(merge_request_id: mr.id).count
         expect(record_count).to eq(0)
@@ -228,7 +218,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
       context 'when all records are processed' do
         it 'finishes with model_processed reason' do
-          service_response = described_class.new(group: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -240,7 +230,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           stub_const('Analytics::CycleAnalytics::DataLoaderService::MAX_UPSERT_COUNT', 1)
           stub_const('Analytics::CycleAnalytics::DataLoaderService::BATCH_LIMIT', 1)
 
-          service_response = described_class.new(group: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:limit_reached)
@@ -258,7 +248,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           # 4. when calculating the aggregation duration
           expect(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(first_monotonic_time, first_monotonic_time, second_monotonic_time, second_monotonic_time)
 
-          service_response = described_class.new(group: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:limit_reached)
@@ -270,12 +260,12 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           stub_const('Analytics::CycleAnalytics::DataLoaderService::MAX_UPSERT_COUNT', 1)
           stub_const('Analytics::CycleAnalytics::DataLoaderService::BATCH_LIMIT', 1)
 
-          service_response = described_class.new(group: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
           ctx = service_response.payload[:context]
 
           expect(Analytics::CycleAnalytics::MergeRequestStageEvent.count).to eq(1)
 
-          described_class.new(group: top_level_group, model: MergeRequest, context: ctx).execute
+          described_class.new(namespace: top_level_group, model: MergeRequest, context: ctx).execute
 
           expect(Analytics::CycleAnalytics::MergeRequestStageEvent.count).to eq(2)
           expect(ctx.processed_records).to eq(2)
@@ -352,7 +342,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
 
       it 'inserts stage records' do
-        described_class.new(group: top_level_group, model: Issue).execute
+        described_class.new(namespace: top_level_group, model: Issue).execute
 
         expect(actual_data.sort_by(&:first))
           .to match_array((expected_stage2_data + expected_stage3_data).sort_by(&:first))
@@ -360,7 +350,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
       context 'with stage specified' do
         it 'inserts specified stage records only' do
-          described_class.new(group: top_level_group, model: Issue, stages: [stage2]).execute
+          described_class.new(namespace: top_level_group, model: Issue, stages: [stage2]).execute
 
           expect(actual_data.sort_by(&:first)).to match_array(expected_stage2_data.sort_by(&:first))
         end
@@ -427,7 +417,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     it 'calculates the sum of durations between the start - end events' do
-      described_class.new(group: group, model: Issue).execute
+      described_class.new(namespace: group, model: Issue).execute
 
       expect(collected_events.size).to eq(1)
 
@@ -444,7 +434,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
 
       it 'does not take unfinished event pairs into the calculation' do
-        described_class.new(group: group, model: Issue).execute
+        described_class.new(namespace: group, model: Issue).execute
 
         expect(collected_events.size).to eq(1)
 
@@ -473,7 +463,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
 
       it 'uses the last timestamp from end event timestamps' do
-        described_class.new(group: group, model: Issue).execute
+        described_class.new(namespace: group, model: Issue).execute
 
         event_for_issue = Analytics::CycleAnalytics::IssueStageEvent
           .where(stage_event_hash_id: stage2.stage_event_hash_id, issue_id: issue1.id)
@@ -489,7 +479,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
 
       it 'uses the last timestamp from end event timestamps' do
-        described_class.new(group: group, model: Issue).execute
+        described_class.new(namespace: group, model: Issue).execute
 
         event_for_issue = Analytics::CycleAnalytics::IssueStageEvent
           .where(stage_event_hash_id: stage3.stage_event_hash_id, issue_id: issue1.id)

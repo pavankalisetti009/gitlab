@@ -29,7 +29,7 @@ RSpec.describe Projects::Analytics::CycleAnalytics::SummaryController, feature_c
       before do
         stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
 
-        Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: Issue).execute
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
 
         project.add_reporter(user)
       end

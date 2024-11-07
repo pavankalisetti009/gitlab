@@ -59,7 +59,7 @@ RSpec.describe Groups::Analytics::CycleAnalytics::SummaryController, feature_cat
 
     it 'uses the aggregated VSA data collector' do
       # Ensure stage_hash_id is present for Lead Time and CycleTime
-      Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: Issue).execute
+      Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
 
       # Calculating Cycle Time and Lead Time
       expect(Gitlab::Analytics::CycleAnalytics::Aggregated::DataCollector).to receive(:new).thrice.and_call_original
@@ -85,7 +85,7 @@ RSpec.describe Groups::Analytics::CycleAnalytics::SummaryController, feature_cat
     end
 
     before do
-      Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: Issue).execute
+      Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
     end
 
     describe 'GET "lead_times"' do

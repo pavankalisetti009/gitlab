@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::CycleAnalytics::AggregatorService do
+RSpec.describe Analytics::CycleAnalytics::NamespaceAggregatorService, feature_category: :value_stream_management do
   let!(:group) { create(:group, :with_organization) }
   let!(:aggregation) { create(:cycle_analytics_aggregation, :enabled, namespace: group) }
   let(:mode) { :incremental }
@@ -24,8 +24,8 @@ RSpec.describe Analytics::CycleAnalytics::AggregatorService do
       expect { run_service }.to change { aggregation.reload.enabled }.from(true).to(false)
     end
 
-    it 'calls the DataLoaderService only once' do
-      expect(Analytics::CycleAnalytics::DataLoaderService).to receive(:new).once.and_call_original
+    it 'doesnt call the DataLoaderService' do
+      expect(Analytics::CycleAnalytics::DataLoaderService).not_to receive(:new)
 
       run_service
     end

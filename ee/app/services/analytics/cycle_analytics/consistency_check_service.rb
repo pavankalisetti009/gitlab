@@ -7,8 +7,8 @@ module Analytics
 
       BATCH_LIMIT = 1000
 
-      def initialize(group:, event_model:)
-        @group = group
+      def initialize(namespace:, event_model:)
+        @namespace = namespace
         @event_model = event_model
       end
 
@@ -58,19 +58,25 @@ module Analytics
           end
         end
 
-        success(:group_processed)
+        success(:namespace_processed)
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
       private
 
-      attr_reader :group, :event_model
+      attr_reader :namespace, :event_model
+
+      def validate
+        return error(:requires_top_level_namespace) if namespace.is_a?(Group) && !namespace.root?
+
+        super
+      end
 
       # rubocop: disable CodeReuse/ActiveRecord
       def iterator(scope, cursor)
         opts = {
           in_operator_optimization_options: {
-            array_scope: group.self_and_descendant_ids,
+            array_scope: namespace.self_and_descendant_ids,
             array_mapping_scope: ->(id_expression) { event_model.where(event_model.arel_table[:group_id].eq(id_expression)) }
           }
         }
@@ -108,9 +114,9 @@ module Analytics
         last_stage_event_hash_id = stage_event_hash_id_from_cursor_data(cursor_data)
 
         @stage_event_hash_ids ||= ::Gitlab::Analytics::CycleAnalytics::DistinctStageLoader
-          .new(group: group)
+          .new(group: namespace)
           .stages
-          .select { |stage| stage.start_event.object_type == model }
+          .select { |stage| stage.subject_class == model }
           .map(&:stage_event_hash_id)
           .sort
           .drop_while { |id| last_stage_event_hash_id && id < last_stage_event_hash_id }

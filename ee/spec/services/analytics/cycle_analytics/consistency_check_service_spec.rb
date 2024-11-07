@@ -9,7 +9,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
   let_it_be(:project1) { create(:project, namespace: group) }
   let_it_be(:project2) { create(:project, namespace: subgroup) }
 
-  let(:service) { described_class.new(group: group, event_model: event_model) }
+  let(:service) { described_class.new(namespace: group, event_model: event_model) }
 
   subject(:service_response) { service.execute }
 
@@ -17,7 +17,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
     context 'when some records are deleted' do
       before do
         stub_licensed_features(cycle_analytics_for_groups: true)
-        Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: event_model.issuable_model).execute
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: event_model.issuable_model).execute
 
         record1.delete
         record3.delete
@@ -26,7 +26,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
 
       it 'cleans up the stage event records' do
         expect(service_response).to be_success
-        expect(service_response.payload[:reason]).to eq(:group_processed)
+        expect(service_response.payload[:reason]).to eq(:namespace_processed)
 
         # stage events where the end criteria are not met are excluded.
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/408320
@@ -75,7 +75,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
           allow(runtime_limiter).to receive(:over_time?).and_return(false)
           response = service.execute(runtime_limiter: runtime_limiter, cursor_data: cursor_data)
 
-          expect(response.payload).to eq({ reason: :group_processed })
+          expect(response.payload).to eq({ reason: :namespace_processed })
 
           # stage events where the end criteria are not met are excluded.
           # See https://gitlab.com/gitlab-org/gitlab/-/issues/408320
@@ -107,7 +107,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
 
         it 'fails' do
           expect(service_response).to be_error
-          expect(service_response.payload[:reason]).to eq(:requires_top_level_group)
+          expect(service_response.payload[:reason]).to eq(:requires_top_level_namespace)
         end
       end
     end

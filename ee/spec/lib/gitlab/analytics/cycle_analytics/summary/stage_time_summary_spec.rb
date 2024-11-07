@@ -38,33 +38,13 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::StageTimeSummary, fea
 
         options[:use_aggregated_data_collector] = true
         stub_licensed_features(cycle_analytics_for_groups: true)
-        Analytics::CycleAnalytics::DataLoaderService.new(group: group, model: model).execute
+
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: MergeRequest).execute
       end
 
-      context 'when only Issue model is specified' do
-        let(:model) { Issue }
-
-        it 'loads the lead time, cycle time and time to merge' do
-          # this only loads Issue models, so Time to Merge is not filled in.
-          expect_values(lead_time: '1.0', cycle_time: '2.0', time_to_merge: '-')
-        end
-      end
-
-      context 'when only MR model is specified' do
-        let(:model) { MergeRequest }
-
-        it 'shows time to merge' do
-          # this only shows MergeRequest models, so the first two are not filled in.
-          expect_values(lead_time: '-', cycle_time: '-', time_to_merge: '4.0')
-        end
-      end
-
-      context 'when some other model is specified' do
-        let(:model) { Epic }
-
-        it 'shows none of the values' do
-          expect_values(lead_time: '-', cycle_time: '-', time_to_merge: '-')
-        end
+      it 'loads the lead time, cycle time and time to merge' do
+        expect_values(lead_time: '1.0', cycle_time: '2.0', time_to_merge: '4.0')
       end
     end
 

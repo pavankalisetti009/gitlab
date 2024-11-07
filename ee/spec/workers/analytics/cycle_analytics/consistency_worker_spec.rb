@@ -77,7 +77,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyWorker, feature_category: :
 
       expect(Analytics::CycleAnalytics::ConsistencyCheckService).to receive(:new)
         .twice
-        .with(group: aggregation1.namespace, event_model: Analytics::CycleAnalytics::IssueStageEvent)
+        .with(namespace: aggregation1.namespace, event_model: Analytics::CycleAnalytics::IssueStageEvent)
         .and_return(issues_consistency_service)
 
       expect(issues_consistency_service).to receive(:execute).once.and_return(issues_consistency_service_response)
@@ -107,7 +107,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyWorker, feature_category: :
       merge_requests_consistency_service = instance_double(Analytics::CycleAnalytics::ConsistencyCheckService)
 
       expect(Analytics::CycleAnalytics::ConsistencyCheckService).to receive(:new)
-        .with(group: aggregation1.namespace, event_model: Analytics::CycleAnalytics::MergeRequestStageEvent)
+        .with(namespace: aggregation1.namespace, event_model: Analytics::CycleAnalytics::MergeRequestStageEvent)
         .and_return(merge_requests_consistency_service)
 
       expect(issues_consistency_service).to receive(:execute).once.and_return(ServiceResponse.success)

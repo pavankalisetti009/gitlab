@@ -4,24 +4,14 @@ module Analytics
   module CycleAnalytics
     module Validations
       def validate
-        unless model == Issue || model == MergeRequest
-          return error(:invalid_model)
-        end
-
-        if group.is_a?(Group)
-          unless group.licensed_feature_available?(:cycle_analytics_for_groups)
-            return error(:missing_license)
-          end
-
-          unless group.root?
-            error(:requires_top_level_group)
-          end
+        if namespace.is_a?(Group) && !namespace.licensed_feature_available?(:cycle_analytics_for_groups)
+          error(:missing_license)
         end
       end
 
       def error(error_reason)
         ServiceResponse.error(
-          message: "#{self.class.name} error for group: #{group.id} (#{error_reason})",
+          message: "#{self.class.name} error for namespace: #{namespace.id} (#{error_reason})",
           payload: { reason: error_reason }
         )
       end

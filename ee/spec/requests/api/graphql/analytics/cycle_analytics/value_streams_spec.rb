@@ -248,7 +248,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                   to: (current_time + 10.days).to_date
                 })
 
-                Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+                Analytics::CycleAnalytics::DataLoaderService.new(namespace: resource.root_ancestor,
                   model: MergeRequest).execute
               end
 
@@ -471,10 +471,10 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
 
         # Load stages data
-        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: resource.root_ancestor,
           model: MergeRequest).execute
 
-        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: resource.root_ancestor,
           model: Issue).execute
       end
 
@@ -545,10 +545,10 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
 
         # Load stages data
-        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: resource.root_ancestor,
           model: MergeRequest).execute
 
-        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+        Analytics::CycleAnalytics::DataLoaderService.new(namespace: resource.root_ancestor,
           model: Issue).execute
       end
 
