@@ -23,14 +23,6 @@ module Vulnerabilities
       SQL
 
       STATS_SQL = <<~SQL
-        WITH project_ids AS (
-          SELECT
-            id AS project_id
-          FROM
-            projects
-          WHERE
-            projects.id IN (%{project_ids})
-        )
         SELECT
           project_ids.project_id AS project_id,
           COALESCE(severity_counts.total, 0) AS total,
@@ -56,8 +48,7 @@ module Vulnerabilities
           ) AS letter_grade,
           now() AS created_at,
           now() AS updated_at
-        FROM
-          project_ids
+        FROM unnest(ARRAY[%{project_ids}]) project_ids(project_id)
         LEFT OUTER JOIN(
           SELECT
             vulnerability_reads.project_id AS project_id,
@@ -85,13 +76,14 @@ module Vulnerabilities
       def initialize(project_ids)
         raise TooManyProjectsError, "Cannot adjust statistics for more than #{MAX_PROJECTS} projects" if project_ids.size > MAX_PROJECTS
 
-        self.project_ids = project_ids.join(', ')
+        self.project_ids = project_ids
       end
 
       def execute
-        Gitlab::Database.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/491176') do
-          connection.execute(upsert_sql)
-        end
+        filter_project_ids
+        return if project_ids.blank?
+
+        connection.execute(upsert_sql)
       end
 
       private
@@ -100,12 +92,18 @@ module Vulnerabilities
 
       delegate :connection, to: ApplicationRecord, private: true
 
+      # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- already limited by caller BulkDismissService
+      def filter_project_ids
+        self.project_ids = Project.id_in(project_ids).pluck_primary_key
+      end
+      # rubocop: enable Database/AvoidUsingPluckWithoutLimit
+
       def upsert_sql
         UPSERT_SQL % { stats_sql: stats_sql }
       end
 
       def stats_sql
-        STATS_SQL % { project_ids: project_ids, active_states: active_states }
+        STATS_SQL % { project_ids: project_ids.join(', '), active_states: active_states }
       end
 
       def active_states
