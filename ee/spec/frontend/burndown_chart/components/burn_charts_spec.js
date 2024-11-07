@@ -4,8 +4,8 @@ import MockAdapter from 'axios-mock-adapter';
 import timezoneMock from 'timezone-mock';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlSegmentedControl } from '@gitlab/ui';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import BurnupQueryIteration from 'shared_queries/burndown_chart/burnup.iteration.query.graphql';
 import BurnupQueryMilestone from 'shared_queries/burndown_chart/burnup.milestone.query.graphql';
 import BurnCharts, {
@@ -34,7 +34,7 @@ describe('burndown_chart', () => {
   let mock;
 
   const findFilterLabel = () => wrapper.findComponent({ ref: 'filterLabel' });
-  const findFilterByControl = () => wrapper.findComponent(SegmentedControlButtonGroup);
+  const findFilterByControl = () => wrapper.findComponent(GlSegmentedControl);
   const findBurndownChart = () => wrapper.findComponent(BurndownChart);
   const findBurnupChart = () => wrapper.findComponent(BurnupChart);
   const findOldBurndownChartButton = () => wrapper.findComponent({ ref: 'oldBurndown' });

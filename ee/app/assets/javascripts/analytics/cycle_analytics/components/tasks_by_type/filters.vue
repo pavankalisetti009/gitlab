@@ -1,9 +1,8 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSegmentedControl } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapGetters } from 'vuex';
 import { difference, debounce } from 'lodash';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import { removeFlash } from '~/analytics/shared/utils';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
@@ -19,7 +18,7 @@ export default {
   name: 'TasksByTypeFilters',
   components: {
     GlCollapsibleListbox,
-    SegmentedControlButtonGroup,
+    GlSegmentedControl,
   },
   props: {
     selectedLabelNames: {
@@ -184,7 +183,7 @@ export default {
         >
           <p class="font-weight-bold text-left mb-2">{{ s__('CycleAnalytics|Show') }}</p>
 
-          <segmented-control-button-group
+          <gl-segmented-control
             :value="subjectFilter"
             :options="subjectFilterOptions"
             data-testid="type-of-work-filters-subject"
