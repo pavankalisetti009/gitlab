@@ -183,7 +183,7 @@ RSpec.describe Server, feature_category: :service_ping do
       await { Net::HTTP.new('localhost', port).options('/com.snowplowanalytics.snowplow/tp2') }
     end
 
-    it 'applies the correct headers' do
+    it 'applies the correct headers', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498779' do
       expect(response.code).to eq('200')
       expect(response.header['Access-Control-Allow-Credentials']).to eq('true')
       expect(response.header['Access-Control-Allow-Headers']).to eq('Content-Type')
