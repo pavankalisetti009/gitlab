@@ -181,7 +181,7 @@ export default {
         },
       });
       this.$emit('workItemCreated', workItem);
-      if (this.workItemTypes && this.workItemTypes[0]) {
+      if (this.workItemTypes && this.workItemTypes[0] && this.workItemTypeName) {
         setNewWorkItemCache(
           this.fullPath,
           this.workItemTypes[0]?.widgetDefinitions,
