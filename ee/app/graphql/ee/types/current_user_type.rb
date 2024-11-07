@@ -13,17 +13,17 @@ module EE
 
         field :duo_chat_available, ::GraphQL::Types::Boolean,
           resolver: ::Resolvers::Ai::UserChatAccessResolver,
-          alpha: { milestone: '16.8' },
+          experiment: { milestone: '16.8' },
           description: 'User access to AI chat feature.'
 
         field :duo_code_suggestions_available, ::GraphQL::Types::Boolean,
           resolver: ::Resolvers::Ai::CodeSuggestionsAccessResolver,
-          alpha: { milestone: '16.8' },
+          experiment: { milestone: '16.8' },
           description: 'User access to code suggestions feature.'
 
         field :duo_chat_available_features, [::GraphQL::Types::String],
           resolver: ::Resolvers::Ai::UserAvailableFeaturesResolver,
-          alpha: { milestone: '17.6' },
+          experiment: { milestone: '17.6' },
           description: 'List of available features for AI chat.'
       end
     end

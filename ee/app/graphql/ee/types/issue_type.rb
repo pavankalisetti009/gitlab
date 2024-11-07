@@ -20,7 +20,7 @@ module EE
 
         field :has_parent, GraphQL::Types::Boolean,
           null: false,
-          alpha: { milestone: '16.5' },
+          experiment: { milestone: '16.5' },
           description: 'Indicates if the issue has a parent work item.',
           method: :has_parent_link?
 

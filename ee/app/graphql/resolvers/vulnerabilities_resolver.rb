@@ -49,7 +49,7 @@ module Resolvers
 
     argument :has_ai_resolution, GraphQL::Types::Boolean,
       required: false,
-      alpha: { milestone: '17.5' },
+      experiment: { milestone: '17.5' },
       description: 'Returns only the vulnerabilities which can likely be resolved by GitLab Duo Vulnerability Resolution. Requires the `vulnerability_report_vr_filter` feature flag to be enabled, otherwise the argument is ignored.'
 
     argument :has_issues, GraphQL::Types::Boolean,

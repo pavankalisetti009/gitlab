@@ -21,7 +21,7 @@ module Types
       field :report,
         type: FindingReportsComparer::ReportType,
         null: true,
-        alpha: { milestone: '16.1' },
+        experiment: { milestone: '16.1' },
         hash_key: :data,
         description: 'Compared security report.'
     end

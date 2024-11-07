@@ -18,8 +18,8 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Destroy
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Update
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create
-        mount_mutation ::Mutations::Issuables::CustomFields::Create, alpha: { milestone: '17.6' }
-        mount_mutation ::Mutations::Issuables::CustomFields::Update, alpha: { milestone: '17.6' }
+        mount_mutation ::Mutations::Issuables::CustomFields::Create, experiment: { milestone: '17.6' }
+        mount_mutation ::Mutations::Issuables::CustomFields::Update, experiment: { milestone: '17.6' }
         mount_mutation ::Mutations::Issues::SetIteration
         mount_mutation ::Mutations::Issues::SetWeight
         mount_mutation ::Mutations::Issues::SetEpic,
@@ -37,11 +37,11 @@ module EE
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Epics::AddIssue,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
-        mount_mutation ::Mutations::Geo::Registries::Update, alpha: { milestone: '16.1' }
-        mount_mutation ::Mutations::Geo::Registries::BulkUpdate, alpha: { milestone: '16.4' }
+        mount_mutation ::Mutations::Geo::Registries::Update, experiment: { milestone: '16.1' }
+        mount_mutation ::Mutations::Geo::Registries::BulkUpdate, experiment: { milestone: '16.4' }
         mount_mutation ::Mutations::GitlabSubscriptions::Activate
         mount_mutation ::Mutations::GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionRequest,
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
         mount_mutation ::Mutations::GitlabSubscriptions::UserAddOnAssignments::Create
         mount_mutation ::Mutations::GitlabSubscriptions::UserAddOnAssignments::Remove
         mount_mutation ::Mutations::GitlabSubscriptions::UserAddOnAssignments::BulkCreate
@@ -54,8 +54,8 @@ module EE
         mount_mutation ::Mutations::Iterations::Cadences::Update
         mount_mutation ::Mutations::Iterations::Cadences::Destroy
         mount_mutation ::Mutations::MemberRoles::Update
-        mount_mutation ::Mutations::MemberRoles::Create, alpha: { milestone: '16.5' }
-        mount_mutation ::Mutations::MemberRoles::Delete, alpha: { milestone: '16.7' }
+        mount_mutation ::Mutations::MemberRoles::Create, experiment: { milestone: '16.5' }
+        mount_mutation ::Mutations::MemberRoles::Delete, experiment: { milestone: '16.7' }
         mount_mutation ::Mutations::RequirementsManagement::CreateRequirement
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
@@ -63,7 +63,7 @@ module EE
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretCreate
         mount_mutation ::Mutations::Security::Finding::CreateIssue
         mount_mutation ::Mutations::Security::Finding::CreateMergeRequest
-        mount_mutation ::Mutations::Security::Finding::CreateVulnerability, alpha: { milestone: '17.5' }
+        mount_mutation ::Mutations::Security::Finding::CreateVulnerability, experiment: { milestone: '17.5' }
         mount_mutation ::Mutations::Security::Finding::Dismiss
         mount_mutation ::Mutations::Security::Finding::RevertToDetected
         mount_mutation ::Mutations::Vulnerabilities::Create
@@ -95,9 +95,9 @@ module EE
         mount_mutation ::Mutations::Boards::Epics::Create,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Boards::Lists::UpdateLimitMetrics
-        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Create, alpha: { milestone: '16.11' }
-        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Update, alpha: { milestone: '17.0' }
-        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Destroy, alpha: { milestone: '17.0' }
+        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Create, experiment: { milestone: '16.11' }
+        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Update, experiment: { milestone: '17.0' }
+        mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Destroy, experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::InstanceSecurityDashboard::AddProject
         mount_mutation ::Mutations::InstanceSecurityDashboard::RemoveProject
         mount_mutation ::Mutations::DastOnDemandScans::Create
@@ -131,14 +131,14 @@ module EE
         mount_mutation ::Mutations::IncidentManagement::IssuableResourceLink::Destroy
         mount_mutation ::Mutations::AppSec::Fuzzing::Coverage::Corpus::Create
         mount_mutation ::Mutations::Projects::SetComplianceFramework
-        mount_mutation ::Mutations::Projects::ProjectSettingsUpdate, alpha: { milestone: '16.9' }
+        mount_mutation ::Mutations::Projects::ProjectSettingsUpdate, experiment: { milestone: '16.9' }
         mount_mutation ::Mutations::Projects::InitializeProductAnalytics
         mount_mutation ::Mutations::Projects::ProductAnalyticsProjectSettingsUpdate
         mount_mutation ::Mutations::SecurityPolicy::CommitScanExecutionPolicy
         mount_mutation ::Mutations::SecurityPolicy::AssignSecurityPolicyProject
         mount_mutation ::Mutations::SecurityPolicy::UnassignSecurityPolicyProject
         mount_mutation ::Mutations::SecurityPolicy::CreateSecurityPolicyProject
-        mount_mutation ::Mutations::SecurityPolicy::CreateSecurityPolicyProjectAsync, alpha: { milestone: '17.3' }
+        mount_mutation ::Mutations::SecurityPolicy::CreateSecurityPolicyProjectAsync, experiment: { milestone: '17.3' }
         mount_mutation ::Mutations::Security::CiConfiguration::ConfigureDependencyScanning
         mount_mutation ::Mutations::Security::CiConfiguration::ConfigureContainerScanning
         mount_mutation ::Mutations::Security::TrainingProviderUpdate
@@ -162,8 +162,10 @@ module EE
         mount_mutation ::Mutations::AuditEvents::Streaming::EventTypeFilters::Destroy
         mount_mutation ::Mutations::Deployments::DeploymentApprove
         mount_mutation ::Mutations::MergeRequests::UpdateApprovalRule
-        mount_mutation ::Mutations::Ai::Action, alpha: { milestone: '15.11' }, scopes: [:api, :ai_features]
-        mount_mutation ::Mutations::Ai::DuoUserFeedback, alpha: { milestone: '16.10' }, scopes: [:api, :ai_features]
+        mount_mutation ::Mutations::Ai::Action, experiment: { milestone: '15.11' }, scopes: [:api, :ai_features]
+        mount_mutation ::Mutations::Ai::DuoUserFeedback, experiment: {
+          milestone: '16.10'
+        }, scopes: [:api, :ai_features]
         mount_mutation ::Mutations::AuditEvents::InstanceExternalAuditEventDestinations::Create
         mount_mutation ::Mutations::AuditEvents::InstanceExternalAuditEventDestinations::Destroy
         mount_mutation ::Mutations::AuditEvents::InstanceExternalAuditEventDestinations::Update
@@ -177,7 +179,7 @@ module EE
         mount_mutation ::Mutations::AuditEvents::Instance::AmazonS3Configurations::Delete
         mount_mutation ::Mutations::AuditEvents::Instance::AmazonS3Configurations::Update
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Create
-        mount_mutation ::Mutations::Forecasting::BuildForecast, alpha: { milestone: '16.0' }
+        mount_mutation ::Mutations::Forecasting::BuildForecast, experiment: { milestone: '16.0' }
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Update
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Destroy
@@ -193,66 +195,66 @@ module EE
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Destroy
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Update
         mount_mutation ::Mutations::DependencyProxy::Packages::Settings::Update
-        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Create, alpha: { milestone: '16.6' }
-        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Update, alpha: { milestone: '16.6' }
-        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Destroy, alpha: { milestone: '16.6' }
+        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Create, experiment: { milestone: '16.6' }
+        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Update, experiment: { milestone: '16.6' }
+        mount_mutation ::Mutations::Analytics::CycleAnalytics::ValueStreams::Destroy, experiment: { milestone: '16.6' }
         mount_mutation ::Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Delete
-        mount_mutation ::Mutations::Ai::Agents::Create, alpha: { milestone: '16.8' }
-        mount_mutation ::Mutations::Ai::Agents::Update, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::Ai::Agents::Destroy, alpha: { milestone: '16.11' }
+        mount_mutation ::Mutations::Ai::Agents::Create, experiment: { milestone: '16.8' }
+        mount_mutation ::Mutations::Ai::Agents::Update, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::Ai::Agents::Destroy, experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::ComplianceManagement::Standards::RefreshAdherenceChecks
-        mount_mutation ::Mutations::Groups::SavedReplies::Create, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::Groups::SavedReplies::Update, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::Groups::SavedReplies::Destroy, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::Members::Groups::Export, alpha: { milestone: '17.4' }
-        mount_mutation ::Mutations::Projects::SavedReplies::Create, alpha: { milestone: '16.11' }
-        mount_mutation ::Mutations::Projects::SavedReplies::Update, alpha: { milestone: '16.11' }
-        mount_mutation ::Mutations::Projects::SavedReplies::Destroy, alpha: { milestone: '16.11' }
-        mount_mutation ::Mutations::BranchRules::ApprovalProjectRules::Create, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::ApprovalProjectRules::Update, alpha: { milestone: '16.10' }
-        mount_mutation ::Mutations::ApprovalProjectRules::Delete, alpha: { milestone: '16.10' }
+        mount_mutation ::Mutations::Groups::SavedReplies::Create, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::Groups::SavedReplies::Update, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::Groups::SavedReplies::Destroy, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::Members::Groups::Export, experiment: { milestone: '17.4' }
+        mount_mutation ::Mutations::Projects::SavedReplies::Create, experiment: { milestone: '16.11' }
+        mount_mutation ::Mutations::Projects::SavedReplies::Update, experiment: { milestone: '16.11' }
+        mount_mutation ::Mutations::Projects::SavedReplies::Destroy, experiment: { milestone: '16.11' }
+        mount_mutation ::Mutations::BranchRules::ApprovalProjectRules::Create, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::ApprovalProjectRules::Update, experiment: { milestone: '16.10' }
+        mount_mutation ::Mutations::ApprovalProjectRules::Delete, experiment: { milestone: '16.10' }
         mount_mutation ::Mutations::AuditEvents::Group::AuditEventStreamingDestinations::Create,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Group::AuditEventStreamingDestinations::Delete,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Group::AuditEventStreamingDestinations::Update,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Create,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Delete,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Instance::AuditEventStreamingDestinations::Update,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::AuditEvents::Group::EventTypeFilters::Create,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::AuditEvents::Group::EventTypeFilters::Delete,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::AuditEvents::Instance::EventTypeFilters::Create,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::AuditEvents::Instance::EventTypeFilters::Delete,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::AuditEvents::Group::NamespaceFilters::Create,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::AuditEvents::Group::NamespaceFilters::Delete,
-          alpha: { milestone: '17.0' }
+          experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::Ai::SelfHostedModels::Create,
-          alpha: { milestone: '17.1' }
+          experiment: { milestone: '17.1' }
         mount_mutation ::Mutations::AuditEvents::Instance::NamespaceFilters::Create,
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
         mount_mutation ::Mutations::AuditEvents::Instance::NamespaceFilters::Delete,
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
         mount_mutation ::Mutations::Ai::SelfHostedModels::Update,
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
         mount_mutation ::Mutations::Ai::SelfHostedModels::Delete,
-          alpha: { milestone: '17.2' }
-        mount_mutation ::Mutations::MergeTrains::Cars::Delete, alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
+        mount_mutation ::Mutations::MergeTrains::Cars::Delete, experiment: { milestone: '17.2' }
         mount_mutation ::Mutations::Projects::UpdateComplianceFrameworks
-        mount_mutation ::Mutations::Ai::FeatureSettings::Update, alpha: { milestone: '17.4' }
+        mount_mutation ::Mutations::Ai::FeatureSettings::Update, experiment: { milestone: '17.4' }
         mount_mutation ::Mutations::Projects::TargetBranchRules::Create
         mount_mutation ::Mutations::Projects::TargetBranchRules::Destroy
         mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirements::Create,
-          alpha: { milestone: '17.6' }
+          experiment: { milestone: '17.6' }
 
         prepend(Types::DeprecatedMutations)
       end

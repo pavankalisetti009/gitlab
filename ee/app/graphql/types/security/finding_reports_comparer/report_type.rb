@@ -27,13 +27,13 @@ module Types
         field :added,
           type: [FindingType],
           null: true,
-          alpha: { milestone: '16.1' },
+          experiment: { milestone: '16.1' },
           description: 'New vulnerability findings.'
 
         field :fixed,
           type: [FindingType],
           null: true,
-          alpha: { milestone: '16.1' },
+          experiment: { milestone: '16.1' },
           description: 'Fixed vulnerability findings.'
 
         def base_report_created_at

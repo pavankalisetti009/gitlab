@@ -21,7 +21,7 @@ module EE
         field :blob_search, ::Types::Search::Blob::BlobSearchType,
           null: true,
           resolver: ::Resolvers::Search::Blob::BlobSearchResolver,
-          alpha: { milestone: '17.2' },
+          experiment: { milestone: '17.2' },
           description: 'Find code visible to the current user'
         field :ci_minutes_usage, ::Types::Ci::Minutes::NamespaceMonthlyUsageType.connection_type,
           null: true,
@@ -109,23 +109,23 @@ module EE
 
         field :ai_messages, ::Types::Ai::MessageType.connection_type,
           resolver: ::Resolvers::Ai::ChatMessagesResolver,
-          alpha: { milestone: '16.1' },
+          experiment: { milestone: '16.1' },
           description: 'Find GitLab Duo Chat messages.'
 
         field :duo_workflow_events, ::Types::Ai::DuoWorkflows::WorkflowEventType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver,
-          alpha: { milestone: '17.2' },
+          experiment: { milestone: '17.2' },
           description: 'List the events for a Duo Workflow'
 
         field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver,
-          alpha: { milestone: '17.2' },
+          experiment: { milestone: '17.2' },
           description: 'List the workflows owned by the current user'
 
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
-          alpha: { milestone: '16.4' },
+          experiment: { milestone: '16.4' },
           description: 'Time taken for CI jobs to be picked up by runner by percentile.',
           resolver: ::Resolvers::Ci::InstanceQueueingHistoryResolver,
           extras: [:lookahead]
@@ -149,29 +149,29 @@ module EE
           ::Types::MemberRoles::CustomizablePermissionType.connection_type,
           null: true,
           description: 'List of all customizable permissions.',
-          alpha: { milestone: '16.4' }
+          experiment: { milestone: '16.4' }
         field :member_role, ::Types::MemberRoles::MemberRoleType,
           null: true, description: 'Finds a single custom role for the instance. Available only for self-managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver.single,
-          alpha: { milestone: '16.6' }
+          experiment: { milestone: '16.6' }
         field :standard_role, ::Types::Members::StandardRoleType,
           null: true, description: 'Finds a single default role for the instance. Available only for self-managed.',
           resolver: ::Resolvers::Members::StandardRolesResolver.single,
-          alpha: { milestone: '17.6' }
+          experiment: { milestone: '17.6' }
         field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
           null: true, description: 'Default roles available for the instance. Available only for self-managed.',
           resolver: ::Resolvers::Members::StandardRolesResolver,
-          alpha: { milestone: '17.3' }
+          experiment: { milestone: '17.3' }
         field :self_managed_add_on_eligible_users,
           ::Types::GitlabSubscriptions::AddOnUserType.connection_type,
           null: true,
           description: 'Users within the self-managed instance who are eligible for add-ons.',
           resolver: ::Resolvers::GitlabSubscriptions::SelfManaged::AddOnEligibleUsersResolver,
-          alpha: { milestone: '16.7' }
+          experiment: { milestone: '16.7' }
         field :self_managed_users_queued_for_role_promotion,
           EE::Types::GitlabSubscriptions::MemberManagement::UsersQueuedForRolePromotionType.connection_type,
           null: true,
-          alpha: { milestone: '17.1' },
+          experiment: { milestone: '17.1' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::
               UsersQueuedForRolePromotionResolver,
           description: 'Fields related to users within a self-managed instance that are pending role ' \
@@ -184,37 +184,37 @@ module EE
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
           null: true, description: 'Custom roles available for the instance. Available only for self-managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
-          alpha: { milestone: '16.7' }
+          experiment: { milestone: '16.7' }
         field :google_cloud_artifact_registry_repository_artifact,
           ::Types::GoogleCloud::ArtifactRegistry::ArtifactDetailsType,
           null: true,
           description: 'Details about an artifact in the Google Artifact Registry.',
           resolver: ::Resolvers::GoogleCloud::ArtifactRegistry::ArtifactResolver,
-          alpha: { milestone: '16.10' }
+          experiment: { milestone: '16.10' }
         field :audit_events_instance_streaming_destinations,
           ::Types::AuditEvents::Instance::StreamingDestinationType.connection_type,
           null: true,
           description: 'Instance-level external audit event streaming destinations.',
           resolver: ::Resolvers::AuditEvents::Instance::StreamingDestinationsResolver,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :ai_self_hosted_models,
           ::Types::Ai::SelfHostedModels::SelfHostedModelType.connection_type,
           null: true,
           description: 'List of self-hosted LLM servers.',
           resolver: ::Resolvers::Ai::SelfHostedModels::SelfHostedModelsResolver,
-          alpha: { milestone: '17.1' }
+          experiment: { milestone: '17.1' }
 
         field :cloud_connector_status,
           ::Types::CloudConnector::StatusType,
           null: true,
           description: 'Run a series of status checks for Cloud Connector features.',
           resolver: ::Resolvers::CloudConnector::StatusResolver,
-          alpha: { milestone: '17.3' }
+          experiment: { milestone: '17.3' }
 
         field :project_secrets_manager, ::Types::SecretsManagement::ProjectSecretsManagerType,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'Find a project secrets manager.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsManagerResolver
 
@@ -223,7 +223,7 @@ module EE
           null: true,
           description: 'List of configurable AI features.',
           resolver: ::Resolvers::Ai::FeatureSettings::FeatureSettingsResolver,
-          alpha: { milestone: '17.4' }
+          experiment: { milestone: '17.4' }
 
         field :ai_slash_commands, [::Types::Ai::SlashCommandType], null: true,
           resolver: ::Resolvers::Ai::SlashCommandsResolver,

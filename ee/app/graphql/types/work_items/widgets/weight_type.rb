@@ -21,11 +21,11 @@ module Types
 
         field :rolled_up_weight, GraphQL::Types::Int,
           null: true, description: 'Rolled up weight from descendant work items.',
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
 
         field :rolled_up_completed_weight, GraphQL::Types::Int, # rubocop:disable GraphQL/ExtractType -- No need to extract 2 integers into an extra type
           null: true, description: 'Rolled up weight from closed descendant work items.',
-          alpha: { milestone: '17.3' }
+          experiment: { milestone: '17.3' }
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

@@ -8,20 +8,21 @@ module Resolvers
         include Gitlab::Graphql::Authorize::AuthorizeResource
 
         type Types::Search::Blob::BlobSearchType, null: true
-        argument :chunk_count, type: GraphQL::Types::Int, required: false, alpha: { milestone: '17.2' },
+        argument :chunk_count, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
           default_value: ::Search::Zoekt::MultiMatch::DEFAULT_REQUESTED_CHUNK_SIZE,
           description: 'Maximum chunks per file.'
-        argument :group_id, ::Types::GlobalIDType[::Group], required: false, alpha: { milestone: '17.2' },
+        argument :group_id, ::Types::GlobalIDType[::Group], required: false, experiment: { milestone: '17.2' },
           description: 'Group to search in.'
-        argument :page, type: GraphQL::Types::Int, required: false, default_value: 1, alpha: { milestone: '17.2' },
+        argument :page, type: GraphQL::Types::Int, required: false, default_value: 1, experiment: { milestone: '17.2' },
           description: 'Page number to fetch the results.'
-        argument :per_page, type: GraphQL::Types::Int, required: false, alpha: { milestone: '17.2' },
+        argument :per_page, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
           default_value: ::Search::Zoekt::SearchResults::DEFAULT_PER_PAGE, description: 'Number of results per page.'
-        argument :project_id, ::Types::GlobalIDType[::Project], required: false, alpha: { milestone: '17.2' },
+        argument :project_id, ::Types::GlobalIDType[::Project], required: false, experiment: { milestone: '17.2' },
           description: 'Project to search in.'
-        argument :regex, GraphQL::Types::Boolean, required: false, default_value: false, alpha: { milestone: '17.3' },
+        argument :regex, GraphQL::Types::Boolean, required: false, default_value: false,
+          experiment: { milestone: '17.3' },
           description: 'Uses the regular expression search mode. Default is false.'
-        argument :repository_ref, type: GraphQL::Types::String, required: false, alpha: { milestone: '17.2' },
+        argument :repository_ref, type: GraphQL::Types::String, required: false, experiment: { milestone: '17.2' },
           description: 'Repository reference to search in.'
         argument :search, GraphQL::Types::String, required: true, description: 'Searched term.'
 

@@ -27,7 +27,7 @@ module EE
             ::Types::WorkItems::Widgets::RolledupDatesInputType,
             required: false,
             description: 'Input for rolledup dates widget.',
-            alpha: { milestone: '16.9' }
+            experiment: { milestone: '16.9' }
 
           argument :color_widget, ::Types::WorkItems::Widgets::ColorInputType,
             required: false,

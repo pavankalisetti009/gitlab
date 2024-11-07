@@ -35,7 +35,7 @@ module EE
             null: true,
             description: 'Remote development agent config for the cluster agent.',
             resolver: ::Resolvers::RemoteDevelopment::RemoteDevelopmentAgentConfigForAgentResolver,
-            alpha: { milestone: '17.4' }
+            experiment: { milestone: '17.4' }
 
           field :workspaces_agent_config,
             ::Types::RemoteDevelopment::WorkspacesAgentConfigType,
@@ -43,7 +43,7 @@ module EE
             null: true,
             description: 'Workspaces agent config for the cluster agent.',
             resolver: ::Resolvers::RemoteDevelopment::WorkspacesAgentConfigForAgentResolver,
-            alpha: { milestone: '17.4' }
+            experiment: { milestone: '17.4' }
 
           def url_configurations
             [object.agent_url_configuration]

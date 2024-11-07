@@ -17,19 +17,19 @@ module Types
       field :base_access_level,
         Types::AccessLevelType,
         null: false,
-        alpha: { milestone: '16.5' },
+        experiment: { milestone: '16.5' },
         description: 'Base access level for the custom role.'
 
       field :enabled_permissions,
         ::Types::MemberRoles::CustomizablePermissionType.connection_type,
         null: false,
-        alpha: { milestone: '16.5' },
+        experiment: { milestone: '16.5' },
         description: 'Array of all permissions enabled for the custom role.'
 
       field :edit_path,
         GraphQL::Types::String,
         null: false,
-        alpha: { milestone: '16.11' },
+        experiment: { milestone: '16.11' },
         description: 'Web UI path to edit the custom role.'
 
       field :created_at,

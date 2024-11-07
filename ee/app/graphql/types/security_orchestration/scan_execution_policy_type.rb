@@ -13,7 +13,7 @@ module Types
 
       field :deprecated_properties, [::GraphQL::Types::String], null: true,
         description: 'All deprecated properties in the policy.',
-        alpha: { milestone: '17.3' }
+        experiment: { milestone: '17.3' }
       field :source, Types::SecurityOrchestration::SecurityPolicySourceType,
         null: false,
         description: 'Source of the policy. Its fields depend on the source type.'

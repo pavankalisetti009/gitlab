@@ -12,7 +12,7 @@ module Types
         type: ::Types::GitlabSubscriptions::UserAddOnAssignmentType.connection_type,
         resolver: ::Resolvers::GitlabSubscriptions::UserAddOnAssignmentsResolver,
         description: 'Add-on purchase assignments for the user.',
-        alpha: { milestone: '16.4' }
+        experiment: { milestone: '16.4' }
 
       field :last_login_at,
         type: Types::TimeType,

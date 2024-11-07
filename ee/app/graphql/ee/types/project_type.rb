@@ -192,7 +192,7 @@ module EE
           ::Types::Security::VulnerabilityManagementPolicyType.connection_type,
           calls_gitaly: true,
           null: true,
-          alpha: { milestone: '17.5' },
+          experiment: { milestone: '17.5' },
           description: 'Vulnerability Management Policies of the project.',
           resolver: ::Resolvers::Security::VulnerabilityManagementPolicyResolver
 
@@ -265,20 +265,20 @@ module EE
           description: 'AI-related metrics.',
           resolver: ::Resolvers::Analytics::AiMetrics::NamespaceMetricsResolver,
           extras: [:lookahead],
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :ai_usage_data,
           ::Types::Analytics::AiUsage::AiUsageDataType,
           description: 'AI-related data.',
           resolver_method: :object,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         field :ai_user_metrics,
           ::Types::Analytics::AiMetrics::UserMetricsType.connection_type,
           null: true,
           description: 'AI-related user metrics.',
           resolver: ::Resolvers::Analytics::AiMetrics::UserMetricsResolver,
-          alpha: { milestone: '17.5' }
+          experiment: { milestone: '17.5' }
 
         field :security_training_urls,
           [::Types::Security::TrainingUrlType],
@@ -299,7 +299,7 @@ module EE
 
         field :duo_features_enabled, GraphQL::Types::Boolean,
           null: true,
-          alpha: { milestone: '16.9' },
+          experiment: { milestone: '16.9' },
           description: 'Indicates whether GitLab Duo features are enabled for the project.'
 
         field :gitlab_subscriptions_preview_billable_user_change,
@@ -313,21 +313,21 @@ module EE
           description: 'Customizable dashboards for the project.',
           null: true,
           calls_gitaly: true,
-          alpha: { milestone: '15.6' },
+          experiment: { milestone: '15.6' },
           resolver: ::Resolvers::ProductAnalytics::DashboardsResolver
 
         field :customizable_dashboard_visualizations, ::Types::ProductAnalytics::VisualizationType.connection_type,
           description: 'Visualizations of the project or associated configuration project.',
           null: true,
           calls_gitaly: true,
-          alpha: { milestone: '16.1' },
+          experiment: { milestone: '16.1' },
           resolver: ::Resolvers::ProductAnalytics::VisualizationsResolver
 
         field :product_analytics_state, ::Types::ProductAnalytics::StateEnum,
           description: 'Current state of the product analytics stack for this project.' \
                        'Can only be called for one project in a single request',
           null: true,
-          alpha: { milestone: '15.10' },
+          experiment: { milestone: '15.10' },
           resolver: ::Resolvers::ProductAnalytics::StateResolver do
           extension ::Gitlab::Graphql::Limit::FieldCallCount, limit: 1
         end
@@ -340,19 +340,19 @@ module EE
         field :tracking_key, GraphQL::Types::String,
           null: true,
           description: 'Tracking key assigned to the project.',
-          alpha: { milestone: '16.0' },
+          experiment: { milestone: '16.0' },
           authorize: :developer_access
 
         field :product_analytics_instrumentation_key, GraphQL::Types::String,
           null: true,
           description: 'Product Analytics instrumentation key assigned to the project.',
-          alpha: { milestone: '16.0' },
+          experiment: { milestone: '16.0' },
           authorize: :developer_access
 
         field :dependencies, ::Types::Sbom::DependencyType.connection_type,
           null: true,
           description: 'Software dependencies used by the project.',
-          alpha: { milestone: '15.9' },
+          experiment: { milestone: '15.9' },
           resolver: ::Resolvers::Sbom::DependenciesResolver
 
         field :merge_requests_disable_committers_approval, GraphQL::Types::Boolean,
@@ -373,7 +373,7 @@ module EE
           null: true,
           resolver: ::Resolvers::ProductAnalytics::ProjectUsageDataResolver,
           description: 'Count of all events used, broken down by month',
-          alpha: { milestone: '16.7' }
+          experiment: { milestone: '16.7' }
 
         field :dependency_proxy_packages_setting,
           ::Types::DependencyProxy::Packages::SettingType,
@@ -384,7 +384,7 @@ module EE
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
           null: true, description: 'Member roles available for the group.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
-          alpha: { milestone: '16.5' }
+          experiment: { milestone: '16.5' }
 
         field :ci_subscriptions_projects,
           type: ::Types::Ci::Subscriptions::ProjectType.connection_type,
@@ -398,7 +398,7 @@ module EE
           description: 'Pipeline subscriptions where this project is the downstream project.' \
                        'When an upstream project\'s pipeline completes, a pipeline is triggered ' \
                        'in the downstream project (this project).',
-          alpha: { milestone: '17.6' }
+          experiment: { milestone: '17.6' }
 
         field :ci_subscribed_projects,
           type: ::Types::Ci::Subscriptions::ProjectType.connection_type,
@@ -412,12 +412,12 @@ module EE
           description: 'Pipeline subscriptions where this project is the upstream project.' \
                        'When this project\'s pipeline completes, a pipeline is triggered ' \
                        'in the downstream project.',
-          alpha: { milestone: '17.6' }
+          experiment: { milestone: '17.6' }
 
         field :runner_cloud_provisioning,
           ::Types::Ci::RunnerCloudProvisioningType,
           null: true,
-          alpha: { milestone: '16.9' },
+          experiment: { milestone: '16.9' },
           description: 'Information used for provisioning the runner on a cloud provider. ' \
                        'Returns `null` if the GitLab instance is not a SaaS instance.' do
                          argument :provider, ::Types::Ci::RunnerCloudProviderEnum, required: true,
@@ -428,20 +428,20 @@ module EE
 
         field :ai_agents, ::Types::Ai::Agents::AgentType.connection_type,
           null: true,
-          alpha: { milestone: '16.9' },
+          experiment: { milestone: '16.9' },
           description: 'Ai Agents for the project.',
           resolver: ::Resolvers::Ai::Agents::FindAgentResolver
 
         field :google_cloud_artifact_registry_repository,
           ::Types::GoogleCloud::ArtifactRegistry::RepositoryType,
           null: true,
-          alpha: { milestone: '16.10' },
+          experiment: { milestone: '16.10' },
           description: 'Google Artifact Registry repository. ' \
                        'Returns `null` if the GitLab instance is not a SaaS instance.'
 
         field :ai_agent, ::Types::Ai::Agents::AgentType,
           null: true,
-          alpha: { milestone: '16.10' },
+          experiment: { milestone: '16.10' },
           description: 'Find a specific AI Agent.',
           resolver: ::Resolvers::Ai::Agents::AgentDetailResolver
 
@@ -456,82 +456,82 @@ module EE
           null: true,
           resolver: ::Resolvers::Projects::Analytics::ValueStreamDashboard::CountResolver,
           description: 'Aggregated usage counts within the project',
-          alpha: { milestone: '17.2' }
+          experiment: { milestone: '17.2' }
 
         field :marked_for_deletion_on, ::Types::TimeType,
           null: true,
           description: 'Date when project was scheduled to be deleted.',
-          alpha: { milestone: '16.10' }
+          experiment: { milestone: '16.10' }
 
         field :is_adjourned_deletion_enabled, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates if delayed project deletion is enabled.',
           method: :adjourned_deletion?,
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :permanent_deletion_date, GraphQL::Types::String,
           null: true,
           description: 'Date when project will be deleted if delayed project deletion is enabled.',
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :saved_replies,
           ::Types::Projects::SavedReplyType.connection_type,
           null: true,
           description: 'Saved replies available to the project. Available only when feature flag ' \
                        '`project_saved_replies_flag` is enabled.',
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :saved_reply,
           resolver: ::Resolvers::Projects::SavedReplyResolver,
           description: 'Saved reply in the project. Available only when feature flag ' \
                        '`group_saved_replies_flag` is enabled.',
-          alpha: { milestone: '16.11' }
+          experiment: { milestone: '16.11' }
 
         field :merge_trains,
           ::Types::MergeTrains::TrainType.connection_type,
           resolver: ::Resolvers::MergeTrains::TrainsResolver,
           description: 'Merge trains available to the project. ',
-          alpha: { milestone: '17.1' }
+          experiment: { milestone: '17.1' }
 
         field :pending_member_approvals,
           EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
           null: true,
-          alpha: { milestone: '17.3' },
+          experiment: { milestone: '17.3' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the project.'
 
         field :observability_logs_links,
           ::Types::Observability::LogType.connection_type,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'Logs attached to the project.',
           resolver: ::Resolvers::Observability::LogsResolver
 
         field :observability_metrics_links,
           ::Types::Observability::MetricType.connection_type,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'Metrics attached to the project.',
           resolver: ::Resolvers::Observability::MetricsResolver
 
         field :observability_traces_links,
           ::Types::Observability::TraceType.connection_type,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'Traces attached to the project.',
           resolver: ::Resolvers::Observability::TracesResolver
 
         field :security_exclusions,
           ::Types::Security::ProjectSecurityExclusionType.connection_type,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'Security exclusions of the project.',
           resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver
 
         field :security_exclusion,
           ::Types::Security::ProjectSecurityExclusionType,
           null: true,
-          alpha: { milestone: '17.4' },
+          experiment: { milestone: '17.4' },
           description: 'A single security exclusion of a project.',
           resolver: ::Resolvers::Security::ProjectSecurityExclusionResolver.single
 

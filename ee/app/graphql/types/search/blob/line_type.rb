@@ -8,11 +8,11 @@ module Types
         graphql_name 'SearchBlobLine'
         description 'JSON structure of each line in a matched chunk'
 
-        field :line_number, GraphQL::Types::Int, null: true, alpha: { milestone: '17.2' },
+        field :line_number, GraphQL::Types::Int, null: true, experiment: { milestone: '17.2' },
           description: 'Line number of the blob.'
-        field :rich_text, GraphQL::Types::String, null: true, alpha: { milestone: '17.2' },
+        field :rich_text, GraphQL::Types::String, null: true, experiment: { milestone: '17.2' },
           description: 'Rich text of the blob.'
-        field :text, GraphQL::Types::String, null: true, alpha: { milestone: '17.2' },
+        field :text, GraphQL::Types::String, null: true, experiment: { milestone: '17.2' },
           description: 'Text content of the blob.'
       end
       # rubocop: enable Graphql/AuthorizeTypes
