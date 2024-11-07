@@ -34916,6 +34916,9 @@ msgstr ""
 msgid "MlModelRegistry|Delete model"
 msgstr ""
 
+msgid "MlModelRegistry|Delete model %{modelName}"
+msgstr ""
+
 msgid "MlModelRegistry|Delete version"
 msgstr ""
 
