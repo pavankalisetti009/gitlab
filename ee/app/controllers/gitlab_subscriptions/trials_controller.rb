@@ -116,16 +116,6 @@ module GitlabSubscriptions
       if discover_group_security_flow?
         s_("BillingPlans|Congratulations, your free trial is activated.")
       else
-        # Added due to this issue we do not know why it happens for premium subscription cases
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/492646#note_2163935257
-        # So for now we'll default back to 60 days in case it isn't synchronized.
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/499720
-        expires_date = if ::Feature.enabled?(:add_on_purchase_expires_on, current_user)
-                         add_on_purchase.expires_on
-                       else
-                         add_on_purchase&.expires_on.presence || 60.days.from_now
-                       end
-
         safe_format(
           s_(
             "BillingPlans|You have successfully started an Ultimate and GitLab Duo Enterprise trial that will " \
@@ -140,7 +130,7 @@ module GitlabSubscriptions
             ),
             :assign_link_start, :assign_link_end
           ),
-          exp_date: l(expires_date.to_date, format: :long)
+          exp_date: l(add_on_purchase.expires_on.to_date, format: :long)
         )
       end
     end

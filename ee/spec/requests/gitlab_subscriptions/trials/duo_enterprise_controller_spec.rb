@@ -194,37 +194,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
           end
         end
 
-        context 'when add_on_purchase is not found upon success for expiration date' do
-          before do
-            stub_feature_flags(add_on_purchase_expires_on: false)
-          end
-
-          it 'shows valid flash message', :freeze_time do
-            service_params = {
-              step: step,
-              lead_params: lead_params,
-              trial_params: trial_params,
-              user: user
-            }
-
-            expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |inst|
-              expect(inst)
-                .to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: group_for_trial }))
-            end
-
-            post_create
-
-            message = s_(
-              'DuoEnterpriseTrial|You have successfully started a Duo Enterprise trial that will expire on %{exp_date}.'
-            )
-            formatted_message = format(
-              message,
-              exp_date: I18n.l(60.days.from_now.to_date, format: :long)
-            )
-            expect(flash[:success]).to have_content(formatted_message)
-          end
-        end
-
         def expect_create_success(namespace)
           service_params = {
             step: step,
