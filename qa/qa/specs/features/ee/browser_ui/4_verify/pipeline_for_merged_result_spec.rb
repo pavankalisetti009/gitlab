@@ -2,8 +2,8 @@
 
 module QA
   RSpec.describe 'Verify', :runner, :blocking, product_group: :pipeline_execution do
-    describe 'Pipelines for merged results and merge trains' do
-      let!(:project) { create(:project, name: 'pipelines-for-merge-trains') }
+    describe 'Pipeline for merged result' do
+      let!(:project) { create(:project, name: 'pipeline-for-merged-results') }
       let!(:executor) { "qa-runner-#{Faker::Alphanumeric.alphanumeric(number: 8)}" }
       let!(:runner) do
         create(:project_runner, project: project, name: executor, tags: [executor])
@@ -17,9 +17,11 @@ module QA
             content: <<~YAML
               test:
                 tags: [#{executor}]
-                script: echo 'OK'
+                script:
+                  - sleep 300
+                  - echo 'OK'
                 only:
-                - merge_requests
+                  - merge_requests
             YAML
           }
         ])
@@ -37,37 +39,25 @@ module QA
       before do
         Flow::Login.sign_in
         project.visit!
-        Flow::MergeRequest.enable_merge_trains
+        Flow::MergeRequest.enable_merged_results_pipelines
       end
 
       after do
-        runner.remove_via_api! if runner
+        runner&.remove_via_api!
       end
 
       it(
-        'creates a pipeline with merged results',
+        'merge request can be merged immediately',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348034'
       ) do
         merge_request.visit!
 
         Page::MergeRequest::Show.perform do |show|
-          expect(show).to have_pipeline_status('passed'), 'Expected the merge request pipeline to pass.'
+          expect { show }.to eventually_have_content('Merged result pipeline running').within(
+            sleep_interval: 5, reload_page: show
+          ), 'Expected pipeline to be merged result pipeline.'
 
-          # The default option is to merge via merge train,
-          # but that is covered by the 'merges via a merge train' test
-          show.skip_merge_train_and_merge_immediately
-
-          expect(show).to be_merged, "Expected content 'The changes were merged' but it did not appear."
-        end
-      end
-
-      it 'merges via a merge train', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348033' do
-        merge_request.visit!
-
-        Page::MergeRequest::Show.perform do |show|
-          expect(show).to have_pipeline_status('passed'), 'Expected the merge request pipeline to pass.'
-
-          show.merge_via_merge_train
+          show.merge_immediately!
 
           expect(show).to be_merged, "Expected content 'The changes were merged' but it did not appear."
         end
