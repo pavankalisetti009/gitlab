@@ -228,64 +228,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
-  describe '::Ai::StoreRepositoryXrayWorker' do
-    shared_examples_for 'storing the xray reports' do |transition|
-      subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
-
-      before do
-        allow(pipeline).to receive(:has_repository_xray_reports?).and_return(has_repository_xray_reports)
-      end
-
-      context 'when the xray reports can be stored for the pipeline' do
-        let(:has_repository_xray_reports) { true }
-
-        it 'does not schedule store security scans job' do
-          expect(::Ai::StoreRepositoryXrayWorker).not_to receive(:perform_async)
-
-          transition_pipeline
-        end
-
-        context 'when FF `ai_enable_internal_repository_xray_service` is disabled' do
-          before do
-            stub_feature_flags(ai_enable_internal_repository_xray_service: false)
-          end
-
-          it 'schedules store security scans job' do
-            expect(::Ai::StoreRepositoryXrayWorker).to receive(:perform_async).with(pipeline.id)
-
-            transition_pipeline
-          end
-        end
-      end
-
-      context 'when the xray reports can not be stored for the pipeline' do
-        let(:has_repository_xray_reports) { false }
-
-        it 'does not schedule store security scans job' do
-          expect(::Ai::StoreRepositoryXrayWorker).not_to receive(:perform_async)
-
-          transition_pipeline
-        end
-      end
-    end
-
-    context 'when pipeline is succeeded' do
-      it_behaves_like 'storing the xray reports', :succeed
-    end
-
-    context 'when pipeline is dropped' do
-      it_behaves_like 'storing the xray reports', :drop
-    end
-
-    context 'when pipeline is skipped' do
-      it_behaves_like 'storing the xray reports', :skip
-    end
-
-    context 'when pipeline is canceled' do
-      it_behaves_like 'storing the xray reports', :cancel
-    end
-  end
-
   describe '::Security::UnenforceablePolicyRulesPipelineNotificationWorker' do
     shared_examples_for 'notification for unenforceable policy rules' do |transition|
       subject(:transition_pipeline) { pipeline.update!(status_event: transition) }
