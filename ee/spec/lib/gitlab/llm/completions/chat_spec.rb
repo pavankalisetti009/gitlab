@@ -308,11 +308,28 @@ client_subscription_id: 'someid' }
       end
     end
 
+    context 'when on self-managed cloud-connected instance' do
+      before do
+        allow(::Gitlab::CloudConnector).to receive(:self_managed_cloud_connected?).and_return(true)
+      end
+
+      it 'does not push expanded ai logging feature flag to AI Gateway' do
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
+          allow(instance).to receive(:execute).and_return(answer)
+        end
+
+        expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:expanded_ai_logging, user)
+
+        subject
+      end
+    end
+
     context 'with commit reader allowed' do
       before do
         stub_feature_flags(ai_commit_reader_for_chat: true)
         allow(ai_request).to receive(:request)
         allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
+        allow(::Gitlab::CloudConnector).to receive(:self_managed_cloud_connected?).and_return(false)
       end
 
       let(:tools) do
