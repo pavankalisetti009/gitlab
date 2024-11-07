@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, feature_category: :security_policy_management do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
-  let_it_be(:pipeline) do
+  let_it_be_with_reload(:pipeline) do
     create(:ci_empty_pipeline,
       status: :success,
       ref: merge_request.source_branch,
@@ -59,6 +59,18 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
 
     context 'when there are no approval rules with scan result policy reads' do
       let!(:approval_project_rule) { nil }
+
+      it 'does not call UnenforceablePolicyRulesNotificationService' do
+        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
+
+        run_worker
+      end
+    end
+
+    context 'when pipeline is still running' do
+      before do
+        pipeline.update!(status: :running)
+      end
 
       it 'does not call UnenforceablePolicyRulesNotificationService' do
         expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)

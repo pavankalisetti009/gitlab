@@ -10,7 +10,9 @@ module Security
 
     def perform(pipeline_id)
       pipeline = ::Ci::Pipeline.find_by_id(pipeline_id)
-      return unless pipeline
+      # Worker is enqueued in MergeRequests::AfterCreate to unblock merge check if pipeline finishes
+      # before MR is created. If pipeline is still running, we exit early
+      return unless pipeline&.complete?
 
       project = pipeline.project
       return unless project.licensed_feature_available?(:security_orchestration_policies)
