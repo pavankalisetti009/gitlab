@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Duo Chat', :js, :requires_custom_models_setup, :sidekiq_inline, feature_category: :"self-hosted_models" do
+RSpec.describe 'Duo Chat', :js, :requires_custom_models_setup, :sidekiq_inline,
+  feature_category: :"self-hosted_models", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/502971' do
   include_context 'with duo features enabled and ai chat available for self-managed'
   using RSpec::Parameterized::TableSyntax
 
