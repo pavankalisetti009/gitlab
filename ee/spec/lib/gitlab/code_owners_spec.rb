@@ -195,7 +195,7 @@ RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
         end
 
         it 'skips reading codeowners and returns an empty array' do
-          expect(described_class).not_to receive(:loader_for_merge_request)
+          expect(Gitlab::CodeOwners::Loader).not_to receive(:new)
 
           is_expected.to be_empty
         end
