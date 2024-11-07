@@ -1,5 +1,5 @@
+import { GlSegmentedControl } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
@@ -7,7 +7,7 @@ import {
 import YamlEditor from 'ee/security_orchestration/components/yaml_editor.vue';
 
 export const switchRuleMode = async (wrapper, mode, awaitPromise = true) => {
-  await wrapper.findComponent(SegmentedControlButtonGroup).vm.$emit('input', mode);
+  await wrapper.findComponent(GlSegmentedControl).vm.$emit('input', mode);
 
   if (awaitPromise) {
     await waitForPromises();

@@ -1,9 +1,8 @@
 <script>
-import { GlAlert, GlButton, GlButtonGroup } from '@gitlab/ui';
+import { GlAlert, GlButton, GlButtonGroup, GlSegmentedControl } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import BurnupQueryIteration from 'shared_queries/burndown_chart/burnup.iteration.query.graphql';
 import BurnupQueryMilestone from 'shared_queries/burndown_chart/burnup.milestone.query.graphql';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import { createAlert } from '~/alert';
 import { STATUS_CLOSED, WORKSPACE_GROUP } from '~/issues/constants';
 import dateFormat from '~/lib/dateformat';
@@ -25,7 +24,7 @@ export default {
     GlAlert,
     GlButton,
     GlButtonGroup,
-    SegmentedControlButtonGroup,
+    GlSegmentedControl,
     BurndownChart,
     BurnupChart,
     OpenTimeboxSummary,
@@ -317,7 +316,7 @@ export default {
   <div>
     <div class="burndown-header gl-flex gl-flex-wrap gl-items-center gl-gap-2">
       <strong ref="filterLabel">{{ __('Display by') }}</strong>
-      <segmented-control-button-group
+      <gl-segmented-control
         :value="filterBySelectedValue"
         :options="$options.filterByOptions"
         @input="handleFilterByChanged"

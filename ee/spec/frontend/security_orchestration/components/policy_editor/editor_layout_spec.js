@@ -6,6 +6,7 @@ import {
   GlFormTextarea,
   GlIcon,
   GlModal,
+  GlSegmentedControl,
 } from '@gitlab/ui';
 import {
   EDITOR_MODE_YAML,
@@ -15,7 +16,6 @@ import {
   EDITOR_MODES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import ScopeSection from 'ee/security_orchestration/components/policy_editor/scope/scope_section.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -60,7 +60,7 @@ describe('EditorLayout component', () => {
   const findEnabledRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
   const findDeletePolicyButton = () => wrapper.findByTestId('delete-policy');
   const findDeletePolicyModal = () => wrapper.findComponent(GlModal);
-  const findEditorModeToggle = () => wrapper.findComponent(SegmentedControlButtonGroup);
+  const findEditorModeToggle = () => wrapper.findComponent(GlSegmentedControl);
   const findYamlModeSection = () => wrapper.findByTestId('policy-yaml-editor');
   const findRuleModeSection = () => wrapper.findByTestId('rule-editor');
   const findRuleModePreviewSection = () => wrapper.findByTestId('rule-editor-preview');

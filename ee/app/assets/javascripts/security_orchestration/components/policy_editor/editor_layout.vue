@@ -9,11 +9,11 @@ import {
   GlIcon,
   GlModal,
   GlModalDirective,
+  GlSegmentedControl,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import SegmentedControlButtonGroup from '~/vue_shared/components/segmented_control_button_group.vue';
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 import ScopeSection from 'ee/security_orchestration/components/policy_editor/scope/scope_section.vue';
 import { NAMESPACE_TYPES } from '../../constants';
@@ -56,7 +56,7 @@ export default {
     GlFormRadioGroup,
     GlIcon,
     GlModal,
-    SegmentedControlButtonGroup,
+    GlSegmentedControl,
     YamlEditor: () => import(/* webpackChunkName: 'policy_yaml_editor' */ '../yaml_editor.vue'),
   },
   directives: { GlModal: GlModalDirective, GlTooltip: GlTooltipDirective },
@@ -236,7 +236,7 @@ export default {
   <section class="security-policies gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
     <div class="gl-mb-5">
       <div class="gl-mb-6 gl-border-b-1 gl-border-gray-100 gl-pb-6 gl-border-b-solid">
-        <segmented-control-button-group v-model="selectedEditorMode" :options="editorModes" />
+        <gl-segmented-control v-model="selectedEditorMode" :options="editorModes" />
       </div>
       <div class="gl-flex gl-flex-col lg:gl-flex-row">
         <section class="gl-w-full">
