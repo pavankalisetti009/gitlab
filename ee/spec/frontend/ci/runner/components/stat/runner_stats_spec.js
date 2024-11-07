@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import RunnerCount from '~/ci/runner/components/stat/runner_count.vue';
 import RunnerStats from '~/ci/runner/components/stat/runner_stats.vue';
 import RunnerUpgradeStatusStats from 'ee_component/ci/runner/components/stat/runner_upgrade_status_stats.vue';
 import RunnerPerformanceStat from 'ee_component/ci/runner/components/stat/runner_performance_stat.vue';
@@ -19,11 +20,13 @@ describe('RunnerStats', () => {
         ...props,
       },
       stubs: {
+        RunnerUpgradeStatusStats,
         RunnerCount: {
-          render() {
-            return this.$scopedSlots.default({
+          ...RunnerCount,
+          data() {
+            return {
               count: 1, // at least one runner exists
-            });
+            };
           },
         },
       },
