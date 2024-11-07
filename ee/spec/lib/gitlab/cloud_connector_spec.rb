@@ -71,4 +71,35 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
       end
     end
   end
+
+  describe '.self_managed_cloud_connected?' do
+    subject(:self_managed_cloud_connected?) { described_class.self_managed_cloud_connected? }
+
+    context 'when on saas' do
+      it 'returns false' do
+        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(true)
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http::test.com')
+
+        expect(self_managed_cloud_connected?).to be(false)
+      end
+    end
+
+    context 'when self-hosted and cloud connected' do
+      it 'returns true' do
+        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(false)
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(nil)
+
+        expect(self_managed_cloud_connected?).to be(true)
+      end
+    end
+
+    context 'when self-hosted and not cloud connected' do
+      it 'returns false' do
+        allow(::Gitlab::CloudConnector).to receive(:gitlab_realm_saas?).and_return(false)
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http::test.com')
+
+        expect(self_managed_cloud_connected?).to be(false)
+      end
+    end
+  end
 end

@@ -8,7 +8,7 @@ module Gitlab
     GITLAB_REALM_SELF_MANAGED = 'self-managed'
 
     def gitlab_realm
-      Gitlab.org_or_com? ? GITLAB_REALM_SAAS : GITLAB_REALM_SELF_MANAGED # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Will be addressed in https://gitlab.com/gitlab-org/gitlab/-/issues/437725
+      gitlab_realm_saas? ? GITLAB_REALM_SAAS : GITLAB_REALM_SELF_MANAGED
     end
 
     def headers(user)
@@ -35,6 +35,14 @@ module Gitlab
       headers(user).merge(
         'X-Gitlab-Duo-Seat-Count' => effective_seat_count.to_s
       )
+    end
+
+    def gitlab_realm_saas?
+      Gitlab.org_or_com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Will be addressed in https://gitlab.com/gitlab-org/gitlab/-/issues/437725
+    end
+
+    def self_managed_cloud_connected?
+      !gitlab_realm_saas? && !::Gitlab::AiGateway.self_hosted_url.present?
     end
   end
 end

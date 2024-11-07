@@ -176,12 +176,15 @@ module Gitlab
 
         def push_feature_flags
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
           Gitlab::AiGateway.push_feature_flag(:ai_build_reader_for_chat, user)
 
-          return unless Feature.enabled?(:ci_editor_tool_removed, user)
+          if Feature.enabled?(:ci_editor_tool_removed, user)
+            Gitlab::AiGateway.push_feature_flag(:ci_editor_tool_removed, user)
+          end
 
-          Gitlab::AiGateway.push_feature_flag(:ci_editor_tool_removed, user)
+          return if ::Gitlab::CloudConnector.self_managed_cloud_connected?
+
+          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
         end
       end
     end
