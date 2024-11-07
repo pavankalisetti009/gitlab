@@ -16,6 +16,7 @@ module Search
       worker_resource_boundary :cpu
       idempotent!
       urgency :throttled
+      loggable_arguments 0
 
       def perform(task = INITIAL_TASK, options = {})
         return false if ::Gitlab::Saas.feature_available?(:advanced_search)
