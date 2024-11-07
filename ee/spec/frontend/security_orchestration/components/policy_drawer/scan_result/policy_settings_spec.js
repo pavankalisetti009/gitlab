@@ -1,11 +1,15 @@
 import { GlSprintf } from '@gitlab/ui';
+import Api from '~/api';
+import { trimText } from 'helpers/text_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import Settings from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_settings.vue';
 import {
   mockApprovalSettingsScanResultObject,
   mockApprovalSettingsPermittedInvalidScanResultObject,
   mockDisabledApprovalSettingsScanResultObject,
-} from '../../../mocks/mock_scan_result_policy_data';
+} from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
+import { TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 describe('Settings', () => {
   let wrapper;
@@ -20,6 +24,10 @@ describe('Settings', () => {
       stubs: { GlSprintf },
     });
   };
+
+  beforeEach(() => {
+    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS));
+  });
 
   it('displays settings', () => {
     factory({ settings: mockApprovalSettingsScanResultObject.approval_settings });
@@ -56,17 +64,52 @@ describe('Settings', () => {
       expect(findGroupBranchExceptions().exists()).toBe(false);
     });
 
-    it('renders when setting has exceptions', () => {
+    it('renders when setting has exceptions', async () => {
       factory({
         settings: {
-          block_group_branch_modification: { enabled: true, exceptions: ['top-level-group'] },
+          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
+        },
+      });
+      await waitForPromises();
+      expect(findHeader().exists()).toBe(true);
+      expect(findGroupBranchExceptions().exists()).toBe(true);
+      expect(trimText(findSettings().at(0).text())).toContain(
+        'Prevent group branch modification exceptions:',
+      );
+      expect(trimText(findSettings().at(0).text())).toContain(TOP_LEVEL_GROUPS[0].full_name);
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
+    });
+
+    it('renders when setting has exceptions and groups are loading', () => {
+      factory({
+        settings: {
+          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
         },
       });
       expect(findHeader().exists()).toBe(true);
       expect(findGroupBranchExceptions().exists()).toBe(true);
-      expect(findSettings().at(0).text()).toMatchInterpolatedText(
-        'Prevent group branch modification exceptions: top-level-group',
+      expect(trimText(findSettings().at(0).text())).toContain(
+        'Prevent group branch modification exceptions:',
       );
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 1');
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
+    });
+
+    it('renders when setting has exceptions and groups have not been retrieved', async () => {
+      jest.spyOn(Api, 'groups').mockRejectedValue();
+      factory({
+        settings: {
+          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
+        },
+      });
+      await waitForPromises();
+      expect(findHeader().exists()).toBe(true);
+      expect(findGroupBranchExceptions().exists()).toBe(true);
+      expect(trimText(findSettings().at(0).text())).toContain(
+        'Prevent group branch modification exceptions:',
+      );
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 1');
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
     });
   });
 });

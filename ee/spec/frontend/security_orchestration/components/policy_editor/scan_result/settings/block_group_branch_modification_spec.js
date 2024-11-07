@@ -8,12 +8,12 @@ import {
   WITHOUT_EXCEPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
+import { TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 jest.mock('~/alert');
 
 describe('BlockGroupBranchModification', () => {
   let wrapper;
-  const TOP_LEVEL_GROUPS_MOCK = [{ id: 1, full_name: 'group-1', full_path: 'Group-1' }];
 
   const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(BlockGroupBranchModification, {
@@ -31,7 +31,7 @@ describe('BlockGroupBranchModification', () => {
   const findExceptionsDropdown = () => wrapper.findByTestId('exceptions-selector');
 
   beforeEach(() => {
-    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS_MOCK));
+    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS));
   });
 
   describe('rendering', () => {
