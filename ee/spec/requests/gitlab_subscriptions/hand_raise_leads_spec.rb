@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_management do
-  describe 'POST /-/subscriptions/hand_raise_leads' do
+  describe 'POST /-/gitlab_subscriptions/hand_raise_leads' do
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group, developers: user) }
     let_it_be(:namespace_id) { namespace.id.to_s }
@@ -26,7 +26,7 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
     end
 
     subject(:post_hand_raise_lead) do
-      post subscriptions_hand_raise_leads_path, params: post_params
+      post gitlab_subscriptions_hand_raise_leads_path, params: post_params
       response
     end
 
@@ -81,6 +81,14 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
         let(:hand_raise_lead_result) { ServiceResponse.error(message: '_fail_') }
 
         it { is_expected.to have_gitlab_http_status(:forbidden) }
+      end
+
+      context 'when POST /-/subscriptions/hand_raise_leads' do
+        it 'completes the requests also' do
+          post subscriptions_hand_raise_leads_url, params: post_params
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
       end
     end
 

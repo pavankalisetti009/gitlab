@@ -183,7 +183,7 @@ describe('HandRaiseLeadModal', () => {
 
       it('primary submits the valid form', () => {
         expect(SubscriptionsApi.sendHandRaiseLead).toHaveBeenCalledWith(
-          '/-/subscriptions/hand_raise_leads',
+          '/-/gitlab_subscriptions/hand_raise_leads',
           {
             namespaceId: 1,
             comment: 'comment',
