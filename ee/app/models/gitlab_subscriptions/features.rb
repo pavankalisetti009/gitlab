@@ -238,6 +238,7 @@ module GitlabSubscriptions
       project_level_analytics_dashboard
       quality_management
       related_epics
+      linked_items_epics
       release_evidence_test_artifacts
       report_approver_rules
       required_ci_templates

@@ -132,6 +132,7 @@ function mountBoardApp(el) {
       canAdminLabel: parseBoolean(wiCanAdminLabel),
       hasIssuableHealthStatusFeature: parseBoolean(el.dataset.healthStatusFeatureAvailable),
       issuesListPath: wiIssuesListPath,
+      hasLinkedItemsEpicsFeature: parseBoolean(el.dataset.hasLinkedItemsEpicsFeature),
     },
     render: (createComponent) => createComponent(BoardApp),
   });
