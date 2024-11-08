@@ -16,9 +16,15 @@ module QA
               element 'save-package-registry-button'
             end
 
+            view 'ee/app/views/admin/application_settings/security_and_compliance.html.haml' do
+              element 'admin-license-compliance-settings'
+            end
+
             def select_gem_checkbox
-              check_element('gem-checkbox', true)
-              click_element('save-package-registry-button')
+              expand_content('admin-license-compliance-settings') do
+                check_element('gem-checkbox', true)
+                click_element('save-package-registry-button')
+              end
             end
           end
         end
