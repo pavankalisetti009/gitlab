@@ -15,7 +15,10 @@ RSpec.describe 'projects/settings/subscriptions/_index.html.haml' do
 
   it 'has a help link' do
     render
-    expect(rendered).to have_css("a[href^='/help'][href$='#trigger-a-pipeline-when-an-upstream-project-is-rebuilt']")
+    expect(rendered).to have_css(
+      "a[href^='/help']" \
+        "[href$='#trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated']"
+    )
   end
 
   context 'when project has upstream subscription' do
