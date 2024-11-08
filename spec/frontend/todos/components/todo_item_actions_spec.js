@@ -16,9 +16,6 @@ describe('TodoItemActions', () => {
         todo: mockTodo,
         ...props,
       },
-      provide: {
-        currentTab: 0,
-      },
     });
   };
 
@@ -43,13 +40,6 @@ describe('TodoItemActions', () => {
   });
 
   describe('tooltipTitle', () => {
-    it('returns empty string when isLoading is true', () => {
-      createComponent();
-      // eslint-disable-next-line no-restricted-syntax
-      wrapper.setData({ isLoading: true });
-      expect(wrapper.vm.tooltipTitle).toBe('');
-    });
-
     it('returns "Mark as done" for pending todo', () => {
       createComponent();
       expect(wrapper.vm.tooltipTitle).toBe('Mark as done');

@@ -21,11 +21,6 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      isLoading: false,
-    };
-  },
   computed: {
     isDone() {
       return this.todo.state === TODO_STATE_DONE;
@@ -34,11 +29,6 @@ export default {
       return this.todo.state === TODO_STATE_PENDING;
     },
     tooltipTitle() {
-      // Setting this to null while loading, combined with keeping the
-      // loading state till the item gets removed, prevents the tooltip
-      // text changing with the item state before the item gets removed.
-      if (this.isLoading) return '';
-
       return this.isDone ? this.$options.i18n.markAsPending : this.$options.i18n.markAsDone;
     },
   },
@@ -71,8 +61,6 @@ export default {
       const showError = this.isDone ? this.showMarkAsPendingError : this.showMarkAsDoneError;
 
       try {
-        this.isLoading = true;
-
         const { data } = await this.$apollo.mutate({
           mutation,
           variables: {
@@ -100,7 +88,6 @@ export default {
         reportToSentry(this.$options.name, failure);
         showError();
       }
-      this.isLoading = false;
     },
   },
   i18n: {
@@ -114,7 +101,6 @@ export default {
   <gl-button
     v-gl-tooltip.hover
     :icon="isDone ? 'redo' : 'check'"
-    :loading="isLoading"
     :aria-label="isDone ? $options.i18n.markAsPending : $options.i18n.markAsDone"
     :title="tooltipTitle"
     @click.prevent="toggleStatus"
