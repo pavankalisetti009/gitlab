@@ -1,22 +1,41 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import FeatureSettingsTable from 'ee/pages/admin/ai/feature_settings/components/feature_settings_table.vue';
+import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
+import { createAlert } from '~/alert';
+import waitForPromises from 'helpers/wait_for_promises';
 import { mockAiFeatureSettings } from './mock_data';
+
+Vue.use(VueApollo);
+
+jest.mock('~/alert');
 
 describe('FeatureSettingsTable', () => {
   let wrapper;
 
-  const createComponent = ({ props } = {}) => {
+  const getAiFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiFeatureSettings: {
+        nodes: mockAiFeatureSettings,
+        errors: [],
+      },
+    },
+  });
+
+  const createComponent = ({
+    apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
+  } = {}) => {
+    const mockApollo = createMockApollo([...apolloHandlers]);
     const newSelfHostedModelPath = '/admin/self_hosted_models/new';
 
     wrapper = mountExtended(FeatureSettingsTable, {
-      propsData: {
-        aiFeatureSettings: mockAiFeatureSettings,
-        ...props,
-      },
       provide: {
         newSelfHostedModelPath,
       },
+      apolloProvider: mockApollo,
     });
   };
 
@@ -41,31 +60,70 @@ describe('FeatureSettingsTable', () => {
 
   describe('when feature settings data is loading', () => {
     it('renders skeleton loaders', () => {
-      createComponent({ props: { loading: true } });
+      createComponent();
 
       expect(findLoaders().exists()).toBe(true);
     });
   });
 
-  describe('AI feature settings', () => {
-    beforeEach(() => {
+  describe('when the API query is successful', () => {
+    beforeEach(async () => {
       createComponent();
+      await waitForPromises();
     });
 
-    describe('Code Suggestions', () => {
-      it('renders Code Suggestions sub-features', () => {
-        const rows = findTableRows().wrappers.map((h) => h.text());
+    it('renders Code Suggestions sub-features', () => {
+      const rows = findTableRows().wrappers.map((h) => h.text());
 
-        expect(rows.filter((r) => r.includes('Code Generation')).length).toEqual(1);
-        expect(rows.filter((r) => r.includes('Code Completion')).length).toEqual(1);
+      expect(rows.filter((r) => r.includes('Code Generation')).length).toEqual(1);
+      expect(rows.filter((r) => r.includes('Code Completion')).length).toEqual(1);
+    });
+
+    it('renders Duo Chat', () => {
+      const rows = findTableRows().wrappers.map((h) => h.text());
+
+      expect(rows.filter((r) => r.includes('Duo Chat')).length).toEqual(1);
+    });
+  });
+
+  describe('when the API request is unsuccessful', () => {
+    describe('due to a general error', () => {
+      it('displays an error message', async () => {
+        createComponent({
+          apolloHandlers: [[getAiFeatureSettingsQuery, jest.fn().mockRejectedValue('ERROR')]],
+        });
+
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the AI feature settings. Please try again.',
+          }),
+        );
       });
     });
 
-    describe('Duo Chat', () => {
-      it('renders Duo Chat', () => {
-        const rows = findTableRows().wrappers.map((h) => h.text());
+    describe('due to a business logic error', () => {
+      const getAiFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiFeatureSettings: {
+            errors: ['An error occured'],
+          },
+        },
+      });
 
-        expect(rows.filter((r) => r.includes('Duo Chat')).length).toEqual(1);
+      it('displays an error message', async () => {
+        createComponent({
+          apolloHandlers: [[getAiFeatureSettingsQuery, getAiFeatureSettingsErrorHandler]],
+        });
+
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the AI feature settings. Please try again.',
+          }),
+        );
       });
     });
   });

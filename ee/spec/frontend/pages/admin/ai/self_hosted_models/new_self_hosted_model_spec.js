@@ -26,7 +26,7 @@ describe('NewSelfHostedModel', () => {
   const findSelfHostedModelForm = () => wrapper.findComponent(SelfHostedModelForm);
 
   it('has a title', () => {
-    expect(wrapper.text()).toMatch('Add self-hosted models');
+    expect(wrapper.text()).toMatch('Add self-hosted model');
   });
 
   it('has a description', () => {

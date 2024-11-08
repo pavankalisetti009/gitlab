@@ -2,8 +2,8 @@
 import { GlTabs, GlTab, GlButton, GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import SelfHostedModelsPage from './self_hosted_models_page.vue';
-import FeatureSettingsPage from './ai_feature_settings_page.vue';
+import SelfHostedModelsTable from '../self_hosted_models/components/self_hosted_models_table.vue';
+import FeatureSettingsTable from '../feature_settings/components/feature_settings_table.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
 
 export default {
@@ -13,8 +13,8 @@ export default {
     GlTab,
     GlButton,
     GlExperimentBadge,
-    SelfHostedModelsPage,
-    FeatureSettingsPage,
+    SelfHostedModelsTable,
+    FeatureSettingsTable,
     PageHeading,
   },
   inject: ['newSelfHostedModelPath'],
@@ -83,10 +83,10 @@ export default {
       </gl-tabs>
     </div>
     <div v-if="isSelfHostedModelsTab">
-      <self-hosted-models-page />
+      <self-hosted-models-table />
     </div>
     <div v-else>
-      <feature-settings-page />
+      <feature-settings-table />
     </div>
   </div>
 </template>
