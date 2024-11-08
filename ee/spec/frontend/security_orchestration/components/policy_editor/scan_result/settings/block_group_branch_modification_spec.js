@@ -8,7 +8,7 @@ import {
   WITHOUT_EXCEPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
-import { TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
+import { createMockGroup, TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 jest.mock('~/alert');
 
@@ -31,6 +31,7 @@ describe('BlockGroupBranchModification', () => {
   const findExceptionsDropdown = () => wrapper.findByTestId('exceptions-selector');
 
   beforeEach(() => {
+    jest.spyOn(Api, 'group').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS[0]));
     jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS));
   });
 
@@ -61,12 +62,47 @@ describe('BlockGroupBranchModification', () => {
       expect(findHasExceptionsDropdown().props('disabled')).toBe(true);
       expect(findExceptionsDropdown().exists()).toBe(false);
     });
+  });
 
-    it('renders when enabled and with exceptions', () => {
-      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+  describe('existing exceptions', () => {
+    const EXCEPTIONS = [{ id: 1 }, { id: 2 }];
+
+    beforeEach(async () => {
+      jest
+        .spyOn(Api, 'group')
+        .mockReturnValueOnce(Promise.resolve(createMockGroup(EXCEPTIONS[0].id)))
+        .mockReturnValueOnce(Promise.resolve(createMockGroup(EXCEPTIONS[1].id)));
+      createComponent({ enabled: true, exceptions: EXCEPTIONS });
+      await waitForPromises();
+    });
+
+    it('retrieves top-level groups', () => {
+      expect(Api.groups).toHaveBeenCalledWith('', { top_level_only: true });
+    });
+
+    it('renders the except selection dropdown', () => {
       expect(findHasExceptionsDropdown().props('selected')).toBe(EXCEPT_GROUPS);
+    });
+
+    it('renders the group selection dropdown', () => {
       expect(findExceptionsDropdown().exists()).toBe(true);
       expect(findExceptionsDropdown().props('selected')).toEqual([1, 2]);
+    });
+
+    it('retrieves exception groups and uses them for the dropdown text', () => {
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-1, Group-2');
+    });
+
+    it('updates the toggle text on selection', async () => {
+      await wrapper.setProps({ enabled: true, exceptions: [...EXCEPTIONS, { id: 3 }] });
+      await waitForPromises();
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-1, Group-2 +1 more');
+    });
+
+    it('updates the toggle text on deselection', async () => {
+      await wrapper.setProps({ enabled: true, exceptions: [{ id: 2 }] });
+      await waitForPromises();
+      expect(findExceptionsDropdown().props('toggleText')).toEqual('Group-2');
     });
   });
 
@@ -90,6 +126,12 @@ describe('BlockGroupBranchModification', () => {
       createComponent({ enabled: false });
       await findHasExceptionsDropdown().vm.$emit('select', EXCEPT_GROUPS);
       expect(wrapper.emitted('change')).toEqual(undefined);
+    });
+
+    it('searches for groups', async () => {
+      createComponent({ enabled: true, exceptions: [{ id: 1 }, { id: 2 }] });
+      await findExceptionsDropdown().vm.$emit('search', 'git');
+      expect(Api.groups).toHaveBeenCalledWith('git', { top_level_only: true });
     });
   });
 

@@ -1,3 +1,4 @@
+import Api from '~/api';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -180,3 +181,79 @@ export const EXCEPTION_GROUPS_TEXTS = {
 };
 
 export const EXCEPTION_GROUPS_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_GROUPS_TEXTS);
+
+const FULFILLED_STATUS = 'fulfilled';
+
+/**
+ * Fetches groups by their IDs
+ * @param {string[]} groupIds - Array of group IDs
+ * @returns {Object[]}
+ */
+export const getGroupsById = async (groupIds = []) => {
+  if (!groupIds.length) return [];
+
+  const groupPromises = groupIds.map((id) => Api.group(id));
+  const groups = await Promise.allSettled(groupPromises);
+  return groups.filter(({ status }) => status === FULFILLED_STATUS).map(({ value }) => value);
+};
+
+/**
+ * Transforms a group into a standardized group object
+ * @param {Object} group - Group to transform
+ * @returns {Object}
+ */
+export const createGroupObject = (group) => ({
+  ...group,
+  text: group.full_name,
+  value: group.id,
+});
+
+/**
+ * Fetches and transforms existing groups
+ * @param {string[]} ids - Array of group IDs
+ * @returns {Object[]}
+ */
+export const fetchExistingGroups = async (ids = []) => {
+  const existingGroups = await getGroupsById(ids);
+  return existingGroups.map(createGroupObject);
+};
+
+/**
+ * Organizes groups into existing and to-be-retrieved groups
+ * @param {string[]} groupIds - Array of group IDs
+ * @param {Object[]} selectedGroups - Currently selected groups
+ * @param {Object[]} availableGroups - Available groups to choose from
+ * @returns {Object} Object containing existing groups and IDs to retrieve
+ */
+export const organizeGroups = ({ ids = [], availableGroups = [] }) =>
+  ids.reduce(
+    (acc, selectedId) => {
+      const existingGroup = availableGroups.find(({ id }) => id === selectedId);
+
+      if (existingGroup) {
+        acc.existingGroups.push(existingGroup);
+      } else {
+        acc.groupsToRetrieve.push(selectedId);
+      }
+
+      return acc;
+    },
+    { existingGroups: [], groupsToRetrieve: [] },
+  );
+
+/**
+ * Updates the selected groups by fetching missing groups
+ * @param {string[]} groupIds - Array of group IDs
+ * @param {Object[]} selectedGroups - Currently selected groups
+ * @param {Object[]} availableGroups - Available groups to choose from
+ * @returns {Object[]}
+ */
+export const updateSelectedGroups = async ({ ids = [], availableGroups = [] }) => {
+  const organized = organizeGroups({ ids, availableGroups });
+
+  const retrievedGroups = organized.groupsToRetrieve.length
+    ? await fetchExistingGroups(organized.groupsToRetrieve)
+    : [];
+
+  return [...organized.existingGroups, ...retrievedGroups];
+};
