@@ -1,5 +1,6 @@
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_USER } from '~/graphql_shared/constants';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { defaultClient } from 'ee/vue_shared/security_configuration/graphql/provider';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from './components/constants';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from './constants';
@@ -7,6 +8,7 @@ import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from './constants';
 /**
  * Get a property from a policy's typename
  * @param {String} typeName policy's typename from GraphQL
+ * @param {String} field
  * @returns {String|null} policy property if available
  */
 export const getPolicyType = (typeName = '', field = 'value') => {
@@ -21,41 +23,29 @@ export const getPolicyType = (typeName = '', field = 'value') => {
  * @returns {Object} approvers separated by type
  */
 export const decomposeApprovers = (existingApprovers) => {
-  const GROUP_TYPE_UNIQ_KEY = 'fullName';
+  return existingApprovers.map((approvers) => {
+    const output = {};
 
-  return existingApprovers.reduce((acc, approver) => {
-    if (typeof approver === 'string') {
-      if (!acc[ROLE_TYPE]) {
-        acc[ROLE_TYPE] = [approver];
-        return acc;
-      }
+    output[ROLE_TYPE] = approvers.roles || [];
+    output[USER_TYPE] =
+      approvers.users
+        ?.map((user) => ({
+          ...user,
+          type: USER_TYPE,
+          value: convertToGraphQLId(TYPENAME_USER, user.id),
+        }))
+        .map(convertObjectPropsToCamelCase) || [];
+    output[GROUP_TYPE] =
+      approvers.groups
+        ?.map((group) => ({
+          ...group,
+          type: GROUP_TYPE,
+          value: convertToGraphQLId(TYPENAME_GROUP, group.id),
+        }))
+        .map(convertObjectPropsToCamelCase) || [];
 
-      acc[ROLE_TYPE].push(approver);
-      return acc;
-    }
-
-    const approverKeys = Object.keys(approver);
-
-    let type = USER_TYPE;
-    let value = convertToGraphQLId(TYPENAME_USER, approver.id);
-
-    if (approverKeys.includes(GROUP_TYPE_UNIQ_KEY)) {
-      type = GROUP_TYPE;
-      value = convertToGraphQLId(TYPENAME_GROUP, approver.id);
-    }
-
-    if (acc[type] === undefined) {
-      acc[type] = [];
-    }
-
-    acc[type].push({
-      ...approver,
-      type,
-      value,
-    });
-
-    return acc;
-  }, {});
+    return output;
+  });
 };
 
 /**

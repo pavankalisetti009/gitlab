@@ -39,7 +39,6 @@ describe('Policy Scope for linked groups', () => {
         glFeatures: {
           ...glFeatures,
         },
-        scanResultPolicyApprovers: {},
         assignedPolicyProject: {
           fullPath: 'full-path',
         },

@@ -80,11 +80,6 @@ describe('EditorComponent', () => {
   const defaultProjectPath = 'path/to/project';
   const policyEditorEmptyStateSvgPath = 'path/to/svg';
   const scanPolicyDocumentationPath = 'path/to/docs';
-  const scanResultPolicyApprovers = {
-    user: [{ id: 1, username: 'the.one', state: 'active' }],
-    group: [],
-    role: [],
-  };
 
   const defaultGroups = [
     { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
@@ -118,7 +113,6 @@ describe('EditorComponent', () => {
         namespacePath: defaultProjectPath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
         scanPolicyDocumentationPath,
-        scanResultPolicyApprovers,
         ...provide,
       },
     });
@@ -490,7 +484,6 @@ describe('EditorComponent', () => {
         beforeEach(() => {
           factory({
             provide: {
-              scanResultPolicyApprovers: {},
               actionApprovers: [{ role: ['owner'] }],
             },
           });
@@ -661,7 +654,7 @@ describe('EditorComponent', () => {
           factoryWithExistingPolicy({
             policy,
             provide: {
-              scanResultPolicyApprovers: approver,
+              actionApprovers: [approver],
             },
           });
 

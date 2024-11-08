@@ -35,7 +35,6 @@ describe('Scan result policy rules', () => {
       provide: {
         ...DEFAULT_PROVIDE,
         ...provide,
-        scanResultPolicyApprovers: {},
       },
       stubs: {
         SourceEditor: true,

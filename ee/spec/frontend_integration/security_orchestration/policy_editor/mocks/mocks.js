@@ -9,11 +9,6 @@ export const DEFAULT_PROVIDE = {
   namespacePath: 'path/to/project',
   namespaceType: NAMESPACE_TYPES.PROJECT,
   scanPolicyDocumentationPath: 'path/to/policy-docs',
-  scanResultPolicyApprovers: {
-    user: [{ id: 1, username: 'the.one', state: 'active' }],
-    group: [],
-    role: [],
-  },
   assignedPolicyProject: {},
   createAgentHelpPath: 'path/to/agent-docs',
   globalGroupApproversEnabled: false,

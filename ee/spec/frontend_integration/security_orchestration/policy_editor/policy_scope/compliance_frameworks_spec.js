@@ -52,7 +52,6 @@ describe('ComplianceFrameworks', () => {
         ...DEFAULT_PROVIDE,
         glFeatures,
         ...provide,
-        scanResultPolicyApprovers: {},
       },
       stubs: {
         SourceEditor: true,

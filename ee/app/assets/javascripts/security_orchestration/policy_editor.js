@@ -28,7 +28,6 @@ export default (el, namespaceType) => {
     roleApproverTypes,
     rootNamespacePath,
     scanPolicyDocumentationPath,
-    scanResultApprovers,
     softwareLicenses,
     timezones,
     actionApprovers,
@@ -54,21 +53,10 @@ export default (el, namespaceType) => {
     parsedSoftwareLicenses = [];
   }
 
-  let scanResultPolicyApprovers;
   let parsedActionApprovers;
 
   try {
-    scanResultPolicyApprovers = decomposeApprovers(
-      JSON.parse(scanResultApprovers).map((approver) => {
-        return typeof approver === 'object' ? convertObjectPropsToCamelCase(approver) : approver;
-      }),
-    );
-  } catch {
-    scanResultPolicyApprovers = {};
-  }
-
-  try {
-    parsedActionApprovers = JSON.parse(actionApprovers);
+    parsedActionApprovers = decomposeApprovers(JSON.parse(actionApprovers));
   } catch {
     parsedActionApprovers = [];
   }
@@ -109,7 +97,6 @@ export default (el, namespaceType) => {
       roleApproverTypes: JSON.parse(roleApproverTypes),
       rootNamespacePath,
       scanPolicyDocumentationPath,
-      scanResultPolicyApprovers,
       parsedSoftwareLicenses,
       timezones: parsedTimezones,
       existingPolicy: policy ? { type: policyType, ...JSON.parse(policy) } : undefined,
