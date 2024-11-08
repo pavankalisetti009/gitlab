@@ -64,6 +64,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: true,
         include_all_resources: true,
+        workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets,
         **additional_args_for_create_config_to_apply
       )
 
@@ -143,6 +144,7 @@ module RemoteDevelopment
       expected_config_to_apply = create_config_to_apply(
         workspace: workspace,
         started: false,
+        workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets,
         **additional_args_for_create_config_to_apply
       )
 
@@ -235,6 +237,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: false,
         include_all_resources: true,
+        workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets,
         **additional_args_for_create_config_to_apply
       )
 

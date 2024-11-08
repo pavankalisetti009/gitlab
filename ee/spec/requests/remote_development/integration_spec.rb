@@ -143,6 +143,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     create(:ee_cluster_agent, project: agent_project, created_by_user: agent_admin_user, project_id: agent_project.id)
   end
 
+  let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
+
   # TODO: We should create the workspaces_agent_config via an API call to update the agent config
   #       with the relevant fixture values in its config file to represent a remote_development enabled agent.
   #       And, as we migrate the settings from the agent config file to the settings UI, we should add
@@ -157,7 +159,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       workspaces_per_user_quota: workspaces_per_user_quota,
       workspaces_quota: workspaces_quota,
       default_max_hours_before_termination: default_max_hours_before_termination,
-      max_hours_before_termination_limit: max_hours_before_termination_limit
+      max_hours_before_termination_limit: max_hours_before_termination_limit,
+      image_pull_secrets: image_pull_secrets
     )
   end
 

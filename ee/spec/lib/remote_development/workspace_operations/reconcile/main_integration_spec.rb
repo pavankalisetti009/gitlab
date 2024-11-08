@@ -402,7 +402,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
               started: expected_value_for_started,
               egress_ip_rules: egress_ip_rules,
               max_resources_per_workspace: max_resources_per_workspace,
-              default_resources_per_workspace_container: default_resources_per_workspace_container
+              default_resources_per_workspace_container: default_resources_per_workspace_container,
+              workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
             )
           end
 
@@ -511,7 +512,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
                 started: expected_value_for_started,
                 egress_ip_rules: egress_ip_rules,
                 max_resources_per_workspace: max_resources_per_workspace,
-                default_resources_per_workspace_container: default_resources_per_workspace_container
+                default_resources_per_workspace_container: default_resources_per_workspace_container,
+                workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
               )
             end
 
@@ -591,7 +593,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           include_all_resources: true,
           egress_ip_rules: egress_ip_rules,
           max_resources_per_workspace: max_resources_per_workspace,
-          default_resources_per_workspace_container: default_resources_per_workspace_container
+          default_resources_per_workspace_container: default_resources_per_workspace_container,
+          workspace_image_pull_secrets: unprovisioned_workspace.workspaces_agent_config.image_pull_secrets
         )
       end
 

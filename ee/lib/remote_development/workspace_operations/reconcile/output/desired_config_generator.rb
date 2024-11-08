@@ -13,62 +13,52 @@ module RemoteDevelopment
           # @return [Array<Hash>]
           def self.generate_desired_config(workspace:, include_all_resources:, logger:)
             desired_config = []
+            workspaces_agent_config = workspace.workspaces_agent_config
             # NOTE: update env_secret_name to "#{workspace.name}-environment". This is to ensure naming consistency.
             # Changing it now would require migration from old config version to a new one.
             # Update this when a new desired config generator is created for some other reason.
             env_secret_name = "#{workspace.name}-env-var"
             file_secret_name = "#{workspace.name}-file"
-            env_secret_names = [env_secret_name]
-            file_secret_names = [file_secret_name]
-            replicas = get_workspace_replicas(desired_state: workspace.desired_state)
             domain_template = get_domain_template_annotation(
               name: workspace.name,
-              dns_zone: workspace.workspaces_agent_config.dns_zone
+              dns_zone: workspaces_agent_config.dns_zone
             )
             inventory_name = "#{workspace.name}-workspace-inventory"
 
-            workspaces_agent_config = workspace.workspaces_agent_config
-            max_resources_per_workspace =
-              workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
-            default_resources_per_workspace_container =
-              workspaces_agent_config.default_resources_per_workspace_container.deep_symbolize_keys
-            allow_privilege_escalation = workspaces_agent_config.allow_privilege_escalation
-            use_kubernetes_user_namespaces = workspaces_agent_config.use_kubernetes_user_namespaces
-            default_runtime_class = workspaces_agent_config.default_runtime_class
-            agent_annotations = workspaces_agent_config.annotations
-            agent_labels = workspaces_agent_config.labels
-
             labels, annotations = get_merged_labels_and_annotations(
-              agent_labels: agent_labels,
-              agent_annotations: agent_annotations,
+              agent_labels: workspaces_agent_config.labels,
+              agent_annotations: workspaces_agent_config.annotations,
               agent_id: workspace.agent.id,
               domain_template: domain_template,
               owning_inventory: inventory_name,
               workspace_id: workspace.id,
-              max_resources_per_workspace: max_resources_per_workspace
+              max_resources_per_workspace: workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
             )
 
             k8s_inventory_for_workspace_core = get_inventory_config_map(
               name: inventory_name,
               namespace: workspace.namespace,
-              agent_labels: agent_labels,
-              agent_annotations: agent_annotations,
+              agent_labels: workspaces_agent_config.labels,
+              agent_annotations: workspaces_agent_config.annotations,
               agent_id: workspace.agent.id
             )
 
             k8s_resources_params = {
               name: workspace.name,
               namespace: workspace.namespace,
-              replicas: replicas,
+              replicas: get_workspace_replicas(desired_state: workspace.desired_state),
               domain_template: domain_template,
               labels: labels,
               annotations: annotations,
-              env_secret_names: env_secret_names,
-              file_secret_names: file_secret_names,
-              default_resources_per_workspace_container: default_resources_per_workspace_container,
-              allow_privilege_escalation: allow_privilege_escalation,
-              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-              default_runtime_class: default_runtime_class
+              env_secret_names: [env_secret_name],
+              file_secret_names: [file_secret_name],
+              service_account_name: workspace.name,
+              default_resources_per_workspace_container: workspaces_agent_config
+                .default_resources_per_workspace_container
+                .deep_symbolize_keys,
+              allow_privilege_escalation: workspaces_agent_config.allow_privilege_escalation,
+              use_kubernetes_user_namespaces: workspaces_agent_config.use_kubernetes_user_namespaces,
+              default_runtime_class: workspaces_agent_config.default_runtime_class
             }
 
             # TODO: https://gitlab.com/groups/gitlab-org/-/epics/12225 - handle error
@@ -85,43 +75,81 @@ module RemoteDevelopment
 
             desired_config.append(k8s_inventory_for_workspace_core, *k8s_resources_for_workspace_core)
 
+            workspace_service_account_definition = get_image_pull_secrets_service_account(
+              name: workspace.name,
+              namespace: workspace.namespace,
+              image_pull_secrets: workspaces_agent_config.image_pull_secrets,
+              labels: labels,
+              annotations: annotations
+            )
+            desired_config.append(workspace_service_account_definition)
+
             if workspaces_agent_config.network_policy_enabled
-              gitlab_workspaces_proxy_namespace = workspaces_agent_config.gitlab_workspaces_proxy_namespace
               network_policy = get_network_policy(
                 name: workspace.name,
                 namespace: workspace.namespace,
                 labels: labels,
                 annotations: annotations,
-                gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+                gitlab_workspaces_proxy_namespace: workspaces_agent_config.gitlab_workspaces_proxy_namespace,
                 egress_ip_rules: workspaces_agent_config.network_policy_egress
               )
               desired_config.append(network_policy)
             end
 
-            if include_all_resources
-              unless max_resources_per_workspace.blank?
-                k8s_resource_quota = get_resource_quota(
-                  name: workspace.name,
-                  namespace: workspace.namespace,
-                  labels: labels,
-                  annotations: annotations,
-                  max_resources_per_workspace: max_resources_per_workspace
-                )
-                desired_config.append(k8s_resource_quota)
-              end
+            return desired_config unless include_all_resources
 
-              k8s_resources_for_secrets = get_k8s_resources_for_secrets(
-                workspace: workspace,
-                agent_labels: agent_labels,
-                agent_annotations: agent_annotations,
-                env_secret_name: env_secret_name,
-                file_secret_name: file_secret_name,
+            desired_config + get_extra_k8s_resources(
+              workspace: workspace,
+              labels: labels,
+              annotations: annotations,
+              env_secret_name: env_secret_name,
+              file_secret_name: file_secret_name
+            )
+          end
+
+          # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
+          # @param [Hash<String, String>] labels
+          # @param [Hash<String, String>] annotations
+          # @param [String] env_secret_name
+          # @param [String] file_secret_name
+          # @param [Hash] desired_config
+          # @return [Array<(Hash)>]
+          def self.get_extra_k8s_resources(
+            workspace:,
+            labels:,
+            annotations:,
+            env_secret_name:,
+            file_secret_name:
+          )
+
+            workspaces_agent_config = workspace.workspaces_agent_config
+            agent_annotations = workspaces_agent_config.annotations
+            agent_labels = workspaces_agent_config.labels
+            max_resources_per_workspace = workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
+            extra_config = []
+
+            unless max_resources_per_workspace.blank?
+              k8s_resource_quota = get_resource_quota(
+                name: workspace.name,
+                namespace: workspace.namespace,
+                labels: labels,
+                annotations: annotations,
                 max_resources_per_workspace: max_resources_per_workspace
               )
-              desired_config.append(*k8s_resources_for_secrets)
+              extra_config.append(k8s_resource_quota)
             end
 
-            desired_config
+            k8s_resources_for_secrets = get_k8s_resources_for_secrets(
+              workspace: workspace,
+              agent_labels: agent_labels,
+              agent_annotations: agent_annotations,
+              env_secret_name: env_secret_name,
+              file_secret_name: file_secret_name,
+              max_resources_per_workspace: max_resources_per_workspace
+            )
+            extra_config.append(*k8s_resources_for_secrets)
+
+            extra_config
           end
 
           # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
@@ -384,6 +412,28 @@ module RemoteDevelopment
                   "requests.memory": max_resources_per_workspace.dig(:requests, :memory)
                 }
               }
+            }.deep_stringify_keys.to_h
+          end
+
+          # @param [String] name
+          # @param [String] namespace
+          # @param [Hash] labels
+          # @param [Hash] annotations
+          # @param [Array] image_pull_secrets
+          # @return [Hash]
+          def self.get_image_pull_secrets_service_account(name:, namespace:, labels:, annotations:, image_pull_secrets:)
+            image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.fetch('name') } }
+            {
+              apiVersion: 'v1',
+              kind: 'ServiceAccount',
+              metadata: {
+                name: name,
+                namespace: namespace,
+                annotations: annotations,
+                labels: labels
+              },
+              automountServiceAccountToken: false,
+              imagePullSecrets: image_pull_secrets_names
             }.deep_stringify_keys.to_h
           end
         end

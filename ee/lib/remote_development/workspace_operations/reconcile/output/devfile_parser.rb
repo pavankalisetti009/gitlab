@@ -23,6 +23,7 @@ module RemoteDevelopment
               annotations: Hash => annotations,
               env_secret_names: Array => env_secret_names,
               file_secret_names: Array => file_secret_names,
+              service_account_name: String => service_account_name,
               default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
               allow_privilege_escalation: TrueClass | FalseClass => allow_privilege_escalation,
               use_kubernetes_user_namespaces: TrueClass | FalseClass => use_kubernetes_user_namespaces,
@@ -69,10 +70,15 @@ module RemoteDevelopment
               default_resources_per_workspace_container:
                 default_resources_per_workspace_container.deep_stringify_keys.to_h
             )
-            inject_secrets(
+            workspace_resources = inject_secrets(
               workspace_resources: workspace_resources,
               env_secret_names: env_secret_names,
               file_secret_names: file_secret_names
+            )
+
+            set_service_account(
+              workspace_resources: workspace_resources,
+              service_account_name: service_account_name
             )
           end
 
@@ -221,6 +227,18 @@ module RemoteDevelopment
                 container.fetch('volumeMounts').concat(volume_mounts) unless file_secret_names.empty?
                 container['envFrom'] = env_from unless env_secret_names.empty?
               end
+            end
+            workspace_resources
+          end
+
+          # @param [Array<Hash>] workspace_resources
+          # @param [String] service_account_name
+          # @return [Array<Hash>]
+          def self.set_service_account(workspace_resources:, service_account_name:)
+            workspace_resources.each do |workspace_resource|
+              next unless workspace_resource.fetch('kind') == 'Deployment'
+
+              workspace_resource['spec']['template']['spec']['serviceAccountName'] = service_account_name
             end
             workspace_resources
           end
