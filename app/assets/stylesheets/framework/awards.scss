@@ -331,15 +331,6 @@
   }
 }
 
-.award-list .gl-button:focus {
-  @include gl-focus(
-    $outline: true,
-    $outline-offset: -2px,
-    $important: true
-  );
-  box-shadow: none !important;
-}
-
 .design-note.note-form .emoji-picker .gl-new-dropdown-panel {
   left: 0 !important;
 }
