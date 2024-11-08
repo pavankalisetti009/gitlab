@@ -12,6 +12,10 @@ module Search
       pause_control :deprecated
       urgency :low
 
+      concurrency_limit -> {
+        2_000 if Feature.enabled?(:zoekt_increased_concurrency_indexing_task_worker, Feature.current_request)
+      }
+
       def perform(project_id, task_type, options = {})
         return false unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
         return false unless ::License.feature_available?(:zoekt_code_search)
