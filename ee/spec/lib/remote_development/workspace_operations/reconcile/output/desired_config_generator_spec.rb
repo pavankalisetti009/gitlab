@@ -8,7 +8,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
   describe '#generate_desired_config' do
     let(:logger) { instance_double(Logger) }
     let(:user) { create(:user) }
-    let(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
+    let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
     let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
     let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     let(:started) { true }
@@ -16,19 +16,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-    let(:egress_ip_rules) { workspace.workspaces_agent_config.network_policy_egress }
-    let(:max_resources_per_workspace) { workspace.workspaces_agent_config.max_resources_per_workspace }
-    let(:default_resources_per_workspace_container) do
-      workspace.workspaces_agent_config.default_resources_per_workspace_container
+    let(:max_resources_per_workspace) { {} }
+    let(:default_resources_per_workspace_container) { {} }
+    let(:image_pull_secrets) { [] }
+    let(:workspaces_agent_config) do
+      config = create(
+        :workspaces_agent_config,
+        agent: agent,
+        image_pull_secrets: image_pull_secrets,
+        default_resources_per_workspace_container: default_resources_per_workspace_container,
+        max_resources_per_workspace: max_resources_per_workspace,
+        network_policy_enabled: network_policy_enabled
+      )
+      agent.reload
+      config
     end
 
-    let(:allow_privilege_escalation) { agent.remote_development_agent_config.allow_privilege_escalation }
-    let(:use_kubernetes_user_namespaces) { agent.remote_development_agent_config.use_kubernetes_user_namespaces }
-    let(:default_runtime_class) { agent.remote_development_agent_config.default_runtime_class }
-    let(:agent_labels) { agent.remote_development_agent_config.labels }
-    let(:agent_annotations) { agent.remote_development_agent_config.annotations }
-
     let(:workspace) do
+      workspaces_agent_config
       create(
         :workspace,
         agent: agent,
@@ -43,38 +48,34 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         create_config_to_apply(
           workspace: workspace,
           started: started,
-          include_network_policy: network_policy_enabled,
+          include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
           include_all_resources: include_all_resources,
-          egress_ip_rules: egress_ip_rules,
+          egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress,
           max_resources_per_workspace: max_resources_per_workspace,
           default_resources_per_workspace_container: default_resources_per_workspace_container,
-          allow_privilege_escalation: allow_privilege_escalation,
-          use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-          default_runtime_class: default_runtime_class,
-          agent_labels: agent_labels,
-          agent_annotations: agent_annotations
+          allow_privilege_escalation: workspace.workspaces_agent_config.allow_privilege_escalation,
+          use_kubernetes_user_namespaces: workspace.workspaces_agent_config.use_kubernetes_user_namespaces,
+          default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
+          agent_labels: workspace.workspaces_agent_config.labels,
+          agent_annotations: workspace.workspaces_agent_config.annotations,
+          workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
         )
       )
     end
 
-    subject(:desired_config_generator) do
-      described_class
-    end
-
-    before do
-      allow(agent.unversioned_latest_workspaces_agent_config)
-        .to receive(:network_policy_enabled).and_return(network_policy_enabled)
+    subject(:workspace_resources) do
+      described_class.generate_desired_config(
+        workspace: workspace,
+        include_all_resources: include_all_resources,
+        logger: logger
+      )
     end
 
     context 'when desired_state results in started=true' do
-      it 'returns expected config' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
+      it 'returns expected config with the replicas set to one' do
         expect(workspace_resources).to eq(expected_config)
+        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
+        expect(deployment.dig('spec', 'replicas')).to eq(1)
       end
     end
 
@@ -82,14 +83,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
       let(:started) { false }
 
-      it 'returns expected config' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
+      it 'returns expected config with the replicas set to zero' do
         expect(workspace_resources).to eq(expected_config)
+        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
+        expect(deployment.dig('spec', 'replicas')).to eq(0)
       end
     end
 
@@ -97,70 +94,54 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       let(:network_policy_enabled) { false }
 
       it 'returns expected config without network policy' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
         expect(workspace_resources).to eq(expected_config)
+        network_policy_resource = workspace_resources.select { |resource| resource.fetch('kind') == 'NetworkPolicy' }
+        expect(network_policy_resource).to be_empty
       end
     end
 
     context 'when default_resources_per_workspace_container is not empty' do
       let(:default_resources_per_workspace_container) do
-        { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
-      end
-
-      before do
-        allow(agent.unversioned_latest_workspaces_agent_config).to receive(:default_resources_per_workspace_container) {
-          default_resources_per_workspace_container
-        }
+        { limits: { cpu: '1.5', memory: '786Mi' }, requests: { cpu: '0.6', memory: '512M' } }
       end
 
       it 'returns expected config with defaults for the container resources set' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
         expect(workspace_resources).to eq(expected_config)
+        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
+        resources_per_workspace_container = deployment.dig('spec', 'template', 'spec',
+          'containers').map do |container|
+          container.fetch('resources')
+        end
+        resources = default_resources_per_workspace_container.deep_stringify_keys
+        expect(resources_per_workspace_container).to all(eq resources)
+      end
+    end
+
+    context 'when there are image-pull-secrets' do
+      let(:image_pull_secrets) { [{ 'name' => 'secret-name', 'namespace' => 'secret-namespace' }] }
+      let(:image_pull_secrets_names) do
+        image_pull_secrets.map { |secret| { 'name' => secret.fetch('name') } }
+      end
+
+      it 'returns expected config with a service account resource configured' do
+        expect(workspace_resources).to eq(expected_config)
+        service_account_resource = workspace_resources.find { |resource| resource.fetch('kind') == 'ServiceAccount' }
+        expect(service_account_resource.fetch('imagePullSecrets')).to eq(image_pull_secrets_names)
       end
     end
 
     context 'when include_all_resources is true' do
       let(:include_all_resources) { true }
 
-      it 'returns expected config' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
-        expect(workspace_resources).to eq(expected_config)
-      end
-
       context 'when max_resources_per_workspace is not empty' do
         let(:max_resources_per_workspace) do
-          { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
+          { limits: { cpu: '1.5', memory: '786Mi' }, requests: { cpu: '0.6', memory: '512Mi' } }
         end
 
-        before do
-          allow(agent.unversioned_latest_workspaces_agent_config).to receive(:max_resources_per_workspace) {
-            max_resources_per_workspace
-          }
-        end
-
-        it 'returns expected config with resource quota' do
-          workspace_resources = desired_config_generator.generate_desired_config(
-            workspace: workspace,
-            include_all_resources: include_all_resources,
-            logger: logger
-          )
-
+        it 'returns expected config with resource quota set' do
           expect(workspace_resources).to eq(expected_config)
+          resource_quota = workspace_resources.find { |resource| resource.fetch('kind') == 'ResourceQuota' }
+          expect(resource_quota).not_to be_nil
         end
       end
     end
@@ -173,12 +154,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       end
 
       it 'returns an empty array' do
-        workspace_resources = desired_config_generator.generate_desired_config(
-          workspace: workspace,
-          include_all_resources: include_all_resources,
-          logger: logger
-        )
-
         expect(workspace_resources).to eq([])
       end
     end

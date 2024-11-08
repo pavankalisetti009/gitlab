@@ -345,7 +345,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
     agent_labels: {},
     agent_annotations: {},
     project_name: "test-project",
-    namespace_path: "test-group"
+    namespace_path: "test-group",
+    workspace_image_pull_secrets: [],
+    core_resources_only: false
   )
     desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
     spec_replicas = started == true ? 1 : 0
@@ -390,7 +392,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       default_resources_per_workspace_container: default_resources_per_workspace_container,
       allow_privilege_escalation: allow_privilege_escalation,
       use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-      default_runtime_class: default_runtime_class
+      default_runtime_class: default_runtime_class,
+      desired_config_generator_version: desired_config_generator_version
     )
 
     workspace_service = workspace_service(
@@ -450,16 +453,31 @@ RSpec.shared_context 'with remote development shared fixtures' do
       max_resources_per_workspace: max_resources_per_workspace
     )
 
+    workspace_service_account = workspace_service_account(
+      name: workspace.name,
+      namespace: workspace.namespace,
+      image_pull_secrets: workspace_image_pull_secrets,
+      labels: labels,
+      annotations: annotations
+    )
+
     resources = []
     resources << workspace_inventory if include_inventory
     resources << workspace_deployment
     resources << workspace_service
     resources << workspace_pvc
-    resources << workspace_network_policy if include_network_policy
-    resources << workspace_resource_quota if include_all_resources && !max_resources_per_workspace.blank?
-    resources << workspace_secrets_inventory if include_all_resources && include_inventory
-    resources << workspace_secret_environment if include_all_resources
-    resources << workspace_secret_file if include_all_resources
+
+    unless core_resources_only
+      resources << workspace_service_account
+      resources << workspace_network_policy if include_network_policy
+
+      if include_all_resources
+        resources << workspace_resource_quota unless max_resources_per_workspace.blank?
+        resources << workspace_secrets_inventory if include_inventory
+        resources << workspace_secret_environment
+        resources << workspace_secret_file
+      end
+    end
 
     resources.map do |resource|
       yaml = YAML.dump(Gitlab::Utils.deep_sort_hash(resource).deep_stringify_keys)
@@ -513,6 +531,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       labels: labels,
       annotations: annotations,
       spec_replicas: spec_replicas,
+      desired_config_generator_version: desired_config_generator_version,
       default_resources_per_workspace_container: {},
       allow_privilege_escalation: false,
       use_kubernetes_user_namespaces: false,
@@ -621,7 +640,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     default_resources_per_workspace_container:,
     allow_privilege_escalation:,
     use_kubernetes_user_namespaces:,
-    default_runtime_class:
+    default_runtime_class:,
+    desired_config_generator_version:
   )
     variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::FileMounts::VARIABLES_FILE_DIR
     container_security_context = {
@@ -903,6 +923,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 ]
               }
             ],
+            serviceAccountName: workspace_name.to_s,
             volumes: [
               {
                 name: "gl-workspace-data",
@@ -938,6 +959,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     deployment[:spec][:template][:spec].delete(:runtimeClassName) if default_runtime_class.empty?
     deployment[:spec][:template][:spec].delete(:hostUsers) unless use_kubernetes_user_namespaces
+
+    if desired_config_generator_version ==
+        RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_2
+      deployment[:spec][:template][:spec].delete(:serviceAccountName)
+    end
 
     deployment
   end
@@ -1096,6 +1122,29 @@ RSpec.shared_context 'with remote development shared fixtures' do
           "requests.memory": max_resources_per_workspace.dig(:requests, :memory)
         }
       }
+    }
+  end
+
+  def workspace_service_account(
+    name:,
+    namespace:,
+    image_pull_secrets:,
+    labels:,
+    annotations:
+  )
+
+    image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.fetch('name') } }
+    {
+      kind: 'ServiceAccount',
+      apiVersion: 'v1',
+      metadata: {
+        name: name,
+        namespace: namespace,
+        annotations: annotations,
+        labels: labels
+      },
+      automountServiceAccountToken: false,
+      imagePullSecrets: image_pull_secrets_names
     }
   end
 
