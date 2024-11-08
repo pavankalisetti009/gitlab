@@ -18,7 +18,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         epics: feature_available,
         group_bulk_edit: feature_available,
         quality_management: feature_available,
-        scoped_labels: feature_available
+        scoped_labels: feature_available,
+        linked_items_epics: feature_available
       )
       allow(helper).to receive(:can?).and_call_original
       allow(helper).to receive(:can?).with(current_user, :bulk_admin_epic, project).and_return(feature_available)
@@ -47,7 +48,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             labels_fetch_path: group_labels_path(
               project, format: :json, only_group_labels: true, include_ancestor_groups: true
             ),
-            epics_list_path: group_epics_path(project)
+            epics_list_path: group_epics_path(project),
+            has_linked_items_epics_feature: "true"
           })
       end
     end
@@ -66,7 +68,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_epics_feature: "false",
             has_scoped_labels_feature: "false",
             has_quality_management_feature: "false",
-            can_bulk_edit_epics: "false"
+            can_bulk_edit_epics: "false",
+            has_linked_items_epics_feature: "false"
           }
         )
       end
@@ -110,7 +113,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         quality_management: feature_available,
         scoped_labels: feature_available,
         subepics: feature_available,
-        iterations: feature_available
+        iterations: feature_available,
+        linked_items_epics: feature_available
       )
     end
 
@@ -131,7 +135,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_subepics_feature: "true",
             has_iterations_feature: "true",
             labels_fetch_path: group_labels_path(
-              group, format: :json, only_group_labels: true, include_ancestor_groups: true)
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
+            has_linked_items_epics_feature: "true"
           }
         )
       end
@@ -154,7 +159,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_subepics_feature: "false",
             has_iterations_feature: "false",
             labels_fetch_path: group_labels_path(
-              group, format: :json, only_group_labels: true, include_ancestor_groups: true)
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
+            has_linked_items_epics_feature: "false"
           }
         )
       end

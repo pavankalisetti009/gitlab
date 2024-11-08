@@ -19,7 +19,8 @@ module EE
         group_issues_path: issues_group_path(resource_parent),
         labels_fetch_path: group_labels_path(
           resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true),
-        epics_list_path: group_epics_path(resource_parent)
+        epics_list_path: group_epics_path(resource_parent),
+        has_linked_items_epics_feature: resource_parent.licensed_feature_available?(:linked_items_epics).to_s
       )
     end
 
@@ -46,7 +47,8 @@ module EE
         has_subepics_feature: group.licensed_feature_available?(:subepics).to_s,
         has_iterations_feature: group.licensed_feature_available?(:iterations).to_s,
         labels_fetch_path: group_labels_path(
-          group, format: :json, only_group_labels: true, include_ancestor_groups: true)
+          group, format: :json, only_group_labels: true, include_ancestor_groups: true),
+        has_linked_items_epics_feature: group.licensed_feature_available?(:linked_items_epics).to_s
       )
     end
   end
