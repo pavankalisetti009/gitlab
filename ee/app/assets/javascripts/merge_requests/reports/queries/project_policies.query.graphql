@@ -1,0 +1,11 @@
+query getProjectPolicies($projectPath: ID!) {
+  project(fullPath: $projectPath) {
+    id
+    approvalPolicies {
+      nodes {
+        enabled
+        name
+      }
+    }
+  }
+}

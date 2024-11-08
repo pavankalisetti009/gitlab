@@ -2,7 +2,6 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import { n__, __, sprintf } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import StatusIcon from '~/vue_merge_request_widget/components/widget/status_icon.vue';
 
@@ -10,7 +9,6 @@ export default {
   components: {
     GlButton,
     GlSprintf,
-    CiIcon,
     StatusIcon,
   },
   props: {
@@ -31,10 +29,9 @@ export default {
   },
   computed: {
     status() {
-      if (this.loading) return { icon: 'status_running' };
-      if (!this.hasFindings) return { icon: 'status_success' };
+      if (!this.hasFindings) return 'success';
 
-      return { icon: 'status_failed' };
+      return 'failed';
     },
     headingText() {
       let message = n__(
@@ -72,10 +69,13 @@ export default {
   },
   methods: {
     findingSeverity(finding) {
-      return capitalizeFirstCharacter(finding.severity);
+      return capitalizeFirstCharacter(finding.severity?.toLowerCase());
     },
     findingIcon(finding) {
-      return EXTENSION_ICONS[`severity${this.findingSeverity(finding)}`];
+      return (
+        EXTENSION_ICONS[`severity${this.findingSeverity(finding)}`] ||
+        EXTENSION_ICONS.severityCritical
+      );
     },
   },
 };
@@ -86,7 +86,7 @@ export default {
     <div
       class="gl-col-span-3 -gl-mx-4 gl-grid gl-grid-cols-subgrid gl-gap-4 gl-rounded-base gl-px-4 gl-py-3"
     >
-      <div><ci-icon :status="status" :use-link="false" /></div>
+      <div><status-icon :icon-name="status" /></div>
       <div>
         <strong class="gl-leading-[24px]" data-testid="security-item-heading">{{
           headingText
@@ -97,12 +97,15 @@ export default {
         <gl-button size="small">{{ __('Details') }}</gl-button>
       </div>
     </div>
-    <div class="gl-col-span-3 gl-grid gl-grid-cols-subgrid gl-gap-4">
-      <ul v-if="!loading" class="gl-col-start-2 gl-mb-0 gl-mt-2 gl-list-none gl-p-0">
+    <div
+      v-if="!loading && findings.length"
+      class="gl-col-span-3 gl-grid gl-grid-cols-subgrid gl-gap-4"
+    >
+      <ul class="gl-col-start-2 gl-mb-0 gl-mt-2 gl-list-none gl-p-0">
         <li
           v-for="(finding, index) in findings"
           :key="index"
-          :class="{ 'gl-mb-3': index !== findings.length - 1 }"
+          class="gl-mb-3"
           data-testid="security-item-finding"
         >
           <gl-sprintf :message="__('%{icon} %{severity} - %{name}')">

@@ -1,4 +1,5 @@
 import IndexComponent from './pages/index.vue';
+import BlockersPage from './pages/blockers_page.vue';
 import {
   BLOCKERS_ROUTE,
   CODE_QUALITY_ROUTE,
@@ -10,7 +11,7 @@ export default [
   {
     path: '/',
     name: BLOCKERS_ROUTE,
-    component: IndexComponent,
+    component: BlockersPage,
   },
   {
     path: '/?type=code-quality',

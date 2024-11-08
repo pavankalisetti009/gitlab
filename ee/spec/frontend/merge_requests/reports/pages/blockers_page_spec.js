@@ -1,0 +1,127 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlLoadingIcon } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import BlockersPage from 'ee/merge_requests/reports/pages/blockers_page.vue';
+import SecurityListItem from 'ee/merge_requests/reports/components/security_list_item.vue';
+import projectPoliciesQuery from 'ee/merge_requests/reports/queries/project_policies.query.graphql';
+import policyViolationsQuery from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
+
+Vue.use(VueApollo);
+
+describe('Merge request reports blockers page component', () => {
+  let wrapper;
+
+  const findSecurityListItems = () => wrapper.findAllComponents(SecurityListItem);
+
+  const createComponent = ({ policyViolations = null, approvalPolicies = [] } = {}) => {
+    const apolloProvider = createMockApollo(
+      [
+        [
+          projectPoliciesQuery,
+          jest.fn().mockResolvedValue({
+            data: { project: { id: 1, approvalPolicies: { nodes: approvalPolicies } } },
+          }),
+        ],
+        [
+          policyViolationsQuery,
+          jest.fn().mockResolvedValue({
+            data: { project: { id: 1, mergeRequest: { id: 1, policyViolations } } },
+          }),
+        ],
+      ],
+      {},
+      { typePolicies: { Query: { fields: { project: { merge: false } } } } },
+    );
+    wrapper = shallowMountExtended(BlockersPage, {
+      apolloProvider,
+      provide: { projectPath: 'gitlab-org/gitlab', iid: '2' },
+    });
+  };
+
+  it('shows loading icon', () => {
+    createComponent();
+
+    expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
+  });
+
+  describe('has policies', () => {
+    describe('has no enabled policies', () => {
+      it('does not render any security list items', async () => {
+        createComponent({
+          approvalPolicies: [{ name: 'policy', enabled: false }],
+        });
+
+        await waitForPromises();
+
+        expect(findSecurityListItems()).toHaveLength(0);
+      });
+    });
+
+    describe('has policies', () => {
+      it('renders security list items', async () => {
+        createComponent({
+          approvalPolicies: [{ name: 'policy', enabled: true }],
+        });
+
+        await waitForPromises();
+
+        expect(findSecurityListItems()).toHaveLength(1);
+      });
+
+      it('renders security list items with failed findings for SCAN_FINDING report', async () => {
+        createComponent({
+          approvalPolicies: [{ name: 'policy', enabled: true }],
+          policyViolations: {
+            anyMergeRequest: [],
+            licenseScanning: [],
+            newScanFinding: [
+              {
+                location: 'location',
+                name: 'name',
+                path: 'path',
+                reportType: 'reportType',
+                severity: 'secerity',
+              },
+            ],
+            policies: [{ name: 'policy', reportType: 'SCAN_FINDING' }],
+            previousScanFinding: [],
+          },
+        });
+
+        await waitForPromises();
+
+        expect(findSecurityListItems().at(0).props('findings')).toEqual([
+          {
+            location: 'location',
+            name: 'name',
+            path: 'path',
+            reportType: 'reportType',
+            severity: 'secerity',
+          },
+        ]);
+      });
+
+      it('renders security list items with failed findings for ANY_MERGE_REQUEST report', async () => {
+        createComponent({
+          approvalPolicies: [{ name: 'policy', enabled: true }],
+          policyViolations: {
+            anyMergeRequest: [{ commits: 'commits', name: 'name' }],
+            licenseScanning: [],
+            newScanFinding: [],
+            policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST' }],
+            previousScanFinding: [],
+          },
+        });
+
+        await waitForPromises();
+
+        expect(findSecurityListItems().at(0).props('findings')).toEqual([
+          { commits: 'commits', name: 'name' },
+        ]);
+      });
+    });
+  });
+});
