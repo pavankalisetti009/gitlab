@@ -37,9 +37,11 @@ module Gitlab
     #   Find code owners entries at a particular MergeRequestDiff.
     #   Assumed to be the most recent one if not provided.
     def self.entries_for_merge_request(merge_request, merge_request_diff: nil)
-      return [] unless merge_request.project.feature_available?(:code_owners)
+      project = merge_request.target_project
+      return [] unless project.feature_available?(:code_owners) && merge_request.source_project_id
 
-      loader_for_merge_request(merge_request, merge_request_diff)&.entries || []
+      paths = paths_for_merge_request(merge_request, merge_request_diff)
+      Loader.new(project, merge_request.target_branch_ref, paths).entries
     end
 
     # @param merge_request [MergeRequest]
@@ -64,18 +66,6 @@ module Gitlab
         merge_request.target_branch_ref,
         paths)&.entries || []
     end
-
-    def self.loader_for_merge_request(merge_request, merge_request_diff)
-      return if merge_request.source_project.nil? || merge_request.source_branch.nil?
-      return unless merge_request.target_project.feature_available?(:code_owners)
-
-      Loader.new(
-        merge_request.target_project,
-        merge_request.target_branch_ref,
-        paths_for_merge_request(merge_request, merge_request_diff)
-      )
-    end
-    private_class_method :loader_for_merge_request
 
     def self.paths_for_merge_request(merge_request, merge_request_diff)
       # In general merge_head_diff is preferred as we want to include latest changes from the target branch.
