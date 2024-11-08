@@ -57743,6 +57743,9 @@ msgstr ""
 msgid "Todos|Reason"
 msgstr ""
 
+msgid "Todos|Refresh To-Do List"
+msgstr ""
+
 msgid "Todos|Removed from Merge Train"
 msgstr ""
 
