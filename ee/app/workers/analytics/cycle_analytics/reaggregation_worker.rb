@@ -4,13 +4,10 @@ module Analytics
   module CycleAnalytics
     class ReaggregationWorker
       include ApplicationWorker
+      include LoopWithRuntimeLimit
+      include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- worker does not perform work scoped to a context
 
-      MAX_RUNTIME = 270.seconds.freeze
-
-      # rubocop:disable Scalability/CronWorkerContext
-      # This worker does not perform work scoped to a context
-      include CronjobQueue
-      # rubocop:enable Scalability/CronWorkerContext
+      MAX_RUNTIME = 270.seconds
 
       idempotent!
 
@@ -19,10 +16,8 @@ module Analytics
 
       def perform
         current_time = Time.current
-        runtime_limiter = Gitlab::Metrics::RuntimeLimiter.new(MAX_RUNTIME)
-        over_time = false
 
-        loop do
+        loop_with_runtime_limit(MAX_RUNTIME) do |runtime_limiter|
           batch = Analytics::CycleAnalytics::Aggregation.load_batch(current_time, :last_full_run_at)
           break if batch.empty?
 
@@ -30,13 +25,8 @@ module Analytics
             Analytics::CycleAnalytics::NamespaceAggregatorService.new(aggregation: aggregation, mode: :full,
               runtime_limiter: runtime_limiter).execute
 
-            if runtime_limiter.over_time?
-              over_time = true
-              break
-            end
+            break if runtime_limiter.over_time?
           end
-
-          break if over_time
         end
       end
     end

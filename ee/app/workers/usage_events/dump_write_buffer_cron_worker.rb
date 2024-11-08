@@ -14,11 +14,18 @@ module UsageEvents
     BATCH_SIZE = 1000
 
     def perform
-      status, inserted_rows = loop_with_runtime_limit(MAX_RUNTIME) { process_next_batch }
+      total_inserted_rows = 0
+
+      status = loop_with_runtime_limit(MAX_RUNTIME) do
+        inserted_rows = process_next_batch
+        break :processed if inserted_rows == 0
+
+        total_inserted_rows += inserted_rows
+      end
 
       log_extra_metadata_on_done(:result, {
         status: status,
-        inserted_rows: inserted_rows
+        inserted_rows: total_inserted_rows
       })
     end
 

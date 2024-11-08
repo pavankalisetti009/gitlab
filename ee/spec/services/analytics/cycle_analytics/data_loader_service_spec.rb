@@ -4,12 +4,46 @@ require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :value_stream_management do
   let_it_be_with_refind(:top_level_group) { create(:group, :with_organization) }
+  let_it_be(:other_group) { create(:group, :with_organization) }
+  let_it_be(:project_outside) { create(:project, namespace: other_group) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:user_project) { create(:project, :public, namespace: user.namespace) }
+
+  def actual_issues_data
+    Analytics::CycleAnalytics::IssueStageEvent.all.map do |event|
+      [
+        event.issue_id,
+        event.group_id,
+        event.project_id,
+        event.start_event_timestamp,
+        event.end_event_timestamp,
+        Analytics::CycleAnalytics::IssueStageEvent.states[event.state_id],
+        event.weight,
+        event.sprint_id,
+        event.duration_in_milliseconds
+      ]
+    end
+  end
+
+  def actual_mrs_data
+    Analytics::CycleAnalytics::MergeRequestStageEvent.all.map do |event|
+      [
+        event.merge_request_id,
+        event.group_id,
+        event.project_id,
+        event.start_event_timestamp,
+        event.end_event_timestamp,
+        Analytics::CycleAnalytics::MergeRequestStageEvent.states[event.state_id]
+      ]
+    end
+  end
 
   describe 'validations' do
+    subject(:service_response) { described_class.new(**service_params).execute }
+
+    let(:service_params) { { namespace: namespace, model: model } }
     let(:namespace) { top_level_group }
     let(:model) { Issue }
-
-    subject(:service_response) { described_class.new(namespace: namespace, model: model).execute }
 
     context 'when wrong model is passed' do
       let(:model) { Project }
@@ -28,90 +62,35 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
       end
     end
 
-    context 'when provided namespace is a personal project namespace' do
-      let_it_be(:user2) { create(:user) }
-      let_it_be(:project) { create(:project, :public, namespace: user2.namespace) }
-      let(:namespace) { project.project_namespace }
+    context 'when stages passed as params' do
+      let(:service_params) { super().merge(stages: [stage]) }
 
-      it 'returns a successful response' do
-        expect(service_response).not_to be_error
-        expect(service_response.payload[:reason]).to eq(:model_processed)
-      end
-    end
+      context 'and stage is from different namespace' do
+        let(:stage) { create(:cycle_analytics_stage, namespace: other_group) }
 
-    context 'when provided namespace is a personal namespace' do
-      let_it_be(:user2) { create(:user) }
-      let_it_be(:project) { create(:project, :public, namespace: user2.namespace) }
-
-      let_it_be(:namespace) { user2.namespace }
-
-      let_it_be(:stage1) do
-        create(:cycle_analytics_stage, {
-          namespace: namespace,
-          start_event_identifier: :merge_request_created,
-          end_event_identifier: :merge_request_merged
-        })
+        it 'raises an exception' do
+          expect do
+            service_response
+          end.to raise_error("Incorrect stage detected. Stages must match namespace and model")
+        end
       end
 
-      let_it_be(:current_time) { Time.current }
-      let_it_be(:mr) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 2.days, source_project: project) }
-      let_it_be(:issue) { create(:issue, project: project, created_at: current_time, closed_at: current_time + 5.minutes, weight: 5) }
+      context 'and stage has different model' do
+        let(:stage) { create(:cycle_analytics_stage, namespace: namespace, start_event_identifier: :merge_request_created) }
 
-      before do
-        stub_licensed_features(cycle_analytics_for_projects: true)
-      end
-
-      it 'returns a successful response' do
-        service_response = described_class.new(namespace: namespace, model: MergeRequest).execute
-
-        expect(service_response).not_to be_error
-        expect(service_response.payload[:reason]).to eq(:model_processed)
-        expect(service_response[:context].processed_records).to eq(1)
-      end
-
-      it 'creates some aggregated data in the personal namespace project' do
-        expect do
-          described_class.new(namespace: namespace, model: MergeRequest).execute
-        end.to change { Analytics::CycleAnalytics::MergeRequestStageEvent.count }.by(1)
-      end
-    end
-
-    context 'when specified stage does not match group or model' do
-      it 'raises exception for specified stage belongs to different namespace' do
-        stage = create(:cycle_analytics_stage, {
-          start_event_identifier: :merge_request_created,
-          end_event_identifier: :merge_request_merged
-        })
-
-        expect do
-          described_class.new(namespace: namespace, stages: [stage], model: MergeRequest)
-        end.to raise_error('Incorrect stage detected. Stages must match namespace and model')
-      end
-
-      it 'raises exception for specified stage belongs to different model' do
-        stage = create(:cycle_analytics_stage, {
-          namespace: namespace,
-          start_event_identifier: :issue_created,
-          end_event_identifier: :issue_closed
-        })
-
-        expect do
-          described_class.new(namespace: namespace, stages: [stage], model: MergeRequest)
-        end.to raise_error('Incorrect stage detected. Stages must match namespace and model')
+        it 'raises an exception' do
+          expect do
+            service_response
+          end.to raise_error("Incorrect stage detected. Stages must match namespace and model")
+        end
       end
     end
   end
 
-  describe 'data loading into stage tables' do
-    let_it_be(:sub_group) { create(:group, parent: top_level_group, organization_id: top_level_group.organization_id) }
-    let_it_be(:other_group) { create(:group, :with_organization) }
-    let_it_be(:project1) { create(:project, :repository, namespace: top_level_group) }
-    let_it_be(:project2) { create(:project, :repository, namespace: sub_group) }
-    let_it_be(:project_outside) { create(:project, namespace: other_group) }
-
+  shared_examples 'common data loading into stage tables' do
     let_it_be(:stage1) do
       create(:cycle_analytics_stage, {
-        namespace: sub_group,
+        namespace: loader_namespace,
         start_event_identifier: :merge_request_created,
         end_event_identifier: :merge_request_merged
       })
@@ -119,7 +98,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
     let_it_be(:stage2) do
       create(:cycle_analytics_stage, {
-        namespace: top_level_group,
+        namespace: loader_namespace,
         start_event_identifier: :issue_created,
         end_event_identifier: :issue_closed
       })
@@ -127,7 +106,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
     let_it_be(:stage3) do
       create(:cycle_analytics_stage, {
-        namespace: top_level_group,
+        namespace: loader_namespace,
         start_event_identifier: :issue_created,
         end_event_identifier: :issue_first_assigned_at
       })
@@ -146,7 +125,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     it 'loads nothing for Issue model' do
-      service_response = described_class.new(namespace: top_level_group, model: Issue).execute
+      service_response = described_class.new(namespace: loader_namespace, model: Issue).execute
 
       expect(service_response).to be_success
       expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -155,7 +134,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     it 'loads nothing for MergeRequest model' do
-      service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
+      service_response = described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
       expect(service_response).to be_success
       expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -165,9 +144,9 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
     context 'when MergeRequest data is present' do
       let_it_be(:current_time) { Time.current }
-      let_it_be(:mr1) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 2.days, source_project: project1) }
-      let_it_be(:mr2) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 5.days, source_project: project1) }
-      let_it_be(:mr3) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 10.days, source_project: project2) }
+      let_it_be(:mr1) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 2.days, source_project: project) }
+      let_it_be(:mr2) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 5.days, source_project: project) }
+      let_it_be(:mr3) { create(:merge_request, :unique_branches, :with_merged_metrics, created_at: current_time, updated_at: current_time + 10.days, source_project: project) }
 
       let(:durations) do
         {
@@ -190,27 +169,15 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           ]
         end
 
-        described_class.new(namespace: top_level_group, model: MergeRequest).execute
+        described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
-        events = Analytics::CycleAnalytics::MergeRequestStageEvent.all
-        event_data = events.map do |event|
-          [
-            event.merge_request_id,
-            event.group_id,
-            event.project_id,
-            event.start_event_timestamp,
-            event.end_event_timestamp,
-            Analytics::CycleAnalytics::MergeRequestStageEvent.states[event.state_id]
-          ]
-        end
-
-        expect(event_data.sort).to match_array(expected_data.sort)
+        expect(actual_mrs_data.sort).to match_array(expected_data.sort)
       end
 
       it 'inserts nothing for group outside of the hierarchy' do
         mr = create(:merge_request, :unique_branches, :with_merged_metrics, source_project: project_outside)
 
-        described_class.new(namespace: top_level_group, model: MergeRequest).execute
+        described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
         record_count = Analytics::CycleAnalytics::MergeRequestStageEvent.where(merge_request_id: mr.id).count
         expect(record_count).to eq(0)
@@ -218,7 +185,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
 
       context 'when all records are processed' do
         it 'finishes with model_processed reason' do
-          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:model_processed)
@@ -230,7 +197,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           stub_const('Analytics::CycleAnalytics::DataLoaderService::MAX_UPSERT_COUNT', 1)
           stub_const('Analytics::CycleAnalytics::DataLoaderService::BATCH_LIMIT', 1)
 
-          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:limit_reached)
@@ -248,7 +215,7 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           # 4. when calculating the aggregation duration
           expect(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(first_monotonic_time, first_monotonic_time, second_monotonic_time, second_monotonic_time)
 
-          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: loader_namespace, model: MergeRequest).execute
 
           expect(service_response).to be_success
           expect(service_response.payload[:reason]).to eq(:limit_reached)
@@ -260,12 +227,12 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
           stub_const('Analytics::CycleAnalytics::DataLoaderService::MAX_UPSERT_COUNT', 1)
           stub_const('Analytics::CycleAnalytics::DataLoaderService::BATCH_LIMIT', 1)
 
-          service_response = described_class.new(namespace: top_level_group, model: MergeRequest).execute
+          service_response = described_class.new(namespace: loader_namespace, model: MergeRequest).execute
           ctx = service_response.payload[:context]
 
           expect(Analytics::CycleAnalytics::MergeRequestStageEvent.count).to eq(1)
 
-          described_class.new(namespace: top_level_group, model: MergeRequest, context: ctx).execute
+          described_class.new(namespace: loader_namespace, model: MergeRequest, context: ctx).execute
 
           expect(Analytics::CycleAnalytics::MergeRequestStageEvent.count).to eq(2)
           expect(ctx.processed_records).to eq(2)
@@ -275,13 +242,16 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
     end
 
     context 'when Issue data is present' do
-      let_it_be(:iteration) { create(:iteration, group: top_level_group) }
+      let_it_be(:iteration) do
+        create(:iteration, group: loader_namespace) if loader_namespace.is_a?(Group)
+      end
+
       let_it_be(:creation_time) { Time.current }
-      let_it_be(:issue1) { create(:issue, project: project1, created_at: creation_time, closed_at: creation_time + 5.minutes, weight: 5) }
-      let_it_be(:issue2) { create(:issue, project: project1, created_at: creation_time, closed_at: creation_time + 10.minutes) }
-      let_it_be(:issue3) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time + 15.minutes, weight: 2, iteration: iteration) }
+      let_it_be(:issue1) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time + 5.minutes, weight: 5) }
+      let_it_be(:issue2) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time + 10.minutes) }
+      let_it_be(:issue3) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time + 15.minutes, weight: 2, iteration: iteration) }
       # invalid the creation time would be later than closed_at, this should not be aggregated by stage2
-      let_it_be(:issue4) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time - 5.minutes) }
+      let_it_be(:issue4) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time - 5.minutes) }
 
       let(:durations) do
         {
@@ -325,42 +295,115 @@ RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :
         end
       end
 
-      def actual_data
-        Analytics::CycleAnalytics::IssueStageEvent.all.map do |event|
-          [
-            event.issue_id,
-            event.group_id,
-            event.project_id,
-            event.start_event_timestamp,
-            event.end_event_timestamp,
-            Analytics::CycleAnalytics::IssueStageEvent.states[event.state_id],
-            event.weight,
-            event.sprint_id,
-            event.duration_in_milliseconds
-          ]
-        end
-      end
-
       it 'inserts stage records' do
-        described_class.new(namespace: top_level_group, model: Issue).execute
+        described_class.new(namespace: loader_namespace, model: Issue).execute
 
-        expect(actual_data.sort_by(&:first))
+        expect(actual_issues_data.sort_by(&:first))
           .to match_array((expected_stage2_data + expected_stage3_data).sort_by(&:first))
       end
 
       context 'with stage specified' do
         it 'inserts specified stage records only' do
-          described_class.new(namespace: top_level_group, model: Issue, stages: [stage2]).execute
+          described_class.new(namespace: loader_namespace, model: Issue, stages: [stage2]).execute
 
-          expect(actual_data.sort_by(&:first)).to match_array(expected_stage2_data.sort_by(&:first))
+          expect(actual_issues_data.sort_by(&:first)).to match_array(expected_stage2_data.sort_by(&:first))
         end
       end
     end
   end
 
+  describe 'when stages namespace is a group' do
+    let_it_be(:project) { create(:project, :repository, namespace: top_level_group) }
+    let_it_be(:loader_namespace) { top_level_group }
+
+    it_behaves_like 'common data loading into stage tables'
+
+    context 'with data in subgroups' do
+      let_it_be(:subgroup) { create(:group, parent: top_level_group, organization_id: top_level_group.organization_id) }
+      let_it_be(:project2) { create(:project, :repository, namespace: subgroup) }
+
+      let_it_be(:stage1) do
+        create(:cycle_analytics_stage, {
+          namespace: top_level_group,
+          start_event_identifier: :issue_created,
+          end_event_identifier: :issue_closed
+        })
+      end
+
+      let_it_be(:stage2) do
+        create(:cycle_analytics_stage, {
+          namespace: subgroup,
+          start_event_identifier: :issue_created,
+          end_event_identifier: :issue_closed
+        })
+      end
+
+      let_it_be(:iteration) { create(:iteration, group: subgroup) }
+      let_it_be(:creation_time) { Time.current }
+      let_it_be(:issue1) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time + 5.minutes, weight: 5) }
+      let_it_be(:issue2) { create(:issue, project: project, created_at: creation_time, closed_at: creation_time + 10.minutes) }
+      let_it_be(:issue3) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time + 15.minutes, weight: 2, iteration: iteration) }
+      # invalid the creation time would be later than closed_at, this should not be aggregated by stage2
+      let_it_be(:issue4) { create(:issue, project: project2, created_at: creation_time, closed_at: creation_time - 5.minutes) }
+
+      let(:durations) do
+        {
+          issue1 => 5.minutes.to_i * 1000,
+          issue2 => 10.minutes.to_i * 1000,
+          issue3 => 15.minutes.to_i * 1000
+        }
+      end
+
+      let(:expected_data) do
+        [issue1, issue2, issue3].map do |issue|
+          issue.reload
+          [
+            issue.id,
+            issue.project.parent_id,
+            issue.project_id,
+            issue.created_at,
+            issue.closed_at,
+            issue.state_id,
+            issue.weight,
+            issue.sprint_id,
+            durations.fetch(issue)
+          ]
+        end
+      end
+
+      it 'inserts stage records' do
+        stub_licensed_features(cycle_analytics_for_groups: true)
+
+        described_class.new(namespace: loader_namespace, model: Issue).execute
+
+        expect(actual_issues_data.sort_by(&:first)).to match_array(expected_data.sort_by(&:first))
+      end
+    end
+  end
+
+  describe 'when stages namespace is a project namespace' do
+    let_it_be(:project) { create(:project, :public, namespace: top_level_group) }
+    let_it_be(:loader_namespace) { project.project_namespace }
+
+    it_behaves_like 'common data loading into stage tables'
+  end
+
+  describe 'when stages namespace is a personal namespace' do
+    let_it_be(:project) { user_project }
+    let_it_be(:loader_namespace) { user.namespace }
+
+    it_behaves_like 'common data loading into stage tables'
+  end
+
+  describe 'when stages namespace is a personal project namespace' do
+    let_it_be(:project) { user_project }
+    let_it_be(:loader_namespace) { project.project_namespace }
+
+    it_behaves_like 'common data loading into stage tables'
+  end
+
   describe 'data loading for stages with label based events' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:group) { create(:group, :with_organization, developers: user) }
+    let_it_be(:group) { top_level_group }
     let_it_be(:project) { create(:project, :repository, namespace: group) }
 
     let_it_be(:label1) { create(:group_label, group: group) }

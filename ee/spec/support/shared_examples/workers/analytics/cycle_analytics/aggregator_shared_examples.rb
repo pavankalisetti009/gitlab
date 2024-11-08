@@ -33,13 +33,7 @@ RSpec.shared_examples 'aggregator worker examples' do
     create_list(:cycle_analytics_aggregation, 2)
 
     first_monotonic_time = 100
-
-    default_max_runtime = [
-      Gitlab::Metrics::RuntimeLimiter::DEFAULT_MAX_RUNTIME.to_i,
-      Analytics::CycleAnalytics::ReaggregationWorker::MAX_RUNTIME.to_i
-    ].max
-
-    second_monotonic_time = first_monotonic_time + default_max_runtime + 10
+    second_monotonic_time = first_monotonic_time + described_class.const_get(:MAX_RUNTIME, false).to_i + 10.seconds
 
     expect(Gitlab::Metrics::System).to receive(:monotonic_time).and_return(first_monotonic_time, second_monotonic_time)
     expect(Analytics::CycleAnalytics::NamespaceAggregatorService).to receive(:new).and_call_original.exactly(:once)
