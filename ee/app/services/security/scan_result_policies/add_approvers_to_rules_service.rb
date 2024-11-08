@@ -33,15 +33,15 @@ module Security
         merge_request_rules = rules_by_idx(approval_merge_request_rules(configuration, referenced_policy_indexes))
 
         policy_indexes_for_users.map do |user_id, policy_indexes|
-          project_rule_ids = project_rules.values_at(*policy_indexes).compact
-          merge_request_rule_ids = merge_request_rules.values_at(*policy_indexes).compact
+          project_rule_ids = project_rules.values_at(*policy_indexes).flatten.compact
+          merge_request_rule_ids = merge_request_rules.values_at(*policy_indexes).flatten.compact
 
           build_user_approval_rules_params(user_id, project_rule_ids, merge_request_rule_ids)
         end
       end
 
       def rules_by_idx(approval_rules)
-        approval_rules.to_h { |rule| [rule.orchestration_policy_idx, rule.id] }
+        approval_rules.group_by(&:orchestration_policy_idx).transform_values { |rules| rules.map(&:id) }
       end
 
       def policy_indexes_for_users(user_ids, policies, project_usernames)
