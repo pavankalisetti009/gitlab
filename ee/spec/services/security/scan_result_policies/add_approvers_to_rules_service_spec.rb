@@ -29,6 +29,18 @@ RSpec.describe Security::ScanResultPolicies::AddApproversToRulesService, feature
     ])
   end
 
+  let(:policies_applicable_yaml) do
+    build(:orchestration_policy_yaml, scan_result_policy: [
+      build(:scan_result_policy, name: 'Active policy', actions: [
+        { type: 'require_approval', approvals_required: 1,
+          user_approvers_ids: [user1.id], user_approvers: [user2.username] }
+      ]),
+      build(:scan_result_policy, name: 'Active policy 2', enabled: true, actions: [
+        { type: 'require_approval', approvals_required: 1, user_approvers_ids: [user1.id] }
+      ])
+    ])
+  end
+
   let(:policies_not_applicable_yaml) do
     build(:orchestration_policy_yaml, scan_result_policy: [
       build(:scan_result_policy, name: 'Active policy',
@@ -132,6 +144,35 @@ RSpec.describe Security::ScanResultPolicies::AddApproversToRulesService, feature
           it_behaves_like 'does not add users to the project rule'
         end
 
+        context 'when there are multiple project rules' do
+          let(:policies_yaml) { policies_applicable_yaml }
+
+          let!(:project_rule2) do
+            create(:approval_project_rule,
+              project: project1,
+              security_orchestration_policy_configuration: configuration,
+              orchestration_policy_idx: 0)
+          end
+
+          let!(:project_rule3) do
+            create(:approval_project_rule,
+              project: project1,
+              security_orchestration_policy_configuration: configuration,
+              orchestration_policy_idx: 1)
+          end
+
+          it 'adds users to the project rules' do
+            expect { execute }
+              .to change { project_rule.users.count }.by(2)
+              .and change { project_rule2.users.count }.by(2)
+              .and change { project_rule3.users.count }.by(1)
+
+            expect(project_rule.reload.users).to contain_exactly(user1, user2)
+            expect(project_rule2.reload.users).to contain_exactly(user1, user2)
+            expect(project_rule3.reload.users).to contain_exactly(user1)
+          end
+        end
+
         context 'when policy is not applicable for the project' do
           let!(:project_rule) { project_rule_expected_to_change }
           let(:policies_yaml) { policies_not_applicable_yaml }
@@ -153,6 +194,46 @@ RSpec.describe Security::ScanResultPolicies::AddApproversToRulesService, feature
           end
 
           it_behaves_like 'adds users to the merge request rule'
+        end
+
+        context 'when there are multiple merge requests in the project' do
+          let(:policies_yaml) { policies_applicable_yaml }
+
+          let(:merge_request2) do
+            create(:merge_request, source_project: project1, target_project: project1, source_branch: 'test4')
+          end
+
+          let!(:merge_request_rule2) do
+            create(:approval_merge_request_rule,
+              merge_request: merge_request2,
+              security_orchestration_policy_configuration: configuration,
+              orchestration_policy_idx: 0,
+              approval_project_rule: project_rule_expected_to_change
+            )
+          end
+
+          let(:merge_request3) do
+            create(:merge_request, source_project: project1, target_project: project1, source_branch: 'test5')
+          end
+
+          let!(:merge_request_rule3) do
+            create(:approval_merge_request_rule,
+              merge_request: merge_request3,
+              security_orchestration_policy_configuration: configuration,
+              orchestration_policy_idx: 1
+            )
+          end
+
+          it 'adds users to the merge request rules' do
+            expect { execute }
+              .to change { merge_request_rule.users.count }.by(2)
+              .and change { merge_request_rule2.users.count }.by(2)
+              .and change { merge_request_rule3.users.count }.by(1)
+
+            expect(merge_request_rule.reload.users).to contain_exactly(user1, user2)
+            expect(merge_request_rule2.reload.users).to contain_exactly(user1, user2)
+            expect(merge_request_rule3.reload.users).to contain_exactly(user1)
+          end
         end
 
         context 'when merge request is merged' do
