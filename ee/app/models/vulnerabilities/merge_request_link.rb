@@ -22,7 +22,7 @@ module Vulnerabilities
       })
     end
     scope :with_vulnerability_findings, -> { includes(vulnerability: [:findings]) }
-    scope :with_merge_request, -> { includes(:merge_request) }
+    scope :with_merge_request, -> { preload(:merge_request) }
     scope :by_vulnerability, ->(values) { where(vulnerability_id: values) }
   end
 end
