@@ -1542,9 +1542,6 @@
   rules:
     - <<: *if-merge-request-labels-pipeline-expedite
       when: never
-    - <<: *if-merge-request
-      when: manual
-      allow_failure: true
     - <<: *if-default-refs
       changes: *code-patterns
 
