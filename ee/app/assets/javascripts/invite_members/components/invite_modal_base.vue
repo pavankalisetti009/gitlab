@@ -293,6 +293,8 @@ export default {
         if (!data?.group?.gitlabSubscriptionsPreviewBillableUserChange) {
           // we don't want to block the flow if API response has unexpected data
           this.emitSubmit(args);
+
+          return;
         }
         const billingDetails = data.group.gitlabSubscriptionsPreviewBillableUserChange;
         this.willIncreaseOverage = billingDetails.willIncreaseOverage;
