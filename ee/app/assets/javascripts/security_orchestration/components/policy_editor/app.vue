@@ -1,7 +1,6 @@
 <script>
 import { s__ } from '~/locale';
 import { getParameterByName } from '~/lib/utils/url_utility';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import EditorWrapper from './editor_wrapper.vue';
@@ -13,9 +12,7 @@ export default {
     PolicyTypeSelector,
     PageHeading,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: {
-    namespaceType: { default: '' },
     existingPolicy: { default: null },
   },
   data() {
@@ -25,14 +22,11 @@ export default {
   },
   computed: {
     title() {
-      if (this.existingPolicy) {
-        return (
-          this.$options.i18n.editTitles[this.selectedPolicy?.value] ||
-          this.$options.i18n.editTitles.fallBack
-        );
-      }
+      const titleType = this.existingPolicy
+        ? this.$options.i18n.editTitles
+        : this.$options.i18n.titles;
 
-      return this.$options.i18n.titles.default;
+      return titleType[this.selectedPolicy?.value] || titleType.default;
     },
   },
   created() {
@@ -55,6 +49,9 @@ export default {
       [POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value]: s__(
         'SecurityOrchestration|New scan execution policy',
       ),
+      [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: s__(
+        'SecurityOrchestration|New pipeline execution policy',
+      ),
       default: s__('SecurityOrchestration|New policy'),
     },
     editTitles: {
@@ -64,7 +61,10 @@ export default {
       [POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value]: s__(
         'SecurityOrchestration|Edit scan execution policy',
       ),
-      fallBack: s__('SecurityOrchestration|Edit policy'),
+      [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: s__(
+        'SecurityOrchestration|Edit pipeline execution policy',
+      ),
+      default: s__('SecurityOrchestration|Edit policy'),
     },
   },
 };
