@@ -74,6 +74,16 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
       end
     end
 
+    describe '.for_add_on_purchases' do
+      it 'returns assignments associated with add-on purchases' do
+        purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+        assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
+        purchases = ::GitlabSubscriptions::AddOnPurchase.where(id: purchase.id)
+
+        expect(described_class.for_add_on_purchases(purchases)).to eq [assignment]
+      end
+    end
+
     describe '.for_active_add_on_purchases' do
       context 'when the assignment is for an active addon purchase' do
         it 'is included in the scope' do
