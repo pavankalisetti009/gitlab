@@ -2,7 +2,7 @@
 
 module Search
   INDEX_PARTITIONING_HASHING_MODULO = 1024
-  DEFAULT_CONCURRENCY_LIMIT = 100
+  DEFAULT_CONCURRENCY_LIMIT = 500
 
   def self.table_name_prefix
     'search_'
