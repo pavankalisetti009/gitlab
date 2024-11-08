@@ -1,13 +1,6 @@
-import { sprintf } from '~/locale';
 import { TEST_HOST } from 'helpers/test_constants';
-import {
-  TITLE_USAGE_SINCE,
-  MINUTES_USED,
-  CI_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK_LABEL,
-} from 'ee/usage_quotas/pipelines/constants';
 
-export const defaultProvide = {
+export const defaultProvide = Object.freeze({
   namespacePath: 'mygroup',
   namespaceId: '12345',
   userNamespace: false,
@@ -24,7 +17,7 @@ export const defaultProvide = {
   namespaceActualPlanName: 'MyGroup',
   buyAdditionalMinutesPath: `${TEST_HOST}/-/subscriptions/buy_minutes?selected_group=12345`,
   buyAdditionalMinutesTarget: '_self',
-};
+});
 
 export const pageInfo = {
   __typename: 'PageInfo',
@@ -120,17 +113,4 @@ export const emptyMockGetCiMinutesUsageNamespaceProjects = {
 export const defaultProjectListProps = {
   projects: mockGetCiMinutesUsageNamespaceProjects.data.ciMinutesUsage.nodes[0].projects.nodes,
   pageInfo,
-};
-
-export const defaultUsageOverviewProps = {
-  helpLinkHref: CI_MINUTES_HELP_LINK,
-  helpLinkLabel: CI_MINUTES_HELP_LINK_LABEL,
-  minutesLimit: defaultProvide.ciMinutesMonthlyMinutesLimit,
-  minutesTitle: sprintf(TITLE_USAGE_SINCE, {
-    usageSince: defaultProvide.ciMinutesLastResetDate,
-  }),
-  minutesUsed: sprintf(MINUTES_USED, {
-    minutesUsed: `${defaultProvide.ciMinutesMonthlyMinutesUsed} / ${defaultProvide.ciMinutesMonthlyMinutesLimit}`,
-  }),
-  minutesUsedPercentage: defaultProvide.ciMinutesMonthlyMinutesUsedPercentage,
 };

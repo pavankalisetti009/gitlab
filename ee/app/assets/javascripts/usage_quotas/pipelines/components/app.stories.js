@@ -62,9 +62,9 @@ const createTemplate = (config = {}) => {
       ciMinutesAnyProjectEnabled: true,
       ciMinutesDisplayMinutesAvailableData: true,
       ciMinutesLastResetDate,
-      ciMinutesMonthlyMinutesLimit: '400',
-      ciMinutesMonthlyMinutesUsed: '0',
-      ciMinutesMonthlyMinutesUsedPercentage: '0',
+      ciMinutesMonthlyMinutesLimit: '10000',
+      ciMinutesMonthlyMinutesUsed: '2000',
+      ciMinutesMonthlyMinutesUsedPercentage: '20',
       ciMinutesPurchasedMinutesLimit: '0',
       ciMinutesPurchasedMinutesUsed: '0',
       ciMinutesPurchasedMinutesUsedPercentage: '0',
@@ -79,6 +79,61 @@ const createTemplate = (config = {}) => {
 
 export const Default = {
   render: createTemplate(),
+};
+
+export const Unused = {
+  render: createTemplate({
+    provide: {
+      ciMinutesMonthlyMinutesLimit: '10000',
+      ciMinutesMonthlyMinutesUsed: '0',
+      ciMinutesMonthlyMinutesUsedPercentage: '0',
+    },
+  }),
+};
+
+export const Unlimited = {
+  render: createTemplate({
+    provide: {
+      ciMinutesMonthlyMinutesLimit: 'Unlimited',
+      ciMinutesMonthlyMinutesUsedPercentage: '0',
+    },
+  }),
+};
+
+export const InstanceRunnersDisabled = {
+  render: createTemplate({
+    provide: {
+      ciMinutesMonthlyMinutesLimit: 'Not supported',
+      ciMinutesAnyProjectEnabled: false,
+      ciMinutesDisplayMinutesAvailableData: false,
+    },
+  }),
+};
+
+export const WithPurchasedMinutes = {
+  render: createTemplate({
+    provide: {
+      ciMinutesMonthlyMinutesLimit: '10000',
+      ciMinutesMonthlyMinutesUsed: '10000',
+      ciMinutesMonthlyMinutesUsedPercentage: '100',
+      ciMinutesPurchasedMinutesLimit: '1000',
+      ciMinutesPurchasedMinutesUsed: '200',
+      ciMinutesPurchasedMinutesUsedPercentage: '20',
+    },
+  }),
+};
+
+export const WithPurchasedMinutesUnused = {
+  render: createTemplate({
+    provide: {
+      ciMinutesMonthlyMinutesLimit: '10000',
+      ciMinutesMonthlyMinutesUsed: '9000',
+      ciMinutesMonthlyMinutesUsedPercentage: '90',
+      ciMinutesPurchasedMinutesLimit: '1000',
+      ciMinutesPurchasedMinutesUsed: '0',
+      ciMinutesPurchasedMinutesUsedPercentage: '0',
+    },
+  }),
 };
 
 export const Loading = {

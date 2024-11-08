@@ -9,8 +9,7 @@ import {
   GlSprintf,
 } from '@gitlab/ui';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import { sprintf } from '~/locale';
-import { formatDate, getMonthNames } from '~/lib/utils/datetime_utility';
+import { getMonthNames } from '~/lib/utils/datetime_utility';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from '~/ci/runner/sentry_utils';
@@ -19,40 +18,31 @@ import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import { logError } from '~/lib/logger';
 import getCiMinutesUsageNamespace from '../graphql/queries/ci_minutes.query.graphql';
 import getCiMinutesUsageNamespaceProjects from '../graphql/queries/ci_minutes_projects.query.graphql';
-import {
-  ERROR_MESSAGE,
-  LABEL_BUY_ADDITIONAL_MINUTES,
-  TITLE_USAGE_SINCE,
-  TOTAL_USED_UNLIMITED,
-  MINUTES_USED,
-  ADDITIONAL_MINUTES,
-  PERCENTAGE_USED,
-  ADDITIONAL_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK_LABEL,
-} from '../constants';
+import { ERROR_MESSAGE, LABEL_BUY_ADDITIONAL_MINUTES } from '../constants';
 import { USAGE_BY_MONTH_HEADER, USAGE_BY_PROJECT_HEADER } from '../../constants';
 import { getUsageDataByYearAsArray, formatIso8601Date } from '../utils';
 import LimitedAccessModal from '../../components/limited_access_modal.vue';
 import ProjectList from './project_list.vue';
-import UsageOverview from './usage_overview.vue';
 import MinutesUsagePerMonth from './minutes_usage_per_month.vue';
 import MinutesUsagePerProject from './minutes_usage_per_project.vue';
+import AdditionalUnitsUsageSummary from './cards/additional_units_usage_summary.vue';
+import MonthlyUnitsUsageSummary from './cards/monthly_units_usage_summary.vue';
 
 export default {
   name: 'PipelineUsageApp',
   components: {
     GlAlert,
     GlButton,
+    GlCollapsibleListbox,
     GlLoadingIcon,
     GlFormGroup,
     GlSprintf,
     LimitedAccessModal,
     ProjectList,
-    UsageOverview,
     MinutesUsagePerProject,
     MinutesUsagePerMonth,
-    GlCollapsibleListbox,
+    AdditionalUnitsUsageSummary,
+    MonthlyUnitsUsageSummary,
   },
   directives: {
     GlModalDirective,
@@ -177,21 +167,6 @@ export default {
     isLoadingMonthProjectUsageData() {
       return this.$apollo.queries.projectsCiMinutesUsage.loading;
     },
-    monthlyUsageTitle() {
-      return sprintf(TITLE_USAGE_SINCE, {
-        usageSince: formatDate(this.ciMinutesLastResetDate, 'mmm dd, yyyy', true),
-      });
-    },
-    monthlyMinutesUsed() {
-      return sprintf(MINUTES_USED, {
-        minutesUsed: `${this.ciMinutesMonthlyMinutesUsed} / ${this.ciMinutesMonthlyMinutesLimit}`,
-      });
-    },
-    purchasedMinutesUsed() {
-      return sprintf(MINUTES_USED, {
-        minutesUsed: `${this.ciMinutesPurchasedMinutesUsed} / ${this.ciMinutesPurchasedMinutesLimit}`,
-      });
-    },
     shouldShowAdditionalMinutes() {
       return (
         this.ciMinutesDisplayMinutesAvailableData && Number(this.ciMinutesPurchasedMinutesLimit) > 0
@@ -251,32 +226,12 @@ export default {
     trackBuyAdditionalMinutesClick() {
       pushEECproductAddToCartEvent();
     },
-    usagePercentage(percentage) {
-      let percentageUsed;
-      if (this.ciMinutesDisplayMinutesAvailableData) {
-        percentageUsed = percentage;
-      } else if (this.ciMinutesAnyProjectEnabled) {
-        percentageUsed = 0;
-      }
-
-      if (percentageUsed) {
-        return sprintf(PERCENTAGE_USED, {
-          percentageUsed,
-        });
-      }
-
-      return TOTAL_USED_UNLIMITED;
-    },
     showLimitedAccessModal() {
       this.isLimitedAccessModalShown = true;
       this.trackBuyAdditionalMinutesClick();
     },
   },
   LABEL_BUY_ADDITIONAL_MINUTES,
-  ADDITIONAL_MINUTES,
-  ADDITIONAL_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK_LABEL,
   USAGE_BY_MONTH_HEADER,
   USAGE_BY_PROJECT_HEADER,
 };
@@ -328,28 +283,21 @@ export default {
           :limited-access-reason="subscriptionPermissions.reason"
         />
       </div>
-      <usage-overview
+      <monthly-units-usage-summary
         :class="{ 'gl-pt-5': !shouldShowBuyAdditionalMinutes }"
-        :minutes-title="monthlyUsageTitle"
-        :minutes-used="monthlyMinutesUsed"
-        minutes-used-testid-selector="plan-compute-minutes"
-        :minutes-used-percentage="usagePercentage(ciMinutesMonthlyMinutesUsedPercentage)"
-        :minutes-limit="ciMinutesMonthlyMinutesLimit"
-        :help-link-href="$options.CI_MINUTES_HELP_LINK"
-        :help-link-label="$options.CI_MINUTES_HELP_LINK_LABEL"
-        data-testid="monthly-usage-overview"
+        :monthly-units-used="ciMinutesMonthlyMinutesUsed"
+        :monthly-units-limit="ciMinutesMonthlyMinutesLimit"
+        :monthly-units-used-percentage="ciMinutesMonthlyMinutesUsedPercentage"
+        :last-reset-date="ciMinutesLastResetDate"
+        :any-project-enabled="ciMinutesAnyProjectEnabled"
+        :display-minutes-available-data="ciMinutesDisplayMinutesAvailableData"
       />
-      <usage-overview
+      <additional-units-usage-summary
         v-if="shouldShowAdditionalMinutes"
         class="gl-pt-5"
-        :minutes-title="$options.ADDITIONAL_MINUTES"
-        :minutes-used="purchasedMinutesUsed"
-        minutes-used-testid-selector="additional-compute-minutes"
-        :minutes-used-percentage="usagePercentage(ciMinutesPurchasedMinutesUsedPercentage)"
-        :minutes-limit="ciMinutesPurchasedMinutesLimit"
-        :help-link-href="$options.ADDITIONAL_MINUTES_HELP_LINK"
-        :help-link-label="$options.ADDITIONAL_MINUTES"
-        data-testid="purchased-usage-overview"
+        :additional-units-used="ciMinutesPurchasedMinutesUsed"
+        :additional-units-limit="ciMinutesPurchasedMinutesLimit"
+        :additional-units-used-percentage="ciMinutesPurchasedMinutesUsedPercentage"
       />
     </section>
 

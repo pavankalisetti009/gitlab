@@ -2,29 +2,17 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton } from '@gitlab/ui';
 import { Wrapper } from '@vue/test-utils'; // eslint-disable-line no-unused-vars
+import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
+import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
 import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/graphql/queries/ci_minutes.query.graphql';
 import getCiMinutesMonthSummaryWithProjects from 'ee/usage_quotas/pipelines/graphql/queries/ci_minutes_projects.query.graphql';
-import { sprintf } from '~/locale';
-import { formatDate } from '~/lib/utils/datetime_utility';
 import { pushEECproductAddToCartEvent } from 'ee/google_tag_manager';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import PipelineUsageApp from 'ee/usage_quotas/pipelines/components/app.vue';
 import ProjectList from 'ee/usage_quotas/pipelines/components/project_list.vue';
-import UsageOverview from 'ee/usage_quotas/pipelines/components/usage_overview.vue';
-import {
-  LABEL_BUY_ADDITIONAL_MINUTES,
-  ERROR_MESSAGE,
-  TITLE_USAGE_SINCE,
-  TOTAL_USED_UNLIMITED,
-  MINUTES_USED,
-  ADDITIONAL_MINUTES,
-  PERCENTAGE_USED,
-  ADDITIONAL_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK,
-  CI_MINUTES_HELP_LINK_LABEL,
-} from 'ee/usage_quotas/pipelines/constants';
+import { LABEL_BUY_ADDITIONAL_MINUTES, ERROR_MESSAGE } from 'ee/usage_quotas/pipelines/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';
@@ -57,8 +45,8 @@ describe('PipelineUsageApp', () => {
     wrapper.findByTestId('pipelines-by-project-chart-loading-indicator');
   const findProjectList = () => wrapper.findComponent(ProjectList);
   const findBuyAdditionalMinutesButton = () => wrapper.findComponent(GlButton);
-  const findMonthlyUsageOverview = () => wrapper.findByTestId('monthly-usage-overview');
-  const findPurchasedUsageOverview = () => wrapper.findByTestId('purchased-usage-overview');
+  const findMonthlyUsageOverview = () => wrapper.findComponent(MonthlyUnitsUsageSummary);
+  const findPurchasedUsageOverview = () => wrapper.findComponent(AdditionalUnitsUsageSummary);
   const findYearDropdown = () => wrapper.findComponentByTestId('minutes-usage-year-dropdown');
   const findMonthDropdown = () => wrapper.findComponentByTestId('minutes-usage-month-dropdown');
   const findLimitedAccessModal = () => wrapper.findComponent(LimitedAccessModal);
@@ -173,36 +161,18 @@ describe('PipelineUsageApp', () => {
   });
 
   describe('namespace ci usage overview', () => {
-    it('passes reset date for monthlyUsageTitle to compute minutes UsageOverview if present', async () => {
-      createComponent();
-
-      await waitForPromises();
-
-      expect(findMonthlyUsageOverview().props('minutesTitle')).toBe(
-        sprintf(TITLE_USAGE_SINCE, {
-          usageSince: formatDate(defaultProvide.ciMinutesLastResetDate, 'mmm dd, yyyy', true),
-        }),
-      );
-    });
-
     it('passes correct props to compute minutes UsageOverview', async () => {
       createComponent();
 
       await waitForPromises();
 
       expect(findMonthlyUsageOverview().props()).toMatchObject({
-        helpLinkHref: CI_MINUTES_HELP_LINK,
-        helpLinkLabel: CI_MINUTES_HELP_LINK_LABEL,
-        minutesLimit: defaultProvide.ciMinutesMonthlyMinutesLimit,
-        minutesTitle: sprintf(TITLE_USAGE_SINCE, {
-          usageSince: formatDate(defaultProvide.ciMinutesLastResetDate, 'mmm dd, yyyy', true),
-        }),
-        minutesUsed: sprintf(MINUTES_USED, {
-          minutesUsed: `${defaultProvide.ciMinutesMonthlyMinutesUsed} / ${defaultProvide.ciMinutesMonthlyMinutesLimit}`,
-        }),
-        minutesUsedPercentage: sprintf(PERCENTAGE_USED, {
-          percentageUsed: defaultProvide.ciMinutesMonthlyMinutesUsedPercentage,
-        }),
+        monthlyUnitsUsed: defaultProvide.ciMinutesMonthlyMinutesUsed,
+        monthlyUnitsLimit: defaultProvide.ciMinutesMonthlyMinutesLimit,
+        monthlyUnitsUsedPercentage: defaultProvide.ciMinutesMonthlyMinutesUsedPercentage,
+        lastResetDate: defaultProvide.ciMinutesLastResetDate,
+        anyProjectEnabled: defaultProvide.ciMinutesAnyProjectEnabled,
+        displayMinutesAvailableData: defaultProvide.ciMinutesDisplayMinutesAvailableData,
       });
     });
 
@@ -212,30 +182,10 @@ describe('PipelineUsageApp', () => {
       await waitForPromises();
 
       expect(findPurchasedUsageOverview().props()).toMatchObject({
-        helpLinkHref: ADDITIONAL_MINUTES_HELP_LINK,
-        helpLinkLabel: ADDITIONAL_MINUTES,
-        minutesLimit: defaultProvide.ciMinutesMonthlyMinutesLimit,
-        minutesTitle: ADDITIONAL_MINUTES,
-        minutesUsed: sprintf(MINUTES_USED, {
-          minutesUsed: `${defaultProvide.ciMinutesPurchasedMinutesUsed} / ${defaultProvide.ciMinutesPurchasedMinutesLimit}`,
-        }),
-        minutesUsedPercentage: sprintf(PERCENTAGE_USED, {
-          percentageUsed: defaultProvide.ciMinutesPurchasedMinutesUsedPercentage,
-        }),
+        additionalUnitsUsed: defaultProvide.ciMinutesPurchasedMinutesUsed,
+        additionalUnitsLimit: defaultProvide.ciMinutesPurchasedMinutesLimit,
+        additionalUnitsUsedPercentage: defaultProvide.ciMinutesPurchasedMinutesUsedPercentage,
       });
-    });
-
-    it('shows unlimited as usagePercentage on compute minutes UsageOverview under correct circumstances', async () => {
-      createComponent({
-        provide: {
-          ciMinutesDisplayMinutesAvailableData: false,
-          ciMinutesAnyProjectEnabled: false,
-        },
-      });
-
-      await waitForPromises();
-
-      expect(findMonthlyUsageOverview().props('minutesUsedPercentage')).toBe(TOTAL_USED_UNLIMITED);
     });
 
     it.each`
@@ -254,10 +204,7 @@ describe('PipelineUsageApp', () => {
           },
         });
         await waitForPromises();
-        const expectedUsageOverviewInstances = showAdditionalMinutes ? 2 : 1;
-        expect(wrapper.findAllComponents(UsageOverview)).toHaveLength(
-          expectedUsageOverviewInstances,
-        );
+        expect(findPurchasedUsageOverview().exists()).toBe(showAdditionalMinutes);
       },
     );
   });
