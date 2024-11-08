@@ -10,8 +10,10 @@ import {
   GlSprintf,
   GlTruncate,
 } from '@gitlab/ui';
+import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
+import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
 import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
 
 export default {
@@ -29,24 +31,18 @@ export default {
     DeleteSelfHostedModelDisclosureItem,
   },
   inject: ['basePath', 'newSelfHostedModelPath'],
-  props: {
-    models: {
-      type: Array,
-      required: true,
-    },
-    loading: {
-      type: Boolean,
-      required: true,
-    },
-  },
   data() {
     return {
       searchTerm: '',
+      selfHostedModels: [],
     };
   },
   i18n: {
     emptyStateText: s__(
       'AdminSelfHostedModels|You do not currently have any self-hosted models. %{linkStart}Add a self-hosted model%{linkEnd} to get started.',
+    ),
+    errorMessage: s__(
+      'AdminSelfHostedModels|An error occurred while loading self-hosted models. Please try again.',
     ),
   },
   fields: [
@@ -116,6 +112,9 @@ export default {
         },
       ];
     },
+    isLoading() {
+      return this.$apollo.loading;
+    },
   },
   methods: {
     editModelItem(model) {
@@ -123,6 +122,21 @@ export default {
         text: __('Edit'),
         to: `${this.basePath}/${getIdFromGraphQLId(model.id)}/edit`,
       };
+    },
+  },
+  apollo: {
+    selfHostedModels: {
+      query: getSelfHostedModelsQuery,
+      update(data) {
+        return data.aiSelfHostedModels?.nodes || [];
+      },
+      error(error) {
+        createAlert({
+          message: this.$options.i18n.errorMessage,
+          error,
+          captureError: true,
+        });
+      },
     },
   },
 };
@@ -134,7 +148,7 @@ export default {
     </div>
     <gl-table
       :fields="$options.fields"
-      :items="loading ? loaderItems : models"
+      :items="isLoading ? loaderItems : selfHostedModels"
       stacked="md"
       :hover="true"
       :filter="searchTerm"
@@ -152,31 +166,31 @@ export default {
         </p>
       </template>
       <template #cell(name)="{ item }">
-        <gl-skeleton-loader v-if="loading" :height="42" :width="400"
+        <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.name" height="36" rx="10" />
         </gl-skeleton-loader>
         <span v-else><gl-truncate :text="item.name" position="end" with-tooltip /></span>
       </template>
       <template #cell(model)="{ item }">
-        <gl-skeleton-loader v-if="loading" :height="42" :width="400"
+        <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.model" height="36" rx="10" />
         </gl-skeleton-loader>
         <span v-else>{{ item.model }}</span>
       </template>
       <template #cell(endpoint)="{ item }">
-        <gl-skeleton-loader v-if="loading" :height="42" :width="400"
+        <gl-skeleton-loader v-if="isLoading" :height="42" :width="400"
           ><rect y="6" :width="item.loaderWidth.endpoint" height="36" rx="10" />
         </gl-skeleton-loader>
         <span v-else><gl-truncate :text="item.endpoint" position="end" with-tooltip /></span>
       </template>
       <template #cell(identifier)="{ item }">
-        <gl-skeleton-loader v-if="loading" :height="42" :width="300"
+        <gl-skeleton-loader v-if="isLoading" :height="42" :width="300"
           ><rect y="4" :width="item.loaderWidth.identifier" height="36" rx="10" />
         </gl-skeleton-loader>
         <span v-else>{{ item.identifier }}</span>
       </template>
       <template #cell(has_api_key)="{ item }">
-        <gl-skeleton-loader v-if="loading" :height="42" :width="200">
+        <gl-skeleton-loader v-if="isLoading" :height="42" :width="200">
           <circle cx="20" cy="20" r="20" />
         </gl-skeleton-loader>
         <span v-else>
@@ -194,7 +208,7 @@ export default {
           size="small"
           icon="ellipsis_v"
           :no-caret="true"
-          :loading="loading"
+          :loading="isLoading"
         >
           <gl-disclosure-dropdown-item
             data-testid="model-edit-button"
