@@ -93,6 +93,34 @@ RSpec.shared_examples 'anthropic client' do
         it_behaves_like 'measured Llm request with error', StandardError
       end
 
+      context 'when response is a 500 error' do
+        let(:http_status) { 500 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it 'returns nil' do
+          expect(complete).to be_nil
+        end
+      end
+
+      context 'when request is 204 No Content' do
+        let(:http_status) { 204 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it_behaves_like 'measured Llm request'
+      end
+
+      context 'when request is a bad request' do
+        let(:http_status) { 400 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it 'returns a response' do
+          expect(complete).to be_present
+        end
+      end
+
       context 'when request is retried' do
         let(:http_status) { 429 }
 

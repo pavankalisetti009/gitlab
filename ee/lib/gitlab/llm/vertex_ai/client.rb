@@ -141,7 +141,7 @@ module Gitlab
             ai_component: 'abstraction_layer',
             unit_primitive: unit_primitive)
 
-          if response.present?
+          if response&.success? && response.parsed_response.present?
             track_token_usage(response)
           else
             log_error(message: "Empty response from Vertex",

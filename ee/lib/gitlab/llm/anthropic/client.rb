@@ -29,11 +29,13 @@ module Gitlab
             perform_completion_request(prompt: prompt, options: options.except(:stream))
           end
 
-          response_completion = response["completion"]
-          log_response_received(response_completion, 'completion')
+          if response&.success?
+            response_completion = response["completion"]
+            log_response_received(response_completion, 'completion')
 
-          track_prompt_size(token_size(prompt))
-          track_response_size(token_size(response_completion))
+            track_prompt_size(token_size(prompt))
+            track_response_size(token_size(response_completion))
+          end
 
           response
         end
