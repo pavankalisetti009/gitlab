@@ -1,7 +1,7 @@
 <script>
 import { GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import {
   seatsAvailableText,
   seatsInSubscriptionText,
@@ -15,6 +15,7 @@ import { sprintf } from '~/locale';
 import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
 import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
 import { updateSubscriptionPlanApolloCache } from 'ee/usage_quotas/seats/graphql/utils';
+import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import PublicNamespacePlanInfoCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
 import SubscriptionUpgradeInfoCard from './subscription_upgrade_info_card.vue';
 import SubscriptionUserList from './subscription_user_list.vue';
@@ -32,12 +33,32 @@ export default {
     SubscriptionUserList,
     GlSkeletonLoader,
   },
-  inject: ['isPublicNamespace'],
+  apollo: {
+    billableMembersCount: {
+      query: getBillableMembersCountQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.group.billableMembersCount;
+      },
+      error() {
+        this.receiveBillableMembersListError();
+      },
+    },
+  },
+  inject: ['fullPath', 'isPublicNamespace'],
+  data() {
+    return {
+      billableMembersCount: 0,
+    };
+  },
   computed: {
     ...mapState([
       'namespaceId',
       'hasError',
-      'total',
       'seatsInSubscription',
       'seatsInUse',
       'maxSeatsUsed',
@@ -68,10 +89,7 @@ export default {
       return this.seatsInSubscription;
     },
     totalSeatsInUse() {
-      if (this.hasLimitedFreePlan) {
-        return this.seatsInUse;
-      }
-      return this.total;
+      return this.billableMembersCount;
     },
     seatsInUseText() {
       if (this.hasFreePlan) {
@@ -121,6 +139,9 @@ export default {
       },
     });
     this.$store.dispatch('fetchInitialData');
+  },
+  methods: {
+    ...mapActions(['receiveBillableMembersListError']),
   },
   helpLinks: {
     seatsInUseLink,

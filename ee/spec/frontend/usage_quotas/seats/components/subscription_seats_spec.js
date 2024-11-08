@@ -1,7 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
 import PublicNamespacePlanInfoCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
 import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
@@ -9,7 +11,9 @@ import SubscriptionUpgradeInfoCard from 'ee/usage_quotas/seats/components/subscr
 import SubscriptionSeats from 'ee/usage_quotas/seats/components/subscription_seats.vue';
 import SubscriptionUserList from 'ee/usage_quotas/seats/components/subscription_user_list.vue';
 import { mockDataSeats, mockTableItems } from 'ee_jest/usage_quotas/seats/mock_data';
+import createMockApolloProvider from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 
 Vue.use(Vuex);
 
@@ -49,17 +53,38 @@ const fakeStore = ({ initialState, initialGetters }) =>
   });
 
 describe('Subscription Seats', () => {
+  Vue.use(VueApollo);
+
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
+  const fullPath = 'group-path';
+
+  const defaultBillableMembersCountMockHandler = jest.fn().mockResolvedValue({
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/13',
+        billableMembersCount: 2,
+        enforceFreeUserCap: false,
+      },
+    },
+  });
+
   const createComponent = ({ initialState = {}, initialGetters = {} } = {}) => {
     const { isPublicNamespace = false } = initialState;
-    return extendedWrapper(
+
+    const handlers = [[getBillableMembersCountQuery, defaultBillableMembersCountMockHandler]];
+    const apolloProvider = createMockApolloProvider(handlers);
+
+    wrapper = extendedWrapper(
       shallowMount(SubscriptionSeats, {
         store: fakeStore({ initialState, initialGetters }),
-        provide: { isPublicNamespace },
+        apolloProvider,
+        provide: { fullPath, isPublicNamespace },
       }),
     );
+
+    return waitForPromises();
   };
 
   const findPublicNamespacePlanInfoCard = () => wrapper.findComponent(PublicNamespacePlanInfoCard);
@@ -71,7 +96,7 @@ describe('Subscription Seats', () => {
 
   describe('actions', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      return createComponent();
     });
 
     it('dispatches fetchInitialData action', () => {
@@ -96,62 +121,87 @@ describe('Subscription Seats', () => {
     };
 
     beforeEach(() => {
-      wrapper = createComponent({
+      return createComponent({
         initialState: defaultInitialState,
       });
     });
 
-    describe('renders <statistics-card>', () => {
-      describe('when group has a subscription', () => {
+    describe('when group has a subscription', () => {
+      it('renders <statistics-card> with the necessary props', () => {
+        expect(findStatisticsCard().props()).toMatchObject({
+          ...defaultProps,
+          description: 'Seats in use / Seats in subscription',
+          percentage: 67,
+          totalValue: '3',
+          usageValue: '2',
+          helpTooltip: null,
+        });
+      });
+    });
+
+    describe('when group has no subscription', () => {
+      describe('when is a public namespace', () => {
+        beforeEach(() => {
+          return createComponent({
+            initialState: {
+              ...defaultInitialState,
+              hasNoSubscription: true,
+              hasLimitedFreePlan: false,
+              activeTrial: false,
+              isPublicNamespace: true,
+            },
+            initialGetters: {
+              hasFreePlan: () => true,
+            },
+          });
+        });
+
+        it('does not render <statistics-seats-card>', () => {
+          expect(findStatisticsSeatsCard().exists()).toBe(false);
+        });
+
+        it('renders <public-namespace-plan-info-card>', () => {
+          expect(findPublicNamespacePlanInfoCard().exists()).toBe(true);
+        });
+      });
+
+      describe('when not on limited free plan', () => {
+        beforeEach(() => {
+          return createComponent({
+            initialState: {
+              ...defaultInitialState,
+              hasNoSubscription: true,
+              hasLimitedFreePlan: false,
+              activeTrial: false,
+            },
+            initialGetters: {
+              hasFreePlan: () => true,
+            },
+          });
+        });
+
         it('renders <statistics-card> with the necessary props', () => {
-          expect(findStatisticsCard().props()).toMatchObject({
+          const statisticsCard = findStatisticsCard();
+
+          expect(statisticsCard.exists()).toBe(true);
+          expect(statisticsCard.props()).toMatchObject({
             ...defaultProps,
-            description: 'Seats in use / Seats in subscription',
-            percentage: 67,
-            totalValue: '3',
+            description: 'Free seats used',
+            percentage: 0,
+            totalValue: 'Unlimited',
             usageValue: '2',
             helpTooltip: null,
           });
         });
-      });
 
-      describe('when group has no subscription', () => {
-        describe('when is a public namespace', () => {
+        describe('when on trial', () => {
           beforeEach(() => {
-            wrapper = createComponent({
+            return createComponent({
               initialState: {
                 ...defaultInitialState,
                 hasNoSubscription: true,
                 hasLimitedFreePlan: false,
-                activeTrial: false,
-                isPublicNamespace: true,
-              },
-              initialGetters: {
-                hasFreePlan: () => true,
-              },
-            });
-          });
-
-          it('does not render <statistics-seats-card>', () => {
-            expect(findStatisticsSeatsCard().exists()).toBe(false);
-          });
-
-          it('renders <public-namespace-plan-info-card>', () => {
-            expect(findPublicNamespacePlanInfoCard().exists()).toBe(true);
-          });
-        });
-
-        describe('when not on limited free plan', () => {
-          beforeEach(() => {
-            wrapper = createComponent({
-              initialState: {
-                ...defaultInitialState,
-                hasNoSubscription: true,
-                hasLimitedFreePlan: false,
-                activeTrial: false,
-              },
-              initialGetters: {
-                hasFreePlan: () => true,
+                activeTrial: true,
               },
             });
           });
@@ -162,50 +212,50 @@ describe('Subscription Seats', () => {
             expect(statisticsCard.exists()).toBe(true);
             expect(statisticsCard.props()).toMatchObject({
               ...defaultProps,
-              description: 'Free seats used',
+              description: 'Seats in use / Seats in subscription',
               percentage: 0,
               totalValue: 'Unlimited',
               usageValue: '2',
               helpTooltip: null,
             });
           });
+        });
+      });
 
-          describe('when on trial', () => {
-            beforeEach(() => {
-              wrapper = createComponent({
-                initialState: {
-                  ...defaultInitialState,
-                  hasNoSubscription: true,
-                  hasLimitedFreePlan: false,
-                  activeTrial: true,
-                },
-              });
-            });
-
-            it('renders <statistics-card> with the necessary props', () => {
-              const statisticsCard = findStatisticsCard();
-
-              expect(statisticsCard.exists()).toBe(true);
-              expect(statisticsCard.props()).toMatchObject({
-                ...defaultProps,
-                description: 'Seats in use / Seats in subscription',
-                percentage: 0,
-                totalValue: 'Unlimited',
-                usageValue: '2',
-                helpTooltip: null,
-              });
-            });
+      describe('when on limited free plan', () => {
+        beforeEach(() => {
+          return createComponent({
+            initialState: {
+              ...defaultInitialState,
+              hasNoSubscription: true,
+              hasLimitedFreePlan: true,
+              activeTrial: false,
+            },
           });
         });
 
-        describe('when on limited free plan', () => {
+        it('renders <statistics-card> with the necessary props', () => {
+          const statisticsCard = findStatisticsCard();
+
+          expect(statisticsCard.exists()).toBe(true);
+          expect(statisticsCard.props()).toMatchObject({
+            ...defaultProps,
+            description: 'Seats in use / Seats available',
+            percentage: 40,
+            totalValue: '5',
+            usageValue: '2',
+            helpTooltip: 'Free groups are limited to 5 seats.',
+          });
+        });
+
+        describe('when on trial', () => {
           beforeEach(() => {
-            wrapper = createComponent({
+            return createComponent({
               initialState: {
                 ...defaultInitialState,
                 hasNoSubscription: true,
                 hasLimitedFreePlan: true,
-                activeTrial: false,
+                activeTrial: true,
               },
             });
           });
@@ -217,38 +267,10 @@ describe('Subscription Seats', () => {
             expect(statisticsCard.props()).toMatchObject({
               ...defaultProps,
               description: 'Seats in use / Seats available',
-              percentage: 40,
-              totalValue: '5',
+              percentage: 0,
+              totalValue: 'Unlimited',
               usageValue: '2',
-              helpTooltip: 'Free groups are limited to 5 seats.',
-            });
-          });
-
-          describe('when on trial', () => {
-            beforeEach(() => {
-              wrapper = createComponent({
-                initialState: {
-                  ...defaultInitialState,
-                  hasNoSubscription: true,
-                  hasLimitedFreePlan: true,
-                  activeTrial: true,
-                },
-              });
-            });
-
-            it('renders <statistics-card> with the necessary props', () => {
-              const statisticsCard = findStatisticsCard();
-
-              expect(statisticsCard.exists()).toBe(true);
-              expect(statisticsCard.props()).toMatchObject({
-                ...defaultProps,
-                description: 'Seats in use / Seats available',
-                percentage: 0,
-                totalValue: 'Unlimited',
-                usageValue: '2',
-                helpTooltip:
-                  'Free tier and trial groups can invite a maximum of 20 members per day.',
-              });
+              helpTooltip: 'Free tier and trial groups can invite a maximum of 20 members per day.',
             });
           });
         });
@@ -268,7 +290,7 @@ describe('Subscription Seats', () => {
 
     describe('for free namespace with limit', () => {
       beforeEach(() => {
-        wrapper = createComponent({
+        return createComponent({
           initialState: { hasNoSubscription: true, hasLimitedFreePlan: true },
         });
       });
@@ -293,7 +315,7 @@ describe('Subscription Seats', () => {
       [false, true],
     ])('Busy when isLoading=%s and hasError=%s', (isLoading, hasError) => {
       beforeEach(() => {
-        wrapper = createComponent({
+        return createComponent({
           initialGetters: { isLoading: () => isLoading },
           initialState: { hasError },
         });
@@ -308,8 +330,8 @@ describe('Subscription Seats', () => {
   });
 
   describe('subscription user list', () => {
-    it('renders subscription users', () => {
-      wrapper = createComponent();
+    it('renders subscription users', async () => {
+      await createComponent();
 
       expect(findSubscriptionUserList().exists()).toBe(true);
     });
