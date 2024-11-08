@@ -520,7 +520,8 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
               url: mirror_url,
               enabled: false,
               mirror_trigger_builds: true,
-              only_mirror_protected_branches: true
+              only_mirror_protected_branches: true,
+              mirror_overwrites_diverged_branches: true
             }
           end
 
@@ -534,7 +535,8 @@ RSpec.describe API::ProjectMirror, feature_category: :source_code_management do
               'enabled' => false,
               'url' => 'http://example.com',
               'mirror_trigger_builds' => true,
-              'only_mirror_protected_branches' => true
+              'only_mirror_protected_branches' => true,
+              'mirror_overwrites_diverged_branches' => true
             )
           end
 

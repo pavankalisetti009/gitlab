@@ -140,9 +140,10 @@ module API
         optional :auth_password, type: String, desc: 'The password used for authentication of a project to pull mirror or a personal access token with the api scope enabled.'
         optional :mirror_trigger_builds, type: Grape::API::Boolean, desc: 'Pull mirroring triggers builds'
         optional :only_mirror_protected_branches, type: Grape::API::Boolean, desc: 'Only mirror protected branches'
+        optional :mirror_overwrites_diverged_branches, type: Grape::API::Boolean, desc: 'Pull mirror overwrites diverged branches'
         optional :mirror_branch_regex, type: String, desc: 'Only mirror branches with names that match this regex'
         mutually_exclusive :only_protected_branches, :mirror_branch_regex
-        at_least_one_of :enabled, :url, :auth_user, :auth_password,
+        at_least_one_of :enabled, :url, :auth_user, :auth_password, :mirror_overwrites_diverged_branches,
           :mirror_trigger_builds, :only_mirror_protected_branches, :mirror_branch_regex
       end
       put ':id/mirror/pull' do
