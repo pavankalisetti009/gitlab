@@ -49,10 +49,16 @@ module Sidebars
           end
         end
 
+        override :pill_count_field
+        def pill_count_field
+          'openEpicsCount' if Feature.enabled?(:async_sidebar_counts, context.group.root_ancestor)
+        end
+
         override :serialize_as_menu_item_args
         def serialize_as_menu_item_args
           super.merge({
             pill_count: pill_count,
+            pill_count_field: pill_count_field,
             has_pill: has_pill?,
             super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::PlanMenu,
             item_id: :group_epic_list
