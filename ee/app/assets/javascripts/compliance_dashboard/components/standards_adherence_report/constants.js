@@ -8,6 +8,7 @@ const PREVENT_APPROVAL_BY_MERGE_REQUEST_COMMITTERS = 'PREVENT_APPROVAL_BY_MERGE_
 const AT_LEAST_TWO_APPROVALS = 'AT_LEAST_TWO_APPROVALS';
 const AT_LEAST_ONE_NON_AUTHOR_APPROVAL = 'AT_LEAST_ONE_NON_AUTHOR_APPROVAL';
 const SAST = 'SAST';
+const DAST = 'DAST';
 
 export const NONE = s__('ComplianceStandardsAdherence|None');
 export const CHECKS = s__('ComplianceStandardsAdherence|Checks');
@@ -34,6 +35,7 @@ export const STANDARDS_ADHERENCE_CHECK_LABELS = {
     'ComplianceStandardsAdherence|At least one non-author approval',
   ),
   [SAST]: s__('ComplianceStandardsAdherence|SAST scan'),
+  [DAST]: s__('ComplianceStandardsAdherence|DAST scan'),
 };
 
 export const STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS = {
@@ -51,6 +53,9 @@ export const STANDARDS_ADHERENCE_CHECK_DESCRIPTIONS = {
   ),
   [SAST]: s__(
     'ComplianceStandardsAdherence|Have SAST scanner configured in pipeline configuration',
+  ),
+  [DAST]: s__(
+    'ComplianceStandardsAdherence|Have DAST scanner configured in pipeline configuration',
   ),
 };
 
@@ -70,6 +75,9 @@ export const STANDARDS_ADHERENCE_CHECK_FAILURE_REASONS = {
   [SAST]: s__(
     'ComplianceStandardsAdherence|SAST scanner is not configured in the pipeline configuration for the default branch.',
   ),
+  [DAST]: s__(
+    'ComplianceStandardsAdherence|DAST scanner is not configured in the pipeline configuration for the default branch.',
+  ),
 };
 
 export const STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS = {
@@ -83,7 +91,10 @@ export const STANDARDS_ADHERENCE_CHECK_SUCCESS_REASONS = {
     'ComplianceStandardsAdherence|A rule is configured to require two approvals.',
   ),
   [SAST]: s__(
-    'ComplianceStandardsAdherence|SAST scanner is not configured in the pipeline configuration for the default branch.',
+    'ComplianceStandardsAdherence|SAST scanner is configured in the pipeline configuration for the default branch.',
+  ),
+  [DAST]: s__(
+    'ComplianceStandardsAdherence|DAST scanner is configured in the pipeline configuration for the default branch.',
   ),
 };
 
@@ -122,6 +133,7 @@ export const ALLOWED_FILTER_TOKENS = {
     AT_LEAST_TWO_APPROVALS,
     AT_LEAST_ONE_NON_AUTHOR_APPROVAL,
     SAST,
+    DAST,
   ],
   standards: [GITLAB, SOC2],
 };
