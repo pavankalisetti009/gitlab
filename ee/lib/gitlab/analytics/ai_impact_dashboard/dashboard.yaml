@@ -27,7 +27,7 @@ panels:
       width: 4
       height: 1
     options: {}
-  - title: 'Lifecycle metrics: %{namespaceName} (%{namespaceType})'
+  - title: 'Lifecycle metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_lifecycle_metrics_table
     gridAttributes:
       yPos: 1
@@ -35,7 +35,7 @@ panels:
       width: 12
       height: 4
     options: {}
-  - title: 'AI usage metrics: %{namespaceName} (%{namespaceType})'
+  - title: 'AI usage metrics for the %{namespaceName} %{namespaceType}'
     visualization: ai_impact_ai_metrics_table
     gridAttributes:
       yPos: 5

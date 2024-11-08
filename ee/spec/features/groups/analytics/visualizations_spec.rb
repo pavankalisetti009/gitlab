@@ -33,7 +33,7 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
       end
 
       it_behaves_like 'renders metrics comparison tables' do
-        let(:panel_title) { "#{group.name} (group)" }
+        let(:panel_title) { "#{group.name} group" }
       end
 
       it_behaves_like 'renders contributor count'
@@ -47,7 +47,7 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
       end
 
       it_behaves_like 'renders metrics comparison tables' do
-        let(:panel_title) { "#{group.name} (group)" }
+        let(:panel_title) { "#{group.name} group" }
       end
 
       it_behaves_like 'does not render contributor count'
