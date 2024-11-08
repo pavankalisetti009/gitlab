@@ -11,16 +11,6 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
     create(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: group, trial_ends_on: Date.tomorrow)
   end
 
-  before do
-    allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
-      allow(instance).to receive(:execute).and_return([Hashie::Mash.new({ id: "plan_id", code: "ultimate" })])
-    end
-    stub_feature_flags(
-      migrate_purchase_flows_for_existing_customers: false,
-      migrate_purchase_flows_for_new_customers: false
-    )
-  end
-
   describe 'GET show' do
     before do
       stub_saas_features(subscriptions_trials: true)
