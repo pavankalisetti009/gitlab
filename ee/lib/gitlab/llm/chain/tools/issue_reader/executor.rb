@@ -7,7 +7,6 @@ module Gitlab
         module IssueReader
           class Executor < Identifier
             include Concerns::ReaderTooling
-            prepend Concerns::UseAiGatewayAgentPrompt
 
             RESOURCE_NAME = 'issue'
             NAME = "IssueReader"
@@ -117,6 +116,14 @@ module Gitlab
               Utils::Prompt.as_assistant("%<suggestions>s"),
               Utils::Prompt.as_user("Question: %<input>s")
             ].freeze
+
+            def use_ai_gateway_agent_prompt?
+              true
+            end
+
+            def unit_primitive
+              'issue_reader'
+            end
 
             private
 

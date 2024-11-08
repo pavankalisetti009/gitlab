@@ -143,17 +143,5 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
       expect(logger).to have_received(:conditional_info).with(context.current_user, a_hash_including(
         message: "Content of the prompt from chat request", klass: tool.class.to_s, prompt: expected_prompt))
     end
-
-    context 'when prompt_migration_issue_reader feature flag is disabled' do
-      before do
-        stub_feature_flags(prompt_migration_issue_reader: false)
-      end
-
-      it 'does not send params to use ai gateway prompt' do
-        expect(ai_request).to receive(:request).with(tool.prompt, unit_primitive: nil)
-
-        tool.request
-      end
-    end
   end
 end
