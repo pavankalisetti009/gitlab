@@ -344,4 +344,19 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       expect(zoekt_index.free_storage_bytes).to eq(99)
     end
   end
+
+  describe '#should_be_deleted?' do
+    it 'returns true if the index state is orphaned or pending_deletion' do
+      expect(zoekt_index).not_to be_should_be_deleted
+
+      zoekt_index.state = :orphaned
+      expect(zoekt_index).to be_should_be_deleted
+
+      zoekt_index.state = :pending_deletion
+      expect(zoekt_index).to be_should_be_deleted
+
+      zoekt_index.state = :ready
+      expect(zoekt_index).not_to be_should_be_deleted
+    end
+  end
 end

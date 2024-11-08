@@ -9,6 +9,7 @@ module Search
       include Gitlab::Loggable
 
       SEARCHEABLE_STATES = %i[ready].freeze
+      SHOULD_BE_DELETED_STATES = %i[orphaned pending_deletion].freeze
       STORAGE_IDEAL_PERCENT_USED = 0.4
       STORAGE_LOW_WATERMARK = 0.7
       STORAGE_HIGH_WATERMARK = 0.85
@@ -71,11 +72,11 @@ module Search
       scope :preload_node, -> { includes(:node) }
 
       scope :should_be_marked_as_orphaned, -> do
-        where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: %i[orphaned pending_deletion])
+        where(zoekt_enabled_namespace: nil).or(where(replica: nil)).where.not(state: SHOULD_BE_DELETED_STATES)
       end
 
       scope :should_be_deleted, -> do
-        where(state: [:orphaned, :pending_deletion])
+        where(state: SHOULD_BE_DELETED_STATES)
       end
 
       scope :should_have_overprovisioned_watermark, -> do
@@ -146,6 +147,10 @@ module Search
 
       def free_storage_bytes
         reserved_storage_bytes.to_i - used_storage_bytes
+      end
+
+      def should_be_deleted?
+        SHOULD_BE_DELETED_STATES.include? state.to_sym
       end
 
       private
