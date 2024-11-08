@@ -67,7 +67,7 @@ describe('Settings', () => {
     it('renders when setting has exceptions', async () => {
       factory({
         settings: {
-          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
+          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 4 }] },
         },
       });
       await waitForPromises();
@@ -77,7 +77,7 @@ describe('Settings', () => {
         'Prevent group branch modification exceptions:',
       );
       expect(trimText(findSettings().at(0).text())).toContain(TOP_LEVEL_GROUPS[0].full_name);
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
+      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 4');
     });
 
     it('renders when setting has exceptions and groups are loading', () => {

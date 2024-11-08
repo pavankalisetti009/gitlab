@@ -1,4 +1,5 @@
 <script>
+import { debounce } from 'lodash';
 import {
   GlAvatarLabeled,
   GlCollapsibleListbox,
@@ -8,9 +9,10 @@ import {
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import Api from '~/api';
-import { __, s__ } from '~/locale';
-import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import { __, s__ } from '~/locale';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION_WITH_EXCEPTIONS_HUMANIZED_STRING,
   BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING,
@@ -20,6 +22,9 @@ import {
   EXCEPTION_GROUPS_TEXTS,
   EXCEPTION_GROUPS_LISTBOX_ITEMS,
   WITHOUT_EXCEPTIONS,
+  createGroupObject,
+  fetchExistingGroups,
+  updateSelectedGroups,
 } from '../lib/settings';
 
 export default {
@@ -49,6 +54,7 @@ export default {
       groups: [],
       loading: false,
       selectedExceptionType: this.exceptions.length ? EXCEPT_GROUPS : WITHOUT_EXCEPTIONS,
+      selectedGroups: [],
     };
   },
   computed: {
@@ -62,7 +68,7 @@ export default {
     },
     toggleText() {
       return getSelectedOptionsText({
-        options: this.groups,
+        options: this.selectedGroups,
         selected: this.exceptionItems,
         placeholder: __('Select groups'),
         maxOptionsShown: 2,
@@ -77,20 +83,25 @@ export default {
         this.selectExceptionType(WITHOUT_EXCEPTIONS);
       }
     },
+    async exceptionItems(ids) {
+      const availableGroups = [...this.selectedGroups, ...this.groups];
+      this.selectedGroups = await updateSelectedGroups({ ids, availableGroups });
+    },
+  },
+  created() {
+    this.handleSearch = debounce(this.fetchGroups, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
   },
   async mounted() {
+    this.selectedGroups = await fetchExistingGroups(this.exceptionItems);
     await this.fetchGroups();
   },
   methods: {
-    createGroupObject(group) {
-      return { ...group, text: group.full_name, value: group.id };
-    },
-    async fetchGroups() {
+    async fetchGroups(searchValue = '') {
       this.loading = true;
 
       try {
-        const topLevelGroups = await Api.groups('', { top_level_only: true });
-        this.groups = topLevelGroups.map((group) => this.createGroupObject(group));
+        const topLevelGroups = await Api.groups(searchValue, { top_level_only: true });
+        this.groups = topLevelGroups.map((group) => createGroupObject(group));
       } catch {
         this.groups = [];
         createAlert({
@@ -111,15 +122,16 @@ export default {
         this.emitChangeEvent(value);
       }
     },
-    updateGroupExceptionValue(value) {
+    updateGroupExceptionValue(ids) {
       if (this.enabled) {
-        this.emitChangeEvent({ enabled: this.enabled, exceptions: value.map((id) => ({ id })) });
+        this.emitChangeEvent({ enabled: this.enabled, exceptions: ids.map((id) => ({ id })) });
       }
     },
     emitChangeEvent(value) {
       this.$emit('change', value);
     },
   },
+
   GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/repository/branches/protected', {
     anchor: 'for-all-projects-in-a-group',
   }),
@@ -151,10 +163,12 @@ export default {
           data-testid="exceptions-selector"
           is-check-centered
           multiple
+          searchable
           :items="groups"
           :loading="loading"
           :selected="exceptionItems"
           :toggle-text="toggleText"
+          @search="handleSearch"
           @select="updateGroupExceptionValue"
         >
           <template #list-item="{ item }">

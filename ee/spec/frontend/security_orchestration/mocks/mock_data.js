@@ -96,4 +96,8 @@ export const generateMockGroups = (ids) =>
     fullPath: `group-${id}-full-path`,
   }));
 
-export const TOP_LEVEL_GROUPS = [{ id: 1, full_name: 'Group-1', full_path: 'group-1' }];
+export const createMockGroup = (id) => {
+  return { id, full_name: `Group-${id}`, full_path: `group-${id}` };
+};
+
+export const TOP_LEVEL_GROUPS = [1, 2, 3].map(createMockGroup);
