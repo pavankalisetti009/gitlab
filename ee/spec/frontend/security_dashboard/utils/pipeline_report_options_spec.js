@@ -20,6 +20,8 @@ describe('getPipelineReportOptions', () => {
       canViewFalsePositive: true,
       vulnerabilitiesQuery: findingsQuery,
       hasJiraVulnerabilitiesIntegrationEnabled: false,
+      hasVulnerabilities: true,
+      noVulnerabilitiesSvgPath: '/noVulnerabilitiesSvgPath',
     });
   });
 

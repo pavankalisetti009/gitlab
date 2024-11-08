@@ -13,6 +13,8 @@ export const getPipelineReportOptions = (data) => {
     sourceBranch,
     canViewFalsePositive,
     hasJiraVulnerabilitiesIntegrationEnabled,
+    hasVulnerabilities,
+    noVulnerabilitiesSvgPath,
   } = data;
 
   return {
@@ -34,5 +36,7 @@ export const getPipelineReportOptions = (data) => {
     hasJiraVulnerabilitiesIntegrationEnabled: parseBoolean(
       hasJiraVulnerabilitiesIntegrationEnabled,
     ),
+    hasVulnerabilities: parseBoolean(hasVulnerabilities),
+    noVulnerabilitiesSvgPath,
   };
 };
