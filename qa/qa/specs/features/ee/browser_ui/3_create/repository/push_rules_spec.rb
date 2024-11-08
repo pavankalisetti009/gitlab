@@ -46,8 +46,18 @@ module QA
           expect_no_error_on_push(file: standard_file)
         end
 
-        it 'restricts files by name and size',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347784' do
+        it 'restricts files by name and size', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347784',
+          quarantine: {
+            only: { job: 'ee-qa-browser_ui-3_create' },
+            type: :investigating,
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/455927'
+          } do
+          # Note: The file size limits in this test should be lower than the limits in
+          # browser_ui/3_create/repository/push_over_http_file_size_spec to prevent
+          # the limit set in that test from triggering in this test (which can happen
+          # on Staging where the tests are run in parallel).
+          # See: https://gitlab.com/gitlab-org/gitlab/-/issues/218620#note_361634705
+
           expect_error_on_push(
             file: {
               name: 'file',
