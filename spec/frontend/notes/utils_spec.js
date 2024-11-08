@@ -32,8 +32,12 @@ describe('createNoteErrorMessages', () => {
         const errorMessages = createNoteErrorMessages(
           {
             errors: {
-              commands_only: ['commands_only error 1', 'commands_only error 2'],
               base: ['base error 1'],
+            },
+            quick_actions_status: {
+              error: true,
+              commands_only: true,
+              messages: ['commands_only error 1', 'commands_only error 2'],
             },
           },
           HTTP_STATUS_UNPROCESSABLE_ENTITY,

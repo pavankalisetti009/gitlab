@@ -510,13 +510,8 @@ export function saveNote(noteData) {
 
   const processQuickActions = (res) => {
     const {
-      errors: { commands_only: commandsOnly } = {
-        commands_only: null,
-        command_names: [],
-      },
-      command_names: commandNames,
+      quick_actions_status: { messages: message = null, command_names: commandNames = [] } = {},
     } = res;
-    const message = commandsOnly;
 
     if (commandNames?.indexOf('submit_review') >= 0) {
       useBatchComments().clearDrafts();
@@ -525,7 +520,7 @@ export function saveNote(noteData) {
     /*
      The following reply means that quick actions have been successfully applied:
 
-     {"commands_changes":{},"valid":false,"errors":{"commands_only":["Commands applied"]}}
+     {"commands_changes":{},"valid":false,"errors":{},"quick_actions_status":{"messages":["Commands applied"],"command_names":["due"],"commands_only":true,"error":false}}
      */
     if (hasQuickActions && message) {
       // synchronizing the quick action with the sidebar widget
