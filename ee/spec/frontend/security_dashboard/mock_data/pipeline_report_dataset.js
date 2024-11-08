@@ -7,4 +7,6 @@ export const dataset = {
   pipelineJobsPath: '/pipelineJobsPath',
   sourceBranch: 'main',
   canViewFalsePositive: 'true',
+  hasVulnerabilities: 'true',
+  noVulnerabilitiesSvgPath: '/noVulnerabilitiesSvgPath',
 };
