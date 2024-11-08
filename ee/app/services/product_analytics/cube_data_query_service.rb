@@ -3,6 +3,7 @@
 module ProductAnalytics
   class CubeDataQueryService < BaseContainerService
     include Gitlab::Utils::StrongMemoize
+    include Analytics::ProductAnalytics::ConfiguratorUrlValidation
 
     REFRESH_TOKEN_EXPIRE = 1.day
 
@@ -32,11 +33,13 @@ module ProductAnalytics
 
     def query_data
       options = {
-        allow_local_requests: false,
+        allow_local_requests: allow_local_requests?,
         headers: cube_security_headers
       }
 
       begin
+        validate_url!(cube_server_url(params[:path]))
+
         response = if params[:path] == 'meta'
                      Gitlab::HTTP.get(cube_server_url(params[:path]), options)
                    else

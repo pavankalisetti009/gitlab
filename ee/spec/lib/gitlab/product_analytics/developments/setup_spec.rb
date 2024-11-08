@@ -69,6 +69,11 @@ RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_cat
     it 'enables feature flags for platform insights' do
       expect(Feature.enabled?(:product_analytics_admin_settings)).to eq(true)
     end
+
+    it 'enables the application settings' do
+      expect(::Gitlab::CurrentSettings.check_namespace_plan).to be(true)
+      expect(::Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services).to be(true)
+    end
   end
 
   context 'when not configured' do

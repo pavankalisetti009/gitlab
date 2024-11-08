@@ -9,7 +9,7 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
 
   before do
     allow_next_instance_of(ProductAnalytics::Settings) do |settings|
-      allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@localhost:4567')
+      allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@testdomain:4567')
     end
   end
 
@@ -71,11 +71,86 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
       end
     end
 
+    context 'when using a local URL' do
+      before do
+        allow_next_instance_of(ProductAnalytics::Settings) do |settings|
+          allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@localhost:4567')
+        end
+      end
+
+      context 'when the admin setting does not allow local requests' do
+        before do
+          allow(Gitlab::HTTP_V2::UrlBlocker)
+            .to receive(:validate!)
+            .and_raise(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+        end
+
+        it 'raises an invalid URL error' do
+          expect do
+            described_class.new.perform(project.id, nil, new_custom_dashboard_project.id)
+          end.to raise_error(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+
+          expect(Gitlab::HTTP).not_to receive(:post)
+        end
+      end
+
+      context 'when the admin setting allows local requests' do
+        before do
+          stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
+
+          allow(Gitlab::HTTP_V2::UrlBlocker)
+            .to receive(:validate!)
+            .and_return(
+              [
+                Addressable::URI.parse('http://test:test@localhost:4567/funnel-schemas'),
+                'http://test:test@localhost:4567/funnel-schemas'
+              ]
+            )
+        end
+
+        it "calls configurator with 'created' funnel" do
+          expect(Gitlab::HTTP)
+            .to receive(:post) do |url, params|
+            expect(url).to eq(
+              URI::HTTP.build(
+                host: 'localhost',
+                port: '4567',
+                path: '/funnel-schemas',
+                userinfo: 'test:test'
+              )
+            )
+
+            payload = ::Gitlab::Json.parse(params[:body]).with_indifferent_access
+
+            expect(payload).to match(
+              a_hash_including(
+                project_ids: ["gitlab_project_#{project.id}"],
+                funnels: [a_hash_including(
+                  state: "created"
+                )]
+              )
+            )
+          end
+            .once
+            .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+
+          described_class.new.perform(project.id, nil, new_custom_dashboard_project.id)
+        end
+      end
+    end
+
     context "when previous custom project doesn't exist" do
       it "calls configurator with 'created' funnel" do
         expect(Gitlab::HTTP)
           .to receive(:post) do |url, params|
-            expect(url).to eq("http://test:test@localhost:4567/funnel-schemas")
+            expect(url).to eq(
+              URI::HTTP.build(
+                host: 'testdomain',
+                port: '4567',
+                path: '/funnel-schemas',
+                userinfo: 'test:test'
+              )
+            )
 
             payload = ::Gitlab::Json.parse(params[:body]).with_indifferent_access
 
@@ -99,7 +174,14 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
       it "calls configurator with 'deleted' funnel" do
         expect(Gitlab::HTTP)
           .to receive(:post) do |url, params|
-          expect(url).to eq("http://test:test@localhost:4567/funnel-schemas")
+          expect(url).to eq(
+            URI::HTTP.build(
+              host: 'testdomain',
+              port: '4567',
+              path: '/funnel-schemas',
+              userinfo: 'test:test'
+            )
+          )
 
           payload = ::Gitlab::Json.parse(params[:body]).with_indifferent_access
 
@@ -125,7 +207,14 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
       it "calls configurator with 'created' and 'deleted' funnels" do
         expect(Gitlab::HTTP)
           .to receive(:post) do |url, params|
-          expect(url).to eq("http://test:test@localhost:4567/funnel-schemas")
+          expect(url).to eq(
+            URI::HTTP.build(
+              host: 'testdomain',
+              port: '4567',
+              path: '/funnel-schemas',
+              userinfo: 'test:test'
+            )
+          )
 
           payload = ::Gitlab::Json.parse(params[:body]).with_indifferent_access
 
