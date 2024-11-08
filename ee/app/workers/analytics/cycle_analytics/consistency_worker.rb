@@ -4,11 +4,8 @@ module Analytics
   module CycleAnalytics
     class ConsistencyWorker
       include ApplicationWorker
-
-      # rubocop:disable Scalability/CronWorkerContext
-      # This worker does not perform work scoped to a context
-      include CronjobQueue
-      # rubocop:enable Scalability/CronWorkerContext
+      include LoopWithRuntimeLimit
+      include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- worker does not perform work scoped to a context
 
       idempotent!
 
@@ -19,10 +16,9 @@ module Analytics
 
       def perform
         current_time = Time.current
-        runtime_limiter = Gitlab::Metrics::RuntimeLimiter.new(MAX_RUNTIME)
         over_time = false
 
-        loop do
+        loop_with_runtime_limit(MAX_RUNTIME) do |runtime_limiter|
           batch = Analytics::CycleAnalytics::Aggregation.load_batch(current_time, :last_consistency_check_updated_at)
           break if batch.empty?
 

@@ -52,7 +52,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, feature_category: :databa
         stub_const("#{described_class.name}::BATCH_SIZE", 1)
 
         allow_next_instance_of(Gitlab::Metrics::RuntimeLimiter) do |limiter|
-          allow(limiter).to receive(:over_time?).and_return(false, false, true)
+          allow(limiter).to receive(:over_time?).and_return(false, true)
         end
 
         status = perform

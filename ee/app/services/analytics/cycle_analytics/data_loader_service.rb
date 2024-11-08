@@ -19,7 +19,7 @@ module Analytics
       def initialize(namespace:, model:, stages: nil, context: Analytics::CycleAnalytics::AggregationContext.new)
         raise "Model #{model} is not supported" unless CONFIG_MAPPING.key?(model)
 
-        @namespace = namespace # could also be a Namespaces::UserNamespace object
+        @namespace = namespace
         @model = model
         @context = context
         @upsert_count = 0

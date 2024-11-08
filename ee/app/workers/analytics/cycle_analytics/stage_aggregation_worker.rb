@@ -2,27 +2,25 @@
 
 module Analytics
   module CycleAnalytics
-    class IncrementalWorker
+    class StageAggregationWorker
       include ApplicationWorker
       include LoopWithRuntimeLimit
       include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- worker does not perform work scoped to a context
 
-      MAX_RUNTIME = 200.seconds
+      MAX_RUNTIME = 270.seconds
 
       idempotent!
 
-      data_consistency :always
+      data_consistency :sticky
       feature_category :value_stream_management
 
       def perform
-        current_time = Time.current
-
         loop_with_runtime_limit(MAX_RUNTIME) do |runtime_limiter|
-          batch = Analytics::CycleAnalytics::Aggregation.load_batch(current_time)
+          batch = Analytics::CycleAnalytics::StageAggregation.load_batch
           break if batch.empty?
 
           batch.each do |aggregation|
-            Analytics::CycleAnalytics::NamespaceAggregatorService.new(aggregation: aggregation, mode: :incremental,
+            Analytics::CycleAnalytics::StageAggregatorService.new(aggregation: aggregation,
               runtime_limiter: runtime_limiter).execute
 
             break if runtime_limiter.over_time?

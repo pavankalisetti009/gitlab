@@ -6,8 +6,8 @@ RSpec.describe Analytics::CycleAnalytics::StageAggregatorService, feature_catego
   let_it_be(:root_group) { create(:group, :with_organization) }
   let_it_be(:subgroup) { create(:group, parent: root_group, organization_id: root_group.organization_id) }
   let_it_be(:project) { create(:project, namespace: subgroup) }
-  let!(:aggregation) { create(:cycle_analytics_stage_aggregation, :enabled, namespace: subgroup, stage: stage) }
   let(:stage) { create(:cycle_analytics_stage, namespace: subgroup) }
+  let!(:aggregation) { stage.stage_aggregation }
 
   def run_service
     described_class.new(aggregation: aggregation).execute
