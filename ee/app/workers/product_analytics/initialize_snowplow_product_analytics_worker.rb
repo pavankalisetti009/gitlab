@@ -3,6 +3,7 @@
 module ProductAnalytics
   class InitializeSnowplowProductAnalyticsWorker
     include ApplicationWorker
+    include Analytics::ProductAnalytics::ConfiguratorUrlValidation
 
     data_consistency :sticky
     feature_category :product_analytics
@@ -22,10 +23,11 @@ module ProductAnalytics
 
       return unless @project&.product_analytics_enabled?
 
+      validate_url!(project_setup_url)
+
       response = Gitlab::HTTP.post(
-        URI.join(::ProductAnalytics::Settings.for_project(@project).product_analytics_configurator_connection_string,
-          "setup-project/gitlab_project_#{project_id}"),
-        allow_local_requests: false,
+        project_setup_url,
+        allow_local_requests: allow_local_requests?,
         timeout: 10
       )
 
@@ -48,6 +50,14 @@ module ProductAnalytics
 
     def update_instrumentation_key(key)
       @project.project_setting.update!(product_analytics_instrumentation_key: key)
+    end
+
+    def project_setup_url
+      URI.join(
+        configurator_url(@project),
+        '/setup-project/',
+        "gitlab_project_#{@project.id}"
+      )
     end
 
     def track_success

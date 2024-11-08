@@ -81,6 +81,61 @@ RSpec.describe ProductAnalytics::InitializeSnowplowProductAnalyticsWorker, featu
     end
   end
 
+  context 'when using a local URL' do
+    before do
+      stub_application_setting(product_analytics_configurator_connection_string: 'http://test:test@localhost:4567')
+    end
+
+    context 'when the admin setting does not allow local requests' do
+      before do
+        allow(Gitlab::HTTP_V2::UrlBlocker)
+          .to receive(:validate!)
+          .and_raise(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+      end
+
+      it 'raises an invalid URL error' do
+        expect { worker }.to raise_error(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+        expect(Gitlab::HTTP).not_to receive(:post)
+      end
+    end
+
+    context 'when the admin setting allows local requests' do
+      before do
+        stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
+
+        allow(Gitlab::HTTP_V2::UrlBlocker)
+          .to receive(:validate!)
+          .and_return(
+            [
+              Addressable::URI.parse("http://test:test@localhost:4567/setup-project/gitlab_project_#{project.id}"),
+              "http://test:test@localhost:4567/setup-project/gitlab_project_#{project.id}"
+            ]
+          )
+
+        allow(Gitlab::HTTP)
+          .to receive(:post)
+          .with(
+            Addressable::URI.parse("http://test:test@localhost:4567/setup-project/gitlab_project_#{project.id}"),
+            allow_local_requests: true,
+            timeout: 10
+          )
+          .and_return(
+            instance_double(
+              HTTParty::Response,
+              code: 200,
+              success?: true,
+              body: { app_id: app_id, project_id: "gitlab_project_#{project.id}" }.to_json
+            )
+          )
+      end
+
+      it 'persists the instrumentation key' do
+        expect { worker }
+          .to change { project.reload.project_setting.product_analytics_instrumentation_key }.from(nil).to(app_id)
+      end
+    end
+  end
+
   context 'when feature is not licensed' do
     before do
       stub_licensed_features(product_analytics: false)

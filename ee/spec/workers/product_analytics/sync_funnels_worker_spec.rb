@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Style/RedundantRegexpEscape -- Several instances of this cop triggering in this file which are not justified as they're matching the escaped characters.
-
 require 'spec_helper'
 
 RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_analytics do
@@ -18,11 +16,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
       it 'is successful' do
         url_to_projects_regex.each do |url, projects_regex|
           expect(Gitlab::HTTP).to receive(:post)
-                                    .with(URI.parse(url.to_s), {
-                                      allow_local_requests: false,
-                                      body: Regexp.new(projects_regex.source + /.*\"state\":\"created\"/.source)
-                                    }).once
-                                    .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+            .with(URI.parse(url.to_s), {
+              allow_local_requests: allow_local_requests,
+              body: Regexp.new(projects_regex.source + /.*"state":"created"/.source)
+            }).once
+            .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
         end
 
         worker
@@ -58,11 +56,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
       it 'is successful' do
         url_to_projects_regex.each do |url, projects_regex|
           expect(Gitlab::HTTP).to receive(:post)
-                                    .with(URI.parse(url.to_s), {
-                                      allow_local_requests: false,
-                                      body: Regexp.new(projects_regex.source + /.*\"state\":\"updated\"/.source)
-                                    }).once.and_return(instance_double("HTTParty::Response",
-                                      body: { result: 'success' }))
+            .with(URI.parse(url.to_s), {
+              allow_local_requests: allow_local_requests,
+              body: Regexp.new(projects_regex.source + /.*"state":"updated"/.source)
+            }).once.and_return(instance_double("HTTParty::Response",
+              body: { result: 'success' }))
         end
 
         worker
@@ -99,11 +97,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
       it 'is successful' do
         url_to_projects_regex.each do |url, _projects_regex|
           expect(Gitlab::HTTP).to receive(:post)
-                                    .with(URI.parse(url.to_s), {
-                                      allow_local_requests: false,
-                                      body: /\"previous_name\":\"example1\"/
-                                    }).once
-                                    .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+            .with(URI.parse(url.to_s), {
+              allow_local_requests: allow_local_requests,
+              body: /"previous_name":"example1"/
+            }).once
+            .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
         end
 
         worker
@@ -136,11 +134,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
       it 'is successful' do
         url_to_projects_regex.each do |url, projects_regex|
           expect(Gitlab::HTTP).to receive(:post)
-                                    .with(URI.parse(url.to_s), {
-                                      allow_local_requests: false,
-                                      body: Regexp.new(projects_regex.source + /.*\"state\":\"deleted\"/.source)
-                                    }).once
-                                    .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+            .with(URI.parse(url.to_s), {
+              allow_local_requests: allow_local_requests,
+              body: Regexp.new(projects_regex.source + /.*"state":"deleted"/.source)
+            }).once
+            .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
         end
 
         worker
@@ -155,11 +153,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         it 'is successful' do
           url_to_projects_regex.each do |url, projects_regex|
             expect(Gitlab::HTTP).to receive(:post)
-                                      .with(URI.parse(url.to_s), {
-                                        allow_local_requests: false,
-                                        body: Regexp.new(projects_regex.source + /.*\"state\":\"deleted\"/.source)
-                                      }).once
-                                      .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+              .with(URI.parse(url.to_s), {
+                allow_local_requests: allow_local_requests,
+                body: Regexp.new(projects_regex.source + /.*"state":"deleted"/.source)
+              }).once
+              .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
           end
 
           worker
@@ -219,7 +217,7 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
   subject(:worker) { described_class.new.perform(project.id, commit.sha, user.id) }
 
   describe '#perform' do
-    context 'without pointer projects' do
+    context 'when using a local URL' do
       before do
         allow_next_instance_of(ProductAnalytics::Settings) do |settings|
           allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@localhost:4567')
@@ -228,22 +226,75 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         project.reload
       end
 
+      context 'when the admin setting does not allow local requests' do
+        before do
+          create_valid_funnel
+
+          allow(Gitlab::HTTP_V2::UrlBlocker)
+            .to receive(:validate!)
+            .and_raise(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+        end
+
+        after do
+          delete_funnel("example1.yml")
+        end
+
+        it 'raises an invalid URL error' do
+          expect { worker }.to raise_error(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError)
+          expect(Gitlab::HTTP).not_to receive(:post)
+        end
+      end
+
+      context 'when the admin setting allows local requests' do
+        before do
+          stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
+
+          allow(Gitlab::HTTP_V2::UrlBlocker)
+            .to receive(:validate!)
+            .and_return(
+              [
+                Addressable::URI.parse('http://test:test@localhost:4567/funnel-schemas'),
+                'http://test:test@localhost:4567/funnel-schemas'
+              ]
+            )
+        end
+
+        it_behaves_like 'sends data to configurator' do
+          let(:allow_local_requests) { true }
+          let(:url_to_projects_regex) do
+            { "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{project.id}/ }
+          end
+        end
+      end
+    end
+
+    context 'without pointer projects' do
+      before do
+        allow_next_instance_of(ProductAnalytics::Settings) do |settings|
+          allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@anotherhost:4567')
+        end
+        project.project_setting.update!(product_analytics_instrumentation_key: 'some_key')
+        project.reload
+      end
+
       it_behaves_like 'sends data to configurator' do
+        let(:allow_local_requests) { false }
         let(:url_to_projects_regex) do
-          { "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{project.id}/ }
+          { "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{project.id}/ }
         end
       end
 
       context "when the connection string ends with /" do
         before do
           allow_next_instance_of(ProductAnalytics::Settings) do |settings|
-            allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@localhost:4567/')
+            allow(settings).to receive(:product_analytics_configurator_connection_string).and_return('http://test:test@anotherhost:4567/')
           end
         end
 
         it_behaves_like 'sends data to configurator' do
+          let(:allow_local_requests) { false }
           let(:url_to_projects_regex) do
-            { "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{project.id}/ }
+            { "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{project.id}/ }
           end
         end
       end
@@ -261,7 +312,7 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         before do
           Analytics::DashboardsPointer.create!(project: other_project_1, target_project: project)
           other_project_1.project_setting.update!(
-            product_analytics_configurator_connection_string: 'http://test:test@localhost:4567',
+            product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
             product_analytics_data_collector_host: 'http://test.net',
             cube_api_base_url: 'https://test.com:3000',
             cube_api_key: 'helloworld'
@@ -270,8 +321,9 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         end
 
         it_behaves_like 'sends data to configurator' do
+          let(:allow_local_requests) { false }
           let(:url_to_projects_regex) do
-            { "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}/ }
+            { "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}/ }
           end
         end
       end
@@ -285,14 +337,14 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         context "when projects are using the same configurator" do
           before do
             other_project_1.project_setting.update!(
-              product_analytics_configurator_connection_string: 'http://test:test@localhost:4567',
+              product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
               product_analytics_data_collector_host: 'http://test.net',
               cube_api_base_url: 'https://test.com:3000',
               cube_api_key: 'helloworld'
             )
             other_project_1.reload
             other_project_2.project_setting.update!(
-              product_analytics_configurator_connection_string: 'http://test:test@localhost:4567',
+              product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
               product_analytics_data_collector_host: 'http://test.net',
               cube_api_base_url: 'https://test.com:3000',
               cube_api_key: 'helloworld'
@@ -301,8 +353,9 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
           end
 
           it_behaves_like 'sends data to configurator' do
+            let(:allow_local_requests) { false }
             let(:url_to_projects_regex) do
-              { "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}/ }
+              { "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}/ }
             end
           end
         end
@@ -310,13 +363,13 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         context "when projects are using different configurators" do
           before do
             other_project_1.project_setting.update!(
-              product_analytics_configurator_connection_string: 'http://test:test@localhost:4567',
+              product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
               product_analytics_data_collector_host: 'http://test.net',
               cube_api_base_url: 'https://test.com:3000',
               cube_api_key: 'helloworld'
             )
             other_project_2.project_setting.update!(
-              product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
+              product_analytics_configurator_connection_string: 'http://test:test@test.net:4567',
               product_analytics_data_collector_host: 'http://test.net',
               cube_api_base_url: 'https://test.com:3000',
               cube_api_key: 'helloworld'
@@ -326,10 +379,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
           end
 
           it_behaves_like 'sends data to configurator' do
+            let(:allow_local_requests) { false }
             let(:url_to_projects_regex) do
               {
-                "http://test:test@localhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}/,
-                "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{other_project_2.id}/
+                "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}/,
+                "http://test:test@test.net:4567/funnel-schemas": /gitlab_project_#{other_project_2.id}/
               }
             end
           end
@@ -421,5 +475,3 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
     )
   end
 end
-
-# rubocop:enable Style/RedundantRegexpEscape

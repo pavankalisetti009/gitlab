@@ -3,6 +3,7 @@
 module ProductAnalytics
   class MoveFunnelsWorker
     include ApplicationWorker
+    include Analytics::ProductAnalytics::ConfiguratorUrlValidation
 
     data_consistency :sticky
     feature_category :product_analytics
@@ -19,11 +20,12 @@ module ProductAnalytics
 
       return if @payload[:funnels].empty?
 
+      validate_url!(funnels_url)
+
       Gitlab::HTTP.post(
-        "#{ ::ProductAnalytics::Settings.for_project(@project)
-                                        .product_analytics_configurator_connection_string }/funnel-schemas",
-        body: build_payload.to_json,
-        allow_local_requests: false
+        funnels_url,
+        allow_local_requests: allow_local_requests?,
+        body: build_payload.to_json
       )
     end
 
@@ -69,6 +71,13 @@ module ProductAnalytics
       end
 
       funnels_to_send
+    end
+
+    def funnels_url
+      URI.join(
+        configurator_url(@project),
+        '/funnel-schemas'
+      )
     end
   end
 end

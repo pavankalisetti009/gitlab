@@ -3,6 +3,7 @@
 module ProductAnalytics
   class SyncFunnelsWorker
     include ApplicationWorker
+    include Analytics::ProductAnalytics::ConfiguratorUrlValidation
 
     data_consistency :sticky
     feature_category :product_analytics
@@ -20,13 +21,15 @@ module ProductAnalytics
       return if funnels.empty?
 
       @payload.each do |url, project_ids|
+        validate_url!(url)
+
         Gitlab::HTTP.post(
           url,
           body: {
             project_ids: project_ids.map { |id| "gitlab_project_#{id}" },
             funnels: funnels
           }.to_json,
-          allow_local_requests: false
+          allow_local_requests: allow_local_requests?
         )
       end
     end
@@ -85,8 +88,8 @@ module ProductAnalytics
       map = {}
 
       project_ids_to_send.each do |project_id|
-        settings = ::ProductAnalytics::Settings.for_project(Project.find_by_id(project_id))
-        url = URI.join(settings.product_analytics_configurator_connection_string, "funnel-schemas")
+        configurator_url = configurator_url(Project.find_by_id(project_id))
+        url = URI.join(configurator_url, "/funnel-schemas")
 
         if map.has_key?(url)
           map[url] << project_id
