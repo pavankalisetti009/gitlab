@@ -14,5 +14,14 @@ module EE
         super
       end
     end
+
+    override :event_wiki_page_target_url
+    def event_wiki_page_target_url(event)
+      if event.group_id.present?
+        group_wiki_url(event.group, event.target&.canonical_slug || ::Wiki::HOMEPAGE)
+      else
+        super
+      end
+    end
   end
 end
