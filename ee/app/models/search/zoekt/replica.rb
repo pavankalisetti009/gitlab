@@ -3,6 +3,7 @@
 module Search
   module Zoekt
     class Replica < ApplicationRecord
+      include EachBatch
       include NamespaceValidateable
 
       self.table_name = 'zoekt_replicas'
