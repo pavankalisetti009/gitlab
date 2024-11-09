@@ -12,6 +12,7 @@ import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
 import ToggleList from '../toggle_list.vue';
 import Approvals from './policy_approvals.vue';
+import EdgeCaseSettings from './edge_case_settings.vue';
 import Settings from './policy_settings.vue';
 import { humanizeRules } from './utils';
 
@@ -28,6 +29,7 @@ export default {
     DrawerLayout,
     InfoRow,
     Approvals,
+    EdgeCaseSettings,
     Settings,
   },
   props: {
@@ -74,6 +76,12 @@ export default {
     },
     actionApprovers() {
       return this.policy?.actionApprovers || [];
+    },
+    edgeCaseSettings() {
+      return this.parsedYaml?.policy_tuning || {};
+    },
+    hasEdgeCaseSettings() {
+      return Object.values(this.edgeCaseSettings).some((v) => v);
     },
     settings() {
       return this.parsedYaml?.approval_settings || {};
@@ -182,10 +190,11 @@ export default {
       <info-row
         v-show="fallbackBehaviorText"
         :label="$options.i18n.fallbackTitle"
-        data-testid="additional-details"
+        data-testid="fallback-details"
       >
         {{ fallbackBehaviorText }}
       </info-row>
+      <edge-case-settings v-if="hasEdgeCaseSettings" :settings="edgeCaseSettings" />
     </template>
   </drawer-layout>
 </template>

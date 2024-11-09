@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import {
   CLOSED,
   OPEN,
-} from 'ee/security_orchestration/components/policy_editor/scan_result/constants';
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import FallbackAndEdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_and_edge_cases_section.vue';
 import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_section.vue';
 import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/edge_cases_section.vue';

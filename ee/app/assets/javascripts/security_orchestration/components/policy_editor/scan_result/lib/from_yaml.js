@@ -2,7 +2,7 @@ import { safeLoad } from 'js-yaml';
 import { isBoolean, isEqual } from 'lodash';
 import { addIdsToPolicy, hasInvalidKey, isValidPolicy } from '../../utils';
 import { PRIMARY_POLICY_KEYS } from '../../constants';
-import { OPEN, CLOSED } from '../constants';
+import { OPEN, CLOSED } from '../advanced_settings/constants';
 import {
   BLOCK_GROUP_BRANCH_MODIFICATION,
   VALID_APPROVAL_SETTINGS,

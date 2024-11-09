@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlFormRadio, GlFormRadioGroup } from '@gitlab/ui';
-import { OPEN } from 'ee/security_orchestration/components/policy_editor/scan_result/constants';
+import { OPEN } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_section.vue';
 
 describe('FallbackSection', () => {
