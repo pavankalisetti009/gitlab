@@ -33,7 +33,6 @@ describe('Scan result policy actions', () => {
       },
       provide: {
         ...DEFAULT_PROVIDE,
-        scanResultPolicyApprovers: {},
         ...provide,
       },
       stubs: {

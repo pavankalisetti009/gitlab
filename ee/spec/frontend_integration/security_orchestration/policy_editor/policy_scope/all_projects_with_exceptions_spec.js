@@ -44,7 +44,6 @@ describe('Policy Scope With Exceptions', () => {
         ...DEFAULT_PROVIDE,
         glFeatures,
         ...provide,
-        scanResultPolicyApprovers: {},
       },
       stubs: {
         SourceEditor: true,

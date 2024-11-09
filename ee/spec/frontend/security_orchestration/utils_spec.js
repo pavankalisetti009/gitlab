@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_USER } from '~/graphql_shared/constants';
-import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import {
   getPolicyType,
@@ -20,7 +20,6 @@ const userApprover = {
 };
 
 const groupApprover = {
-  avatar_url: null,
   id: 2,
   name: null,
   fullName: null,
@@ -28,7 +27,7 @@ const groupApprover = {
   webUrl: null,
 };
 
-const allApprovers = [userApprover, groupApprover];
+const allApprovers = [{ users: [userApprover], groups: [groupApprover] }];
 
 describe('getPolicyType', () => {
   it.each`
@@ -48,22 +47,25 @@ describe('getPolicyType', () => {
 describe('decomposeApprovers', () => {
   describe('with mixed approvers', () => {
     it('returns a copy of the input values with their proper type attribute', () => {
-      expect(decomposeApprovers(allApprovers)).toStrictEqual({
-        [GROUP_TYPE]: [
-          {
-            ...groupApprover,
-            type: GROUP_TYPE,
-            value: convertToGraphQLId(TYPENAME_GROUP, groupApprover.id),
-          },
-        ],
-        [USER_TYPE]: [
-          {
-            ...userApprover,
-            type: USER_TYPE,
-            value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
-          },
-        ],
-      });
+      expect(decomposeApprovers(allApprovers)).toStrictEqual([
+        {
+          [GROUP_TYPE]: [
+            {
+              ...groupApprover,
+              type: GROUP_TYPE,
+              value: convertToGraphQLId(TYPENAME_GROUP, groupApprover.id),
+            },
+          ],
+          [USER_TYPE]: [
+            {
+              ...userApprover,
+              type: USER_TYPE,
+              value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
+            },
+          ],
+          [ROLE_TYPE]: [],
+        },
+      ]);
     });
 
     it.each`
@@ -71,34 +73,42 @@ describe('decomposeApprovers', () => {
       ${USER_TYPE}  | ${userApprover}
       ${GROUP_TYPE} | ${groupApprover}
     `('sets types depending on whether the approver has $type', ({ type, approver }) => {
-      expect(decomposeApprovers(allApprovers)[type].find(({ id }) => id === approver.id)).toEqual(
-        expect.objectContaining({ type }),
-      );
+      expect(
+        decomposeApprovers(allApprovers)[0][type].find(({ id }) => id === approver.id),
+      ).toEqual(expect.objectContaining({ type }));
     });
   });
 
   it('sets group as a type for group related approvers', () => {
-    expect(decomposeApprovers([groupApprover])).toStrictEqual({
-      [GROUP_TYPE]: [
-        {
-          ...groupApprover,
-          type: GROUP_TYPE,
-          value: convertToGraphQLId(TYPENAME_GROUP, groupApprover.id),
-        },
-      ],
-    });
+    expect(decomposeApprovers([{ groups: [groupApprover] }])).toStrictEqual([
+      {
+        [GROUP_TYPE]: [
+          {
+            ...groupApprover,
+            type: GROUP_TYPE,
+            value: convertToGraphQLId(TYPENAME_GROUP, groupApprover.id),
+          },
+        ],
+        [USER_TYPE]: [],
+        [ROLE_TYPE]: [],
+      },
+    ]);
   });
 
   it('sets user as a type for user related approvers', () => {
-    expect(decomposeApprovers([userApprover])).toStrictEqual({
-      [USER_TYPE]: [
-        {
-          ...userApprover,
-          type: USER_TYPE,
-          value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
-        },
-      ],
-    });
+    expect(decomposeApprovers([{ users: [userApprover] }])).toStrictEqual([
+      {
+        [USER_TYPE]: [
+          {
+            ...userApprover,
+            type: USER_TYPE,
+            value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
+          },
+        ],
+        [GROUP_TYPE]: [],
+        [ROLE_TYPE]: [],
+      },
+    ]);
   });
 });
 

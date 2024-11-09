@@ -137,7 +137,6 @@ export default {
     'namespaceType',
     'policyEditorEmptyStateSvgPath',
     'scanPolicyDocumentationPath',
-    'scanResultPolicyApprovers',
   ],
   props: {
     assignedPolicyProject: {
@@ -176,10 +175,6 @@ export default {
 
     const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
 
-    const existingApprovers = isEmpty(this.scanResultPolicyApprovers)
-      ? this.actionApprovers
-      : [this.scanResultPolicyApprovers];
-
     return {
       errors: { action: [] },
       invalidBranches: [],
@@ -191,7 +186,7 @@ export default {
         'scan-result-policy-editor',
       ),
       mode: EDITOR_MODE_RULE,
-      existingApprovers,
+      existingApprovers: this.actionApprovers,
       yamlEditorValue,
     };
   },
