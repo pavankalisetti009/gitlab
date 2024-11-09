@@ -11,7 +11,7 @@ import FallbackAndEdgeCasesSection from 'ee/security_orchestration/components/po
 import {
   CLOSED,
   OPEN,
-} from 'ee/security_orchestration/components/policy_editor/scan_result/constants';
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import BotCommentAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/bot_message_action.vue';

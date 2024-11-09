@@ -6,6 +6,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import Approvals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
 import Settings from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_settings.vue';
+import EdgeCaseSettings from 'ee/security_orchestration/components/policy_drawer/scan_result/edge_case_settings.vue';
 import {
   disabledSendBotMessageActionScanResultManifest,
   enabledSendBotMessageActionScanResultManifest,
@@ -15,12 +16,13 @@ import {
   mockProjectFallbackClosedScanResultManifest,
   mockNoFallbackScanResultManifest,
   zeroActionsScanResultManifest,
+  mockProjectPolicyTuningScanResultManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 describe('DetailsDrawer component', () => {
   let wrapper;
 
-  const findAdditionalDetails = () => wrapper.findByTestId('additional-details');
+  const findFallbackDetails = () => wrapper.findByTestId('fallback-details');
   const findSummary = () => wrapper.findByTestId('policy-summary');
   const findPolicyApprovals = () => wrapper.findComponent(Approvals);
   const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
@@ -28,6 +30,7 @@ describe('DetailsDrawer component', () => {
   const findSettings = () => wrapper.findComponent(Settings);
   const findBotMessage = () => wrapper.findByTestId('policy-bot-message');
   const findApprovalSubheader = () => wrapper.findByTestId('approvals-subheader');
+  const findEdgeCaseSettings = () => wrapper.findComponent(EdgeCaseSettings);
 
   const factory = ({ props } = {}) => {
     wrapper = shallowMountExtended(DetailsDrawer, {
@@ -157,14 +160,14 @@ describe('DetailsDrawer component', () => {
           policy: { ...mockProjectScanResultPolicy, yaml: mockNoFallbackScanResultManifest },
         },
       });
-      expect(findAdditionalDetails().isVisible()).toBe(false);
-      expect(findAdditionalDetails().text()).toBe('');
+      expect(findFallbackDetails().isVisible()).toBe(false);
+      expect(findFallbackDetails().text()).toBe('');
     });
 
     it('renders the open fallback behavior', () => {
       factory();
-      expect(findAdditionalDetails().isVisible()).toBe(true);
-      expect(findAdditionalDetails().text()).toBe(
+      expect(findFallbackDetails().isVisible()).toBe(true);
+      expect(findFallbackDetails().text()).toBe(
         'Fail open: Allow the merge request to proceed, even if not all criteria are met',
       );
     });
@@ -178,10 +181,29 @@ describe('DetailsDrawer component', () => {
           },
         },
       });
-      expect(findAdditionalDetails().isVisible()).toBe(true);
-      expect(findAdditionalDetails().text()).toBe(
+      expect(findFallbackDetails().isVisible()).toBe(true);
+      expect(findFallbackDetails().text()).toBe(
         'Fail closed: Block the merge request until all criteria are met',
       );
+    });
+  });
+
+  describe('edge case settings', () => {
+    it('does not render the edge case settings', () => {
+      factory();
+      expect(findEdgeCaseSettings().exists()).toBe(false);
+    });
+
+    it('does render the edge case settings', () => {
+      factory({
+        props: {
+          policy: {
+            ...mockProjectScanResultPolicy,
+            yaml: mockProjectPolicyTuningScanResultManifest,
+          },
+        },
+      });
+      expect(findEdgeCaseSettings().exists()).toBe(true);
     });
   });
 });

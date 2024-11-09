@@ -5,7 +5,7 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/edge_cases_section.vue';
 import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_section.vue';
 import DimDisableContainer from '../../dim_disable_container.vue';
-import { CLOSED } from '../constants';
+import { CLOSED } from './constants';
 
 export default {
   i18n: {
