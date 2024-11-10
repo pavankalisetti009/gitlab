@@ -111,10 +111,11 @@ export default {
       },
       result({ data }) {
         const groups = data?.project?.securityPolicyProjectLinkedGroups?.nodes || [];
-        const currentSettingsValue = this.policy.approval_settings[BLOCK_GROUP_BRANCH_MODIFICATION];
+        const currentSettingsValue =
+          this.policy.approval_settings?.[BLOCK_GROUP_BRANCH_MODIFICATION];
         if (groups.length && currentSettingsValue === undefined) {
           const newSettings = {
-            ...this.policy.approval_settings,
+            ...(this.policy.approval_settings || {}),
             [BLOCK_GROUP_BRANCH_MODIFICATION]: true,
           };
           this.updateSettings(newSettings);

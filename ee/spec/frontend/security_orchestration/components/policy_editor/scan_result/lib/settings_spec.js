@@ -19,8 +19,14 @@ import { createMockGroup } from 'ee_jest/security_orchestration/mocks/mock_data'
 const defaultSettings = buildSettingsList();
 
 describe('buildSettingsList', () => {
-  it('returns the default settings', () => {
+  it('returns the default settings with no arguments', () => {
     expect(buildSettingsList()).toEqual(defaultSettings);
+  });
+
+  it('returns the default settings when there are no settings', () => {
+    expect(
+      buildSettingsList({ settings: undefined, options: { namespaceType: NAMESPACE_TYPES.GROUP } }),
+    ).toEqual(defaultSettings);
   });
 
   it('can update merge request settings for projects', () => {

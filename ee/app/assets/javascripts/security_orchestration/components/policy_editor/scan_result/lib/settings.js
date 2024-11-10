@@ -156,7 +156,9 @@ const buildConfig = (
  * @param settings
  * @returns {Object}
  */
-export const buildSettingsList = ({ settings, options = {} } = { settings: {}, options: {} }) => {
+export const buildSettingsList = (
+  { settings = {}, options = {} } = { settings: {}, options: {} },
+) => {
   const configuration = buildConfig(settings, options);
 
   return Object.keys(configuration).reduce((acc, setting) => {

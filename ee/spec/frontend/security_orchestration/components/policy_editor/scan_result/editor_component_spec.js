@@ -880,6 +880,17 @@ describe('EditorComponent', () => {
           blockGroupBranchModificationSetting,
         );
       });
+
+      it('adds settings for an existing policy without settings', async () => {
+        factoryWithExistingPolicy({
+          provide: { glFeatures: { scanResultPolicyBlockGroupBranchModification: true } },
+          handler: mockLinkedSppItemsResponse({ groups: defaultGroups }),
+        });
+        await waitForPromises();
+        expect(findSettingsSection().props('settings')).toMatchObject({
+          [BLOCK_GROUP_BRANCH_MODIFICATION]: true,
+        });
+      });
     });
   });
 
