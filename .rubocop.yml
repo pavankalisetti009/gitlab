@@ -36,17 +36,14 @@ AllCops:
     - 'vendor/**/*'
     - 'node_modules/**/*'
     - 'db/fixtures/**/*'
-    - 'db/schema.rb'
     - 'tmp/**/*'
     - 'bin/**/*'
     - 'generator_templates/**/*'
     - 'builds/**/*'
-    - 'plugins/**/*'
     - 'file_hooks/**/*'
     - 'workhorse/**/*'
     - 'shared/packages/**/*'
     - 'spec/support/*.git/**/*'  # e.g. spec/support/gitlab-git-test.git
-    - 'db/ci_migrate/*.rb'      # since the `db/ci_migrate` is a symlinked to `db/migrate`
     # projects_controller.rb is used for testing LLM response and is very sensitive to whitespaces.
     - 'ee/spec/fixtures/llm/projects_controller.rb'
     # Adding this specifically for a large revert: !118368
