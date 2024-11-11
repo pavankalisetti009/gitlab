@@ -54,7 +54,6 @@ this provider also allows Crowd authentication for Git-over-https requests.
        gitlab_rails['omniauth_providers'] = [
          {
            name: "crowd",
-           # label: "Provider name", # optional label for login button, defaults to "Crowd"
            args: {
              crowd_server_url: "CROWD_SERVER_URL",
              application_name: "YOUR_APP_NAME",
@@ -68,7 +67,6 @@ this provider also allows Crowd authentication for Git-over-https requests.
 
      ```yaml
         - { name: 'crowd',
-            # label: 'Provider name', # optional label for login button, defaults to "Crowd"
             args: {
               crowd_server_url: 'CROWD_SERVER_URL',
               application_name: 'YOUR_APP_NAME',
