@@ -1,7 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlLink, GlPopover } from '@gitlab/ui';
 import { flattenDeep } from 'lodash';
-import SafeHtml from '~/vue_shared/directives/safe_html';
 import { __, s__, sprintf } from '~/locale';
 
 export default {
@@ -13,9 +12,6 @@ export default {
     GlCollapse,
     GlBadge,
     GlLink,
-  },
-  directives: {
-    SafeHtml,
   },
   props: {
     description: {
@@ -94,10 +90,11 @@ export default {
     getPathIcon(index) {
       return this.stepsExpanded[index] ? 'chevron-down' : 'chevron-right';
     },
-    getBoldFileName(filepath) {
-      const parts = filepath.split('/');
-      const filename = parts[parts.length - 1];
-      return filepath.replace(filename, `<b>${filename}</b>`);
+    fileName(fileName) {
+      return fileName.split('/').pop();
+    },
+    filePath(fileName) {
+      return fileName.slice(0, fileName.lastIndexOf('/') + 1);
     },
     selectStep(vulnerabilityItem) {
       this.selectedStepNumber = vulnerabilityItem.stepNumber;
@@ -249,7 +246,10 @@ export default {
             :aria-label="toggleAriaLabel(index)"
             @click="openFileSteps(index)"
           />
-          <span v-safe-html="getBoldFileName(vulnerabilityFlow[0].fileLocation.fileName)"></span>
+          <span :data-testid="`file-name-${index}`">
+            {{ filePath(vulnerabilityFlow[0].fileLocation.fileName)
+            }}<b>{{ fileName(vulnerabilityFlow[0].fileLocation.fileName) }}</b>
+          </span>
           <gl-collapse class="gl-mt-2 gl-pl-6" :visible="!!stepsExpanded[index]">
             <gl-link
               v-for="(vulnerabilityItem, i) in vulnerabilityFlow"

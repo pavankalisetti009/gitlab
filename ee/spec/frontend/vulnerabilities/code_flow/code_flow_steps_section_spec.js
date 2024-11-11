@@ -141,4 +141,34 @@ describe('Vulnerability Code Flow', () => {
       });
     });
   });
+
+  it('should show file name', () => {
+    const fileName = 'src/url/test.java';
+    expect(getById('file-name-0').text()).toBe(fileName);
+  });
+
+  it('should show escaped file name', () => {
+    const fileName = 'app/<svg><use href="assets/icons-123.svg"/></svg>.py';
+    const escapedFileName = 'app/<svg><use href="assets/icons-123.svg"/></svg>.py';
+
+    createWrapper({
+      details: {
+        name: mockVulnerability.details.name,
+        type: mockVulnerability.details.type,
+        items: [
+          [
+            {
+              ...mockVulnerability.details.items[0][0],
+              fileLocation: {
+                fileName,
+                lineStart: mockVulnerability.details.items[0][0].fileLocation.lineStart,
+              },
+            },
+          ],
+        ],
+      },
+    });
+
+    expect(getById('file-name-0').text()).toBe(escapedFileName);
+  });
 });
