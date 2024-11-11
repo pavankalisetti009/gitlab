@@ -123,29 +123,13 @@ module Gitlab
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 
-          execute_with_tool_chosen_by_ai(response_handler, stream_response_handler)
-        end
-
-        def execute_with_tool_chosen_by_ai(response_handler, stream_response_handler)
-          if Feature.enabled?(:v2_chat_agent_integration, user) &&
-              Feature.disabled?(:v2_chat_agent_integration_override, user)
-
-            Gitlab::Duo::Chat::ReactExecutor.new(
-              user_input: prompt_message.content,
-              tools: tools,
-              context: context,
-              response_handler: response_handler,
-              stream_response_handler: stream_response_handler
-            ).execute
-          else
-            Gitlab::Llm::Chain::Agents::ZeroShot::Executor.new(
-              user_input: prompt_message.content,
-              tools: tools,
-              context: context,
-              response_handler: response_handler,
-              stream_response_handler: stream_response_handler
-            ).execute
-          end
+          Gitlab::Duo::Chat::ReactExecutor.new(
+            user_input: prompt_message.content,
+            tools: tools,
+            context: context,
+            response_handler: response_handler,
+            stream_response_handler: stream_response_handler
+          ).execute
         end
 
         def execute_with_slash_command_tool(stream_response_handler)
