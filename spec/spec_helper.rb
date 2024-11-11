@@ -336,9 +336,6 @@ RSpec.configure do |config|
       # Keep-around refs should only be turned off for specific projects/repositories.
       stub_feature_flags(disable_keep_around_refs: false)
 
-      # Work in progress reviewer sidebar that does not have most of the features yet
-      stub_feature_flags(reviewer_assign_drawer: false)
-
       # Disable suspending ClickHouse data ingestion workers
       stub_feature_flags(suspend_click_house_data_ingestion: false)
 
