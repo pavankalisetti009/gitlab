@@ -29,9 +29,11 @@ module Gitlab
 
           def get_search_results(question)
             response = Gitlab::Llm::AiGateway::DocsClient.new(current_user)
-              .search(query: question) || {}
+              .search(query: question)
 
-            response.dig('response', 'results')&.map(&:with_indifferent_access)
+            return {} unless response&.success? && response.parsed_response
+
+            response.parsed_response.dig('response', 'results')&.map(&:with_indifferent_access)
           end
 
           private
@@ -51,6 +53,11 @@ module Gitlab
               { prompt: final_prompt[:prompt], options: final_prompt[:options] }
             ) do |data|
               yield data if block_given?
+            end
+
+            unless final_prompt_result&.success? && final_prompt_result.parsed_response
+              final_prompt_error = "Error retrieving completions with final prompt: #{final_prompt_result}"
+              raise Gitlab::Llm::AiGateway::Client::ConnectionError, final_prompt_error
             end
 
             log_conditional_info(current_user,
