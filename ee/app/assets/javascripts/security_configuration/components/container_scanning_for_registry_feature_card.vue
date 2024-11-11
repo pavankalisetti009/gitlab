@@ -40,7 +40,10 @@ export default {
       return this.toggleValue && this.available;
     },
     cardClasses() {
-      return { 'gl-bg-gray-10': !this.available };
+      return { 'gl-bg-strong': !this.available };
+    },
+    textClasses() {
+      return { 'gl-text-subtle': !this.available };
     },
     statusClasses() {
       const { enabled } = this;
@@ -48,8 +51,8 @@ export default {
       return {
         'gl-ml-auto': true,
         'gl-flex-shrink-0': true,
-        'gl-text-gray-500': !enabled,
-        'gl-text-green-500': enabled,
+        'gl-text-disabled': !enabled,
+        'gl-text-success': enabled,
         'gl-w-full': false,
         'gl-justify-between': false,
         'gl-flex': false,
@@ -148,33 +151,35 @@ export default {
 
 <template>
   <gl-card :class="cardClasses">
-    <div class="gl-flex gl-items-baseline">
-      <h3 class="gl-m-0 gl-mr-3 gl-text-lg">
-        {{ feature.name }}
-        <gl-icon v-if="showLock" id="ContainerScanningLockIcon" name="lock" class="gl-mb-1" />
-      </h3>
-      <gl-popover target="ContainerScanningLockIcon" placement="right">
-        <template #title> {{ $options.i18n.tooltipTitle }} </template>
-        <slot>
-          {{ featureLockDescription }}
-        </slot>
-      </gl-popover>
+    <template #header>
+      <div class="gl-flex gl-items-baseline">
+        <h3 class="gl-m-0 gl-mr-3 gl-text-base" :class="textClasses">
+          {{ feature.name }}
+          <gl-icon v-if="showLock" id="ContainerScanningLockIcon" name="lock" class="gl-mb-1" />
+        </h3>
+        <gl-popover target="ContainerScanningLockIcon" placement="right">
+          <template #title> {{ $options.i18n.tooltipTitle }} </template>
+          <slot>
+            {{ featureLockDescription }}
+          </slot>
+        </gl-popover>
 
-      <div
-        :class="statusClasses"
-        data-testid="feature-status"
-        :data-qa-feature="`${feature.type}_${enabled}_status`"
-      >
-        <span>
-          <gl-icon v-if="enabled" name="check-circle-filled" />
-          <span class="{gl-text-green-700: enabled}">{{ statusText }}</span>
-        </span>
+        <div
+          :class="statusClasses"
+          data-testid="feature-status"
+          :data-qa-feature="`${feature.type}_${enabled}_status`"
+        >
+          <span>
+            <gl-icon v-if="enabled" name="check-circle-filled" />
+            <span class="{gl-text-green-700: enabled}">{{ statusText }}</span>
+          </span>
+        </div>
       </div>
-    </div>
+    </template>
 
-    <p class="gl-mb-0 gl-mt-5">
+    <p class="gl-mb-0" :class="textClasses">
       {{ feature.description }}
-      <gl-link :href="feature.helpPath" target="_blank">{{ $options.i18n.learnMore }}</gl-link>
+      <gl-link :href="feature.helpPath" target="_blank">{{ $options.i18n.learnMore }}.</gl-link>
     </p>
 
     <template v-if="available">

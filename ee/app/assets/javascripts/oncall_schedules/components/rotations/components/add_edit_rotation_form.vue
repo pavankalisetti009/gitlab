@@ -241,11 +241,7 @@ export default {
         "
       />
 
-      <gl-card
-        v-if="form.isEndDateEnabled"
-        data-testid="rotation-ends-on"
-        class="gl-border-gray-400 gl-bg-gray-10"
-      >
+      <gl-card v-if="form.isEndDateEnabled" data-testid="rotation-ends-on" class="gl-border-strong">
         <gl-form-group
           :label="$options.i18n.fields.endsAt.title"
           label-size="sm"
@@ -305,7 +301,7 @@ export default {
       <gl-card
         v-if="form.isRestrictedToTime"
         data-testid="restricted-to-time"
-        class="gl-mt-5 gl-border-gray-400 gl-bg-gray-10"
+        class="gl-mt-5 gl-border-strong"
       >
         <gl-form-group
           :label="$options.i18n.fields.restrictToTime.title"

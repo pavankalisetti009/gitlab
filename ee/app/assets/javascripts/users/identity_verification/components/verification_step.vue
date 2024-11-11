@@ -40,7 +40,7 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-mb-3" header-class="gl-bg-white gl-border-b-0" :body-class="cardBodyClasses">
+  <gl-card class="gl-mb-3" header-class="gl-border-b-0" :body-class="cardBodyClasses">
     <template #header>
       <h3 :class="titleClasses">
         {{ title }}

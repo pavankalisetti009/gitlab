@@ -194,7 +194,7 @@ export default {
 </script>
 
 <template>
-  <gl-card ref="ruleContainer" class="gl-relative gl-mb-3 gl-border-0 gl-bg-gray-10">
+  <gl-card ref="ruleContainer" class="gl-relative gl-mb-3 gl-border-0">
     <gl-button
       v-if="index !== 0"
       category="tertiary"
