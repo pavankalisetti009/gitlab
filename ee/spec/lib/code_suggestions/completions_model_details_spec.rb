@@ -64,22 +64,4 @@ RSpec.describe CodeSuggestions::CompletionsModelDetails, feature_category: :code
       end
     end
   end
-
-  describe '#feature_disabled?' do
-    subject(:feature_disabled?) { completions_model_details.feature_disabled? }
-
-    it 'returns false' do
-      expect(feature_disabled?).to eq(false)
-    end
-
-    context 'when code_completions is self-hosted, but set to disabled' do
-      let_it_be(:feature_setting) do
-        create(:ai_feature_setting, provider: :disabled, feature: :code_completions)
-      end
-
-      it 'returns true' do
-        expect(feature_disabled?).to eq(true)
-      end
-    end
-  end
 end

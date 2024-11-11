@@ -30,8 +30,10 @@ module API
         ).merge(saas_headers).transform_values { |v| Array(v) }
       end
 
-      def connector_public_headers
-        Gitlab::CloudConnector.ai_headers(current_user)
+      def connector_public_headers(service_name)
+        namespace_ids = current_user.allowed_by_namespace_ids(service_name)
+
+        Gitlab::CloudConnector.ai_headers(current_user, namespace_ids: namespace_ids)
           .merge(saas_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
@@ -181,7 +183,7 @@ module API
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
             token: token[:token],
             expires_at: token[:expires_at],
-            headers: connector_public_headers
+            headers: connector_public_headers(completion_model_details.feature_name)
           }.tap do |a|
             a[:model_details] = details_hash unless details_hash.blank?
           end

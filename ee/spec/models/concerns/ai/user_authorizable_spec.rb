@@ -240,6 +240,30 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe '#allowed_by_namespace_ids' do
+    let(:ai_feature) { :my_feature }
+
+    subject { user.allowed_by_namespace_ids(ai_feature) }
+
+    context "when allowed_to_use? doesn't yield any value" do
+      before do
+        allow(user).to receive(:allowed_to_use?).with(ai_feature)
+      end
+
+      it { is_expected.to eq([]) }
+    end
+
+    context 'when allowed_to_use? yields namespace ids' do
+      let(:namespace_ids) { [1, 2] }
+
+      before do
+        allow(user).to receive(:allowed_to_use?).with(ai_feature).and_yield(namespace_ids)
+      end
+
+      it { is_expected.to eq(namespace_ids) }
+    end
+  end
+
   describe '#any_group_with_ai_available?', :saas, :use_clean_rails_redis_caching do
     using RSpec::Parameterized::TableSyntax
 

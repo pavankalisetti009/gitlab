@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module CodeSuggestions
-  class CompletionsModelDetails
+  class CompletionsModelDetails < ModelDetails
     FEATURE_SETTING_NAME = 'code_completions'
 
     def initialize(current_user:)
-      @current_user = current_user
+      super(current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME)
     end
 
     def current_model
@@ -21,13 +21,7 @@ module CodeSuggestions
       {}
     end
 
-    def feature_disabled?
-      !!feature_setting&.disabled?
-    end
-
     private
-
-    attr_reader :current_user
 
     def codestral_model_details
       {
@@ -43,20 +37,12 @@ module CodeSuggestions
       }
     end
 
-    def self_hosted?
-      feature_setting&.self_hosted?
-    end
-
     def use_codestral_for_code_completions?
       Feature.enabled?(:use_codestral_for_code_completions, current_user, type: :beta)
     end
 
     def use_fireworks_qwen_for_code_completions?
       Feature.enabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
-    end
-
-    def feature_setting
-      @feature_setting ||= ::Ai::FeatureSetting.find_by_feature(FEATURE_SETTING_NAME)
     end
   end
 end

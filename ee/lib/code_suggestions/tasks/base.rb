@@ -5,34 +5,13 @@ module CodeSuggestions
     class Base
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
+      delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, to: :model_details
+
       def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil)
-        @feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_setting_name)
+        @model_details = ModelDetails.new(current_user: current_user, feature_setting_name: feature_setting_name)
         @params = params
         @unsafe_passthrough_params = unsafe_passthrough_params
         @current_user = current_user
-      end
-
-      def base_url
-        feature_setting&.base_url || Gitlab::AiGateway.url
-      end
-
-      def self_hosted?
-        feature_setting&.self_hosted?
-      end
-
-      def feature_disabled?
-        # In case the code suggestions feature is being used via self-hosted models,
-        # it can also be disabled completely. In such cases, this check
-        # can be used to prevent exposing the feature via UI/API.
-        !!feature_setting&.disabled?
-      end
-
-      def feature_name
-        if self_hosted?
-          :self_hosted_models
-        else
-          :code_suggestions
-        end
       end
 
       def endpoint
@@ -56,7 +35,7 @@ module CodeSuggestions
 
       private
 
-      attr_reader :params, :unsafe_passthrough_params, :feature_setting, :current_user
+      attr_reader :params, :unsafe_passthrough_params, :model_details, :current_user
 
       def endpoint_name
         raise NotImplementedError

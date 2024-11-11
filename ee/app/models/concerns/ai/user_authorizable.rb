@@ -134,6 +134,12 @@ module Ai
         end
       end
 
+      def allowed_by_namespace_ids(*args, **kwargs)
+        allowed_to_use?(*args, **kwargs) { |namespace_ids| return namespace_ids } # rubocop:disable Cop/AvoidReturnFromBlocks -- Early return if namespace ids are yielded
+
+        []
+      end
+
       private
 
       def licensed_to_use_in_com?(maturity)
