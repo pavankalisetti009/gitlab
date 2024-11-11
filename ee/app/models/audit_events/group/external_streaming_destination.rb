@@ -15,7 +15,7 @@ module AuditEvents
 
       belongs_to :group, class_name: '::Group', inverse_of: :audit_events
       validate :top_level_group?
-      validates :name, uniqueness: { scope: :group_id }
+      validates :name, uniqueness: { scope: [:category, :group_id] }
 
       has_many :event_type_filters, class_name: 'AuditEvents::Group::EventTypeFilter'
       has_many :namespace_filters, class_name: 'AuditEvents::Group::NamespaceFilter'
