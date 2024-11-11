@@ -6,12 +6,11 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }
-  let_it_be(:issue_work_item) { create(:work_item, :group_level, namespace: group) }
+  let_it_be(:original_work_item) { create(:work_item, :group_level, namespace: group) }
   let_it_be(:source_namespace_member) { create(:user, reporter_of: group) }
   let_it_be(:target_namespace_member) { create(:user, reporter_of: target_group) }
   let_it_be(:namespaces_member) { create(:user, developer_of: [group, target_group]) }
 
-  let(:original_work_item) { issue_work_item }
   let(:target_namespace) { target_group.reload }
 
   let(:service) do
@@ -141,16 +140,7 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
       end
 
       it_behaves_like 'cloneable and moveable work item'
-
-      context 'with specific widgets' do
-        let!(:assignees) { [source_namespace_member, target_namespace_member, namespaces_member] }
-
-        def set_assignees
-          original_work_item.assignee_ids = assignees.map(&:id)
-        end
-
-        it_behaves_like 'cloneable and moveable widget data'
-      end
+      it_behaves_like 'cloneable and moveable widget data'
     end
   end
 end
