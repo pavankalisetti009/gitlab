@@ -1,26 +1,27 @@
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import PhoneVerificationArkoseApp from 'ee/arkose_labs/components/phone_verification_arkose_app.vue';
-import { initArkoseLabsChallenge } from 'ee/arkose_labs/init_arkose_labs';
+import { initArkoseLabsChallenge, resetArkoseLabsChallenge } from 'ee/arkose_labs/init_arkose_labs';
 import { logError } from '~/lib/logger';
 
 jest.mock('~/lib/logger');
 jest.mock('ee/arkose_labs/init_arkose_labs');
 let onShown;
 let onCompleted;
-const mockResetHandler = jest.fn();
-
-const mockDataExchangePayload = 'fakeDataExchangePayload';
-initArkoseLabsChallenge.mockImplementation(({ config }) => {
-  onShown = config.onShown;
-  onCompleted = config.onCompleted;
-
-  return { reset: mockResetHandler };
-});
 
 const MOCK_ARKOSE_RESPONSE = { token: 'verification-token' };
 const MOCK_PUBLIC_KEY = 'arkose-labs-public-api-key';
 const MOCK_DOMAIN = 'client-api.arkoselabs.com';
+const MOCK_DATA_EXCHANGE_PAYLOAD = 'fakeDataExchangePayload';
+const MOCK_DATA_EXCHANGE_PAYLOAD_PATH = '/path/to/data_exchange_payload';
+const MOCK_ARKOSE_OBJECT = 'mockArkoseObject';
+
+initArkoseLabsChallenge.mockImplementation(({ config }) => {
+  onShown = config.onShown;
+  onCompleted = config.onCompleted;
+
+  return MOCK_ARKOSE_OBJECT;
+});
 
 describe('PhoneVerificationArkoseApp', () => {
   let wrapper;
@@ -29,12 +30,15 @@ describe('PhoneVerificationArkoseApp', () => {
 
   const createComponent = () => {
     wrapper = mountExtended(PhoneVerificationArkoseApp, {
-      propsData: {
-        publicKey: MOCK_PUBLIC_KEY,
-        domain: MOCK_DOMAIN,
-        dataExchangePayload: mockDataExchangePayload,
-        resetSession: false,
+      provide: {
+        arkoseConfiguration: {
+          apiKey: MOCK_PUBLIC_KEY,
+          domain: MOCK_DOMAIN,
+          dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
+        },
+        arkoseDataExchangePayload: MOCK_DATA_EXCHANGE_PAYLOAD,
       },
+      propsData: { resetSession: false },
     });
   };
 
@@ -46,7 +50,8 @@ describe('PhoneVerificationArkoseApp', () => {
     expect(initArkoseLabsChallenge).toHaveBeenCalledWith({
       publicKey: MOCK_PUBLIC_KEY,
       domain: MOCK_DOMAIN,
-      dataExchangePayload: mockDataExchangePayload,
+      dataExchangePayload: MOCK_DATA_EXCHANGE_PAYLOAD,
+      dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
       config: expect.objectContaining({
         onShown: expect.any(Function),
         onCompleted: expect.any(Function),
@@ -81,7 +86,7 @@ describe('PhoneVerificationArkoseApp', () => {
       resetSession: true,
     });
 
-    expect(mockResetHandler).toHaveBeenCalled();
+    expect(resetArkoseLabsChallenge).toHaveBeenCalledWith(MOCK_ARKOSE_OBJECT);
   });
 
   describe('when challenge initialization fails', () => {

@@ -9,7 +9,6 @@ export default {
     PhoneVerificationArkoseApp,
     ReCaptcha,
   },
-  inject: ['arkoseConfiguration', 'arkoseDataExchangePayload'],
   props: {
     showArkoseChallenge: {
       type: Boolean,
@@ -87,9 +86,6 @@ export default {
 
     <phone-verification-arkose-app
       v-if="showArkoseChallenge"
-      :public-key="arkoseConfiguration.apiKey"
-      :domain="arkoseConfiguration.domain"
-      :data-exchange-payload="arkoseDataExchangePayload"
       :reset-session="arkose.reset"
       class="gl-mt-5"
       @challenge-solved="onArkoseChallengeSolved"

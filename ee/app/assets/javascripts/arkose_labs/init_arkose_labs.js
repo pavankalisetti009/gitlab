@@ -1,4 +1,5 @@
 import { uniqueId } from 'lodash';
+import axios from '~/lib/utils/axios_utils';
 
 const CALLBACK_NAME = '_initArkoseLabsScript_callback_';
 
@@ -46,8 +47,46 @@ const configureArkoseLabs = (configObject, dataExchangePayload, options = {}) =>
   });
 };
 
-export const initArkoseLabsChallenge = ({ publicKey, domain, dataExchangePayload, config }) =>
-  initArkoseLabsScript({ publicKey, domain }).then((arkoseObject) => {
-    configureArkoseLabs(arkoseObject, dataExchangePayload, config);
-    return arkoseObject;
-  });
+const fetchDataExchangePayload = async (path) => {
+  try {
+    const response = await axios.get(path);
+    return response.data?.payload;
+  } catch {
+    return undefined;
+  }
+};
+
+export const initArkoseLabsChallenge = async ({
+  publicKey,
+  domain,
+  dataExchangePayloadPath,
+  config,
+  ...rest
+}) => {
+  const dataExchangePayloadPromise = dataExchangePayloadPath
+    ? fetchDataExchangePayload(dataExchangePayloadPath)
+    : rest.dataExchangePayload;
+
+  const initArkoseLabsScriptPromise = initArkoseLabsScript({ publicKey, domain });
+
+  const dataExchangePayload = await dataExchangePayloadPromise;
+  const arkoseObject = await initArkoseLabsScriptPromise;
+
+  configureArkoseLabs(arkoseObject, dataExchangePayload, config);
+
+  return arkoseObject;
+};
+
+export const resetArkoseLabsChallenge = async (arkoseObject, dataExchangePayloadPath) => {
+  const dataExchangePayloadPromise = dataExchangePayloadPath
+    ? fetchDataExchangePayload(dataExchangePayloadPath)
+    : undefined;
+
+  const dataExchangePayload = await dataExchangePayloadPromise;
+
+  arkoseObject.reset();
+
+  if (dataExchangePayload) {
+    arkoseObject.setConfig({ data: { blob: dataExchangePayload } });
+  }
+};

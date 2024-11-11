@@ -39,9 +39,6 @@ msgstr ""
 msgid " Try to %{action} this file again."
 msgstr ""
 
-msgid " You need to do this before %{grace_period_deadline}."
-msgstr ""
-
 msgid " and "
 msgstr ""
 
@@ -1988,6 +1985,12 @@ msgid "500|500: Encoding error"
 msgstr ""
 
 msgid "500|Page cannot be loaded because of an encoding error."
+msgstr ""
+
+msgid "503|503: Service unavailable"
+msgstr ""
+
+msgid "503|Please contact your GitLab administrator if you think this is a mistake."
 msgstr ""
 
 msgid ":%{startLine} to %{endLine}"
@@ -14795,6 +14798,9 @@ msgid "Configure custom rules for Jira issue key matching"
 msgstr ""
 
 msgid "Configure import sources and settings related to import and export features."
+msgstr ""
+
+msgid "Configure it later"
 msgstr ""
 
 msgid "Configure pipeline"
@@ -38566,6 +38572,16 @@ msgstr ""
 
 msgid "Organization|Organizations"
 msgstr ""
+
+msgid "Organization|Organizations must have at least one owner. To delete the user, first assign a new owner to %{lastLink}."
+msgid_plural "Organization|Organizations must have at least one owner. To delete the user, first assign a new owner to %{links} %{boldStart}and%{boldEnd} %{lastLink}."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Organization|Organizations must have at least one owner. To delete the user, first assign a new owner to %{links} %{boldStart}and%{boldEnd} %{extrasCount} %{boldStart}other Organization%{boldEnd}."
+msgid_plural "Organization|Organizations must have at least one owner. To delete the user, first assign a new owner to %{links} %{boldStart}and%{boldEnd} %{extrasCount} %{boldStart}other Organizations%{boldEnd}."
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Organization|Perform advanced options such as deleting the organization."
 msgstr ""
@@ -64036,6 +64052,9 @@ msgid "You need git-lfs version %{min_git_lfs_version} (or greater) to continue.
 msgstr ""
 
 msgid "You need permission."
+msgstr ""
+
+msgid "You need to do this before %{grace_period_deadline}."
 msgstr ""
 
 msgid "You need to set terms to be enforced"

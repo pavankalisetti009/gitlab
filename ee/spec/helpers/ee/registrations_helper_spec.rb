@@ -37,12 +37,27 @@ RSpec.describe EE::RegistrationsHelper, feature_category: :user_management do
 
     subject(:data) { helper.arkose_labs_data }
 
-    it { is_expected.to eq({ api_key: 'api-key', domain: 'domain', data_exchange_payload: data_exchange_payload }) }
+    it 'contains the correct values' do
+      expect(data).to eq({
+        api_key: 'api-key',
+        domain: 'domain',
+        data_exchange_payload: data_exchange_payload,
+        data_exchange_payload_path: data_exchange_payload_path
+      })
+    end
+
+    context 'when fetch_arkose_data_exchange_payload feature flag is disabled' do
+      it 'does not include data_exchange_payload_path' do
+        stub_feature_flags(fetch_arkose_data_exchange_payload: false)
+
+        expect(data.keys).not_to include(:data_exchange_payload_path)
+      end
+    end
 
     context 'when data exchange payload is nil' do
       let(:data_exchange_payload) { nil }
 
-      it 'does not include data exchange payload' do
+      it 'does not include data_exchange_payload' do
         expect(data.keys).not_to include(:data_exchange_payload)
       end
     end
