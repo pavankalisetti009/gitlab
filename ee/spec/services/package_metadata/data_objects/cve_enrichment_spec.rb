@@ -7,7 +7,8 @@ RSpec.describe PackageMetadata::DataObjects::CveEnrichment, feature_category: :s
     let(:data) do
       {
         "cve_id" => "CVE-2023-12345",
-        "epss_score" => 0.5
+        "epss_score" => 0.5,
+        "is_known_exploit" => false
       }
     end
 
@@ -18,7 +19,8 @@ RSpec.describe PackageMetadata::DataObjects::CveEnrichment, feature_category: :s
     it do
       is_expected.to match(have_attributes(
         cve_id: "CVE-2023-12345",
-        epss_score: 0.5
+        epss_score: 0.5,
+        is_known_exploit: false
       ))
     end
 
@@ -41,7 +43,7 @@ RSpec.describe PackageMetadata::DataObjects::CveEnrichment, feature_category: :s
   end
 
   describe '==' do
-    let(:obj) { described_class.new(cve_id: "CVE-2023-12345", epss_score: 0.85) }
+    let(:obj) { described_class.new(cve_id: "CVE-2023-12345", epss_score: 0.85, is_known_exploit: false) }
 
     subject(:equality) { obj == other }
 
@@ -59,6 +61,12 @@ RSpec.describe PackageMetadata::DataObjects::CveEnrichment, feature_category: :s
 
     context 'when epss_score does not match' do
       let(:other) { obj.dup.tap { |o| o.epss_score = 0.9 } }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when is_known_exploit does not match' do
+      let(:other) { obj.dup.tap { |o| o.is_known_exploit = true } }
 
       it { is_expected.to eq(false) }
     end

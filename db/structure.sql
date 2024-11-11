@@ -16922,6 +16922,7 @@ CREATE TABLE pm_cve_enrichment (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     cve text NOT NULL,
+    is_known_exploit boolean DEFAULT false NOT NULL,
     CONSTRAINT check_16651e3ffb CHECK ((char_length(cve) <= 24))
 );
 
