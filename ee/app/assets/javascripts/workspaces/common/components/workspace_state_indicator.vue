@@ -46,7 +46,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    workspaceState: {
+    workspaceDisplayState: {
       type: String,
       required: true,
       validator: (value) => Object.values(WORKSPACE_STATES).includes(value),
@@ -54,13 +54,13 @@ export default {
   },
   computed: {
     iconName() {
-      return stateLabel.includes(this.workspaceState) ? 'status' : '';
+      return stateLabel.includes(this.workspaceDisplayState) ? 'status' : '';
     },
     iconLabel() {
-      return i18n.labels[this.workspaceState];
+      return i18n.labels[this.workspaceDisplayState];
     },
     variant() {
-      return STATE_TO_VARIANT[this.workspaceState];
+      return STATE_TO_VARIANT[this.workspaceDisplayState];
     },
   },
 };

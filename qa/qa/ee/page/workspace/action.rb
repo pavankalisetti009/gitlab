@@ -6,7 +6,8 @@ module QA
       module Workspace
         class Action < QA::Page::Base
           view 'ee/app/assets/javascripts/workspaces/common/components/workspace_actions.vue' do
-            element 'workspace-button', ':data-testid="`workspace-${action.key}-button`"' # rubocop:disable QA/ElementWithPattern -- Pattern to fetch workspace action dynamically
+            element 'workspace-actions-dropdown'
+            element 'workspace-button', ':data-testid="`workspace-${item.key}-button`"' # rubocop:disable QA/ElementWithPattern -- Pattern to fetch workspace action dynamically
           end
 
           view 'ee/app/assets/javascripts/workspaces/common/components/workspaces_list/workspaces_table.vue' do

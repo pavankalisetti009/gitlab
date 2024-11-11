@@ -91,7 +91,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
 
   describe '#url' do
     it 'returns calculated url' do
-      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent_dns_zone}?folder=dir%2Ffile")
+      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent_dns_zone}/?folder=dir%2Ffile")
     end
   end
 

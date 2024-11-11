@@ -1,16 +1,22 @@
 <script>
-import { GlDisclosureDropdownItem } from '@gitlab/ui';
+import { GlLink } from '@gitlab/ui';
 import Tracking from '~/tracking';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import { s__ } from '~/locale';
 import WorkspaceStateIndicator from '../../common/components/workspace_state_indicator.vue';
 import WorkspaceActions from '../../common/components/workspace_actions.vue';
+import { calculateDisplayState } from '../../common/services/calculate_display_state';
+import { WORKSPACE_STATES } from '../constants';
 
 export default {
   components: {
-    GlDisclosureDropdownItem,
+    GlLink,
     WorkspaceStateIndicator,
     WorkspaceActions,
     TimeAgoTooltip,
+  },
+  i18n: {
+    created: s__('Workspaces|Created'),
   },
   mixins: [Tracking.mixin()],
   props: {
@@ -26,6 +32,12 @@ export default {
         text: this.workspace.name,
       };
     },
+    displayState() {
+      return calculateDisplayState(this.workspace.actualState, this.workspace.desiredState);
+    },
+    isRunning() {
+      return this.displayState === WORKSPACE_STATES.running;
+    },
   },
   methods: {
     trackOpenWorkspace() {
@@ -35,21 +47,39 @@ export default {
 };
 </script>
 <template>
-  <gl-disclosure-dropdown-item class="gl-my-0" :item="dropdownItem" @action="trackOpenWorkspace">
-    <template #list-item>
-      <div class="gl-flex gl-items-center gl-justify-between">
-        <span class="gl-inline-flex gl-flex-col gl-items-start">
-          <workspace-state-indicator class="gl-mb-2" :workspace-state="workspace.actualState" />
-          <span class="gl-w-9/10 gl-pl-1 gl-break-anywhere">{{ workspace.name }}</span>
-          <time-ago-tooltip class="gl-mt-2 gl-pl-1 gl-text-secondary" :time="workspace.createdAt" />
-        </span>
-        <workspace-actions
-          :actual-state="workspace.actualState"
-          :desired-state="workspace.desiredState"
-          compact
-          @click="$emit('updateWorkspace', { desiredState: $event })"
-        />
+  <div class="gl-flex gl-items-center gl-justify-between gl-px-4 gl-py-3">
+    <span class="gl-inline-flex gl-flex-col gl-items-start gl-gap-2">
+      <!--
+      TODO: To improve the accessibility of this component, the link to open the Workspace should always be available instead
+      of enabling the link only when the Workspace's state is Running. We can't implement this improvement yet because
+      opening a "non running" workspace leads to a 404 page. As a follow-up issue, we will
+      implement this UX improvement after delivering https://gitlab.com/gitlab-org/gitlab/-/issues/471852
+      -->
+      <!-- Ensures that the link is accessible using keyboard -->
+      <gl-link
+        v-if="isRunning"
+        :href="workspace.url"
+        class="gl-break-anywhere"
+        @keydown.stop
+        @click="trackOpenWorkspace"
+        >{{ workspace.name }}</gl-link
+      >
+      <span v-else class="gl-break-anywhere">{{ workspace.name }}</span>
+      <div class="gl-flex gl-gap-2">
+        <workspace-state-indicator :workspace-display-state="displayState" />
+        <div class="gl-text-secondary">
+          {{ $options.i18n.created }}
+          <time-ago-tooltip :time="workspace.createdAt" />
+        </div>
       </div>
-    </template>
-  </gl-disclosure-dropdown-item>
+    </span>
+    <!-- Ensures that the nested dropdown is navigable using keyboard while preserving
+        other disclosure dropdown features like closing when pressing ESC key -->
+    <span @keydown.stop>
+      <workspace-actions
+        :workspace-display-state="displayState"
+        @click="$emit('updateWorkspace', { desiredState: $event })"
+      />
+    </span>
+  </div>
 </template>

@@ -1,15 +1,15 @@
 import { mount } from '@vue/test-utils';
-import { cloneDeep } from 'lodash';
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
-import { GlLink, GlTableLite } from '@gitlab/ui';
 import { useFakeDate } from 'helpers/fake_date';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import WorkspacesTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
 import WorkspaceActions from 'ee/workspaces/common/components/workspace_actions.vue';
+import OpenWorkspaceButton from 'ee/workspaces/common/components/open_workspace_button.vue';
 import WorkspaceStateIndicator from 'ee/workspaces/common/components/workspace_state_indicator.vue';
+import { calculateDisplayState } from 'ee/workspaces/common/services/calculate_display_state';
 import { populateWorkspacesWithProjectDetails } from 'ee/workspaces/common/services/utils';
-import { WORKSPACE_STATES, WORKSPACE_DESIRED_STATES } from 'ee/workspaces/common/constants';
+import { WORKSPACE_DESIRED_STATES } from 'ee/workspaces/common/constants';
 import {
   USER_WORKSPACES_LIST_QUERY_RESULT,
   GET_PROJECTS_DETAILS_QUERY_RESULT,
@@ -21,33 +21,24 @@ Vue.use(VueApollo);
 
 const SVG_PATH = '/assets/illustrations/empty_states/empty_workspaces.svg';
 
-const findTable = (wrapper) => wrapper.findComponent(GlTableLite);
-const findTableRows = (wrapper) => findTable(wrapper).findAll('tbody tr');
+const findTable = (wrapper) => wrapper.find('[data-testid="workspaces-list"]');
+const findTableRows = (wrapper) => wrapper.findAll('[data-testid="workspaces-list"] > li');
 const findTableRowsAsData = (wrapper) =>
   findTableRows(wrapper).wrappers.map((x) => {
-    const tds = x.findAll('td');
     const rowData = {
-      workspaceState: tds.at(0).findComponent(WorkspaceStateIndicator).props('workspaceState'),
-      nameText: tds.at(1).text(),
-      createdAt: tds.at(2).findComponent(TimeAgoTooltip).props().time,
-      terminates: tds.at(3).text(),
-      actionsProps: tds.at(6).findComponent(WorkspaceActions).props(),
+      stateIndicatorProps: {
+        ...x.findComponent(WorkspaceStateIndicator).props(),
+      },
+      openWorkspaceButtonProps: {
+        ...x.findComponent(OpenWorkspaceButton).props(),
+      },
+      workspaceActionsProps: {
+        ...x.findComponent(WorkspaceActions).props(),
+      },
+      nameText: x.find('[data-testid="workspace-name"]').text(),
+      createdAt: x.findComponent(TimeAgoTooltip).props().time,
+      terminates: x.find('[data-testid="workspace-termination"]').text(),
     };
-
-    const devfileLinkTd = tds.at(4);
-    const devfileLink = devfileLinkTd.findComponent(GlLink);
-    if (devfileLink.exists()) {
-      rowData.devfileText = devfileLinkTd.text();
-      rowData.devfileHref = devfileLink.attributes('href');
-      rowData.devfileTooltipTitle = devfileLink.attributes('title');
-      rowData.devfileTooltipAriaLabel = devfileLink.attributes('aria-label');
-    }
-
-    const previewLinkTd = tds.at(5);
-    if (previewLinkTd.findComponent(GlLink).exists()) {
-      rowData.previewText = previewLinkTd.text();
-      rowData.previewHref = previewLinkTd.findComponent(GlLink).attributes('href');
-    }
 
     return rowData;
   });
@@ -87,22 +78,6 @@ describe('workspaces/common/components/workspaces_list/workspaces_table.vue', ()
     });
   };
 
-  const setupMockTerminatedWorkspace = (extraData = {}) => {
-    const customData = cloneDeep(
-      USER_WORKSPACES_LIST_QUERY_RESULT.data.currentUser.workspaces.nodes,
-    );
-    const workspace = cloneDeep(customData[0]);
-
-    customData.unshift({
-      ...workspace,
-      name: 'workspace-1-1-idma03',
-      actualState: WORKSPACE_STATES.terminated,
-      ...extraData,
-    });
-
-    return customData;
-  };
-
   const findUpdateWorkspaceMutation = () => wrapper.findComponent(UpdateWorkspaceMutationStub);
 
   describe('default (with nodes)', () => {
@@ -119,39 +94,28 @@ describe('workspaces/common/components/workspaces_list/workspaces_table.vue', ()
         populateWorkspacesWithProjectDetails(
           USER_WORKSPACES_LIST_QUERY_RESULT.data.currentUser.workspaces.nodes,
           GET_PROJECTS_DETAILS_QUERY_RESULT.data.projects.nodes,
-        ).map((x) => {
+        ).map((workspace) => {
+          const workspaceDisplayState = calculateDisplayState(
+            workspace.actualState,
+            workspace.desiredState,
+          );
           return {
-            nameText: `${x.projectName}   ${x.name}`,
-            workspaceState: x.actualState,
-            createdAt: x.createdAt,
-            terminates: x.name === 'workspace-1-1-idmi02' ? 'in 54 minutes' : 'in 2 days',
-            actionsProps: {
-              actualState: x.actualState,
-              desiredState: x.desiredState,
-              compact: false,
+            nameText: workspace.name,
+            createdAt: workspace.createdAt,
+            terminates: workspace.name === 'workspace-1-1-idmi02' ? 'in 54 minutes' : 'in 2 days',
+            workspaceActionsProps: {
+              workspaceDisplayState,
             },
-            devfileText: `${x.devfilePath} on ${x.devfileRef}`,
-            devfileHref: x.devfileWebUrl,
-            devfileTooltipTitle: x.devfileWebUrl,
-            ...(x.actualState === WORKSPACE_STATES.running
-              ? {
-                  previewText: x.url,
-                  previewHref: x.url,
-                }
-              : {}),
+            openWorkspaceButtonProps: {
+              workspaceDisplayState,
+              workspaceUrl: workspace.url,
+            },
+            stateIndicatorProps: {
+              workspaceDisplayState,
+            },
           };
         }),
       );
-    });
-
-    describe('when the query returns terminated workspaces', () => {
-      beforeEach(() => {
-        createWrapper({ workspaces: setupMockTerminatedWorkspace() });
-      });
-
-      it('sorts the list to display terminated workspaces at the end of the list', () => {
-        expect(findTableRowsAsData(wrapper).pop().workspaceState).toBe(WORKSPACE_STATES.terminated);
-      });
     });
   });
 

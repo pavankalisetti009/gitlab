@@ -144,7 +144,9 @@ module RemoteDevelopment
     end
 
     def url
-      URI::HTTPS.build(host: "#{url_prefix}.#{workspaces_agent_config.dns_zone}", query: url_query_string).to_s
+      URI::HTTPS.build(host: "#{url_prefix}.#{workspaces_agent_config.dns_zone}",
+        path: '/',
+        query: url_query_string).to_s
     end
 
     def devfile_web_url

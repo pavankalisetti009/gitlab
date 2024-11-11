@@ -79,7 +79,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       # We look for the project GID because that's all we know about the workspace at this point. For the new UI,
       # we will have to either expose this as a field on the new workspaces UI, or else come up
       # with some more clever finder to assert on the workspace showing up in the list after a refresh.
-      page.find('td', text: project.name_with_namespace)
+      page.find('span[data-testid="workspaces-project-name"]', text: project.name_with_namespace)
 
       # GET NAME AND NAMESPACE OF NEW WORKSPACE
       workspaces = RemoteDevelopment::Workspace.all.to_a
@@ -87,13 +87,17 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       workspace = workspaces[0]
 
       # ASSERT ON NEW WORKSPACE IN LIST
-      page.find('td', text: workspace.name)
+      expect(page).to have_content(workspace.name)
 
       # ASSERT WORKSPACE STATE BEFORE POLLING NEW STATES
       expect_workspace_state_indicator('Creating')
 
       # ASSERT TERMINATE BUTTON IS AVAILABLE
+      click_button 'Actions'
       expect(page).to have_button('Terminate')
+
+      # CLOSE THE ACTIONS DROPDOWN
+      click_button 'Actions'
 
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply(
@@ -126,10 +130,11 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
       expect_workspace_state_indicator(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
-      expect(page).to have_selector('a', text: workspace.url)
+      expect(find_open_workspace_button).to have_text('Open workspace')
+      expect(find_open_workspace_button[:href]).to eq(workspace.url)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR RUNNING STATE
-      expect(page).to have_button('Restart')
+      click_button 'Actions'
       expect(page).to have_button('Stop')
       expect(page).to have_button('Terminate')
 
@@ -151,7 +156,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
       expect_workspace_state_indicator(RemoteDevelopment::WorkspaceOperations::States::STOPPING)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR STOPPING STATE
-      # TODO: What other buttons are there?
+      click_button 'Actions'
       expect(page).to have_button('Terminate')
 
       # SIMULATE FOURTH POLL FROM AGENTK TO UPDATE WORKSPACE TO STOPPED STATE
@@ -220,6 +225,10 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
 
       Gitlab::Json.parse(reconcile_post_response.body).deep_symbolize_keys
     end
+  end
+
+  def find_open_workspace_button
+    page.first('[data-testid="workspace-open-button"]', minimum: 0)
   end
 
   context 'when creating a workspace' do
