@@ -16,6 +16,7 @@ RSpec.describe GitlabSchema.types['ComplianceFramework'] do
     scan_result_policies
     scan_execution_policies
     pipeline_execution_policies
+    compliance_requirements
   ]
 
   it 'has the correct fields' do
