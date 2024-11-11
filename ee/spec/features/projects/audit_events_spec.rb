@@ -172,19 +172,47 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
   end
 
   describe 'combined list of authenticated and unauthenticated users' do
-    let_it_be(:audit_event_1) { create(:project_audit_event, :unauthenticated, entity_type: 'Project', entity_id: project.id) }
-    let_it_be(:audit_event_2) { create(:project_audit_event, author_id: non_existing_record_id, entity_type: 'Project', entity_id: project.id) }
-    let_it_be(:audit_event_3) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id) }
+    context 'when read_audit_events_from_new_tables is disabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: false)
+      end
 
-    it 'displays the correct authors names' do
-      visit project_audit_events_path(project)
+      let_it_be(:audit_event_1) { create(:project_audit_event, :unauthenticated, entity_type: 'Project', entity_id: project.id) }
+      let_it_be(:audit_event_2) { create(:project_audit_event, author_id: non_existing_record_id, entity_type: 'Project', entity_id: project.id) }
+      let_it_be(:audit_event_3) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id) }
 
-      wait_for_all_requests
+      it 'displays the correct authors names' do
+        visit project_audit_events_path(project)
 
-      page.within('.audit-log-table') do
-        expect(page).to have_content('An unauthenticated user')
-        expect(page).to have_content("#{audit_event_2.author_name} (removed)")
-        expect(page).to have_content(audit_event_3.user.name)
+        wait_for_all_requests
+
+        page.within('.audit-log-table') do
+          expect(page).to have_content('An unauthenticated user')
+          expect(page).to have_content("#{audit_event_2.author_name} (removed)")
+          expect(page).to have_content(audit_event_3.user.name)
+        end
+      end
+    end
+
+    context 'when read_audit_events_from_new_tables is enabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: true)
+      end
+
+      let_it_be(:audit_event_1) { create(:audit_events_project_audit_event, :unauthenticated, project_id: project.id) }
+      let_it_be(:audit_event_2) { create(:audit_events_project_audit_event, author_id: non_existing_record_id, project_id: project.id) }
+      let_it_be(:audit_event_3) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+      it 'displays the correct authors names' do
+        visit project_audit_events_path(project)
+
+        wait_for_all_requests
+
+        page.within('.audit-log-table') do
+          expect(page).to have_content('An unauthenticated user')
+          expect(page).to have_content("#{audit_event_2.author_name} (removed)")
+          expect(page).to have_content(audit_event_3.user.name)
+        end
       end
     end
   end
@@ -193,12 +221,32 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
     let_it_be(:events_path) { :project_audit_events_path }
     let_it_be(:entity) { project }
 
-    describe 'filter by date' do
-      let_it_be(:audit_event_1) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: 5.days.ago) }
-      let_it_be(:audit_event_2) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: 3.days.ago) }
-      let_it_be(:audit_event_3) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.current) }
+    context 'when read_audit_events_from_new_tables is disabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: false)
+      end
 
-      it_behaves_like 'audit events date filter'
+      describe 'filter by date' do
+        let_it_be(:audit_event_1) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: 5.days.ago) }
+        let_it_be(:audit_event_2) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: 3.days.ago) }
+        let_it_be(:audit_event_3) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.current) }
+
+        it_behaves_like 'audit events date filter'
+      end
+    end
+
+    context 'when read_audit_events_from_new_tables is enabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: true)
+      end
+
+      describe 'filter by date' do
+        let_it_be(:audit_event_1) { create(:audit_events_project_audit_event, project_id: project.id, created_at: 5.days.ago) }
+        let_it_be(:audit_event_2) { create(:audit_events_project_audit_event, project_id: project.id, created_at: 3.days.ago) }
+        let_it_be(:audit_event_3) { create(:audit_events_project_audit_event, project_id: project.id, created_at: Date.current) }
+
+        it_behaves_like 'audit events date filter'
+      end
     end
 
     context 'signed in as a developer' do
@@ -207,12 +255,32 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
         sign_in(pete)
       end
 
-      describe 'filter by author' do
-        let_it_be(:audit_event_1) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: pete.id) }
-        let_it_be(:audit_event_2) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
-        let_it_be(:author) { user }
+      context 'when read_audit_events_from_new_tables is disabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: false)
+        end
 
-        it_behaves_like 'audit events author filtering without entity admin permission'
+        describe 'filter by author' do
+          let_it_be(:audit_event_1) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: pete.id) }
+          let_it_be(:audit_event_2) { create(:project_audit_event, entity_type: 'Project', entity_id: project.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
+          let_it_be(:author) { user }
+
+          it_behaves_like 'audit events author filtering without entity admin permission'
+        end
+      end
+
+      context 'when read_audit_events_from_new_tables is enabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: true)
+        end
+
+        describe 'filter by author' do
+          let_it_be(:audit_event_1) { create(:audit_events_project_audit_event, project_id: project.id, created_at: Date.today, ip_address: '1.1.1.1', author_id: pete.id) }
+          let_it_be(:audit_event_2) { create(:audit_events_project_audit_event, project_id: project.id, created_at: Date.today, ip_address: '0.0.0.0', author_id: user.id) }
+          let_it_be(:author) { user }
+
+          it_behaves_like 'audit events author filtering without entity admin permission'
+        end
       end
     end
   end
