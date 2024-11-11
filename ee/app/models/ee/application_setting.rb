@@ -47,6 +47,11 @@ module EE
 
       validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
 
+      jsonb_accessor :user_seat_management,
+        seat_control: [:integer, { default: 0 }]
+
+      validates :user_seat_management, json_schema: { filename: "application_setting_user_seat_management" }
+
       validates :shared_runners_minutes,
         numericality: { greater_than_or_equal_to: 0 }
 
