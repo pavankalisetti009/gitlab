@@ -423,11 +423,11 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'for issue' do
-      let(:scope) { 'issues' }
+    context 'for issues', :sidekiq_inline do # sidekiq needed for ElasticAssociationIndexerWorker
+      let_it_be(:work_item) { create :work_item, project: project }
+      let_it_be(:work_item2) { create :work_item, project: project2, title: work_item.title }
 
-      let!(:work_item) { create :work_item, project: project }
-      let!(:work_item2) { create :work_item, project: project2, title: work_item.title }
+      let(:scope) { 'issues' }
       let(:search) { work_item.title }
 
       where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
@@ -435,6 +435,11 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
 
       with_them do
+        before do
+          Elastic::ProcessInitialBookkeepingService.track!(work_item)
+          ensure_elasticsearch_index!
+        end
+
         it_behaves_like 'search respects visibility'
       end
     end

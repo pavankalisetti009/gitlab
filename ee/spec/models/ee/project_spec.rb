@@ -835,6 +835,10 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             on_change: :archived
           },
           {
+            association_name: :work_items,
+            on_change: :visibility_level
+          },
+          {
             association_name: :merge_requests,
             on_change: :visibility_level
           },
@@ -3725,8 +3729,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let!(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
 
       context 'when updating the visibility_level' do
-        it 'triggers ElasticAssociationIndexerWorker to update issues, merge_requests and notes' do
-          expect(ElasticAssociationIndexerWorker).to receive(:perform_async).with('Project', project.id, %w[issues merge_requests notes milestones])
+        it 'triggers ElasticAssociationIndexerWorker to update associations' do
+          expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
+            .with('Project', project.id, %w[issues work_items merge_requests notes milestones])
 
           project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
         end

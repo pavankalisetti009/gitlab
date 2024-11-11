@@ -6,7 +6,7 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 24_11
+        SCHEMA_VERSION = 24_11_1
 
         override :serialize
         def self.serialize(record)
@@ -101,9 +101,11 @@ module Search
           end
 
           data['upvotes'] = target.upvotes_count
-          data['namespace_visibility_level'] = target.namespace.visibility_level
 
-          data['namespace_id'] = target.namespace_id if target.namespace.group_namespace?
+          if target.namespace.group_namespace?
+            data['namespace_visibility_level'] = target.namespace.visibility_level
+            data['namespace_id'] = target.namespace_id
+          end
 
           if target.project.present?
             data['archived'] = target.project.archived?
