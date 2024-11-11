@@ -41,7 +41,7 @@ describe('RelatedIssuableItem', () => {
   };
 
   beforeEach(() => {
-    mountComponent({ props, slots });
+    mountComponent({ props, slots, stubs: { IssueWeight } });
   });
 
   it('renders weight component with correct weight', () => {
