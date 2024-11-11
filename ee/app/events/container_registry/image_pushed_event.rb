@@ -10,7 +10,6 @@ module ContainerRegistry
         'required' => %w[project_id image],
         'properties' => {
           'project_id' => { 'type' => 'integer' },
-          'user_id' => { 'type' => 'integer' },
           'image' => { 'type' => 'string' }
         }
       }

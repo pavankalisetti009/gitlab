@@ -18,16 +18,8 @@ module EE
         return unless action_push?
         return unless project
 
-        # Retaining this for Sidekiq compatibility across updates.
-        # Refer to the documentation here:
-        # https://docs.gitlab.com/ee/development/sidekiq/compatibility_across_updates.html
-        # This code will be removed in a future milestone.
-        user_originator = originator.is_a?(User) ? originator : project.owner
-
-        return unless user_originator
-
         push_event = ::ContainerRegistry::ImagePushedEvent.new(
-          data: { project_id: project.id, user_id: user_originator.id, image: image_path }).tap do |event|
+          data: { project_id: project.id, image: image_path }).tap do |event|
           event.project = project
         end
 
