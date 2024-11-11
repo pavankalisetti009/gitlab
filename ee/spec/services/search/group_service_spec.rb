@@ -418,11 +418,11 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'for issues' do
-      let(:scope) { 'issues' }
-
+    context 'for issues', :sidekiq_inline do # sidekiq needed for ElasticAssociationIndexerWorker
       let_it_be(:work_item) { create(:work_item, project: project) }
       let_it_be(:work_item2) { create(:work_item, project: project2, title: work_item.title) }
+
+      let(:scope) { 'issues' }
       let(:search) { work_item.title }
 
       where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do

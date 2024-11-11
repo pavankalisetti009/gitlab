@@ -208,6 +208,7 @@ module EE
 
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
+      elastic_index_dependant_association :work_items, on_change: :visibility_level
       elastic_index_dependant_association :work_items, on_change: :archived
       elastic_index_dependant_association :merge_requests, on_change: :visibility_level
       elastic_index_dependant_association :merge_requests, on_change: :archived

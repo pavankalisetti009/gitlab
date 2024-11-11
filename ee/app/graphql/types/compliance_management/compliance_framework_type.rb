@@ -58,6 +58,11 @@ module Types
         description: 'Pipeline Execution Policies of the compliance framework.',
         resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecutionPolicyResolver
 
+      field :compliance_requirements,
+        ::Types::ComplianceManagement::ComplianceRequirementType.connection_type,
+        null: true,
+        description: 'Compliance requirements of the compliance framework.'
+
       def default
         object.id == object.namespace.namespace_settings.default_compliance_framework_id
       end

@@ -43,7 +43,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: project_work_item.due_date,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
           hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: project_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
@@ -80,7 +79,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: project_work_item.due_date,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
           hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: project_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
@@ -118,7 +116,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: project_work_item.due_date,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
           hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: project_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
@@ -148,7 +145,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: user_work_item.due_date,
           traversal_ids: "#{user_work_item.namespace.id}-",
           hashed_root_namespace_id: user_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: user_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           type: 'work_item'
         )
@@ -210,7 +206,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: project_work_item.due_date,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
           hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: project_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
@@ -269,7 +264,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           due_date: user_work_item.due_date,
           traversal_ids: "#{user_work_item.namespace.id}-",
           hashed_root_namespace_id: user_work_item.namespace.hashed_root_namespace_id,
-          namespace_visibility_level: user_work_item.namespace.visibility_level,
           schema_version: described_class::SCHEMA_VERSION,
           type: 'work_item'
         )
