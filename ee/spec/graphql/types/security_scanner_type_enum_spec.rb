@@ -7,7 +7,6 @@ RSpec.describe GitlabSchema.types['SecurityScannerType'] do
     expect(described_class.values.keys).to match_array(
       %w[
         API_FUZZING
-        BREACH_AND_ATTACK_SIMULATION
         CLUSTER_IMAGE_SCANNING
         CONTAINER_SCANNING
         COVERAGE_FUZZING
