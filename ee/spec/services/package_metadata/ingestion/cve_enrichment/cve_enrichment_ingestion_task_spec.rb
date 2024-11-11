@@ -7,6 +7,7 @@ RSpec.describe PackageMetadata::Ingestion::CveEnrichment::CveEnrichmentIngestion
     let(:cve_id) { 'CVE-2023-12345' }
     let(:new_epss_score) { 0.75 }
     let(:old_epss_score) { 0.5 }
+    let(:is_known_exploit) { false }
 
     let!(:existing_cve_enrichment) do
       create(:pm_cve_enrichment, cve: cve_id, epss_score: old_epss_score)

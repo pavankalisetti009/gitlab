@@ -10,6 +10,7 @@ RSpec.describe PackageMetadata::CveEnrichment, type: :model, feature_category: :
   describe 'validations' do
     it { is_expected.to validate_presence_of(:cve) }
     it { is_expected.to validate_presence_of(:epss_score) }
+    it { is_expected.to validate_inclusion_of(:is_known_exploit).in_array([true, false]) }
 
     describe 'CVE format validation' do
       where(:attribute, :value, :is_valid) do
