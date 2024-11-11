@@ -36,7 +36,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
       end
 
       let(:example_answer) { { "response" => "AI generated review summary" } }
-      let(:example_response) { instance_double(HTTParty::Response, body: example_answer.to_json) }
+      let(:example_response) { instance_double(HTTParty::Response, body: example_answer.to_json, success?: true) }
 
       shared_examples_for 'summarize review' do
         it 'publishes the content from the AI response' do

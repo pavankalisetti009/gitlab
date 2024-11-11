@@ -9,8 +9,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
   let(:prompt_message) { build(:ai_message, ai_action: ai_action, user: user, resource: resource) }
   let(:inputs) { { prompt: "What's your name?" } }
   let(:response) { "I'm Duo" }
-  let(:http_response) { instance_double(HTTParty::Response, body: %("#{response}")) }
-  let(:processed_repsonse) { response }
+  let(:http_response) { instance_double(HTTParty::Response, body: %("#{response}"), success?: true) }
+  let(:processed_response) { response }
   let(:response_modifier_class) { Gitlab::Llm::AiGateway::ResponseModifiers::Base }
   let(:response_modifier) { instance_double(Gitlab::Llm::AiGateway::ResponseModifiers::Base) }
   let(:response_service) { instance_double(Gitlab::Llm::GraphqlSubscriptionResponseService) }
@@ -56,7 +56,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
             .and_return(http_response)
         end
 
-        expect(response_modifier_class).to receive(:new).with(processed_repsonse)
+        expect(response_modifier_class).to receive(:new).with(processed_response)
           .and_return(response_modifier)
         expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
           .with(user, resource, response_modifier, options: response_options).and_return(response_service)
@@ -82,19 +82,19 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
 
     context 'when the subclass raises an ArgumentError when gathering inputs' do
       let(:http_response) { nil }
-      let(:processed_repsonse) { { 'detail' => 'Something went wrong.' } }
+      let(:processed_response) { { 'detail' => 'Something went wrong.' } }
 
       before do
         subclass.define_method(:inputs) { raise ArgumentError, 'Something went wrong.' }
       end
 
       # Note: The completion "executes successfully" in that it relays the error to the user via GraphQL, which we check
-      # by changing the `let(:processed_repsonse)` in this context
+      # by changing the `let(:processed_response)` in this context
       it_behaves_like 'executing successfully'
     end
 
     context 'when an unexpected error is raised' do
-      let(:processed_repsonse) { { 'detail' => 'An unexpected error has occurred.' } }
+      let(:processed_response) { { 'detail' => 'An unexpected error has occurred.' } }
 
       before do
         allow(Gitlab::Json).to receive(:parse).and_raise(StandardError)
@@ -104,7 +104,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
     end
 
     context 'when the subclass overrides the post_process method' do
-      let(:processed_repsonse) { response.upcase }
+      let(:processed_response) { response.upcase }
 
       before do
         subclass.define_method(:post_process) { |response| response.upcase }
