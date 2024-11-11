@@ -14,8 +14,7 @@ RSpec.describe UsersStatistics do
 
     context 'when there is an ultimate license' do
       before do
-        license = create(:license, plan: License::ULTIMATE_PLAN)
-        allow(License).to receive(:current).and_return(license)
+        create_current_license(plan: License::ULTIMATE_PLAN)
       end
 
       it 'excludes blocked users, bots, guest users, users without a group or project and minimal access users' do
@@ -33,6 +32,16 @@ RSpec.describe UsersStatistics do
   describe '#non_billable' do
     it 'sums bots and guests values' do
       expect(users_statistics.non_billable).to eq(5)
+    end
+
+    context 'when there is an ultimate license' do
+      before do
+        create_current_license(plan: License::ULTIMATE_PLAN)
+      end
+
+      it 'includes users without a group or project' do
+        expect(users_statistics.non_billable).to eq(28)
+      end
     end
   end
 
