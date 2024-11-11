@@ -56,11 +56,12 @@ describe('EEInviteModalBase', () => {
     overageMembersModalAvailable = true,
     customRoleForGroupLinkEnabled = false,
     queryHandler = defaultReconciliationMock,
+    getBillableUserCountChangesQueryHandler = defaultBillableMock,
     showModal = true,
   } = {}) => {
     const mockCustomersDotClient = createMockClient([[getReconciliationStatus, queryHandler]]);
     const mockGitlabClient = createMockClient([
-      [getBillableUserCountChanges, defaultBillableMock],
+      [getBillableUserCountChanges, getBillableUserCountChangesQueryHandler],
       [getGroupMemberRoles, groupMemberRolesResponse],
       [getProjectMemberRoles, projectMemberRolesResponse],
     ]);
@@ -353,6 +354,42 @@ describe('EEInviteModalBase', () => {
         });
         expect(defaultReconciliationMock).toHaveBeenCalledTimes(1);
         expect(defaultReconciliationMock).toHaveBeenCalledWith({ namespaceId: 54321 });
+      });
+    });
+
+    describe('when getBillableUserCountChanges query fails', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: { newGroupToInvite: 123, rootGroupId: '54321' },
+          glFeatures: { overageMembersModal: true },
+          overageMembersModalAvailable: true,
+          getBillableUserCountChangesQueryHandler: jest.fn().mockRejectedValueOnce(),
+        });
+        clickInviteButton();
+        await nextTick();
+        await waitForPromises();
+      });
+
+      it('emits submit one time', () => {
+        expect(wrapper.emitted('submit')).toHaveLength(1);
+      });
+    });
+
+    describe('when getBillableUserCountChanges is successful with invalid data structure', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: { newGroupToInvite: 123, rootGroupId: '54321' },
+          glFeatures: { overageMembersModal: true },
+          overageMembersModalAvailable: true,
+          getBillableUserCountChangesQueryHandler: jest.fn().mockResolvedValueOnce({}),
+        });
+        clickInviteButton();
+        await nextTick();
+        await waitForPromises();
+      });
+
+      it('emits submit one time', () => {
+        expect(wrapper.emitted('submit')).toHaveLength(1);
       });
     });
 
