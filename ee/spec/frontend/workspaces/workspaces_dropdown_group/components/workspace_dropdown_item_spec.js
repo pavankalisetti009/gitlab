@@ -1,22 +1,25 @@
-import { GlDisclosureDropdownItem } from '@gitlab/ui';
+import { GlLink } from '@gitlab/ui';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { mockTracking } from 'helpers/tracking_helper';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import WorkspaceStateIndicator from 'ee/workspaces/common/components/workspace_state_indicator.vue';
 import WorkspaceActions from 'ee/workspaces/common/components/workspace_actions.vue';
-import { WORKSPACE_DESIRED_STATES } from 'ee/workspaces/dropdown_group/constants';
+import { WORKSPACE_DESIRED_STATES, WORKSPACE_STATES } from 'ee/workspaces/dropdown_group/constants';
 import WorkspaceDropdownItem from 'ee/workspaces/dropdown_group/components/workspace_dropdown_item.vue';
+import { calculateDisplayState } from 'ee/workspaces/common/services/calculate_display_state';
 import { WORKSPACE } from '../../mock_data';
 
 describe('workspaces/dropdown_group/components/workspace_dropdown_item.vue', () => {
   let wrapper;
   let trackingSpy;
 
-  const createWrapper = () => {
-    // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
-    wrapper = shallowMountExtended(WorkspaceDropdownItem, {
+  const createWrapper = ({
+    props = { workspace: WORKSPACE },
+    mountFn = shallowMountExtended,
+  } = {}) => {
+    wrapper = mountFn(WorkspaceDropdownItem, {
       propsData: {
-        workspace: WORKSPACE,
+        ...props,
       },
     });
 
@@ -24,15 +27,17 @@ describe('workspaces/dropdown_group/components/workspace_dropdown_item.vue', () 
   };
   const findWorkspaceStateIndicator = () => wrapper.findComponent(WorkspaceStateIndicator);
   const findWorkspaceActions = () => wrapper.findComponent(WorkspaceActions);
-  const findDropdownItem = () => wrapper.findComponent(GlDisclosureDropdownItem);
+  const findOpenWorkspaceLink = () => wrapper.findComponent(GlLink);
 
   describe('default', () => {
+    const displayState = calculateDisplayState(WORKSPACE.actualState, WORKSPACE.desiredState);
+
     beforeEach(() => {
       createWrapper();
     });
 
     it('displays workspace state indicator', () => {
-      expect(findWorkspaceStateIndicator().props().workspaceState).toBe(WORKSPACE.actualState);
+      expect(findWorkspaceStateIndicator().props().workspaceDisplayState).toBe(displayState);
     });
 
     it('displays the workspace name', () => {
@@ -43,47 +48,66 @@ describe('workspaces/dropdown_group/components/workspace_dropdown_item.vue', () 
       expect(wrapper.findComponent(TimeAgoTooltip).props('time')).toBe(WORKSPACE.createdAt);
     });
 
-    it('passes workspace URL to the dropdown item', () => {
-      expect(findDropdownItem().props().item).toEqual({
-        text: WORKSPACE.name,
-        href: WORKSPACE.url,
-      });
-    });
-
     it('displays workspace actions', () => {
-      expect(findWorkspaceActions().props()).toEqual({
-        actualState: WORKSPACE.actualState,
-        desiredState: WORKSPACE.desiredState,
-        compact: true,
-      });
+      expect(findWorkspaceActions().props().workspaceDisplayState).toEqual(displayState);
     });
   });
 
-  describe('when the dropdown item emits "action" event', () => {
+  describe('when workspace is running', () => {
     beforeEach(() => {
-      createWrapper();
-
-      findDropdownItem().vm.$emit('action');
-    });
-
-    it('tracks event', () => {
-      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_consolidated_edit', {
-        label: 'workspace',
+      createWrapper({
+        props: {
+          workspace: {
+            ...WORKSPACE,
+            desiredState: WORKSPACE_DESIRED_STATES.running,
+            actualState: WORKSPACE_STATES.running,
+          },
+        },
+        mountFn: mountExtended,
       });
     });
-  });
 
-  describe('when workspaces action is clicked', () => {
-    it('emits updateWorkspace event with the desiredState provided by the action', () => {
-      createWrapper();
+    describe('when the dropdown item emits "action" event', () => {
+      beforeEach(() => {
+        findOpenWorkspaceLink().vm.$emit('click');
+      });
 
-      expect(wrapper.emitted('updateWorkspace')).toBe(undefined);
+      it('tracks event', () => {
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_consolidated_edit', {
+          label: 'workspace',
+        });
+      });
+    });
 
-      findWorkspaceActions().vm.$emit('click', WORKSPACE_DESIRED_STATES.running);
+    describe('when workspaces action is clicked', () => {
+      it('emits updateWorkspace event with the desiredState provided by the action', () => {
+        expect(wrapper.emitted('updateWorkspace')).toBe(undefined);
 
-      expect(wrapper.emitted('updateWorkspace')).toEqual([
-        [{ desiredState: WORKSPACE_DESIRED_STATES.running }],
-      ]);
+        findWorkspaceActions().vm.$emit('click', WORKSPACE_DESIRED_STATES.running);
+
+        expect(wrapper.emitted('updateWorkspace')).toEqual([
+          [{ desiredState: WORKSPACE_DESIRED_STATES.running }],
+        ]);
+      });
+    });
+
+    it.each`
+      component                     | selector
+      ${'workspace actions parent'} | ${() => findWorkspaceActions().element.parentElement}
+      ${'open workspace link'}      | ${() => findOpenWorkspaceLink().element}
+    `('stops propagation of keydown event in $component component', ({ selector }) => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'A',
+        keyCode: 65,
+        which: 64,
+        bubbles: true,
+        cancelable: true,
+      });
+      const spy = jest.spyOn(event, 'stopPropagation');
+
+      selector().dispatchEvent(event);
+
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

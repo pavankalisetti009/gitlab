@@ -1,37 +1,35 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlBadge } from '@gitlab/ui';
-import WorkspaceStateIndicator, {
-  i18n,
-} from 'ee/workspaces/common/components/workspace_state_indicator.vue';
+import WorkspaceStateIndicator from 'ee/workspaces/common/components/workspace_state_indicator.vue';
 import { WORKSPACE_STATES } from 'ee/workspaces/common/constants';
 
 describe('WorkspaceStateIndicator', () => {
   let wrapper;
 
-  const createWrapper = ({ workspaceState }) => {
+  const createWrapper = ({ workspaceDisplayState }) => {
     wrapper = shallowMount(WorkspaceStateIndicator, {
       propsData: {
-        workspaceState,
+        workspaceDisplayState,
       },
     });
   };
 
   it.each`
-    workspaceState                        | iconName    | label                                              | variant
-    ${WORKSPACE_STATES.creationRequested} | ${'status'} | ${i18n.labels[WORKSPACE_STATES.creationRequested]} | ${'success'}
-    ${WORKSPACE_STATES.starting}          | ${'status'} | ${i18n.labels[WORKSPACE_STATES.starting]}          | ${'success'}
-    ${WORKSPACE_STATES.running}           | ${''}       | ${i18n.labels[WORKSPACE_STATES.running]}           | ${'success'}
-    ${WORKSPACE_STATES.stopping}          | ${'status'} | ${i18n.labels[WORKSPACE_STATES.stopping]}          | ${'info'}
-    ${WORKSPACE_STATES.stopped}           | ${''}       | ${i18n.labels[WORKSPACE_STATES.stopped]}           | ${'info'}
-    ${WORKSPACE_STATES.failed}            | ${''}       | ${i18n.labels[WORKSPACE_STATES.failed]}            | ${'danger'}
-    ${WORKSPACE_STATES.error}             | ${''}       | ${i18n.labels[WORKSPACE_STATES.error]}             | ${'danger'}
-    ${WORKSPACE_STATES.unknown}           | ${''}       | ${i18n.labels[WORKSPACE_STATES.unknown]}           | ${'danger'}
-    ${WORKSPACE_STATES.terminating}       | ${'status'} | ${i18n.labels[WORKSPACE_STATES.terminating]}       | ${'muted'}
-    ${WORKSPACE_STATES.terminated}        | ${''}       | ${i18n.labels[WORKSPACE_STATES.terminated]}        | ${'muted'}
+    workspaceDisplayState                 | iconName    | label              | variant
+    ${WORKSPACE_STATES.creationRequested} | ${'status'} | ${'Creating'}      | ${'success'}
+    ${WORKSPACE_STATES.starting}          | ${'status'} | ${'Starting'}      | ${'success'}
+    ${WORKSPACE_STATES.running}           | ${''}       | ${'Running'}       | ${'success'}
+    ${WORKSPACE_STATES.stopping}          | ${'status'} | ${'Stopping'}      | ${'info'}
+    ${WORKSPACE_STATES.stopped}           | ${''}       | ${'Stopped'}       | ${'info'}
+    ${WORKSPACE_STATES.terminating}       | ${'status'} | ${'Terminating'}   | ${'muted'}
+    ${WORKSPACE_STATES.terminated}        | ${''}       | ${'Terminated'}    | ${'muted'}
+    ${WORKSPACE_STATES.failed}            | ${''}       | ${'Failed'}        | ${'danger'}
+    ${WORKSPACE_STATES.error}             | ${''}       | ${'Error'}         | ${'danger'}
+    ${WORKSPACE_STATES.unknown}           | ${''}       | ${'Unknown state'} | ${'danger'}
   `(
-    'displays $iconName with $tooltip and $cssClass when workspace state is $state',
-    ({ workspaceState, iconName, label, variant }) => {
-      createWrapper({ workspaceState });
+    'label=$label, icon=$iconName, variant=$variant when displayState=$workspaceDisplayState',
+    ({ workspaceDisplayState, iconName, label, variant }) => {
+      createWrapper({ workspaceDisplayState });
 
       const badge = wrapper.findComponent(GlBadge);
 

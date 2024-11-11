@@ -1,143 +1,91 @@
 <script>
-import { GlButton, GlTooltip } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
+import { GlDisclosureDropdown, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { WORKSPACE_DESIRED_STATES, WORKSPACE_STATES } from '../constants';
-
-const RESTART_ACTION_VISIBLE_STATES = {
-  [WORKSPACE_STATES.running]: [
-    WORKSPACE_DESIRED_STATES.restartRequested,
-    WORKSPACE_DESIRED_STATES.running,
-  ],
-  [WORKSPACE_STATES.failed]: [
-    WORKSPACE_DESIRED_STATES.restartRequested,
-    WORKSPACE_DESIRED_STATES.running,
-  ],
-};
-
-const START_ACTION_VISIBLE_STATES = {
-  [WORKSPACE_STATES.creationRequested]: [
-    WORKSPACE_DESIRED_STATES.running,
-    WORKSPACE_DESIRED_STATES.stopped,
-  ],
-  [WORKSPACE_STATES.stopped]: [WORKSPACE_DESIRED_STATES.running, WORKSPACE_DESIRED_STATES.stopped],
-  [WORKSPACE_STATES.starting]: [WORKSPACE_DESIRED_STATES.running, WORKSPACE_DESIRED_STATES.stopped],
-};
-
-const STOP_ACTION_VISIBLE_STATES = {
-  [WORKSPACE_STATES.stopping]: [WORKSPACE_DESIRED_STATES.running, WORKSPACE_DESIRED_STATES.stopped],
-  [WORKSPACE_STATES.running]: [WORKSPACE_DESIRED_STATES.running, WORKSPACE_DESIRED_STATES.stopped],
-  [WORKSPACE_STATES.failed]: [WORKSPACE_DESIRED_STATES.running, WORKSPACE_DESIRED_STATES.stopped],
-};
-
-const stateIsInMap = (actualToDesired, actualState, desiredState) => {
-  return actualToDesired[actualState]?.includes(desiredState);
-};
 
 const ACTIONS = [
   {
     key: 'restart',
-    isVisible: (actualState, desiredState) =>
-      stateIsInMap(RESTART_ACTION_VISIBLE_STATES, actualState, desiredState),
+    isVisible: (displayState) =>
+      [WORKSPACE_STATES.failed, WORKSPACE_STATES.error, WORKSPACE_STATES.unknown].includes(
+        displayState,
+      ),
     desiredState: WORKSPACE_DESIRED_STATES.restartRequested,
     title: s__('Workspaces|Restart'),
-    titleLoading: s__('Workspaces|Restarting'),
-    icon: 'retry',
   },
   {
     key: 'start',
-    isVisible: (actualState, desiredState) =>
-      stateIsInMap(START_ACTION_VISIBLE_STATES, actualState, desiredState),
+    isVisible: (displayState) => displayState === WORKSPACE_STATES.stopped,
     desiredState: WORKSPACE_DESIRED_STATES.running,
     title: s__('Workspaces|Start'),
-    titleLoading: s__('Workspaces|Starting'),
-    icon: 'play',
   },
   {
     key: 'stop',
-    isVisible: (actualState, desiredState) =>
-      stateIsInMap(STOP_ACTION_VISIBLE_STATES, actualState, desiredState),
+    isVisible: (displayState) => displayState === WORKSPACE_STATES.running,
     desiredState: WORKSPACE_DESIRED_STATES.stopped,
     title: s__('Workspaces|Stop'),
-    titleLoading: s__('Workspaces|Stopping'),
-    icon: 'stop',
   },
   {
     key: 'terminate',
-    isVisible: (actualState) =>
-      ![WORKSPACE_STATES.unknown, WORKSPACE_STATES.terminated].includes(actualState),
+    isVisible: (displayState) =>
+      ![WORKSPACE_STATES.terminated, WORKSPACE_STATES.terminating].includes(displayState),
     desiredState: WORKSPACE_DESIRED_STATES.terminated,
     title: s__('Workspaces|Terminate'),
-    titleLoading: s__('Workspaces|Terminating'),
-    icon: 'remove',
+    extraAttrs: {
+      class: '!gl-text-red-500',
+    },
   },
 ];
 
 export default {
   components: {
-    GlButton,
-    GlTooltip,
+    GlDisclosureDropdown,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
-    actualState: {
+    workspaceDisplayState: {
       type: String,
       required: true,
-    },
-    desiredState: {
-      type: String,
-      required: true,
-    },
-    compact: {
-      type: Boolean,
-      required: false,
-      default: false,
+      validator: (value) => Object.values(WORKSPACE_STATES).includes(value),
     },
   },
   computed: {
     actions() {
-      return ACTIONS.filter(({ isVisible }) => isVisible(this.actualState, this.desiredState)).map(
-        ({ desiredState, icon, key, titleLoading, title }) => {
-          const isLoading = this.desiredState === desiredState;
-          const tooltip = isLoading ? titleLoading : title;
-
+      return ACTIONS.filter(({ isVisible }) => isVisible(this.workspaceDisplayState)).map(
+        ({ desiredState, key, title, extraAttrs }) => {
           return {
-            desiredState,
-            icon,
-            isLoading,
             key,
             id: uniqueId(`action-wrapper-${key}`),
-            tooltip,
+            text: title,
+            action: () => this.$emit('click', desiredState),
+            extraAttrs,
           };
         },
       );
-    },
-    compactButtonProps() {
-      return this.compact ? { category: 'tertiary', size: 'small' } : {};
-    },
-  },
-  methods: {
-    onClick(actionDesiredState) {
-      this.$emit('click', actionDesiredState);
     },
   },
 };
 </script>
 
 <template>
-  <div class="gl-flex gl-justify-end gl-gap-3">
-    <span v-for="action in actions" :id="action.id" :key="action.key">
-      <gl-button
-        :disabled="action.isLoading"
-        :loading="action.isLoading"
-        :aria-label="action.tooltip"
-        :icon="action.icon"
-        v-bind="compactButtonProps"
-        :data-testid="`workspace-${action.key}-button`"
-        @click.stop.prevent="onClick(action.desiredState)"
-      />
-      <gl-tooltip boundary="viewport" :target="action.id">
-        {{ action.tooltip }}
-      </gl-tooltip>
-    </span>
-  </div>
+  <gl-disclosure-dropdown
+    v-if="actions.length > 0"
+    :items="actions"
+    icon="ellipsis_v"
+    toggle-text="Actions"
+    text-sr-only
+    category="tertiary"
+    no-caret
+    positioning-strategy="fixed"
+    data-testid="workspace-actions-dropdown"
+  >
+    <template #list-item="{ item }">
+      <span :id="item.id" :key="item.key" :data-testid="`workspace-${item.key}-button`">
+        {{ item.text }}
+      </span>
+    </template>
+  </gl-disclosure-dropdown>
 </template>

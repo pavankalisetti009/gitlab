@@ -1,153 +1,72 @@
-import { shallowMount } from '@vue/test-utils';
-import { GlButton, GlTooltip } from '@gitlab/ui';
+import { mount } from '@vue/test-utils';
+import { GlDisclosureDropdownItem } from '@gitlab/ui';
 import WorkspaceActions from 'ee/workspaces/common/components/workspace_actions.vue';
-import {
-  WORKSPACE_STATES as ACTUAL,
-  WORKSPACE_DESIRED_STATES as DESIRED,
-} from 'ee/workspaces/common/constants';
+import { WORKSPACE_STATES as ACTUAL } from 'ee/workspaces/common/constants';
 
 describe('ee/workspaces/components/common/workspace_actions', () => {
   let wrapper;
 
   const createWrapper = (props = {}) => {
-    wrapper = shallowMount(WorkspaceActions, {
+    wrapper = mount(WorkspaceActions, {
       propsData: {
         ...props,
-      },
-      stubs: {
-        GlTooltip,
       },
     });
   };
 
-  const findButtons = () => wrapper.findAllComponents(GlButton);
-  const findButtonWithLabel = (label) =>
-    findButtons().wrappers.find((x) => x.attributes('aria-label') === label);
-  const findButtonsAsData = () =>
-    findButtons().wrappers.map((button) => ({
-      ariaLabel: button.attributes('aria-label'),
-      icon: button.props('icon'),
-      disabled: button.props('disabled'),
-      loading: button.props('loading'),
-    }));
-  const findTooltipsAsData = () =>
-    wrapper.findAllComponents(GlTooltip).wrappers.map((tooltip) => ({
-      text: tooltip.text(),
-      target: tooltip.props().target,
+  const findDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
+  const findDropdownItemWithText = (text) =>
+    findDropdownItems().wrappers.find((x) => x.text() === text);
+  const findDropdownItemsAsData = () =>
+    findDropdownItems().wrappers.map((button) => ({
+      text: button.text(),
     }));
 
-  const createButtonData = (tooltip, icon, loading = false) => ({
-    icon,
-    ariaLabel: tooltip,
-    disabled: loading,
-    loading,
+  const createButtonData = (text) => ({
+    text,
   });
 
-  const RESTART_BUTTON = createButtonData('Restart', 'retry');
-  const RESTARTING_BUTTON = createButtonData('Restarting', 'retry', true);
-  const START_BUTTON = createButtonData('Start', 'play');
-  const STARTING_BUTTON = createButtonData('Starting', 'play', true);
-  const STOP_BUTTON = createButtonData('Stop', 'stop');
-  const STOPPING_BUTTON = createButtonData('Stopping', 'stop', true);
-  const TERMINATE_BUTTON = createButtonData('Terminate', 'remove');
-  const TERMINATING_BUTTON = createButtonData('Terminating', 'remove', true);
+  const RESTART_BUTTON = createButtonData('Restart');
+  const START_BUTTON = createButtonData('Start');
+  const STOP_BUTTON = createButtonData('Stop');
+  const TERMINATE_BUTTON = createButtonData('Terminate');
 
   it.each`
-    actualState                 | desiredState                | buttonsData
-    ${ACTUAL.creationRequested} | ${DESIRED.running}          | ${[STARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.creationRequested} | ${DESIRED.stopped}          | ${[START_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.creationRequested} | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.creationRequested} | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.starting}          | ${DESIRED.running}          | ${[STARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.starting}          | ${DESIRED.stopped}          | ${[START_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.starting}          | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.starting}          | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.running}           | ${DESIRED.running}          | ${[RESTART_BUTTON, STOP_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.running}           | ${DESIRED.stopped}          | ${[STOPPING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.running}           | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.running}           | ${DESIRED.restartRequested} | ${[RESTARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopping}          | ${DESIRED.running}          | ${[STOP_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopping}          | ${DESIRED.stopped}          | ${[STOPPING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopping}          | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.stopping}          | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.stopped}           | ${DESIRED.running}          | ${[STARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopped}           | ${DESIRED.stopped}          | ${[START_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopped}           | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.terminated}        | ${DESIRED.running}          | ${[]}
-    ${ACTUAL.terminated}        | ${DESIRED.stopped}          | ${[]}
-    ${ACTUAL.terminated}        | ${DESIRED.terminated}       | ${[]}
-    ${ACTUAL.terminated}        | ${DESIRED.restartRequested} | ${[]}
-    ${ACTUAL.failed}            | ${DESIRED.running}          | ${[RESTART_BUTTON, STOP_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.failed}            | ${DESIRED.stopped}          | ${[STOPPING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.failed}            | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.failed}            | ${DESIRED.restartRequested} | ${[RESTARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.error}             | ${DESIRED.running}          | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.error}             | ${DESIRED.stopped}          | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.error}             | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.error}             | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.unknown}           | ${DESIRED.running}          | ${[]}
-    ${ACTUAL.unknown}           | ${DESIRED.stopped}          | ${[]}
-    ${ACTUAL.unknown}           | ${DESIRED.terminated}       | ${[]}
-    ${ACTUAL.unknown}           | ${DESIRED.restartRequested} | ${[]}
-    ${ACTUAL.terminating}       | ${DESIRED.running}          | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.terminating}       | ${DESIRED.stopped}          | ${[TERMINATE_BUTTON]}
-    ${ACTUAL.terminating}       | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.terminating}       | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
+    workspaceDisplayState       | buttonsData
+    ${ACTUAL.creationRequested} | ${[TERMINATE_BUTTON]}
+    ${ACTUAL.starting}          | ${[TERMINATE_BUTTON]}
+    ${ACTUAL.running}           | ${[STOP_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.stopping}          | ${[TERMINATE_BUTTON]}
+    ${ACTUAL.stopped}           | ${[START_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.terminated}        | ${[]}
+    ${ACTUAL.failed}            | ${[RESTART_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.error}             | ${[RESTART_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.unknown}           | ${[RESTART_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.terminating}       | ${[]}
   `(
-    'renders buttons - with actualState=$actualState and desiredState=$desiredState',
-    ({ actualState, desiredState, buttonsData }) => {
-      createWrapper({ actualState, desiredState });
+    'renders buttons - with workspaceDisplayState=$workspaceDisplayState',
+    ({ workspaceDisplayState, buttonsData }) => {
+      createWrapper({ workspaceDisplayState });
 
-      expect(findButtonsAsData()).toEqual(buttonsData);
-      expect(findTooltipsAsData()).toEqual(
-        buttonsData.map((buttonData) => ({
-          text: buttonData.ariaLabel,
-          target: expect.stringMatching(/action-wrapper-\w+\d{1}/),
-        })),
-      );
+      expect(findDropdownItemsAsData()).toEqual(buttonsData);
     },
   );
 
   it.each`
-    actualState                 | desiredState       | buttonLabel    | actionDesiredState
-    ${ACTUAL.creationRequested} | ${DESIRED.running} | ${'Terminate'} | ${'Terminated'}
-    ${ACTUAL.stopped}           | ${DESIRED.stopped} | ${'Start'}     | ${'Running'}
-    ${ACTUAL.running}           | ${DESIRED.running} | ${'Stop'}      | ${'Stopped'}
+    workspaceDisplayState       | text           | actionDesiredState
+    ${ACTUAL.creationRequested} | ${'Terminate'} | ${'Terminated'}
+    ${ACTUAL.stopped}           | ${'Start'}     | ${'Running'}
+    ${ACTUAL.running}           | ${'Stop'}      | ${'Stopped'}
   `(
-    'when clicking "$buttonLabel", emits "click" with "$actionDesiredState"',
-    ({ actualState, desiredState, buttonLabel, actionDesiredState }) => {
-      const mockEvent = { stopPropagation: jest.fn(), preventDefault: jest.fn() };
-
-      createWrapper({ actualState, desiredState });
+    'when clicking "$text", emits "click" with "$actionDesiredState"',
+    async ({ workspaceDisplayState, text, actionDesiredState }) => {
+      createWrapper({ workspaceDisplayState });
 
       expect(wrapper.emitted('click')).toBeUndefined();
 
-      const button = findButtonWithLabel(buttonLabel);
-
-      button.vm.$emit('click', mockEvent);
+      await findDropdownItemWithText(text).find('button').trigger('click');
 
       expect(wrapper.emitted('click')).toEqual([[actionDesiredState]]);
-      expect(mockEvent.stopPropagation).toHaveBeenCalled();
-      expect(mockEvent.preventDefault).toHaveBeenCalled();
     },
   );
-
-  describe('when compact mode', () => {
-    beforeEach(() => {
-      createWrapper({
-        actualState: ACTUAL.creationRequested,
-        desiredState: DESIRED.running,
-        compact: true,
-      });
-    });
-
-    it('sets buttons as small and category tertiary', () => {
-      findButtons().wrappers.forEach((button) => {
-        expect(button.props()).toMatchObject({
-          category: 'tertiary',
-          size: 'small',
-        });
-      });
-    });
-  });
 });

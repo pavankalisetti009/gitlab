@@ -117,6 +117,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "60001-#{workspace.name}.#{dns_zone}",
+          path: '/',
           query: {
             folder: "#{workspace_root}/#{project.path}"
           }.to_query

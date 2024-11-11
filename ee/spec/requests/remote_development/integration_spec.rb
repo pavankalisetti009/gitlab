@@ -221,6 +221,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
     expect(workspace.url).to eq(URI::HTTPS.build({
       host: "60001-#{workspace.name}.#{dns_zone}",
+      path: "/",
       query: {
         folder: "#{workspace_root}/#{workspace_project.path}"
       }.to_query
