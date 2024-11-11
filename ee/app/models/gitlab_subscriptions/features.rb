@@ -191,7 +191,6 @@ module GitlabSubscriptions
       api_discovery
       api_fuzzing
       auto_rollback
-      breach_and_attack_simulation
       cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
