@@ -111,7 +111,7 @@ export default {
     },
   },
   helpDocsPath: helpPagePath('/administration/settings/sign_up_restrictions', {
-    anchor: 'enable-role-promotion-approval',
+    anchor: 'turn-on-administrator-approval-for-role-promotions',
   }),
   description: s__(
     'Members|Role promotions must be approved by an administrator. This setting can be changed in the Admin area. %{linkStart}Learn more%{linkEnd}.',
