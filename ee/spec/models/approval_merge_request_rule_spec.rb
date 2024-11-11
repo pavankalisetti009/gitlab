@@ -507,6 +507,37 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
   end
 
+  describe '#hook_attrs' do
+    let(:rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
+
+    subject(:hook_attrs) { rule.hook_attrs }
+
+    it 'returns the expected attributes' do
+      expect(hook_attrs).to eq({
+        id: rule.id,
+        approvals_required: rule.approvals_required,
+        name: rule.name,
+        rule_type: rule.rule_type,
+        report_type: rule.report_type,
+        merge_request_id: rule.merge_request_id,
+        section: rule.section,
+        modified_from_project_rule: rule.modified_from_project_rule,
+        orchestration_policy_idx: rule.orchestration_policy_idx,
+        vulnerabilities_allowed: rule.vulnerabilities_allowed,
+        scanners: rule.scanners,
+        severity_levels: rule.severity_levels,
+        vulnerability_states: rule.vulnerability_states,
+        security_orchestration_policy_configuration_id: rule.security_orchestration_policy_configuration_id,
+        scan_result_policy_id: rule.scan_result_policy_id,
+        applicable_post_merge: rule.applicable_post_merge,
+        project_id: rule.project_id,
+        approval_policy_rule_id: rule.approval_policy_rule_id,
+        updated_at: rule.updated_at,
+        created_at: rule.created_at
+      })
+    end
+  end
+
   describe '#applicable_to_branch?' do
     let!(:rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
     let(:branch) { 'stable' }
