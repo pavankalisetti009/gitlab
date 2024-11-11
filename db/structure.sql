@@ -16778,7 +16778,7 @@ CREATE TABLE plan_limits (
     dotenv_size integer DEFAULT 5120 NOT NULL,
     pipeline_triggers integer DEFAULT 25000 NOT NULL,
     project_ci_secure_files integer DEFAULT 100 NOT NULL,
-    repository_size bigint DEFAULT 0 NOT NULL,
+    repository_size bigint,
     security_policy_scan_execution_schedules integer DEFAULT 0 NOT NULL,
     web_hook_calls_mid integer DEFAULT 0 NOT NULL,
     web_hook_calls_low integer DEFAULT 0 NOT NULL,

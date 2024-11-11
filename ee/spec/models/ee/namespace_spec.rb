@@ -984,7 +984,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it 'has all limits defined' do
-        limits = subject.attributes.except('id', 'plan_id', 'dashboard_limit_enabled_at', 'updated_at')
+        limits = subject.attributes.except('id', 'plan_id', 'repository_size', 'dashboard_limit_enabled_at', 'updated_at')
         limits.each do |_attribute, limit|
           expect(limit).not_to be_nil
         end
