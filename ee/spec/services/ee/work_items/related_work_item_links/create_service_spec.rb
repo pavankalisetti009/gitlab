@@ -82,11 +82,11 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
       end
     end
 
-    context 'when there is an epic for the work item' do
+    context 'for epic work items' do
       let_it_be(:group) { create(:group) }
-      let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
-      let_it_be(:epic_a) { create(:epic, :with_synced_work_item, group: group) }
-      let_it_be(:epic_b) { create(:epic, :with_synced_work_item, group: group) }
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:epic_a) { create(:epic, group: group) }
+      let_it_be(:epic_b) { create(:epic, group: group) }
       let_it_be_with_refind(:work_item) { epic.work_item }
       let_it_be(:work_item_a) { epic_a.work_item }
       let_it_be(:another_work_item) { epic_b.work_item }
@@ -110,6 +110,8 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
         it_behaves_like 'successful response', link_type: 'blocks'
 
         it 'does not sync with a RelatedEpicLink record' do
+          expect(::Epic::RelatedEpicLink).not_to receive(:find_or_initialize_from_work_item_link)
+
           expect { link_items }.to not_change { Epic::RelatedEpicLink.count }
             .and change { link_class.count }.by(2)
         end
@@ -120,12 +122,28 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
 
         it_behaves_like 'successful response', link_type: 'blocks'
 
+        context 'when one work item is not an epic' do
+          let_it_be(:issue_work_item) { create(:work_item, :issue, namespace: group) }
+
+          let(:params) do
+            { target_issuable: [issue_work_item], synced_work_item: false, link_type: 'blocks' }
+          end
+
+          it 'does not try to sync it to a related epic link' do
+            expect(::Epic::RelatedEpicLink).not_to receive(:find_or_initialize_from_work_item_link)
+
+            expect { link_items }.to not_change { Epic::RelatedEpicLink.count }
+              .and change { link_class.count }.by(1)
+          end
+        end
+
         it 'syncs with a RelatedEpicLink record' do
           expect { link_items }.to change { Epic::RelatedEpicLink.count }.by(2)
 
           synced_links = Epic::RelatedEpicLink.where(source_id: epic.id)
           expect(synced_links.map(&:link_type).uniq).to eq(['blocks'])
           expect(synced_links.map(&:target)).to match_array([epic_a, epic_b])
+          expect(synced_links.map(&:issue_link_id)).to match_array(link_class.pluck(:id))
         end
 
         context 'when there is only a partial success' do
@@ -234,8 +252,9 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
 
         context 'when something goes wrong creating related epic link' do
           before do
-            allow_next_instance_of(Epics::RelatedEpicLinks::CreateService) do |instance|
-              allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
+            allow_next_instance_of(Epic::RelatedEpicLink) do |instance|
+              errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:base, 'Some error') }
+              allow(instance).to receive_messages(save: false, errors: errors)
             end
           end
 
