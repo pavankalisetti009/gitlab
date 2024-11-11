@@ -17,7 +17,6 @@ export const removeProfile = ({ profile, store }) => store.evict({ id: store.ide
  * @returns {{[p: string]: string, __typename: string}}
  */
 export const dastProfilesDeleteResponse = ({ mutationName, payloadTypeName }) => ({
-  // eslint-disable-next-line @gitlab/require-i18n-strings
   __typename: 'Mutation',
   [mutationName]: {
     __typename: payloadTypeName,

@@ -1,4 +1,3 @@
-/* eslint-disable @gitlab/require-i18n-strings */
 export const projectsTestCoverageResponse = {
   data: {
     group: {
