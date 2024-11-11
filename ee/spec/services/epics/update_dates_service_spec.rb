@@ -11,12 +11,13 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
   let(:work_item) { epic.work_item }
 
   before do
-    stub_feature_flags(work_items_rolledup_dates: false)
+    stub_feature_flags(work_items_rolledup_dates: false, work_item_epics: false)
+    stub_licensed_features(epics: true)
   end
 
-  shared_examples 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled' do
+  shared_examples 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled' do
     before do
-      stub_feature_flags(work_items_rolledup_dates: true)
+      stub_feature_flags(work_items_rolledup_dates: true, work_item_epics: true)
     end
 
     specify do
@@ -77,7 +78,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
         end
 
         context 'without due date' do
@@ -94,7 +95,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
         end
 
         context 'without any dates' do
@@ -129,7 +130,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
-        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
       end
 
       context 'and single milestone' do
@@ -154,7 +155,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
         end
 
         context 'without due date' do
@@ -170,7 +171,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
         end
 
         context 'without any dates' do
@@ -186,7 +187,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
         end
       end
     end
@@ -317,7 +318,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
-        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
 
         context "and epic has child epics" do
           let_it_be(:child_epic) do
@@ -339,7 +340,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
-          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when feature flags are enabled'
 
           context "when epic dates are propagated upwards", :sidekiq_inline do
             let_it_be(:top_level_parent_epic) { create(:epic, group: group) }
@@ -391,7 +392,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
 
             context 'when work_items_rolledup_dates is enabled' do
               before do
-                stub_feature_flags(work_items_rolledup_dates: true)
+                stub_feature_flags(work_items_rolledup_dates: true, work_item_epics: true)
               end
 
               it 'calls the HierarchiesUpdateService for the work items' do
