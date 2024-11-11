@@ -35,7 +35,8 @@ export const setupArkoseLabsForIdentityVerification = () => {
     return null;
   }
 
-  const { apiKey, domain, sessionVerificationPath, dataExchangePayload } = el.dataset;
+  const { apiKey, domain, sessionVerificationPath, dataExchangePayload, dataExchangePayloadPath } =
+    el.dataset;
 
   return new Vue({
     el,
@@ -46,6 +47,7 @@ export const setupArkoseLabsForIdentityVerification = () => {
           domain,
           sessionVerificationPath,
           dataExchangePayload,
+          dataExchangePayloadPath,
         },
       });
     },

@@ -1,22 +1,36 @@
-import { initArkoseLabsChallenge } from 'ee/arkose_labs/init_arkose_labs';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+import { HTTP_STATUS_OK, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '~/lib/utils/http_status';
+import { initArkoseLabsChallenge, resetArkoseLabsChallenge } from 'ee/arkose_labs/init_arkose_labs';
 
 jest.mock('lodash/uniqueId', () => (x) => `${x}7`);
 
 const EXPECTED_CALLBACK_NAME = '_initArkoseLabsScript_callback_7';
-const TEST_PUBLIC_KEY = 'arkose-labs-public-api-key';
-const TEST_DOMAIN = 'client-api.arkoselabs.com';
+const MOCK_PUBLIC_KEY = 'arkose-labs-public-api-key';
+const MOCK_DOMAIN = 'client-api.arkoselabs.com';
+const MOCK_DATA_EXCHANGE_PAYLOAD = 'fakeDataExchangePayload';
+const MOCK_DATA_EXCHANGE_PAYLOAD_PATH = '/path/to/data_exchange_payload';
 
-describe('initArkoseLabsScript', () => {
+let axiosMock;
+
+beforeEach(() => {
+  axiosMock = new MockAdapter(axios);
+});
+
+afterEach(() => {
+  axiosMock.restore();
+});
+
+describe('initArkoseLabsChallenge', () => {
   let subject;
 
   const initSubject = (
-    { dataExchangePayload, config } = { dataExchangePayload: undefined, config: {} },
+    args = { dataExchangePayload: undefined, dataExchangePayloadPath: undefined, config: {} },
   ) => {
     subject = initArkoseLabsChallenge({
-      publicKey: TEST_PUBLIC_KEY,
-      domain: TEST_DOMAIN,
-      dataExchangePayload,
-      config,
+      publicKey: MOCK_PUBLIC_KEY,
+      domain: MOCK_DOMAIN,
+      ...args,
     });
   };
 
@@ -42,7 +56,7 @@ describe('initArkoseLabsScript', () => {
 
     expect(scriptTag.getAttribute('type')).toBe('text/javascript');
     expect(scriptTag.getAttribute('src')).toBe(
-      `https://${TEST_DOMAIN}/v2/${TEST_PUBLIC_KEY}/api.js`,
+      `https://${MOCK_DOMAIN}/v2/${MOCK_PUBLIC_KEY}/api.js`,
     );
     expect(scriptTag.dataset.callback).toBe(EXPECTED_CALLBACK_NAME);
     expect(scriptTag.getAttribute('id')).toBe('arkose-challenge-script');
@@ -50,6 +64,11 @@ describe('initArkoseLabsScript', () => {
 
   describe('when callback is called', () => {
     const enforcement = { setConfig: jest.fn() };
+    const config = { a: 'a', b: 'b' };
+    const expectedSetConfigArgs = (dataExchangePayload) => {
+      const baseArgs = { mode: 'inline', ...config };
+      return dataExchangePayload ? { data: { blob: dataExchangePayload }, ...baseArgs } : baseArgs;
+    };
 
     it('when callback is called, cleans up the global object and resolves the Promise', () => {
       initSubject();
@@ -58,8 +77,6 @@ describe('initArkoseLabsScript', () => {
       expect(window[EXPECTED_CALLBACK_NAME]).toBe(undefined);
       return expect(subject).resolves.toBe(enforcement);
     });
-
-    const config = { a: 'a', b: 'b' };
 
     it('calls ArkoseLabs config object setDefault with defaults and passed in options', async () => {
       initSubject({ dataExchangePayload: undefined, config });
@@ -76,10 +93,50 @@ describe('initArkoseLabsScript', () => {
         window[EXPECTED_CALLBACK_NAME](enforcement);
 
         await expect(subject).resolves.toBe(enforcement);
-        expect(enforcement.setConfig).toHaveBeenCalledWith({
-          mode: 'inline',
-          data: { blob: dataExchangePayload },
-          ...config,
+        expect(enforcement.setConfig).toHaveBeenCalledWith(
+          expectedSetConfigArgs(dataExchangePayload),
+        );
+      });
+    });
+
+    describe('when dataExchangePayloadPath is passed in', () => {
+      describe('when request to fetch data exchange payload succeeds', () => {
+        beforeEach(() => {
+          axiosMock
+            .onGet(MOCK_DATA_EXCHANGE_PAYLOAD_PATH)
+            .reply(HTTP_STATUS_OK, { payload: MOCK_DATA_EXCHANGE_PAYLOAD });
+        });
+
+        it('calls ArkoseLabs config object setConfig with the data value', async () => {
+          initSubject({
+            dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
+            dataExchangePayload: 'not used',
+            config,
+          });
+          window[EXPECTED_CALLBACK_NAME](enforcement);
+
+          await expect(subject).resolves.toBe(enforcement);
+          expect(enforcement.setConfig).toHaveBeenCalledWith(
+            expectedSetConfigArgs(MOCK_DATA_EXCHANGE_PAYLOAD),
+          );
+        });
+      });
+
+      describe('when request to fetch data exchange fails', () => {
+        beforeEach(() => {
+          axiosMock.onGet(MOCK_DATA_EXCHANGE_PAYLOAD_PATH).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        });
+
+        it('calls ArkoseLabs config object setConfig without data value', async () => {
+          initSubject({
+            dataExchangePayloadPath: MOCK_DATA_EXCHANGE_PAYLOAD_PATH,
+            dataExchangePayload: 'not used',
+            config,
+          });
+          window[EXPECTED_CALLBACK_NAME](enforcement);
+
+          await expect(subject).resolves.toBe(enforcement);
+          expect(enforcement.setConfig).toHaveBeenCalledWith(expectedSetConfigArgs(undefined));
         });
       });
     });
@@ -100,5 +157,51 @@ describe('initArkoseLabsScript', () => {
     initSubject();
 
     expect(findScriptTags()).toHaveLength(1);
+  });
+});
+
+describe('resetArkoseLabsChallenge', () => {
+  const arkoseObject = { setConfig: jest.fn(), reset: jest.fn() };
+
+  it('calls reset on the Arkose object', async () => {
+    await expect(resetArkoseLabsChallenge(arkoseObject)).resolves.toBe(undefined);
+    expect(arkoseObject.reset).toHaveBeenCalled();
+  });
+
+  describe('when dataExchangePayloadPath is passed in', () => {
+    describe('when request to fetch data exchange payload succeeds', () => {
+      beforeEach(() => {
+        axiosMock
+          .onGet(MOCK_DATA_EXCHANGE_PAYLOAD_PATH)
+          .reply(HTTP_STATUS_OK, { payload: MOCK_DATA_EXCHANGE_PAYLOAD });
+      });
+
+      it('calls setConfig on the Arkose object with the fetched payload', async () => {
+        await expect(
+          resetArkoseLabsChallenge(arkoseObject, MOCK_DATA_EXCHANGE_PAYLOAD_PATH),
+        ).resolves.toBe(undefined);
+        expect(arkoseObject.setConfig).toHaveBeenCalledWith({
+          data: { blob: MOCK_DATA_EXCHANGE_PAYLOAD },
+        });
+      });
+    });
+
+    describe('when request to fetch data exchange fails', () => {
+      beforeEach(() => {
+        axiosMock.onGet(MOCK_DATA_EXCHANGE_PAYLOAD_PATH).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+      });
+
+      it('calls reset on the Arkose object', async () => {
+        await expect(resetArkoseLabsChallenge(arkoseObject)).resolves.toBe(undefined);
+        expect(arkoseObject.reset).toHaveBeenCalled();
+      });
+
+      it('does not call setConfig on the Arkose object', async () => {
+        await expect(
+          resetArkoseLabsChallenge(arkoseObject, MOCK_DATA_EXCHANGE_PAYLOAD_PATH),
+        ).resolves.toBe(undefined);
+        expect(arkoseObject.setConfig).not.toHaveBeenCalled();
+      });
+    });
   });
 });
