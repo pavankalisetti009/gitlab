@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, api: true, feature_category: :source_code_management do
+RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, feature_category: :source_code_management do
   include ApiHelpers
 
   let_it_be(:group) { create(:group) }

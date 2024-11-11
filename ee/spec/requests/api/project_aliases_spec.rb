@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::ProjectAliases, :aggregate_failures, api: true, feature_category: :source_code_management do
+RSpec.describe API::ProjectAliases, :aggregate_failures, :api, feature_category: :source_code_management do
   let(:user)  { create(:user) }
   let(:admin) { create(:admin) }
   let(:path) { '/project_aliases' }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::EpicBoards::UpdateService, services: true do
+RSpec.describe Boards::EpicBoards::UpdateService, :services do
   let_it_be(:parent_group) { create(:group) }
   let_it_be_with_reload(:group) { create(:group, parent: parent_group) }
   let_it_be_with_reload(:board) { create(:epic_board, group: group) }

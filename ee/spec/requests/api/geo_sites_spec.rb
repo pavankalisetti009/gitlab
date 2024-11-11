@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::GeoSites, :aggregate_failures, :request_store, :geo, :prometheus, api: true, feature_category: :geo_replication do
+RSpec.describe API::GeoSites, :aggregate_failures, :request_store, :geo, :prometheus, :api, feature_category: :geo_replication do
   include ApiHelpers
   include ::EE::GeoHelpers
 

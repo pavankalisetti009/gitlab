@@ -95,7 +95,7 @@ RSpec.configure do |config|
   end
 
   # Add :full_backtrace tag to an example if full_backtrace output is desired
-  config.before(:each, full_backtrace: true) do |example|
+  config.before(:each, :full_backtrace) do |example|
     config.full_backtrace = true
   end
 

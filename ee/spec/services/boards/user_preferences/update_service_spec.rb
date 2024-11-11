@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::UserPreferences::UpdateService, services: true do
+RSpec.describe Boards::UserPreferences::UpdateService, :services do
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:board) { create(:board) }

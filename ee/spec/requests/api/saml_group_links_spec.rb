@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe API::SamlGroupLinks, api: true, feature_category: :system_access do
+RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
   include ApiHelpers
 
   let_it_be(:owner) { create(:user) }

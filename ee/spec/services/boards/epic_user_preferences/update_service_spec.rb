@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::EpicUserPreferences::UpdateService, services: true do
+RSpec.describe Boards::EpicUserPreferences::UpdateService, :services do
   describe '#execute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user) }
