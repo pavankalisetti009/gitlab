@@ -59,12 +59,13 @@ module Gitlab
 
           private
 
+          # Returns an array of arrays that contains the expanded command args with their env hashes when available
+          #
+          # The output is intended to be used directly by Open3.pipeline
+          #
+          # @return [Array<Array<Hash,String>>]
           def build_command_list
-            @shell_commands.map do |command|
-              args = command.cmd_args
-              args.prepend(command.env) if command.env.any?
-              args
-            end
+            @shell_commands.map { |command| command.cmd_args(with_env: true) }
           end
         end
       end
