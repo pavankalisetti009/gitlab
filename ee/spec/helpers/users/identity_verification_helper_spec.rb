@@ -8,6 +8,10 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
   let_it_be_with_reload(:user) { create(:user) }
 
   describe '#*identity_verification_data' do
+    let(:request_double) { instance_double(ActionDispatch::Request) }
+    let(:sign_up_data_exchange_payload) { 'sign_up_data_exchange_payload' }
+    let(:iv_data_exchange_payload) { 'iv_data_exchange_payload' }
+
     let(:signup_identity_verification_data) do
       {
         successful_verification_path: success_signup_identity_verification_path,
@@ -48,9 +52,11 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
         },
         arkose: {
           api_key: 'api-key',
-          domain: 'domain'
+          domain: 'domain',
+          data_exchange_payload: sign_up_data_exchange_payload,
+          data_exchange_payload_path: data_exchange_payload_path
         },
-        arkose_data_exchange_payload: nil
+        arkose_data_exchange_payload: iv_data_exchange_payload
       }
     end
 
@@ -83,6 +89,17 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
 
         allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_public_api_key).and_return('api-key')
         allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_labs_domain).and_return('domain')
+
+        allow(helper).to receive(:request).and_return(request_double)
+        allow_next_instance_of(Arkose::DataExchangePayload, request_double,
+          a_hash_including({ use_case: Arkose::DataExchangePayload::USE_CASE_SIGN_UP })) do |builder|
+          allow(builder).to receive(:build).and_return(sign_up_data_exchange_payload)
+        end
+
+        allow_next_instance_of(Arkose::DataExchangePayload, request_double,
+          a_hash_including({ use_case: Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION })) do |builder|
+          allow(builder).to receive(:build).and_return(iv_data_exchange_payload)
+        end
       end
 
       subject(:data) { helper.send(method, user) }
@@ -109,28 +126,12 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
         end
       end
 
-      describe 'arkose_data_exchange_payload' do
-        let(:request_double) { instance_double(ActionDispatch::Request) }
-        let(:data_exchange_payload) { 'data_exchange_payload' }
+      context 'when fetch_arkose_data_exchange_payload feature flag is disabled' do
+        it 'does not include arkose.data_exchange_payload_path' do
+          stub_feature_flags(fetch_arkose_data_exchange_payload: false)
 
-        before do
-          allow(helper).to receive(:request).and_return(request_double)
-
-          allow_next_instance_of(Arkose::DataExchangePayload, request_double,
-            a_hash_including({ use_case: 'SIGN_UP' })) do |builder|
-            allow(builder).to receive(:build).and_call_original
-          end
-
-          allow_next_instance_of(Arkose::DataExchangePayload, request_double,
-            a_hash_including({ use_case: 'IDENTITY_VERIFICATION' })) do |builder|
-            allow(builder).to receive(:build).and_return(data_exchange_payload)
-          end
-        end
-
-        it 'is included' do
-          expect(Gitlab::Json.parse(data[:data])).to include(
-            "arkose_data_exchange_payload" => data_exchange_payload
-          )
+          arkose_data = Gitlab::Json.parse(data[:data])['arkose']
+          expect(arkose_data.keys).not_to include('data_exchange_payload_path')
         end
       end
     end

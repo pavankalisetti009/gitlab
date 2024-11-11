@@ -27,6 +27,11 @@ export default {
       required: false,
       default: undefined,
     },
+    dataExchangePayloadPath: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
   },
   data() {
     return {
@@ -40,6 +45,7 @@ export default {
         publicKey: this.publicKey,
         domain: this.domain,
         dataExchangePayload: this.dataExchangePayload,
+        dataExchangePayloadPath: this.dataExchangePayloadPath,
         config: {
           selector: `.${this.$options.CHALLENGE_CONTAINER_CLASS}`,
           onShown: this.onArkoseLabsIframeShown,

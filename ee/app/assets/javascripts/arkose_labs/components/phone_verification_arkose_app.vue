@@ -1,29 +1,17 @@
 <script>
 import { uniqueId } from 'lodash';
 import { logError } from '~/lib/logger';
-import { initArkoseLabsChallenge } from '../init_arkose_labs';
+import { initArkoseLabsChallenge, resetArkoseLabsChallenge } from '../init_arkose_labs';
 import { CHALLENGE_CONTAINER_CLASS } from '../constants';
 
 export default {
   name: 'PhoneVerificationArkoseApp',
+  inject: ['arkoseConfiguration', 'arkoseDataExchangePayload'],
   props: {
-    publicKey: {
-      type: String,
-      required: true,
-    },
-    domain: {
-      type: String,
-      required: true,
-    },
     resetSession: {
       type: Boolean,
       required: false,
       default: false,
-    },
-    dataExchangePayload: {
-      type: String,
-      required: false,
-      default: undefined,
     },
   },
   data() {
@@ -50,9 +38,10 @@ export default {
   async mounted() {
     try {
       this.arkoseObject = await initArkoseLabsChallenge({
-        publicKey: this.publicKey,
-        domain: this.domain,
-        dataExchangePayload: this.dataExchangePayload,
+        publicKey: this.arkoseConfiguration.apiKey,
+        domain: this.arkoseConfiguration.domain,
+        dataExchangePayload: this.arkoseDataExchangePayload,
+        dataExchangePayloadPath: this.arkoseConfiguration.dataExchangePayloadPath,
         config: {
           selector: `.${this.arkoseLabsContainerClass}`,
           onShown: this.onArkoseLabsIframeShown,
@@ -71,7 +60,7 @@ export default {
       this.arkoseToken = response.token;
     },
     resetArkoseSession() {
-      this.arkoseObject?.reset();
+      resetArkoseLabsChallenge(this.arkoseObject);
     },
   },
 };

@@ -7,22 +7,11 @@ import IdentityVerificationCaptcha from 'ee/users/identity_verification/componen
 describe('Identity Verification Captcha component', () => {
   let wrapper;
 
-  const MOCK_ARKOSE_PUBLIC_KEY = 'arkose-labs-public-api-key';
-  const MOCK_ARKOSE_DOMAIN = 'client-api.arkoselabs.com';
-
   const findRecaptcha = () => wrapper.findComponent(ReCaptcha);
   const findArkose = () => wrapper.findComponent(PhoneVerificationArkoseApp);
 
-  const createComponent = (provide = {}, props = {}) => {
+  const createComponent = (props = {}) => {
     wrapper = shallowMount(IdentityVerificationCaptcha, {
-      provide: {
-        arkoseDataExchangePayload: undefined,
-        arkoseConfiguration: {
-          apiKey: MOCK_ARKOSE_PUBLIC_KEY,
-          domain: MOCK_ARKOSE_DOMAIN,
-        },
-        ...provide,
-      },
       propsData: {
         showArkoseChallenge: false,
         showRecaptchaChallenge: false,
@@ -44,18 +33,13 @@ describe('Identity Verification Captcha component', () => {
 
   describe('when showArkoseChallenge prop is true', () => {
     beforeEach(() => {
-      createComponent({ arkoseDataExchangePayload: 'payload' }, { showArkoseChallenge: true });
+      createComponent({ showArkoseChallenge: true });
     });
 
     it('renders arkose', () => {
       expect(findArkose().exists()).toBe(true);
 
-      expect(findArkose().props()).toMatchObject({
-        publicKey: MOCK_ARKOSE_PUBLIC_KEY,
-        domain: MOCK_ARKOSE_DOMAIN,
-        resetSession: false,
-        dataExchangePayload: 'payload',
-      });
+      expect(findArkose().props()).toMatchObject({ resetSession: false });
     });
 
     it('emits `captcha-shown` event', () => {
@@ -90,12 +74,7 @@ describe('Identity Verification Captcha component', () => {
     beforeEach(() => {
       window.gon.recaptcha_sitekey = 'site-key';
 
-      createComponent(
-        {},
-        {
-          showRecaptchaChallenge: true,
-        },
-      );
+      createComponent({ showRecaptchaChallenge: true });
     });
 
     it('renders recaptcha', () => {

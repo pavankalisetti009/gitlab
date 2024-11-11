@@ -12,10 +12,13 @@ module EE
     end
 
     def arkose_labs_data
+      path = data_exchange_payload_path if ::Feature.enabled?(:fetch_arkose_data_exchange_payload, :instance)
+
       data = {
         api_key: ::AntiAbuse::IdentityVerification::Settings.arkose_public_api_key,
         domain: ::AntiAbuse::IdentityVerification::Settings.arkose_labs_domain,
-        data_exchange_payload: arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_SIGN_UP)
+        data_exchange_payload: arkose_data_exchange_payload(Arkose::DataExchangePayload::USE_CASE_SIGN_UP),
+        data_exchange_payload_path: path
       }
 
       data.compact

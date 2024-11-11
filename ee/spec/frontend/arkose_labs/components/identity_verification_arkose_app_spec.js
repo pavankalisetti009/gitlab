@@ -14,6 +14,7 @@ let onShown;
 let onCompleted;
 
 const mockDataExchangePayload = 'fakeDataExchangePayload';
+const mockDataExchangePayloadPath = '/path/to/data_exchange_payload';
 initArkoseLabsChallenge.mockImplementation(({ config }) => {
   onShown = config.onShown;
   onCompleted = config.onCompleted;
@@ -38,6 +39,7 @@ describe('IdentityVerificationArkoseApp', () => {
         publicKey: MOCK_PUBLIC_KEY,
         domain: MOCK_DOMAIN,
         dataExchangePayload: mockDataExchangePayload,
+        dataExchangePayloadPath: mockDataExchangePayloadPath,
         sessionVerificationPath: MOCK_SESSION_VERIFICATION_PATH,
         ...props,
       },
@@ -53,6 +55,7 @@ describe('IdentityVerificationArkoseApp', () => {
       publicKey: MOCK_PUBLIC_KEY,
       domain: MOCK_DOMAIN,
       dataExchangePayload: mockDataExchangePayload,
+      dataExchangePayloadPath: mockDataExchangePayloadPath,
       config: expect.objectContaining({
         selector: `.${CHALLENGE_CONTAINER_CLASS}`,
         onShown: expect.any(Function),
