@@ -268,8 +268,8 @@ export default {
     <gl-card
       class="gl-mt-5"
       :class="{ 'gl-border-b-0': !scheduleVisible }"
-      body-class="gl-bg-gray-10 gl-py-0"
-      :header-class="{ 'gl-bg-white': true, 'gl-rounded-small': !scheduleVisible }"
+      body-class="gl-py-0"
+      :header-class="{ 'gl-rounded-small': !scheduleVisible }"
     >
       <template #header>
         <div class="gl-flex gl-items-start" data-testid="schedule-header">

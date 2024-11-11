@@ -3,7 +3,7 @@ import { GlCard, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 
 export default {
   cardBodyClass: 'gl-text-center gl-py-3 gl-text-size-h2',
-  cardClass: 'gl-bg-gray-10 gl-border-0 gl-mb-5',
+  cardClass: 'gl-border-0 gl-mb-5',
   components: {
     GlCard,
     GlSkeletonLoader,

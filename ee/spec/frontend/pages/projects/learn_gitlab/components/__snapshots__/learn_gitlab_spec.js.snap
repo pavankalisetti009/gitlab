@@ -68,7 +68,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         class="gl-card gl-h-full gl-pt-0"
       >
         <div
-          class="gl-bg-white gl-border-0 gl-card-header gl-pb-0"
+          class="gl-border-0 gl-card-header gl-pb-0"
         >
           <img
             src="code.svg"
@@ -156,7 +156,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         class="gl-card gl-h-full gl-pt-0"
       >
         <div
-          class="gl-bg-white gl-border-0 gl-card-header gl-pb-0"
+          class="gl-border-0 gl-card-header gl-pb-0"
         >
           <img
             src="workspace.svg"
@@ -303,7 +303,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         class="gl-card gl-h-full gl-pt-0"
       >
         <div
-          class="gl-bg-white gl-border-0 gl-card-header gl-pb-0"
+          class="gl-border-0 gl-card-header gl-pb-0"
         >
           <img
             src="deploy.svg"
@@ -413,7 +413,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         class="gl-card gl-h-full gl-pt-0"
       >
         <div
-          class="gl-bg-white gl-border-0 gl-card-header gl-pb-0"
+          class="gl-border-0 gl-card-header gl-pb-0"
         >
           <img
             src="plan.svg"

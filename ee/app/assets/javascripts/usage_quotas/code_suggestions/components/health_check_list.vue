@@ -145,7 +145,7 @@ export default {
 <template>
   <gl-card
     class="gl-mb-5"
-    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-gap-3 gl-px-5 gl-bg-default"
+    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-gap-3 gl-px-5"
     body-class="gl-p-0"
   >
     <template #header>
