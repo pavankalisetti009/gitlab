@@ -175,25 +175,15 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
 
     describe '.count_members_by_role' do
-      subject(:result) { described_class.count_members_by_role.as_json }
+      subject(:result) { described_class.count_members_by_role }
 
-      it 'groups by role' do
-        expect(result).to contain_exactly(
-          hash_including("access_level" => 40, "members_count" => 2),
-          hash_including("access_level" => 10, "members_count" => 1)
-        )
-      end
+      it { is_expected.to eql(::Gitlab::Access::MAINTAINER => 2, ::Gitlab::Access::GUEST => 1) }
     end
 
     describe '.count_users_by_role' do
-      subject(:result) { described_class.count_users_by_role.as_json }
+      subject(:result) { described_class.count_users_by_role }
 
-      it 'groups by role' do
-        expect(result).to contain_exactly(
-          hash_including("access_level" => 40, "users_count" => 2),
-          hash_including("access_level" => 10, "users_count" => 1)
-        )
-      end
+      it { is_expected.to eql(::Gitlab::Access::MAINTAINER => 2, ::Gitlab::Access::GUEST => 1) }
     end
   end
 
