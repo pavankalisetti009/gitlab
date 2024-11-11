@@ -59627,6 +59627,9 @@ msgstr ""
 msgid "Use custom color #FF0000"
 msgstr ""
 
+msgid "Use existing commit message"
+msgstr ""
+
 msgid "Use experiment and beta GitLab Duo features"
 msgstr ""
 
