@@ -1,4 +1,4 @@
-import markMultipleLines from '~/vue_shared/components/source_viewer/plugins/mark_multiple_lines';
+import markMultipleLines from 'ee/vue_shared/components/code_flow/plugins/mark_multiple_lines';
 
 describe('Highlight.js plugin for mark multi lines', () => {
   it('mutates the input value by marking multi lines and numbering', () => {
@@ -21,7 +21,7 @@ describe('Highlight.js plugin for mark multi lines', () => {
       ],
     };
 
-    const wrappedLine = `<span id="TEXT-MARKER2,3-L1" class="inline-section-marker"><span id="TEXT-SPAN-MARKER2" class="inline-item-mark">2</span><span id="TEXT-SPAN-MARKER3" class="inline-item-mark">3</span><span class="hljs-keyword">FROM</span> alpine:latest<span class="hljs-keyword">COPY</span> . /tmp<span class="hljs-keyword">CMD</span> /tmp/run-app</span>`;
+    const wrappedLine = `<span id="TEXT-MARKER-2,3-L1" class="inline-section-marker"><span id="TEXT-SPAN-MARKER-2" class="inline-item-mark">2</span><span id="TEXT-SPAN-MARKER-3" class="inline-item-mark">3</span><span class="hljs-keyword">FROM</span> alpine:latest<span class="hljs-keyword">COPY</span> . /tmp<span class="hljs-keyword">CMD</span> /tmp/run-app</span>`;
     const outputValue = `<div class="line">${wrappedLine}</div>`;
 
     markMultipleLines(hljsResultMock, lineToMarkersInfo);

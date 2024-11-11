@@ -20,11 +20,11 @@ function markLinesWithDiv(content, lineNum, markLineInfo) {
   markLineInfo?.forEach((markLine) => {
     stepNumberSpan +=
       lineNum === markLine.startLine
-        ? `<span id="TEXT-SPAN-MARKER${markLine.stepNumber}" class="inline-item-mark">${markLine.stepNumber}</span>`
+        ? `<span id="TEXT-SPAN-MARKER-${markLine.stepNumber}" class="inline-item-mark">${markLine.stepNumber}</span>`
         : '';
     stepNumberSpanNone +=
       lineNum !== markLine.startLine
-        ? `<span id="TEXT-SPAN-MARKER${markLine.stepNumber}" class="inline-item-mark gl-opacity-0">${markLine.stepNumber}</span>`
+        ? `<span id="TEXT-SPAN-MARKER-${markLine.stepNumber}" class="inline-item-mark gl-opacity-0">${markLine.stepNumber}</span>`
         : '';
   });
 
@@ -33,7 +33,7 @@ function markLinesWithDiv(content, lineNum, markLineInfo) {
     wrappedLine = `${content.slice(
       0,
       contentStartIndex,
-    )}${stepNumberSpanNone}<span id="TEXT-MARKER${
+    )}${stepNumberSpanNone}<span id="TEXT-MARKER-${
       stepNumbers
     }-L${lineNum}" class="inline-section-marker">${stepNumberSpan}${content.slice(contentStartIndex)}</span>`;
   }
