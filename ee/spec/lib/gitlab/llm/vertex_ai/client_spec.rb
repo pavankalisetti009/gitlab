@@ -136,6 +136,16 @@ RSpec.describe Gitlab::Llm::VertexAi::Client, feature_category: :ai_abstraction_
       end
     end
 
+    context 'when a 403 error is returned from the API' do
+      before do
+        stub_request(:post, url).to_return(status: 403, body: "403 Unauthorized")
+      end
+
+      it 'returns a 403 response' do
+        expect(response.code).to eq(403)
+      end
+    end
+
     context 'when a failed response is returned from the API' do
       include_context 'when a failed response is returned from the API'
 

@@ -141,13 +141,25 @@ module Gitlab
             ai_component: 'abstraction_layer',
             unit_primitive: unit_primitive)
 
-          if response&.success? && response.parsed_response.present?
-            track_token_usage(response)
-          else
+          # 500 errors will return as nil. This preserves the previous behavior
+          # of returning nil if a blank body is detected.
+          if response.nil? || response&.body.blank?
             log_error(message: "Empty response from Vertex",
               event_name: 'empty_response_received',
               ai_component: 'abstraction_layer',
               unit_primitive: unit_primitive
+            )
+            return
+          end
+
+          if response.success? && response.parsed_response.present?
+            track_token_usage(response)
+          else
+            log_error(message: "Failed response from Vertex",
+              event_name: 'failed_response_received',
+              ai_component: 'abstraction_layer',
+              unit_primitive: unit_primitive,
+              status: response
             )
           end
 
