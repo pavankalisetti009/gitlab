@@ -30519,6 +30519,8 @@ CREATE INDEX index_members_on_member_role_id ON members USING btree (member_role
 
 CREATE INDEX index_members_on_requested_at ON members USING btree (requested_at);
 
+CREATE INDEX index_members_on_source_and_access_level_and_member_role ON members USING btree (source_id, source_type, access_level) WHERE (member_role_id IS NULL);
+
 CREATE INDEX index_members_on_source_and_type_and_access_level ON members USING btree (source_id, source_type, type, access_level);
 
 CREATE INDEX index_members_on_source_and_type_and_id ON members USING btree (source_id, source_type, type, id) WHERE (invite_token IS NULL);

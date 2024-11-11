@@ -14,23 +14,9 @@ module Resolvers
         description: 'Access level or levels to filter by.'
 
       def resolve_with_lookahead(access_level: nil)
-        options = Gitlab::Access.options_with_minimal_access
-        options = options.select { |_, level| access_level.include?(level) } if access_level.present?
-
-        result = options.map do |name, access_level_id|
-          members_row = member_counts.find { |c| c.access_level == access_level_id } if selects_field?(:members_count)
-          users_row = user_counts.find { |c| c.access_level == access_level_id } if selects_field?(:users_count)
-
-          {
-            name: name,
-            access_level: access_level_id,
-            members_count: members_row&.members_count || 0,
-            users_count: users_row&.users_count || 0,
-            group: object
-          }
-        end
-
-        result.sort_by { |role| role[:access_level] }
+        access_levels(access_level)
+          .map { |name, access_level| map_from(name, access_level) }
+          .sort_by { |role| role[:access_level] }
       end
 
       def ready?(**args)
@@ -44,16 +30,12 @@ module Resolvers
       private
 
       def member_counts
-        member = object ? Member.for_self_and_descendants(object) : Member
-
-        member.with_static_role.count_members_by_role
+        selects_field?(:members_count) ? memberships([:id, :access_level]).count_members_by_role : {}
       end
       strong_memoize_attr :member_counts
 
       def user_counts
-        member = object ? Member.for_self_and_descendants(object) : Member
-
-        member.with_static_role.count_users_by_role
+        selects_field?(:users_count) ? memberships([:id, :access_level, :user_id]).count_users_by_role : {}
       end
       strong_memoize_attr :user_counts
 
@@ -63,6 +45,27 @@ module Resolvers
 
       def selects_field?(name)
         lookahead.selects?(name) || selected_fields.include?(name)
+      end
+
+      def access_levels(target_access_levels)
+        all_levels = Gitlab::Access.options_with_minimal_access
+        return all_levels if target_access_levels.blank?
+
+        all_levels.select { |_, level| target_access_levels.include?(level) }
+      end
+
+      def map_from(name, access_level)
+        {
+          name: name,
+          access_level: access_level,
+          members_count: member_counts[access_level] || 0,
+          users_count: user_counts[access_level] || 0,
+          group: object
+        }
+      end
+
+      def memberships(columns)
+        Member.with_static_role.for_self_and_descendants(object, columns)
       end
     end
   end

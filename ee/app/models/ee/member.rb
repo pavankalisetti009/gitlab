@@ -44,7 +44,6 @@ module EE
       end
 
       scope :with_custom_role, -> { where.not(member_role_id: nil) }
-
       scope :with_member_role_id, ->(member_role_id) { where(member_role_id: member_role_id) }
 
       scope :elevated_guests, -> do
@@ -58,13 +57,8 @@ module EE
         ).left_outer_joins(:member_role)
       end
 
-      scope :count_members_by_role, -> do
-        select(:access_level, 'COUNT(*) as members_count').group(:access_level)
-      end
-
-      scope :count_users_by_role, -> do
-        select(:access_level, 'COUNT(DISTINCT user_id) as users_count').group(:access_level)
-      end
+      scope :count_members_by_role, -> { count_by_access_level }
+      scope :count_users_by_role, -> { count_by_access_level('DISTINCT(user_id)') }
 
       before_create :set_membership_activation
 
