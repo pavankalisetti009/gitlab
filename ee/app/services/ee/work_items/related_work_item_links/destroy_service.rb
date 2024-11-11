@@ -25,6 +25,9 @@ module EE
 
         private
 
+        # This can be removed once every related_epic_link has the FK set to `issue_links` as we cascade
+        # the deletion.
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/497768
         override :perform_destroy_link
         def perform_destroy_link(link, linked_item)
           return super unless destroy_related_epic_link_for?(link)

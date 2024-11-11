@@ -26,5 +26,17 @@ class Epic::RelatedEpicLink < ApplicationRecord
     def issuable_type
       :epic
     end
+
+    def find_or_initialize_from_work_item_link(work_item_link)
+      epic_link = find_or_initialize_by(
+        source: work_item_link.source.synced_epic,
+        target: work_item_link.target.synced_epic
+      )
+
+      epic_link.link_type = work_item_link.link_type
+      epic_link.issue_link_id = work_item_link.id
+
+      epic_link
+    end
   end
 end

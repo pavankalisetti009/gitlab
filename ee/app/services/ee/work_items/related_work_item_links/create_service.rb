@@ -83,30 +83,28 @@ module EE
         end
 
         def create_synced_related_epic_link!
-          return unless referenced_synced_epics.any?
+          new_links.each do |work_item_link|
+            # RelatedEpicLink can only link an epic to an epic. We therefore need to skip the links where not both
+            # work items are epics. next if work_item_link.source.synced_epic.nil?
+            next if work_item_link.target.synced_epic.nil?
 
-          sync_params = {
-            link_type: params[:link_type],
-            target_issuable: referenced_synced_epics,
-            synced_epic: true
-          }
+            epic_link = ::Epic::RelatedEpicLink.find_or_initialize_from_work_item_link(work_item_link)
 
-          result =
-            ::Epics::RelatedEpicLinks::CreateService.new(issuable.synced_epic, current_user, sync_params).execute
+            log_and_raise_sync_error!(epic_link) unless epic_link.save
+          end
+        end
 
-          return result if result[:status] == :success
+        def log_and_raise_sync_error!(epic_link)
+          error_message = epic_link.errors&.full_messages&.to_sentence
+          return unless error_message
 
           ::Gitlab::EpicWorkItemSync::Logger.error(
             message: "Not able to create related epic links",
-            error_message: result[:message],
+            error_message: error_message,
             group_id: issuable.namespace.id,
             work_item_id: issuable.id
           )
-          raise ::WorkItems::SyncAsEpic::SyncAsEpicError, result[:message]
-        end
-
-        def referenced_synced_epics
-          referenced_issuables.filter_map(&:synced_epic)
+          raise ::WorkItems::SyncAsEpic::SyncAsEpicError, error_message
         end
 
         def sync_related_epic_link?
