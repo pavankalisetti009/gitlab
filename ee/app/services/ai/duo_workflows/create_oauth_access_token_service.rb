@@ -5,9 +5,9 @@ module Ai
     class CreateOauthAccessTokenService
       include ::Services::ReturnServiceResponses
 
-      def initialize(current_user:, organization: nil)
+      def initialize(current_user:, organization:)
         @current_user = current_user
-        @organization = organization || ::Organizations::Organization.default_organization
+        @organization = organization
       end
 
       def execute
