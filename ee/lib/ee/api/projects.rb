@@ -58,11 +58,18 @@ module EE
               use :pagination
             end
             get '/', feature_category: :audit_events, urgency: :low do
-              level = ::Gitlab::Audit::Levels::Project.new(project: user_project)
-              audit_events = AuditEventFinder.new(
-                level: level,
-                params: audit_event_finder_params
-              ).execute
+              if ::Feature.enabled?(:read_audit_events_from_new_tables, user_project)
+                audit_events = ::AuditEvents::ProjectAuditEventFinder.new(
+                  project: user_project,
+                  params: audit_event_finder_params
+                ).execute
+              else
+                level = ::Gitlab::Audit::Levels::Project.new(project: user_project)
+                audit_events = AuditEventFinder.new(
+                  level: level,
+                  params: audit_event_finder_params
+                ).execute
+              end
 
               present paginate_with_strategies(audit_events), with: EE::API::Entities::AuditEvent
             end
@@ -74,13 +81,19 @@ module EE
               requires :audit_event_id, type: Integer, desc: 'The ID of the audit event'
             end
             get '/:audit_event_id', feature_category: :audit_events, urgency: :low do
-              level = ::Gitlab::Audit::Levels::Project.new(project: user_project)
-              # rubocop: disable CodeReuse/ActiveRecord, Rails/FindById
-              # This is not `find_by!` from ActiveRecord
-              audit_event = AuditEventFinder.new(level: level, params: audit_event_finder_params)
-                .find_by!(id: params[:audit_event_id])
-              # rubocop: enable CodeReuse/ActiveRecord, Rails/FindById
+              # rubocop: disable CodeReuse/ActiveRecord, Rails/FindById -- This is not `find_by!` from ActiveRecord
+              if ::Feature.enabled?(:read_audit_events_from_new_tables, user_project)
+                audit_event = ::AuditEvents::ProjectAuditEventFinder.new(
+                  project: user_project,
+                  params: audit_event_finder_params
+                ).find_by!(id: params[:audit_event_id])
+              else
+                level = ::Gitlab::Audit::Levels::Project.new(project: user_project)
 
+                audit_event = AuditEventFinder.new(level: level, params: audit_event_finder_params)
+                                              .find_by!(id: params[:audit_event_id])
+              end
+              # rubocop: enable CodeReuse/ActiveRecord, Rails/FindById
               present audit_event, with: EE::API::Entities::AuditEvent
             end
           end

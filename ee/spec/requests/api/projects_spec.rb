@@ -861,13 +861,34 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         project.add_developer(developer)
       end
 
-      it 'returns only events authored by current user' do
-        project_audit_event_1 = create(:project_audit_event, entity_id: project.id, author_id: developer.id)
-        create(:project_audit_event, entity_id: project.id, author_id: 666)
+      context 'when read_audit_events_from_new_tables is disabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: false)
+        end
 
-        get api(path, developer)
+        it 'returns only events authored by current user' do
+          project_audit_event_1 = create(:project_audit_event, entity_id: project.id, author_id: developer.id)
+          create(:project_audit_event, entity_id: project.id, author_id: 666)
 
-        expect_response_contain_exactly(project_audit_event_1.id)
+          get api(path, developer)
+
+          expect_response_contain_exactly(project_audit_event_1.id)
+        end
+      end
+
+      context 'when read_audit_events_from_new_tables is enabled' do
+        before do
+          stub_feature_flags(read_audit_events_from_new_tables: true)
+        end
+
+        it 'returns only events authored by current user' do
+          project_audit_event_1 = create(:audit_events_project_audit_event, project_id: project.id, author_id: developer.id)
+          create(:audit_events_project_audit_event, project_id: project.id, author_id: 666)
+
+          get api(path, developer)
+
+          expect_response_contain_exactly(project_audit_event_1.id.to_i)
+        end
       end
     end
 
@@ -887,94 +908,193 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
 
       context 'audit events feature is available' do
-        let_it_be(:project_audit_event_1) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: project.id) }
-        let_it_be(:project_audit_event_2) { create(:project_audit_event, created_at: Date.new(2000, 1, 15), entity_id: project.id) }
-        let_it_be(:project_audit_event_3) { create(:project_audit_event, created_at: Date.new(2000, 1, 20), entity_id: project.id) }
-
         before do
           stub_licensed_features(audit_events: true)
         end
 
-        it 'returns 200 response' do
-          get api(path, user)
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-
-        it 'includes the correct pagination headers' do
-          audit_events_counts = 3
-
-          get api(path, user)
-
-          expect(response).to include_pagination_headers
-          expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
-          expect(response.headers['X-Page']).to eq('1')
-        end
-
-        it 'does not include audit events of a different project' do
-          project = create(:project)
-          audit_event = create(:project_audit_event, created_at: Date.new(2000, 1, 20), entity_id: project.id)
-
-          get api(path, user)
-
-          audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
-
-          expect(audit_event_ids).not_to include(audit_event.id)
-        end
-
-        context 'parameters' do
-          it_behaves_like 'an endpoint with keyset pagination' do
-            let_it_be(:admin) { create(:admin) }
-            let!(:audit_event_1) { create(:project_audit_event, entity_id: project.id) }
-            let!(:audit_event_2) { create(:project_audit_event, entity_id: project.id) }
-
-            let(:first_record) { audit_event_2 }
-            let(:second_record) { audit_event_1 }
-            let(:url) { "/projects/#{project.id}/audit_events" }
-            let(:api_call) { api(url, admin, admin_mode: true) }
+        context 'when read_audit_events_from_new_tables is disabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: false)
           end
 
-          context 'created_before parameter' do
-            it "returns audit events created before the given parameter" do
-              created_before = '2000-01-20T00:00:00.060Z'
+          let_it_be(:project_audit_event_1) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: project.id) }
+          let_it_be(:project_audit_event_2) { create(:project_audit_event, created_at: Date.new(2000, 1, 15), entity_id: project.id) }
+          let_it_be(:project_audit_event_3) { create(:project_audit_event, created_at: Date.new(2000, 1, 20), entity_id: project.id) }
 
-              get api(path, user), params: { created_before: created_before }
-
-              expect(json_response.size).to eq 3
-              expect(json_response.first["id"]).to eq(project_audit_event_3.id)
-              expect(json_response.last["id"]).to eq(project_audit_event_1.id)
-            end
-          end
-
-          context 'created_after parameter' do
-            it "returns audit events created after the given parameter" do
-              created_after = '2000-01-12T00:00:00.060Z'
-
-              get api(path, user), params: { created_after: created_after }
-
-              expect(json_response.size).to eq 2
-              expect(json_response.first["id"]).to eq(project_audit_event_3.id)
-              expect(json_response.last["id"]).to eq(project_audit_event_2.id)
-            end
-          end
-        end
-
-        context 'response schema' do
-          it 'matches the response schema' do
+          it 'returns 200 response' do
             get api(path, user)
 
-            expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          it 'includes the correct pagination headers' do
+            audit_events_counts = 3
+
+            get api(path, user)
+
+            expect(response).to include_pagination_headers
+            expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
+            expect(response.headers['X-Page']).to eq('1')
+          end
+
+          it 'does not include audit events of a different project' do
+            project = create(:project)
+            audit_event = create(:project_audit_event, created_at: Date.new(2000, 1, 20), entity_id: project.id)
+
+            get api(path, user)
+
+            audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
+
+            expect(audit_event_ids).not_to include(audit_event.id)
+          end
+
+          context 'parameters' do
+            it_behaves_like 'an endpoint with keyset pagination' do
+              let_it_be(:admin) { create(:admin) }
+              let!(:audit_event_1) { create(:project_audit_event, entity_id: project.id) }
+              let!(:audit_event_2) { create(:project_audit_event, entity_id: project.id) }
+
+              let(:first_record) { audit_event_2 }
+              let(:second_record) { audit_event_1 }
+              let(:url) { "/projects/#{project.id}/audit_events" }
+              let(:api_call) { api(url, admin, admin_mode: true) }
+            end
+
+            context 'created_before parameter' do
+              it "returns audit events created before the given parameter" do
+                created_before = '2000-01-20T00:00:00.060Z'
+
+                get api(path, user), params: { created_before: created_before }
+
+                expect(json_response.size).to eq 3
+                expect(json_response.first["id"]).to eq(project_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(project_audit_event_1.id)
+              end
+            end
+
+            context 'created_after parameter' do
+              it "returns audit events created after the given parameter" do
+                created_after = '2000-01-12T00:00:00.060Z'
+
+                get api(path, user), params: { created_after: created_after }
+
+                expect(json_response.size).to eq 2
+                expect(json_response.first["id"]).to eq(project_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(project_audit_event_2.id)
+              end
+            end
+          end
+
+          context 'response schema' do
+            it 'matches the response schema' do
+              get api(path, user)
+
+              expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
+            end
+          end
+
+          context 'Snowplow event tracking' do
+            it_behaves_like 'Snowplow event tracking with RedisHLL context' do
+              subject(:api_request) { get api(path, user) }
+
+              let(:category) { 'EE::API::Projects' }
+              let(:action) { 'project_audit_event_request' }
+              let(:namespace) { project.namespace }
+              let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+            end
           end
         end
 
-        context 'Snowplow event tracking' do
-          it_behaves_like 'Snowplow event tracking with RedisHLL context' do
-            subject(:api_request) { get api(path, user) }
+        context 'when read_audit_events_from_new_tables is enabled' do
+          before do
+            stub_feature_flags(read_audit_events_from_new_tables: true)
+          end
 
-            let(:category) { 'EE::API::Projects' }
-            let(:action) { 'project_audit_event_request' }
-            let(:namespace) { project.namespace }
-            let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+          let_it_be(:project_audit_event_1) { create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 10), project_id: project.id) }
+          let_it_be(:project_audit_event_2) { create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 15), project_id: project.id) }
+          let_it_be(:project_audit_event_3) { create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 20), project_id: project.id) }
+
+          it 'returns 200 response' do
+            get api(path, user)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          it 'includes the correct pagination headers' do
+            audit_events_counts = 3
+
+            get api(path, user)
+
+            expect(response).to include_pagination_headers
+            expect(response.headers['X-Total']).to eq(audit_events_counts.to_s)
+            expect(response.headers['X-Page']).to eq('1')
+          end
+
+          it 'does not include audit events of a different project' do
+            project = create(:project)
+            audit_event = create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 20), project_id: project.id)
+
+            get api(path, user)
+
+            audit_event_ids = json_response.map { |audit_event| audit_event['id'] }
+
+            expect(audit_event_ids).not_to include(audit_event.id)
+          end
+
+          context 'parameters' do
+            it_behaves_like 'an endpoint with keyset pagination' do
+              let_it_be(:admin) { create(:admin) }
+              let!(:audit_event_1) { create(:audit_events_project_audit_event, project_id: project.id) }
+              let!(:audit_event_2) { create(:audit_events_project_audit_event, project_id: project.id) }
+
+              let(:first_record) { audit_event_2 }
+              let(:second_record) { audit_event_1 }
+              let(:url) { "/projects/#{project.id}/audit_events" }
+              let(:api_call) { api(url, admin, admin_mode: true) }
+            end
+
+            context 'created_before parameter' do
+              it "returns audit events created before the given parameter" do
+                created_before = '2000-01-20T00:00:00.060Z'
+
+                get api(path, user), params: { created_before: created_before }
+
+                expect(json_response.size).to eq 3
+                expect(json_response.first["id"]).to eq(project_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(project_audit_event_1.id)
+              end
+            end
+
+            context 'created_after parameter' do
+              it "returns audit events created after the given parameter" do
+                created_after = '2000-01-12T00:00:00.060Z'
+
+                get api(path, user), params: { created_after: created_after }
+
+                expect(json_response.size).to eq 2
+                expect(json_response.first["id"]).to eq(project_audit_event_3.id)
+                expect(json_response.last["id"]).to eq(project_audit_event_2.id)
+              end
+            end
+          end
+
+          context 'response schema' do
+            it 'matches the response schema' do
+              get api(path, user)
+
+              expect(response).to match_response_schema('public_api/v4/audit_events', dir: 'ee')
+            end
+          end
+
+          context 'Snowplow event tracking' do
+            it_behaves_like 'Snowplow event tracking with RedisHLL context' do
+              subject(:api_request) { get api(path, user) }
+
+              let(:category) { 'EE::API::Projects' }
+              let(:action) { 'project_audit_event_request' }
+              let(:namespace) { project.namespace }
+              let(:context) { [::Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: 'a_compliance_audit_events_api').to_context] }
+            end
           end
         end
       end
@@ -986,107 +1106,227 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     let_it_be(:project) { create(:project, :public, namespace: user.namespace) }
     let(:path) { "/projects/#{project.id}/audit_events/#{project_audit_event.id}" }
 
-    let_it_be(:project_audit_event) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: project.id) }
-
-    it_behaves_like 'inaccessable by reporter role and lower'
-
-    context 'when authenticated, as a guest' do
-      let_it_be(:guest) { create(:user) }
-
+    context 'when read_audit_events_from_new_tables is disabled' do
       before do
-        stub_licensed_features(audit_events: true)
-        project.add_guest(guest)
+        stub_feature_flags(read_audit_events_from_new_tables: false)
       end
 
-      it_behaves_like '403 response' do
-        let(:request) { get api(path, guest) }
-      end
-    end
+      let_it_be(:project_audit_event) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: project.id) }
 
-    context 'when authenticated, as a member' do
-      let_it_be(:developer) { create(:user) }
+      it_behaves_like 'inaccessable by reporter role and lower'
 
-      before do
-        stub_licensed_features(audit_events: true)
-        project.add_developer(developer)
-      end
+      context 'when authenticated, as a guest' do
+        let_it_be(:guest) { create(:user) }
 
-      it 'returns 200 response' do
-        audit_event = create(:project_audit_event, entity_id: project.id, author_id: developer.id)
-        path = "/projects/#{project.id}/audit_events/#{audit_event.id}"
-
-        get api(path, developer)
-
-        expect(response).to have_gitlab_http_status(:ok)
-      end
-
-      context 'existing audit event of a different user' do
-        let_it_be(:audit_event) { create(:project_audit_event, entity_id: project.id, author_id: another_user.id) }
-
-        let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
-
-        it_behaves_like '404 response' do
-          let(:request) { get api(path, developer) }
-        end
-      end
-    end
-
-    context 'when authenticated, as a project owner' do
-      context 'audit events feature is not available' do
         before do
-          stub_licensed_features(audit_events: false)
+          stub_licensed_features(audit_events: true)
+          project.add_guest(guest)
         end
 
         it_behaves_like '403 response' do
-          let(:request) { get api(path, user) }
+          let(:request) { get api(path, guest) }
         end
       end
 
-      context 'audit events feature is available' do
+      context 'when authenticated, as a member' do
+        let_it_be(:developer) { create(:user) }
+
         before do
           stub_licensed_features(audit_events: true)
+          project.add_developer(developer)
         end
 
-        context 'existent audit event' do
-          it 'returns 200 response' do
-            get api(path, user)
+        it 'returns 200 response' do
+          audit_event = create(:project_audit_event, entity_id: project.id, author_id: developer.id)
+          path = "/projects/#{project.id}/audit_events/#{audit_event.id}"
 
-            expect(response).to have_gitlab_http_status(:ok)
+          get api(path, developer)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'existing audit event of a different user' do
+          let_it_be(:audit_event) { create(:project_audit_event, entity_id: project.id, author_id: another_user.id) }
+
+          let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
+
+          it_behaves_like '404 response' do
+            let(:request) { get api(path, developer) }
+          end
+        end
+      end
+
+      context 'when authenticated, as a project owner' do
+        context 'audit events feature is not available' do
+          before do
+            stub_licensed_features(audit_events: false)
           end
 
-          context 'response schema' do
-            it 'matches the response schema' do
+          it_behaves_like '403 response' do
+            let(:request) { get api(path, user) }
+          end
+        end
+
+        context 'audit events feature is available' do
+          before do
+            stub_licensed_features(audit_events: true)
+          end
+
+          context 'existent audit event' do
+            it 'returns 200 response' do
               get api(path, user)
 
-              expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              expect(response).to have_gitlab_http_status(:ok)
             end
-          end
 
-          context 'invalid audit_event_id' do
-            let(:path) { "/projects/#{project.id}/audit_events/an-invalid-id" }
+            context 'response schema' do
+              it 'matches the response schema' do
+                get api(path, user)
 
-            it_behaves_like '400 response' do
-              let(:request) { get api(path, user) }
+                expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              end
             end
-          end
 
-          context 'non existent audit event' do
-            context 'non existent audit event of a project' do
-              let(:path) { "/projects/#{project.id}/audit_events/666777" }
+            context 'invalid audit_event_id' do
+              let(:path) { "/projects/#{project.id}/audit_events/an-invalid-id" }
 
-              it_behaves_like '404 response' do
+              it_behaves_like '400 response' do
                 let(:request) { get api(path, user) }
               end
             end
 
-            context 'existing audit event of a different project' do
-              let(:new_project) { create(:project) }
-              let(:audit_event) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: new_project.id) }
+            context 'non existent audit event' do
+              context 'non existent audit event of a project' do
+                let(:path) { "/projects/#{project.id}/audit_events/666777" }
 
-              let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
 
-              it_behaves_like '404 response' do
+              context 'existing audit event of a different project' do
+                let(:new_project) { create(:project) }
+                let(:audit_event) { create(:project_audit_event, created_at: Date.new(2000, 1, 10), entity_id: new_project.id) }
+
+                let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    context 'when read_audit_events_from_new_tables is enabled' do
+      before do
+        stub_feature_flags(read_audit_events_from_new_tables: true)
+      end
+
+      let_it_be(:project_audit_event) { create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 10), project_id: project.id) }
+
+      it_behaves_like 'inaccessable by reporter role and lower'
+
+      context 'when authenticated, as a guest' do
+        let_it_be(:guest) { create(:user) }
+
+        before do
+          stub_licensed_features(audit_events: true)
+          project.add_guest(guest)
+        end
+
+        it_behaves_like '403 response' do
+          let(:request) { get api(path, guest) }
+        end
+      end
+
+      context 'when authenticated, as a member' do
+        let_it_be(:developer) { create(:user) }
+
+        before do
+          stub_licensed_features(audit_events: true)
+          project.add_developer(developer)
+        end
+
+        it 'returns 200 response' do
+          audit_event = create(:audit_events_project_audit_event, project_id: project.id, author_id: developer.id)
+          path = "/projects/#{project.id}/audit_events/#{audit_event.id}"
+
+          get api(path, developer)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'existing audit event of a different user' do
+          let_it_be(:audit_event) { create(:audit_events_project_audit_event, project_id: project.id, author_id: another_user.id) }
+
+          let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
+
+          it_behaves_like '404 response' do
+            let(:request) { get api(path, developer) }
+          end
+        end
+      end
+
+      context 'when authenticated, as a project owner' do
+        context 'audit events feature is not available' do
+          before do
+            stub_licensed_features(audit_events: false)
+          end
+
+          it_behaves_like '403 response' do
+            let(:request) { get api(path, user) }
+          end
+        end
+
+        context 'audit events feature is available' do
+          before do
+            stub_licensed_features(audit_events: true)
+          end
+
+          context 'existent audit event' do
+            it 'returns 200 response' do
+              get api(path, user)
+
+              expect(response).to have_gitlab_http_status(:ok)
+            end
+
+            context 'response schema' do
+              it 'matches the response schema' do
+                get api(path, user)
+
+                expect(response).to match_response_schema('public_api/v4/audit_event', dir: 'ee')
+              end
+            end
+
+            context 'invalid audit_event_id' do
+              let(:path) { "/projects/#{project.id}/audit_events/an-invalid-id" }
+
+              it_behaves_like '400 response' do
                 let(:request) { get api(path, user) }
+              end
+            end
+
+            context 'non existent audit event' do
+              context 'non existent audit event of a project' do
+                let(:path) { "/projects/#{project.id}/audit_events/666777" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
+              end
+
+              context 'existing audit event of a different project' do
+                let(:new_project) { create(:project) }
+                let(:audit_event) { create(:audit_events_project_audit_event, created_at: Date.new(2000, 1, 10), project_id: new_project.id) }
+
+                let(:path) { "/projects/#{project.id}/audit_events/#{audit_event.id}" }
+
+                it_behaves_like '404 response' do
+                  let(:request) { get api(path, user) }
+                end
               end
             end
           end
