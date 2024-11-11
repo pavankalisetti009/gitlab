@@ -50,7 +50,10 @@ RSpec.describe Gitlab::CloudConnector, feature_category: :cloud_connector do
 
   describe '.ai_headers' do
     let(:expected_headers) do
-      super().merge('X-Gitlab-Duo-Seat-Count' => '0')
+      super().merge(
+        'X-Gitlab-Duo-Seat-Count' => '0',
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
+      )
     end
 
     let(:namespace_ids) { [1, 42] }

@@ -33,7 +33,8 @@ module Gitlab
         namespace_ids: namespace_ids
       )
       headers(user).merge(
-        'X-Gitlab-Duo-Seat-Count' => effective_seat_count.to_s
+        'X-Gitlab-Duo-Seat-Count' => effective_seat_count.to_s,
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
       )
     end
 

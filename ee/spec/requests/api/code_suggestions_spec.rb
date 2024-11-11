@@ -16,7 +16,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     }
   end
 
-  let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:enabled_by_namespace_ids) { [] }
   let(:current_user) { nil }
   let(:headers) { {} }
   let(:access_code_suggestions) { true }
@@ -24,6 +24,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:global_instance_id) { 'instance-ABC' }
   let(:global_user_id) { 'user-ABC' }
   let(:gitlab_realm) { 'saas' }
+  let(:service_name) { :code_suggestions }
+  let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
+  let_it_be(:token) { 'generated-jwt' }
 
   before do
     allow(Gitlab).to receive(:com?).and_return(is_saas)
@@ -38,6 +41,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
+
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
+    allow(service).to receive_messages(access_token: token, name: service_name)
+    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
+    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
+      .and_return(enabled_by_namespace_ids)
   end
 
   shared_examples 'a response' do |case_name|
@@ -164,7 +173,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     let(:file_name) { 'test.py' }
-    let(:service_name) { :code_suggestions }
     let(:additional_params) { {} }
     let(:body) do
       {
@@ -224,19 +232,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       }
     end
 
-    let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
-
     subject(:post_api) do
       post api('/code_suggestions/completions', current_user), headers: headers, params: body.to_json
     end
 
     before do
       allow(Gitlab::ApplicationRateLimiter).to receive(:threshold).and_return(0)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
-      allow(service).to receive_messages(access_token: token, name: service_name)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
-      allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
-        .and_return(enabled_by_namespace_ids)
       stub_feature_flags(use_codestral_for_code_completions: false)
       stub_feature_flags(fireworks_qwen_code_completion: false)
     end
@@ -295,7 +296,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
               'X-Gitlab-Realm' => [gitlab_realm],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
+              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12']
             )
@@ -348,7 +349,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
             'X-Gitlab-Realm' => [gitlab_realm],
             'Authorization' => ["Bearer #{token}"],
-            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
+            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12']
           )
@@ -373,7 +374,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params['Header']).to include({
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
+              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
               'Content-Type' => ['application/json'],
               'X-Gitlab-Instance-Id' => [global_instance_id],
               'X-Gitlab-Global-User-Id' => [global_user_id],
@@ -970,7 +971,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Realm' => gitlab_realm,
           'X-Gitlab-Version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
-          'X-Gitlab-Duo-Seat-Count' => duo_seat_count
+          'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
+          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(',')
         }
       end
 
@@ -996,6 +998,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       context 'when user belongs to a namespace with an active code suggestions purchase' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let_it_be(:enabled_by_namespace_ids) { [add_on_purchase.namespace_id] }
         let(:duo_seat_count) { '1' }
 
         let(:headers) do

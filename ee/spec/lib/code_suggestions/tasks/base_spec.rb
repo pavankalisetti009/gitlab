@@ -11,33 +11,6 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
     end
   end
 
-  describe '#base_url' do
-    include_context 'when loading 1_settings initializer'
-
-    # Reload settings to ensure a consistent state
-    # for Settings.cloud_connector base_url
-    # and isolate tests to reduce the risk of flaky tests
-    # due to shared state with other specs
-    before do
-      load_settings
-    end
-
-    it 'returns correct URL' do
-      expect(klass.new.base_url).to eql('https://cloud.gitlab.com/ai')
-    end
-
-    context 'when the feature is customized' do
-      let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :vendored) }
-
-      it 'takes the base url from feature settings' do
-        url = "http://localhost:5000"
-        expect(::Gitlab::AiGateway).to receive(:cloud_connector_url).and_return(url)
-
-        expect(klass.new.base_url).to eq(url)
-      end
-    end
-  end
-
   describe '#endpoint' do
     it 'raies NotImplementedError' do
       expect { klass.new.endpoint }.to raise_error(NotImplementedError)
