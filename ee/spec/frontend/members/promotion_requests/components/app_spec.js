@@ -59,7 +59,7 @@ describe('PromotionRequestsApp', () => {
       );
 
       expect(descriptionElement.findComponent(GlLink).attributes('href')).toBe(
-        '/help/administration/settings/sign_up_restrictions#enable-role-promotion-approval',
+        '/help/administration/settings/sign_up_restrictions#turn-on-administrator-approval-for-role-promotions',
       );
     });
   });
