@@ -8,36 +8,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
   let(:backend) { 'gitlab-ai-gateway' }
   let(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
 
-  describe '#free_access?' do
-    subject(:free_access) { available_service_data.free_access? }
-
-    let(:cut_off_date) { 1.month.from_now }
-
-    context 'when cloud_connector_cut_off_date_expired feature flag is disabled' do
-      before do
-        stub_feature_flags(cloud_connector_cut_off_date_expired: false)
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when cloud_connector_cut_off_date_expired feature flag is enabled' do
-      before do
-        stub_feature_flags(cloud_connector_cut_off_date_expired: true)
-      end
-
-      context 'when feature name is in IGNORE_LIST' do
-        before do
-          stub_const("#{described_class.name}::IGNORE_CUT_OFF_DATE_EXPIRED_LIST", %i[duo_chat])
-        end
-
-        it { is_expected.to be true }
-      end
-
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#access_token' do
     let(:resource) { create(:user) }
     let(:encoded_token_string) { 'token_string' }
