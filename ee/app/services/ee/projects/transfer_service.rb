@@ -11,7 +11,7 @@ module EE
       def execute_system_hooks
         super
 
-        Audit::ProjectChangesAuditor.new(current_user, project).execute
+        ::Projects::ProjectChangesAuditor.new(current_user, project).execute
       end
 
       override :transfer_missing_group_resources
@@ -82,7 +82,7 @@ module EE
         deleted_framework_settings = project.compliance_framework_settings.each(&:delete)
 
         deleted_framework_settings.each do |framework_setting|
-          Audit::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
+          ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
         end
       end
 

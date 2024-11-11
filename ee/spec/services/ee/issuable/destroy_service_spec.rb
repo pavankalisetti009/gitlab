@@ -359,7 +359,7 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
         let(:scope) { issuable.project }
 
         it 'calls MergeRequestDestroyAuditor with correct arguments' do
-          expect_next_instance_of(Audit::MergeRequestDestroyAuditor, issuable, user) do |instance|
+          expect_next_instance_of(MergeRequests::MergeRequestDestroyAuditor, issuable, user) do |instance|
             expect(instance).to receive(:execute)
           end
 
@@ -367,7 +367,7 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
         end
 
         it 'calls MergeRequestBeforeDestroyAuditor with correct arguments' do
-          expect_next_instance_of(Audit::MergeRequestBeforeDestroyAuditor, issuable, user) do |instance|
+          expect_next_instance_of(MergeRequests::MergeRequestBeforeDestroyAuditor, issuable, user) do |instance|
             expect(instance).to receive(:execute)
           end
 

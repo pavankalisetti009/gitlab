@@ -7,7 +7,7 @@ module Mutations
         class Update < Base
           graphql_name 'AuditEventsInstanceAmazonS3ConfigurationUpdate'
 
-          include ::Audit::Changes
+          include ::AuditEvents::Changes
 
           COLUMNS_TO_AUDIT = [:access_key_xid, :secret_access_key, :bucket_name, :aws_region, :name].freeze
 

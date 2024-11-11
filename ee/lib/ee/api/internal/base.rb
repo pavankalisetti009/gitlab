@@ -48,7 +48,7 @@ module EE
                 { success: true }
               else
                 user.increment_failed_attempts!
-                Audit::UnauthenticatedSecurityEventAuditor.new(user, 'OTP').execute
+                ::Authn::UnauthenticatedSecurityEventAuditor.new(user, 'OTP').execute
                 ::Gitlab::AppLogger.info(
                   message: 'Failed OTP login',
                   user_id: user.id,

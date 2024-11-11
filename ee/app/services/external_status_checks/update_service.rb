@@ -43,7 +43,7 @@ module ExternalStatusChecks
     end
 
     def log_audit_event
-      Audit::ExternalStatusCheckChangesAuditor.new(current_user, external_status_check).execute
+      MergeRequests::ExternalStatusCheckChangesAuditor.new(current_user, external_status_check).execute
     end
   end
 end

@@ -114,7 +114,7 @@ RSpec.describe ExternalStatusChecks::UpdateService, feature_category: :groups_an
     end
 
     it 'executes ExternalStatusCheckChangesAuditor' do
-      expect(Audit::ExternalStatusCheckChangesAuditor).to receive(:new).with(current_user, check).and_call_original
+      expect(MergeRequests::ExternalStatusCheckChangesAuditor).to receive(:new).with(current_user, check).and_call_original
 
       execute
     end

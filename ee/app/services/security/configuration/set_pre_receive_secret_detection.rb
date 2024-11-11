@@ -24,7 +24,7 @@ module Security
           })
 
         if response.success?
-          Audit::ProjectSecuritySettingChangesAuditor.new(
+          Projects::ProjectSecuritySettingChangesAuditor.new(
             current_user: current_user, model: namespace.security_setting).execute
         end
 

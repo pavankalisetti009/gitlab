@@ -30,8 +30,8 @@ RSpec.describe PasswordsController, feature_category: :system_access do
         let(:reset_password_token) { user.send_reset_password_instructions }
         let(:user) { create(:user, password_automatically_set: true, password_expires_at: 10.minutes.ago) }
 
-        it "calls `::Audit::UserPasswordResetAuditor` with correct args" do
-          expect(::Audit::UserPasswordResetAuditor).to receive(:new).with(user, user,
+        it "calls `::Users::UserPasswordResetAuditor` with correct args" do
+          expect(::Users::UserPasswordResetAuditor).to receive(:new).with(user, user,
             instance_of(String)).and_call_original
 
           subject

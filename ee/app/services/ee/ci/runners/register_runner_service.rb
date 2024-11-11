@@ -5,7 +5,7 @@ module EE
     module Runners
       module RegisterRunnerService
         extend ::Gitlab::Utils::Override
-        include ::Audit::Changes
+        include ::AuditEvents::Changes
 
         override :execute
         def execute

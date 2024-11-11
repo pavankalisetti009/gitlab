@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module ProtectedEnvironments
   class UpdateService < ProtectedEnvironments::BaseService
-    include ::Audit::Changes
+    include ::AuditEvents::Changes
 
     AUDITABLE_ATTRIBUTES = [:required_approval_count].freeze
 
@@ -66,7 +66,7 @@ module ProtectedEnvironments
       deleted_deploy_access_levels:,
       deleted_approval_rules:
     )
-      ::Audit::ProtectedEnvironmentAuthorizationRuleChangesAuditor.new(
+      ::Environments::ProtectedEnvironmentAuthorizationRuleChangesAuditor.new(
         author: current_user,
         scope: container,
         protected_environment: protected_environment,

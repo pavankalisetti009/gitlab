@@ -13,7 +13,7 @@ RSpec.shared_examples 'an auditable failed authentication' do
       }
     }
 
-    expect(Audit::UnauthenticatedSecurityEventAuditor).to receive(:new).with(user, method).and_call_original
+    expect(Authn::UnauthenticatedSecurityEventAuditor).to receive(:new).with(user, method).and_call_original
     expect(Gitlab::Audit::Auditor).to receive(:audit).with(audit_context).and_call_original
 
     operation

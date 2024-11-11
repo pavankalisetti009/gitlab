@@ -7,7 +7,7 @@ module Mutations
         class Update < Base
           graphql_name 'GroupAuditEventStreamingDestinationsUpdate'
 
-          include ::Audit::Changes
+          include ::AuditEvents::Changes
 
           UPDATE_EVENT_NAME = 'updated_group_audit_event_streaming_destination'
           AUDIT_EVENT_COLUMNS = [:config, :name, :category, :secret_token].freeze

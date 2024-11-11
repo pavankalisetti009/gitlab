@@ -6,7 +6,7 @@ module EE
 
     override :log_failed_two_factor
     def log_failed_two_factor(user, method)
-      Audit::UnauthenticatedSecurityEventAuditor.new(user, method).execute
+      ::Authn::UnauthenticatedSecurityEventAuditor.new(user, method).execute
     end
   end
 end

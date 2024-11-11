@@ -5,7 +5,7 @@ module EE
     module UpdateService
       extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
-      include ::Audit::Changes
+      include ::AuditEvents::Changes
 
       attr_reader :group_id_for_saml, :ldap_sync
 
@@ -106,7 +106,7 @@ module EE
       end
 
       def log_audit_events
-        Audit::UserSettingChangesAuditor.new(current_user).execute
+        ::Users::UserSettingChangesAuditor.new(current_user).execute
       end
 
       def discard_private_profile

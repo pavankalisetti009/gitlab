@@ -6,7 +6,7 @@ module Mutations
       class Update < Base
         graphql_name 'InstanceExternalAuditEventDestinationUpdate'
 
-        include ::Audit::Changes
+        include ::AuditEvents::Changes
 
         authorize :admin_instance_external_audit_events
 
