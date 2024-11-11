@@ -1,33 +1,23 @@
-import { GlSprintf } from '@gitlab/ui';
-import Api from '~/api';
-import { trimText } from 'helpers/text_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import waitForPromises from 'helpers/wait_for_promises';
 import Settings from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_settings.vue';
+import BlockGroupBranchModificationSetting from 'ee/security_orchestration/components/policy_drawer/scan_result//block_group_branch_modification_setting.vue';
 import {
   mockApprovalSettingsScanResultObject,
   mockApprovalSettingsPermittedInvalidScanResultObject,
   mockDisabledApprovalSettingsScanResultObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
-import { TOP_LEVEL_GROUPS } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 describe('Settings', () => {
   let wrapper;
 
   const findHeader = () => wrapper.find('h5');
   const findSettings = () => wrapper.findAll('li');
-  const findGroupBranchExceptions = () => wrapper.findByTestId('group-branch-exceptions');
+  const findGroupBranchExceptions = () =>
+    wrapper.findComponent(BlockGroupBranchModificationSetting);
 
   const factory = (propsData) => {
-    wrapper = shallowMountExtended(Settings, {
-      propsData,
-      stubs: { GlSprintf },
-    });
+    wrapper = shallowMountExtended(Settings, { propsData });
   };
-
-  beforeEach(() => {
-    jest.spyOn(Api, 'groups').mockReturnValue(Promise.resolve(TOP_LEVEL_GROUPS));
-  });
 
   it('displays settings', () => {
     factory({ settings: mockApprovalSettingsScanResultObject.approval_settings });
@@ -55,61 +45,11 @@ describe('Settings', () => {
     expect(findSettings().exists()).toBe(false);
   });
 
-  describe('block group branch modification', () => {
-    it('renders when setting is "true"', () => {
-      factory({ settings: { block_group_branch_modification: true } });
-      expect(findHeader().exists()).toBe(true);
-      expect(findSettings()).toHaveLength(1);
-      expect(findSettings().at(0).text()).toBe('Prevent group branch modification');
-      expect(findGroupBranchExceptions().exists()).toBe(false);
-    });
-
-    it('renders when setting has exceptions', async () => {
-      factory({
-        settings: {
-          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 4 }] },
-        },
-      });
-      await waitForPromises();
-      expect(findHeader().exists()).toBe(true);
-      expect(findGroupBranchExceptions().exists()).toBe(true);
-      expect(trimText(findSettings().at(0).text())).toContain(
-        'Prevent group branch modification exceptions:',
-      );
-      expect(trimText(findSettings().at(0).text())).toContain(TOP_LEVEL_GROUPS[0].full_name);
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 4');
-    });
-
-    it('renders when setting has exceptions and groups are loading', () => {
-      factory({
-        settings: {
-          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
-        },
-      });
-      expect(findHeader().exists()).toBe(true);
-      expect(findGroupBranchExceptions().exists()).toBe(true);
-      expect(trimText(findSettings().at(0).text())).toContain(
-        'Prevent group branch modification exceptions:',
-      );
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 1');
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
-    });
-
-    it('renders when setting has exceptions and groups have not been retrieved', async () => {
-      jest.spyOn(Api, 'groups').mockRejectedValue();
-      factory({
-        settings: {
-          block_group_branch_modification: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] },
-        },
-      });
-      await waitForPromises();
-      expect(findHeader().exists()).toBe(true);
-      expect(findGroupBranchExceptions().exists()).toBe(true);
-      expect(trimText(findSettings().at(0).text())).toContain(
-        'Prevent group branch modification exceptions:',
-      );
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 1');
-      expect(trimText(findSettings().at(0).text())).toContain('Group with id: 2');
-    });
+  it('renders when setting is "true"', () => {
+    factory({ settings: { block_group_branch_modification: true } });
+    expect(findHeader().exists()).toBe(true);
+    expect(findSettings()).toHaveLength(1);
+    expect(findSettings().at(0).text()).toBe('Prevent group branch modification');
+    expect(findGroupBranchExceptions().exists()).toBe(false);
   });
 });
