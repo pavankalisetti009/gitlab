@@ -5,6 +5,7 @@ module AuditEvents
     class ExternalStreamingDestination < ApplicationRecord
       include Limitable
       include ExternallyStreamable
+      include LegacyDestinationMappable
 
       self.limit_name = 'external_audit_event_destinations'
       self.limit_scope = Limitable::GLOBAL_SCOPE

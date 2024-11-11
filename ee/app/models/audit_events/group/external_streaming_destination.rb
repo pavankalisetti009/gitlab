@@ -5,6 +5,7 @@ module AuditEvents
     class ExternalStreamingDestination < ApplicationRecord
       include Limitable
       include ExternallyStreamable
+      include LegacyDestinationMappable
 
       MAXIMUM_NAMESPACE_FILTER_COUNT = 5
 

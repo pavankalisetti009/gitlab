@@ -80,6 +80,10 @@ RSpec.describe AuditEvents::Group::ExternalStreamingDestination, feature_categor
     let(:model_factory_name) { :audit_events_group_external_streaming_destination }
   end
 
+  it_behaves_like 'includes LegacyDestinationMappable concern',
+    :audit_events_group_external_streaming_destination,
+    described_class
+
   describe ".configs_of_parent" do
     let!(:http_destinations) do
       create_list(:audit_events_group_external_streaming_destination, 3, group: destination.group)
