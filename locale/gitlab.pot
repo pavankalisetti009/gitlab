@@ -39,9 +39,6 @@ msgstr ""
 msgid " Try to %{action} this file again."
 msgstr ""
 
-msgid " You need to do this before %{grace_period_deadline}."
-msgstr ""
-
 msgid " and "
 msgstr ""
 
@@ -14795,6 +14792,9 @@ msgid "Configure custom rules for Jira issue key matching"
 msgstr ""
 
 msgid "Configure import sources and settings related to import and export features."
+msgstr ""
+
+msgid "Configure it later"
 msgstr ""
 
 msgid "Configure pipeline"
@@ -64036,6 +64036,9 @@ msgid "You need git-lfs version %{min_git_lfs_version} (or greater) to continue.
 msgstr ""
 
 msgid "You need permission."
+msgstr ""
+
+msgid "You need to do this before %{grace_period_deadline}."
 msgstr ""
 
 msgid "You need to set terms to be enforced"
