@@ -29,13 +29,17 @@ module Gitlab
             perform_completion_request(prompt: prompt, options: options.except(:stream))
           end
 
-          if response&.success?
-            response_completion = response["completion"]
-            log_response_received(response_completion, 'completion')
+          # retry_with_exponential_backoff will return nil if a 5xx server request is returned.
+          # If the client returns a 4xx response, we still want to return the response
+          # in case the caller wants to parse the errors: https://docs.anthropic.com/en/api/errors
+          return unless response&.parsed_response
+          return response unless response.success?
 
-            track_prompt_size(token_size(prompt))
-            track_response_size(token_size(response_completion))
-          end
+          response_completion = response["completion"]
+          log_response_received(response_completion, 'completion')
+
+          track_prompt_size(token_size(prompt))
+          track_response_size(token_size(response_completion))
 
           response
         end
@@ -69,7 +73,13 @@ module Gitlab
             perform_messages_request(messages: messages, options: options.except(:stream))
           end
 
-          response_completion = response&.dig('content', 0, 'text')
+          # retry_with_exponential_backoff will return nil if a 5xx server request is returned.
+          # If the client returns a 4xx response, we still want to return the response
+          # in case the caller wants to parse the errors: https://docs.anthropic.com/en/api/errors
+          return unless response&.parsed_response
+          return response unless response.success?
+
+          response_completion = response.dig('content', 0, 'text')
           log_response_received(response_completion, 'messages')
 
           track_prompt_size(token_size(messages))
