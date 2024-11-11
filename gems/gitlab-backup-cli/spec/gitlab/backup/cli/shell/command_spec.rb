@@ -17,6 +17,33 @@ RSpec.describe Gitlab::Backup::Cli::Shell::Command do
     end
   end
 
+  describe '#cmd_args' do
+    let(:cmd_args) { %w[ls -l] }
+
+    it 'returns a list of command args' do
+      cmd = command.new(*cmd_args)
+
+      expect(cmd.cmd_args).to eq(cmd_args)
+    end
+
+    context 'when with_env is true' do
+      it 'returns the same list of command args when no env is provided' do
+        cmd = command.new(*cmd_args)
+
+        expect(cmd.cmd_args(with_env: true)).to eq(cmd_args)
+      end
+
+      it 'returns a list of command args with the env hash as its first element' do
+        cmd = command.new(*cmd_args, env: envdata)
+
+        result = cmd.cmd_args(with_env: true)
+
+        expect(result.first).to eq(envdata)
+        expect(result[1..]).to eq(cmd_args)
+      end
+    end
+  end
+
   describe '#capture' do
     it 'returns stdout from executed command' do
       expected_output = 'my custom content'
