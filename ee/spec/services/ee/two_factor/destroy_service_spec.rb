@@ -43,7 +43,7 @@ RSpec.describe TwoFactor::DestroyService, feature_category: :system_access do
 
         expect(AuditEvent.last).to have_attributes(
           author: current_user,
-          entity_id: user.id,
+          entity_id: group.id,
           target_id: user.id,
           target_type: current_user.class.name,
           target_details: user.name,
