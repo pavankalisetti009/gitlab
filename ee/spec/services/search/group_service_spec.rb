@@ -38,9 +38,8 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
     with_them do
       before do
-        allow(search_service).to receive(:scope).and_return(scope)
-        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
-        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
+          use_elasticsearch?: use_elasticsearch)
       end
 
       it { is_expected.to eq(expected_type) }
@@ -81,8 +80,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     before do
       # Ensure these are present when the index is refreshed
       Elastic::ProcessInitialBookkeepingService.track!(
-        outside_project, private_project, other_project,
-        project1, project2, project3
+        outside_project, private_project, other_project, project1, project2, project3
       )
 
       ensure_elasticsearch_index!
@@ -134,7 +132,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
     subject { described_class.new(user, group, scope: scope).zoekt_node_id }
 
-    it { is_expected.to be nil }
+    it { is_expected.to be_nil }
   end
 
   context 'when searching with Zoekt', :zoekt_settings_enabled do
@@ -146,13 +144,12 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     let(:use_zoekt) { true }
     let(:scope) { 'blobs' }
     let(:page) { nil }
-    let(:zoekt_nodes) { create_list(:zoekt_node, 2) }
+    let_it_be(:zoekt_nodes) { create_list(:zoekt_node, 2) }
     let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
     let(:circuit_breaker_operational) { true }
 
     before do
-      allow(group).to receive(:use_zoekt?).and_return(use_zoekt)
-      allow(group).to receive(:search_code_with_zoekt?).and_return(use_zoekt)
+      allow(group).to receive_messages(use_zoekt?: use_zoekt, search_code_with_zoekt?: use_zoekt)
       zoekt_ensure_namespace_indexed!(group)
 
       allow(service).to receive(:zoekt_nodes).and_return zoekt_nodes
@@ -161,7 +158,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
 
     it 'returns a Search::Zoekt::SearchResults' do
-      expect(service.use_zoekt?).to eq(true)
+      expect(service.use_zoekt?).to be(true)
       expect(service.zoekt_searchable_scope).to eq(group)
       expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
     end
@@ -177,7 +174,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         end
 
         it 'returns a Search::Zoekt::SearchResults' do
-          expect(service.use_zoekt?).to eq(true)
+          expect(service.use_zoekt?).to be(true)
           expect(service.zoekt_searchable_scope).to eq(group)
           expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
         end
@@ -188,7 +185,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let(:use_zoekt) { false }
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -220,7 +217,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -229,7 +226,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let(:page) { 1 }
 
       it 'searches with Zoekt' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -238,7 +235,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let(:page) { 2 }
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -249,7 +246,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -267,7 +264,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let(:source) { 'api' }
 
       it 'searches with Zoekt' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
 
@@ -277,7 +274,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         end
 
         it 'does not search with Zoekt' do
-          expect(service.use_zoekt?).to eq(false)
+          expect(service.use_zoekt?).to be(false)
           expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
         end
       end
@@ -289,7 +286,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end

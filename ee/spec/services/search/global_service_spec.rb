@@ -36,9 +36,8 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
     with_them do
       before do
-        allow(search_service).to receive(:scope).and_return(scope)
-        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
-        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
+          use_elasticsearch?: use_elasticsearch)
       end
 
       it { is_expected.to eq(expected_type) }
