@@ -107,6 +107,12 @@ module EE
       }
     end
 
+    def duo_home_app_data(group)
+      {
+        duo_seat_utilization_path: group_settings_gitlab_duo_seat_utilization_index_path(group)
+      }.merge(code_suggestions_usage_app_data(group))
+    end
+
     def code_suggestions_usage_app_data(group)
       {
         full_path: group.full_path,
