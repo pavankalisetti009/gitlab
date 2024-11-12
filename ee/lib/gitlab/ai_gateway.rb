@@ -74,5 +74,13 @@ module Gitlab
           result.merge!(Langsmith::RunHelpers.to_headers) if Langsmith::RunHelpers.enabled?
         end
     end
+
+    def self.public_headers(user:, service:)
+      namespace_ids = user.allowed_by_namespace_ids(service)
+
+      {
+        'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(',')
+      }.merge(Gitlab::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
+    end
   end
 end

@@ -972,7 +972,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
           'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
-          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(',')
+          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
+          'x-gitlab-enabled-feature-flags' => ''
         }
       end
 

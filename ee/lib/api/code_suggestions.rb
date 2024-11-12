@@ -31,9 +31,8 @@ module API
       end
 
       def connector_public_headers(service_name)
-        namespace_ids = current_user.allowed_by_namespace_ids(service_name)
-
-        Gitlab::CloudConnector.ai_headers(current_user, namespace_ids: namespace_ids)
+        Gitlab::AiGateway.public_headers(user: current_user,
+          service: service_name)
           .merge(saas_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
