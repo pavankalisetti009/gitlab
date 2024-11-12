@@ -70,6 +70,9 @@ describe('ComplianceFrameworksReport component', () => {
           rootAncestor,
           ...props,
         },
+        stubs: {
+          BaseToken: true,
+        },
         mocks: {
           $router,
           $route: {
@@ -131,6 +134,26 @@ describe('ComplianceFrameworksReport component', () => {
         frameworks: [],
         frameworksNot: [],
       });
+    });
+
+    it('uses default group when there is no group in url', () => {
+      createComponent();
+      expect(mockGraphQlLoading).toHaveBeenCalledWith(
+        expect.objectContaining({
+          groupPath,
+        }),
+      );
+    });
+
+    it('uses group from url if provided', () => {
+      createComponent(mount, {}, mockGraphQlLoading, {
+        group: 'new-group',
+      });
+      expect(mockGraphQlLoading).toHaveBeenCalledWith(
+        expect.objectContaining({
+          groupPath: 'new-group',
+        }),
+      );
     });
   });
 

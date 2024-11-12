@@ -3,8 +3,13 @@
 import { GlButton, GlFilteredSearch, GlPopover } from '@gitlab/ui';
 
 import { __, s__ } from '~/locale';
+import GroupToken from '~/vue_shared/components/filtered_search_bar/tokens/group_token.vue';
 
-import { FRAMEWORKS_FILTER_TYPE_FRAMEWORK, FRAMEWORKS_FILTER_TYPE_PROJECT } from '../../constants';
+import {
+  FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+  FRAMEWORKS_FILTER_TYPE_PROJECT,
+  FRAMEWORKS_FILTER_TYPE_GROUP,
+} from '../../constants';
 import ProjectSearchToken from './filter_tokens/project_search_token.vue';
 import ComplianceFrameworkToken from './filter_tokens/compliance_framework_token.vue';
 
@@ -48,6 +53,17 @@ export default {
           type: FRAMEWORKS_FILTER_TYPE_PROJECT,
           entityType: 'project',
           token: ProjectSearchToken,
+          operators: [{ value: 'matches', description: 'matches' }],
+        },
+        {
+          unique: true,
+          icon: 'group',
+          title: __('Group'),
+          type: FRAMEWORKS_FILTER_TYPE_GROUP,
+          entityType: 'group',
+          token: GroupToken,
+          fullPath: this.groupPath,
+          skipIdPrefix: true,
           operators: [{ value: 'matches', description: 'matches' }],
         },
       ];

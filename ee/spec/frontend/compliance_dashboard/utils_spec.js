@@ -4,6 +4,7 @@ import * as utils from 'ee/compliance_dashboard/utils';
 import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   FRAMEWORKS_FILTER_TYPE_PROJECT,
+  FRAMEWORKS_FILTER_TYPE_GROUP,
 } from 'ee/compliance_dashboard/constants';
 
 jest.mock('ee/audit_events/constants', () => ({
@@ -123,14 +124,16 @@ describe('compliance report utils', () => {
       expect(utils.mapFiltersToUrlParams([])).toEqual({});
     });
 
-    it('maps project and framework filters to url params', () => {
+    it('maps filters to url params', () => {
       const filters = [
         { type: FRAMEWORKS_FILTER_TYPE_PROJECT, value: { data: 'my-project' } },
         { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework1' } },
         { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework2' } },
+        { type: FRAMEWORKS_FILTER_TYPE_GROUP, value: { data: 'my-group' } },
       ];
       expect(utils.mapFiltersToUrlParams(filters)).toEqual({
         project: 'my-project',
+        group: 'my-group',
         'framework[]': ['my-framework1', 'my-framework2'],
       });
     });
@@ -172,9 +175,10 @@ describe('compliance report utils', () => {
       expect(utils.mapQueryToFilters({})).toEqual([]);
     });
 
-    it('maps project and framework query params to filters', () => {
+    it('maps query params to filters', () => {
       const queryParams = {
         project: 'my-project',
+        group: 'my-group',
         'framework[]': ['my-framework1', 'my-framework2'],
       };
       expect(utils.mapQueryToFilters(queryParams)).toEqual([
@@ -184,6 +188,7 @@ describe('compliance report utils', () => {
           type: FRAMEWORKS_FILTER_TYPE_PROJECT,
           value: { data: 'my-project', operator: 'matches' },
         },
+        { type: FRAMEWORKS_FILTER_TYPE_GROUP, value: { data: 'my-group', operator: 'matches' } },
       ]);
     });
 
@@ -219,6 +224,15 @@ describe('compliance report utils', () => {
         project: '',
         framework: ['old-framework', 'new-framework'],
         frameworkExclude: false,
+      };
+      expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when group filter has changed', () => {
+      const currentFilters = { project: '', 'framework[]': ['old-framework'], group: 'old-group' };
+      const newFilters = {
+        ...currentFilters,
+        group: 'new-group',
       };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
