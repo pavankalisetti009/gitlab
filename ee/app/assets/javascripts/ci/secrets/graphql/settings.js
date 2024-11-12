@@ -101,7 +101,6 @@ export const resolvers = {
               },
               nextRotation: secret.rotationPeriod ? '2024-09-22T08:04:26.024Z' : null,
               status: 'enabled',
-              // eslint-disable-next-line @gitlab/require-i18n-strings
               __typename: 'Secret',
             },
           },

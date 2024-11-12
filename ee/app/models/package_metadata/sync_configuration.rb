@@ -22,7 +22,8 @@ module PackageMetadata
       'cbl-mariner': "cbl-mariner",
       wolfi: "wolfi",
       cargo: "cargo",
-      swift: "swift"
+      swift: "swift",
+      conda: "conda"
     }.with_indifferent_access.freeze
 
     def self.configs_for(data_type)

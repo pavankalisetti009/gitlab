@@ -249,7 +249,9 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
       context 'group selection menu', :js do
         it 'shows only the subgroups' do
-          click_button 'Search for a group'
+          within_testid('custom-project-templates-container') do
+            click_button 'Search for a group'
+          end
 
           expect_listbox_items(["#{nested_group.full_name}\n#{nested_group.full_path}"])
         end

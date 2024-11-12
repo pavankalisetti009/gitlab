@@ -20,7 +20,7 @@ const transformJiraIssueAuthor = (jiraIssue, authorId) => {
 
 const transformJiraIssueLabels = (jiraIssue) => {
   return jiraIssue.labels.map((label) => ({
-    __typename: 'Label', // eslint-disable-line @gitlab/require-i18n-strings
+    __typename: 'Label',
     ...label,
   }));
 };

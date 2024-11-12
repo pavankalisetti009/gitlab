@@ -39325,6 +39325,7 @@ Values for package manager.
 | <a id="packagemanagerbundler"></a>`BUNDLER` | Package manager: bundler. |
 | <a id="packagemanagercomposer"></a>`COMPOSER` | Package manager: composer. |
 | <a id="packagemanagerconan"></a>`CONAN` | Package manager: conan. |
+| <a id="packagemanagerconda"></a>`CONDA` | Package manager: conda. |
 | <a id="packagemanagergo"></a>`GO` | Package manager: go. |
 | <a id="packagemanagergradle"></a>`GRADLE` | Package manager: gradle. |
 | <a id="packagemanagermaven"></a>`MAVEN` | Package manager: maven. |
