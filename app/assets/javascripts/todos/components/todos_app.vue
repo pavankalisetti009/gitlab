@@ -19,6 +19,7 @@ import {
   INSTRUMENT_TODO_FILTER_CHANGE,
   STATUS_BY_TAB,
   TAB_PENDING,
+  TODO_WAIT_BEFORE_RELOAD,
 } from '~/todos/constants';
 import getTodosQuery from './queries/get_todos.query.graphql';
 import getPendingTodosCount from './queries/get_pending_todos_count.query.graphql';
@@ -54,6 +55,8 @@ export default {
   },
   data() {
     return {
+      updatePid: null,
+      needsRefresh: false,
       cursor: {
         first: ENTRIES_PER_PAGE,
         after: null,
@@ -96,6 +99,10 @@ export default {
       error(error) {
         this.alert = createAlert({ message: s__('Todos|Something went wrong. Please try again.') });
         Sentry.captureException(error);
+      },
+      watchLoading() {
+        // We reset the `needsRefresh` when paginating or changing tabs
+        this.needsRefresh = false;
       },
     },
     pendingTodosCount: {
@@ -175,6 +182,8 @@ export default {
       }
     },
     async handleItemChanged() {
+      this.needsRefresh = true;
+
       await this.updateCounts();
     },
     updateCounts() {
@@ -187,6 +196,29 @@ export default {
       await Promise.all([this.updateCounts(), this.$apollo.queries.todos.refetch()]);
 
       this.showSpinnerWhileLoading = true;
+    },
+    markInteracting() {
+      clearTimeout(this.updatePid);
+    },
+    stoppedInteracting() {
+      if (!this.needsRefresh) {
+        return;
+      }
+
+      if (this.updatePid) {
+        clearTimeout(this.updatePid);
+      }
+
+      this.updatePid = setTimeout(() => {
+        /*
+         We double-check needsRefresh or
+         whether a query is already running
+         */
+        if (this.needsRefresh && !this.$apollo.queries.todos.loading) {
+          this.updateAllQueries(false);
+        }
+        this.updatePid = null;
+      }, TODO_WAIT_BEFORE_RELOAD);
     },
   },
 };
@@ -241,7 +273,13 @@ export default {
     <div>
       <div class="gl-flex gl-flex-col">
         <gl-loading-icon v-if="isLoading && showSpinnerWhileLoading" size="lg" class="gl-mt-5" />
-        <ul v-else class="gl-m-0 gl-border-collapse gl-list-none gl-p-0">
+        <ul
+          v-else
+          data-testid="todo-item-list-container"
+          class="gl-m-0 gl-border-collapse gl-list-none gl-p-0"
+          @mouseenter="markInteracting"
+          @mouseleave="stoppedInteracting"
+        >
           <transition-group name="todos">
             <todo-item
               v-for="todo in todos"
