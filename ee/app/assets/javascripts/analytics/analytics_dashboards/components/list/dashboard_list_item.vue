@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GlIcon, GlBadge, GlLink, GlTruncateText, GlDisclosureDropdown } from '@gitlab/ui';
 import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
 import { __ } from '~/locale';
-import { DASHBOARD_STATUS_BETA } from '../../constants';
+import { DASHBOARD_STATUS_BETA } from '~/vue_shared/components/customizable_dashboard/constants';
 
 const TRUNCATE_BUTTON_ID = `desc-truncate-btn-${uuidv4()}`;
 

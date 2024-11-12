@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::InviteMembersHelper, feature_category: :onboarding do
+RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects do
   include Devise::Test::ControllerHelpers
 
   describe '#common_invite_group_modal_data' do

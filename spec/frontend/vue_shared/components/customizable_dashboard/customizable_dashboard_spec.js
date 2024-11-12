@@ -4,28 +4,23 @@ import { GlLink, GlSprintf, GlExperimentBadge } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { mockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CustomizableDashboard from 'ee/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
-import GridstackWrapper from 'ee/vue_shared/components/customizable_dashboard/gridstack_wrapper.vue';
-import AnonUsersFilter from 'ee/vue_shared/components/customizable_dashboard/filters/anon_users_filter.vue';
-import DateRangeFilter from 'ee/vue_shared/components/customizable_dashboard/filters/date_range_filter.vue';
+import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
+import GridstackWrapper from '~/vue_shared/components/customizable_dashboard/gridstack_wrapper.vue';
+import AnonUsersFilter from '~/vue_shared/components/customizable_dashboard/filters/anon_users_filter.vue';
+import DateRangeFilter from '~/vue_shared/components/customizable_dashboard/filters/date_range_filter.vue';
 import waitForPromises from 'helpers/wait_for_promises';
-import AvailableVisualizationsDrawer from 'ee/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
+import AvailableVisualizationsDrawer from '~/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
 import {
   filtersToQueryParams,
   buildDefaultDashboardFilters,
-} from 'ee/vue_shared/components/customizable_dashboard/utils';
+} from '~/vue_shared/components/customizable_dashboard/utils';
 import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
 import {
-  NEW_DASHBOARD,
+  CUSTOM_VALUE_STREAM_DASHBOARD,
   EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER,
   EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
   DASHBOARD_SCHEMA_VERSION,
-} from 'ee/analytics/analytics_dashboards/constants';
-import { CUSTOM_VALUE_STREAM_DASHBOARD } from 'ee/analytics/dashboards/constants';
-import {
-  TEST_VISUALIZATION,
-  TEST_EMPTY_DASHBOARD_SVG_PATH,
-} from 'ee_jest/analytics/analytics_dashboards/mock_data';
+} from '~/vue_shared/components/customizable_dashboard/constants';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import { stubComponent } from 'helpers/stub_component';
 import {
@@ -33,6 +28,8 @@ import {
   builtinDashboard,
   betaDashboard,
   mockDateRangeFilterChangePayload,
+  TEST_VISUALIZATION,
+  TEST_EMPTY_DASHBOARD_SVG_PATH,
 } from './mock_data';
 
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal');
@@ -43,6 +40,16 @@ jest.mock('~/alert', () => ({
     dismiss: mockAlertDismiss,
   })),
 }));
+
+const NEW_DASHBOARD = () => ({
+  title: '',
+  version: DASHBOARD_SCHEMA_VERSION,
+  description: '',
+  panels: [],
+  userDefined: true,
+  status: null,
+  errors: null,
+});
 
 describe('CustomizableDashboard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

@@ -8,12 +8,12 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   getDashboardConfig,
   updateApolloCache,
-} from 'ee/vue_shared/components/customizable_dashboard/utils';
+} from '~/vue_shared/components/customizable_dashboard/utils';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import { s__, __ } from '~/locale';
 import { uniquifyString } from '~/lib/utils/text_utility';
-import getAllCustomizableDashboardsQuery from '../graphql/queries/get_all_customizable_dashboards.query.graphql';
-import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
+import getAllCustomizableDashboardsQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_all_customizable_dashboards.query.graphql';
+import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
 import { saveCustomDashboard } from '../api/dashboards_api';
 import DashboardListItem from './list/dashboard_list_item.vue';
 

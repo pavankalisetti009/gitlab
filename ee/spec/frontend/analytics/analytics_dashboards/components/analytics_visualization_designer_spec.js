@@ -20,9 +20,10 @@ import {
   EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER,
   EVENT_LABEL_USER_CREATED_CUSTOM_VISUALIZATION,
 } from 'ee/analytics/analytics_dashboards/constants';
-import { NEW_DASHBOARD_SLUG } from 'ee/vue_shared/components/customizable_dashboard/constants';
+import { NEW_DASHBOARD_SLUG } from '~/vue_shared/components/customizable_dashboard/constants';
 
-import { TEST_CUSTOM_DASHBOARDS_PROJECT, mockFilterOptions } from '../mock_data';
+import { TEST_CUSTOM_DASHBOARDS_PROJECT } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
+import { mockFilterOptions } from '../mock_data';
 
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_action');
 

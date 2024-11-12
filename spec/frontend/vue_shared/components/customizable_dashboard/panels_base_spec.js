@@ -9,10 +9,10 @@ import {
   GlSprintf,
 } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import PanelsBase from 'ee/vue_shared/components/customizable_dashboard/panels_base.vue';
+import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
 import { VARIANT_DANGER, VARIANT_WARNING, VARIANT_INFO } from '~/alert';
 import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
-import { PANEL_POPOVER_DELAY } from 'ee/vue_shared/components/customizable_dashboard/constants';
+import { PANEL_POPOVER_DELAY } from '~/vue_shared/components/customizable_dashboard/constants';
 
 describe('PanelsBase', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */

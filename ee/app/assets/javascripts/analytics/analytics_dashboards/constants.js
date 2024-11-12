@@ -1,5 +1,6 @@
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { DASHBOARD_SCHEMA_VERSION } from '~/vue_shared/components/customizable_dashboard/constants';
 
 export const EVENTS_TYPES = ['pageViews', 'linkClickEvents', 'events'];
 
@@ -64,8 +65,6 @@ export const RETURNING_USERS_TABLE_NAME = 'ReturningUsers';
 
 export const TRACKED_EVENTS_KEY = 'trackedevents';
 
-export const DASHBOARD_SCHEMA_VERSION = '2';
-
 export const NEW_DASHBOARD = () => ({
   title: '',
   version: DASHBOARD_SCHEMA_VERSION,
@@ -93,11 +92,9 @@ export const DASHBOARD_REFRESH_MESSAGE = s__(
   'Analytics|Refresh the page to try again or see %{linkStart}troubleshooting documentation%{linkEnd}.',
 );
 
-export const DASHBOARD_STATUS_BETA = 'beta';
-
 export const EVENT_LABEL_CREATED_DASHBOARD = 'user_created_custom_dashboard';
 export const EVENT_LABEL_EDITED_DASHBOARD = 'user_edited_custom_dashboard';
-export const EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER = 'user_viewed_dashboard_designer';
+
 export const EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD = 'user_viewed_custom_dashboard';
 export const EVENT_LABEL_VIEWED_BUILTIN_DASHBOARD = 'user_viewed_builtin_dashboard';
 export const EVENT_LABEL_VIEWED_DASHBOARD = 'user_viewed_dashboard';
@@ -113,8 +110,6 @@ export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNE
 export const EVENT_LABEL_USER_FEEDBACK_GITLAB_DUO_QUERY_IN_VISUALIZATION_DESIGNER_WRONG =
   'user_feedback_gitlab_duo_query_in_visualization_designer_wrong';
 export const VISUALIZATION_DESIGNER_GITLAB_DUO_CORRELATION_PROPERTY = 'correlation_id';
-
-export const EVENT_LABEL_EXCLUDE_ANONYMISED_USERS = 'exclude_anonymised_users';
 
 export const EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE = 'click_metric_in_dashboard_table';
 export const AI_IMPACT_TABLE_TRACKING_PROPERTY = 'ai_impact_table';
@@ -137,8 +132,3 @@ export const CUSTOM_EVENT_FILTER_SUPPORTED_MEASURES = [
   `${EVENTS_TABLE_NAME}.count`,
   `${EVENTS_TABLE_NAME}.uniqueUsersCount`,
 ];
-
-export const VISUALIZATION_TYPE_DATA_TABLE = 'DataTable';
-export const VISUALIZATION_TYPE_LINE_CHART = 'LineChart';
-export const VISUALIZATION_TYPE_COLUMN_CHART = 'ColumnChart';
-export const VISUALIZATION_TYPE_SINGLE_STAT = 'SingleStat';

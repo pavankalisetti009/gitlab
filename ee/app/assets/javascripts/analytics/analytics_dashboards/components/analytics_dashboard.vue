@@ -6,7 +6,7 @@ import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED } from '~/lib/utils/http_s
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
-import CustomizableDashboard from 'ee/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
+import CustomizableDashboard from '~/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import {
@@ -14,16 +14,17 @@ import {
   getDashboardConfig,
   updateApolloCache,
   getUniquePanelId,
-} from 'ee/vue_shared/components/customizable_dashboard/utils';
-import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
+} from '~/vue_shared/components/customizable_dashboard/utils';
 import {
-  BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS,
+  AI_IMPACT_DASHBOARD,
   BUILT_IN_VALUE_STREAM_DASHBOARD,
   CUSTOM_VALUE_STREAM_DASHBOARD,
-  AI_IMPACT_DASHBOARD,
-} from 'ee/analytics/dashboards/constants';
+} from '~/vue_shared/components/customizable_dashboard/constants';
+import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
+import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
+import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
 import {
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   NEW_DASHBOARD,
@@ -35,7 +36,6 @@ import {
   DEFAULT_DASHBOARD_LOADING_ERROR,
   DASHBOARD_REFRESH_MESSAGE,
 } from '../constants';
-import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
 import getAvailableVisualizations from '../graphql/queries/get_all_customizable_visualizations.query.graphql';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 

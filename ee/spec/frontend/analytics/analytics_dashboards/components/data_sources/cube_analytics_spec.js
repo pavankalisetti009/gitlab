@@ -5,7 +5,7 @@ import fetch, {
 import {
   TODAY,
   SEVEN_DAYS_AGO,
-} from 'ee/vue_shared/components/customizable_dashboard/filters/constants';
+} from '~/vue_shared/components/customizable_dashboard/filters/constants';
 import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import {
   mockResultSet,
