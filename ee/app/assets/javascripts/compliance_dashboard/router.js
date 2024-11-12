@@ -59,6 +59,7 @@ export function createRouter(basePath, props) {
       component: FrameworksReport,
       props: {
         groupPath,
+        projectPath,
         rootAncestor: {
           path: rootAncestorPath,
           name: rootAncestorName,

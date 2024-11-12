@@ -202,4 +202,21 @@ describe('FrameworkInfoDrawer component', () => {
       );
     });
   });
+
+  it('does not render associated projects when they are not provided', () => {
+    createComponent({
+      props: {
+        groupPath: GROUP_PATH,
+        rootAncestor: {
+          path: GROUP_PATH,
+        },
+        framework: { ...defaultFramework, projects: null },
+      },
+      provide: {
+        groupSecurityPoliciesPath: '/group-policies',
+      },
+    });
+
+    expect(findProjectsTitle().exists()).toBe(false);
+  });
 });

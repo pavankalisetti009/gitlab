@@ -33,7 +33,8 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     framework: {
       type: Object,
@@ -165,8 +166,8 @@ export default {
     </template>
 
     <template v-if="framework" #default>
-      <div>
-        <div class="gl-mb-5" data-testid="sidebar-id">
+      <div class="gl-flex gl-flex-col gl-gap-5">
+        <div class="data-testid" data-testid="sidebar-id">
           <div class="gl-flex gl-items-baseline">
             <h3 class="gl-heading-3" data-testid="sidebar-id-title">
               {{ $options.i18n.frameworkIdTitle }}
@@ -214,7 +215,7 @@ export default {
             {{ framework.description }}
           </span>
         </div>
-        <div class="gl-border-t gl-my-5" data-testid="sidebar-projects">
+        <div v-if="framework.projects" class="gl-border-t" data-testid="sidebar-projects">
           <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
             {{ associatedProjectsTitle }}
           </h3>
@@ -228,7 +229,7 @@ export default {
             </li>
           </ul>
         </div>
-        <div class="gl-border-t gl-mb-5" data-testid="sidebar-policies">
+        <div class="gl-border-t" data-testid="sidebar-policies">
           <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
             {{ policiesTitle }}
           </h3>

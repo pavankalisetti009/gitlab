@@ -38,7 +38,6 @@ export default () => {
     featurePipelineMaintenanceModeEnabled,
     featureAdherenceReportEnabled,
     featureViolationsReportEnabled,
-    featureFrameworksReportEnabled,
     featureProjectsReportEnabled,
     featureSecurityPoliciesEnabled,
     adherenceV2Enabled,
@@ -55,7 +54,7 @@ export default () => {
   const routes = Object.entries({
     [ROUTE_STANDARDS_ADHERENCE]: parseBoolean(featureAdherenceReportEnabled),
     [ROUTE_VIOLATIONS]: parseBoolean(featureViolationsReportEnabled),
-    [ROUTE_FRAMEWORKS]: parseBoolean(featureFrameworksReportEnabled),
+    [ROUTE_FRAMEWORKS]: true,
     [ROUTE_PROJECTS]: parseBoolean(featureProjectsReportEnabled),
   })
     .filter(([, status]) => status)

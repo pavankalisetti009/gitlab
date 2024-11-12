@@ -152,6 +152,21 @@ describe('FrameworksTable component', () => {
     });
   });
 
+  describe('when projectPath is provided', () => {
+    it('has the correct table headers', () => {
+      wrapper = createComponent({ isLoading: false, groupPath: null, projectPath: 'foo/bar' });
+      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
+
+      expect(headerTexts).toStrictEqual(['Frameworks', 'Policies', 'Action']);
+    });
+
+    it('does not render search bar', () => {
+      wrapper = createComponent({ isLoading: false, groupPath: null, projectPath: 'foo/bar' });
+
+      expect(findSearchBox().exists()).toBe(false);
+    });
+  });
+
   describe('No frameworks alert', () => {
     it('does not render for a top-level group when there are frameworks', () => {
       wrapper = createComponent({
