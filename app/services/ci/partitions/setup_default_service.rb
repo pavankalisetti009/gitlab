@@ -3,10 +3,6 @@
 module Ci
   module Partitions
     class SetupDefaultService
-      DEFAULT_PARTITION_IDS = [
-        100, 101, 102
-      ].freeze
-
       def execute
         return if Ci::Partition.current
 
@@ -21,7 +17,7 @@ module Ci
       end
 
       def setup_active_partitions
-        active_partitions = DEFAULT_PARTITION_IDS
+        active_partitions = Ci::Partition::DEFAULT_PARTITION_VALUES
           .map { |value| { id: value, status: Ci::Partition.statuses[:active] } }
 
         Ci::Partition.upsert_all(active_partitions, unique_by: :id)

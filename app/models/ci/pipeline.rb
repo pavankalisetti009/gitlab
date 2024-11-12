@@ -33,7 +33,6 @@ module Ci
 
     CANCELABLE_STATUSES = (Ci::HasStatus::CANCELABLE_STATUSES + ['manual']).freeze
     UNLOCKABLE_STATUSES = (Ci::Pipeline.completed_statuses + [:manual]).freeze
-    INITIAL_PARTITION_VALUE = 100
 
     paginates_per 15
 
@@ -586,7 +585,7 @@ module Ci
 
     def self.current_partition_value
       Gitlab::SafeRequestStore.fetch(:ci_current_partition_value) do
-        Ci::Partition.current&.id || INITIAL_PARTITION_VALUE
+        Ci::Partition.current&.id || Ci::Partition::INITIAL_PARTITION_VALUE
       end
     end
 
