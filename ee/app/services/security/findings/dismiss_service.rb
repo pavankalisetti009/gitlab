@@ -27,7 +27,7 @@ module Security
       def dismiss_finding
         @error_message = nil
 
-        ApplicationRecord.transaction do
+        Gitlab::Database::SecApplicationRecord.transaction do
           create_or_update_feedback
           create_and_dismiss_vulnerability
         end
