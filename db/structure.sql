@@ -20508,7 +20508,6 @@ CREATE TABLE user_details (
     pronunciation text,
     registration_objective smallint,
     phone text,
-    requires_credit_card_verification boolean DEFAULT false NOT NULL,
     linkedin text DEFAULT ''::text NOT NULL,
     twitter text DEFAULT ''::text NOT NULL,
     skype text DEFAULT ''::text NOT NULL,
