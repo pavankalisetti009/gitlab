@@ -14,23 +14,24 @@ class GroupHook < WebHook
   self.singular_route_key = :hook
 
   triggerable_hooks [
-    :push_hooks,
-    :tag_push_hooks,
-    :issue_hooks,
     :confidential_issue_hooks,
-    :note_hooks,
-    :merge_request_hooks,
-    :job_hooks,
-    :pipeline_hooks,
-    :wiki_page_hooks,
-    :deployment_hooks,
-    :release_hooks,
-    :member_hooks,
-    :subgroup_hooks,
-    :feature_flag_hooks,
     :confidential_note_hooks,
+    :deployment_hooks,
     :emoji_hooks,
-    :resource_access_token_hooks
+    :feature_flag_hooks,
+    :issue_hooks,
+    :job_hooks,
+    :member_hooks,
+    :merge_request_hooks,
+    :note_hooks,
+    :pipeline_hooks,
+    :project_hooks,
+    :push_hooks,
+    :release_hooks,
+    :resource_access_token_hooks,
+    :subgroup_hooks,
+    :tag_push_hooks,
+    :wiki_page_hooks
   ]
 
   belongs_to :group
