@@ -26798,6 +26798,12 @@ msgstr ""
 msgid "GroupSettings|Configure limits on the number of repositories users can download, clone, or fork in a given time."
 msgstr ""
 
+msgid "GroupSettings|Contact source"
+msgstr ""
+
+msgid "GroupSettings|Contact source cannot be changed when issues already have contacts assigned from a different source."
+msgstr ""
+
 msgid "GroupSettings|Custom project templates"
 msgstr ""
 
@@ -26940,6 +26946,9 @@ msgid "GroupSettings|Set the initial name and protections for the default branch
 msgstr ""
 
 msgid "GroupSettings|The Auto DevOps pipeline runs if no alternative CI configuration file is found."
+msgstr ""
+
+msgid "GroupSettings|The group from which to source contacts for issues in this group and it's subgroups."
 msgstr ""
 
 msgid "GroupSettings|There was a problem updating Auto DevOps pipeline: %{error_messages}."
