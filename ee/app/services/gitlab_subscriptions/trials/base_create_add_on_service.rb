@@ -7,7 +7,7 @@ module GitlabSubscriptions
 
       override :execute
       def execute
-        return not_found unless AddOns.eligible_namespace?(trial_params[:namespace_id], namespaces_eligible_for_trial)
+        return not_found unless Trials.eligible_namespace?(trial_params[:namespace_id], namespaces_eligible_for_trial)
 
         super
       end
