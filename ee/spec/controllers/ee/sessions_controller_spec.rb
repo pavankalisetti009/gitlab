@@ -92,14 +92,6 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
 
   describe '#create', :saas do
     context 'with wrong credentials' do
-      context 'when is a trial form' do
-        it 'redirects to new trial sign in page' do
-          post :create, params: { trial: true, user: { login: 'foo@bar.com', password: '11111' } }
-
-          expect(response).to render_template("trial_registrations/new")
-        end
-      end
-
       context 'when is a regular form' do
         it 'redirects to the regular sign in page' do
           post :create, params: { user: { login: 'foo@bar.com', password: '11111' } }

@@ -96,6 +96,15 @@ module EE
         end
       end
 
+      override :execute_hooks
+      def execute_hooks
+        super
+        return unless project.has_active_hooks?(:project_hooks)
+
+        hook_data = ::Gitlab::HookData::ProjectBuilder.new(project).build(:create)
+        project.execute_hooks(hook_data, :project_hooks)
+      end
+
       def create_security_policy_configuration_if_exists
         return if security_policy_target.blank?
 

@@ -60,6 +60,15 @@ module EE
         log_audit_event(project)
       end
 
+      override :execute_hooks
+      def execute_hooks(project)
+        super
+        return unless project.has_active_hooks?(:project_hooks)
+
+        hook_data = ::Gitlab::HookData::ProjectBuilder.new(project).build(:destroy)
+        project.execute_hooks(hook_data, :project_hooks)
+      end
+
       def mirror_cleanup(project)
         return unless project.mirror?
 

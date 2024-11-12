@@ -176,6 +176,43 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
     end
   end
 
+  context 'when project deletion triggers group webhooks' do
+    let_it_be(:group, reload: true) { create(:group) }
+    let(:project) { create(:project, :repository, namespace_id: group.id) }
+
+    before do
+      stub_licensed_features(group_webhooks: true)
+      group.add_owner(user)
+    end
+
+    context 'with no active group hooks configured' do
+      it 'does not call the hooks' do
+        expect(WebHookService).not_to receive(:new)
+
+        project_destroy_service.execute
+      end
+    end
+
+    context 'with active group hooks configured' do
+      let!(:hook) { create(:group_hook, group: group, project_events: true) }
+      let(:hook_data) { { mock_data: true } }
+
+      before do
+        allow_next_instance_of(::Gitlab::HookData::ProjectBuilder) do |builder|
+          allow(builder).to receive(:build).and_return(hook_data)
+        end
+      end
+
+      it 'calls the hooks' do
+        expect_next_instance_of(WebHookService, hook, hook_data, 'project_hooks', anything) do |service|
+          expect(service).to receive(:async_execute)
+        end
+
+        project_destroy_service.execute
+      end
+    end
+  end
+
   context 'audit events' do
     context 'when the project belongs to a user namespace' do
       include_examples 'audit event logging' do
