@@ -10611,9 +10611,6 @@ msgstr ""
 msgid "CICD|Select the groups and projects authorized to use a CI/CD job token to authenticate requests to this project. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "CICD|Target project is already in the job token scope."
-msgstr ""
-
 msgid "CICD|The %{boldStart}Limit access %{boldEnd}%{italicAndBoldStart}from%{italicAndBoldEnd}%{boldStart} this project%{boldEnd} setting is deprecated and scheduled for removal in the 18.0 milestone. Use the %{boldStart}Authorized groups and projects%{boldEnd} setting and allowlist instead. %{linkStart}How do I do this?%{linkEnd}"
 msgstr ""
 
@@ -39815,6 +39812,9 @@ msgstr ""
 msgid "Paste a public key here. %{link_start}How do I generate it?%{link_end}"
 msgstr ""
 
+msgid "Paste group or project path. Example: %{codeStart}gitlab-org/gitlab%{codeEnd}."
+msgstr ""
+
 msgid "Paste project path (i.e. gitlab-org/gitlab)"
 msgstr ""
 
@@ -40086,9 +40086,6 @@ msgid "PhoneVerification|You've reached the maximum number of tries. Request a n
 msgstr ""
 
 msgid "PhoneVerification|You've reached the maximum number of tries. Wait %{interval} and try again."
-msgstr ""
-
-msgid "Pick a group or project"
 msgstr ""
 
 msgid "Pipeline"
