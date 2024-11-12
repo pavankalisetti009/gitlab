@@ -200,18 +200,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
             end
           end
 
-          context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
-            before do
-              stub_feature_flags(unblock_rules_using_execution_policies: false)
-            end
-
-            it 'updates violations' do
-              execute_with_error
-
-              expect(violated_policies).to contain_exactly policy_a
-            end
-          end
-
           context 'when the unblocking is not enabled by the policy' do
             let(:unblock_enabled) { false }
 

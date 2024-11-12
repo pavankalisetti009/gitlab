@@ -55,44 +55,22 @@ describe('FallbackAndEdgeCasesSection', () => {
   });
 
   describe('policy edge cases section', () => {
-    it('renders the edge cases section with FF enabled', () => {
-      createComponent({
-        provide: {
-          glFeatures: {
-            unblockRulesUsingExecutionPolicies: true,
-          },
-        },
-      });
+    it('renders the edge cases section', () => {
+      createComponent();
       expect(findEdgeCasesSection().props()).toStrictEqual({
         policyTuning: { unblock_rules_using_execution_policies: false },
       });
     });
 
-    it('renders the edge cases section with FF enabled and policy value provided', () => {
+    it('renders the edge cases section with policy value provided', () => {
       createComponent({
         propsData: {
           policy: { policy_tuning: { unblock_rules_using_execution_policies: true } },
-        },
-        provide: {
-          glFeatures: {
-            unblockRulesUsingExecutionPolicies: true,
-          },
         },
       });
       expect(findEdgeCasesSection().props()).toEqual({
         policyTuning: { unblock_rules_using_execution_policies: true },
       });
-    });
-
-    it('does not render the edge cases section with FF disabled', () => {
-      createComponent({
-        provide: {
-          glFeatures: {
-            unblockRulesUsingExecutionPolicies: false,
-          },
-        },
-      });
-      expect(findEdgeCasesSection().exists()).toBe(false);
     });
   });
 });

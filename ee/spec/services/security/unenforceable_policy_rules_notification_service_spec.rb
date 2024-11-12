@@ -332,16 +332,6 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       .and not_change { non_matching_scanner_rule.reload.approvals_required }
     end
 
-    context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
-      before do
-        stub_feature_flags(unblock_rules_using_execution_policies: false)
-      end
-
-      it 'does not unblock the rules' do
-        expect { execute }.not_to change { matching_scanner_rule.reload.approvals_required }
-      end
-    end
-
     context 'when toggle "unblock_rules_using_execution_policies" is disabled' do
       let(:unblock_enabled) { false }
 
