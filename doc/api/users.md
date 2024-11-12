@@ -21,6 +21,8 @@ Takes [pagination parameters](rest/index.md#offset-based-pagination) `page` and 
 
 ### As a regular user
 
+> - Keyset pagination [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/419556) in GitLab 16.5.
+
 ```plaintext
 GET /users
 ```
@@ -68,7 +70,7 @@ Example response:
 ]
 ```
 
-This endpoint supports [keyset pagination](rest/index.md#keyset-based-pagination). Keyset pagination [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/419556) in GitLab 16.5.
+This endpoint supports [keyset pagination](rest/index.md#keyset-based-pagination). In GitLab 17.0 and later, keyset pagination is required for responses of 50,000 and above.
 
 You can also use `?search=` to search for users by name, username, or public email. For example, `/users?search=John`. When you search for a:
 
