@@ -96,7 +96,7 @@ export default {
             <gl-icon name="warning" />
           </div>
           <div class="vertical-timeline-content">
-            <span class="gl-text-gray-900">{{
+            <span class="gl-text-default">{{
               __("You don't have permission to view this epic")
             }}</span>
           </div>
@@ -109,7 +109,7 @@ export default {
             <gl-icon :name="getIcon(ancestor)" />
           </div>
           <div class="vertical-timeline-content">
-            <gl-link :href="ancestor.url" class="gl-text-gray-900">{{ ancestor.title }}</gl-link>
+            <gl-link :href="ancestor.url" class="gl-text-default">{{ ancestor.title }}</gl-link>
           </div>
         </li>
       </template>
