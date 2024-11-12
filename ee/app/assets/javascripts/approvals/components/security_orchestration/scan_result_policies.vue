@@ -48,7 +48,7 @@ export default {
     },
   },
   scanResultPolicyHelpPagePath: helpPagePath(
-    'user/application_security/policies/scan-result-policies',
+    'user/application_security/policies/merge_request_approval_policies',
   ),
 };
 </script>
