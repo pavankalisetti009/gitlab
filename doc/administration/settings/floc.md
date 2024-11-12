@@ -15,12 +15,11 @@ FLoC categorized users into different cohorts so
 advertisers could use this data to uniquely target and track users. FLoC has been 
 replaced by [Topics API](https://patcg-individual-drafts.github.io/topics/).
 
-To avoid users being tracked and categorized in any GitLab instance, FLoC is
-disabled by default by sending the following header:
+By default, GitLab opts out of user tracking for interest-based advertising
+by sending the following header:
 
 ```plaintext
 Permissions-Policy: interest-cohort=()
-```
 
 To enable it:
 
