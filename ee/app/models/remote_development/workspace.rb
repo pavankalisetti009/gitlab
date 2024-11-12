@@ -6,7 +6,6 @@ module RemoteDevelopment
     include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
 
-    ignore_column :dns_zone, remove_with: '17.5', remove_after: '2024-10-11'
     ignore_column :editor, remove_with: '17.7', remove_after: '2024-11-21'
 
     belongs_to :user, inverse_of: :workspaces
