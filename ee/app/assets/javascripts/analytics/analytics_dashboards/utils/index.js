@@ -1,20 +1,5 @@
-import { cloneWithoutReferences } from '~/lib/utils/common_utils';
-import { humanize } from '~/lib/utils/text_utility';
-import { getUniquePanelId } from 'ee/vue_shared/components/customizable_dashboard/utils';
 import { SESSIONS_TABLE_NAME } from 'ee/analytics/analytics_dashboards/constants';
 import { DATE_RANGE_FILTER_DIMENSIONS } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
-
-export const createNewVisualizationPanel = (visualization) => ({
-  id: getUniquePanelId(),
-  title: humanize(visualization.slug),
-  gridAttributes: {
-    width: 4,
-    height: 3,
-  },
-  queryOverrides: {},
-  options: {},
-  visualization: cloneWithoutReferences({ ...visualization, errors: null }),
-});
 
 /**
  * Given a CubeJS property (e.g. `Sessions.count`), get the schema name (e.g. `Sessions`).

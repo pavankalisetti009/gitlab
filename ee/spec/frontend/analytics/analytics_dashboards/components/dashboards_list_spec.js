@@ -10,8 +10,8 @@ import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
-import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
+import getAllCustomizableDashboardsQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_all_customizable_dashboards.query.graphql';
+import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
@@ -19,12 +19,14 @@ import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import {
   getDashboardConfig,
   updateApolloCache,
-} from 'ee/vue_shared/components/customizable_dashboard/utils';
+} from '~/vue_shared/components/customizable_dashboard/utils';
+import {
+  TEST_CUSTOM_DASHBOARDS_PROJECT,
+  TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
+} from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import {
   TEST_COLLECTOR_HOST,
   TEST_TRACKING_KEY,
-  TEST_CUSTOM_DASHBOARDS_PROJECT,
-  TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
   TEST_DASHBOARD_GRAPHQL_EMPTY_SUCCESS_RESPONSE,
   TEST_CUSTOM_GROUP_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
@@ -41,8 +43,8 @@ jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api', () => ({
   saveCustomDashboard: jest.fn(),
 }));
 
-jest.mock('ee/vue_shared/components/customizable_dashboard/utils', () => ({
-  ...jest.requireActual('ee/vue_shared/components/customizable_dashboard/utils'),
+jest.mock('~/vue_shared/components/customizable_dashboard/utils', () => ({
+  ...jest.requireActual('~/vue_shared/components/customizable_dashboard/utils'),
   updateApolloCache: jest.fn(),
 }));
 

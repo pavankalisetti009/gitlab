@@ -1,28 +1,32 @@
 import produce from 'immer';
 import isEmpty from 'lodash/isEmpty';
 import uniqueId from 'lodash/uniqueId';
-import { TYPENAME_ANALYTICS_DASHBOARD_PANEL } from 'ee/analytics/analytics_dashboards/graphql/constants';
-import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
-import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import { queryToObject } from '~/lib/utils/url_utility';
 import { formatDate, newDate } from '~/lib/utils/datetime_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
+import { humanize } from '~/lib/utils/text_utility';
 import {
   convertObjectPropsToCamelCase,
   convertObjectPropsToSnakeCase,
   parseBoolean,
+  cloneWithoutReferences,
 } from '~/lib/utils/common_utils';
+import getAllCustomizableDashboardsQuery from './graphql/queries/get_all_customizable_dashboards.query.graphql';
+import getCustomizableDashboardQuery from './graphql/queries/get_customizable_dashboard.query.graphql';
+import { TYPENAME_ANALYTICS_DASHBOARD_PANEL } from './graphql/constants';
 import {
   DASHBOARD_SCHEMA_VERSION,
   VISUALIZATION_TYPE_DATA_TABLE,
   VISUALIZATION_TYPE_SINGLE_STAT,
-} from 'ee/analytics/analytics_dashboards/constants';
+  CATEGORY_SINGLE_STATS,
+  CATEGORY_CHARTS,
+  CATEGORY_TABLES,
+} from './constants';
 import {
   DATE_RANGE_OPTIONS,
   CUSTOM_DATE_RANGE_KEY,
   DEFAULT_SELECTED_OPTION_INDEX,
 } from './filters/constants';
-import { CATEGORY_SINGLE_STATS, CATEGORY_CHARTS, CATEGORY_TABLES } from './constants';
 
 const isCustomOption = (option) => option && option === CUSTOM_DATE_RANGE_KEY;
 
@@ -279,3 +283,15 @@ export const parsePanelToGridItem = ({
       ...rest,
     },
   });
+
+export const createNewVisualizationPanel = (visualization) => ({
+  id: getUniquePanelId(),
+  title: humanize(visualization.slug),
+  gridAttributes: {
+    width: 4,
+    height: 3,
+  },
+  queryOverrides: {},
+  options: {},
+  visualization: cloneWithoutReferences({ ...visualization, errors: null }),
+});

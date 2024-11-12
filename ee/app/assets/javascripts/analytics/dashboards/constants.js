@@ -167,16 +167,6 @@ export const BACKGROUND_AGGREGATION_DOCS_LINK = helpPagePath(
   { anchor: 'enable-or-disable-overview-background-aggregation' },
 );
 
-// The URL name already in use is `value_streams_dashboard`,
-// the slug name for a dashboard must match the URL path that is used
-export const BUILT_IN_VALUE_STREAM_DASHBOARD = 'value_streams_dashboard';
-
-// The URL for shared analytics dashboards is based on the name of the YAML config
-// YAML configured VSD uses `/value_streams` for the custom file name
-export const CUSTOM_VALUE_STREAM_DASHBOARD = 'value_streams';
-
-export const AI_IMPACT_DASHBOARD = 'ai_impact';
-
 export const BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS = ['behavior', 'audience'];
 
 export const PRODUCT_ANALYTICS_DASHBOARD_FEEDBACK_CALLOUT_ID =

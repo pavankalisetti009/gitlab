@@ -2,11 +2,11 @@
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import isString from 'lodash/isString';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { isEmptyPanelData } from 'ee/vue_shared/components/customizable_dashboard/utils';
+import { isEmptyPanelData } from '~/vue_shared/components/customizable_dashboard/utils';
 import { VARIANT_DANGER, VARIANT_INFO, VARIANT_WARNING } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import { __, s__, sprintf } from '~/locale';
-import PanelsBase from 'ee/vue_shared/components/customizable_dashboard/panels_base.vue';
+import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
 import dataSources from '../data_sources';
 import { PANEL_TROUBLESHOOTING_URL } from '../constants';
 

@@ -16,25 +16,23 @@ import { s__, __ } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { createNewVisualizationPanel } from 'ee/analytics/analytics_dashboards/utils';
-import {
-  AI_IMPACT_DASHBOARD,
-  BUILT_IN_VALUE_STREAM_DASHBOARD,
-  CUSTOM_VALUE_STREAM_DASHBOARD,
-} from 'ee/analytics/dashboards/constants';
+import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   EVENT_LABEL_VIEWED_DASHBOARD_DESIGNER,
   EVENT_LABEL_EXCLUDE_ANONYMISED_USERS,
   DASHBOARD_STATUS_BETA,
-} from 'ee/analytics/analytics_dashboards/constants';
-import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
-import { helpPagePath } from '~/helpers/help_page_helper';
+  AI_IMPACT_DASHBOARD,
+  BUILT_IN_VALUE_STREAM_DASHBOARD,
+  CUSTOM_VALUE_STREAM_DASHBOARD,
+} from './constants';
 import GridstackWrapper from './gridstack_wrapper.vue';
 import AvailableVisualizationsDrawer from './dashboard_editor/available_visualizations_drawer.vue';
 import {
   getDashboardConfig,
   filtersToQueryParams,
   availableVisualizationsValidator,
+  createNewVisualizationPanel,
 } from './utils';
 
 export default {

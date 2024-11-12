@@ -4,7 +4,7 @@ import PanelsBase from './panels_base.vue';
 
 export default {
   component: PanelsBase,
-  title: 'ee/vue_shared/components/panels_base',
+  title: '~/vue_shared/components/panels_base',
 };
 
 const Template = (args, { argTypes }) => ({

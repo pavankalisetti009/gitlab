@@ -1,3 +1,5 @@
+import getCustomizableDashboardQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_customizable_dashboard.query.graphql';
+import getAllCustomizableDashboardsQuery from '~/vue_shared/components/customizable_dashboard/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import {
   buildDefaultDashboardFilters,
   dateRangeOptionToFilter,
@@ -9,32 +11,53 @@ import {
   updateApolloCache,
   getVisualizationCategory,
   parsePanelToGridItem,
-} from 'ee/vue_shared/components/customizable_dashboard/utils';
+  createNewVisualizationPanel,
+} from '~/vue_shared/components/customizable_dashboard/utils';
 import { newDate } from '~/lib/utils/datetime_utility';
 import {
   CUSTOM_DATE_RANGE_KEY,
   DATE_RANGE_OPTIONS,
   DEFAULT_SELECTED_OPTION_INDEX,
-} from 'ee/vue_shared/components/customizable_dashboard/filters/constants';
-import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
-import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
+} from '~/vue_shared/components/customizable_dashboard/filters/constants';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import {
   CATEGORY_SINGLE_STATS,
   CATEGORY_CHARTS,
   CATEGORY_TABLES,
-} from 'ee/vue_shared/components/customizable_dashboard/constants';
+  DASHBOARD_SCHEMA_VERSION,
+} from '~/vue_shared/components/customizable_dashboard/constants';
+
 import {
+  mockDateRangeFilterChangePayload,
+  dashboard,
+  mockPanel,
+  TEST_VISUALIZATION,
   TEST_CUSTOM_DASHBOARDS_PROJECT,
   TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
+  getGraphQLDashboard,
   TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
-  getGraphQLDashboard,
-} from 'ee_jest/analytics/analytics_dashboards/mock_data';
-import { DASHBOARD_SCHEMA_VERSION } from 'ee/analytics/analytics_dashboards/constants';
-import { mockDateRangeFilterChangePayload, dashboard, mockPanel } from './mock_data';
+} from './mock_data';
 
 const option = DATE_RANGE_OPTIONS[0];
+
+describe('#createNewVisualizationPanel', () => {
+  it('returns the expected object', () => {
+    const visualization = TEST_VISUALIZATION();
+    expect(createNewVisualizationPanel(visualization)).toMatchObject({
+      visualization: {
+        ...visualization,
+        errors: null,
+      },
+      title: 'Test visualization',
+      gridAttributes: {
+        width: 4,
+        height: 3,
+      },
+      options: {},
+    });
+  });
+});
 
 describe('getDateRangeOption', () => {
   it('should return the date range option', () => {
