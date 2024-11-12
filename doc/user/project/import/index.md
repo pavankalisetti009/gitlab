@@ -274,7 +274,7 @@ This results in their membership for the imported group or project being higher 
 
 Prerequisites:
 
-- You must have the Owner role of the group.
+- You must have the Owner role for the group.
 
 To request a user accept reassignment of contributions and memberships:
 

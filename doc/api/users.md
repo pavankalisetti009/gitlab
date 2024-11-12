@@ -1308,7 +1308,7 @@ Create a runner linked to the current user.
 
 Prerequisites:
 
-- You must be an administrator or have the Owner role of the target namespace or project.
+- You must be an administrator or have the Owner role for the target namespace or project.
 - For `instance_type`, you must be an administrator of the GitLab instance.
 - For `group_type` or `project_type` with an Owner role, an administrator must not have enabled [restrict runner registration](../administration/settings/continuous_integration.md#restrict-runner-registration-by-all-users-in-an-instance).
 - An access token with the `create_runner` scope.
