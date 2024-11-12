@@ -9,7 +9,7 @@ import dataSources from 'ee/analytics/analytics_dashboards/data_sources';
 
 import waitForPromises from 'helpers/wait_for_promises';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import PanelsBase from 'ee/vue_shared/components/customizable_dashboard/panels_base.vue';
+import PanelsBase from '~/vue_shared/components/customizable_dashboard/panels_base.vue';
 import { mockPanel, invalidVisualization } from '../mock_data';
 
 const mockFetch = jest.fn().mockResolvedValue([]);

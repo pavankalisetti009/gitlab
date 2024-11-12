@@ -1,12 +1,12 @@
 import { GlAlert, GlDrawer, GlLoadingIcon, GlFormCheckbox } from '@gitlab/ui';
-import AvailableVisualizationsDrawer from 'ee/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
+import AvailableVisualizationsDrawer from '~/vue_shared/components/customizable_dashboard/dashboard_editor/available_visualizations_drawer.vue';
 import api from '~/api';
 import { humanize } from '~/lib/utils/text_utility';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
-import { TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE } from 'ee_jest/analytics/analytics_dashboards/mock_data';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { stubComponent } from 'helpers/stub_component';
+import { TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE } from '../mock_data';
 
 jest.mock('~/lib/utils/dom_utils', () => ({
   getContentWrapperHeight: () => '123px',

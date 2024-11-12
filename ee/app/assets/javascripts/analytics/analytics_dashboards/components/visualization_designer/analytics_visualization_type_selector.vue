@@ -6,7 +6,7 @@ import {
   VISUALIZATION_TYPE_LINE_CHART,
   VISUALIZATION_TYPE_COLUMN_CHART,
   VISUALIZATION_TYPE_SINGLE_STAT,
-} from '../../constants';
+} from '~/vue_shared/components/customizable_dashboard/constants';
 
 const TYPES = [
   {

@@ -7,12 +7,12 @@ module QA
         module Analyze
           module AnalyticsDashboards
             class Dashboard < QA::Page::Base
-              view 'ee/app/assets/javascripts/vue_shared/components/' \
+              view 'app/assets/javascripts/vue_shared/components/' \
                    'customizable_dashboard/gridstack_wrapper.vue' do
                 element 'grid-stack-panel'
               end
 
-              view 'ee/app/assets/javascripts/vue_shared/components/' \
+              view 'app/assets/javascripts/vue_shared/components/' \
                    'customizable_dashboard/customizable_dashboard.vue' do
                 element 'dashboard-edit-btn'
               end
