@@ -4,9 +4,7 @@ module Ci
   module Partitions
     class SetupDefaultService
       DEFAULT_PARTITION_IDS = [
-        Ci::Pipeline::INITIAL_PARTITION_VALUE,
-        Ci::Pipeline::SECOND_PARTITION_VALUE,
-        Ci::Pipeline::NEXT_PARTITION_VALUE
+        100, 101, 102
       ].freeze
 
       def execute
