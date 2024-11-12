@@ -28,7 +28,7 @@ module GitlabSubscriptions
       def eligible_namespaces_exist?
         return false if eligible_namespaces.none?
 
-        GitlabSubscriptions::Trials::AddOns.eligible_namespace?(general_params[:namespace_id], eligible_namespaces)
+        GitlabSubscriptions::Trials.eligible_namespace?(general_params[:namespace_id], eligible_namespaces)
       end
 
       def namespace

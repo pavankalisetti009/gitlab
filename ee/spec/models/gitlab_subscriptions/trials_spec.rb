@@ -25,6 +25,47 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
+  describe '.eligible_namespace?' do
+    context 'when namespace_id is blank' do
+      it 'returns true for nil' do
+        expect(described_class.eligible_namespace?(nil, [])).to be(true)
+      end
+
+      it 'returns true for empty string' do
+        expect(described_class.eligible_namespace?('', [])).to be(true)
+      end
+    end
+
+    context 'when namespace_id is present' do
+      let_it_be(:namespace) { create(:group) }
+      let(:eligible_namespaces) { Namespace.id_in(namespace.id) }
+
+      it 'returns true for an eligible namespace' do
+        expect(described_class.eligible_namespace?(namespace.id.to_s, eligible_namespaces)).to be(true)
+      end
+
+      it 'returns false for an in-eligible namespace' do
+        expect(described_class.eligible_namespace?(non_existing_record_id.to_s, eligible_namespaces)).to be(false)
+      end
+    end
+  end
+
+  describe '.creating_group_trigger?' do
+    subject { described_class.creating_group_trigger?(namespace_id) }
+
+    where(:namespace_id, :expected_result) do
+      [
+        [0,   true],
+        [nil, false],
+        [1,   false]
+      ]
+    end
+
+    with_them do
+      it { is_expected.to be(expected_result) }
+    end
+  end
+
   describe '.namespace_eligible?', :saas do
     subject { described_class.namespace_eligible?(namespace) }
 

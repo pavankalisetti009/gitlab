@@ -8,6 +8,17 @@ module GitlabSubscriptions
       eligible_namespaces.count == 1
     end
 
+    def self.creating_group_trigger?(namespace_id)
+      # The value of 0 is the option in the select for creating a new group
+      namespace_id.to_s == '0'
+    end
+
+    def self.eligible_namespace?(namespace_id, eligible_namespaces)
+      return true if namespace_id.blank?
+
+      namespace_id.to_i.in?(eligible_namespaces.pluck_primary_key)
+    end
+
     def self.namespace_eligible?(namespace)
       namespace_plan_eligible?(namespace) && namespace_add_on_eligible?(namespace)
     end
