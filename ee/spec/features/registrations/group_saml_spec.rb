@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, feature_category: :onboarding do
+RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, feature_category: :system_access do
   include TermsHelper
   include LoginHelpers
 
