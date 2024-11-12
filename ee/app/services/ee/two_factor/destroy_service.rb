@@ -19,7 +19,7 @@ module EE
         audit_context = {
           name: 'user_disable_two_factor',
           author: current_user,
-          scope: user,
+          scope: group || user,
           target: user,
           message: 'Disabled two-factor authentication',
           created_at: DateTime.current

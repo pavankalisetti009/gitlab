@@ -7,4 +7,4 @@ milestone: '15.1'
 feature_category: system_access
 saved_to_database: true
 streamed: true
-scope: [User]
+scope: [User, Group]
