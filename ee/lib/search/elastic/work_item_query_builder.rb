@@ -55,7 +55,6 @@ module Search
 
       # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
       def hybrid_work_item_search?
-        return false unless Feature.enabled?(:search_work_items_hybrid_search)
         return false unless Feature.enabled?(:ai_global_switch, type: :ops)
         return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
         return false unless ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding_to_work_items)
@@ -64,6 +63,7 @@ module Search
         user = options[:current_user]
 
         return false unless project && user
+        return false unless Feature.enabled?(:search_work_items_hybrid_search, user)
 
         Feature.enabled?(:elasticsearch_work_item_embedding, project, type: :ops) &&
           user.any_group_with_ai_available?
