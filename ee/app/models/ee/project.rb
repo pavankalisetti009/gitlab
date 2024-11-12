@@ -291,7 +291,6 @@ module EE
       scope :with_compliance_framework_settings, -> { preload(:compliance_framework_settings) }
       scope :with_compliance_management_frameworks, -> { preload(:compliance_management_frameworks) }
       scope :has_vulnerabilities, -> { joins(:project_setting).merge(::ProjectSetting.has_vulnerabilities) }
-      scope :has_vulnerability_statistics, -> { joins(:vulnerability_statistic) }
       scope :with_vulnerability_statistics, -> { includes(:vulnerability_statistic) }
 
       scope :with_group_saml_provider, -> { preload(group: :saml_provider) }

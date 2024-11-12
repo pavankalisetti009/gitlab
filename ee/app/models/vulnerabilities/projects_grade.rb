@@ -30,6 +30,7 @@ module Vulnerabilities
 
       relation = ::Vulnerabilities::Statistic.for_project(projects.reduce(&:or))
       relation = relation.by_grade(filter) if filter
+      relation = relation.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/503387')
 
       relation.group(:letter_grade)
               .select(:letter_grade, 'array_agg(project_id) project_ids')
