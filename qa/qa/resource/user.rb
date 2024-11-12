@@ -14,13 +14,15 @@ module QA
         :expect_fabrication_success,
         :hard_delete_on_api_removal,
         :access_level,
-        :email_domain
+        :email_domain,
+        :with_personal_access_token
 
       attributes :id,
         :name,
         :first_name,
         :last_name,
-        :email
+        :email,
+        :commit_email
 
       class << self
         # TODO: remove as these methods can end up using same user which isn't fully compatible with parallel execution
@@ -52,6 +54,7 @@ module QA
         @unique_id = SecureRandom.hex(8)
         @expect_fabrication_success = true
         @email_domain = 'example.com'
+        @with_personal_access_token = false
         @personal_access_tokens = []
       end
 
@@ -128,7 +131,7 @@ module QA
       def fabricate_via_api!
         resource_web_url(api_get)
       rescue ResourceNotFoundError
-        super
+        super.tap { create_personal_access_token! if with_personal_access_token }
       end
 
       def exists?
@@ -145,11 +148,11 @@ module QA
         "/users/#{fetch_id(username)}?hard_delete=#{hard_delete_on_api_removal}"
       end
 
+      # Default path to get full information on user object
+      #
+      # @return [String]
       def api_get_path
-        "/users/#{id}"
-      rescue NoValueError
-        # if id is not yet known, attempt to find the id based on username
-        "/users/#{fetch_id(username)}"
+        "/user"
       end
 
       def api_post_path
@@ -218,11 +221,19 @@ module QA
       #
       # @return [QA::Resource::PersonalAccessToken]
       def create_personal_access_token!(use_for_api_client: true)
+        user_id = begin
+          id
+        rescue NoValueError
+          nil
+        end
+
         pat = Resource::PersonalAccessToken.fabricate! do |resource|
           resource.username = username
           resource.password = password
-          resource.user_id = id if @id # if user id is not yet known, force token creation via UI by not setting user_id
-          resource.api_client = api_client if admin? # if user is admin, use it's own api client for creation
+          # if user is admin, use it's own api client for creation
+          resource.api_client = api_client if admin?
+          # if user id is not yet known, force token creation via UI by not setting user_id
+          resource.user_id = user_id if user_id
         end
 
         @personal_access_tokens << pat
@@ -277,6 +288,26 @@ module QA
       end
 
       private
+
+      # Use id specific path in case api get action was not performed with the token that belongs to user of resource
+      # This will happen when user was created with admin token without option 'with_personal_access_token' set to true
+      #
+      # @param api_resource [Hash]
+      # @return [Hash]
+      def transform_api_resource(api_resource)
+        return api_resource if api_resource[:username] == username
+
+        path = begin
+          # /users/:id can't be used as default get path because it returns very limited response if admin token is
+          # not used
+          "/users/#{id}"
+        rescue NoValueError
+          # if id is not yet known, attempt to find the id based on username
+          "/users/#{fetch_id(username)}"
+        end
+
+        parse_body(api_get_from(path))
+      end
 
       def ldap_post_body
         return {} unless extern_uid && provider
