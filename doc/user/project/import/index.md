@@ -247,8 +247,7 @@ they stay associated with placeholder users.
 
 #### Security considerations
 
-Once this contribution and membership reassignment is complete, it cannot be undone so check all everything before
-starting.
+Contribution and membership reassignment cannot be undone, so check everything carefully before you start.
 
 Reassigning contributions and membership to an incorrect user poses a security threat, because the user becomes a member
 of your group. They can, therefore, view information they should not be able to see.
