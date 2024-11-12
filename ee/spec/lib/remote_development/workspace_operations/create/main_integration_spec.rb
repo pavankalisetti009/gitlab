@@ -71,12 +71,15 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     }
   end
 
+  let(:vscode_extensions_gallery_metadata_enabled) { false }
+
   let(:context) do
     {
       current_user: current_user,
       params: params,
       settings: settings,
-      vscode_extensions_gallery: vscode_extensions_gallery
+      vscode_extensions_gallery: vscode_extensions_gallery,
+      vscode_extensions_gallery_metadata: { enabled: vscode_extensions_gallery_metadata_enabled }
     }
   end
 
@@ -208,12 +211,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
   end
 
-  context "when allow_extensions_marketplace_in_workspace feature flag is disabled" do
+  context "when vscode_extensions_gallery_metadata Web IDE setting is disabled" do
     let(:tools_injector_image_from_settings) { 'my/awesome/image:42' }
-
-    before do
-      stub_feature_flags(allow_extensions_marketplace_in_workspace: false)
-    end
+    let(:vscode_extensions_gallery_metadata_enabled) { false }
 
     it 'uses image override' do
       workspace = response.fetch(:payload).fetch(:workspace)

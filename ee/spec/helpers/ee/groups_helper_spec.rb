@@ -449,6 +449,34 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
+  describe '#duo_home_app_data' do
+    subject(:duo_home_app_data) { helper.duo_home_app_data(group) }
+
+    before do
+      allow(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).and_return('/path/to/seat/utilization')
+      allow(helper).to receive(:code_suggestions_usage_app_data).and_return({ code_suggestions: 'data' })
+    end
+
+    it 'returns a hash with expected values and merges the result of code_suggestions_usage_app_data' do
+      expect(subject).to eq({
+        duo_seat_utilization_path: '/path/to/seat/utilization',
+        code_suggestions: 'data'
+      })
+    end
+
+    it 'calls group_settings_gitlab_duo_seat_utilization_index_path with the group' do
+      expect(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).with(group)
+
+      subject
+    end
+
+    it 'calls code_suggestions_usage_app_data with the group' do
+      expect(helper).to receive(:code_suggestions_usage_app_data).with(group)
+
+      subject
+    end
+  end
+
   describe '#code_suggestions_usage_app_data' do
     subject(:code_suggestions_usage_app_data) { helper.code_suggestions_usage_app_data(group) }
 

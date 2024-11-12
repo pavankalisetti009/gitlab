@@ -19,6 +19,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInj
     }
   end
 
+  let(:vscode_extensions_gallery_metadata_enabled) { false }
+
   let(:context) do
     {
       processed_devfile: input_processed_devfile,
@@ -27,17 +29,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInj
           path: "/projects"
         }
       },
-      settings: settings
+      settings: settings,
+      vscode_extensions_gallery_metadata: { enabled: vscode_extensions_gallery_metadata_enabled }
     }
   end
 
   subject(:returned_value) do
     described_class.inject(context)
-  end
-
-  before do
-    allow(described_class)
-      .to receive(:allow_extensions_marketplace_in_workspace_feature_enabled?).and_return(true)
   end
 
   it 'injects the tools injector component' do
@@ -53,13 +51,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInj
     end
   end
 
-  context "when allow_extensions_marketplace_in_workspace is disabled" do
+  context "when vscode_extensions_gallery_metadata Web IDE setting is disabled" do
     let(:expected_processed_devfile_name) { 'example.tools-injected-marketplace-disabled-devfile.yaml' }
-
-    before do
-      allow(described_class)
-        .to receive(:allow_extensions_marketplace_in_workspace_feature_enabled?).and_return(false)
-    end
+    let(:vscode_extensions_gallery_metadata_enabled) { false }
 
     it 'injects the tools injector component' do
       expect(returned_value[:processed_devfile]).to eq(expected_processed_devfile)

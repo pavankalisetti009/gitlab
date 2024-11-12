@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Groups::Settings::GitlabDuoController, type: :request, feature_category: :ai_abstraction_layer do
-  let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
+  let_it_be(:owner) { create(:user, owner_of: group) }
+  let_it_be(:maintainer) { create(:user, maintainer_of: group) }
 
   subject(:get_page) { get group_settings_gitlab_duo_path(group) }
 
@@ -16,15 +17,31 @@ RSpec.describe Groups::Settings::GitlabDuoController, type: :request, feature_ca
   end
 
   context 'when user has read_usage_quotas permission' do
-    before_all do
-      group.add_owner(user)
+    let(:user) { owner }
+
+    context "when show_gitlab_duo_settings_app? returns false" do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it "renders 404" do
+        get_page
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
     end
 
-    it "redirects to seat utilization page" do
-      get_page
+    context "when show_gitlab_duo_settings_app? returns true" do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
 
-      expect(response).to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group))
-      expect(response).to have_gitlab_http_status(:moved_permanently)
+      it "renders show with 200 status code" do
+        get_page
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:show)
+      end
     end
 
     context 'when in a subgroup' do
@@ -35,25 +52,25 @@ RSpec.describe Groups::Settings::GitlabDuoController, type: :request, feature_ca
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it "redirects to seat utilization page" do
+      it "renders 404" do
         get group_settings_gitlab_duo_path(subgroup)
 
-        expect(response).to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(subgroup))
-        expect(response).to have_gitlab_http_status(:moved_permanently)
+        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
   end
 
   context 'when user does not have read_usage_quotas permission' do
-    before_all do
-      group.add_maintainer(user)
+    let(:user) { maintainer }
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
-    it "redirects to seat utilization page" do
+    it "renders 404" do
       get_page
 
-      expect(response).to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group))
-      expect(response).to have_gitlab_http_status(:moved_permanently)
+      expect(response).to have_gitlab_http_status(:not_found)
     end
   end
 end
