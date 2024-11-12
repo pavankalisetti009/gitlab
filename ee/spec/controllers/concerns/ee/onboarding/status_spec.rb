@@ -85,7 +85,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       stub_saas_features(onboarding: onboarding_enabled)
     end
 
-    subject { described_class.new(params, {}, nil).registration_omniauth_params }
+    subject { described_class.new(params, nil, nil).registration_omniauth_params }
 
     context 'when onboarding is enabled' do
       it { is_expected.to eq({ glm_source: 'source', glm_content: 'content', onboarding_status_email_opt_in: true }) }
@@ -128,7 +128,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       stub_saas_features(onboarding: onboarding_enabled)
     end
 
-    subject { described_class.new(params, {}, nil).trial_registration_omniauth_params }
+    subject { described_class.new(params, nil, nil).trial_registration_omniauth_params }
 
     context 'when onboarding is enabled' do
       it 'has the glm, onboarding and trial params' do
@@ -145,13 +145,10 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
   end
 
   describe '#continue_full_onboarding?' do
-    let(:session_in_oauth) do
-      { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
-    end
+    let(:session_in_oauth) { ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
+    let(:session_not_in_oauth) { nil }
 
-    let(:session_not_in_oauth) { { 'user_return_to' => nil } }
-
-    where(:registration_type, :session, :enabled?, :expected_result) do
+    where(:registration_type, :user_return_to, :enabled?, :expected_result) do
       'free'         | ref(:session_not_in_oauth) | true  | true
       'free'         | ref(:session_in_oauth)     | true  | false
       'free'         | ref(:session_not_in_oauth) | false | false
@@ -176,7 +173,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
     with_them do
       let(:current_user) { build(:user, onboarding_status_registration_type: registration_type) }
-      let(:instance) { described_class.new({}, session, current_user) }
+      let(:instance) { described_class.new({}, user_return_to, current_user) }
 
       before do
         stub_saas_features(onboarding: enabled?)
@@ -191,13 +188,10 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
   describe '#welcome_submit_button_text' do
     let(:continue_text) { _('Continue') }
     let(:get_started_text) { _('Get started!') }
-    let(:session_in_oauth) do
-      { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
-    end
+    let(:session_in_oauth) { ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
+    let(:session_not_in_oauth) { nil }
 
-    let(:session_not_in_oauth) { { 'user_return_to' => nil } }
-
-    where(:registration_type, :session, :expected_result) do
+    where(:registration_type, :user_return_to, :expected_result) do
       'free'         | ref(:session_not_in_oauth) | ref(:continue_text)
       'free'         | ref(:session_in_oauth)     | ref(:get_started_text)
       nil            | ref(:session_not_in_oauth) | ref(:continue_text)
@@ -212,7 +206,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
     with_them do
       let(:current_user) { build(:user, onboarding_status_registration_type: registration_type) }
-      let(:instance) { described_class.new({}, session, current_user) }
+      let(:instance) { described_class.new({}, user_return_to, current_user) }
 
       before do
         stub_saas_features(onboarding: true)
@@ -374,8 +368,8 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
   describe '#preregistration_tracking_label' do
     let(:params) { {} }
-    let(:session) { {} }
-    let(:instance) { described_class.new(params, session, nil) }
+    let(:user_return_to) { nil }
+    let(:instance) { described_class.new(params, user_return_to, nil) }
 
     subject(:preregistration_tracking_label) { instance.preregistration_tracking_label }
 
@@ -388,32 +382,25 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
 
     context 'when it is a subscription' do
-      let(:session) { { 'user_return_to' => ::Gitlab::Routing.url_helpers.new_subscriptions_path } }
+      let(:user_return_to) { ::Gitlab::Routing.url_helpers.new_subscriptions_path }
 
       it { is_expected.to eq('subscription_registration') }
     end
   end
 
-  describe '#stored_user_location' do
-    let(:return_to) { nil }
-    let(:session) { { 'user_return_to' => return_to } }
+  describe '#user_return_to' do
+    let(:user_return_to) { nil }
 
-    subject { described_class.new(nil, session, nil).stored_user_location }
+    subject { described_class.new(nil, user_return_to, nil).user_return_to }
 
-    context 'when no user location is stored' do
+    context 'when no user location is passed' do
       it { is_expected.to be_nil }
     end
 
-    context 'when user location exists' do
-      let(:return_to) { '/some/path' }
+    context 'when user location has value' do
+      let(:user_return_to) { '/some/path' }
 
-      it { is_expected.to eq(return_to) }
-    end
-
-    context 'when user location does not have value in session' do
-      let(:session) { {} }
-
-      it { is_expected.to be_nil }
+      it { is_expected.to eq('/some/path') }
     end
   end
 end

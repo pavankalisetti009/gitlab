@@ -26,7 +26,8 @@ module Registrations
     def show; end
 
     def update
-      result = ::Users::SignupService.new(current_user, session: session, params: update_params).execute
+      result = ::Users::SignupService
+                 .new(current_user, user_return_to: session['user_return_to'], params: update_params).execute
 
       if result.success?
         clear_memoization(:onboarding_status) # needed in case registration_type is changed on update
@@ -126,7 +127,7 @@ module Registrations
     end
 
     def onboarding_status
-      Onboarding::Status.new(@onboarding_status_params, session, current_user)
+      Onboarding::Status.new(@onboarding_status_params, session['user_return_to'], current_user)
     end
     strong_memoize_attr :onboarding_status
 

@@ -222,7 +222,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
         track_action_for_errors: 'free_registration'
       }
 
-      expect(helper.create_company_form_data(::Onboarding::Status.new({}, {}, user))).to match(attributes)
+      expect(helper.create_company_form_data(::Onboarding::Status.new({}, nil, user))).to match(attributes)
     end
   end
 

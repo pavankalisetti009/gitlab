@@ -63,7 +63,7 @@ module Registrations
     end
 
     def onboarding_status
-      ::Onboarding::Status.new({}, session, current_user)
+      ::Onboarding::Status.new({}, nil, current_user)
     end
     strong_memoize_attr :onboarding_status
   end

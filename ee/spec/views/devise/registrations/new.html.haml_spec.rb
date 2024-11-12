@@ -8,7 +8,7 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
   let(:arkose_labs_domain) { "domain" }
   let(:resource) { Users::RegistrationsBuildService.new(nil, {}).execute }
   let(:params) { controller.params }
-  let(:onboarding_status) { ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, {}, resource) }
+  let(:onboarding_status) { ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, nil, resource) }
 
   subject { render && rendered }
 
