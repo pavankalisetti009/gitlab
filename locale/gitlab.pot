@@ -16246,9 +16246,6 @@ msgstr ""
 msgid "Create %{workspace} label"
 msgstr ""
 
-msgid "Create New Directory"
-msgstr ""
-
 msgid "Create a Kubernetes cluster"
 msgstr ""
 
@@ -53304,9 +53301,6 @@ msgid "Start a %{new_merge_request} with these changes"
 msgstr ""
 
 msgid "Start a Free Ultimate Trial"
-msgstr ""
-
-msgid "Start a new merge request with these changes"
 msgstr ""
 
 msgid "Start a review"
