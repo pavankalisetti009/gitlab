@@ -67,9 +67,20 @@ module Gitlab
           end
 
           def model(options)
-            return options[:model] if options[:model].present?
+            return CLAUDE_3_5_SONNET unless options[:model].present?
 
-            CLAUDE_3_5_SONNET
+            case options[:model]
+            when ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_HAIKU
+              if Feature.enabled?(:claude_3_5_haiku_rollout,
+                user)
+                ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_HAIKU
+              else
+                ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_HAIKU
+              end
+
+            else
+              options[:model]
+            end
           end
 
           def provider(options)
