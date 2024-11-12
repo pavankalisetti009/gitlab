@@ -17,7 +17,7 @@
       = f.number_field :new_user_signups_cap, min: 1,
         class: 'form-control form-control-sm gl-form-input gl-w-auto gl-mt-3',
         disabled: group.shared_externally?, required: true,
-        data: { testid: 'user-cap-limit-field' }
+        data: { testid: 'user-cap-limit-field', dirty_submit_original_value: @group.new_user_signups_cap }
   .gl-my-5
     = f.gitlab_ui_radio_component :seat_control, :off, "Open access",
       help_text: _("Invitations do not require administrator approval"),
