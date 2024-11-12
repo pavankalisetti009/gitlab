@@ -33,7 +33,7 @@ components:
         - name: GL_SSH_PORT
           value: "60022"
         - name: GL_EDITOR_ENABLE_MARKETPLACE
-          value: "true"
+          value: "false"
       endpoints:
         - name: editor-server
           targetPort: 60001

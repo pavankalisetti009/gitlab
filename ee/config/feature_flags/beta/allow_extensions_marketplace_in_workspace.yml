@@ -1,9 +1,0 @@
----
-name: allow_extensions_marketplace_in_workspace
-feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/12443
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/142001
-rollout_issue_url: https://gitlab.com/gitlab-com/gl-infra/production/-/issues/17418
-milestone: '16.9'
-group: group::ide
-type: beta
-default_enabled: false

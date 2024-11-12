@@ -714,7 +714,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   },
                   {
                     name: "GL_EDITOR_ENABLE_MARKETPLACE",
-                    value: "true"
+                    value: "false"
                   },
                   {
                     name: "PROJECTS_ROOT",

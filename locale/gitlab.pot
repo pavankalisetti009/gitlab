@@ -41614,7 +41614,13 @@ msgstr ""
 msgid "PreferencesIntegrations|Third-Party Extensions Acknowledgement"
 msgstr ""
 
-msgid "PreferencesIntegrations|Third-party extensions are now available in the Web IDE. While each extension runs in a secure browser sandbox, %{boldStart}third-party extensions%{boldEnd} may have access to the contents of the files opened in the Web IDE, %{boldStart}including any personal data in those files%{boldEnd}, and may communicate with external servers."
+msgid "PreferencesIntegrations|Third-party extensions are now available in the Web IDE and Workspaces. While each extension runs in a secure browser sandbox, %{boldStart}third-party extensions%{boldEnd} may have access to the contents of the files opened in the Web IDE or Workspaces, %{boldStart}including any personal data in those files%{boldEnd}, and may communicate with external servers."
+msgstr ""
+
+msgid "PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace for Workspaces."
+msgstr ""
+
+msgid "PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace for the Web IDE and Workspaces."
 msgstr ""
 
 msgid "PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace for the Web IDE."
@@ -41797,10 +41803,16 @@ msgstr ""
 msgid "Preferences|Web IDE"
 msgstr ""
 
+msgid "Preferences|Web IDE and Workspaces"
+msgstr ""
+
 msgid "Preferences|When you type in a description or comment box, pressing %{kbdOpen}Enter%{kbdClose} in a list adds a new item below."
 msgstr ""
 
 msgid "Preferences|When you type in a description or comment box, selected text is surrounded by the corresponding character after typing one of the following characters: %{supported_characters}."
+msgstr ""
+
+msgid "Preferences|Workspaces"
 msgstr ""
 
 msgid "Premium plan"

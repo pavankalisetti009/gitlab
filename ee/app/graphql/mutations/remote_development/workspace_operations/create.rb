@@ -59,6 +59,7 @@ module Mutations
           replace_null_with_default: true,
           description: 'Variables to inject into the workspace.'
 
+        # @param [Hash] args
         def resolve(args)
           unless License.feature_available?(:remote_development)
             raise_resource_not_available_error!("'remote_development' licensed feature is not available")
@@ -105,11 +106,21 @@ module Mutations
             variables: variables
           )
 
+          WebIde::Settings.get(
+            [:vscode_extensions_gallery_metadata, :vscode_extensions_gallery],
+            user: current_user,
+            vscode_extensions_marketplace_feature_flag_enabled: true
+          ) =>
+            {
+              vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata,
+              vscode_extensions_gallery: Hash => vscode_extensions_gallery
+            }
+
           domain_main_class_args = {
             current_user: current_user,
             params: params,
-            vscode_extensions_gallery:
-              WebIde::Settings.get_single_setting(:vscode_extensions_gallery, user: current_user)
+            vscode_extensions_gallery_metadata: vscode_extensions_gallery_metadata,
+            vscode_extensions_gallery: vscode_extensions_gallery
           }
 
           response = ::RemoteDevelopment::CommonService.execute(

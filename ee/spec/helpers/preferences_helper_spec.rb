@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PreferencesHelper do
+RSpec.describe PreferencesHelper, feature_category: :shared do
   before do
     allow(helper).to receive(:current_user).and_return(user)
   end
@@ -44,6 +44,40 @@ RSpec.describe PreferencesHelper do
 
     context 'when security dashboard feature is disabled' do
       it { is_expected.not_to include(['Security dashboard', :security_dashboard]) }
+    end
+  end
+
+  describe '#extensions_marketplace_view' do
+    subject { helper.extensions_marketplace_view }
+
+    context 'when remote_development licensed feature is enabled' do
+      before do
+        stub_licensed_features(remote_development: true)
+      end
+
+      context 'when Web IDE Extension Marketplace feature is enabled' do
+        before do
+          allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled?).with(user: user).and_return(true)
+        end
+
+        it { is_expected.to match(a_hash_including(title: 'Web IDE and Workspaces', message: /IDE and Workspaces/)) }
+      end
+
+      context 'when Web IDE Extension Marketplace feature not enabled' do
+        it { is_expected.to match(a_hash_including(title: 'Workspaces', message: /for Workspaces/)) }
+      end
+    end
+
+    context 'when remote_development licensed feature is not enabled' do
+      context 'when Web IDE Extension Marketplace feature is enabled' do
+        before do
+          allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled?).with(user: user).and_return(true)
+        end
+
+        it { is_expected.to match(a_hash_including(title: 'Web IDE', message: /for the Web IDE/)) }
+      end
+
+      it { is_expected.not_to match(a_hash_including(name: 'extensions_marketplace')) }
     end
   end
 
