@@ -463,19 +463,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       it { is_expected.to contain_exactly(project_1) }
     end
 
-    describe '.has_vulnerability_statistics' do
-      let_it_be(:project_1) { create(:project) }
-      let_it_be(:project_2) { create(:project) }
-
-      before do
-        create(:vulnerability_statistic, project: project_1)
-      end
-
-      subject { described_class.has_vulnerability_statistics }
-
-      it { is_expected.to contain_exactly(project_1) }
-    end
-
     describe '.not_aimed_for_deletion' do
       let_it_be(:project) { create(:project) }
       let_it_be(:delayed_deletion_project) { create(:project, marked_for_deletion_at: Date.current) }
