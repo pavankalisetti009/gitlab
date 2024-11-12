@@ -15,7 +15,7 @@ module EE
       GLM_PARAMS = [:glm_source, :glm_content].freeze
       PASSED_THROUGH_PARAMS = [:role, :registration_objective, :jobs_to_be_done_other].freeze
 
-      attr_reader :registration_type
+      attr_reader :registration_type, :user_return_to
 
       # string delegations
       delegate :tracking_label, :product_interaction, to: :registration_type
@@ -110,11 +110,6 @@ module EE
         user.onboarding_status_initial_registration_type == ::Onboarding::REGISTRATION_TYPE[:trial]
       end
 
-      def stored_user_location
-        # side effect free look at devise store_location_for(:user)
-        session['user_return_to']
-      end
-
       override :registration_omniauth_params
       def registration_omniauth_params
         return super unless ::Onboarding.enabled?
@@ -131,7 +126,7 @@ module EE
 
       private
 
-      attr_reader :params, :session
+      attr_reader :params
 
       def calculate_registration_type_klass
         REGISTRATION_KLASSES.fetch(user&.onboarding_status_registration_type, ::Onboarding::FreeRegistration)
@@ -149,9 +144,9 @@ module EE
       end
 
       def base_stored_user_location_path
-        return unless stored_user_location
+        return unless user_return_to
 
-        URI.parse(stored_user_location).path
+        URI.parse(user_return_to).path
       end
     end
   end
