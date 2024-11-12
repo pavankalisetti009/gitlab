@@ -122,7 +122,12 @@ module EE
 
     override :onboarding_status_params
     def onboarding_status_params
-      params.to_unsafe_h.deep_symbolize_keys # rubocop:todo Rails/StrongParams -- this is a move, not an add. We'll handle in https://gitlab.com/gitlab-org/gitlab/-/issues/498141
+      base_params = params.permit(:invite_email, *::Onboarding::Status::GLM_PARAMS)
+
+      return base_params.to_h.deep_symbolize_keys unless params[:user].present? # rubocop:disable Rails/StrongParams -- false positive, we are really checking here just need to detect difference on get vs post
+
+      params.require(:user)
+            .permit(:onboarding_status_email_opt_in).merge(base_params).to_h.deep_symbolize_keys
     end
 
     override :set_resource_fields

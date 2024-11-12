@@ -125,7 +125,7 @@ module Users
     end
 
     def onboarding_status
-      Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, session, @user)
+      Onboarding::Status.new({}, session, @user)
     end
     strong_memoize_attr :onboarding_status
 
