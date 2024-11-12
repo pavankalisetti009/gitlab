@@ -5,10 +5,32 @@ module EE
     extend ::Gitlab::Utils::Override
 
     override :excluded_dashboard_choices
+
     def excluded_dashboard_choices
       return [] if can?(current_user, :read_operations_dashboard)
 
       super
+    end
+
+    override :extensions_marketplace_view
+
+    def extensions_marketplace_view
+      if License.feature_available?(:remote_development) &&
+          ::WebIde::ExtensionsMarketplace.feature_enabled?(user: current_user)
+        build_extensions_marketplace_view(
+          title: s_("Preferences|Web IDE and Workspaces"),
+          message: s_("PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace " \
+            "for the Web IDE and Workspaces.")
+        )
+      elsif License.feature_available?(:remote_development)
+        build_extensions_marketplace_view(
+          title: s_("Preferences|Workspaces"),
+          message: s_("PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace " \
+            "for Workspaces.")
+        )
+      else
+        super
+      end
     end
 
     def group_view_choices

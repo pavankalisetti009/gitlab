@@ -70,6 +70,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
       domain_main_class_args: {
         current_user: current_user,
         params: params,
+        vscode_extensions_gallery_metadata: { enabled: true },
         vscode_extensions_gallery: { some_gallery_setting: "some-value" }
       }
     }
@@ -88,8 +89,15 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     stub_licensed_features(remote_development: true)
 
     allow(WebIde::Settings)
-      .to receive(:get_single_setting).with(:vscode_extensions_gallery, user: current_user).and_return(
-        { some_gallery_setting: "some-value" }
+      .to receive(:get).with(
+        [:vscode_extensions_gallery_metadata, :vscode_extensions_gallery],
+        user: current_user,
+        vscode_extensions_marketplace_feature_flag_enabled: true
+      ).and_return(
+        {
+          vscode_extensions_gallery_metadata: { enabled: true },
+          vscode_extensions_gallery: { some_gallery_setting: "some-value" }
+        }
       )
 
     # reload projects, so any local debugging performed in the tests has the correct state

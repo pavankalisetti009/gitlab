@@ -12,7 +12,8 @@ module RemoteDevelopment
           context => {
             processed_devfile: Hash => processed_devfile,
             volume_mounts: Hash => volume_mounts,
-            settings: Hash => settings
+            settings: Hash => settings,
+            vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata
           }
           volume_mounts => { data_volume: Hash => data_volume }
           data_volume => { path: String => volume_path }
@@ -21,8 +22,6 @@ module RemoteDevelopment
           editor_port = WorkspaceCreator::WORKSPACE_PORT
           ssh_port = 60022
           tools_dir = "#{volume_path}/.gl-tools"
-          enable_marketplace = allow_extensions_marketplace_in_workspace_feature_enabled?(context: context)
-
           # NOTE: We will always have exactly one tools_component found, because we have already
           #       validated this in post_flatten_devfile_validator.rb
           tools_component = processed_devfile['components'].find { |c| c.dig('attributes', 'gl/inject-editor') }
@@ -39,20 +38,10 @@ module RemoteDevelopment
             tools_dir: tools_dir,
             editor_port: editor_port,
             ssh_port: ssh_port,
-            enable_marketplace: enable_marketplace
+            enable_marketplace: vscode_extensions_gallery_metadata.fetch(:enabled)
           )
 
           context
-        end
-
-        # @param [Hash] context
-        # @return [Boolean]
-        def self.allow_extensions_marketplace_in_workspace_feature_enabled?(context:)
-          Feature.enabled?(
-            :allow_extensions_marketplace_in_workspace,
-            context.fetch(:params).fetch(:agent).project.root_namespace,
-            type: :beta
-          )
         end
 
         # @param [Hash] tools_component
@@ -162,8 +151,7 @@ module RemoteDevelopment
             }
           ]
         end
-        private_class_method :allow_extensions_marketplace_in_workspace_feature_enabled?, :override_main_container,
-          :inject_tools_components, :tools_components
+        private_class_method :override_main_container, :inject_tools_components, :tools_components
       end
     end
   end
