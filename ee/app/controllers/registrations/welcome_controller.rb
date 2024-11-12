@@ -12,7 +12,12 @@ module Registrations
     layout 'minimal'
 
     before_action :verify_onboarding_enabled!
-    before_action :verify_welcome_needed!, only: :show
+    before_action only: :show do
+      set_onboarding_status_params
+      verify_welcome_needed!
+    end
+
+    before_action :set_update_onboarding_status_params, only: :update
 
     helper_method :onboarding_status
 
@@ -42,6 +47,10 @@ module Registrations
       return if current_user
 
       redirect_to new_user_registration_path
+    end
+
+    def set_onboarding_status_params
+      @onboarding_status_params = {}
     end
 
     def verify_welcome_needed!
@@ -117,9 +126,14 @@ module Registrations
     end
 
     def onboarding_status
-      Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, session, current_user)
+      Onboarding::Status.new(@onboarding_status_params, session, current_user)
     end
     strong_memoize_attr :onboarding_status
+
+    def set_update_onboarding_status_params
+      @onboarding_status_params = params.require(:user).permit(:setup_for_company)
+                                        .merge(params.permit(:joining_project)).to_h.deep_symbolize_keys
+    end
   end
 end
 

@@ -46,6 +46,7 @@ module Registrations
     def permitted_params
       params.permit(
         *::Onboarding::Status::GLM_PARAMS,
+        *::Onboarding::Status::PASSED_THROUGH_PARAMS,
         :company_name,
         :company_size,
         :first_name,
@@ -53,11 +54,7 @@ module Registrations
         :phone_number,
         :country,
         :state,
-        :website_url,
-        # passed through params
-        :role,
-        :registration_objective,
-        :jobs_to_be_done_other
+        :website_url
       )
     end
 
@@ -66,7 +63,7 @@ module Registrations
     end
 
     def onboarding_status
-      ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, session, current_user)
+      ::Onboarding::Status.new({}, session, current_user)
     end
     strong_memoize_attr :onboarding_status
   end

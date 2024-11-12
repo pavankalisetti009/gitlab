@@ -75,7 +75,7 @@ module EE
       end
 
       def email_opt_in?
-        ::Gitlab::Utils.to_boolean(params.dig(:user, :onboarding_status_email_opt_in), default: true)
+        ::Gitlab::Utils.to_boolean(params[:onboarding_status_email_opt_in], default: true)
       end
 
       def convert_to_automatic_trial?
@@ -93,7 +93,7 @@ module EE
       end
 
       def setup_for_company?
-        ::Gitlab::Utils.to_boolean(params.dig(:user, :setup_for_company), default: false)
+        ::Gitlab::Utils.to_boolean(params[:setup_for_company], default: false)
       end
 
       def company_lead_product_interaction
