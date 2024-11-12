@@ -20,9 +20,7 @@ export const createResolvers = (groupId) => ({
 
       return axios.get(url, { params }).then(({ data }) => {
         const groups = {
-          // eslint-disable-next-line @gitlab/require-i18n-strings
           __typename: 'Groups',
-          // eslint-disable-next-line @gitlab/require-i18n-strings
           nodes: data.map((group) => ({ ...group, __typename: 'Group' })),
         };
 

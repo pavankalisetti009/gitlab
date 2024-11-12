@@ -129,8 +129,6 @@ export default {
             }
           },
           optimisticResponse: {
-            // False positive i18n lint: https://gitlab.com/gitlab-org/frontend/eslint-plugin-i18n/issues/26
-            // eslint-disable-next-line @gitlab/require-i18n-strings
             __typename: 'Mutation',
             dastProfileDelete: {
               __typename: 'DastProfileDeletePayload',

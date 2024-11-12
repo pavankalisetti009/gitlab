@@ -24,14 +24,12 @@ export const STEP_PAYMENT_METHOD = 'paymentMethod';
 export const STEP_CONFIRM_ORDER = 'confirmOrder';
 
 // The order of the steps in this array determines the flow of the application
-/* eslint-disable @gitlab/require-i18n-strings */
 export const STEPS = [
   { id: STEP_SUBSCRIPTION_DETAILS, __typename: 'Step' },
   { id: STEP_BILLING_ADDRESS, __typename: 'Step' },
   { id: STEP_PAYMENT_METHOD, __typename: 'Step' },
   { id: STEP_CONFIRM_ORDER, __typename: 'Step' },
 ];
-/* eslint-enable @gitlab/require-i18n-strings */
 
 export const TRACK_SUCCESS_MESSAGE = 'Success';
 

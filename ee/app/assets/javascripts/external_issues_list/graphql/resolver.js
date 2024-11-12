@@ -25,7 +25,7 @@ export const externalIssuesResolverFactory = (issueTrackerName) => {
 
   const transformExternalIssueLabels = (externalIssue) => {
     return externalIssue.labels.map((label) => ({
-      __typename: 'Label', // eslint-disable-line @gitlab/require-i18n-strings
+      __typename: 'Label',
       ...label,
     }));
   };
@@ -42,14 +42,12 @@ export const externalIssuesResolverFactory = (issueTrackerName) => {
     const { headers, data: externalIssues } = response;
 
     return {
-      // eslint-disable-next-line @gitlab/require-i18n-strings
       __typename: `${issueTrackerName}Issues`,
       errors: [],
       pageInfo: transformExternalIssuePageInfo(headers),
       nodes: externalIssues.map((rawIssue, index) => {
         const externalIssue = convertObjectPropsToCamelCase(rawIssue, { deep: true });
         return {
-          // eslint-disable-next-line @gitlab/require-i18n-strings
           __typename: `${issueTrackerName}Issue`,
           ...externalIssue,
           id: rawIssue.id,
@@ -78,7 +76,6 @@ export const externalIssuesResolverFactory = (issueTrackerName) => {
       })
       .catch((error) => {
         return {
-          // eslint-disable-next-line @gitlab/require-i18n-strings
           __typename: `${issueTrackerName}Issues`,
           errors: error?.response?.data?.errors || [i18n.errorFetchingIssues],
           pageInfo: transformExternalIssuePageInfo(),
