@@ -160,4 +160,66 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       end
     end
   end
+
+  describe '.public_headers' do
+    let(:user) { build(:user, id: 1) }
+    let(:service_name) { :test }
+    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
+    let(:namespace_ids) { [1, 2, 3] }
+    let(:enabled_feature_flags) { %w[feature_a feature_b] }
+    let(:ai_headers) { { 'X-Gitlab-Duo-Seat-Count' => 1, 'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '' } }
+
+    subject(:public_headers) { described_class.public_headers(user: user, service: service) }
+
+    before do
+      allow(user).to receive(:allowed_by_namespace_ids)
+        .with(service)
+        .and_return(namespace_ids)
+
+      allow(described_class).to receive(:enabled_feature_flags)
+        .and_return(enabled_feature_flags)
+
+      allow(Gitlab::CloudConnector).to receive(:ai_headers)
+        .with(user, namespace_ids: namespace_ids)
+        .and_return(ai_headers)
+    end
+
+    it 'returns headers with enabled feature flags and AI headers' do
+      expected_headers = {
+        'X-Gitlab-Duo-Seat-Count' => 1,
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+        'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
+      }
+
+      expect(public_headers).to eq(expected_headers)
+    end
+
+    context 'when there are no enabled feature flags' do
+      let(:enabled_feature_flags) { [] }
+
+      it 'returns headers with empty feature flags string' do
+        expected_headers = {
+          'X-Gitlab-Duo-Seat-Count' => 1,
+          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+          'x-gitlab-enabled-feature-flags' => ''
+        }
+
+        expect(public_headers).to eq(expected_headers)
+      end
+    end
+
+    context 'when there are duplicate feature flags' do
+      let(:enabled_feature_flags) { %w[feature_a feature_a feature_b] }
+
+      it 'returns headers with unique feature flags' do
+        expected_headers = {
+          'X-Gitlab-Duo-Seat-Count' => 1,
+          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
+          'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
+        }
+
+        expect(public_headers).to eq(expected_headers)
+      end
+    end
+  end
 end
