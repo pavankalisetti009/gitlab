@@ -1,4 +1,5 @@
 <script>
+import { isBoolean } from 'lodash';
 import { GlBadge, GlAlert, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
@@ -33,8 +34,8 @@ import {
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
-import CodeSuggestionsInfoCard from './code_suggestions_info_card.vue';
 import CodeSuggestionsIntro from './code_suggestions_intro.vue';
+import CodeSuggestionsInfoCard from './code_suggestions_info_card.vue';
 import CodeSuggestionsStatisticsCard from './code_suggestions_usage_statistics_card.vue';
 import HealthCheckList from './health_check_list.vue';
 import CodeSuggestionsUsageLoader from './code_suggestions_usage_loader.vue';
@@ -70,6 +71,23 @@ export default {
       'CodeSuggestions|You have successfully added a license that activates on %{date}.',
     ),
   },
+  props: {
+    title: {
+      type: String,
+      required: false,
+      default: s__('UsageQuota|Seat utilization'),
+    },
+    subtitle: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    forceHideTitle: {
+      type: Boolean,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
       addOnPurchase: undefined,
@@ -95,7 +113,7 @@ export default {
       return this.addOnPurchase?.assignedQuantity ?? 0;
     },
     hasCodeSuggestions() {
-      return this.totalValue !== null && this.totalValue > 0;
+      return this.totalValue > 0 && this.usageValue >= 0;
     },
     isLoading() {
       return (
@@ -106,30 +124,30 @@ export default {
     duoTier() {
       return this.addOnPurchase?.name === ADD_ON_DUO_ENTERPRISE ? DUO_ENTERPRISE : DUO_PRO;
     },
-    showTitleAndSubtitle() {
-      if (this.isSaaS && !this.isStandalonePage) {
-        return false;
+    shouldForceHideTitle() {
+      if (isBoolean(this.forceHideTitle)) {
+        return this.forceHideTitle;
       }
 
+      return this.isSaaS && !this.isStandalonePage;
+    },
+    showTitleAndSubtitle() {
+      if (this.shouldForceHideTitle) {
+        return false;
+      }
       return !this.isLoading && (this.hasCodeSuggestions || this.addOnPurchaseFetchError);
     },
-    saasSubtitle() {
-      return sprintf(
-        s__('CodeSuggestions|Manage seat assignments for %{addOnName} within your group.'),
-        {
-          addOnName: this.codeSuggestionsFriendlyName,
-        },
-      );
-    },
-    selfManagedSubtitle() {
-      return sprintf(
-        s__(
-          'CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems.',
-        ),
-        {
-          addOnName: this.codeSuggestionsFriendlyName,
-        },
-      );
+    subtitleText() {
+      if (this.subtitle) {
+        return this.subtitle;
+      }
+
+      const message = this.isSaaS
+        ? s__('CodeSuggestions|Manage seat assignments for %{addOnName} within your group.')
+        : s__(
+            'CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems.',
+          );
+      return sprintf(message, { addOnName: this.codeSuggestionsFriendlyName });
     },
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
@@ -251,19 +269,14 @@ export default {
         <page-heading>
           <template #heading>
             <span class="gl-flex gl-items-center gl-gap-3">
-              <span data-testid="code-suggestions-title">{{
-                $options.i18n.codeSuggestionTitle
-              }}</span>
+              <span data-testid="code-suggestions-title">{{ title }}</span>
               <gl-badge variant="tier" icon="license" class="gl-capitalize">{{ duoTier }}</gl-badge>
             </span>
           </template>
 
           <template #description>
-            <span v-if="isSaaS" data-testid="code-suggestions-subtitle">
-              {{ saasSubtitle }}
-            </span>
-            <span v-else data-testid="code-suggestions-subtitle">
-              {{ selfManagedSubtitle }}
+            <span data-testid="code-suggestions-subtitle">
+              {{ subtitleText }}
             </span>
           </template>
         </page-heading>
@@ -272,28 +285,30 @@ export default {
       </template>
 
       <section v-if="hasCodeSuggestions">
-        <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
-          <code-suggestions-statistics-card
-            :total-value="totalValue"
-            :usage-value="usageValue"
+        <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
+          <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
+            <code-suggestions-statistics-card
+              :total-value="totalValue"
+              :usage-value="usageValue"
+              :duo-tier="duoTier"
+            />
+            <code-suggestions-info-card
+              :group-id="groupId"
+              :duo-tier="duoTier"
+              @error="handleAddOnPurchaseFetchError"
+            />
+          </section>
+          <saas-add-on-eligible-user-list
+            v-if="isSaaS"
+            :add-on-purchase-id="addOnPurchase.id"
             :duo-tier="duoTier"
           />
-          <code-suggestions-info-card
-            :group-id="groupId"
+          <self-managed-add-on-eligible-user-list
+            v-else
+            :add-on-purchase-id="addOnPurchase.id"
             :duo-tier="duoTier"
-            @error="handleAddOnPurchaseFetchError"
           />
-        </section>
-        <saas-add-on-eligible-user-list
-          v-if="isSaaS"
-          :add-on-purchase-id="addOnPurchase.id"
-          :duo-tier="duoTier"
-        />
-        <self-managed-add-on-eligible-user-list
-          v-else
-          :add-on-purchase-id="addOnPurchase.id"
-          :duo-tier="duoTier"
-        />
+        </slot>
       </section>
       <error-alert
         v-else-if="addOnPurchaseFetchError"

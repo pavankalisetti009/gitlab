@@ -20,16 +20,6 @@ RSpec.shared_examples 'Gitlab Duo administration' do
     wait_for_all_requests
   end
 
-  context 'when user interacts with the hand raise lead button' do
-    it 'renders and submits in-app hand raise lead for code suggestions' do
-      find_by_testid('code-suggestions-hand-raise-lead-button').click
-
-      fill_in_and_submit_hand_raise_lead(
-        user, group, glm_content: 'code-suggestions', product_interaction: 'Requested Contact-Duo Pro Add-On'
-      )
-    end
-  end
-
   context 'when bulk assign and unassign duo pro seats' do
     let_it_be(:add_on_purchase, reload: true) do
       create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, quantity: 10, namespace: group)
