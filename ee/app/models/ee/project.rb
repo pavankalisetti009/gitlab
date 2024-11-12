@@ -482,9 +482,9 @@ module EE
 
       def pipeline_configuration_full_path
         compliance_framework_settings
-          .order(:id)
           .joins(:compliance_management_framework)
           .where.not(compliance_management_framework: { pipeline_configuration_full_path: nil })
+          .order(created_at: :asc)
           .pick(:pipeline_configuration_full_path)
       end
 

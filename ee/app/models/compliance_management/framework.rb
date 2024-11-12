@@ -35,8 +35,19 @@ module ComplianceManagement
     # https://gitlab.com/gitlab-org/gitlab/-/issues/358423
     validate :namespace_is_root_level_group
 
-    scope :with_projects, ->(project_ids) { includes(:projects).where(projects: { id: project_ids }) }
+    scope :with_projects, ->(project_ids) {
+      includes(:projects)
+      .where(projects: { id: project_ids })
+      .ordered_by_addition_time_and_pipeline_existence
+    }
     scope :with_namespaces, ->(namespace_ids) { includes(:namespace).where(namespaces: { id: namespace_ids }) }
+    scope :ordered_by_addition_time_and_pipeline_existence, -> {
+      left_joins(:project_settings)
+        .order(
+          Arel.sql('CASE WHEN pipeline_configuration_full_path IS NULL THEN 1 ELSE 0 END'),
+          Arel.sql('project_compliance_framework_settings.created_at ASC NULLS LAST')
+        )
+    }
 
     def self.search(query)
       query.present? ? fuzzy_search(query, [:name], use_minimum_char_limit: true) : all
