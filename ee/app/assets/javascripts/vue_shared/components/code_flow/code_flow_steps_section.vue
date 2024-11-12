@@ -107,45 +107,55 @@ export default {
     },
     markdownRowContent() {
       // Highlights the selected markdown row content
-      const elements = document.querySelectorAll('[id^="TEXT-MARKER"]');
+      const elements = document.querySelectorAll('[id^="TEXT-MARKER-"]');
       elements.forEach((el) => {
         el.classList.remove('selected-inline-section-marker');
       });
 
-      // Examples of ID: 'TEXT-MARKER1,2-L8', 'TEXT-MARKER3-L7'
-      const element = document.querySelectorAll(
-        `[id^="TEXT-MARKER"][id*="${this.selectedStepNumber}-L"], [id^="TEXT-MARKER"][id*=",${this.selectedStepNumber}-L"], [id^="TEXT-MARKER"][id*="${this.selectedStepNumber},"][id*="-L"]`,
-      );
+      // Examples of ID: 'TEXT-MARKER-1,2-L8', 'TEXT-MARKER-3-L7'
+      const stepMarkerSelectors = [
+        `[id^="TEXT-MARKER-"][id*="${this.selectedStepNumber}-L"]`,
+        `[id^="TEXT-MARKER-"][id*=",${this.selectedStepNumber}-L"]`,
+        `[id^="TEXT-MARKER-"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+      ];
+      const selector = stepMarkerSelectors.join(', ');
+      const element = document.querySelectorAll(selector);
+
       if (element) {
         element.forEach((el) => el.classList.add('selected-inline-section-marker'));
       }
     },
     markdownStepNumber() {
       // Highlights the step number in the markdown
-      const elements = document.querySelectorAll('[id^="TEXT-MARKER"]');
+      const elements = document.querySelectorAll('[id^="TEXT-MARKER-"]');
       elements.forEach((el) => {
         const spans = el.querySelectorAll('span.inline-item-mark');
         spans.forEach((span) => {
           span.classList.remove('selected-inline-item-mark');
         });
       });
-      const element = document.querySelector(`[id^="TEXT-SPAN-MARKER${this.selectedStepNumber}"]`);
+      const element = document.querySelector(`[id^="TEXT-SPAN-MARKER-${this.selectedStepNumber}"]`);
       if (element) {
         element.classList.add('selected-inline-item-mark', 'gs');
       }
     },
     markdownRowNumber() {
       // Highlights the row number in the markdown
-      const elements = document.querySelectorAll('[id^="NUM-MARKER"]');
+      const elements = document.querySelectorAll('[id^="NUM-MARKER-"]');
       elements.forEach((el) => {
         el.classList.remove('selected-inline-number-mark');
         el.classList.add('unselected-inline-number-mark');
       });
 
-      // Examples of ID: 'NUM-MARKER1,2-L8', 'NUM-MARKER3-L7'
-      const element = document.querySelector(
-        `[id^="NUM-MARKER"][id*="${this.selectedStepNumber}-L"], [id^="NUM-MARKER"][id*=",${this.selectedStepNumber}-L"], [id^="NUM-MARKER"][id*="${this.selectedStepNumber},"][id*="-L"]`,
-      );
+      // Examples of ID: 'NUM-MARKER-1,2-L8', 'NUM-MARKER-3-L7'
+      const numMarkerSelectors = [
+        `[id^="NUM-MARKER-"][id*="${this.selectedStepNumber}-L"]`,
+        `[id^="NUM-MARKER-"][id*=",${this.selectedStepNumber}-L"]`,
+        `[id^="NUM-MARKER-"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+      ];
+      const selector = numMarkerSelectors.join(', ');
+      const element = document.querySelector(selector);
+
       if (element) {
         element.classList.add('selected-inline-number-mark');
         element.classList.remove('unselected-inline-number-mark');
@@ -173,7 +183,7 @@ export default {
       this.scrollToSpecificCodeFlow();
     },
     scrollToSpecificCodeFlow() {
-      const element = document.querySelector(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+      const element = document.querySelector(`[id^=TEXT-MARKER-${this.selectedStepNumber}]`);
       if (element) {
         const subScroller = document.querySelector(`[id=code-flows-container]`);
         const subScrollerRect = subScroller.getBoundingClientRect();
