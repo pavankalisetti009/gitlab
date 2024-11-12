@@ -4,13 +4,13 @@ import { isEmpty } from 'lodash';
 import VulnerabilityFileContentViewer from 'ee/vulnerabilities/components/vulnerability_file_content_viewer.vue';
 import BlobHeader from '~/blob/components/blob_header.vue';
 import { __, s__ } from '~/locale';
-import markMultipleLines from '~/vue_shared/components/source_viewer/plugins/mark_multiple_lines';
 import { highlightContent } from '~/highlight_js';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   updateCodeBlocks,
   updateLinesToMarker,
 } from 'ee/vue_shared/components/code_flow/utils/utils';
+import markMultipleLines from './plugins/mark_multiple_lines';
 
 export default {
   name: 'CodeFlowFileViewer',
