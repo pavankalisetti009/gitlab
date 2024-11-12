@@ -30,6 +30,14 @@ module Resolvers
                    'when feature flag `owasp_top_10_null_filtering` is enabled. ' \
                    '"NONE" wildcard cannot be combined with other OWASP top 10 values.'
 
+    argument :identifier_name, GraphQL::Types::String,
+      required: false,
+      experiment: { milestone: '17.6' },
+      description: 'Filter vulnerabilities by identifier name. Applicable only on project ' \
+                   'level when feature flag `vulnerability_identifier_name_filter` is ' \
+                   'enabled. Ignored when applied on group level or instance security' \
+                   'dashboard queries.'
+
     argument :scanner, [GraphQL::Types::String],
       required: false,
       description: 'Filter vulnerabilities by VulnerabilityScanner.externalId.'
