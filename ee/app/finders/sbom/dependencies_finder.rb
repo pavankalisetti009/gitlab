@@ -21,6 +21,7 @@ module Sbom
       poetry
       setuptools
       apk
+      conda
     ].freeze
 
     # @param dependable [Organization, Group, Project] the container for detected SBoM occurrences
