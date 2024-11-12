@@ -4301,7 +4301,6 @@
 - './spec/lib/gitlab/background_migration/legacy_uploads_migrator_spec.rb'
 - './spec/lib/gitlab/background_migration/mailers/unconfirm_mailer_spec.rb'
 - './spec/lib/gitlab/background_migration/populate_operation_visibility_permissions_from_operations_spec.rb'
-- './spec/lib/gitlab/background_migration/set_correct_vulnerability_state_spec.rb'
 - './spec/lib/gitlab/background_migration/set_legacy_open_source_license_available_for_non_public_projects_spec.rb'
 - './spec/lib/gitlab/background_migration_spec.rb'
 - './spec/lib/gitlab/background_migration/update_jira_tracker_data_deployment_type_based_on_url_spec.rb'
