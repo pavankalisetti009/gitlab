@@ -74,6 +74,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
   let(:tools) do
     [
+      ::Gitlab::Llm::Chain::Tools::BuildReader,
       ::Gitlab::Llm::Chain::Tools::IssueReader,
       ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
       ::Gitlab::Llm::Chain::Tools::EpicReader,
@@ -213,7 +214,6 @@ client_subscription_id: 'someid' }
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
       stub_feature_flags(ai_commit_reader_for_chat: false)
-      stub_feature_flags(ai_build_reader_for_chat: false)
       # This flag is used only on AI Gateway and we need to stub it to
       # prevent Rubocop from marking this flag as unused
       # and raising an error
@@ -272,38 +272,6 @@ client_subscription_id: 'someid' }
       end
     end
 
-    context 'with build reader allowed' do
-      before do
-        stub_feature_flags(ai_build_reader_for_chat: true)
-        allow(ai_request).to receive(:request)
-        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
-      end
-
-      let(:tools) do
-        [
-          ::Gitlab::Llm::Chain::Tools::IssueReader,
-          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
-          ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
-          ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
-          ::Gitlab::Llm::Chain::Tools::BuildReader
-        ]
-      end
-
-      it_behaves_like 'tool behind a feature flag'
-
-      it 'pushes feature flag to AI Gateway' do
-        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
-          allow(instance).to receive(:execute).and_return(answer)
-        end
-
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:ai_build_reader_for_chat, user).and_return(:ai_build_reader_for_chat)
-
-        subject
-      end
-    end
-
     context 'when on self-managed cloud-connected instance' do
       before do
         allow(::Gitlab::CloudConnector).to receive(:self_managed_cloud_connected?).and_return(true)
@@ -330,6 +298,7 @@ client_subscription_id: 'someid' }
 
       let(:tools) do
         [
+          ::Gitlab::Llm::Chain::Tools::BuildReader,
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
