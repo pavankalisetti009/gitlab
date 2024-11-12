@@ -60013,6 +60013,9 @@ msgstr ""
 msgid "UserMapping|Awaiting reassignment"
 msgstr ""
 
+msgid "UserMapping|Contribution and membership reassignment cannot be undone. Incorrect reassignment %{linkStart}poses a security risk%{linkEnd}, so check carefully before you reassign."
+msgstr ""
+
 msgid "UserMapping|Don't reassign"
 msgstr ""
 
