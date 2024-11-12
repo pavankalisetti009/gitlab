@@ -186,17 +186,35 @@ export const mockPipelineStatistics = {
   },
 };
 
+export const mockEmptyPipelineAnalytics = {
+  data: {
+    project: {
+      id: 1,
+      pipelineAnalytics: {
+        aggregate: {
+          count: '0',
+          successCount: '0',
+          failedCount: '0',
+          durationStatistics: {
+            p50: null,
+          },
+        },
+      },
+    },
+  },
+};
+
 export const mockSevenDayPipelineAnalytics = {
   data: {
     project: {
       id: 1,
       pipelineAnalytics: {
         aggregate: {
-          count: 100,
-          successCount: 80,
-          failedCount: 10,
+          count: '100',
+          successCount: '80',
+          failedCount: '10',
           durationStatistics: {
-            p50: 12345,
+            p50: '12345',
           },
         },
       },
@@ -210,11 +228,11 @@ export const mockNinetyDayPipelineAnalytics = {
       id: 1,
       pipelineAnalytics: {
         aggregate: {
-          count: 1800,
-          successCount: 600,
-          failedCount: 360,
+          count: '1800',
+          successCount: '600',
+          failedCount: '360',
           durationStatistics: {
-            p50: 23456,
+            p50: '23456',
           },
         },
       },

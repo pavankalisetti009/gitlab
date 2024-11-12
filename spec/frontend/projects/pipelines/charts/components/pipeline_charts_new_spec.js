@@ -10,7 +10,11 @@ import PipelineChartsNew from '~/projects/pipelines/charts/components/pipeline_c
 import StatisticsList from '~/projects/pipelines/charts/components/statistics_list.vue';
 import getPipelineAnalyticsQuery from '~/projects/pipelines/charts/graphql/queries/get_pipeline_analytics.query.graphql';
 import { createAlert } from '~/alert';
-import { mockSevenDayPipelineAnalytics, mockNinetyDayPipelineAnalytics } from '../mock_data';
+import {
+  mockEmptyPipelineAnalytics,
+  mockSevenDayPipelineAnalytics,
+  mockNinetyDayPipelineAnalytics,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -95,6 +99,28 @@ describe('~/projects/pipelines/charts/components/pipeline_charts_new.vue', () =>
       expect(findSkeletonLoader().exists()).toBe(true);
     });
 
+    it('renders with empty data', async () => {
+      createComponent({
+        mountFn: mount,
+        handlers: {
+          getPipelineAnalytics: jest.fn().mockReturnValue(mockEmptyPipelineAnalytics),
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findStatisticsList().props('counts')).toEqual({
+        failureRatio: 0,
+        meanDuration: null,
+        successRatio: 0,
+        total: '0',
+      });
+
+      expect(findAllSingleStats().at(0).text()).toBe('Total pipeline runs 0');
+      expect(findAllSingleStats().at(1).text()).toBe('Failure rate 0%');
+      expect(findAllSingleStats().at(2).text()).toBe('Success rate 0%');
+    });
+
     it('renders with data', async () => {
       createComponent({ mountFn: mount });
 
@@ -102,9 +128,9 @@ describe('~/projects/pipelines/charts/components/pipeline_charts_new.vue', () =>
 
       expect(findStatisticsList().props('counts')).toEqual({
         failureRatio: 10,
-        meanDuration: 12345,
+        meanDuration: '12345',
         successRatio: 80,
-        total: 100,
+        total: '100',
       });
 
       expect(findAllSingleStats().at(0).text()).toBe('Total pipeline runs 100');
@@ -122,9 +148,9 @@ describe('~/projects/pipelines/charts/components/pipeline_charts_new.vue', () =>
 
       expect(findStatisticsList().props('counts')).toEqual({
         failureRatio: 20,
-        meanDuration: 23456,
+        meanDuration: '23456',
         successRatio: 33.33333333333333,
-        total: 1800,
+        total: '1800',
       });
 
       expect(findAllSingleStats().at(0).text()).toBe('Total pipeline runs 1,800');

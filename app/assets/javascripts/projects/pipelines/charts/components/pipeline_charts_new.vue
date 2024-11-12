@@ -63,11 +63,12 @@ export default {
       return this.$apollo.queries.pipelineAnalytics.loading;
     },
     formattedCounts() {
+      const { count, successCount, failedCount, durationStatistics } = this.pipelineAnalytics;
       return {
-        total: this.pipelineAnalytics.count,
-        meanDuration: this.pipelineAnalytics.durationStatistics.p50,
-        successRatio: (this.pipelineAnalytics.successCount / this.pipelineAnalytics.count) * 100,
-        failureRatio: (this.pipelineAnalytics.failedCount / this.pipelineAnalytics.count) * 100,
+        total: count === null ? '-' : count,
+        meanDuration: durationStatistics.p50,
+        successRatio: Number(count) ? (successCount / count) * 100 : 0,
+        failureRatio: Number(count) ? (failedCount / count) * 100 : 0,
       };
     },
   },
