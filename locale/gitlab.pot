@@ -61815,6 +61815,9 @@ msgstr ""
 msgid "Webhooks|A pipeline's status changes."
 msgstr ""
 
+msgid "Webhooks|A project is created or removed."
+msgstr ""
+
 msgid "Webhooks|A release is created, updated, or deleted."
 msgstr ""
 
@@ -61942,6 +61945,9 @@ msgid "Webhooks|Only alphanumeric characters, periods, dashes, and underscores a
 msgstr ""
 
 msgid "Webhooks|Pipeline events"
+msgstr ""
+
+msgid "Webhooks|Project events"
 msgstr ""
 
 msgid "Webhooks|Project or group access token events"

@@ -719,5 +719,45 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         end
       end
     end
+
+    context 'with execute hooks' do
+      let_it_be(:group, reload: true) { create(:group) }
+      let(:extra_params) { { namespace_id: group.id } }
+
+      before_all do
+        group.add_owner(user)
+      end
+
+      before do
+        stub_licensed_features(group_webhooks: true)
+      end
+
+      context 'with no active group hooks configured' do
+        it 'does not call the hooks' do
+          expect(WebHookService).not_to receive(:new)
+
+          response
+        end
+      end
+
+      context 'with active group hooks configured' do
+        let!(:hook) { create(:group_hook, group: group, project_events: true) }
+        let(:hook_data) { { mock_data: true } }
+
+        before do
+          allow_next_instance_of(::Gitlab::HookData::ProjectBuilder) do |builder|
+            allow(builder).to receive(:build).and_return(hook_data)
+          end
+        end
+
+        it 'calls the hooks' do
+          expect_next_instance_of(WebHookService, hook, hook_data, 'project_hooks', anything) do |service|
+            expect(service).to receive(:async_execute)
+          end
+
+          response
+        end
+      end
+    end
   end
 end
