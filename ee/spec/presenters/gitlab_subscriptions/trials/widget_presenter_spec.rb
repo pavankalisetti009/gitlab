@@ -77,6 +77,20 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
       it { is_expected.to match_array(duo_enterprise_trial_widget_attribute_keys) }
     end
 
+    context 'when on premium trial' do
+      context 'when group is not eligible for widget' do
+        before do
+          build(
+            :gitlab_subscription,
+            :active_trial, :premium_trial, namespace: current_group,
+            trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
+          )
+        end
+
+        it { is_expected.to match_array([]) }
+      end
+    end
+
     context 'when not eligible for widget' do
       before do
         build(
