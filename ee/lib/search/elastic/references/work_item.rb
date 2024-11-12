@@ -6,7 +6,7 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 24_11_1
+        SCHEMA_VERSION = 24_46
 
         override :serialize
         def self.serialize(record)
