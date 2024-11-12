@@ -217,7 +217,7 @@ export default {
     <template #collapsed>
       <div class="hide-collapsed gl-flex gl-items-center">
         <span
-          :class="hasWeight ? 'gl-font-bold gl-text-gray-900' : 'gl-text-gray-500'"
+          :class="hasWeight ? 'gl-font-bold gl-text-default' : 'gl-text-subtle'"
           data-testid="sidebar-weight-value"
         >
           {{ weightLabel }}

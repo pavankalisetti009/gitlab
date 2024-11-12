@@ -173,7 +173,7 @@ export default {
       </div>
       <div class="hide-collapsed">
         <issue-health-status v-if="healthStatus" class="gl-mt-2" :health-status="healthStatus" />
-        <span v-else class="gl-text-secondary">{{ $options.HEALTH_STATUS_I18N_NONE }}</span>
+        <span v-else class="gl-text-subtle">{{ $options.HEALTH_STATUS_I18N_NONE }}</span>
       </div>
     </template>
     <template #default>
