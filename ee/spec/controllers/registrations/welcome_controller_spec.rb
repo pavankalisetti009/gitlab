@@ -52,9 +52,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           sign_in(user)
         end
 
-        it 'does not perform a redirect' do
-          expect(subject).not_to redirect_to(profile_two_factor_auth_path)
-        end
+        it { is_expected.not_to redirect_to(profile_two_factor_auth_path) }
       end
 
       context 'when welcome step is completed' do

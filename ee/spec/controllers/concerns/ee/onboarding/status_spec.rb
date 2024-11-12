@@ -98,6 +98,28 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
   end
 
+  describe '#email_opt_in?' do
+    let(:params) { { onboarding_status_email_opt_in: 'true' } }
+
+    subject { described_class.new(params, {}, nil).email_opt_in? }
+
+    context 'when onboarding_status_email_opt_in is true' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when onboarding_status_email_opt_in is false' do
+      let(:params) { { onboarding_status_email_opt_in: 'false' } }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when onboarding_status_email_opt_in is not present' do
+      let(:params) { {} }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#trial_registration_omniauth_params' do
     let(:params) { { glm_source: 'source', glm_content: 'content', extra: 'param' } }
     let(:onboarding_enabled) { true }
@@ -250,9 +272,9 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
   describe '#setup_for_company?' do
     where(:params, :expected_result) do
-      { user: { setup_for_company: true } }  | true
-      { user: { setup_for_company: false } } | false
-      { user: {} }                           | false
+      { setup_for_company: true }   | true
+      { setup_for_company: false }  | false
+      {}                            | false
     end
 
     with_them do
