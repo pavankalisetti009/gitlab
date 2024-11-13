@@ -383,7 +383,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
           user,
           name: params[:customer][:company],
           path: Namespace.clean_path(params[:customer][:company]),
-          organization_id: Current.organization_id
+          organization_id: current_organization.id
         )
         expect_next_instance_of(GitlabSubscriptions::CreateService,
           user,
