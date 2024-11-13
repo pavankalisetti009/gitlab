@@ -1987,10 +1987,13 @@ msgstr ""
 msgid "500|Page cannot be loaded because of an encoding error."
 msgstr ""
 
-msgid "503|503: Service unavailable"
+msgid "503|503: We're sorry, GitLab is currently unavailable"
 msgstr ""
 
 msgid "503|Please contact your GitLab administrator if you think this is a mistake."
+msgstr ""
+
+msgid "503|Try refreshing the page, or going back and attempting the action again."
 msgstr ""
 
 msgid ":%{startLine} to %{endLine}"
