@@ -3,6 +3,15 @@ import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlLink, GlPopover } from 
 import { flattenDeep } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { __, s__, sprintf } from '~/locale';
+import {
+  numMarkerIdPrefix,
+  selectedInlineItemMark,
+  selectedInlineSectionMarker,
+  selectedInlineNumberMark,
+  textMarkerIdPrefix,
+  textSpanMarkerIdPrefix,
+  unselectedInlineNumberMark,
+} from 'ee/vue_shared/components/code_flow/utils/constants';
 
 export default {
   name: 'CodeFlowStepsSection',
@@ -107,58 +116,60 @@ export default {
     },
     markdownRowContent() {
       // Highlights the selected markdown row content
-      const elements = document.querySelectorAll('[id^="TEXT-MARKER-"]');
+      const elements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
       elements.forEach((el) => {
-        el.classList.remove('selected-inline-section-marker');
+        el.classList.remove(selectedInlineSectionMarker);
       });
 
       // Examples of ID: 'TEXT-MARKER-1,2-L8', 'TEXT-MARKER-3-L7'
       const stepMarkerSelectors = [
-        `[id^="TEXT-MARKER-"][id*="${this.selectedStepNumber}-L"]`,
-        `[id^="TEXT-MARKER-"][id*=",${this.selectedStepNumber}-L"]`,
-        `[id^="TEXT-MARKER-"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+        `[id^="${textMarkerIdPrefix}"][id*="${this.selectedStepNumber}-L"]`,
+        `[id^="${textMarkerIdPrefix}"][id*=",${this.selectedStepNumber}-L"]`,
+        `[id^="${textMarkerIdPrefix}"][id*="${this.selectedStepNumber},"][id*="-L"]`,
       ];
       const selector = stepMarkerSelectors.join(', ');
       const element = document.querySelectorAll(selector);
 
       if (element) {
-        element.forEach((el) => el.classList.add('selected-inline-section-marker'));
+        element.forEach((el) => el.classList.add(selectedInlineSectionMarker));
       }
     },
     markdownStepNumber() {
       // Highlights the step number in the markdown
-      const elements = document.querySelectorAll('[id^="TEXT-MARKER-"]');
+      const elements = document.querySelectorAll(`[id^=${textMarkerIdPrefix}]`);
       elements.forEach((el) => {
         const spans = el.querySelectorAll('span.inline-item-mark');
         spans.forEach((span) => {
-          span.classList.remove('selected-inline-item-mark');
+          span.classList.remove(selectedInlineItemMark);
         });
       });
-      const element = document.querySelector(`[id^="TEXT-SPAN-MARKER-${this.selectedStepNumber}"]`);
+      const element = document.querySelector(
+        `[id^="${textSpanMarkerIdPrefix}${this.selectedStepNumber}"]`,
+      );
       if (element) {
-        element.classList.add('selected-inline-item-mark', 'gs');
+        element.classList.add(selectedInlineItemMark, 'gs');
       }
     },
     markdownRowNumber() {
       // Highlights the row number in the markdown
-      const elements = document.querySelectorAll('[id^="NUM-MARKER-"]');
+      const elements = document.querySelectorAll(`[id^="${numMarkerIdPrefix}"]`);
       elements.forEach((el) => {
-        el.classList.remove('selected-inline-number-mark');
-        el.classList.add('unselected-inline-number-mark');
+        el.classList.remove(selectedInlineNumberMark);
+        el.classList.add(unselectedInlineNumberMark);
       });
 
       // Examples of ID: 'NUM-MARKER-1,2-L8', 'NUM-MARKER-3-L7'
       const numMarkerSelectors = [
-        `[id^="NUM-MARKER-"][id*="${this.selectedStepNumber}-L"]`,
-        `[id^="NUM-MARKER-"][id*=",${this.selectedStepNumber}-L"]`,
-        `[id^="NUM-MARKER-"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+        `[id^="${numMarkerIdPrefix}"][id*="${this.selectedStepNumber}-L"]`,
+        `[id^="${numMarkerIdPrefix}"][id*=",${this.selectedStepNumber}-L"]`,
+        `[id^="${numMarkerIdPrefix}"][id*="${this.selectedStepNumber},"][id*="-L"]`,
       ];
       const selector = numMarkerSelectors.join(', ');
       const element = document.querySelector(selector);
 
       if (element) {
-        element.classList.add('selected-inline-number-mark');
-        element.classList.remove('unselected-inline-number-mark');
+        element.classList.add(selectedInlineNumberMark);
+        element.classList.remove(unselectedInlineNumberMark);
       }
     },
     markdownBlobData() {
@@ -183,7 +194,9 @@ export default {
       this.scrollToSpecificCodeFlow();
     },
     scrollToSpecificCodeFlow() {
-      const element = document.querySelector(`[id^=TEXT-MARKER-${this.selectedStepNumber}]`);
+      const element = document.querySelector(
+        `[id^=${textMarkerIdPrefix}${this.selectedStepNumber}]`,
+      );
       if (element) {
         const subScroller = document.querySelector(`[id=code-flows-container]`);
         const subScrollerRect = subScroller.getBoundingClientRect();
