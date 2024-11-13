@@ -2,13 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe BillableMembers::DestroyService do
+RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_management do
   describe '#execute' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:root_group) { create(:group) }
-
     let(:group) { root_group }
-
     let(:user_id) { nil }
 
     subject(:execute) { described_class.new(group, user_id: user_id, current_user: current_user).execute }
@@ -35,71 +33,96 @@ RSpec.describe BillableMembers::DestroyService do
         group.add_owner(current_user)
       end
 
-      context 'when passing a sub group to the service' do
-        let(:group) { subgroup }
+      context 'with billable_member_async_deletion enabled' do
+        context 'with a valid user' do
+          let(:user_id) { group_member.user }
 
-        it 'raises an invalid group error' do
-          result = execute
+          it 'schedules async deletion' do
+            expect { execute }.to change { Members::DeletionSchedule.count }.from(0).to(1)
+          end
+        end
 
-          expect(result[:status]).to eq :error
-          expect(result[:message]).to eq 'Invalid group provided, must be top-level'
+        context 'with no found user' do
+          it 'raises an appropriate error' do
+            result = execute
+
+            expect(result[:status]).to eq :error
+            expect(result[:message]).to eq 'No user found for the given user_id'
+          end
         end
       end
 
-      context 'when removing a group member' do
-        let(:user_id) { group_member.user_id }
-
-        it 'removes the member' do
-          execute
-
-          expect(root_group.members).not_to include(group_member)
+      context 'with billable_member_async_deletion disabled' do
+        before do
+          stub_feature_flags(billable_member_async_deletion: false)
         end
-      end
 
-      context 'when removing a subgroup member' do
-        let(:user_id) { subgroup_member.user_id }
+        context 'when passing a sub group to the service' do
+          let(:group) { subgroup }
 
-        it 'removes the member' do
-          execute
+          it 'raises an invalid group error' do
+            result = execute
 
-          expect(subgroup.members).not_to include(subgroup_member)
+            expect(result[:status]).to eq :error
+            expect(result[:message]).to eq 'Invalid group provided, must be top-level'
+          end
         end
-      end
 
-      context 'when removing a project member' do
-        let(:user_id) { project_member.user_id }
+        context 'when removing a group member' do
+          let(:user_id) { group_member.user_id }
 
-        it 'removes the member' do
-          execute
+          it 'removes the member' do
+            execute
 
-          expect(project_1.members).not_to include(project_member)
+            expect(root_group.members).not_to include(group_member)
+          end
         end
-      end
 
-      context 'when the user is a direct member of multiple projects' do
-        let(:multi_project_user) { create(:user) }
-        let(:user_id) { multi_project_user.id }
+        context 'when removing a subgroup member' do
+          let(:user_id) { subgroup_member.user_id }
 
-        it 'removes the user from all the projects' do
-          project_1.add_developer(multi_project_user)
-          project_2.add_developer(multi_project_user)
+          it 'removes the member' do
+            execute
 
-          execute
-
-          expect(multi_project_user.projects).not_to include(project_1)
-          expect(multi_project_user.projects).not_to include(project_2)
+            expect(subgroup.members).not_to include(subgroup_member)
+          end
         end
-      end
 
-      context 'when the user has no Member record' do
-        let(:non_member) { create(:user) }
-        let(:user_id) { non_member.id }
+        context 'when removing a project member' do
+          let(:user_id) { project_member.user_id }
 
-        it 'returns an appropriate error' do
-          result = execute
+          it 'removes the member' do
+            execute
 
-          expect(result[:status]).to eq :error
-          expect(result[:message]).to eq 'No member found for the given user_id'
+            expect(project_1.members).not_to include(project_member)
+          end
+        end
+
+        context 'when the user is a direct member of multiple projects' do
+          let(:multi_project_user) { create(:user) }
+          let(:user_id) { multi_project_user.id }
+
+          it 'removes the user from all the projects' do
+            project_1.add_developer(multi_project_user)
+            project_2.add_developer(multi_project_user)
+
+            execute
+
+            expect(multi_project_user.projects).not_to include(project_1)
+            expect(multi_project_user.projects).not_to include(project_2)
+          end
+        end
+
+        context 'when the user has no Member record' do
+          let(:non_member) { create(:user) }
+          let(:user_id) { non_member.id }
+
+          it 'returns an appropriate error' do
+            result = execute
+
+            expect(result[:status]).to eq :error
+            expect(result[:message]).to eq 'No member found for the given user_id'
+          end
         end
       end
     end

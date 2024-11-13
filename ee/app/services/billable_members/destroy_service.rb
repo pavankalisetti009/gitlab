@@ -37,15 +37,22 @@ module BillableMembers
 
     # rubocop: disable CodeReuse/ActiveRecord
     def remove_user_from_resources
-      memberships_found = false
-      memberships = ::Member.in_hierarchy(group).where(user_id: user_id)
+      if Feature.enabled?(:billable_member_async_deletion, group)
+        user_for_removal = User.find_by_id(user_id)
+        raise InvalidMemberError, 'No user found for the given user_id' unless user_for_removal
 
-      memberships.find_each do |member|
-        memberships_found = true
-        ::Members::DestroyService.new(current_user).execute(member, skip_subresources: true)
+        Members::ScheduleDeletionService.new(group, user_for_removal, current_user).execute
+      else
+        memberships_found = false
+        memberships = ::Member.in_hierarchy(group).where(user_id: user_id)
+
+        memberships.find_each do |member|
+          memberships_found = true
+          ::Members::DestroyService.new(current_user).execute(member, skip_subresources: true)
+        end
+
+        raise InvalidMemberError, 'No member found for the given user_id' unless memberships_found
       end
-
-      raise InvalidMemberError, 'No member found for the given user_id' unless memberships_found
     end
     # rubocop: enable CodeReuse/ActiveRecord
 

@@ -19,6 +19,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
     stub_signing_key
     stub_application_setting(check_namespace_plan: true)
     stub_subscription_permissions_data(group.id)
+    stub_feature_flags(billable_member_async_deletion: false)
 
     group.add_owner(user)
     group.add_maintainer(maintainer)
