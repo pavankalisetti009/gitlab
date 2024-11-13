@@ -444,6 +444,34 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         expect(merge_request.find_reviewer(user)).to be_requested_changes
         expect(merge_request.find_reviewer(user2)).to be_unreviewed
       end
+
+      context 'when assigning Duo Code Review bot as a reviewer' do
+        context 'when AI review feature is not allowed' do
+          before do
+            allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(current_user).and_return(false)
+          end
+
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            update_merge_request(reviewer_ids: [::Users::Internal.duo_code_review_bot.id])
+          end
+        end
+
+        context 'when AI review feature is allowed' do
+          before do
+            allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(current_user).and_return(true)
+          end
+
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
+              expect(svc).to receive(:execute)
+            end
+
+            update_merge_request(reviewer_ids: [::Users::Internal.duo_code_review_bot.id])
+          end
+        end
+      end
     end
 
     describe 'capture suggested_reviewer_ids', feature_category: :code_review_workflow do
