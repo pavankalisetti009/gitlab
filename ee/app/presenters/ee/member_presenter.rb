@@ -57,9 +57,9 @@ module EE
       end
     end
 
-    delegator_override :member_role_description
+    override :member_role_description
     def member_role_description
-      member_role&.description
+      member_role&.description || super
     end
 
     def access_level_for_export

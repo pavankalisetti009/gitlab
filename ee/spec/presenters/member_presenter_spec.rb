@@ -47,6 +47,29 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#member_role_description' do
+    context 'when user has static role' do
+      it 'returns member role description for the access level' do
+        Gitlab::Access.option_descriptions.each do |access_level, description|
+          member_root.access_level = access_level
+
+          expect(presenter.member_role_description).to eq(description)
+        end
+      end
+    end
+
+    context 'when user has a custom role' do
+      let(:description) { 'Custom description' }
+
+      it 'returns custom role description' do
+        member_role = create(:member_role, :guest, namespace: root_group, description: description)
+        member_root.member_role = member_role
+
+        expect(presenter.member_role_description).to eq(description)
+      end
+    end
+  end
+
   describe '#access_level_for_export' do
     context 'when a member has static role assigned' do
       it 'returns correct label for default role' do
