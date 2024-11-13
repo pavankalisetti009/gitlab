@@ -13,7 +13,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
   # rubocop:enable Gitlab/RSpec/AvoidSetup
 
   context 'when creating lead and applying trial is successful' do
-    it 'fills out form, submits and lands on the group usage quotas page' do
+    it 'fills out form, submits and lands on the group duo page' do
       sign_in(user)
 
       visit new_trials_duo_enterprise_path
@@ -22,7 +22,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
 
       submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
@@ -43,12 +43,12 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       # success
       submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
   context 'when applying trial fails' do
-    it 'fills out form, submits and is sent back to information form with errors  and is then resolved' do
+    it 'fills out form, submits and is sent back to information form with errors and is then resolved' do
       # setup
       sign_in(user)
 
@@ -68,7 +68,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
 
       submit_duo_enterprise_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 

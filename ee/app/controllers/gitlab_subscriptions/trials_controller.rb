@@ -73,7 +73,7 @@ module GitlabSubscriptions
       if discover_group_security_flow?
         group_security_dashboard_path(namespace)
       else
-        group_settings_gitlab_duo_seat_utilization_index_path(namespace)
+        group_settings_gitlab_duo_path(namespace)
       end
     end
 

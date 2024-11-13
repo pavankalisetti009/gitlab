@@ -175,7 +175,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
             expect_create_success(group_for_trial)
           end
 
-          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(group_for_trial)) }
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_path(group_for_trial)) }
 
           it 'shows valid flash message', :freeze_time do
             allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original

@@ -47,7 +47,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
 
     context 'when part of the discover security flow' do
@@ -94,7 +94,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
-        expect_to_be_on_gitlab_duo_seat_utilization_page
+        expect_to_be_on_gitlab_duo_page
       end
     end
 
@@ -118,7 +118,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
         submit_new_group_trial_selection_form(extra_params: { glm_source: glm_source, **new_group_attrs })
 
-        expect_to_be_on_gitlab_duo_seat_utilization_page
+        expect_to_be_on_gitlab_duo_page
       end
     end
   end
@@ -146,7 +146,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
 
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
@@ -172,7 +172,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       # success
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 

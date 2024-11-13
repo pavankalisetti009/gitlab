@@ -17,7 +17,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
   # rubocop:enable Gitlab/RSpec/AvoidSetup
 
   context 'when creating lead and applying trial is successful' do
-    it 'fills out form, submits and lands on the group usage quotas page' do
+    it 'fills out form, submits and lands on the group duo page' do
       sign_in(user)
 
       visit new_trials_duo_pro_path
@@ -26,7 +26,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
 
       submit_duo_pro_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
@@ -47,7 +47,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
       # success
       submit_duo_pro_trial_company_form(with_trial: true)
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
@@ -70,7 +70,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
 
       submit_duo_pro_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 end

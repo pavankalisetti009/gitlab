@@ -20,7 +20,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
 
     context 'on a premium plan' do
@@ -35,7 +35,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+        expect_to_be_on_gitlab_duo_page(path: group.name)
       end
     end
 
@@ -51,7 +51,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+        expect_to_be_on_gitlab_duo_page(path: group.name)
       end
     end
 
@@ -69,7 +69,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
         submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-        expect_to_be_on_gitlab_duo_seat_utilization_page(path: group.name)
+        expect_to_be_on_gitlab_duo_page(path: group.name)
       end
     end
 
@@ -109,7 +109,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       # success
       submit_company_information_form(with_trial: true, button_text: 'Continue')
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
   end
 
@@ -134,7 +134,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       submit_trial_selection_form
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page
+      expect_to_be_on_gitlab_duo_page
     end
 
     it 'fails submitting trial and then chooses to create a namespace and apply trial to it' do
@@ -162,7 +162,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       group_name = 'gitlab1'
       submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
 
-      expect_to_be_on_gitlab_duo_seat_utilization_page(path: group_name)
+      expect_to_be_on_gitlab_duo_page(path: group_name)
     end
   end
 end

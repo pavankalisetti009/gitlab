@@ -37,7 +37,7 @@ module GitlabSubscriptions
             GitlabSubscriptions::Trials::DuoEnterprise.any_add_on_purchase_for_namespace(@result.payload[:namespace])
           )
 
-          redirect_to group_settings_gitlab_duo_seat_utilization_index_path(@result.payload[:namespace])
+          redirect_to group_settings_gitlab_duo_path(@result.payload[:namespace])
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::NO_SINGLE_NAMESPACE
           # lead created, but we now need to select namespace and then apply a trial
           redirect_to new_trials_duo_enterprise_path(@result.payload[:trial_selection_params])
