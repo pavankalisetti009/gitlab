@@ -58233,7 +58233,13 @@ msgstr ""
 msgid "TransferProject|Please select a new namespace for your project."
 msgstr ""
 
-msgid "TransferProject|Project cannot be transferred, because tags are present in its container registry"
+msgid "TransferProject|Project cannot be transferred because of a container registry error: %{error}"
+msgstr ""
+
+msgid "TransferProject|Project cannot be transferred to a different top-level namespace, because image tags are present in its container registry"
+msgstr ""
+
+msgid "TransferProject|Project cannot be transferred, because image tags are present in its container registry"
 msgstr ""
 
 msgid "TransferProject|Project is already in this namespace."
