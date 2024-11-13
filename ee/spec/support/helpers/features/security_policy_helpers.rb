@@ -14,6 +14,7 @@ module Features
       stub_feature_flags(merge_when_checks_pass: false)
       stub_feature_flags(bulk_create_scan_result_policies: false)
       stub_feature_flags(custom_software_license: false)
+      stub_feature_flags(static_licenses: false)
       stub_licensed_features(security_dashboard: true,
         multiple_approval_rules: true,
         sast: true, report_approver_rules: true,
@@ -48,7 +49,7 @@ module Features
     end
 
     def license_type
-      'MIT'
+      'MIT License'
     end
 
     def policy_rule

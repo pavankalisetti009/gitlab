@@ -6,7 +6,7 @@ FactoryBot.define do
 
     trait :mit do
       spdx_identifier { 'MIT' }
-      name { 'MIT' }
+      name { 'MIT License' }
     end
 
     trait :apache_2_0 do
