@@ -199,7 +199,7 @@ module EE
 
             ::Sidebars::MenuItem.new(
               title: _('GitLab Duo'),
-              link: group_settings_gitlab_duo_seat_utilization_index_path(context.group),
+              link: group_settings_gitlab_duo_path(context.group),
               active_routes: { path: ['seat_utilization#index', 'gitlab_duo#show'] },
               item_id: :gitlab_duo_settings
             )

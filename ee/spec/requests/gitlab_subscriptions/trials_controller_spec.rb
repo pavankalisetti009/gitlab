@@ -152,7 +152,7 @@ RSpec.describe GitlabSubscriptions::TrialsController, feature_category: :plan_pr
             expect_create_success(namespace)
           end
 
-          it { is_expected.to redirect_to(group_settings_gitlab_duo_seat_utilization_index_path(namespace)) }
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_path(namespace)) }
 
           it 'shows valid flash message', :freeze_time do
             allow(Namespace.sticking).to receive(:find_caught_up_replica).and_call_original

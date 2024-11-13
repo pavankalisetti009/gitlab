@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::DiscoverDuoProComponent, :aggregate_failures, type: :component, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:namespace) }
   let(:page_scope) { page }
-  let(:duo_buy_now_url) { group_settings_gitlab_duo_seat_utilization_index_path(namespace) }
+  let(:duo_buy_now_url) { group_settings_gitlab_duo_path(namespace) }
 
   subject(:component) { render_inline(described_class.new(namespace: namespace)) && page_scope }
 

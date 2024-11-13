@@ -145,7 +145,7 @@ module GitlabSubscriptions
 
     override :buy_now_link
     def buy_now_link
-      group_settings_gitlab_duo_seat_utilization_index_path(namespace)
+      group_settings_gitlab_duo_path(namespace)
     end
 
     override :hero_video
