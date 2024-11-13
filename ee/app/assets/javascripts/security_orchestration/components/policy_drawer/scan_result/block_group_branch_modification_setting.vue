@@ -8,6 +8,7 @@ export default {
   i18n: {
     title: s__('SecurityOrchestration|Override the following project settings:'),
     blockGroupBranchModificationExceptions: s__('SecurityOrchestration|exceptions: %{exceptions}'),
+    groupNameText: s__('SecurityOrchestration|Group ID: %{id}'),
   },
   components: {
     GlSprintf,
@@ -37,7 +38,7 @@ export default {
   },
   methods: {
     getDefaultName(id) {
-      return sprintf(s__('SecurityOrchestration|Group ID: %{id}'), { id });
+      return sprintf(this.$options.i18n.groupNameText, { id });
     },
   },
 };
