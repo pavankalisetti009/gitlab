@@ -92,7 +92,7 @@ export default {
     <gl-skeleton-loader v-if="isLoading" :lines="1" />
     <template v-else>
       <div v-if="errorsTotal">
-        <gl-icon name="status_warning" class="gl-mr-2 gl-text-red-500" />
+        <gl-icon name="status_warning" class="gl-mr-2" variant="danger" />
         <span data-testid="invalid-syntax-text">{{ $options.i18n.syntaxErrors(errorsTotal) }}</span>
         <gl-button
           v-collapse-toggle="$options.collapseId"
@@ -127,7 +127,7 @@ export default {
         </gl-collapse>
       </div>
       <div v-else-if="isSyntaxValid">
-        <gl-icon name="check" class="gl-mr-4 gl-text-green-500" />
+        <gl-icon name="check" class="gl-mr-4" variant="success" />
         <span data-testid="valid-syntax-text">{{ $options.i18n.syntaxValid }}</span>
       </div>
     </template>

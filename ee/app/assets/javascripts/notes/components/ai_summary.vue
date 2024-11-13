@@ -191,8 +191,8 @@ export default {
       <div v-else>
         <div v-if="markdown" ref="markdown" v-safe-html="markdown" class="gl-mb-2"></div>
 
-        <div class="gl-text-sm gl-text-secondary">
-          <gl-icon name="eye-slash" class="gl-mr-2 gl-text-gray-400" :size="12" />{{
+        <div class="gl-text-sm gl-text-subtle">
+          <gl-icon name="eye-slash" class="gl-mr-2" :size="12" variant="subtle" />{{
             $options.i18n.onlyVisibleToYou
           }}
           &middot;

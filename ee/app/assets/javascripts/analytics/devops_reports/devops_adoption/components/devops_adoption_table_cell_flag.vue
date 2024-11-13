@@ -39,7 +39,7 @@ export default {
       <div v-if="withText">{{ __('Adopted') }}</div>
     </div>
     <div v-if="!enabled" class="gl-flex gl-justify-end sm:gl-justify-start">
-      <gl-icon name="issue-open-m" class="gl-text-gray-500" :class="{ 'gl-mr-3': withText }" />
+      <gl-icon name="issue-open-m" :class="{ 'gl-mr-3': withText }" variant="subtle" />
       <div v-if="withText">{{ __('Not adopted') }}</div>
     </div>
   </div>

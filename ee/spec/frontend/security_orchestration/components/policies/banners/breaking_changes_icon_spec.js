@@ -33,7 +33,7 @@ describe('BreakingChangesIcon', () => {
     createComponent();
 
     expect(findIcon().props('name')).toBe('error');
-    expect(findIcon().classes()).toEqual(['gl-text-red-600']);
+    expect(findIcon().props('variant')).toBe('danger');
 
     expect(findViolationItem(0).text()).toBe('content 1');
     expect(findViolationItem(1).text()).toBe('content 2');

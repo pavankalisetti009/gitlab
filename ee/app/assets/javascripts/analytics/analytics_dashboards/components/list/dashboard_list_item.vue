@@ -85,7 +85,7 @@ export default {
     @click="routeToDashboard"
   >
     <div class="gl-float-left gl-mr-4 gl-flex gl-items-center">
-      <gl-icon name="dashboard" class="gl-mr-3 gl-text-gray-200" :size="16" />
+      <gl-icon name="dashboard" class="gl-mr-3" :size="16" variant="disabled" />
     </div>
     <div class="gl-flex gl-grow gl-items-center gl-justify-between">
       <div class="gl-flex gl-flex-col">
@@ -148,7 +148,7 @@ export default {
         >
           <template #list-item="{ item }">
             <span class="gl-flex gl-items-center gl-gap-3">
-              <gl-icon class="gl-text-secondary" :name="item.icon" />
+              <gl-icon :name="item.icon" variant="subtle" />
               {{ item.text }}
             </span>
           </template>

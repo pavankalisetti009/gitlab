@@ -6,10 +6,9 @@ exports[`DevopsAdoptionTableCellFlag disabled matches the snapshot 1`] = `
     class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
-      class="gl-text-gray-500"
       name="issue-open-m"
       size="16"
-      variant="current"
+      variant="subtle"
     />
   </div>
 </div>
@@ -51,10 +50,9 @@ exports[`DevopsAdoptionTableCellFlag enabled when the enabled flag is changed to
     class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
-      class="gl-text-gray-500"
       name="issue-open-m"
       size="16"
-      variant="current"
+      variant="subtle"
     />
   </div>
 </div>
