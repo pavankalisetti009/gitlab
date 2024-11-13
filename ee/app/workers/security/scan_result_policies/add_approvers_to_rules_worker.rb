@@ -11,34 +11,34 @@ module Security
 
       concurrency_limit -> { 200 }
 
-      def self.dispatch?(event)
-        return unless event.data[:project_id]
+      class << self
+        def projects(event)
+          project_ids = Array.wrap(event.data[:project_id] || event.data[:project_ids])
 
-        project = Project.find_by_id(event.data[:project_id])
-        return unless project
+          Project.id_in(project_ids).with_scan_result_policy_reads
+        end
 
-        project.licensed_feature_available?(:security_orchestration_policies) &&
-          project.scan_result_policy_reads.any?
+        def dispatch?(event)
+          projects(event).any? { |project| process_project?(project) }
 
-        # TODO: Add check if we have any rules in defined policies that requires this worker to perform
-        # TODO: This will be possible after delivery of https://gitlab.com/groups/gitlab-org/-/epics/9971
+          # TODO: Add check if we have any rules in defined policies that requires this worker to perform
+          # TODO: This will be possible after delivery of https://gitlab.com/groups/gitlab-org/-/epics/9971
+        end
+
+        def process_project?(project)
+          project.scan_result_policy_reads.any? && project.licensed_feature_available?(:security_orchestration_policies)
+        end
       end
 
       def handle_event(event)
         user_ids = event.data[:user_ids]
         return if user_ids.blank?
 
-        project_id = event.data[:project_id]
-        project = Project.find_by_id(project_id)
+        self.class.projects(event).find_each do |project|
+          next unless self.class.process_project?(project)
 
-        unless project
-          logger.info(structured_payload(message: 'Project not found.', project_id: project_id))
-          return
+          Security::ScanResultPolicies::AddApproversToRulesService.new(project: project).execute(user_ids)
         end
-
-        return unless project.licensed_feature_available?(:security_orchestration_policies)
-
-        Security::ScanResultPolicies::AddApproversToRulesService.new(project: project).execute(user_ids)
       end
     end
   end
