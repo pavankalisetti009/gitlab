@@ -21,6 +21,7 @@ import {
   buildScannerAction,
   buildDefaultScheduleRule,
   fromYaml,
+  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
@@ -652,6 +653,53 @@ enabled: true`;
         );
         expect(findAllActionBuilders()).toHaveLength(1);
       });
+    });
+  });
+
+  describe('new yaml format with type as a wrapper', () => {
+    beforeEach(() => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesNewYamlFormat: true,
+          },
+        },
+      });
+    });
+
+    it('renders default yaml in new format', () => {
+      expect(findPolicyEditorLayout().props()).toMatchObject({
+        parsingError: '',
+        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT }).policy,
+        yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
+      });
+    });
+
+    it('converts new policy format to old policy format when saved', async () => {
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(wrapper.emitted('save')).toEqual([
+        [
+          {
+            action: undefined,
+            policy: `name: ''
+description: ''
+enabled: true
+policy_scope:
+  projects:
+    excluding: []
+rules:
+  - type: pipeline
+    branches:
+      - '*'
+actions:
+  - scan: secret_detection
+type: scan_execution_policy
+`,
+          },
+        ],
+      ]);
     });
   });
 });

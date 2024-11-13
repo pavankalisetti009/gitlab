@@ -1,5 +1,6 @@
 import { intersection, uniqBy, uniqueId } from 'lodash';
 import { isValidCron } from 'cron-validator';
+import { safeDump } from 'js-yaml';
 import { sprintf, s__ } from '~/locale';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -204,7 +205,7 @@ export const ruleHasConflictingKeys = (rule) => {
 
 /**
  * Rule can not have both keys simultaneously
- * @param rule
+ * @param rules
  */
 export const hasConflictingKeys = (rules = []) => {
   return rules.some((rule) => BRANCH_TYPE_KEY in rule && BRANCHES_KEY in rule);
@@ -684,4 +685,32 @@ export const getMergeRequestConfig = (params = {}, context = {}) => {
     title,
     description: [migrationInfo, continueToOverwriteWarning, backLinkMessage].join('\n\n'),
   };
+};
+
+export const policyBodyToYaml = (policy) => {
+  return safeDump(removeIdsFromPolicy(policy));
+};
+
+/**
+ * Return yaml representation of a policy.
+ * @param policy
+ * @param type
+ * @returns {string}
+ */
+export const policyToYaml = (policy, type) => {
+  const { securityPoliciesNewYamlFormat } = window.gon?.features || {};
+
+  if (securityPoliciesNewYamlFormat) {
+    const policyWithoutIds = removeIdsFromPolicy(policy);
+    const hasLegacyTypeRootProperty = 'type' in policyWithoutIds;
+
+    if (hasLegacyTypeRootProperty) {
+      delete policyWithoutIds.type;
+    }
+
+    const payload = { [type]: [policyWithoutIds] };
+    return safeDump(payload);
+  }
+
+  return policyBodyToYaml(policy);
 };
