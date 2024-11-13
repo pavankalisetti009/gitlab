@@ -396,43 +396,59 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
   },
 };
 
+export const MAPPED_CLUSTER_AGENT = {
+  id: 'gid://gitlab/Clusters::Agent/1',
+  name: 'rootgroup-agent',
+  project: {
+    id: 'gid://gitlab/Project/101',
+    name: 'GitLab Agent One',
+  },
+  connections: {
+    nodes: [
+      {
+        connectedAt: '2023-04-29T18:24:34Z',
+      },
+    ],
+  },
+  mappingStatus: AGENT_MAPPING_STATUS_MAPPED,
+  workspacesAgentConfig: {
+    id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
+    defaultMaxHoursBeforeTermination: 99,
+    maxHoursBeforeTerminationLimit: 999,
+  },
+};
+
+export const UNMAPPED_CLUSTER_AGENT = {
+  id: 'gid://gitlab/Clusters::Agent/2',
+  name: 'rootgroup-agent-2',
+  project: {
+    id: 'gid://gitlab/Project/102',
+    name: 'GitLab Agent Two',
+  },
+  connections: {
+    nodes: [
+      {
+        connectedAt: '2023-04-29T18:24:34Z',
+      },
+    ],
+  },
+  mappingStatus: AGENT_MAPPING_STATUS_UNMAPPED,
+  workspacesAgentConfig: {
+    id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
+    defaultMaxHoursBeforeTermination: 99,
+    maxHoursBeforeTerminationLimit: 999,
+  },
+};
+
 export const GET_AGENTS_WITH_MAPPING_STATUS_QUERY_RESULT = {
   data: {
     namespace: {
       id: 'gid://gitlab/Group/81',
       mappedAgents: {
-        nodes: [
-          {
-            id: 'gid://gitlab/Clusters::Agent/1',
-            name: 'rootgroup-agent',
-            project: {
-              id: 'gid://gitlab/Project/101',
-              nameWithNamespace: 'GitLab Org / GitLab Agent One',
-            },
-            workspacesAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
-              defaultMaxHoursBeforeTermination: 99,
-              maxHoursBeforeTerminationLimit: 999,
-            },
-          },
-        ],
+        nodes: [cloneDeep(MAPPED_CLUSTER_AGENT)],
       },
       unmappedAgents: {
-        nodes: [
-          {
-            id: 'gid://gitlab/Clusters::Agent/2',
-            name: 'rootgroup-agent-2',
-            project: {
-              id: 'gid://gitlab/Project/102',
-              nameWithNamespace: 'GitLab Org / GitLab Agent Two',
-            },
-            workspacesAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
-              defaultMaxHoursBeforeTermination: 99,
-              maxHoursBeforeTerminationLimit: 999,
-            },
-          },
-        ],
+        nodes: [cloneDeep(UNMAPPED_CLUSTER_AGENT)],
       },
     },
   },
@@ -498,18 +514,6 @@ export const DELETE_CLUSTER_AGENT_MAPPING_MUTATION_WITH_ERROR_RESULT = {
       errors: ['Namespace cluster agent mapping not found'],
     },
   },
-};
-
-export const MAPPED_CLUSTER_AGENT = {
-  id: 'gid://gitlab/Clusters::Agent/1',
-  name: 'rootgroup-agent',
-  mappingStatus: AGENT_MAPPING_STATUS_MAPPED,
-};
-
-export const UNMAPPED_CLUSTER_AGENT = {
-  id: 'gid://gitlab/Clusters::Agent/2',
-  name: 'rootgroup-agent-2',
-  mappingStatus: AGENT_MAPPING_STATUS_UNMAPPED,
 };
 
 export const NAMESPACE_ID = 'gid://gitlab/Group/81';

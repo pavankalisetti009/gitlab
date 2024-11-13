@@ -19,9 +19,10 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
     group.add_owner(user)
   end
 
+  include_context 'with kubernetes agent service'
+
   before do
     stub_licensed_features(remote_development: true)
-
     sign_in(user)
     visit group_settings_workspaces_path(group)
     wait_for_requests
@@ -45,6 +46,10 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
 
       it 'displays agent in the agents table' do
         expect(page).to have_content agent.name
+
+        click_button 'Agent Information'
+        expect(page).to have_content('Connected')
+        expect(page).to have_content(project.name)
       end
     end
 
