@@ -14543,6 +14543,9 @@ msgstr ""
 msgid "Confidentiality"
 msgstr ""
 
+msgid "Confidentiality controls have moved to the issue actions menu (%{icon}) at the top of the page."
+msgstr ""
+
 msgid "Configuration help"
 msgstr ""
 
@@ -52759,6 +52762,9 @@ msgstr ""
 msgid "Something went wrong while fetching the packages list."
 msgstr ""
 
+msgid "Something went wrong while getting %{issuableType} confidentiality status."
+msgstr ""
+
 msgid "Something went wrong while obtaining the Let's Encrypt certificate."
 msgstr ""
 
@@ -62653,6 +62659,12 @@ msgid "WorkItem|Comment & reopen %{workItemType}"
 msgstr ""
 
 msgid "WorkItem|Comments only"
+msgstr ""
+
+msgid "WorkItem|Confidentiality turned off."
+msgstr ""
+
+msgid "WorkItem|Confidentiality turned on."
 msgstr ""
 
 msgid "WorkItem|Configure work items such as epics, issues, and tasks to represent how your team works."
