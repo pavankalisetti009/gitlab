@@ -70,7 +70,7 @@ module Search
           # es_parent attribute is used for routing but is nil for some records, e.g., projects, users
           es_parent = hit['_routing']
 
-          Gitlab::Elastic::DocumentReference.new(self.class::DOCUMENT_TYPE, id, es_id, es_parent)
+          Search::Elastic::Reference.init(self.class::DOCUMENT_TYPE, id, es_id, es_parent)
         end
 
         document_references.each_slice(update_batch_size) do |refs|

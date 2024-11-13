@@ -16,6 +16,10 @@ module Search
         def self.instantiate(string)
           Gitlab::Elastic::DocumentReference.deserialize(string)
         end
+
+        def self.init(*args)
+          Gitlab::Elastic::DocumentReference.new(*args)
+        end
       end
     end
   end

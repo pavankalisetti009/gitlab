@@ -214,7 +214,7 @@ module Users
       required_params.permit(:verification_code)
     end
 
-    def arkose_labs_enabled?(user: nil)
+    def arkose_labs_enabled?(user:)
       ::AntiAbuse::IdentityVerification::Settings.arkose_enabled?(user: user, user_agent: request.user_agent)
     end
 

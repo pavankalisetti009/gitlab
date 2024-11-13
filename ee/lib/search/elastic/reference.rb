@@ -51,6 +51,14 @@ module Search
           deserialize(ref(item, klass))
         end
 
+        def init(klass, id, es_id, es_parent)
+          ref_class = Gitlab::Elastic::Helper.ref_class(klass.to_s)
+
+          return ref_class.new(id, es_parent) if ref_class && klass == WorkItem
+
+          ::Search::Elastic::References::Legacy.init(klass.to_s, id, es_id, es_parent)
+        end
+
         def serialize(item)
           case item
           when String

@@ -1,3 +1,10 @@
+import {
+  inlineItemMark,
+  inlineSectionMarker,
+  textMarkerIdPrefix,
+  textSpanMarkerIdPrefix,
+} from 'ee/vue_shared/components/code_flow/utils/constants';
+
 /**
  * Highlight.js plugin for wrapping lines in the correct classes and attributes.
  * Needed to highlight a large amount of lines
@@ -20,11 +27,11 @@ function markLinesWithDiv(content, lineNum, markLineInfo) {
   markLineInfo?.forEach((markLine) => {
     stepNumberSpan +=
       lineNum === markLine.startLine
-        ? `<span id="TEXT-SPAN-MARKER-${markLine.stepNumber}" class="inline-item-mark">${markLine.stepNumber}</span>`
+        ? `<span id="${textSpanMarkerIdPrefix}${markLine.stepNumber}" class="${inlineItemMark}">${markLine.stepNumber}</span>`
         : '';
     stepNumberSpanNone +=
       lineNum !== markLine.startLine
-        ? `<span id="TEXT-SPAN-MARKER-${markLine.stepNumber}" class="inline-item-mark gl-opacity-0">${markLine.stepNumber}</span>`
+        ? `<span id="${textSpanMarkerIdPrefix}${markLine.stepNumber}" class="${inlineItemMark} gl-opacity-0">${markLine.stepNumber}</span>`
         : '';
   });
 
@@ -33,9 +40,9 @@ function markLinesWithDiv(content, lineNum, markLineInfo) {
     wrappedLine = `${content.slice(
       0,
       contentStartIndex,
-    )}${stepNumberSpanNone}<span id="TEXT-MARKER-${
+    )}${stepNumberSpanNone}<span id="${textMarkerIdPrefix}${
       stepNumbers
-    }-L${lineNum}" class="inline-section-marker">${stepNumberSpan}${content.slice(contentStartIndex)}</span>`;
+    }-L${lineNum}" class="${inlineSectionMarker}">${stepNumberSpan}${content.slice(contentStartIndex)}</span>`;
   }
   return `<div class="line">${wrappedLine}</div>`;
 }

@@ -10,6 +10,11 @@ RSpec.describe Emails::UserCap do
   describe "#user_cap_reached" do
     subject(:email) { Notify.user_cap_reached(user.id) }
 
+    it_behaves_like 'it should not have Gmail Actions links'
+    it_behaves_like 'a user cannot unsubscribe through footer link'
+    it_behaves_like 'appearance header and footer enabled'
+    it_behaves_like 'appearance header and footer not enabled'
+
     it "sends mail with expected contents" do
       expect(email).to have_subject('Important information about usage on your GitLab instance')
       expect(email).to be_delivered_to([user.notification_email_or_default])

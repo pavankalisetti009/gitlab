@@ -14,7 +14,7 @@ module EE
       include GoogleAnalyticsCSP
       include GoogleSyndicationCSP
 
-      skip_before_action :check_captcha, if: -> { arkose_labs_enabled? }
+      skip_before_action :check_captcha, if: -> { arkose_labs_enabled?(user: nil) }
       before_action :restrict_registration, only: [:new, :create]
       before_action :ensure_can_remove_self, only: [:destroy]
       before_action :verify_arkose_labs_challenge!, only: :create
@@ -193,7 +193,7 @@ module EE
     end
 
     override :arkose_labs_enabled?
-    def arkose_labs_enabled?(user: nil)
+    def arkose_labs_enabled?(user:)
       ::AntiAbuse::IdentityVerification::Settings.arkose_enabled?(user: user, user_agent: request.user_agent)
     end
 
