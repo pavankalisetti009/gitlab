@@ -150,6 +150,73 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
           it 'returns sync stats as payload' do
             expect(sync.payload).to include({ added: 1, removed: 0, updated: 1 })
           end
+
+          context 'when member promotion management is enabled' do
+            let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+            let!(:member_approval) { create(:member_approval, :to_maintainer, user: user) }
+
+            before do
+              stub_application_setting(enable_member_promotion_management: true)
+              allow(License).to receive(:current).and_return(license)
+              allow(::Gitlab::EventStore).to receive(:publish).and_call_original
+            end
+
+            shared_examples 'does not publish MembershipModifiedByAdminEvent' do
+              it 'does not publish MembershipModifiedByAdminEvent' do
+                expect(::Gitlab::EventStore).not_to receive(:publish).with(
+                  an_instance_of(::Members::MembershipModifiedByAdminEvent).and(
+                    having_attributes(data: { member_user_id: user.id })
+                  )
+                )
+
+                sync
+              end
+            end
+
+            shared_examples 'publishes MembershipModifiedByAdminEvent' do
+              it 'publishes MembershipModifiedByAdminEvent' do
+                expect(::Gitlab::EventStore).to receive(:publish).with(
+                  an_instance_of(::Members::MembershipModifiedByAdminEvent).and(
+                    having_attributes(data: { member_user_id: user.id })
+                  )
+                )
+
+                sync
+              end
+            end
+
+            context 'when sync updates user on a non-billable access level' do
+              let_it_be(:manage_group_ids) { [top_level_group.id] }
+
+              let_it_be(:group_links) do
+                [create(:saml_group_link, group: top_level_group, access_level: Gitlab::Access::GUEST)]
+              end
+
+              it_behaves_like 'does not publish MembershipModifiedByAdminEvent'
+            end
+
+            context 'when sync updates user on a billable access level' do
+              let_it_be(:manage_group_ids) { [top_level_group.id, group1.id] }
+
+              let_it_be(:group_links) do
+                [create(:saml_group_link, group: group1, access_level: Gitlab::Access::DEVELOPER)]
+              end
+
+              before do
+                group1.add_member(user, ::Gitlab::Access::GUEST)
+              end
+
+              context 'when there are pending promotions' do
+                it_behaves_like 'publishes MembershipModifiedByAdminEvent'
+              end
+
+              context 'when there are no pending promotions' do
+                let!(:member_approval) { nil }
+
+                it_behaves_like 'does not publish MembershipModifiedByAdminEvent'
+              end
+            end
+          end
         end
 
         context 'when the user is the last owner' do
