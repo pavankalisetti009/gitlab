@@ -1,16 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Govern',
-    :skip_live_env,
-    product_group: :compliance,
-    feature_flag: {
-      name: :show_role_details_in_drawer
-    } do
-    include Support::API
-
-    let(:api_client) { Runtime::API::Client.new(:gitlab) }
-
+  RSpec.describe 'Govern', :skip_live_env, product_group: :compliance, feature_flag: {
+    name: :show_role_details_in_drawer
+  } do
     shared_examples 'audit event' do |expected_events|
       it 'logs audit events for UI operations' do
         wait_for_audit_events(expected_events, group)
@@ -30,7 +23,6 @@ module QA
 
     describe 'Group' do
       let(:group) { create(:group, path: "test-group-#{SecureRandom.hex(8)}") }
-
       let(:project) { create(:project, name: 'project-shared-with-group') }
       let(:user) do
         Resource::User.fabricate_or_use(Runtime::Env.gitlab_qa_username_1, Runtime::Env.gitlab_qa_password_1)
@@ -136,8 +128,7 @@ module QA
     end
 
     def get_audit_event_count(group)
-      response = get Runtime::API::Request.new(api_client, "/groups/#{group.id}/audit_events").url
-      parse_body(response).length
+      group.audit_events.length
     end
 
     def wait_for_audit_events(expected_events, group)

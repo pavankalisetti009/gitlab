@@ -37,7 +37,7 @@ module QA
         }
       end
 
-      let(:token) { Resource::PersonalAccessToken.fabricate!.token }
+      let(:token) { Runtime::UserStore.default_api_client.personal_access_token }
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
 
       let(:context) do

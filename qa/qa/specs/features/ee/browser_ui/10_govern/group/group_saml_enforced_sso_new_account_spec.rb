@@ -6,16 +6,10 @@ module QA
       include Support::API
 
       let!(:group) { create(:sandbox, :private, path: "saml_sso_group_#{SecureRandom.hex(8)}") }
-      let(:idp_user) { Struct.new(:username, :password).new('user3', 'user3pass') }
-
-      # The user that signs in via the IDP with username `user3` and password `user3pass`
-      # will have `user_3` as username in GitLab
-      let(:user) do
-        build(:user, username: 'user_3', email: 'user_3@example.com', name: 'User Three')
-      end
-
-      let!(:saml_idp_service) { Flow::Saml.run_saml_idp_service(group.path) }
+      let!(:saml_idp_service) { Flow::Saml.run_saml_idp_service(group.path, [idp_user]) }
       let!(:group_sso_url) { Flow::Saml.enable_saml_sso(group, saml_idp_service, enforce_sso: true) }
+
+      let(:idp_user) { build(:user, username: "saml_user_#{Faker::Number.number(digits: 8)}") }
 
       before do
         Page::Main::Menu.perform(&:sign_out_if_signed_in)
@@ -24,10 +18,6 @@ module QA
       end
 
       shared_examples 'group membership actions' do
-        before do
-          remove_user if user.exists?
-        end
-
         it 'creates a new account automatically and allows to leave group and join again' do
           # When the user signs in via IDP for the first time
 
@@ -63,7 +53,7 @@ module QA
 
           # When the user is removed and so their linked identity is also removed
 
-          remove_user
+          remove_user(idp_user)
 
           visit_group_sso_url
 
@@ -77,12 +67,6 @@ module QA
 
       after do
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
-
-        group.remove_via_api!
-
-        remove_user
-
-        page.visit Runtime::Scenario.gitlab_address
       end
 
       context 'with Snowplow tracking enabled', :blocking,
@@ -110,7 +94,7 @@ module QA
 
     private
 
-    def remove_user
+    def remove_user(user)
       user.reload!
       user.remove_via_api!
       Support::Waiter.wait_until(max_duration: 180, retry_on_exception: true, sleep_interval: 3) { !user.exists? }

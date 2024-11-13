@@ -43,10 +43,6 @@ module QA
         Flow::Login.sign_in(as: group_owner)
       end
 
-      after do
-        remove_resources(group_owner, user_2, user_3, user_4, user_5, user_6, user_7)
-      end
-
       context 'when Saas user limit experience ' do
         it(
           'limit overage enforcement removed from private group when trial is started',
@@ -159,13 +155,6 @@ module QA
       def send_private_group_over_limit
         invitee_group.add_member(user_6)
         private_group.invite_group(invitee_group)
-      end
-
-      # Clean up resources
-      #
-      # @param [Array<Resource>] resources
-      def remove_resources(*resources)
-        resources.each(&:remove_via_api!)
       end
 
       # Returns user limit notification message

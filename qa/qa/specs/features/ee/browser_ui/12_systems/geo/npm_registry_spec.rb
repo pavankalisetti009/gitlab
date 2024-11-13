@@ -17,7 +17,10 @@ module QA
 
       let(:auth_token) do
         QA::Flow::Login.while_signed_in(address: :geo_primary) do
-          Resource::PersonalAccessToken.fabricate!.token
+          Resource::PersonalAccessToken.fabricate_via_browser_ui! do |resource|
+            resource.username = Runtime::UserStore.test_user.username
+            resource.password = Runtime::UserStore.test_user.password
+          end.token
         end
       end
 

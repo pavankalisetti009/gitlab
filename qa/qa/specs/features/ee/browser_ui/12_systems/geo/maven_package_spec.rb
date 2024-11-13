@@ -8,11 +8,7 @@ module QA
       let(:group_id) { 'com.gitlab.qa' }
       let(:artifact_id) { 'maven' }
       let(:package_name) { "#{group_id}/#{artifact_id}".tr('.', '/') }
-      let(:auth_token) do
-        Flow::Login.sign_in unless Page::Main::Menu.perform(&:signed_in?)
-
-        Resource::PersonalAccessToken.fabricate!.token
-      end
+      let(:auth_token) { Runtime::UserStore.default_api_client.personal_access_token }
 
       let(:project) { create(:project, name: 'geo-maven-package-project') }
       let(:uri) { URI.parse(Runtime::Scenario.gitlab_address) }
