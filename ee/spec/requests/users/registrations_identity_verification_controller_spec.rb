@@ -9,6 +9,8 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
   let_it_be_with_reload(:unconfirmed_user) { create(:user, :unconfirmed, :low_risk) }
   let_it_be(:confirmed_user, reload: true) { create(:user, :low_risk) }
+  let_it_be(:invalid_verification_user_id) { non_existing_record_id }
+  let(:request_headers) { { "HTTP_USER_AGENT" => "test-ua" } }
 
   before do
     stub_saas_features(identity_verification: true)
@@ -85,7 +87,8 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     let(:arkose_enabled) { true }
 
     before do
-      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(arkose_enabled)
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?)
+        .with(user: user, user_agent: 'test-ua').and_return(arkose_enabled)
 
       stub_session(session_data: { verification_user_id: user.id })
 
@@ -110,7 +113,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
   end
 
   describe 'GET show' do
-    subject(:do_request) { get signup_identity_verification_path }
+    subject(:do_request) { get signup_identity_verification_path, headers: request_headers }
 
     before do
       stub_session(session_data: { verification_user_id: unconfirmed_user.id })
@@ -220,7 +223,9 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     let_it_be(:params) { { registrations_identity_verification: { code: '123456' } } }
     let_it_be(:service_response) { { status: :success } }
 
-    subject(:do_request) { post verify_email_code_signup_identity_verification_path(params) }
+    subject(:do_request) do
+      post verify_email_code_signup_identity_verification_path(params), headers: request_headers
+    end
 
     before do
       allow_next_instance_of(::Users::EmailVerification::ValidateTokenService) do |service|
@@ -264,7 +269,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
   describe 'POST resend_email_code' do
     let_it_be(:user) { unconfirmed_user }
 
-    subject(:do_request) { post resend_email_code_signup_identity_verification_path }
+    subject(:do_request) { post resend_email_code_signup_identity_verification_path, headers: request_headers }
 
     it_behaves_like 'it requires a signed-in user'
     it_behaves_like 'it requires an unconfirmed user'
@@ -332,7 +337,9 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       { registrations_identity_verification: { country: 'US', international_dial_code: '1', phone_number: '555' } }
     end
 
-    subject(:do_request) { post send_phone_verification_code_signup_identity_verification_path(params) }
+    subject(:do_request) do
+      post send_phone_verification_code_signup_identity_verification_path(params), headers: request_headers
+    end
 
     before do
       stub_session(session_data: { verification_user_id: user.id })
@@ -367,7 +374,9 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       { registrations_identity_verification: { verification_code: '999' } }
     end
 
-    subject(:do_request) { post verify_phone_verification_code_signup_identity_verification_path(params) }
+    subject(:do_request) do
+      post verify_phone_verification_code_signup_identity_verification_path(params), headers: request_headers
+    end
 
     before do
       stub_session(session_data: { verification_user_id: user.id })

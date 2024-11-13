@@ -92,7 +92,7 @@ module Users
     end
 
     def require_arkose_verification!
-      return unless arkose_labs_enabled?
+      return unless arkose_labs_enabled?(user: @user)
       return unless @user.identities.any?
       return if @user.arkose_verified?
 
