@@ -12,7 +12,7 @@ data_category: optional
 performance_indicator_type: []
 distribution:
   - ee
-tier:
+tiers:
   - ultimate
 events:
   - name: user_viewed_instrumentation_directions

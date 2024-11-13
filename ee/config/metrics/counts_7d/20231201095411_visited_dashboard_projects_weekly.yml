@@ -11,7 +11,7 @@ data_source: internal_events
 data_category: optional
 distribution:
 - ee
-tier:
+tiers:
   - ultimate
 events:
   - name: user_visited_dashboard

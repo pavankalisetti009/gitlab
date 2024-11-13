@@ -16,6 +16,6 @@ events:
 data_category: optional
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate

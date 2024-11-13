@@ -12,7 +12,7 @@ data_category: optional
 performance_indicator_type: []
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 value_json_schema: "ee/config/metrics/object_schemas/geo_node_usage.json"

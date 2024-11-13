@@ -16,7 +16,7 @@ options:
     - incident_management_issuable_resource_link_created
 distribution:
   - ee
-tier:
+tiers:
   - premium
   - ultimate
 

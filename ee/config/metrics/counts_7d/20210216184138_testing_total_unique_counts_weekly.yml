@@ -19,7 +19,7 @@ options:
   - users_expanding_testing_accessibility_report
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

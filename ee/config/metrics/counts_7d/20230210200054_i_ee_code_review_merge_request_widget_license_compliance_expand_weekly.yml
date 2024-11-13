@@ -16,5 +16,5 @@ events:
       label: license_compliance
 distribution:
 - ee
-tier:
+tiers:
 - ultimate

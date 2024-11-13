@@ -17,7 +17,7 @@ options:
   - g_project_management_users_viewing_epic_boards
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

@@ -13,7 +13,7 @@ options:
   - g_compliance_audit_events
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type:

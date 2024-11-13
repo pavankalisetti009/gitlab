@@ -12,7 +12,7 @@ options:
   scan_type: sast
 distribution:
 - ee
-tier:
+tiers:
 - free
 - premium
 - ultimate

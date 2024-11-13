@@ -13,5 +13,5 @@ events:
 - name: user_visited_dashboard
 distribution:
 - ee
-tier:
+tiers:
 - ultimate

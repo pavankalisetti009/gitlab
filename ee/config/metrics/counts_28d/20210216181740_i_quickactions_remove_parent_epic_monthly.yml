@@ -13,7 +13,7 @@ options:
   - i_quickactions_remove_parent_epic
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 performance_indicator_type: []
 milestone: "<13.9"

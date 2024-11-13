@@ -12,7 +12,7 @@ options:
   scan_type: container_scanning
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 - premium
 - free

@@ -12,7 +12,7 @@ options:
 data_source: database
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 - premium
 - free
