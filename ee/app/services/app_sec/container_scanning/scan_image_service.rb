@@ -23,9 +23,14 @@ module AppSec
         end
 
         user = security_policy_bot
+        return unless user
 
         service = ::Ci::CreatePipelineService.new(project, user, ref: project.default_branch_or_main)
         result = service.execute(SOURCE, content: pipeline_config)
+
+        unless result.success?
+          log_error(StandardError.new("Failed to create pipeline: #{result.payload.full_error_messages}"))
+        end
 
         track(user, project, result)
 
@@ -90,7 +95,25 @@ module AppSec
           .new(project, nil, skip_authorization: true)
           .execute
 
+        raise StandardError, "Security Orchestration Bot was not persisted." unless response.user.persisted?
+
         response.user
+      rescue StandardError => error
+        log_error(error)
+
+        nil
+      end
+
+      def log_error(error)
+        ::Gitlab::ErrorTracking.track_exception(
+          error,
+          class: self.class.name,
+          project_id: project_id,
+          image: image,
+          scan_type: :container_scanning,
+          pipeline_source: SOURCE,
+          message: error.full_message
+        )
       end
     end
   end

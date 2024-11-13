@@ -119,6 +119,34 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
           { key: "CS_IMAGE", value: image }
         )
       end
+
+      context 'when the pipeline creation fails' do
+        let(:fake_pipeline) do
+          instance_double(Ci::Pipeline, created_successfully?: false, full_error_messages: 'full error messages')
+        end
+
+        let(:fake_service) do
+          instance_double(Ci::CreatePipelineService,
+            execute: ServiceResponse.error(message: 'error message', payload: fake_pipeline))
+        end
+
+        before do
+          allow(Ci::CreatePipelineService).to receive(:new).and_return(fake_service)
+        end
+
+        it 'logs an error with the failure message' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            a_kind_of(StandardError),
+            hash_including(
+              class: described_class.name,
+              project_id: project_id,
+              message: /Failed to create pipeline: full error messages/
+            )
+          )
+
+          execute
+        end
+      end
     end
 
     context 'when the project has exceeded the daily scan limit' do
@@ -133,12 +161,34 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
 
     context 'when the project does not have a security policy bot' do
       let_it_be(:project) { create(:project, :repository) }
-      let(:service_response) { instance_double(Member, user: bot_user) }
+
+      context 'when it fails to create the security bot' do
+        before do
+          allow(Security::Orchestration::CreateBotService).to receive_message_chain(:new,
+            :execute).and_raise(Gitlab::Access::AccessDeniedError)
+        end
+
+        it 'logs the error with its respective details' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            a_kind_of(Gitlab::Access::AccessDeniedError),
+            hash_including(class: described_class.name, project_id: project.id,
+              message: /Gitlab::Access::AccessDeniedError/)
+          )
+
+          execute
+        end
+
+        it 'does not attempt to create a pipeline' do
+          expect(Ci::CreatePipelineService).not_to receive(:new)
+          expect { execute }.not_to change { Ci::Pipeline.count }
+        end
+      end
 
       it 'creates the security policy bot' do
         expect(Security::Orchestration::CreateBotService).to receive(:new)
-                  .with(project, nil, skip_authorization: true).and_return(
-                    instance_double(Security::Orchestration::CreateBotService, execute: service_response))
+                  .with(project, nil, skip_authorization: true).and_call_original
+        expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
+
         execute
       end
     end
