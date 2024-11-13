@@ -205,6 +205,9 @@ module EE
         })
       end
 
+      licensed_users_count = ::License.current&.restricted_user_count
+      form_data[:licensed_user_count] = licensed_users_count ? licensed_users_count.to_s : ''
+
       promotion_management_available = member_promotion_management_feature_available?
       form_data[:promotion_management_available] = promotion_management_available.to_s
       if promotion_management_available

@@ -144,6 +144,20 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         it { is_expected.to match(hash_excluding(:enable_member_promotion_management)) }
       end
     end
+
+    describe 'Licensed user count' do
+      it { is_expected.to match(hash_including({ licensed_user_count: '' })) }
+
+      context 'with a license' do
+        let(:active_user_count) { 10 }
+
+        before do
+          create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+        end
+
+        it { is_expected.to match(hash_including({ licensed_user_count: active_user_count.to_s })) }
+      end
+    end
   end
 
   describe '.deletion_protection_data' do
