@@ -326,7 +326,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
           add_on_purchase_id: add_on_purchase.id,
           message: 'Duo Bulk User Assignment',
           response_type: 'error',
-          payload: { errors: error_message, user_ids: user_ids }
+          payload: { errors: error_message, user_ids: match_array(user_ids) }
         }
       end
 
@@ -335,7 +335,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
           add_on_purchase_id: add_on_purchase.id,
           message: 'Duo Bulk User Assignment',
           response_type: 'success',
-          payload: { users: user_ids.reverse }
+          payload: { users: match_array(user_ids) }
         }
       end
 
