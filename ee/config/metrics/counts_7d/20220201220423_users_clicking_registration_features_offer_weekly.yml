@@ -16,6 +16,6 @@ options:
   - users_clicking_registration_features_offer
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate

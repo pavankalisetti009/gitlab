@@ -13,7 +13,7 @@ options:
   - i_testing_group_code_coverage_visit_total
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

@@ -12,7 +12,7 @@ data_category: operational
 performance_indicator_type: []
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 events:

@@ -22,7 +22,7 @@ events:
   unique: user.id
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

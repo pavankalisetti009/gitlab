@@ -16,6 +16,6 @@ events:
       label: metrics
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate

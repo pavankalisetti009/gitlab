@@ -13,7 +13,7 @@ options:
   - p_analytics_valuestream
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

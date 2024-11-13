@@ -16,5 +16,5 @@ instrumentation_class: RedisHLLMetric
 performance_indicator_type: []
 distribution:
 - ee
-tier:
+tiers:
 - ultimate

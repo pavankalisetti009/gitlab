@@ -13,7 +13,7 @@ options:
   - g_analytics_productivity
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

@@ -17,6 +17,6 @@ options:
     - clusters_using_network_policies_ui
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 performance_indicator_type: []
