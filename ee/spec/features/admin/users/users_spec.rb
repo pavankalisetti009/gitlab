@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin::Users', feature_category: :user_profile do
+RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :user_profile do
   include Features::AdminUsersHelpers
   include Spec::Support::Helpers::ModalHelpers
 
