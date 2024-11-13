@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupsController, feature_category: :groups_and_projects do
+RSpec.describe GroupsController, :with_current_organization, feature_category: :groups_and_projects do
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, :public) }
+  let_it_be(:user) { create(:user, organizations: [current_organization]) }
+  let_it_be(:group) { create(:group, :public, organization: current_organization) }
   let_it_be(:project) { create(:project, :public, namespace: group) }
   let_it_be(:subgroup) { create(:group, :private, parent: group) }
   let_it_be(:subgroup2) { create(:group, :private, parent: subgroup) }
@@ -360,7 +360,7 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
 
     context 'authorization' do
       it 'allows an auditor with "can_create_group" set to true to create a group' do
-        sign_in(create(:user, :auditor, can_create_group: true))
+        sign_in(create(:user, :auditor, can_create_group: true, organizations: [current_organization]))
 
         expect { subject }.to change { Group.count }.by(1)
 
