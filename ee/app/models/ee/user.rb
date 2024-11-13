@@ -36,8 +36,6 @@ module EE
       validate :auditor_requires_license_add_on, if: :auditor
       validate :cannot_be_admin_and_auditor
 
-      validate :seats_still_available, on: :create, unless: ::Gitlab::CurrentSettings.check_namespace_plan?
-
       validate :enterprise_user_email_change, on: :update, if: ->(user) {
         user.email_changed? && user.enterprise_user? && !user.skip_enterprise_user_email_change_restrictions?
       }
@@ -706,23 +704,6 @@ module EE
     end
 
     private
-
-    def seats_still_available
-      return if seats_available?
-
-      errors.add(:base, _("There are no more seats left in your subscription. New users cannot be added to this instance."))
-    end
-
-    def seats_available?
-      return true if ::Feature.disabled?(:sm_seat_control_block_overages, :instance, type: :wip)
-      return true unless License.current
-
-      licensed_seats = License.current.restricted_user_count
-
-      return true unless licensed_seats
-
-      self.class.billable.limit(licensed_seats).count < licensed_seats
-    end
 
     def ci_namespace_mirrors_permitted_to(permission)
       ::Ci::NamespaceMirror.by_group_and_descendants(

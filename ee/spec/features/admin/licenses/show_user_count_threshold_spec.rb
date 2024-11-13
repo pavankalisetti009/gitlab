@@ -44,9 +44,9 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
   end
 
   before do
-    stub_feature_flags(sm_seat_control_block_overages: false)
-
     create_list(:user, active_user_count)
+
+    stub_feature_flags(sm_seat_control_block_overages: false)
   end
 
   context 'with reached user count threshold' do
