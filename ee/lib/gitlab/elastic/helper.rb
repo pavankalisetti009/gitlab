@@ -71,6 +71,10 @@ module Gitlab
         def type_class(class_name)
           [::Search::Elastic::Types, class_name].join('::').safe_constantize
         end
+
+        def ref_class(class_name)
+          [::Search::Elastic::References, class_name].join('::').safe_constantize
+        end
       end
 
       def default_settings

@@ -3,6 +3,7 @@
 RSpec.shared_examples 'migration backfills fields' do
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
+  let(:index_name) { klass.__elasticsearch__.index_name }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -56,8 +57,11 @@ RSpec.shared_examples 'migration backfills fields' do
         object = objects.first
         add_field_for_objects(objects[1..])
 
-        expected = [Gitlab::Elastic::DocumentReference.new(klass, object.id, object.es_id, object.es_parent)]
-        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).with(*expected).once.and_call_original
+        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+          .once.and_call_original do |*tracked_refs|
+          expect(tracked_refs.count).to eq(1)
+          expect(::Search::Elastic::Reference.deserialize(tracked_refs.first).identifier).to eq(object.id)
+        end
 
         subject
 
@@ -133,7 +137,7 @@ RSpec.shared_examples 'migration backfills fields' do
 
     client = klass.__elasticsearch__.client
     client.update_by_query({
-      index: klass.__elasticsearch__.index_name,
+      index: index_name,
       wait_for_completion: true, # run synchronously
       refresh: true, # make operation visible to search
       body: {
@@ -155,9 +159,10 @@ RSpec.shared_examples 'migration backfills fields' do
 end
 
 RSpec.shared_examples 'migration reindex based on schema_version' do
+  let_it_be(:client) { Gitlab::Search::Client.new }
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
-  let(:client) { klass.__elasticsearch__.client }
+  let(:index_name) { klass.__elasticsearch__.index_name }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -170,7 +175,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
   end
 
   it 'index has schema_version in the mapping' do
-    mapping = client.indices.get_field_mapping(index: klass.__elasticsearch__.index_name, fields: 'schema_version')
+    mapping = client.indices.get_field_mapping(index: index_name, fields: 'schema_version')
     expect(mapping.values.all? { |m| m['mappings']['schema_version'].present? }).to be true
   end
 
@@ -188,8 +193,8 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
     context 'when migration is already completed' do
       it 'does not modify data' do
         expect(::Elastic::ProcessInitialBookkeepingService).not_to receive(:track!)
-        schema_version = described_class::NEW_SCHEMA_VERSION
-        expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_version }).to be true
+
+        assert_objects_have_new_schema_version(objects)
 
         subject
       end
@@ -234,8 +239,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
 
           ensure_elasticsearch_index!
 
-          schema_ver = described_class::NEW_SCHEMA_VERSION
-          expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_ver }).to be true
+          assert_objects_have_new_schema_version(objects)
           expect(migration.completed?).to be_truthy
         end
       end
@@ -250,21 +254,19 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         end
 
         it 'only updates documents whose schema_version is old', :aggregate_failures do
-          expected = [
-            Gitlab::Elastic::DocumentReference.new(
-              klass,
-              sample_object.id,
-              sample_object.es_id,
-              sample_object.es_parent)
-          ]
-          expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).with(*expected).once.and_call_original
+          expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+            .once.and_call_original do |*tracked_refs|
+            expect(tracked_refs.count).to eq(1)
+            ref = ::Search::Elastic::Reference.deserialize(tracked_refs.first)
+            expect(ref.identifier).to eq(sample_object.id)
+            expect(ref.routing).to eq(sample_object.es_parent)
+          end
 
           subject
 
           ensure_elasticsearch_index!
 
-          schema_ver = described_class::NEW_SCHEMA_VERSION
-          expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_ver }).to be true
+          assert_objects_have_new_schema_version(objects)
           expect(migration.completed?).to be_truthy
         end
       end
@@ -284,8 +286,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
 
         ensure_elasticsearch_index!
 
-        schema_version = described_class::NEW_SCHEMA_VERSION
-        expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_version }).to be true
+        assert_objects_have_new_schema_version(objects)
         expect(migration.completed?).to be_truthy
       end
     end
@@ -297,12 +298,12 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
 
       it 'sets the new schema_version for all the documents' do
         expect(client.count(body: { query: { bool: { must_not: { exists: { field: 'schema_version' } } } } },
-          index: klass.__elasticsearch__.index_name)['count']).to be > 0
+          index: index_name)['count']).to be > 0
         subject
         ensure_elasticsearch_index!
         expect(migration).to be_completed
-        schema_version = described_class::NEW_SCHEMA_VERSION
-        expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_version }).to be true
+
+        assert_objects_have_new_schema_version(objects)
       end
     end
   end
@@ -316,12 +317,18 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
       end
 
       it { expect(migration).not_to be_completed }
-      it { expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_ver }).to be true }
+
+      it 'all objects return the new schema_version' do
+        assert_objects_have_new_schema_version(objects)
+      end
     end
 
     context 'when no documents have old schema_version' do
       it { expect(migration).to be_completed }
-      it { expect(objects.all? { |o| o.__elasticsearch__.as_indexed_json['schema_version'] >= schema_ver }).to be true }
+
+      it 'all objects return the new schema_version' do
+        assert_objects_have_new_schema_version(objects)
+      end
     end
   end
 
@@ -330,9 +337,8 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
   def update_by_query(objects, script)
     object_ids = objects.map(&:id)
 
-    client = klass.__elasticsearch__.client
     client.update_by_query({
-      index: klass.__elasticsearch__.index_name,
+      index: index_name,
       wait_for_completion: true, # run synchronously
       refresh: true, # make operation visible to search
       body: {
@@ -350,6 +356,14 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         }
       }
     })
+  end
+
+  def assert_objects_have_new_schema_version(objects, schema_version = described_class::NEW_SCHEMA_VERSION)
+    result = objects.all? do |o|
+      ref = ::Search::Elastic::Reference.serialize(o)
+      Search::Elastic::Reference.deserialize(ref).as_indexed_json['schema_version'] >= schema_version
+    end
+    expect(result).to be true
   end
 end
 

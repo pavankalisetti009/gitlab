@@ -86,6 +86,30 @@ RSpec.describe ::Search::Elastic::Reference, feature_category: :global_search do
     end
   end
 
+  describe '#init' do
+    let(:id) { 1 }
+    let(:es_id) { 2 }
+    let(:es_parent) { 'group_1' }
+
+    it 'returns a WorkItem ref if the klass is WorkItem' do
+      ref = described_class.init(WorkItem, id, es_id, es_parent)
+
+      expect(ref).to be_a(Search::Elastic::References::WorkItem)
+      expect(ref.klass).to eq('WorkItem')
+      expect(ref.identifier).to eq(id)
+      expect(ref.routing).to eq(es_parent)
+    end
+
+    it 'returns a Document Reference if the klass is MergeRequest' do
+      ref = described_class.init(MergeRequest, id, es_id, es_parent)
+
+      expect(ref).to be_a(Gitlab::Elastic::DocumentReference)
+      expect(ref.klass.to_s).to eq('MergeRequest')
+      expect(ref.identifier).to eq(es_id)
+      expect(ref.routing).to eq(es_parent)
+    end
+  end
+
   describe '.serialize' do
     it 'raises a NotImplementedError' do
       expect { instance.serialize }.to raise_error(NotImplementedError)
