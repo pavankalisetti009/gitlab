@@ -10,6 +10,9 @@ module QA
       def perform_before_hooks
         return unless QA::CE::Strategy.perform_before_hooks
 
+        # Do not attempt to add license or perform other admin actions on live environments
+        return if QA::Runtime::Env.running_on_dot_com?
+
         if QA::Runtime::Env.ee_license.present?
           QA::Runtime::Logger.info("Performing initial license fabrication!")
 
@@ -17,8 +20,6 @@ module QA
             resource.license = QA::Runtime::Env.ee_license
           end
         end
-
-        return if QA::Runtime::Env.running_on_dot_com?
 
         QA::Runtime::Logger.info("Disabling sync with External package metadata database")
         # we can't pass [] here, otherwise it causes a validation error, because the value we pass

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Package', :skip_live_env, :orchestrated, :group_saml, requires_admin: 'for various user admin functions' do
+  RSpec.describe 'Package', :skip_live_env, :orchestrated, :group_saml,
+    requires_admin: 'for various user admin functions' do
     describe 'Dependency Proxy Group SSO', product_group: :container_registry do
       let!(:group) do
         Resource::Sandbox.fabricate! do |sandbox_group|
@@ -9,18 +10,12 @@ module QA
         end
       end
 
-      let(:idp_user) { Struct.new(:username, :password).new('user3', 'user3pass') }
-
-      let(:user) do
-        build(:user, username: 'user_3', email: 'user_3@example.com', name: 'User Three')
-      end
+      let(:idp_user) { build(:user, username: "saml_user_#{Faker::Number.number(digits: 8)}") }
 
       # starts a docker Docker container with a plug and play SAML 2.0 Identity Provider (IdP)
-      let!(:saml_idp_service) { Flow::Saml.run_saml_idp_service(group.path) }
-
+      let!(:saml_idp_service) { Flow::Saml.run_saml_idp_service(group.path, [idp_user]) }
       let!(:group_sso_url) { Flow::Saml.enable_saml_sso(group, saml_idp_service, enforce_sso: true) }
-
-      let(:project) { create(:project, name: 'dependency-proxy-sso-project', group: group) }
+      let!(:project) { create(:project, name: 'dependency-proxy-sso-project', group: group) }
 
       let!(:runner) do
         create(:project_runner,
@@ -36,14 +31,12 @@ module QA
 
       before do
         Page::Main::Menu.perform(&:sign_out_if_signed_in)
-        Flow::Saml.logout_from_idp(saml_idp_service)
-        remove_user if user.exists?
 
         visit_group_sso_url
 
         EE::Page::Group::SamlSSOSignIn.perform(&:click_sign_in)
         Flow::Saml.login_to_idp_if_required(idp_user.username, idp_user.password)
-        QA::Flow::User.confirm_user(user)
+        QA::Flow::User.confirm_user(idp_user)
 
         visit_group_sso_url
 
@@ -52,11 +45,11 @@ module QA
 
       after do
         Flow::Saml.remove_saml_idp_service(saml_idp_service)
-        remove_user
         runner.remove_via_api!
       end
 
-      it "pulls an image using the dependency proxy on a group enforced SSO", :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347612' do
+      it "pulls an image using the dependency proxy on a group enforced SSO", :blocking,
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347612' do
         create(:commit, project: project, commit_message: 'Add .gitlab-ci.yml', actions: [
           {
             action: 'create',
@@ -89,8 +82,7 @@ module QA
           expect(job).to be_successful(timeout: 800)
         end
 
-        Flow::Login.sign_in
-        project.group.visit!
+        group.visit!
         Page::Group::Menu.perform(&:go_to_dependency_proxy)
         Page::Group::DependencyProxy.perform do |index|
           expect(index).to have_blob_count(/Contains [1-9]\d* blobs of images/)
@@ -98,12 +90,6 @@ module QA
       end
 
       private
-
-      def remove_user
-        user.reload!
-        user.remove_via_api!
-        Support::Waiter.wait_until(max_duration: 180, retry_on_exception: true, sleep_interval: 3) { !user.exists? }
-      end
 
       def visit_group_sso_url
         Runtime::Logger.debug(%(Visiting managed_group_url at "#{group_sso_url}"))

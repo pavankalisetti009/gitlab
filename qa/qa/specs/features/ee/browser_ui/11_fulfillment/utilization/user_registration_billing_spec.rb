@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env, except: { job: 'review-qa-*' },
+  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env,
     product_group: :utilization do
     describe 'Utilization' do
       describe 'User Registration' do
@@ -33,13 +33,6 @@ module QA
         after do
           # Restore what the signup_enabled setting was before this test was run
           Runtime::ApplicationSettings.restore_application_settings(:signup_enabled)
-
-          user.remove_via_api!
-          group.remove_via_api!
-        rescue Resource::ApiFabricator::ResourceNotDeletedError
-          # ignore and leave for other cleanup tasks.
-          # sometimes `group.remove_api!` fails with error:
-          #   could not be deleted (400): `{"message":"Group has been already marked for deletion"}`
         end
 
         context 'when adding and removing a group member' do

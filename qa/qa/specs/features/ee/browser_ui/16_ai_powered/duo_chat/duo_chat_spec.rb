@@ -5,7 +5,7 @@ module QA
   RSpec.describe 'Ai-powered', product_group: :duo_chat do
     describe 'Duo Chat' do
       let(:project) { create(:project, name: 'duo-chat-project') }
-      let(:token) { Resource::PersonalAccessToken.fabricate!.token }
+      let(:token) { Runtime::UserStore.default_api_client.personal_access_token }
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
       # Determine whether we are running against dotcom or a self managed cloud connector by checking
       # the base_url of the direct connection endpoint. This lets us determine the expected response.
