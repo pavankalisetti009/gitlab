@@ -46,7 +46,7 @@ export default {
       key: 'status',
       label: __('Status'),
       class: '!gl-bg-transparent gl-truncate',
-      thClass: 'gl-w-1/8 sm:max-xl:gl-w-1/6',
+      thClass: 'gl-w-1/8 sm:gl-w-1/6 xl:gl-w-1/8',
     },
   ],
   components: {
