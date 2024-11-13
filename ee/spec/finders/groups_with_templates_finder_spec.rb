@@ -29,31 +29,49 @@ RSpec.describe GroupsWithTemplatesFinder, :saas, feature_category: :source_code_
     create(:project, namespace: subgroup_3)
     create(:gitlab_subscription, :ultimate, namespace: group_1)
     create(:gitlab_subscription, :premium, namespace: group_2)
+    create(:group_member, user: user, group: subgroup_1)
+    create(:group_member, user: user, group: subgroup_4)
   end
 
   shared_examples 'groups_with_templates' do
     describe 'without group id' do
-      it 'returns all groups' do
-        is_expected.to contain_exactly(group_1, group_2, group_3)
+      context 'when feature flag "remove_non_user_group_templates" is disabled' do
+        before do
+          stub_feature_flags(remove_non_user_group_templates: false)
+        end
+
+        it 'returns all groups' do
+          is_expected.to contain_exactly(group_1, group_2, group_3)
+        end
       end
 
-      context 'when namespace checked' do
+      context 'when feature flag "remove_non_user_group_templates" is enabled' do
         before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_feature_flags(remove_non_user_group_templates: true)
         end
 
-        it 'returns groups on ultimate/premium plan' do
-          is_expected.to contain_exactly(group_1, group_2)
+        it 'returns all groups the user belongs to' do
+          is_expected.to contain_exactly(group_1)
         end
 
-        context 'with subgroup with template' do
+        context 'when namespace checked' do
           before do
-            subgroup_4.update!(custom_project_templates_group_id: subgroup_5.id)
-            create(:project, namespace: subgroup_5)
+            stub_ee_application_setting(should_check_namespace_plan: true)
           end
 
           it 'returns groups on ultimate/premium plan' do
-            is_expected.to contain_exactly(group_1, group_2, subgroup_4)
+            is_expected.to contain_exactly(group_1)
+          end
+
+          context 'with subgroup with template' do
+            before do
+              subgroup_4.update!(custom_project_templates_group_id: subgroup_5.id)
+              create(:project, namespace: subgroup_5)
+            end
+
+            it 'returns groups on ultimate/premium plan' do
+              is_expected.to contain_exactly(group_1, subgroup_4)
+            end
           end
         end
       end

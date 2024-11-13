@@ -93,6 +93,7 @@ export default {
               (sourceData) =>
                 produce(sourceData, (draftData) => {
                   const { mappedAgents, unmappedAgents } = draftData.namespace;
+
                   let addTo;
                   let removeFrom;
 
@@ -104,8 +105,12 @@ export default {
                     removeFrom = unmappedAgents;
                   }
 
-                  addTo.nodes.push(agent);
-                  removeFrom.nodes = removeFrom.nodes.filter((node) => node.id !== agent.id);
+                  const targetAgentIndex = removeFrom.nodes.findIndex(
+                    (node) => node.id === agent.id,
+                  );
+
+                  addTo.nodes.push(removeFrom.nodes[targetAgentIndex]);
+                  removeFrom.nodes.splice(targetAgentIndex, 1);
                 }),
             );
           },

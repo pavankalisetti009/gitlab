@@ -181,8 +181,8 @@ export default {
             </gl-link>
           </template>
           <template v-else>
-            <span class="gl-text-gray-400">{{ item.namespace.fullName }}</span>
-            <gl-icon name="hourglass" class="gl-text-gray-400" />
+            <span class="gl-text-subtle">{{ item.namespace.fullName }}</span>
+            <gl-icon name="hourglass" variant="subtle" />
           </template>
         </div>
       </template>

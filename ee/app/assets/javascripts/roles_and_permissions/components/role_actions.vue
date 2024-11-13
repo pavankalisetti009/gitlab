@@ -84,7 +84,7 @@ export default {
       @action="showCopiedToClipboardToast"
     >
       <template #list-item>
-        <gl-icon name="copy-to-clipboard" class="gl-mr-2 gl-text-gray-400" />
+        <gl-icon name="copy-to-clipboard" class="gl-mr-2" variant="subtle" />
         <gl-sprintf :message="idText">
           <template #id>{{ roleId }}</template>
         </gl-sprintf>

@@ -298,6 +298,7 @@ module EE
       scope :with_invited_groups, -> { preload(:invited_groups) }
 
       scope :with_security_setting, -> { preload(:security_setting) }
+      scope :with_scan_result_policy_reads, -> { preload(:scan_result_policy_reads) }
 
       scope :by_marked_for_deletion_on, ->(marked_for_deletion_on) do
         where(marked_for_deletion_at: marked_for_deletion_on)

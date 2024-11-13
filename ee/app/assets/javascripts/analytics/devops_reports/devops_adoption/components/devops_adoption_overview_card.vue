@@ -58,7 +58,7 @@ export default {
 <template>
   <div class="devops-overview-card gl-mb-4 gl-flex gl-grow gl-flex-col md:gl-mr-5">
     <div class="gl-mb-3 gl-flex gl-items-center" data-testid="card-title">
-      <gl-icon :name="icon" class="gl-mr-3 gl-text-gray-500" />
+      <gl-icon :name="icon" class="gl-mr-3" variant="subtle" />
       <gl-button
         v-if="displayMeta"
         class="gl-font-md gl-font-bold"

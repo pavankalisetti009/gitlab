@@ -90,12 +90,34 @@ describe('workspaces/agent_mapping/components/get_agents_with_mapping_status_que
                 {
                   id: 'gid://gitlab/Clusters::Agent/1',
                   name: 'rootgroup-agent',
+                  project: {
+                    id: 'gid://gitlab/Project/101',
+                    name: 'GitLab Agent One',
+                  },
                   mappingStatus: AGENT_MAPPING_STATUS_MAPPED,
+                  connections: {
+                    nodes: [
+                      {
+                        connectedAt: '2023-04-29T18:24:34Z',
+                      },
+                    ],
+                  },
                 },
                 {
                   id: 'gid://gitlab/Clusters::Agent/2',
                   name: 'rootgroup-agent-2',
+                  project: {
+                    name: 'GitLab Agent Two',
+                    id: 'gid://gitlab/Project/102',
+                  },
                   mappingStatus: AGENT_MAPPING_STATUS_UNMAPPED,
+                  connections: {
+                    nodes: [
+                      {
+                        connectedAt: '2023-04-29T18:24:34Z',
+                      },
+                    ],
+                  },
                 },
               ],
             },

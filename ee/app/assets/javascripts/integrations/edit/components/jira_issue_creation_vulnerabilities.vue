@@ -276,7 +276,7 @@ export default {
             />
           </gl-button-group>
           <p v-if="projectKeyWarning" class="gl-my-0">
-            <gl-icon name="warning" class="gl-text-orange-500" />
+            <gl-icon name="warning" variant="warning" />
             {{ projectKeyWarning }}
           </p>
         </div>

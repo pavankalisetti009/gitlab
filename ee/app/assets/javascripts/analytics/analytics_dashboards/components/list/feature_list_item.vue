@@ -52,7 +52,7 @@ export default {
 <template>
   <li class="!gl-flex gl-items-center !gl-px-5">
     <div class="gl-float-left gl-mr-4 gl-flex gl-items-center">
-      <gl-icon name="cloud-gear" class="gl-mr-3 gl-text-gray-200" :size="16" />
+      <gl-icon name="cloud-gear" class="gl-mr-3" :size="16" variant="disabled" />
     </div>
     <div class="gl-flex gl-grow gl-items-center gl-justify-between">
       <div class="gl-flex gl-flex-col">

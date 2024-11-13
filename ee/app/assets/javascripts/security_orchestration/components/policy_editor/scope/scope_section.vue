@@ -372,7 +372,7 @@ export default {
     <div v-else class="gl-mt-2 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <template v-if="showLinkedSppItemsError">
         <div data-testid="policy-scope-project-error" class="gl-flex gl-items-center gl-gap-3">
-          <gl-icon class="gl-text-red-500" name="status_warning" />
+          <gl-icon name="status_warning" variant="danger" />
           <p data-testid="policy-scope-project-error-text" class="gl-m-0 gl-text-red-500">
             {{ $options.i18n.policyScopeErrorText }}
           </p>

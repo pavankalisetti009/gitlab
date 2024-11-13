@@ -144,7 +144,7 @@ export default {
           class="gl-ml-4 gl-inline-flex gl-items-center"
           data-testid="related-jira-issues-count"
         >
-          <gl-icon name="issues" class="gl-mr-2 gl-text-gray-500" />
+          <gl-icon name="issues" class="gl-mr-2" variant="subtle" />
           {{ issuesCount }}
         </span>
         <create-jira-issue

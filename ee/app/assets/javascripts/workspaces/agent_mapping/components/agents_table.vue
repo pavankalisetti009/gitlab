@@ -4,6 +4,7 @@ import { __ } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { AGENT_MAPPING_STATUS_MAPPED, AGENT_MAPPING_STATUS_UNMAPPED } from '../constants';
+import AgentDetailsPopover from './agent_details_popover.vue';
 import AgentMappingStatusToggle from './agent_mapping_status_toggle.vue';
 import ToggleAgentMappingStatusMutation from './toggle_agent_mapping_status_mutation.vue';
 
@@ -45,6 +46,7 @@ export default {
     GlLoadingIcon,
     GlTable,
     CrudComponent,
+    AgentDetailsPopover,
     AgentMappingStatusToggle,
     ToggleAgentMappingStatusMutation,
   },
@@ -113,7 +115,8 @@ export default {
         <div v-safe-html="emptyStateMessage" class="text-center"></div>
       </template>
       <template #cell(name)="{ item }">
-        <span data-testid="agent-name">{{ item.name }}</span>
+        <span id="agent-name" data-testid="agent-name">{{ item.name }}</span>
+        <agent-details-popover :agent="item" />
       </template>
       <template v-if="displayMappingStatus" #cell(mappingStatusLabel)="{ item }">
         <gl-badge :variant="item.statusBadge.variant" data-testid="agent-mapping-status-label">{{

@@ -127,7 +127,7 @@ describe('DevopsAdoptionOverviewTable', () => {
         it('grays the text out', () => {
           const name = findColRowChild(TABLE_TEST_IDS_NAMESPACE, 1, 'span');
 
-          expect(name.classes()).toStrictEqual(['gl-text-gray-400']);
+          expect(name.classes()).toStrictEqual(['gl-text-subtle']);
         });
 
         it('does not include a link to the group DevOps page', () => {

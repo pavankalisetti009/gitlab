@@ -82,7 +82,7 @@ export default {
         <div class="gl-text-tertiary">{{ upstreamPipeline.project.full_name }}</div>
       </gl-tooltip>
 
-      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle gl-text-tertiary" />
+      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle" variant="subtle" />
     </template>
 
     <ci-icon
@@ -97,7 +97,7 @@ export default {
     </gl-tooltip>
 
     <template v-if="hasDownstreamPipelines">
-      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle gl-text-tertiary" />
+      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle" variant="subtle" />
 
       <div
         v-for="(pipeline, index) in shownDownstreamPipelines"

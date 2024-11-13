@@ -66,7 +66,7 @@ export default {
     </gl-popover>
 
     <slot name="trigger">
-      <gl-icon :id="target" class="gl-text-blue-600" :name="iconName" />
+      <gl-icon :id="target" :name="iconName" variant="info" />
     </slot>
   </div>
 </template>

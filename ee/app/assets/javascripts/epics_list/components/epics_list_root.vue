@@ -350,7 +350,7 @@ export default {
         :title="__('Blocking epics')"
         data-testid="issuable-blocking-count"
       >
-        <gl-icon name="entity-blocking" class="gl-text-orange-500" />
+        <gl-icon name="entity-blocking" variant="warning" />
         {{ issuable.blockingCount }}
       </li>
       <li

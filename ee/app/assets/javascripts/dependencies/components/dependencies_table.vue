@@ -155,7 +155,7 @@ export default {
   >
     <template #head(location)="data">
       {{ data.label }}
-      <gl-icon id="location-info" name="information-o" class="gl-ml-2 gl-text-blue-600" />
+      <gl-icon id="location-info" name="information-o" class="gl-ml-2" variant="info" />
       <gl-popover
         target="location-info"
         placement="top"
@@ -219,7 +219,7 @@ export default {
         href="#"
         @click.native="rowExpanded(toggleDetails, item)"
       >
-        <gl-icon name="warning" class="mr-1 gl-text-orange-500" />
+        <gl-icon name="warning" class="mr-1" variant="warning" />
         {{
           n__(
             'Dependencies|%d vulnerability detected',

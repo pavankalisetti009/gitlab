@@ -116,7 +116,7 @@ export default {
             $options.i18n.inProgress
           }}</gl-badge>
           <gl-badge v-if="hasError(item)" variant="danger" class="gl-ml-2">
-            <gl-icon name="status-alert" class="gl-mr-2 gl-text-red-500" />
+            <gl-icon name="status-alert" class="gl-mr-2" variant="danger" />
             {{ errorBadgeContent(item) }}
           </gl-badge>
         </div>

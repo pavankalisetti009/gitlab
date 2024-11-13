@@ -59,6 +59,6 @@ export default {
         </gl-sprintf>
       </template>
     </gl-popover>
-    <gl-icon :id="id" class="gl-text-red-600" name="error" />
+    <gl-icon :id="id" name="error" variant="danger" />
   </div>
 </template>
