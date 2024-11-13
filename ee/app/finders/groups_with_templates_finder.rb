@@ -27,7 +27,14 @@ class GroupsWithTemplatesFinder
   end
 
   def simple_group_search(groups)
-    groups = group_id ? groups.find_by(id: group_id)&.self_and_ancestors : groups # rubocop: disable CodeReuse/ActiveRecord
+    groups = if group_id
+               groups.find_by_id(group_id)&.self_and_ancestors
+             elsif ::Feature.enabled?(:remove_non_user_group_templates, user)
+               groups.id_in(user.groups)&.self_and_hierarchy
+             else
+               groups
+             end
+
     return Group.none unless groups
 
     groups.with_project_templates
