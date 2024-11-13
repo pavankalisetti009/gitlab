@@ -48,14 +48,6 @@ module RemoteDevelopment
               persisted_workspace.desired_state = States::RUNNING
             end
 
-            # Ensure workspaces are terminated after max time-to-live. This is a temporary approach, we eventually want
-            # to replace this with some mechanism to detect workspace activity and only shut down inactive workspaces.
-            # Until then, this is the workaround to ensure workspaces don't live indefinitely.
-            # See https://gitlab.com/gitlab-org/gitlab/-/issues/390597
-            if (persisted_workspace.created_at + persisted_workspace.max_hours_before_termination.hours).past?
-              persisted_workspace.desired_state = States::TERMINATED
-            end
-
             persisted_workspace.actual_state = actual_state
 
             # In some cases a deployment resource version may not be present, e.g. if the initial creation request for

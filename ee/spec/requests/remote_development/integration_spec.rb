@@ -9,11 +9,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"
 
+  let(:states) { ::RemoteDevelopment::WorkspaceOperations::States }
   let(:agent_admin_user) { create(:user, name: "Agent Admin User") }
   # Agent setup
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
   let(:agent_token) { create(:cluster_agent_token, agent: agent) }
-  let(:cluster_agents_query) do
+  let(:workspaces_agents_config_query) do
     <<~GRAPHQL
       query {
           namespace(fullPath: "#{common_parent_namespace.full_path}") {
@@ -41,27 +42,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
   let(:dns_zone) { "integration-spec-workspaces.localdev.me" }
-  let(:network_policy_enabled) { true }
   let(:workspaces_per_user_quota) { 20 }
   let(:workspaces_quota) { 100 }
-  let(:default_max_hours_before_termination) { 48 }
-  let(:max_hours_before_termination_limit) { 240 }
-
-  let(:expected_agent_config) do
-    {
-      "id" => "gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/#{workspaces_agent_config.id}",
-      "projectId" => agent_project.id.to_s,
-      "enabled" => true,
-      "gitlabWorkspacesProxyNamespace" => "gitlab-workspaces",
-      "networkPolicyEnabled" => network_policy_enabled,
-      "dnsZone" => dns_zone,
-      "workspacesPerUserQuota" => workspaces_per_user_quota,
-      "workspacesQuota" => workspaces_quota,
-      "defaultMaxHoursBeforeTermination" => default_max_hours_before_termination,
-      "maxHoursBeforeTerminationLimit" => max_hours_before_termination_limit
-    }
-  end
-
   let(:user) { create(:user, name: "Workspaces User", email: "workspaces-user@example.org") }
   let(:current_user) { user }
   let(:common_parent_namespace_name) { "common-parent-group" }
@@ -135,52 +117,82 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       namespace: workspace_project_namespace, developers: user)
   end
 
+  let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
+
+  let(:agent_config_file_hash) do
+    {
+      remote_development: {
+        enabled: true,
+        dns_zone: dns_zone,
+        workspaces_per_user_quota: workspaces_per_user_quota,
+        workspaces_quota: workspaces_quota,
+        image_pull_secrets: image_pull_secrets
+      }
+    }
+  end
+
   let(:agent_project) do
-    create(:project, path: "agent-project", developers: user, namespace: agent_project_namespace)
+    create(:project, :in_group, path: "agent-project", namespace: agent_project_namespace, developers: user)
   end
 
   let(:agent) do
     create(:ee_cluster_agent, project: agent_project, created_by_user: agent_admin_user, project_id: agent_project.id)
   end
 
-  let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
+  def do_create_workspaces_agent_config
+    # Perform an agent update post which will cause a workspaces_agent_config record to be created
+    # based on the cluster agent's config file.
 
-  # TODO: We should create the workspaces_agent_config via an API call to update the agent config
-  #       with the relevant fixture values in its config file to represent a remote_development enabled agent.
-  #       And, as we migrate the settings from the agent config file to the settings UI, we should add
-  #       simulated API calls for setting the values that way too.
-  let!(:workspaces_agent_config) do
-    create(
-      :workspaces_agent_config,
-      agent: agent,
-      gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
-      dns_zone: dns_zone,
-      network_policy_enabled: network_policy_enabled,
-      workspaces_per_user_quota: workspaces_per_user_quota,
-      workspaces_quota: workspaces_quota,
-      default_max_hours_before_termination: default_max_hours_before_termination,
-      max_hours_before_termination_limit: max_hours_before_termination_limit,
-      image_pull_secrets: image_pull_secrets
-    )
-  end
-
-  let(:namespace_create_remote_development_cluster_agent_mapping_create_mutation_args) do
-    {
-      namespace_id: common_parent_namespace.to_global_id.to_s,
-      cluster_agent_id: agent.to_global_id.to_s
+    params = {
+      agent_id: agent.id,
+      agent_config: agent_config_file_hash
     }
-  end
 
-  before do
-    stub_licensed_features(remote_development: true)
-    allow(SecureRandom).to receive(:alphanumeric) { random_string }
+    jwt_token = JWT.encode(
+      { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
+      Gitlab::Kas.secret,
+      "HS256"
+    )
+    agent_token_headers = {
+      "Authorization" => "Bearer #{agent_token.token}",
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
+    }
+    agent_configuration_url = api("/internal/kubernetes/agent_configuration", personal_access_token: agent_token)
 
-    allow(Gitlab::Kas).to receive(:secret).and_return(jwt_secret)
+    post agent_configuration_url, params: params, headers: agent_token_headers, as: :json
 
-    allow(workspace_project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
+    # The internal kubernetes agent_configuration API endpoint does not return any response,
+    # it only returns 204 No Content.
+    expect(response).to have_gitlab_http_status(:no_content)
+
+    workspaces_agent_config = RemoteDevelopment::WorkspacesAgentConfig.find_by_cluster_agent_id(agent.id)
+
+    # Get the agent config via the GraphQL API to verify it was created correctly
+    get_graphql(workspaces_agents_config_query, current_user: agent_admin_user)
+    expected_agent_config =
+      {
+        "id" => "gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/#{workspaces_agent_config.id}",
+        "projectId" => agent_project.id.to_s,
+        "enabled" => true,
+        "gitlabWorkspacesProxyNamespace" => "gitlab-workspaces",
+        "networkPolicyEnabled" => true,
+        "dnsZone" => dns_zone,
+        "workspacesPerUserQuota" => workspaces_per_user_quota,
+        "workspacesQuota" => workspaces_quota,
+        "defaultMaxHoursBeforeTermination" => 24,
+        "maxHoursBeforeTerminationLimit" => 120
+      }
+    expect(
+      graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
+    ).to eq(expected_agent_config)
   end
 
   def do_create_mapping
+    namespace_create_remote_development_cluster_agent_mapping_create_mutation_args =
+      {
+        namespace_id: common_parent_namespace.to_global_id.to_s,
+        cluster_agent_id: agent.to_global_id.to_s
+      }
     do_graphql_mutation_post(
       name: :namespace_create_remote_development_cluster_agent_mapping,
       input: namespace_create_remote_development_cluster_agent_mapping_create_mutation_args,
@@ -188,21 +200,14 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     )
   end
 
-  def fetch_agent_config
-    get_graphql(cluster_agents_query, current_user: agent_admin_user)
-
-    expect(
-      graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
-    ).to eq(expected_agent_config)
-
-    graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :id)
-  end
-
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
-  def do_create_workspace(cluster_agent_id)
+  def do_create_workspace
+    # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
+    cluster_agent_gid = "gid://gitlab/Clusters::Agent/#{agent.id}"
+
     create_mutation_response = do_graphql_mutation_post(
       name: :workspace_create,
-      input: workspace_create_mutation_args(cluster_agent_id),
+      input: workspace_create_mutation_args(cluster_agent_gid),
       user: user
     )
 
@@ -259,12 +264,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   # rubocop:enable Metrics/AbcSize
 
-  def workspace_create_mutation_args(cluster_agent_id)
+  # @param [String] cluster_agent_gid
+  def workspace_create_mutation_args(cluster_agent_gid)
     {
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: states::RUNNING,
       editor: "webide",
       max_hours_before_termination: 24,
-      cluster_agent_id: cluster_agent_id,
+      cluster_agent_id: cluster_agent_gid,
       project_id: workspace_project.to_global_id.to_s,
       devfile_ref: devfile_ref,
       devfile_path: devfile_path,
@@ -274,10 +280,22 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     }
   end
 
+  # @param [RemoteDevelopment::Workspace] workspace
+  def do_start_workspace(workspace)
+    do_change_workspace_state(workspace: workspace, desired_state: states::RUNNING)
+  end
+
+  # @param [RemoteDevelopment::Workspace] workspace
   def do_stop_workspace(workspace)
+    do_change_workspace_state(workspace: workspace, desired_state: states::STOPPED)
+  end
+
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [String] desired_state
+  def do_change_workspace_state(workspace:, desired_state:)
     workspace_update_mutation_args = {
       id: global_id_of(workspace),
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED
+      desired_state: desired_state
     }
 
     do_graphql_mutation_post(
@@ -293,6 +311,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(workspace.reload.desired_state_updated_at).to eq(Time.current)
   end
 
+  # @param [Symbol] name
+  # @param [Hash] input
+  # @param [User] user
   def do_graphql_mutation_post(name:, input:, user:)
     mutation = graphql_mutation(name, input)
     post_graphql_mutation(mutation, current_user: user)
@@ -302,14 +323,11 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     mutation_response
   end
 
-  def simulate_agentk_reconcile_post(workspace_agent_infos:, update_type:, agent_token:)
-    # Add `travel(...)` based on full or partial reconciliation interval in response body
-    partial_reconciliation_interval_seconds =
-      RemoteDevelopment::Settings
-        .get([:full_reconciliation_interval_seconds, :partial_reconciliation_interval_seconds])
-        .fetch(:partial_reconciliation_interval_seconds)
-        .to_i
-    travel(partial_reconciliation_interval_seconds)
+  # @param [Hash] params
+  # @param [QA::Resource::Clusters::AgentToken] agent_token
+  # @return [Hash] response_json with deep symbolized keys
+  def do_reconcile_post(params:, agent_token:)
+    # Custom logic to perform the reconcile post for a _REQUEST_ spec
 
     jwt_token = JWT.encode(
       { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
@@ -320,110 +338,134 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       "Authorization" => "Bearer #{agent_token.token}",
       Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
     }
-
-    post_params = {
-      update_type: update_type,
-      workspace_agent_infos: workspace_agent_infos
-    }
     reconcile_url = api("/internal/kubernetes/modules/remote_development/reconcile", personal_access_token: agent_token)
-    post reconcile_url, params: post_params, headers: agent_token_headers, as: :json
+
+    post reconcile_url, params: params, headers: agent_token_headers, as: :json
 
     expect(response).to have_gitlab_http_status(:created)
-    response_json = json_response.deep_symbolize_keys
-
-    reconciliation_interval_from_response =
-      response_json.fetch(:settings).fetch(:partial_reconciliation_interval_seconds).to_i
-    expect(reconciliation_interval_from_response).to eq(partial_reconciliation_interval_seconds)
-
-    response_json
+    json_response.deep_symbolize_keys
   end
 
-  it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do
-    # CREATE THE MAPPING VIA GRAPHQL API, SO WE HAVE PROPER AUTHORIZATION
-    do_create_mapping
+  shared_examples 'workspace lifecycle' do
+    before do
+      stub_licensed_features(remote_development: true)
+      allow(SecureRandom).to receive(:alphanumeric) { random_string }
 
-    # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
-    cluster_agent_id = fetch_agent_config
+      allow(Gitlab::Kas).to receive(:secret).and_return(jwt_secret)
 
-    # DO THE INITAL WORKSPACE CREATION VIA GRAPHQL API
-    workspace = do_create_workspace(cluster_agent_id)
-
-    additional_args_for_expected_config_to_apply =
-      build_additional_args_for_expected_config_to_apply(
-        network_policy_enabled: network_policy_enabled,
-        dns_zone: dns_zone,
-        namespace_path: workspace_project_namespace.full_path,
-        project_name: workspace_project_name
-      )
-
-    # SIMULATE FIRST POLL FROM AGENTK TO PICK UP NEW WORKSPACE
-    simulate_first_poll(
-      workspace: workspace.reload,
-      **additional_args_for_expected_config_to_apply
-    ) do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type,
-        agent_token: agent_token
-      )
+      allow(workspace_project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
     end
 
-    # noinspection RubyResolve
-    expect(workspace.reload.responded_to_agent_at).to eq(Time.current)
+    it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do # rubocop:disable RSpec/NoExpectationExample -- the expectations are in the called methods
+      # CREATE THE MAPPING VIA GRAPHQL API, SO WE HAVE PROPER AUTHORIZATION
+      do_create_mapping
 
-    # SIMULATE SECOND POLL FROM AGENTK TO UPDATE WORKSPACE TO RUNNING STATE
-    simulate_second_poll(workspace: workspace.reload) do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type,
-        agent_token: agent_token
-      )
-    end
+      # CREATE THE WorkspacesAgentConfig VIA GRAPHQL API
+      do_create_workspaces_agent_config
 
-    # UPDATE WORKSPACE DESIRED_STATE TO STOPPED VIA GRAPHQL API
-    do_stop_workspace(workspace)
+      # CREATE WORKSPACE VIA GRAPHQL API
+      workspace = do_create_workspace
 
-    # SIMULATE THIRD POLL FROM AGENTK TO UPDATE WORKSPACE TO STOPPING STATE
-    simulate_third_poll(
-      workspace: workspace.reload,
-      **additional_args_for_expected_config_to_apply
-    ) do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
+      additional_args_for_expected_config_to_apply =
+        build_additional_args_for_expected_config_to_apply(
+          network_policy_enabled: true,
+          dns_zone: dns_zone,
+          namespace_path: workspace_project_namespace.full_path,
+          project_name: workspace_project_name,
+          image_pull_secrets: image_pull_secrets
+        )
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK SENDING NEW WORKSPACE
+      simulate_first_poll(
+        workspace: workspace.reload,
         agent_token: agent_token,
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type
+        **additional_args_for_expected_config_to_apply
       )
-    end
 
-    # SIMULATE FOURTH POLL FROM AGENTK TO UPDATE WORKSPACE TO STOPPED STATE
-    simulate_fourth_poll(workspace: workspace.reload) do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
-        agent_token: agent_token,
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type
-      )
-    end
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO RUNNING ACTUAL_STATE
+      simulate_second_poll(workspace: workspace.reload, agent_token: agent_token)
 
-    # SIMULATE FIFTH POLL FROM AGENTK FOR PARTIAL RECONCILE TO SHOW NO RAILS_INFOS ARE SENT
-    simulate_fifth_poll do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
-        agent_token: agent_token,
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type
-      )
-    end
+      # UPDATE WORKSPACE DESIRED_STATE TO STOPPED VIA GRAPHQL API
+      do_stop_workspace(workspace)
 
-    # SIMULATE SIXTH POLL FROM AGENTK FOR FULL RECONCILE TO SHOW ALL WORKSPACES ARE SENT IN RAILS_INFOS
-    simulate_sixth_poll(
-      workspace: workspace.reload,
-      **additional_args_for_expected_config_to_apply
-    ) do |workspace_agent_infos:, update_type:|
-      simulate_agentk_reconcile_post(
+      # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO STOPPED DESIRED_STATE
+      simulate_third_poll(
+        workspace: workspace.reload,
         agent_token: agent_token,
-        workspace_agent_infos: workspace_agent_infos,
-        update_type: update_type
+        **additional_args_for_expected_config_to_apply
       )
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
+      simulate_fourth_poll(workspace: workspace.reload, agent_token: agent_token)
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
+      simulate_fifth_poll(workspace: workspace.reload, agent_token: agent_token)
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK FOR PARTIAL RECONCILE TO SHOW NO RAILS_INFOS ARE SENT
+      simulate_sixth_poll(agent_token: agent_token)
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK FOR FULL RECONCILE TO SHOW ALL WORKSPACES ARE SENT IN RAILS_INFOS
+      simulate_seventh_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
+
+      # UPDATE WORKSPACE DESIRED_STATE BACK TO RUNNING VIA GRAPHQL API
+      do_start_workspace(workspace)
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO RUNNING DESIRED_STATE
+      simulate_eighth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO RUNNING ACTUAL_STATE
+      simulate_ninth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        # TRAVEL FORWARD IN TIME MAX_ACTIVE_HOURS_BEFORE_STOP HOURS
+        time_to_travel_after_poll: workspace.workspaces_agent_config.max_active_hours_before_stop.hours
+      )
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO STOPPED DESIRED_STATE
+      simulate_tenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
+      simulate_eleventh_poll(workspace: workspace.reload, agent_token: agent_token)
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
+      simulate_twelfth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        # TRAVEL FORWARD IN TIME MAX_STOPPED_HOURS_BEFORE_TERMINATION HOURS
+        time_to_travel_after_poll: workspace.workspaces_agent_config.max_stopped_hours_before_termination.hours
+      )
+
+      # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO TERMINATED DESIRED_STATE
+      simulate_thirteenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATING ACTUAL_STATE
+      simulate_fourteenth_poll(workspace: workspace.reload, agent_token: agent_token)
+
+      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATED ACTUAL_STATE
+      simulate_fifteenth_poll(workspace: workspace.reload, agent_token: agent_token)
     end
+  end
+
+  describe "a happy path workspace lifecycle" do
+    # NOTE: Even though this is only called once, we leave it as a shared example, so that we can easily
+    #       introduce additional contexts with different behavior for temporary feature flag testing.
+    it_behaves_like 'workspace lifecycle'
   end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

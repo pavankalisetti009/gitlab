@@ -103,7 +103,7 @@ module RemoteDevelopment
     def desired_state_updated_more_recently_than_last_response_to_agent?
       return true if responded_to_agent_at.nil?
 
-      desired_state_updated_at >= responded_to_agent_at
+      desired_state_updated_at > responded_to_agent_at
     end
 
     def workspaces_count_for_current_user_and_agent

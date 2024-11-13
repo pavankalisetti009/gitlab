@@ -392,27 +392,6 @@ export default {
               />
             </gl-form-input-group>
           </gl-form-group>
-          <gl-form-group
-            data-testid="max-hours-before-termination"
-            :label="$options.i18n.form.maxHoursBeforeTermination"
-            label-for="workspace-max-hours-before-termination"
-          >
-            <gl-form-input-group>
-              <gl-form-input
-                id="workspace-max-hours-before-termination"
-                v-model="maxHoursBeforeTermination"
-                type="number"
-                required
-                autocomplete="off"
-                width="xs"
-              />
-              <template #append>
-                <div class="input-group-text">
-                  {{ $options.i18n.form.maxHoursSuffix }}
-                </div>
-              </template>
-            </gl-form-input-group>
-          </gl-form-group>
           <workspace-variables
             v-model="workspaceVariables"
             class="mb-3"

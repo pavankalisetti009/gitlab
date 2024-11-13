@@ -37,7 +37,6 @@ const findTableRowsAsData = (wrapper) =>
       },
       nameText: x.find('[data-testid="workspace-name"]').text(),
       createdAt: x.findComponent(TimeAgoTooltip).props().time,
-      terminates: x.find('[data-testid="workspace-termination"]').text(),
     };
 
     return rowData;
@@ -102,7 +101,6 @@ describe('workspaces/common/components/workspaces_list/workspaces_table.vue', ()
           return {
             nameText: workspace.name,
             createdAt: workspace.createdAt,
-            terminates: workspace.name === 'workspace-1-1-idmi02' ? 'in 54 minutes' : 'in 2 days',
             workspaceActionsProps: {
               workspaceDisplayState,
             },

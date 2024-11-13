@@ -21,6 +21,7 @@ module RemoteDevelopment
               .map(Input::AgentInfosObserver.method(:observe))
               .map(Persistence::WorkspacesFromAgentInfosUpdater.method(:update))
               .map(Persistence::OrphanedWorkspacesObserver.method(:observe))
+              .map(Persistence::WorkspacesLifecycleManager.method(:manage))
               .map(Persistence::WorkspacesToBeReturnedFinder.method(:find))
               .map(Output::ResponsePayloadBuilder.method(:build))
               .map(Persistence::WorkspacesToBeReturnedUpdater.method(:update))

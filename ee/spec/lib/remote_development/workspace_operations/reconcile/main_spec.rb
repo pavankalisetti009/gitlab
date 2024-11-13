@@ -19,6 +19,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, feature_
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfosObserver, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesFromAgentInfosUpdater, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::OrphanedWorkspacesObserver, :map],
+      [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesLifecycleManager, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadBuilder, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedUpdater, :map],

@@ -6,13 +6,13 @@ require 'spec_helper'
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integration", :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  shared_examples 'max_hours_before_termination handling' do
-    it 'sets desired_state to Terminated' do
+  shared_examples 'workspace lifecycle management expectations' do |expected_desired_state:|
+    it "sets desired_state to #{expected_desired_state}" do
       response = subject
       expect(response[:message]).to be_nil
       expect(response.dig(:payload, :workspace_rails_infos)).not_to be_nil
 
-      expect(workspace.reload.desired_state).to eq(RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
+      expect(workspace.reload.desired_state).to eq(expected_desired_state)
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     end
   end
 
-  let_it_be(:image_pull_secrets) { [{ "name" => "secret-name", "namespace" => "secret-namespace" }] }
+  let_it_be(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }
   let_it_be(:dns_zone) { 'workspaces.localdev.me' }
   let_it_be(:user) { create(:user) }
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
@@ -53,10 +53,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent, image_pull_secrets: image_pull_secrets)
   end
 
-  let(:egress_ip_rules) { agent.unversioned_latest_workspaces_agent_config.network_policy_egress }
-  let(:max_resources_per_workspace) { agent.unversioned_latest_workspaces_agent_config.max_resources_per_workspace }
+  let(:unversioned_latest_workspaces_agent_config) { agent.unversioned_latest_workspaces_agent_config }
+  let(:egress_ip_rules) { unversioned_latest_workspaces_agent_config.network_policy_egress }
+  let(:max_resources_per_workspace) { unversioned_latest_workspaces_agent_config.max_resources_per_workspace }
   let(:default_resources_per_workspace_container) do
-    agent.unversioned_latest_workspaces_agent_config.default_resources_per_workspace_container
+    unversioned_latest_workspaces_agent_config.default_resources_per_workspace_container
   end
 
   let(:full_reconciliation_interval_seconds) { 3600 }
@@ -68,7 +69,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   subject(:response) do
     described_class.main(
-      agent: agent,
+      agent: agent.reload,
       logger: logger,
       original_params: {
         workspace_agent_infos: workspace_agent_infos,
@@ -135,7 +136,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
       let(:workspace_agent_info) do
         create_workspace_agent_info_hash(
-          workspace: workspace,
+          workspace: workspace.reload,
           previous_actual_state: previous_actual_state,
           current_actual_state: current_actual_state,
           workspace_exists: workspace_exists,
@@ -171,33 +172,46 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         )
       end
 
-      context 'with max_hours_before_termination expired' do
+      describe 'workspace lifecycle management' do
+        let(:max_hours_before_termination) do
+          RemoteDevelopment::WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
+        end
+
         let(:workspace) do
-          create(
+          workspace = create(
             :workspace,
             :without_realistic_after_create_timestamp_updates,
-            agent: agent,
+            agent: agent.reload,
             user: user,
             desired_state: desired_state,
             actual_state: actual_state,
-            max_hours_before_termination: 24,
-            created_at: 25.hours.ago,
+            created_at: created_at,
             force_include_all_resources: false
           )
+          workspace.update!(desired_state_updated_at: desired_state_updated_at)
+          workspace
         end
 
-        context 'when state would otherwise be sent' do
-          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+        context 'when max_active_hours_before_stop has passed' do
+          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
           let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+          let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
+          let(:desired_state_updated_at) { workspaces_agent_config.max_active_hours_before_stop.hours.ago - 1.minute }
 
-          it_behaves_like 'max_hours_before_termination handling'
+          it_behaves_like 'workspace lifecycle management expectations',
+            expected_desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED
         end
 
-        context 'when desired_state is RestartRequested and actual_state is Stopped' do
-          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RESTART_REQUESTED }
+        context 'when max_stopped_hours_before_termination has passed' do
+          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
           let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+          let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
+          let(:desired_state_updated_at) do
+            workspaces_agent_config.max_stopped_hours_before_termination.hours.ago - 1.minute
+          end
 
-          it_behaves_like 'max_hours_before_termination handling'
+          it_behaves_like 'workspace lifecycle management expectations',
+            expected_desired_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED
         end
       end
 
@@ -403,7 +417,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
               egress_ip_rules: egress_ip_rules,
               max_resources_per_workspace: max_resources_per_workspace,
               default_resources_per_workspace_container: default_resources_per_workspace_container,
-              workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
+              image_pull_secrets: image_pull_secrets
             )
           end
 
@@ -513,7 +527,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
                 egress_ip_rules: egress_ip_rules,
                 max_resources_per_workspace: max_resources_per_workspace,
                 default_resources_per_workspace_container: default_resources_per_workspace_container,
-                workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
+                image_pull_secrets: image_pull_secrets
               )
             end
 
@@ -594,7 +608,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           egress_ip_rules: egress_ip_rules,
           max_resources_per_workspace: max_resources_per_workspace,
           default_resources_per_workspace_container: default_resources_per_workspace_container,
-          workspace_image_pull_secrets: unprovisioned_workspace.workspaces_agent_config.image_pull_secrets
+          image_pull_secrets: unprovisioned_workspace.workspaces_agent_config.image_pull_secrets
         )
       end
 
