@@ -33,12 +33,17 @@ module EE
           member_role&.name || options_with_minimal_access.key(access)
         end
 
+        override :human_access_with_none
+        def human_access_with_none(access, member_role = nil)
+          human_access(access, member_role) || super
+        end
+
         override :option_descriptions
         def option_descriptions
           super.merge({
-            minimal_access: s_('MemberRole|The Minimal Access role is for users who need the least amount of access ' \
-              'into groups and projects. You can assign this role as a default, before giving a user another role ' \
-              'with more permissions.')
+            ::Gitlab::Access::MINIMAL_ACCESS => s_('MemberRole|The Minimal Access role is for users who need the ' \
+              'least amount of access into groups and projects. You can assign this role as a default, before giving ' \
+              'a user another role with more permissions.')
           })
         end
       end
@@ -46,6 +51,11 @@ module EE
       override :human_access
       def human_access
         ::Gitlab::Access.human_access(access_field, member_role)
+      end
+
+      override :human_access_with_none
+      def human_access_with_none
+        ::Gitlab::Access.human_access_with_none(access_field, member_role)
       end
 
       override :human_access_labeled

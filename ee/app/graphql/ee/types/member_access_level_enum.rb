@@ -7,7 +7,7 @@ module EE
 
       prepended do
         value 'MINIMAL_ACCESS', value: ::Gitlab::Access::MINIMAL_ACCESS,
-          description: ::Gitlab::Access.option_descriptions[:minimal_access]
+          description: ::Gitlab::Access.option_descriptions[::Gitlab::Access::MINIMAL_ACCESS]
       end
     end
   end
