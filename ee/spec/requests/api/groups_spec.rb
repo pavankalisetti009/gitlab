@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_projects do
+RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, feature_category: :groups_and_projects do
   include GroupAPIHelpers
 
   let_it_be(:ssh_certificate_1) { create(:group_ssh_certificate) }
@@ -10,9 +10,9 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
   let_it_be(:group, reload: true) { create(:group, ssh_certificates: [ssh_certificate_1, ssh_certificate_2]) }
   let_it_be(:private_group) { create(:group, :private) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
-  let_it_be(:another_user) { create(:user) }
-  let_it_be(:admin) { create(:admin) }
+  let_it_be(:user) { create(:user, organizations: [current_organization]) }
+  let_it_be(:another_user) { create(:user, organizations: [current_organization]) }
+  let_it_be(:admin) { create(:admin, organizations: [current_organization]) }
 
   before do
     group.add_owner(user)
@@ -777,7 +777,7 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
         end
 
         it 'creates a subgroup' do
-          parent = create(:group)
+          parent = create(:group, organization: current_organization)
           parent.add_owner(admin)
 
           expect do
@@ -822,7 +822,7 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
         end
 
         it 'creates a subgroup' do
-          parent = create(:group)
+          parent = create(:group, organization: current_organization)
           parent.add_owner(admin)
 
           expect do

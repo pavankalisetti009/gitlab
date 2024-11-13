@@ -148,6 +148,15 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
         it_behaves_like "empty response"
       end
     end
+
+    it 'avoids N+1 grabbing oncall_schedules and escalation_policies' do
+      create(:project, group: group)
+
+      recorder = ActiveRecord::QueryRecorder.new(skip_cached: false) { get group_group_members_path(group_id: group), params: params }
+      method_invocations = recorder.find_query('app/serializers/base_serializer.rb', 0)
+
+      expect(method_invocations.count).to eq(1)
+    end
   end
 
   describe 'PUT /groups/*group_id/-/group_members/:id/ban' do
