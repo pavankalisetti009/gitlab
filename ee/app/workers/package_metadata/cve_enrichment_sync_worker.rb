@@ -27,7 +27,6 @@ module PackageMetadata
     private
 
     def should_run?
-      return false unless Feature.enabled?(:cve_enrichment_ingestion, :instance)
       return false unless ::License.feature_available?(:dependency_scanning)
       return false if Rails.env.development? && ENV.fetch('PM_SYNC_IN_DEV', 'false') != 'true'
 
