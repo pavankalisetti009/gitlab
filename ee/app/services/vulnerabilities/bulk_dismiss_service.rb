@@ -54,7 +54,7 @@ module Vulnerabilities
       state_transitions = transition_attributes_for(vulnerability_attrs)
       system_notes = system_note_attributes_for(vulnerability_attrs)
 
-      ApplicationRecord.transaction do
+      Gitlab::Database::SecApplicationRecord.transaction do
         Vulnerabilities::StateTransition.insert_all!(state_transitions)
         # The `insert_or_update_vulnerability_reads` database trigger does not
         # update the dismissal_reason and we are moving away from using
