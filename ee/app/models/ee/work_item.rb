@@ -33,7 +33,7 @@ module EE
       scope :grouped_by_work_item, -> { group(:id) }
 
       scope :preload_indexing_data, -> do
-        includes(:namespace, :sync_object, :work_item_type, project: :project_feature)
+        includes(:namespace, :sync_object, ::Gitlab::Issues::TypeAssociationGetter.call, project: :project_feature)
       end
     end
 

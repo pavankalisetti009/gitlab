@@ -88,7 +88,9 @@ module Gitlab
         return if epic.epic_issues.blank? && work_item.child_links.blank?
 
         epic_issue_ids = epic.epic_issues.pluck(:issue_id).sort
-        epic_work_item_issue_child_ids = work_item.child_links.joins(work_item: :work_item_type).where(
+        epic_work_item_issue_child_ids = work_item.child_links.joins(
+          work_item: ::Gitlab::Issues::TypeAssociationGetter.call
+        ).where(
           ::WorkItems::Type.arel_table[:name].lower.eq('issue')
         ).pluck(:work_item_id).sort
 
