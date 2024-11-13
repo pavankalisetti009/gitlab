@@ -14,7 +14,7 @@ options:
 data_category: operational
 distribution:
   - ee
-tier:
+tiers:
   - ultimate
   - premium
   - free

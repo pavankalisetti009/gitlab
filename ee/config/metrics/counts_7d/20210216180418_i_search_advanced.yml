@@ -13,7 +13,7 @@ options:
   - i_search_advanced
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

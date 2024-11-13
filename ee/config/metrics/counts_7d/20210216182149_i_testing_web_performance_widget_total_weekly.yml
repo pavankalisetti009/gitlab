@@ -14,7 +14,7 @@ options:
   - i_testing_web_performance_widget_total
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

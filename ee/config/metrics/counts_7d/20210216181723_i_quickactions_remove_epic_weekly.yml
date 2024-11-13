@@ -13,7 +13,7 @@ options:
   - i_quickactions_remove_epic
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

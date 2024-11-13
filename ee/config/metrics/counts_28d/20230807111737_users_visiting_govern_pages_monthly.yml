@@ -39,5 +39,5 @@ performance_indicator_type:
 - smau
 distribution:
 - ee
-tier:
+tiers:
 - ultimate

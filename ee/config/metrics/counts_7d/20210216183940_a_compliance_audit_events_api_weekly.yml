@@ -13,7 +13,7 @@ options:
   - a_compliance_audit_events_api
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

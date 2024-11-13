@@ -16,7 +16,7 @@ options:
 performance_indicator_type: []
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/90163
 milestone_removed: '15.5'

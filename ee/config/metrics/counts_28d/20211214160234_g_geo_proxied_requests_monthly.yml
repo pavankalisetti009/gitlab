@@ -16,6 +16,6 @@ options:
   - g_geo_proxied_requests
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate

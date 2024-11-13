@@ -10,7 +10,7 @@ milestone: '17.6'
 time_frame: 28d
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 events:
 - name: visit_standards_adherence

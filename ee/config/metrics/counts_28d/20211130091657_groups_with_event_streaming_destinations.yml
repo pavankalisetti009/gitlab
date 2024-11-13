@@ -13,5 +13,5 @@ data_category: optional
 instrumentation_class: CountGroupsWithEventStreamingDestinationsMetric
 distribution:
 - ee
-tier:
+tiers:
 - ultimate

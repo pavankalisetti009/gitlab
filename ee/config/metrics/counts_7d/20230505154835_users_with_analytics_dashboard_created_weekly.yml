@@ -12,7 +12,7 @@ data_category: optional
 instrumentation_class: RedisHLLMetric
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 options:
   events:

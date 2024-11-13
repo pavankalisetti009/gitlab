@@ -15,7 +15,7 @@ options:
   - i_incident_management_oncall_notification_sent
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

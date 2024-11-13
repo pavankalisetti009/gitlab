@@ -13,6 +13,6 @@ instrumentation_class: CountDeploymentApprovalsMetric
 performance_indicator_type: []
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate

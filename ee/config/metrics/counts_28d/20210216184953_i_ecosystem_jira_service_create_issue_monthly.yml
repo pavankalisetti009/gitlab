@@ -13,7 +13,7 @@ options:
   - i_ecosystem_jira_service_create_issue
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

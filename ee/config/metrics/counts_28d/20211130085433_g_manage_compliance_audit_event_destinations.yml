@@ -12,7 +12,7 @@ data_category: operational
 instrumentation_class: CountEventStreamingDestinationsMetric
 distribution:
 - ee
-tier:
+tiers:
 - ultimate
 performance_indicator_type:
 - customer_health_score

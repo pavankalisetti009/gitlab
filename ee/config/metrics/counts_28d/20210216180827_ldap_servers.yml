@@ -9,7 +9,7 @@ time_frame: 28d
 data_source: system
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []

@@ -15,7 +15,7 @@ options:
     - users_viewing_analytics_group_devops_adoption
 distribution:
 - ee
-tier:
+tiers:
 - premium
 - ultimate
 performance_indicator_type: []
