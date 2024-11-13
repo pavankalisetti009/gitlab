@@ -27,6 +27,10 @@ module Gitlab
         @licenses ||= catalogue.fetch(:licenses, []).map { |x| map_from(x) }
       end
 
+      def self.latest_active_licenses
+        @latest_active_licenses ||= latest.licenses.reject(&:deprecated).sort_by(&:name)
+      end
+
       private
 
       attr_reader :catalogue

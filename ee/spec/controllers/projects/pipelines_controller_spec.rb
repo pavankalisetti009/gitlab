@@ -126,14 +126,14 @@ RSpec.describe Projects::PipelinesController do
           end
 
           it 'returns MIT license allowed status' do
-            payload_mit = payload.find { |l| l['name'] == 'MIT' }
+            payload_mit = payload.find { |l| l['name'] == 'MIT License' }
             expect(payload_mit['count']).to eq(scanner.report.licenses.find { |x| x.name == 'MIT' }.count)
             expect(payload_mit['url']).to eq("https://spdx.org/licenses/MIT.html")
             expect(payload_mit['classification']['approval_status']).to eq('allowed')
           end
 
           context 'approval_status' do
-            subject(:status) { payload.find { |l| l['name'] == 'MIT' }.dig('classification', 'approval_status') }
+            subject(:status) { payload.find { |l| l['name'] == 'MIT License' }.dig('classification', 'approval_status') }
 
             it { is_expected.to eq('allowed') }
           end
@@ -143,7 +143,7 @@ RSpec.describe Projects::PipelinesController do
               'Apache 2.0 License',
               'BSD-2-Clause',
               'Default License 2.1',
-              'MIT',
+              'MIT License',
               'unknown'
             ])
           end

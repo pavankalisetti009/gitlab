@@ -36,8 +36,8 @@ class SoftwareLicensePolicy < ApplicationRecord
   # A license is unique for its project since it can't be approved and denied.
   validates :software_license, uniqueness: { scope: [:project_id, :scan_result_policy_id] }, allow_blank: true
   validates :custom_software_license, uniqueness: { scope: [:project_id, :scan_result_policy_id] }, allow_blank: true
+  validates :software_license_spdx_identifier, length: { maximum: 255 }
 
-  scope :ordered, -> { SoftwareLicensePolicy.includes(:software_license).order("software_licenses.name ASC") }
   scope :for_project, ->(project) { where(project: project) }
   scope :for_scan_result_policy_read, ->(scan_result_policy_id) { where(scan_result_policy_id: scan_result_policy_id) }
   scope :with_license, -> { joins(:software_license) }
@@ -53,7 +53,13 @@ class SoftwareLicensePolicy < ApplicationRecord
   end
 
   scope :with_license_by_name, ->(license_name) do
-    with_license.where(SoftwareLicense.arel_table[:name].lower.in(Array(license_name).map(&:downcase)))
+    if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
+      license_names = Array.wrap(license_name).map(&:downcase)
+      related_spdx_identifiers = latest_active_licenses_by_name(license_names).map(&:id)
+      where(software_license_spdx_identifier: related_spdx_identifiers)
+    else
+      with_license.where(SoftwareLicense.arel_table[:name].lower.in(Array(license_name).map(&:downcase)))
+    end
   end
 
   scope :with_license_or_custom_license_by_name, ->(license_names) do
@@ -69,11 +75,29 @@ class SoftwareLicensePolicy < ApplicationRecord
   end
 
   scope :by_spdx, ->(spdx_identifier) do
-    with_license.where(software_licenses: { spdx_identifier: spdx_identifier })
+    if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      where(software_license_spdx_identifier: spdx_identifier)
+    else
+      with_license.where(software_licenses: { spdx_identifier: spdx_identifier })
+    end
   end
 
   def self.approval_status_values
     %w[allowed denied]
+  end
+
+  def self.latest_active_licenses
+    Gitlab::SPDX::Catalogue.latest_active_licenses
+  end
+
+  def self.latest_active_licenses_by_name(license_names)
+    latest_active_licenses.select do |license|
+      license.name.downcase.in?(license_names)
+    end
+  end
+
+  def self.latest_active_licenses_by_spdx(spdx_identifier)
+    latest_active_licenses.select { |license| license.id == spdx_identifier }
   end
 
   def approval_status
@@ -81,14 +105,20 @@ class SoftwareLicensePolicy < ApplicationRecord
   end
 
   def name
-    if Feature.enabled?(:custom_software_license, project)
-      software_license&.name || custom_software_license&.name
+    if Feature.enabled?(:static_licenses) && software_license_spdx_identifier # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      self.class.latest_active_licenses_by_spdx(software_license_spdx_identifier).first&.name
+    elsif Feature.enabled?(:custom_software_license, project) && custom_software_license
+      custom_software_license&.name
     else
       software_license&.name
     end
   end
 
   def spdx_identifier
-    software_license&.spdx_identifier
+    if Feature.enabled?(:static_licenses) && software_license_spdx_identifier # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      software_license_spdx_identifier
+    else
+      software_license&.spdx_identifier
+    end
   end
 end

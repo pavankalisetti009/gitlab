@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-RSpec.describe Gitlab::SPDX::Catalogue do
+RSpec.describe Gitlab::SPDX::Catalogue, feature_category: :software_composition_analysis do
   include StubRequests
   subject { described_class.new(catalogue_hash) }
 
@@ -94,6 +94,22 @@ RSpec.describe Gitlab::SPDX::Catalogue do
       end
 
       it { expect(subject).to be(catalogue) }
+    end
+  end
+
+  describe ".latest_active_licenses" do
+    subject(:latest_active_licenses) { described_class.latest_active_licenses }
+
+    it 'rejects deprecated licenses' do
+      expect(latest_active_licenses.find(&:deprecated)).to be_nil
+    end
+
+    it 'returns only active licenses' do
+      expect(latest_active_licenses.all?(&:deprecated)).to be_falsey
+    end
+
+    it 'returns the expected active licenses' do
+      expect(latest_active_licenses.find { |l| l.id == 'MIT' }).to be_present
     end
   end
 end

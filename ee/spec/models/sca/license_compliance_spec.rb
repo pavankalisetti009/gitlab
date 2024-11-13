@@ -86,7 +86,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
         let(:report) { create(:ci_reports_license_scanning_report) }
 
         before do
-          report.add_license(id: 'MIT', name: 'MIT')
+          report.add_license(id: 'MIT', name: 'MIT License')
           report.add_license(id: 'AML', name: 'Apple MIT License')
           report.add_license(id: 'MS-PL', name: 'Microsoft Public License')
           report.add_license(id: 'Apache-2.0', name: 'Apache-2.0 License')
@@ -372,11 +372,11 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
       end
 
       context 'when sorting policies' do
-        let(:sorted_by_name_asc) { ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT', 'unknown'] }
+        let(:sorted_by_name_asc) { ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT License', 'unknown'] }
 
         where(:attribute, :direction, :expected) do
-          sorted_by_name_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT', 'unknown']
-          sorted_by_classification_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'unknown', 'MIT']
+          sorted_by_name_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'MIT License', 'unknown']
+          sorted_by_classification_asc = ['BSD-3-Clause', 'CUSTOM_DENIED_LICENSE', 'unknown', 'MIT License']
           [
             [:classification, :asc, sorted_by_classification_asc],
             [:classification, :desc, sorted_by_classification_asc.reverse],
@@ -671,7 +671,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
       end
 
       context "when a software license record does not have an spdx identifier" do
-        let(:license_name) { 'MIT' }
+        let(:license_name) { 'MIT License' }
         let!(:policy) { create(:software_license_policy, :allowed, project: project, software_license: mit) }
 
         it "falls back to matching detections based on name rather than spdx id" do
