@@ -20,11 +20,17 @@ module EE
       end
 
       def oncall_schedules
-        object.oncall_schedules.for_project(project_ids)
+        return object.oncall_schedules.for_project(project_ids) unless object.oncall_schedules.loaded?
+
+        user_schedules = object.oncall_schedules.to_a
+        user_schedules.select { |schedule| project_ids.include?(schedule.project_id) }
       end
 
       def escalation_policies
-        object.escalation_policies.for_project(project_ids)
+        return object.escalation_policies.for_project(project_ids) unless object.escalation_policies.loaded?
+
+        user_policies = object.escalation_policies
+        user_policies.select { |policy| project_ids.include?(policy.project_id) }
       end
     end
 
