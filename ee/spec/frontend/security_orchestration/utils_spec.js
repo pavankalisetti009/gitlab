@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_USER } from '~/graphql_shared/constants';
-import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import {
   getPolicyType,
@@ -63,7 +63,6 @@ describe('decomposeApprovers', () => {
               value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
             },
           ],
-          [ROLE_TYPE]: [],
         },
       ]);
     });
@@ -89,8 +88,6 @@ describe('decomposeApprovers', () => {
             value: convertToGraphQLId(TYPENAME_GROUP, groupApprover.id),
           },
         ],
-        [USER_TYPE]: [],
-        [ROLE_TYPE]: [],
       },
     ]);
   });
@@ -105,8 +102,6 @@ describe('decomposeApprovers', () => {
             value: convertToGraphQLId(TYPENAME_USER, userApprover.id),
           },
         ],
-        [GROUP_TYPE]: [],
-        [ROLE_TYPE]: [],
       },
     ]);
   });

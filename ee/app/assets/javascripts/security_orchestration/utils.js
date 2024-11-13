@@ -26,23 +26,37 @@ export const decomposeApprovers = (existingApprovers) => {
   return existingApprovers.map((approvers) => {
     const output = {};
 
-    output[ROLE_TYPE] = approvers.roles || [];
-    output[USER_TYPE] =
-      approvers.users
-        ?.map((user) => ({
-          ...user,
-          type: USER_TYPE,
-          value: convertToGraphQLId(TYPENAME_USER, user.id),
-        }))
-        .map(convertObjectPropsToCamelCase) || [];
-    output[GROUP_TYPE] =
-      approvers.groups
-        ?.map((group) => ({
-          ...group,
-          type: GROUP_TYPE,
-          value: convertToGraphQLId(TYPENAME_GROUP, group.id),
-        }))
-        .map(convertObjectPropsToCamelCase) || [];
+    const { users = [], groups = [], roles = [] } = approvers;
+
+    const hasUsers = users.length > 0;
+    const hasGroups = groups.length > 0;
+    const hasRoles = roles.length > 0;
+
+    if (hasRoles) {
+      output[ROLE_TYPE] = approvers.roles || [];
+    }
+
+    if (hasUsers) {
+      output[USER_TYPE] =
+        approvers.users
+          .map((user) => ({
+            ...user,
+            type: USER_TYPE,
+            value: convertToGraphQLId(TYPENAME_USER, user.id),
+          }))
+          .map(convertObjectPropsToCamelCase) || [];
+    }
+
+    if (hasGroups) {
+      output[GROUP_TYPE] =
+        approvers.groups
+          .map((group) => ({
+            ...group,
+            type: GROUP_TYPE,
+            value: convertToGraphQLId(TYPENAME_GROUP, group.id),
+          }))
+          .map(convertObjectPropsToCamelCase) || [];
+    }
 
     return output;
   });
