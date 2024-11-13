@@ -60,10 +60,6 @@ module Security
           schedule_builds_count: schedule_builds_count, project: project, schedule_id: schedule_id)
       end
 
-      # def project_ids(project)
-      #   project.root_namespace.all_projects
-      # end
-
       def max_scheduled_scans_concurrency
         Gitlab::CurrentSettings.security_policy_scheduled_scans_max_concurrency
       end
