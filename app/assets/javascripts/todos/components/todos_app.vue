@@ -17,13 +17,11 @@ import Tracking from '~/tracking';
 import {
   INSTRUMENT_TAB_LABELS,
   INSTRUMENT_TODO_FILTER_CHANGE,
-  INSTRUMENT_TODO_ITEM_CLICK,
   STATUS_BY_TAB,
+  TAB_PENDING,
 } from '~/todos/constants';
 import getTodosQuery from './queries/get_todos.query.graphql';
 import getPendingTodosCount from './queries/get_pending_todos_count.query.graphql';
-import markAsDoneMutation from './mutations/mark_as_done.mutation.graphql';
-import markAsPendingMutation from './mutations/mark_as_pending.mutation.graphql';
 import TodoItem from './todo_item.vue';
 import TodosEmptyState from './todos_empty_state.vue';
 import TodosFilterBar, { SORT_OPTIONS } from './todos_filter_bar.vue';
@@ -129,7 +127,7 @@ export default {
       return !this.isLoading && this.todos.length === 0;
     },
     showMarkAllAsDone() {
-      return this.currentTab === 0 && !this.showEmptyState;
+      return this.currentTab === TAB_PENDING && !this.showEmptyState;
     },
   },
   mounted() {
@@ -176,27 +174,8 @@ export default {
         this.updateAllQueries(false);
       }
     },
-    async handleItemChanged(id, markedAsDone) {
-      await this.updateAllQueries(false);
-      this.showUndoToast(id, markedAsDone);
-    },
-    showUndoToast(todoId, markedAsDone) {
-      const message = markedAsDone ? s__('Todos|Marked as done') : s__('Todos|Marked as undone');
-      const mutation = markedAsDone ? markAsPendingMutation : markAsDoneMutation;
-
-      const { hide } = this.$toast.show(message, {
-        action: {
-          text: s__('Todos|Undo'),
-          onClick: async () => {
-            hide();
-            await this.$apollo.mutate({ mutation, variables: { todoId } });
-            this.track(INSTRUMENT_TODO_ITEM_CLICK, {
-              label: markedAsDone ? 'undo_mark_done' : 'undo_mark_pending',
-            });
-            this.updateAllQueries(false);
-          },
-        },
-      });
+    async handleItemChanged() {
+      await this.updateCounts();
     },
     updateCounts() {
       return this.$apollo.queries.pendingTodosCount.refetch();

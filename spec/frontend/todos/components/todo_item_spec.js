@@ -21,6 +21,9 @@ describe('TodoItem', () => {
         },
         ...props,
       },
+      provide: {
+        currentTab: 0,
+      },
     });
   };
 

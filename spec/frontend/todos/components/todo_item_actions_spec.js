@@ -43,11 +43,11 @@ describe('TodoItemActions', () => {
   });
 
   describe('tooltipTitle', () => {
-    it('returns null when isLoading is true', () => {
+    it('returns empty string when isLoading is true', () => {
       createComponent();
       // eslint-disable-next-line no-restricted-syntax
       wrapper.setData({ isLoading: true });
-      expect(wrapper.vm.tooltipTitle).toBeNull();
+      expect(wrapper.vm.tooltipTitle).toBe('');
     });
 
     it('returns "Mark as done" for pending todo', () => {
