@@ -14,6 +14,8 @@ module EE
       DEFAULT_NUMBER_OF_DAYS_BEFORE_REMOVAL = 7
       MASK_PASSWORD = '*****'
       ELASTIC_REQUEST_TIMEOUT = 30
+      SEAT_CONTROL_OFF = 0
+      SEAT_CONTROL_USER_CAP = 1
 
       belongs_to :file_template_project, class_name: "Project"
 
@@ -48,7 +50,7 @@ module EE
       validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
 
       jsonb_accessor :user_seat_management,
-        seat_control: [:integer, { default: 0 }]
+        seat_control: [:integer, { default: SEAT_CONTROL_OFF }]
 
       validates :user_seat_management, json_schema: { filename: "application_setting_user_seat_management" }
 
@@ -238,6 +240,8 @@ module EE
       validates :observability_backend_ssl_verification_enabled,
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
+
+      before_save :set_seat_control
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :resume_elasticsearch_indexing
@@ -571,6 +575,10 @@ module EE
     end
 
     private
+
+    def set_seat_control
+      self.seat_control = new_user_signups_cap.present? ? SEAT_CONTROL_USER_CAP : SEAT_CONTROL_OFF
+    end
 
     def elasticsearch_limited_project_exists?(project)
       project_namespaces = ::Namespace.where(id: project.namespace_id)
