@@ -22,6 +22,7 @@
 module Groups
   class SyncService < Groups::BaseService
     include Gitlab::Utils::StrongMemoize
+    include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
     extend Gitlab::Utils::Override
 
     attr_reader :updated_membership
@@ -91,6 +92,8 @@ module Groups
         prior_member_role_id: existing_member&.member_role_id,
         member_role_id: member_role_id
       )
+
+      trigger_event_to_promote_pending_members!(member)
     end
 
     def correct_access_level?(member, access_level, member_role_id)
