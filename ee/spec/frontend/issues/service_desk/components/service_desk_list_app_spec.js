@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { cloneDeep } from 'lodash';
@@ -23,6 +23,7 @@ import {
 import getServiceDeskIssuesQuery from 'ee_else_ce/issues/service_desk/queries/get_service_desk_issues.query.graphql';
 import getServiceDeskIssuesCountsQuery from 'ee_else_ce/issues/service_desk/queries/get_service_desk_issues_counts.query.graphql';
 import ServiceDeskListApp from 'ee/issues/service_desk/components/service_desk_list_app.vue';
+import ServiceDeskListAppBase from '~/issues/service_desk/components/service_desk_list_app.vue';
 import {
   getServiceDeskIssuesQueryResponse,
   getServiceDeskIssuesCountsQueryResponse,
@@ -80,7 +81,7 @@ describe('EE ServiceDeskListApp', () => {
       [getServiceDeskIssuesCountsQuery, serviceDeskIssuesCountsQueryResponse],
     ];
 
-    return mount(ServiceDeskListApp, {
+    return shallowMount(ServiceDeskListApp, {
       apolloProvider: createMockApollo(
         requestHandlers,
         {},
@@ -99,6 +100,9 @@ describe('EE ServiceDeskListApp', () => {
       provide: {
         ...defaultProvide,
         ...provide,
+      },
+      stubs: {
+        ServiceDeskListApp: ServiceDeskListAppBase,
       },
     });
   };

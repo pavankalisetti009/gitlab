@@ -4,7 +4,7 @@ description: Track key DevSecOps metrics throughout the development lifecycle.
 version: "2"
 panels:
   - visualization: usage_overview
-    title: Usage overview for %{namespaceName} %{namespaceType}
+    title: Usage overview for the %{namespaceName} %{namespaceType}
     gridAttributes:
       yPos: 0
       xPos: 0
@@ -12,7 +12,7 @@ panels:
       height: 1
     options: {}
   - visualization: vsd_lifecycle_metrics_table
-    title: 'Lifecycle metrics: %{namespaceName} (%{namespaceType})'
+    title: 'Lifecycle metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
       yPos: 1
       xPos: 0
@@ -20,7 +20,7 @@ panels:
       height: 5
     options: {}
   - visualization: vsd_dora_metrics_table
-    title: 'DORA metrics: %{namespaceName} (%{namespaceType})'
+    title: 'DORA metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
       yPos: 6
       xPos: 0
@@ -28,7 +28,7 @@ panels:
       height: 3
     options: {}
   - visualization: vsd_security_metrics_table
-    title: 'Security metrics: %{namespaceName} (%{namespaceType})'
+    title: 'Security metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
       yPos: 9
       xPos: 0
@@ -36,7 +36,7 @@ panels:
       height: 2
     options: {}
   - visualization: dora_performers_score
-    title: DORA performers score for %{namespaceName} %{namespaceType}
+    title: DORA performers score for the %{namespaceName} %{namespaceType} (Last full calendar month)
     gridAttributes:
       yPos: 11
       xPos: 0
