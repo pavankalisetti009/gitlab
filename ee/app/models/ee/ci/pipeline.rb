@@ -80,7 +80,7 @@ module EE
             end
           end
 
-          after_transition any => ::Ci::Pipeline.completed_statuses do |pipeline|
+          after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
             pipeline.run_after_commit do
               ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(pipeline.id)
             end

@@ -37,6 +37,20 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
       run_worker
     end
 
+    context 'when pipeline is manual' do
+      before do
+        pipeline.update!(status: 'manual')
+      end
+
+      it 'calls UnenforceablePolicyRulesNotificationService' do
+        expect_next_instance_of(Security::UnenforceablePolicyRulesNotificationService, merge_request) do |instance|
+          expect(instance).to receive(:execute)
+        end
+
+        run_worker
+      end
+    end
+
     context 'when pipeline does not exist' do
       let(:pipeline_id) { non_existing_record_id }
 
