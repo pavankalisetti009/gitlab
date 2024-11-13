@@ -151,5 +151,22 @@ describe('DataTable Visualization', () => {
 
       expect(rowCells.at(0).text()).toBe(expected);
     });
+
+    it('should not allow unsafe URLs to be linkable', () => {
+      /* eslint-disable no-script-url */
+      const linksData = [
+        { foo: { text: 'foo', href: 'https://example.com/foo' } },
+        { foo: { text: 'bar', href: 'javascript:alert("XSS")' } },
+      ];
+      /* eslint-enable no-script-url */
+
+      createWrapper(mount, { data: linksData });
+
+      const badLink = findTableRowCells(1).at(0).find('a');
+
+      expect(findTableRowCells(0).at(0).find('a').exists()).toBe(true);
+      expect(badLink.text()).toBe('bar');
+      expect(badLink.attributes('href')).toBe('about:blank');
+    });
   });
 });

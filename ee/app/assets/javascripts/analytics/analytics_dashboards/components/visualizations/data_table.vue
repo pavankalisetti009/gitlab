@@ -58,7 +58,7 @@ export default {
   <div>
     <gl-table-lite :fields="fields" :items="data" hover responsive class="gl-mt-4">
       <template #cell()="{ value }">
-        <gl-link v-if="isLink(value)" :href="value.href" is-unsafe-link
+        <gl-link v-if="isLink(value)" :href="value.href"
           >{{ formatVisualizationValue(value.text) }}
           <gl-icon
             v-if="isExternalLink(value.href)"

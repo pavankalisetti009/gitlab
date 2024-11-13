@@ -29,9 +29,8 @@ module API
       get ":id/merge_requests/:merge_request_iid/blocks" do
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
-        blocks = merge_request.blocks_as_blockee
-
-        present paginate(blocks), with: EE::API::Entities::MergeRequestDependency
+        present paginate(merge_request.blocks_as_blockee), with: EE::API::Entities::MergeRequestDependency,
+          current_user: current_user
       end
 
       params do
@@ -42,7 +41,7 @@ module API
         merge_request = find_merge_request_with_access(params[:merge_request_iid])
 
         present find_block(merge_request),
-          with: EE::API::Entities::MergeRequestDependency
+          with: EE::API::Entities::MergeRequestDependency, current_user: current_user
       end
 
       params do
@@ -74,7 +73,8 @@ module API
           ).execute
 
         if result.success?
-          present result.payload[:merge_request_block], with: EE::API::Entities::MergeRequestDependency
+          present result.payload[:merge_request_block], with: EE::API::Entities::MergeRequestDependency, current_user:
+            current_user
         else
           render_api_error!(result.message, result.reason)
         end
