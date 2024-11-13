@@ -221,11 +221,7 @@ module EE
       end
 
       condition(:allow_top_level_group_owners_to_create_service_accounts, scope: :global) do
-        if ::Feature.enabled?(:allow_top_level_group_owners_to_create_service_accounts, @user)
-          ::Gitlab::CurrentSettings.current_application_settings.allow_top_level_group_owners_to_create_service_accounts?
-        else
-          is_gitlab_com?
-        end
+        ::Gitlab::CurrentSettings.current_application_settings.allow_top_level_group_owners_to_create_service_accounts?
       end
 
       MemberRole.all_customizable_group_permissions.each do |ability|

@@ -129,61 +129,41 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
       context 'when group owner' do
         let_it_be(:current_user) { create(:user, owner_of: group) }
 
-        context 'when allow_top_level_group_owners_to_create_service_accounts FF is disabled' do
+        context 'when application setting is disabled' do
           before do
-            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
           end
 
           it_behaves_like 'service account creation failure'
+
+          context 'when saas', :saas do
+            it_behaves_like 'service account creation failure'
+          end
+        end
+
+        context 'when application setting is enabled' do
+          before do
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          end
+
+          it_behaves_like 'service account creation success' do
+            let(:username_prefix) { "service_account_group_#{group.id}" }
+          end
 
           context 'when saas', :saas do
             it_behaves_like 'service account creation success' do
               let(:username_prefix) { "service_account_group_#{group.id}" }
             end
           end
-        end
 
-        context 'when allow_top_level_group_owners_to_create_service_accounts FF is enabled' do
-          before do
-            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
-          end
-
-          context 'when application setting is disabled' do
-            before do
-              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
-            end
+          # setting is only applicable for top level group
+          context 'when the group is subgroup' do
+            let(:namespace_id) { subgroup.id }
 
             it_behaves_like 'service account creation failure'
 
             context 'when saas', :saas do
               it_behaves_like 'service account creation failure'
-            end
-          end
-
-          context 'when application setting is enabled' do
-            before do
-              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-            end
-
-            it_behaves_like 'service account creation success' do
-              let(:username_prefix) { "service_account_group_#{group.id}" }
-            end
-
-            context 'when saas', :saas do
-              it_behaves_like 'service account creation success' do
-                let(:username_prefix) { "service_account_group_#{group.id}" }
-              end
-            end
-
-            # setting is only applicable for top level group
-            context 'when the group is subgroup' do
-              let(:namespace_id) { subgroup.id }
-
-              it_behaves_like 'service account creation failure'
-
-              context 'when saas', :saas do
-                it_behaves_like 'service account creation failure'
-              end
             end
           end
         end

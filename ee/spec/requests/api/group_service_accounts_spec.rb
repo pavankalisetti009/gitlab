@@ -235,68 +235,47 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         it_behaves_like "service account user creation"
       end
 
-      context 'when current user is an owner and feature is activated and allow top level setting activated' do
+      context 'when current user is an owner' do
         let_it_be(:user) { create(:user) }
 
         before do
           group.add_owner(user)
-          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
         end
 
-        it_behaves_like "service account user creation"
-      end
+        context 'when allow top level setting is activated' do
+          before do
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+          end
 
-      context 'when current user is an owner and feature is deactivated in GitLab.com', :saas do
-        let_it_be(:user) { create(:user) }
-        let(:hosted_plan) { create(:ultimate_plan) }
+          it_behaves_like "service account user creation"
 
-        before do
-          group.add_owner(user)
-          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
-          create(:gitlab_subscription, namespace: group, hosted_plan: hosted_plan)
-          stub_application_setting(check_namespace_plan: true)
+          context 'when in GitLab.com', :saas do
+            let(:hosted_plan) { create(:ultimate_plan) }
+
+            before do
+              create(:gitlab_subscription, namespace: group, hosted_plan: hosted_plan)
+              stub_application_setting(check_namespace_plan: true)
+            end
+
+            it_behaves_like "service account user creation"
+          end
         end
 
-        it_behaves_like "service account user creation"
-      end
+        context 'when allow top level setting is deactivated' do
+          let(:group_id) { group.id }
 
-      context 'when current user is an owner and feature is deactivated and allow top level setting activated' do
-        let_it_be(:user) { create(:user) }
-        let(:group_id) { group.id }
+          before do
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
+          end
 
-        before do
-          group.add_owner(user)
-          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-          stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
-        end
+          it 'returns error' do
+            perform_request
 
-        it 'returns error' do
-          perform_request
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['message']).to include(
-            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
-          )
-        end
-      end
-
-      context 'when current user is an owner and allow top level setting deactivated' do
-        let_it_be(:user) { create(:user) }
-        let(:group_id) { group.id }
-
-        before do
-          group.add_owner(user)
-          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
-        end
-
-        it 'returns error' do
-          perform_request
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['message']).to include(
-            s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
-          )
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include(
+              s_('ServiceAccount|User does not have permission to create a service account in this namespace.')
+            )
+          end
         end
       end
     end
@@ -449,41 +428,10 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
     it_behaves_like "service account user deletion"
 
-    it "is not available for group owners when allow top level group owners feature is disabled on Self Managed",
-      :sidekiq_inline do
-      group.add_owner(user)
-
-      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
-      perform_enqueued_jobs { delete api(path, user) }
-      expect(response).to have_gitlab_http_status(:no_content)
-      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).not_to exist
-    end
-
-    it "is not available for group owners when allow top level group owners feature is disabled", :sidekiq_inline do
-      group.add_owner(user)
-
-      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
-      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
-      perform_enqueued_jobs { delete api(path, user) }
-      expect(response).to have_gitlab_http_status(:no_content)
-      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).not_to exist
-    end
-
-    it "is available for group owners when allow top level group owners feature is disabled on GitLab.com",
-      :sidekiq_inline, :saas do
-      group.add_owner(user)
-
-      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
-      perform_enqueued_jobs { delete api(path, user) }
-      expect(response).to have_gitlab_http_status(:no_content)
-      expect(Users::GhostUserMigration.where(user: service_account_user, initiator_user: user)).to exist
-    end
-
     it "is available for group owners when allow top level group owners application setting is enabled",
       :sidekiq_inline, :saas do
       group.add_owner(user)
 
-      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
       stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
       perform_enqueued_jobs { delete api(path, user) }
       expect(response).to have_gitlab_http_status(:no_content)
@@ -492,7 +440,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
     it "is not available to non group owners" do
       group.add_maintainer(user)
-      stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
       stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
 
       perform_enqueued_jobs { delete api(path, user) }

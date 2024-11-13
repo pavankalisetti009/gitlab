@@ -63,52 +63,34 @@ RSpec.describe Namespaces::ServiceAccounts::DeleteService, feature_category: :us
       context 'when group owner' do
         let_it_be(:current_user) { create(:user, owner_of: group) }
 
-        context 'when allow_top_level_group_owners_to_create_service_accounts FF is disabled' do
+        context 'when setting is off' do
           before do
-            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: false)
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
           end
 
           it_behaves_like 'service account deletion failure'
 
           context 'when saas', :saas do
-            it_behaves_like 'service account deletion is success'
+            it_behaves_like 'service account deletion failure'
           end
         end
 
-        context 'when allow_top_level_group_owners_to_create_service_accounts is enabled' do
+        context 'when setting is on' do
           before do
-            stub_feature_flags(allow_top_level_group_owners_to_create_service_accounts: true)
+            stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
           end
 
-          context 'when setting is off' do
-            before do
-              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: false)
-            end
+          it_behaves_like 'service account deletion is success'
+
+          context 'when saas', :saas do
+            it_behaves_like 'service account deletion is success'
+          end
+
+          context 'when its a subgroup' do
+            let_it_be(:group) { create(:group, :private, parent: create(:group)) }
+            let_it_be(:delete_user) { create(:service_account, provisioned_by_group: group) }
 
             it_behaves_like 'service account deletion failure'
-
-            context 'when saas', :saas do
-              it_behaves_like 'service account deletion failure'
-            end
-          end
-
-          context 'when setting is on' do
-            before do
-              stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
-            end
-
-            it_behaves_like 'service account deletion is success'
-
-            context 'when saas', :saas do
-              it_behaves_like 'service account deletion is success'
-            end
-
-            context 'when its a subgroup' do
-              let_it_be(:group) { create(:group, :private, parent: create(:group)) }
-              let_it_be(:delete_user) { create(:service_account, provisioned_by_group: group) }
-
-              it_behaves_like 'service account deletion failure'
-            end
           end
         end
       end
