@@ -8,6 +8,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :wo
 
   include_context 'with remote development shared fixtures'
   include_context 'file upload requests helpers'
+  include_context 'with kubernetes agent service'
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, name: 'test-group', developers: user, owners: user) }

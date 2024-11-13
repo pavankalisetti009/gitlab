@@ -1,6 +1,7 @@
 import { GlTable, GlLoadingIcon } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import AgentDetailsPopover from 'ee_component/workspaces/agent_mapping/components/agent_details_popover.vue';
 import AgentsTable from 'ee_component/workspaces/agent_mapping/components/agents_table.vue';
 import AgentMappingStatusToggle from 'ee_component/workspaces/agent_mapping/components/agent_mapping_status_toggle.vue';
 import ToggleAgentMappingStatusMutation from 'ee_component/workspaces/agent_mapping/components/toggle_agent_mapping_status_mutation.vue';
@@ -130,6 +131,13 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
 
     it('displays agents list', () => {
       expect(findAgentsTable().text()).toContain(MAPPED_CLUSTER_AGENT.name);
+    });
+
+    it('displays agent data popover', () => {
+      const popover = findAgentsTable().findAllComponents(AgentDetailsPopover);
+      agents.forEach((agent, index) => {
+        expect(popover.at(index).props().agent).toMatchObject(agent);
+      });
     });
 
     describe('when displayMappingStatus is true', () => {
