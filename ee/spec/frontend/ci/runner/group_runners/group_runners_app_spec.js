@@ -17,7 +17,7 @@ describe('GroupRunnersApp', () => {
 
   const findRunnerDashboardLink = () => wrapper.findComponent(RunnerDashboardLink);
 
-  const createComponent = ({ provide, ...options } = {}) => {
+  const createComponent = ({ provide, stubs, ...options } = {}) => {
     wrapper = shallowMount(GroupRunnersApp, {
       apolloProvider: createMockApollo(),
       propsData: {
@@ -29,6 +29,10 @@ describe('GroupRunnersApp', () => {
         localMutations: {},
         ...provide,
       },
+      stubs: {
+        RunnerFilteredSearchBar: true,
+        ...stubs,
+      },
       ...options,
     });
 
@@ -39,6 +43,7 @@ describe('GroupRunnersApp', () => {
     it('shows link', async () => {
       await createComponent({
         provide: { runnerDashboardPath: '/dashboard-path' },
+        stubs: { RunnerDashboardLink },
       });
 
       expect(findRunnerDashboardLink().attributes('href')).toBe('/dashboard-path');

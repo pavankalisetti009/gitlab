@@ -56,6 +56,9 @@ describe('AdminRunnersApp', () => {
         localMutations,
         ...provide,
       },
+      stubs: {
+        RunnerFilteredSearchBar: true,
+      },
       ...options,
     });
 
@@ -98,12 +101,12 @@ describe('AdminRunnersApp', () => {
       ${'15.0.0'} | ${'displays upgrade available'}            | ${'gl-text-blue-500'}   | ${3}
     `('with $version $description', ({ version, index, colorClass }) => {
       const row = findRunnerRows().wrappers.map(extendedWrapper)[index];
-      const upgradeIcon = row.findComponent(RunnerUpgradeStatusIcon);
+      const upgradeIcon = row.findComponent(RunnerUpgradeStatusIcon).find('svg');
 
       if (colorClass) {
         expect(upgradeIcon.classes()).toContain(colorClass);
       } else {
-        expect(upgradeIcon.html()).toBe('');
+        expect(upgradeIcon.exists()).toBe(false);
       }
 
       expect(row.text()).toContain(version);
