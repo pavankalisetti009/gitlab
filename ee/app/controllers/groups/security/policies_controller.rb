@@ -109,12 +109,7 @@ module Groups
 
         return unless result[:status] == :success
 
-        {
-          single_approvers: API::Entities::UserBasic.represent(result[:users]) +
-            API::Entities::PublicGroupDetails.represent(result[:groups]) +
-            result[:roles],
-          action_approvers: API::Entities::PolicyApprovers.represent(result[:approvers])
-        }
+        API::Entities::PolicyApprovers.represent(result[:approvers])
       end
     end
   end

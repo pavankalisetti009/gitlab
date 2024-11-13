@@ -67,13 +67,16 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
           request
           app = Nokogiri::HTML.parse(response.body).at_css('div#js-group-policy-builder-app')
 
-          expect(app['data-scan-result-approvers']).to be_nil
+          expect(app['data-action-approvers']).to be_nil
         end
 
         shared_examples 'scan result policy like type' do |type|
           let(:policy) { build(:scan_result_policy) }
           let(:policy_type) { type }
-          let_it_be(:service_result) { { users: [user], groups: [group], roles: ['OWNER'], status: :success } }
+          let_it_be(:approvers) { [{ users: [user], groups: [group], all_groups: [group], roles: ['OWNER'] }] }
+          let_it_be(:service_result) do
+            { users: [user], groups: [group], roles: ['OWNER'], approvers: approvers, status: :success }
+          end
 
           let(:service) do
             instance_double('::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService',
@@ -96,7 +99,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
 
             app = Nokogiri::HTML.parse(response.body).at_css('div#js-group-policy-builder-app')
 
-            expect(app['data-scan-result-approvers']).to include(user.name,
+            expect(app['data-action-approvers']).to include(user.name,
               user.id.to_s, group.full_path, group.id.to_s)
           end
         end
