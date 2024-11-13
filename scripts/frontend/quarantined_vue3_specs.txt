@@ -72,7 +72,6 @@ ee/spec/frontend/groups/settings/components/comma_separated_list_token_selector_
 ee/spec/frontend/incidents/components/service_level_agreement_cell_spec.js
 ee/spec/frontend/insights/insights_router_spec.js
 ee/spec/frontend/integrations/edit/components/jira_issue_creation_vulnerabilities_spec.js
-ee/spec/frontend/issuable/components/related_issuable_item_spec.js
 ee/spec/frontend/issues/list/components/issues_list_app_spec.js
 ee/spec/frontend/issues_analytics/components/issues_analytics_table_spec.js
 ee/spec/frontend/iterations/components/iteration_form_spec.js
