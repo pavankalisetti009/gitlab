@@ -144,7 +144,11 @@ describe('Vulnerability Code Flow', () => {
 
   it('should show file name', () => {
     const fileName = 'src/url/test.java';
-    expect(getById('file-name-0').text()).toBe(fileName);
+    expect(
+      getById('file-name-0')
+        .text()
+        .replace(/\u200E/gi, ''), // remove truncate marks
+    ).toBe(fileName);
   });
 
   it('should show escaped file name', () => {
@@ -169,6 +173,10 @@ describe('Vulnerability Code Flow', () => {
       },
     });
 
-    expect(getById('file-name-0').text()).toBe(escapedFileName);
+    expect(
+      getById('file-name-0')
+        .text()
+        .replace(/\u200E/gi, ''), // remove truncate marks
+    ).toBe(escapedFileName);
   });
 });

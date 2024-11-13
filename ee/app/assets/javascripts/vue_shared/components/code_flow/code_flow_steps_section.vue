@@ -1,5 +1,14 @@
 <script>
-import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlLink, GlPopover } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlButton,
+  GlButtonGroup,
+  GlCollapse,
+  GlLink,
+  GlPopover,
+  GlTruncate,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { flattenDeep } from 'lodash';
 import { __, s__, sprintf } from '~/locale';
 import {
@@ -21,6 +30,10 @@ export default {
     GlCollapse,
     GlBadge,
     GlLink,
+    GlTruncate,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     description: {
@@ -263,16 +276,28 @@ export default {
           class="-gl-ml-4"
           :data-testid="`file-steps-${index}`"
         >
-          <gl-button
-            :icon="getPathIcon(index)"
-            category="tertiary"
-            :aria-label="toggleAriaLabel(index)"
-            @click="openFileSteps(index)"
-          />
-          <span :data-testid="`file-name-${index}`">
-            {{ filePath(vulnerabilityFlow[0].fileLocation.fileName)
-            }}<b>{{ fileName(vulnerabilityFlow[0].fileLocation.fileName) }}</b>
-          </span>
+          <div
+            v-gl-tooltip
+            :title="vulnerabilityFlow[0].fileLocation.fileName"
+            class="gl-inline-flex gl-max-w-full gl-items-center"
+            :data-testid="`file-name-${index}`"
+          >
+            <gl-button
+              :icon="getPathIcon(index)"
+              category="tertiary"
+              :aria-label="toggleAriaLabel(index)"
+              @click="openFileSteps(index)"
+            />
+            <gl-truncate
+              class="gl-min-w-0 gl-flex-shrink"
+              :text="filePath(vulnerabilityFlow[0].fileLocation.fileName)"
+              position="end"
+            /><gl-truncate
+              class="gl-flex-shrink-0 gl-font-bold"
+              :text="fileName(vulnerabilityFlow[0].fileLocation.fileName)"
+              position="start"
+            />
+          </div>
           <gl-collapse class="gl-mt-2 gl-pl-6" :visible="!!stepsExpanded[index]">
             <gl-link
               v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
