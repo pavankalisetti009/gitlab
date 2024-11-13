@@ -99,7 +99,14 @@ module EE
       end
 
       scope :preload_search_data, -> do
-        preload(:labels, :timelogs, :assignees, :synced_epic, :work_item_type, project: [:route, :namespace, :group])
+        preload(
+          :labels,
+          :timelogs,
+          :assignees,
+          :synced_epic,
+          ::Gitlab::Issues::TypeAssociationGetter.call,
+          project: [:route, :namespace, :group]
+        )
       end
       scope :searchable, -> { where.not(project_id: nil) }
 

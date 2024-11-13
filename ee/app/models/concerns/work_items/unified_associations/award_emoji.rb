@@ -66,7 +66,7 @@ module WorkItems
         end
 
         def union_preloads
-          { awardable: [:work_item_type, :namespace, :group, :author] }
+          { awardable: [::Gitlab::Issues::TypeAssociationGetter.call, :namespace, :group, :author] }
         end
 
         override :awarded
