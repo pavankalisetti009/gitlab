@@ -37,6 +37,6 @@ export default {
     :title="__('This issue is in a child epic of the filtered epic')"
     class="gl-ml-1 gl-inline-block"
   >
-    <gl-icon name="file-tree" class="gl-text-secondary" />
+    <gl-icon name="file-tree" variant="subtle" />
   </span>
 </template>

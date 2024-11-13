@@ -328,8 +328,8 @@ export default {
         <hr class="gl-my-3" />
 
         <div class="gl-mb-3 gl-flex gl-items-center">
-          <gl-icon name="calendar" :size="14" class="gl-mr-2 gl-text-gray-700" />
-          <div class="gl-grow gl-font-bold gl-text-gray-700">{{ scheduleRange }}</div>
+          <gl-icon name="calendar" :size="14" class="gl-mr-2" />
+          <div class="gl-grow gl-font-bold">{{ scheduleRange }}</div>
 
           <gl-collapsible-listbox
             :items="$options.presetListboxItems"

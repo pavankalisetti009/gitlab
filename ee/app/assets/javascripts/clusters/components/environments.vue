@@ -159,7 +159,7 @@ export default {
 
         <!-- Empty state -->
         <div v-else class="deployments-empty gl-flex">
-          <gl-icon name="warning" class="mr-2 align-self-center flex-shrink-0 gl-text-orange-500" />
+          <gl-icon name="warning" class="mr-2 align-self-center flex-shrink-0" variant="warning" />
           <span>
             <gl-sprintf
               :message="

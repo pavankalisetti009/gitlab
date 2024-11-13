@@ -167,7 +167,7 @@ export default {
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.progressTitle }}
         <template v-if="showProgressPopover">
-          <gl-icon id="okr-progress-popover-title" class="gl-text-blue-600" name="question-o" />
+          <gl-icon id="okr-progress-popover-title" name="question-o" variant="info" />
           <gl-popover
             triggers="hover"
             target="okr-progress-popover-title"
@@ -191,7 +191,7 @@ export default {
         <label for="progress-widget-input" class="gl-mb-0"
           >{{ $options.i18n.progressTitle }}
           <template v-if="showProgressPopover">
-            <gl-icon id="okr-progress-popover-label" class="gl-text-blue-600" name="question-o" />
+            <gl-icon id="okr-progress-popover-label" name="question-o" variant="info" />
             <gl-popover
               triggers="hover"
               target="okr-progress-popover-label"

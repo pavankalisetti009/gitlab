@@ -86,7 +86,7 @@ export default {
         <template #label>
           {{ $options.i18n.formLabel }}
           <gl-link :href="$options.docsLink" target="_blank">
-            <gl-icon class="gl-text-blue-600" name="question-o" />
+            <gl-icon name="question-o" variant="info" />
           </gl-link>
         </template>
         <gl-form-input
