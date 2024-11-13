@@ -1,0 +1,62 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas, :aggregate_failures,
+  type: :component, feature_category: :acquisition do
+  let(:namespace) { build(:group, id: non_existing_record_id) }
+  let(:user) { build(:user) }
+
+  subject(:component) do
+    render_inline(described_class.new(namespace: namespace, user: user)) && page
+  end
+
+  before do
+    build(:gitlab_subscription, :ultimate, namespace: namespace)
+  end
+
+  context 'when gold plan' do
+    before do
+      build(:gitlab_subscription, :gold, namespace: namespace)
+    end
+
+    it { is_expected.to have_content('') }
+  end
+
+  context 'when there is Duo Enterprise add-on' do
+    before do
+      allow(GitlabSubscriptions::DuoEnterprise)
+        .to receive(:no_add_on_purchase_for_namespace?)
+        .with(namespace)
+        .and_return(false)
+    end
+
+    it { is_expected.to have_content('') }
+  end
+
+  context 'when rendering' do
+    it 'has the correct text' do
+      is_expected.to have_content('Introducing GitLab Duo Enterprise')
+
+      is_expected.to have_content(
+        'Start a GitLab Duo Enterprise trial to try all end-to-end AI ' \
+          'capabilities from GitLab. You can try it for free for 60 days, ' \
+          'no credit card required.'
+      )
+    end
+
+    it 'has the primary action' do
+      is_expected.to have_link(
+        'Start a free GitLab Duo Enterprise Trial',
+        href: new_trials_duo_enterprise_path(namespace_id: namespace.id)
+      )
+
+      attributes = { event: 'click_duo_enterprise_trial_billing_page', label: 'duo_enterprise_trial' }
+      is_expected.to have_internal_tracking(attributes)
+    end
+
+    it 'has the hand raise lead selector' do
+      is_expected.to have_selector('.js-hand-raise-lead-trigger')
+    end
+  end
+end

@@ -145,23 +145,4 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
       end
     end
   end
-
-  describe '#duo_enterprise_trial_alert_hand_raise_lead_data' do
-    it 'provides the expected dataset' do
-      result = {
-        glm_content: 'billing-group',
-        cta_tracking: {
-          action: 'hand_raise_form_viewed',
-          label: 'click_duo_enterprise_trial_billing_page'
-        }.to_json,
-        button_attributes: {
-          variant: 'confirm',
-          category: 'secondary',
-          class: 'gl-w-full sm:gl-w-auto'
-        }.to_json
-      }
-
-      expect(helper.duo_enterprise_trial_alert_hand_raise_lead_data).to eq(result)
-    end
-  end
 end
