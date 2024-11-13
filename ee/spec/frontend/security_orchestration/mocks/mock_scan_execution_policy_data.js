@@ -29,6 +29,18 @@ export const defaultMockScanExecutionObject = {
   enabled: false,
 };
 
+export const mockScanExecutionPolicyManifestWithWrapper = `scan_execution_policy:
+  - name: Scheduled Dast/SAST scan
+    description: This policy enforces pipeline configuration to have a job with DAST scan
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+`;
+
 export const mockScheduleScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
 rules:
   - type: schedule
@@ -130,6 +142,11 @@ export const mockProjectScanExecutionPolicy = {
       fullPath: 'project/path',
     },
   },
+};
+
+export const mockProjectScanExecutionPolicyWithWrapper = {
+  ...mockProjectScanExecutionPolicy,
+  yaml: mockScanExecutionPolicyManifestWithWrapper,
 };
 
 export const mockScheduledProjectScanExecutionPolicy = {

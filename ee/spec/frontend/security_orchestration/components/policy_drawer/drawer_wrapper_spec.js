@@ -6,17 +6,24 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import {
   mockProjectScanExecutionPolicy,
   mockGroupScanExecutionPolicy,
+  mockProjectScanExecutionPolicyWithWrapper,
 } from '../../mocks/mock_scan_execution_policy_data';
 
 describe('DrawerWrapper component', () => {
   let wrapper;
 
-  const factory = ({ mountFn = shallowMountExtended, propsData, stubs = {} } = {}) => {
+  const factory = ({
+    mountFn = shallowMountExtended,
+    propsData,
+    stubs = {},
+    provide = {},
+  } = {}) => {
     wrapper = mountFn(DrawerWrapper, {
       propsData: {
         open: true,
         ...propsData,
       },
+      provide,
       stubs: { YamlEditor: true, ...stubs },
     });
   };
@@ -93,14 +100,24 @@ describe('DrawerWrapper component', () => {
   });
 
   describe.each`
-    policyType                                           | mock                              | finder
-    ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value} | ${mockProjectScanExecutionPolicy} | ${findScanExecutionDrawer}
-  `('given a $policyType policy', ({ policyType, mock, finder }) => {
+    policyType                                           | mock                                         | securityPoliciesNewYamlFormat
+    ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value} | ${mockProjectScanExecutionPolicy}            | ${false}
+    ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value} | ${mockProjectScanExecutionPolicyWithWrapper} | ${true}
+  `('given a $policyType policy', ({ policyType, mock, securityPoliciesNewYamlFormat }) => {
     beforeEach(() => {
+      window.gon.features = {
+        securityPoliciesNewYamlFormat,
+      };
+
       factory({
         propsData: {
           policy: mock,
           policyType,
+        },
+        provide: {
+          glFeatures: {
+            securityPoliciesNewYamlFormat,
+          },
         },
         stubs: {
           GlButton,
@@ -111,7 +128,7 @@ describe('DrawerWrapper component', () => {
     });
 
     it(`renders the ${policyType} component`, () => {
-      expect(finder().exists()).toBe(true);
+      expect(findScanExecutionDrawer().exists()).toBe(true);
     });
 
     it('renders the tabs', () => {

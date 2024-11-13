@@ -25,6 +25,7 @@ import {
   removeIdsFromPolicy,
   validateBranchProjectFormat,
   getMergeRequestConfig,
+  policyToYaml,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -32,6 +33,11 @@ import createPolicy from 'ee/security_orchestration/graphql/mutations/create_pol
 import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
+import {
+  mockDastScanExecutionManifest,
+  mockDastScanExecutionObject,
+} from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 jest.mock('ee/security_orchestration/utils');
@@ -577,6 +583,35 @@ describe('mapBranchesToExceptions', () => {
       delete params[key];
 
       expect(getMergeRequestConfig(params, { namespacePath: 'foo ' })).toBe(null);
+    });
+  });
+
+  describe('policyToYaml', () => {
+    const { urlParameter } = POLICY_TYPE_COMPONENT_OPTIONS.scanExecution;
+    it('returns policy object as yaml', () => {
+      expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(
+        mockDastScanExecutionManifest,
+      );
+    });
+
+    it('returns policy object as yaml with type wrapper', () => {
+      window.gon.features = {
+        securityPoliciesNewYamlFormat: true,
+      };
+
+      expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(`scan_execution_policy:
+  - name: Scheduled Dast/SAST scan
+    description: This policy enforces pipeline configuration to have a job with DAST scan
+    enabled: false
+    rules:
+      - type: pipeline
+        branches:
+          - main
+    actions:
+      - scan: dast
+        site_profile: required_site_profile
+        scanner_profile: required_scanner_profile
+`);
     });
   });
 });

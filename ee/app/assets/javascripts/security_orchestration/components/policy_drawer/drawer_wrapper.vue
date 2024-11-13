@@ -13,9 +13,11 @@ import { s__ } from '~/locale';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { policyToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
 import { removeUnnecessaryDashes } from '../../utils';
 import { POLICIES_LIST_CONTAINER_CLASS, POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
-import { isPolicyInherited, policyHasNamespace } from '../utils';
+import { extractPolicyContent, isPolicyInherited, policyHasNamespace } from '../utils';
 import PipelineExecutionDrawer from './pipeline_execution/details_drawer.vue';
 import ScanExecutionDrawer from './scan_execution/details_drawer.vue';
 import ScanResultDrawer from './scan_result/details_drawer.vue';
@@ -43,6 +45,7 @@ export default {
     ScanExecutionDrawer,
     ScanResultDrawer,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     containerClass: {
       type: String,
@@ -76,7 +79,19 @@ export default {
       return policyComponent[this.policyType] || null;
     },
     policyYaml() {
-      return removeUnnecessaryDashes(this.policy.yaml);
+      const type =
+        Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(({ value }) => value === this.policyType)
+          ?.urlParameter || '';
+
+      return this.glFeatures.securityPoliciesNewYamlFormat
+        ? policyToYaml(
+            extractPolicyContent({
+              manifest: removeUnnecessaryDashes(this.policy.yaml),
+              type,
+            }),
+            type,
+          )
+        : removeUnnecessaryDashes(this.policy.yaml);
     },
     sourcePolicyListUrl() {
       return getSecurityPolicyListUrl({ namespacePath: this.policy.source.namespace.fullPath });

@@ -17,6 +17,7 @@ import {
   isProject,
   isGroup,
   isScanningReport,
+  extractPolicyContent,
 } from 'ee/security_orchestration/components/utils';
 import {
   EXCLUDING,
@@ -24,6 +25,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { DEFAULT_SCAN_EXECUTION_POLICY } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import {
   mockDastScanExecutionObject,
   mockDastScanExecutionManifest,
@@ -291,4 +293,28 @@ describe('checkForPerformanceRisk', () => {
       expect(checkForPerformanceRisk({ namespaceType, policy, projectsCount })).toBe(output);
     },
   );
+
+  describe('extractPolicyContent', () => {
+    const defaultPayload = {
+      policy: {},
+      parsingError: { hasParsingError: true, actions: true, rules: true },
+    };
+    const extractedPolicyContent = {
+      actions: [{ scan: 'secret_detection' }],
+      description: '',
+      enabled: true,
+      name: '',
+      rules: [{ branches: ['*'], type: 'pipeline' }],
+    };
+
+    it.each`
+      type                       | manifest                         | withType | expectedManifest
+      ${'scan_execution_policy'} | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${false} | ${extractedPolicyContent}
+      ${'scan_execution_policy'} | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${true}  | ${{ ...extractedPolicyContent, type: 'scan_execution_policy' }}
+      ${'scan_execution_policy'} | ${''}                            | ${true}  | ${defaultPayload}
+      ${'invalid_type'}          | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${true}  | ${defaultPayload}
+    `('returns output without type wrapper', ({ type, manifest, withType, expectedManifest }) => {
+      expect(extractPolicyContent({ manifest, type, withType })).toEqual(expectedManifest);
+    });
+  });
 });

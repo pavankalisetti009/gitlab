@@ -3,6 +3,8 @@ import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
+import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { addIdsToPolicy, hasConflictingKeys, hasInvalidCron } from '../../utils';
 import {
   BRANCH_TYPE_KEY,
@@ -59,8 +61,18 @@ export const hasInvalidScanners = (actions = []) => {
  */
 export const fromYaml = ({ manifest, validateRuleMode = false }) => {
   const error = { hasParsingError: false };
+  const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
+
   try {
-    const policy = addIdsToPolicy(safeLoad(manifest, { json: true }));
+    const payload = securityPoliciesNewYamlFormat
+      ? extractPolicyContent({
+          manifest,
+          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          withType: true,
+        })
+      : safeLoad(manifest, { json: true });
+
+    const policy = addIdsToPolicy(payload);
 
     if (validateRuleMode) {
       if (

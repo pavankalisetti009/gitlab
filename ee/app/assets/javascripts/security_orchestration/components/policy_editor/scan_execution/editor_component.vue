@@ -8,8 +8,14 @@ import {
   checkForPerformanceRisk,
   hasScheduledRule,
   isGroup,
+  extractPolicyContent,
 } from 'ee/security_orchestration/components/utils';
 import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  policyBodyToYaml,
+  policyToYaml,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
@@ -30,7 +36,8 @@ import {
   createPolicyObject,
   DEFAULT_SCAN_EXECUTION_POLICY,
   DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
-  policyToYaml,
+  DEFAULT_SCAN_EXECUTION_POLICY_NEW_FORMAT,
+  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
 } from './lib';
 import {
   DEFAULT_SCANNER,
@@ -130,11 +137,20 @@ export default {
     },
   },
   data() {
-    const newPolicyYaml = isGroup(this.namespaceType)
-      ? DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE
-      : DEFAULT_SCAN_EXECUTION_POLICY;
+    const { securityPoliciesNewYamlFormat } = this.glFeatures;
 
-    const yamlEditorValue = this.existingPolicy ? policyToYaml(this.existingPolicy) : newPolicyYaml;
+    const defaultPolicy = securityPoliciesNewYamlFormat
+      ? DEFAULT_SCAN_EXECUTION_POLICY_NEW_FORMAT
+      : DEFAULT_SCAN_EXECUTION_POLICY;
+    const defaultPolicyWithScope = securityPoliciesNewYamlFormat
+      ? DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT
+      : DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE;
+
+    const newPolicyYaml = isGroup(this.namespaceType) ? defaultPolicyWithScope : defaultPolicy;
+
+    const yamlEditorValue = this.existingPolicy
+      ? policyToYaml(this.existingPolicy, POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter)
+      : newPolicyYaml;
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
     const { hasParsingError } = parsingError;
@@ -264,7 +280,19 @@ export default {
         return;
       }
 
-      this.$emit('save', { action, policy: this.yamlEditorValue });
+      /**
+       * backend only accepts the old format
+       * policy body is extracted
+       * and policy type is added to a policy body
+       */
+      const type = POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter;
+      const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
+
+      const payload = this.glFeatures.securityPoliciesNewYamlFormat
+        ? policyBodyToYaml(policy)
+        : this.yamlEditorValue;
+
+      this.$emit('save', { action, policy: payload });
     },
     updateYaml(manifest) {
       const { policy, parsingError } = createPolicyObject(manifest);
@@ -276,7 +304,10 @@ export default {
       this.specificActionSectionError = '';
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy);
+      this.yamlEditorValue = policyToYaml(
+        policy,
+        POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+      );
     },
   },
 };

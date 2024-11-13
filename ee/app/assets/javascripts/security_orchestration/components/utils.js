@@ -209,3 +209,57 @@ export const checkForPerformanceRisk = ({ policy, namespaceType, projectsCount }
     projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT
   );
 };
+
+const isValidPolicyType = (type) => {
+  const validTypes = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).map(
+    ({ urlParameter }) => urlParameter,
+  );
+  return validTypes.includes(type);
+};
+
+/**
+ * Policy type, in this case, policy type is a wrapper
+ * for a policy content. This method extracts policy content from
+ * a wrapper
+ * @param manifest policy in yaml format
+ * @param type policy type
+ * @param withType wheather include or not include type property in a policy body
+ * @returns {*|{policy: {}}}
+ */
+export const extractPolicyContent = ({ manifest, type, withType = false }) => {
+  const defaultPayload = {
+    policy: {},
+    parsingError: { hasParsingError: true, actions: true, rules: true },
+  };
+
+  try {
+    if (!isValidPolicyType(type)) {
+      return defaultPayload;
+    }
+
+    const parsedYaml = safeLoad(manifest, { json: true });
+
+    /**
+     * Remove type property from yaml
+     * Type now is a parent property
+     */
+    const hasLegacyTypeRootProperty = 'type' in parsedYaml;
+    if (hasLegacyTypeRootProperty) {
+      delete parsedYaml.type;
+    }
+
+    const hasNewTypeRootProperty = type in parsedYaml;
+    const extractedPolicy = hasNewTypeRootProperty ? parsedYaml[type] : parsedYaml;
+
+    const isArray = Array.isArray(extractedPolicy);
+    const policy = isArray ? extractedPolicy[0] : extractedPolicy;
+
+    if (withType) {
+      policy.type = type;
+    }
+
+    return policy || {};
+  } catch {
+    return defaultPayload;
+  }
+};
