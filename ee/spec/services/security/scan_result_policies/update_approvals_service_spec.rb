@@ -244,14 +244,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
           it_behaves_like 'sets approvals_required to 0'
 
-          context 'when feature flag "unblock_rules_using_execution_policies" is disabled' do
-            before do
-              stub_feature_flags(unblock_rules_using_execution_policies: false)
-            end
-
-            it_behaves_like 'does not update approvals_required'
-          end
-
           context 'when toggle "unblock_rules_using_execution_policies" is disabled' do
             let(:unblock_enabled) { false }
 
