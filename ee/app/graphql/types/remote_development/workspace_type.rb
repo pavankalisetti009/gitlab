@@ -32,7 +32,7 @@ module Types
       field :desired_state, GraphQL::Types::String,
         null: false, description: 'Desired state of the workspace.'
 
-      field :desired_state_updated_at, Types::TimeType, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type, it's just a timestamp field
+      field :desired_state_updated_at, Types::TimeType,
         null: false, description: 'Timestamp of the last update to the desired state.'
 
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409772 - Make this a type:enum
@@ -72,6 +72,20 @@ module Types
 
       field :deployment_resource_version, GraphQL::Types::Int,
         null: true, description: 'Version of the deployment resource for the workspace.'
+
+      field :desired_config_generator_version, GraphQL::Types::Int, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type, its purpose is different than other 'desired' fields
+        experiment: { milestone: '17.6' },
+        null: false, description: 'Version of the desired config generator for the workspace.'
+
+      field :workspaces_agent_config_version, GraphQL::Types::Int,
+        experiment: { milestone: '17.6' },
+        null: false, description: 'Version of the associated WorkspacesAgentConfig for the workspace.'
+
+      field :force_include_all_resources, GraphQL::Types::Boolean,
+        experiment: { milestone: '17.6' },
+        null: false,
+        description: 'Forces all resources to be included for the workspace' \
+          'during the next reconciliation with the agent.'
 
       field :created_at, Types::TimeType,
         null: false, description: 'Timestamp of when the workspace was created.'
