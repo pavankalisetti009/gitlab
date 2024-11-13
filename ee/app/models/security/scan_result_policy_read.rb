@@ -56,8 +56,7 @@ module Security
     end
 
     def unblock_rules_using_execution_policies?
-      (::Feature.enabled?(:unblock_rules_using_execution_policies, project.group) &&
-        policy_tuning['unblock_rules_using_execution_policies']) || false
+      policy_tuning['unblock_rules_using_execution_policies'] || false
     end
 
     def newly_detected?

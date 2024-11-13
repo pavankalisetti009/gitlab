@@ -37,9 +37,6 @@ export default {
     fallbackBehaviorSetting() {
       return this.policy.fallback_behavior?.fail || CLOSED;
     },
-    showEdgeCasesSection() {
-      return this.glFeatures.unblockRulesUsingExecutionPolicies;
-    },
   },
   methods: {
     updateProperty(key, value) {
@@ -61,15 +58,14 @@ export default {
         <div class="rounded gl-bg-gray-10 gl-p-6"></div>
       </template>
 
-      <h5 v-if="showEdgeCasesSection">{{ $options.i18n.fallbackBehaviorTitle }}</h5>
+      <h5>{{ $options.i18n.fallbackBehaviorTitle }}</h5>
       <fallback-section :property="fallbackBehaviorSetting" @changed="updateProperty" />
-      <div v-if="showEdgeCasesSection">
-        <h5>
-          {{ $options.i18n.edgeCaseSettingsTitle }}
-          <gl-experiment-badge class="gl-ml-2" />
-        </h5>
-        <edge-cases-section :policy-tuning="policy.policy_tuning" @changed="updateProperty" />
-      </div>
+
+      <h5>
+        {{ $options.i18n.edgeCaseSettingsTitle }}
+        <gl-experiment-badge class="gl-ml-2" />
+      </h5>
+      <edge-cases-section :policy-tuning="policy.policy_tuning" @changed="updateProperty" />
     </dim-disable-container>
   </div>
 </template>

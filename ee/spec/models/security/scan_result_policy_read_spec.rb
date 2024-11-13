@@ -354,14 +354,6 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
       let(:read_attributes) { { policy_tuning: { unblock_rules_using_execution_policies: true } } }
 
       it { is_expected.to be(true) }
-
-      context "when feature flag unblock_rules_using_execution_policies is disabled" do
-        before do
-          stub_feature_flags(unblock_rules_using_execution_policies: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
 
     context "when unblock_rules_using_execution_policies is set as false" do
