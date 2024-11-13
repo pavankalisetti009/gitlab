@@ -12,7 +12,8 @@ import {
 } from 'ee_jest/compliance_dashboard/mock_data';
 
 import ComplianceFrameworksReport from 'ee/compliance_dashboard/components/frameworks_report/report.vue';
-import complianceFrameworks from 'ee/compliance_dashboard/components/frameworks_report/graphql/compliance_frameworks_list.query.graphql';
+import groupComplianceFrameworks from 'ee/compliance_dashboard/components/frameworks_report/graphql/compliance_frameworks_group_list.query.graphql';
+import projectComplianceFrameworks from 'ee/compliance_dashboard/components/frameworks_report/graphql/compliance_frameworks_project_list.query.graphql';
 import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
 import { createAlert } from '~/alert';
 
@@ -56,9 +57,14 @@ describe('ComplianceFrameworksReport component', () => {
     groupSecurityPoliciesPath: '/group-security-policies-example-path',
   };
 
-  function createMockApolloProvider(complianceFrameworksResolverMock, deleteFrameworkResolverMock) {
+  function createMockApolloProvider({
+    complianceFrameworksGroupResolverMock,
+    complianceFrameworksProjectResolverMock,
+    deleteFrameworkResolverMock,
+  }) {
     return createMockApollo([
-      [complianceFrameworks, complianceFrameworksResolverMock],
+      [groupComplianceFrameworks, complianceFrameworksGroupResolverMock],
+      [projectComplianceFrameworks, complianceFrameworksProjectResolverMock],
       [deleteComplianceFrameworkMutation, deleteFrameworkResolverMock],
     ]);
   }
@@ -67,10 +73,13 @@ describe('ComplianceFrameworksReport component', () => {
   function createComponent(
     mountFn = shallowMount,
     props = {},
-    complianceFrameworksResolverMock = mockGraphQlLoading,
+    {
+      complianceFrameworksGroupResolverMock = mockGraphQlLoading,
+      complianceFrameworksProjectResolverMock = mockGraphQlLoading,
+      deleteFrameworkResolverMock = mockDeleteFrameworkSuccess,
+    } = {},
     queryParams = {},
     provide = {},
-    deleteFrameworkResolverMock = mockDeleteFrameworkSuccess,
   ) {
     const currentQueryParams = { ...queryParams };
     $router = {
@@ -79,10 +88,11 @@ describe('ComplianceFrameworksReport component', () => {
       }),
     };
 
-    apolloProvider = createMockApolloProvider(
-      complianceFrameworksResolverMock,
+    apolloProvider = createMockApolloProvider({
+      complianceFrameworksGroupResolverMock,
+      complianceFrameworksProjectResolverMock,
       deleteFrameworkResolverMock,
-    );
+    });
 
     wrapper = extendedWrapper(
       mountFn(ComplianceFrameworksReport, {
@@ -125,13 +135,7 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('when feature flag for pipeline maintenance mode is enabled', () => {
     beforeEach(() => {
-      createComponent(
-        mount,
-        {},
-        mockGraphQlLoading,
-        {},
-        { featurePipelineMaintenanceModeEnabled: true },
-      );
+      createComponent(mount, {}, {}, {}, { featurePipelineMaintenanceModeEnabled: true });
     });
 
     it('renders the maintenance-mode-alert', () => {
@@ -154,7 +158,7 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('when initializing in top-level group', () => {
     beforeEach(() => {
-      createComponent(mount, {}, mockGraphQlLoading);
+      createComponent(mount, {});
     });
 
     it('renders the table loading icon', () => {
@@ -175,16 +179,12 @@ describe('ComplianceFrameworksReport component', () => {
     const subgroupPath = '/root/subgroup';
 
     beforeEach(() => {
-      createComponent(
-        mount,
-        {
-          groupPath: subgroupPath,
-          rootAncestor: {
-            path: rootPath,
-          },
+      createComponent(mount, {
+        groupPath: subgroupPath,
+        rootAncestor: {
+          path: rootPath,
         },
-        mockGraphQlLoading,
-      );
+      });
     });
 
     it('fetches the list of frameworks from current group', () => {
@@ -196,7 +196,7 @@ describe('ComplianceFrameworksReport component', () => {
   });
 
   it('loads data when search criteria changes', async () => {
-    createComponent(mount, {}, mockGraphQlLoading);
+    createComponent(mount, {});
 
     findFrameworksTable().vm.$emit('search', 'test');
     await nextTick();
@@ -210,7 +210,11 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('pagination', () => {
     beforeEach(() => {
-      createComponent(mount, {}, mockFrameworksGraphQlSuccess);
+      createComponent(
+        mount,
+        {},
+        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
+      );
       return waitForPromises();
     });
 
@@ -261,7 +265,11 @@ describe('ComplianceFrameworksReport component', () => {
   describe('when the frameworks query fails', () => {
     beforeEach(() => {
       jest.spyOn(Sentry, 'captureException');
-      createComponent(shallowMount, { props: {} }, mockGraphQlError);
+      createComponent(
+        shallowMount,
+        { props: {} },
+        { complianceFrameworksGroupResolverMock: mockGraphQlError },
+      );
     });
 
     it('renders the error message', async () => {
@@ -278,7 +286,11 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('when there are frameworks', () => {
     beforeEach(async () => {
-      createComponent(mount, { props: {} }, mockFrameworksGraphQlSuccess);
+      createComponent(
+        mount,
+        { props: {} },
+        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
+      );
       await waitForPromises();
     });
 
@@ -298,7 +310,11 @@ describe('ComplianceFrameworksReport component', () => {
 
   describe('deleting frameworks', () => {
     beforeEach(async () => {
-      createComponent(mount, { props: {} }, mockFrameworksGraphQlSuccess);
+      createComponent(
+        mount,
+        { props: {} },
+        { complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess },
+      );
       await waitForPromises();
     });
 
@@ -320,7 +336,10 @@ describe('ComplianceFrameworksReport component', () => {
       createComponent(
         mount,
         { props: {} },
-        mockFrameworksGraphQlSuccess,
+        {
+          complianceFrameworksGroupResolverMock: mockFrameworksGraphQlSuccess,
+          deleteFrameworkResolverMock: mockDeleteFrameworkError,
+        },
         {},
         {},
         mockDeleteFrameworkError,
@@ -336,6 +355,48 @@ describe('ComplianceFrameworksReport component', () => {
         message: 'Could not delete framework',
       });
       expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('graphql query selction', () => {
+    it('uses group query with groupPath when groupPath is provided in props', () => {
+      const complianceFrameworksGroupResolverMock = jest.fn();
+      const complianceFrameworksProjectResolverMock = jest.fn();
+      createComponent(
+        mount,
+        { groupPath: 'groupPath' },
+        {
+          complianceFrameworksGroupResolverMock,
+          complianceFrameworksProjectResolverMock,
+        },
+      );
+
+      expect(complianceFrameworksGroupResolverMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: 'groupPath',
+        }),
+      );
+      expect(complianceFrameworksProjectResolverMock).not.toHaveBeenCalled();
+    });
+
+    it('uses project query with projectPath when projectPath is provided in props', () => {
+      const complianceFrameworksGroupResolverMock = jest.fn();
+      const complianceFrameworksProjectResolverMock = jest.fn();
+      createComponent(
+        mount,
+        { groupPath: 'groupPath', projectPath: 'projectPath' },
+        {
+          complianceFrameworksGroupResolverMock,
+          complianceFrameworksProjectResolverMock,
+        },
+      );
+
+      expect(complianceFrameworksProjectResolverMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: 'projectPath',
+        }),
+      );
+      expect(complianceFrameworksGroupResolverMock).not.toHaveBeenCalled();
     });
   });
 });

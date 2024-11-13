@@ -41,7 +41,13 @@ export default {
   props: {
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
+    },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
     },
     rootAncestor: {
       type: Object,
@@ -59,17 +65,21 @@ export default {
   data() {
     return {
       frameworkToDeleteName: null,
-      frameworkToDeleteID: null,
+      frameworkToDeleteId: null,
     };
   },
   computed: {
     isTopLevelGroup() {
       return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
     },
+    hasSearch() {
+      // Search is not supported for project frameworks
+      return !this.projectPath;
+    },
 
     selectedFramework() {
       return this.$route.query.id
-        ? this.frameworks.find(
+        ? this.frameworksWithFilteredProjects.find(
             (framework) => framework.id === convertFrameworkIdToGraphQl(this.$route.query.id),
           )
         : null;
@@ -79,6 +89,29 @@ export default {
     },
     showNoFrameworksAlert() {
       return !this.frameworks.length && !this.isLoading && !this.isTopLevelGroup;
+    },
+    tableFields() {
+      return this.projectPath
+        ? this.$options.fields.filter((f) => f.key !== 'associatedProjects')
+        : this.$options.fields;
+    },
+    frameworksWithFilteredProjects() {
+      return this.frameworks.map((framework) => {
+        const filteredProjects =
+          this.groupPath && framework.projects
+            ? {
+                ...framework.projects,
+                nodes: framework.projects.nodes.filter((p) =>
+                  p.fullPath.startsWith(this.groupPath),
+                ),
+              }
+            : framework.projects;
+
+        return {
+          ...framework,
+          projects: filteredProjects,
+        };
+      });
     },
   },
   methods: {
@@ -120,9 +153,6 @@ export default {
       ]
         .map((x) => x.name)
         .join(',');
-    },
-    filterProjects(projects) {
-      return projects.filter((p) => p.fullPath.startsWith(this.groupPath));
     },
     shouldDisableDeleteAction(framework) {
       return framework.default || Boolean(this.getPoliciesList(framework).length);
@@ -193,7 +223,7 @@ export default {
 </script>
 <template>
   <section>
-    <div class="gl-flex gl-gap-4 gl-bg-gray-10 gl-p-4">
+    <div v-if="hasSearch" class="gl-flex gl-gap-4 gl-bg-gray-10 gl-p-4">
       <gl-search-box-by-click
         class="gl-grow"
         @submit="$emit('search', $event)"
@@ -216,9 +246,9 @@ export default {
       </div>
     </gl-alert>
     <gl-table
-      :fields="$options.fields"
+      :fields="tableFields"
       :busy="isLoading"
-      :items="frameworks"
+      :items="frameworksWithFilteredProjects"
       no-local-sorting
       show-empty
       stacked="md"
@@ -236,7 +266,7 @@ export default {
         }"
       >
         <div
-          v-for="(associatedProject, index) in filterProjects(associatedProjects)"
+          v-for="(associatedProject, index) in associatedProjects"
           :key="associatedProject.id"
           class="gl-inline-block"
         >

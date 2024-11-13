@@ -6,14 +6,15 @@ import { s__ } from '~/locale';
 
 import { createAlert } from '~/alert';
 import deleteComplianceFrameworkMutation from '../../graphql/mutations/delete_compliance_framework.mutation.graphql';
-import complianceFrameworks from './graphql/compliance_frameworks_list.query.graphql';
+import complianceFrameworksGroupList from './graphql/compliance_frameworks_group_list.query.graphql';
+import complianceFrameworksProjectList from './graphql/compliance_frameworks_project_list.query.graphql';
 
 import FrameworksTable from './frameworks_table.vue';
 
 const FRAMEWORK_LIMIT = 20;
 
 export default {
-  name: 'ComplianceProjectsReport',
+  name: 'ComplianceFrameworksReport',
   components: {
     GlAlert,
     GlLink,
@@ -43,9 +44,16 @@ export default {
     },
     groupPath: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
+    },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
+
   data() {
     return {
       hasQueryError: false,
@@ -60,11 +68,13 @@ export default {
   },
   apollo: {
     frameworks: {
-      query: complianceFrameworks,
+      query() {
+        return this.projectPath ? complianceFrameworksProjectList : complianceFrameworksGroupList;
+      },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       variables() {
         return {
-          fullPath: this.groupPath,
+          fullPath: this.projectPath ?? this.groupPath,
           search: this.searchString,
           ...this.cursor,
           [this.cursor.before ? 'last' : 'first']: FRAMEWORK_LIMIT,
@@ -195,6 +205,7 @@ export default {
       <frameworks-table
         :root-ancestor="rootAncestor"
         :group-path="groupPath"
+        :project-path="projectPath"
         :is-loading="isLoading"
         :frameworks="frameworks.nodes"
         @search="onSearch"
