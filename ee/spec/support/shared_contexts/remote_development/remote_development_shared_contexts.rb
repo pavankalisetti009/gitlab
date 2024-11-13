@@ -346,7 +346,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     agent_annotations: {},
     project_name: "test-project",
     namespace_path: "test-group",
-    workspace_image_pull_secrets: [],
+    image_pull_secrets: [],
     core_resources_only: false
   )
     desired_config_generator_version = RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::VERSION_3
@@ -456,7 +456,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     workspace_service_account = workspace_service_account(
       name: workspace.name,
       namespace: workspace.namespace,
-      image_pull_secrets: workspace_image_pull_secrets,
+      image_pull_secrets: image_pull_secrets,
       labels: labels,
       annotations: annotations
     )
@@ -1133,7 +1133,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     annotations:
   )
 
-    image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.fetch('name') } }
+    image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.symbolize_keys.fetch(:name) } }
     {
       kind: 'ServiceAccount',
       apiVersion: 'v1',

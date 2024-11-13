@@ -15,7 +15,6 @@ module RemoteDevelopment
             params: Hash => params
           }
           params => {
-            max_hours_before_termination: Integer => max_hours_before_termination,
             project: Project => project
           }
 
@@ -25,11 +24,7 @@ module RemoteDevelopment
             impersonation: false,
             scopes: [:write_repository, :api],
             organization: project.organization,
-            # Since expires_at is a date, we need to set it to the round it off to the next day.
-            # e.g. If the max_hours_before_termination of the workspace is 1 hour
-            # and the workspace is created at 2023-08-20 05:30:00,
-            # then the expires_at of the PAT would be 2023-08-21.
-            expires_at: max_hours_before_termination.hours.from_now.to_date.next_day
+            expires_at: max_allowed_personal_access_token_expires_at
           )
           personal_access_token.save
 
@@ -45,6 +40,12 @@ module RemoteDevelopment
             })
           )
         end
+
+        # @return [ActiveSupport::TimeWithZone]
+        def self.max_allowed_personal_access_token_expires_at
+          MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION.hours.from_now.to_date.next_day - 1.second
+        end
+        private_class_method :max_allowed_personal_access_token_expires_at
       end
     end
   end

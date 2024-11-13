@@ -58,7 +58,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
           agent_labels: workspace.workspaces_agent_config.labels,
           agent_annotations: workspace.workspaces_agent_config.annotations,
-          workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
+          image_pull_secrets: image_pull_secrets
         )
       )
     end
@@ -118,15 +118,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     context 'when there are image-pull-secrets' do
-      let(:image_pull_secrets) { [{ 'name' => 'secret-name', 'namespace' => 'secret-namespace' }] }
-      let(:image_pull_secrets_names) do
-        image_pull_secrets.map { |secret| { 'name' => secret.fetch('name') } }
-      end
+      let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
+      let(:expected_image_pull_secrets_names) { [{ 'name' => 'secret-name' }] }
 
       it 'returns expected config with a service account resource configured' do
         expect(workspace_resources).to eq(expected_config)
         service_account_resource = workspace_resources.find { |resource| resource.fetch('kind') == 'ServiceAccount' }
-        expect(service_account_resource.fetch('imagePullSecrets')).to eq(image_pull_secrets_names)
+        expect(service_account_resource.fetch('imagePullSecrets')).to eq(expected_image_pull_secrets_names)
       end
     end
 

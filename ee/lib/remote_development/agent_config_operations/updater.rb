@@ -17,7 +17,7 @@ module RemoteDevelopment
           )
         end
 
-        workspaces_agent_config = find_or_initialize_workspaces_agent_config(
+        workspaces_agent_config = update_or_initialize_workspaces_agent_config(
           agent: agent,
           config_from_agent_config_file: config_from_agent_config_file
         )
@@ -34,9 +34,8 @@ module RemoteDevelopment
       # @param [Clusters::Agent] agent
       # @param [Hash] config_from_agent_config_file
       # @return [RemoteDevelopment::WorkspacesAgentConfig]
-      # rubocop:disable Metrics/AbcSize -- This is being resolved by refactoring in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/166065
-      def self.find_or_initialize_workspaces_agent_config(agent:, config_from_agent_config_file:)
-        model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:disable CodeReuse/ActiveRecord -- We don't want to use a finder, we want to use find_or_initialize_by because it's more concise
+      def self.update_or_initialize_workspaces_agent_config(agent:, config_from_agent_config_file:)
+        agent_config_model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:disable CodeReuse/ActiveRecord -- We don't want to use a finder, we want to use find_or_initialize_by because it's more concise
 
         normalized_config_from_file = config_from_agent_config_file.dup.to_h.transform_keys(&:to_sym)
 
@@ -49,9 +48,13 @@ module RemoteDevelopment
         #       Same for `network_policy_enabled` and `network_policy_egress` db fields - rename them from the
         #       network_policy field in the config_from_agent_config_file spec
         network_policy_enabled = normalized_config_from_file.dig(:network_policy, :enabled)
-        normalized_config_from_file[:network_policy_enabled] = network_policy_enabled if network_policy_enabled
+        normalized_config_from_file[:network_policy_enabled] = network_policy_enabled unless network_policy_enabled.nil?
         network_policy_egress = normalized_config_from_file.dig(:network_policy, :egress)
         normalized_config_from_file[:network_policy_egress] = network_policy_egress if network_policy_egress
+
+        # NOTE: `enabled` is the one field we can't easily move into the Settings module, so its default
+        #       remains hardcoded here. It may also be a string or a boolean.
+        normalized_config_from_file[:enabled] = ["true", true].include?(normalized_config_from_file[:enabled])
 
         # NOTE: We rely on the settings module to fetch the defaults of all values except `enabled` in the
         #       agent config file. This is temporary pending completion of the settings module/UI which will
@@ -59,55 +62,90 @@ module RemoteDevelopment
 
         agent_config_settings = Settings.get(
           [
+            :allow_privilege_escalation,
+            :annotations,
             :default_max_hours_before_termination,
             :default_resources_per_workspace_container,
+            :default_runtime_class,
             :gitlab_workspaces_proxy_namespace,
+            :image_pull_secrets,
+            :labels,
+            :max_active_hours_before_stop,
             :max_hours_before_termination_limit,
             :max_resources_per_workspace,
+            :max_stopped_hours_before_termination,
             :network_policy_egress,
             :network_policy_enabled,
-            :workspaces_per_user_quota,
-            :workspaces_quota,
-            :allow_privilege_escalation,
             :use_kubernetes_user_namespaces,
-            :default_runtime_class,
-            :annotations,
-            :labels,
-            :image_pull_secrets
+            :workspaces_per_user_quota,
+            :workspaces_quota
           ]
         )
-        agent_config_values = agent_config_settings.merge(normalized_config_from_file)
+        values = agent_config_settings.merge(normalized_config_from_file)
 
-        # NOTE: `enabled` is the one field we can't easily move into the Settings module, so its default
-        #       remains hardcoded here.
-        model_instance.enabled = agent_config_values.fetch(:enabled, false)
+        set_attributes_on_agent_config_model_instance(
+          agent_config_model: agent_config_model_instance,
+          values: values,
+          agent_model: agent
+        )
 
-        model_instance.project_id = agent.project_id
-        model_instance.workspaces_quota = agent_config_values.fetch(:workspaces_quota)
-        model_instance.workspaces_per_user_quota = agent_config_values.fetch(:workspaces_per_user_quota)
-        model_instance.dns_zone = agent_config_values[:dns_zone]
-        model_instance.network_policy_enabled = agent_config_values.fetch(:network_policy_enabled)
-        model_instance.network_policy_egress = agent_config_values.fetch(:network_policy_egress)
-        model_instance.gitlab_workspaces_proxy_namespace = agent_config_values.fetch(:gitlab_workspaces_proxy_namespace)
-        model_instance.default_resources_per_workspace_container =
-          agent_config_values.fetch(:default_resources_per_workspace_container)
-        model_instance.max_resources_per_workspace = agent_config_values.fetch(:max_resources_per_workspace)
-        model_instance.default_max_hours_before_termination =
-          agent_config_values.fetch(:default_max_hours_before_termination)
-        model_instance.max_hours_before_termination_limit =
-          agent_config_values.fetch(:max_hours_before_termination_limit)
-        model_instance.allow_privilege_escalation = agent_config_values.fetch(:allow_privilege_escalation)
-        model_instance.use_kubernetes_user_namespaces = agent_config_values.fetch(:use_kubernetes_user_namespaces)
-        model_instance.default_runtime_class = agent_config_values.fetch(:default_runtime_class)
-        model_instance.annotations = agent_config_values.fetch(:annotations)
-        model_instance.labels = agent_config_values.fetch(:labels)
-        model_instance.image_pull_secrets = agent_config_values.fetch(:image_pull_secrets)
-
-        model_instance
+        agent_config_model_instance
       end
-      # rubocop:enable Metrics/AbcSize
 
-      private_class_method :find_or_initialize_workspaces_agent_config
+      # @param [WorkspacesAgentConfig] agent_config_model
+      # @param [Hash] values
+      # @param [Clusters::Agent] agent_model
+      # @return [RemoteDevelopment::WorkspacesAgentConfig]
+      # noinspection RubyResolve -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32301
+      def self.set_attributes_on_agent_config_model_instance(agent_config_model:, values:, agent_model:)
+        # Type check all the values via rightward assignment destructuring
+        values => {
+          allow_privilege_escalation: (TrueClass | FalseClass) => allow_privilege_escalation,
+          annotations: Hash => annotations,
+          default_max_hours_before_termination: Integer => default_max_hours_before_termination,
+          default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
+          default_runtime_class: String => default_runtime_class,
+          dns_zone: String => dns_zone,
+          enabled: (TrueClass | FalseClass) => enabled,
+          gitlab_workspaces_proxy_namespace: String => gitlab_workspaces_proxy_namespace,
+          image_pull_secrets: Array => image_pull_secrets,
+          labels: Hash => labels,
+          max_active_hours_before_stop: Integer => max_active_hours_before_stop,
+          max_hours_before_termination_limit: Integer => max_hours_before_termination_limit,
+          max_resources_per_workspace: Hash => max_resources_per_workspace,
+          max_stopped_hours_before_termination: Integer => max_stopped_hours_before_termination,
+          network_policy_egress: Array => network_policy_egress,
+          network_policy_enabled: (TrueClass | FalseClass) => network_policy_enabled,
+          use_kubernetes_user_namespaces: (TrueClass | FalseClass) => use_kubernetes_user_namespaces,
+          workspaces_per_user_quota: Integer => workspaces_per_user_quota,
+          workspaces_quota: Integer => workspaces_quota
+        }
+
+        agent_config_model.assign_attributes({
+          allow_privilege_escalation: allow_privilege_escalation,
+          annotations: annotations,
+          default_max_hours_before_termination: default_max_hours_before_termination,
+          default_resources_per_workspace_container: default_resources_per_workspace_container,
+          default_runtime_class: default_runtime_class,
+          dns_zone: dns_zone,
+          enabled: enabled,
+          gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+          image_pull_secrets: image_pull_secrets,
+          labels: labels,
+          max_active_hours_before_stop: max_active_hours_before_stop,
+          max_hours_before_termination_limit: max_hours_before_termination_limit,
+          max_resources_per_workspace: max_resources_per_workspace,
+          max_stopped_hours_before_termination: max_stopped_hours_before_termination,
+          network_policy_egress: network_policy_egress,
+          network_policy_enabled: network_policy_enabled,
+          project_id: agent_model.project_id,
+          use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+          workspaces_per_user_quota: workspaces_per_user_quota,
+          workspaces_quota: workspaces_quota
+        })
+      end
+
+      private_class_method :update_or_initialize_workspaces_agent_config, :set_attributes_on_agent_config_model_instance
     end
   end
 end

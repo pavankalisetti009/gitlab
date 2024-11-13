@@ -1,5 +1,4 @@
 <script>
-import { getTimeago, nSecondsAfter } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { WORKSPACE_STATES, WORKSPACE_DESIRED_STATES } from '../../constants';
@@ -11,7 +10,6 @@ import { calculateDisplayState } from '../../services/calculate_display_state';
 
 export const i18n = {
   created: __('Created'),
-  terminates: __('Terminates'),
 };
 
 export default {
@@ -44,15 +42,6 @@ export default {
         return '';
       }
       return sprintf(__(`%{path} on %{ref}`), { ref, path });
-    },
-    terminatesIn(workspace) {
-      const createdAt = new Date(workspace.createdAt);
-      const terminationDate = nSecondsAfter(
-        createdAt,
-        workspace.maxHoursBeforeTermination * 60 * 60,
-      );
-
-      return getTimeago().format(terminationDate, { relativeDate: createdAt });
     },
     isTerminated(workspace) {
       return workspace.actualState === WORKSPACE_STATES.terminated;
@@ -97,13 +86,6 @@ export default {
                   class="gl-font-sm-600 gl-whitespace-nowrap gl-text-secondary"
                   :time="item.createdAt"
                 />
-                <span v-if="!isTerminated(item)">
-                  &middot;
-                  {{ $options.i18n.terminates }}
-                  <span data-testid="workspace-termination">
-                    {{ terminatesIn(item) }}
-                  </span>
-                </span>
               </div>
             </div>
             <div class="gl-flex gl-w-full gl-gap-3 sm:gl-w-auto">

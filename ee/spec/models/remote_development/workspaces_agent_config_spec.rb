@@ -11,9 +11,9 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       {
         allow: "0.0.0.0/0",
         except: [
-          - "10.0.0.0/8",
-          - "172.16.0.0/12",
-          - "192.168.0.0/16"
+          -"10.0.0.0/8",
+          -"172.16.0.0/12",
+          -"192.168.0.0/16"
         ]
       }.deep_stringify_keys
     ]
@@ -26,6 +26,37 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
   let(:default_runtime_class) { "" }
 
   subject(:config) { agent.unversioned_latest_workspaces_agent_config }
+
+  describe "database defaults" do
+    let_it_be(:agent_config_with_defaults) { described_class.new }
+
+    where(:field) do
+      %i[
+        allow_privilege_escalation
+        annotations
+        default_resources_per_workspace_container
+        default_runtime_class
+        gitlab_workspaces_proxy_namespace
+        labels
+        max_active_hours_before_stop
+        max_resources_per_workspace
+        max_stopped_hours_before_termination
+        network_policy_egress
+        network_policy_enabled
+        use_kubernetes_user_namespaces
+        workspaces_per_user_quota
+        workspaces_quota
+      ].map { |field| [field] }
+    end
+
+    with_them do
+      it "have same defaults as the Settings defaults" do
+        default_value_from_db = agent_config_with_defaults.send(field)
+        default_value_from_db.each(&:deep_symbolize_keys!) if [:network_policy_egress].include?(field)
+        expect(default_value_from_db).to eq(RemoteDevelopment::Settings.get_single_setting(field))
+      end
+    end
+  end
 
   describe 'associations' do
     it { is_expected.to belong_to(:agent) }
@@ -198,16 +229,37 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
     it 'allows numerical values for max_hours_before_termination_limit greater or equal to' \
       'default_max_hours_before_termination and less than or equal to 8760' do
       is_expected.to validate_numericality_of(:max_hours_before_termination_limit)
-        .only_integer
-        .is_less_than_or_equal_to(8760)
-        .is_greater_than_or_equal_to(default_max_hours_before_termination_default_value)
+                       .only_integer
+                       .is_less_than_or_equal_to(8760)
+                       .is_greater_than_or_equal_to(default_max_hours_before_termination_default_value)
     end
 
     it 'allows numerical values for default_max_hours_before_termination greater or equal to 1' \
       'and less than or equal to max_hours_before_termination_limit' do
       is_expected.to validate_numericality_of(:default_max_hours_before_termination)
-        .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
-        .is_greater_than_or_equal_to(1)
+                       .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
+                       .is_greater_than_or_equal_to(1)
+    end
+
+    it 'allows numerical values for max_active_hours_before_stop greater or equal to 1' do
+      is_expected.to validate_numericality_of(:max_active_hours_before_stop)
+                       .only_integer.is_greater_than_or_equal_to(1)
+    end
+
+    it 'allows numerical values for max_stopped_hours_before_termination greater or equal to 1' do
+      is_expected.to validate_numericality_of(:max_stopped_hours_before_termination)
+                       .only_integer.is_greater_than_or_equal_to(1)
+    end
+
+    it 'prevents max_active_hours_before_stop + max_stopped_hours_before_termination > 1 year' do
+      # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+      config.max_active_hours_before_stop = 8760
+      # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+      config.max_stopped_hours_before_termination = 1
+      expect(config).not_to be_valid
+      expect(config.errors[:base]).to include(
+        "Sum of max_active_hours_before_stop and max_stopped_hours_before_termination must not exceed 8760 hours"
+      )
     end
   end
 

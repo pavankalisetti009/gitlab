@@ -185,21 +185,6 @@ describe('workspaces/user/pages/create.vue', () => {
 
   const findMaxHoursBeforeTerminationField = () =>
     wrapper.findByTestId('max-hours-before-termination');
-  const findMaxHoursBeforeTerminationInputGroup = () =>
-    findMaxHoursBeforeTerminationField().findComponent(GlFormInputGroup);
-  const findMaxHoursBeforeTerminationInput = () =>
-    findMaxHoursBeforeTerminationInputGroup().findComponent(GlFormInput);
-  const findMaxHoursBeforeTerminationFieldParts = () => {
-    const field = findMaxHoursBeforeTerminationField();
-    const inputAppendText = findMaxHoursBeforeTerminationInputGroup().text();
-    const inputValue = findMaxHoursBeforeTerminationInput();
-
-    return {
-      label: field.attributes('label'),
-      inputAppendText,
-      inputValue: parseInt(inputValue.attributes('value'), 10),
-    };
-  };
 
   const emitGetProjectDetailsQueryResult = ({
     clusterAgents = [],
@@ -347,27 +332,9 @@ describe('workspaces/user/pages/create.vue', () => {
       });
     });
 
-    describe('max hours before termination field', () => {
-      it('renders parts', () => {
-        expect(findMaxHoursBeforeTerminationFieldParts()).toEqual({
-          label: 'Workspace automatically terminates after',
-          inputAppendText: 'hours',
-          inputValue: clusterAgentOneDefaultMaxHours,
-        });
-      });
-    });
-
     describe('when selecting a different cluster agent', () => {
       beforeEach(async () => {
         await selectClusterAgent(selectedClusterAgentTwoIDFixture);
-      });
-
-      it('auto-populates max hours before termination field value to new agent value', () => {
-        expect(findMaxHoursBeforeTerminationFieldParts()).toEqual({
-          label: 'Workspace automatically terminates after',
-          inputAppendText: 'hours',
-          inputValue: clusterAgentTwoDefaultMaxHours,
-        });
       });
 
       it('submits workspaceCreate mutation with correct data', async () => {
@@ -408,12 +375,7 @@ describe('workspaces/user/pages/create.vue', () => {
 
     describe('when clicking Create Workspace button', () => {
       it('submits workspaceCreate mutation', async () => {
-        const maxHoursBeforeTermination = 10;
-        findMaxHoursBeforeTerminationInput().vm.$emit(
-          'input',
-          maxHoursBeforeTermination.toString(),
-        );
-
+        const maxHoursBeforeTermination = 100;
         const devfileRef = 'mybranch';
         findDevfileRefRefSelector().vm.$emit('input', devfileRef);
 

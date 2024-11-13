@@ -10,10 +10,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessT
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :in_group, :repository) }
   let(:workspace_name) { "workspace-example_agent_id-example_user_id-example_random_string" }
-  let(:max_hours_before_termination) { 24 }
   let(:params) do
     {
-      max_hours_before_termination: max_hours_before_termination,
       project: project
     }
   end
@@ -42,7 +40,13 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessT
   end
 
   context 'when personal access token creation fails' do
-    let(:max_hours_before_termination) { 999999999999 }
+    before do
+      invalid_token_expiration_lifetime_in_hours =
+        ((PersonalAccessToken.new.send(:max_expiration_lifetime_in_days) + 1) * 24).hours
+      allow(described_class)
+        .to receive(:max_allowed_personal_access_token_expires_at)
+              .and_return(invalid_token_expiration_lifetime_in_hours.from_now.to_date)
+    end
 
     it 'returns an error result containing a failed message with model errors' do
       expect { result }.not_to change { user.personal_access_tokens.count }

@@ -8,10 +8,7 @@ module RemoteDevelopment
     include Sortable
 
     UNLIMITED_QUOTA = -1
-    MINIMUM_HOURS_BEFORE_TERMINATION = 1
-    # NOTE: see the following issue for the reasoning behind this value being the hard maximum termination limit:
-    #      https://gitlab.com/gitlab-org/gitlab/-/issues/471994
-    MAXIMUM_HOURS_BEFORE_TERMINATION = 8760
+    MIN_HOURS_BEFORE_TERMINATION = 1
 
     has_paper_trail versions: {
       class_name: 'RemoteDevelopment::WorkspacesAgentConfigVersion'
@@ -43,11 +40,11 @@ module RemoteDevelopment
     validates :max_hours_before_termination_limit,
       numericality: {
         only_integer: true, greater_than_or_equal_to: :default_max_hours_before_termination,
-        less_than_or_equal_to: MAXIMUM_HOURS_BEFORE_TERMINATION
+        less_than_or_equal_to: WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
       }
     validates :default_max_hours_before_termination,
       numericality: {
-        only_integer: true, greater_than_or_equal_to: MINIMUM_HOURS_BEFORE_TERMINATION,
+        only_integer: true, greater_than_or_equal_to: MIN_HOURS_BEFORE_TERMINATION,
         less_than_or_equal_to: :max_hours_before_termination_limit
       }
     validates :allow_privilege_escalation, inclusion: { in: [true, false] }
@@ -60,11 +57,36 @@ module RemoteDevelopment
       json_schema: { filename: 'workspaces_agent_configs_image_pull_secrets', detail_errors: true }
     validates :image_pull_secrets, 'remote_development/image_pull_secrets': true
 
+    validates :max_active_hours_before_stop,
+      numericality: {
+        only_integer: true, greater_than_or_equal_to: 1,
+        less_than_or_equal_to: WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
+      }
+    validates :max_stopped_hours_before_termination,
+      numericality: {
+        only_integer: true, greater_than_or_equal_to: 1,
+        less_than_or_equal_to: WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
+      }
+
+    validate :validate_sum_of_delayed_termination_fields_does_not_exceed_max_hours_before_termination_limit
+
     validate :validate_allow_privilege_escalation
 
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
 
     private
+
+    def validate_sum_of_delayed_termination_fields_does_not_exceed_max_hours_before_termination_limit
+      max_hours_before_termination = WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
+
+      return if max_active_hours_before_stop + max_stopped_hours_before_termination <= max_hours_before_termination
+
+      msg = "Sum of max_active_hours_before_stop and max_stopped_hours_before_termination must not exceed " \
+        "%{maximum_hours_before_termination} hours"
+
+      errors.add(:base, format(_(msg), maximum_hours_before_termination: max_hours_before_termination))
+      false
+    end
 
     # allow_privilege_escalation is allowed to be set to true only if
     # - either use_kubernetes_user_namespaces is true

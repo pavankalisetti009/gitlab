@@ -7,20 +7,20 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   include ResultMatchers
 
   let(:enabled) { true }
+  let(:enabled_present) { true }
   let_it_be(:dns_zone) { 'my-awesome-domain.me' }
-  let(:termination_limits_sets) { false }
-  let(:default_unlimited_quota) { -1 }
+  let(:unlimited_quota) { -1 }
   let(:saved_quota) { 5 }
   let(:quota) { 5 }
+
   let(:network_policy_present) { false }
-  let(:default_network_policy_egress) do
+  let(:network_policy_egress) do
     [{
       allow: "0.0.0.0/0",
       except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
     }]
   end
 
-  let(:network_policy_egress) { default_network_policy_egress }
   let(:network_policy_enabled) { true }
   let(:network_policy_without_egress) do
     { enabled: network_policy_enabled }
@@ -36,16 +36,22 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:network_policy) { network_policy_without_egress }
   let(:gitlab_workspaces_proxy_present) { false }
   let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-  let(:gitlab_workspaces_proxy) do
-    { namespace: gitlab_workspaces_proxy_namespace }
-  end
+  let(:gitlab_workspaces_proxy) { { namespace: gitlab_workspaces_proxy_namespace } }
+  let(:gitlab_workspaces_proxy_namespace_present) { true }
 
-  let(:default_default_resources_per_workspace_container) { {} }
-  let(:default_resources_per_workspace_container) { default_default_resources_per_workspace_container }
-  let(:default_max_resources_per_workspace) { {} }
-  let(:max_resources_per_workspace) { default_max_resources_per_workspace }
+  let(:default_resources_per_workspace_container) { {} }
+  let(:max_resources_per_workspace) { {} }
+
   let(:default_max_hours_before_termination) { 24 }
+  let(:default_max_hours_before_termination_present) { false }
   let(:max_hours_before_termination_limit) { 120 }
+  let(:max_hours_before_termination_limit_present) { false }
+
+  let(:max_active_hours_before_stop) { 36 }
+  let(:max_active_hours_before_stop_present) { false }
+  let(:max_stopped_hours_before_termination) { 744 }
+  let(:max_stopped_hours_before_termination_present) { false }
+
   let(:allow_privilege_escalation) { false }
   let(:use_kubernetes_user_namespaces) { false }
   let(:default_runtime_class) { "" }
@@ -59,17 +65,35 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
   let(:config) do
     remote_development_config = {
-      'enabled' => enabled,
       'dns_zone' => dns_zone_in_config
     }
+    remote_development_config['enabled'] = enabled if enabled_present
     remote_development_config['network_policy'] = network_policy if network_policy_present
-    remote_development_config['gitlab_workspaces_proxy'] = gitlab_workspaces_proxy if gitlab_workspaces_proxy_present
+
+    remote_development_config['gitlab_workspaces_proxy'] =
+      if gitlab_workspaces_proxy_present && gitlab_workspaces_proxy_namespace_present
+        gitlab_workspaces_proxy
+      elsif gitlab_workspaces_proxy_present
+        {}
+      end
+
     remote_development_config['default_resources_per_workspace_container'] = default_resources_per_workspace_container
     remote_development_config['max_resources_per_workspace'] = max_resources_per_workspace
 
-    if termination_limits_sets
+    if default_max_hours_before_termination_present
       remote_development_config['default_max_hours_before_termination'] = default_max_hours_before_termination
+    end
+
+    if max_hours_before_termination_limit_present
       remote_development_config['max_hours_before_termination_limit'] = max_hours_before_termination_limit
+    end
+
+    if max_active_hours_before_stop_present
+      remote_development_config['max_active_hours_before_stop'] = max_active_hours_before_stop
+    end
+
+    if max_stopped_hours_before_termination_present
+      remote_development_config['max_stopped_hours_before_termination'] = max_stopped_hours_before_termination
     end
 
     if quota
@@ -87,51 +111,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     {
       remote_development: HashWithIndifferentAccess.new(remote_development_config)
     }
-  end
-
-  let(:agent_config_setting_names) do
-    [
-      :default_max_hours_before_termination,
-      :default_resources_per_workspace_container,
-      :gitlab_workspaces_proxy_namespace,
-      :max_hours_before_termination_limit,
-      :max_resources_per_workspace,
-      :network_policy_egress,
-      :network_policy_enabled,
-      :workspaces_per_user_quota,
-      :workspaces_quota,
-      :allow_privilege_escalation,
-      :use_kubernetes_user_namespaces,
-      :default_runtime_class,
-      :annotations,
-      :labels,
-      :image_pull_secrets
-    ]
-  end
-
-  let(:agent_config_setting_values) do
-    {
-      default_max_hours_before_termination: default_max_hours_before_termination,
-      default_resources_per_workspace_container: default_default_resources_per_workspace_container,
-      gitlab_workspaces_proxy_namespace: "gitlab-workspaces",
-      max_hours_before_termination_limit: max_hours_before_termination_limit,
-      max_resources_per_workspace: default_max_resources_per_workspace,
-      network_policy_egress: default_network_policy_egress,
-      network_policy_enabled: network_policy_enabled,
-      workspaces_per_user_quota: default_unlimited_quota,
-      workspaces_quota: default_unlimited_quota,
-      allow_privilege_escalation: allow_privilege_escalation,
-      use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-      default_runtime_class: default_runtime_class,
-      annotations: annotations,
-      labels: labels,
-      image_pull_secrets: image_pull_secrets
-    }
-  end
-
-  before do
-    allow(RemoteDevelopment::Settings)
-      .to receive(:get).with(agent_config_setting_names).and_return(agent_config_setting_values)
   end
 
   subject(:result) do
@@ -157,27 +136,26 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         expect { result }.to change { RemoteDevelopment::WorkspacesAgentConfig.count }.by(expected_configs_created)
 
         config_instance = agent.reload.unversioned_latest_workspaces_agent_config
-        expect(config_instance.enabled).to eq(enabled)
-        expect(config_instance.project_id).to eq(agent.project_id)
-        expect(config_instance.dns_zone).to eq(expected_dns_zone)
-        expect(config_instance.network_policy_enabled).to eq(network_policy_enabled)
-        expect(config_instance.network_policy_egress.map(&:deep_symbolize_keys)).to eq(network_policy_egress)
-        expect(config_instance.gitlab_workspaces_proxy_namespace).to eq(gitlab_workspaces_proxy_namespace)
+        expect(config_instance.allow_privilege_escalation).to eq(allow_privilege_escalation)
+        expect(config_instance.annotations.deep_symbolize_keys).to eq(annotations)
+        expect(config_instance.default_max_hours_before_termination).to eq(default_max_hours_before_termination)
         expect(config_instance.default_resources_per_workspace_container.deep_symbolize_keys)
           .to eq(default_resources_per_workspace_container)
-        expect(config_instance.max_resources_per_workspace.deep_symbolize_keys)
-          .to eq(max_resources_per_workspace)
-        # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-        expect(config_instance.workspaces_quota).to eq(saved_quota)
-        # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-        expect(config_instance.workspaces_per_user_quota).to eq(saved_quota)
-        expect(config_instance.default_max_hours_before_termination).to eq(default_max_hours_before_termination)
-        expect(config_instance.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit)
-        expect(config_instance.allow_privilege_escalation).to eq(allow_privilege_escalation)
-        expect(config_instance.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
         expect(config_instance.default_runtime_class).to eq(default_runtime_class)
-        expect(config_instance.annotations.deep_symbolize_keys).to eq(annotations)
+        expect(config_instance.dns_zone).to eq(expected_dns_zone)
+        expect(config_instance.enabled).to eq(expected_enabled)
+        expect(config_instance.gitlab_workspaces_proxy_namespace).to eq(gitlab_workspaces_proxy_namespace)
         expect(config_instance.labels.deep_symbolize_keys).to eq(labels)
+        expect(config_instance.max_active_hours_before_stop).to eq(max_active_hours_before_stop)
+        expect(config_instance.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit)
+        expect(config_instance.max_resources_per_workspace.deep_symbolize_keys).to eq(max_resources_per_workspace)
+        expect(config_instance.max_stopped_hours_before_termination).to eq(max_stopped_hours_before_termination)
+        expect(config_instance.network_policy_egress.map(&:deep_symbolize_keys)).to eq(network_policy_egress)
+        expect(config_instance.network_policy_enabled).to eq(network_policy_enabled)
+        expect(config_instance.project_id).to eq(agent.project_id)
+        expect(config_instance.use_kubernetes_user_namespaces).to eq(use_kubernetes_user_namespaces)
+        expect(config_instance.workspaces_per_user_quota).to eq(saved_quota)
+        expect(config_instance.workspaces_quota).to eq(saved_quota)
         expect(config_instance.image_pull_secrets).to eq(image_pull_secrets)
 
         expect(result)
@@ -191,6 +169,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     end
 
     context 'when a config file is valid' do
+      let(:expected_enabled) { true }
       let(:expected_dns_zone) { dns_zone }
       let(:expected_configs_created) { 1 }
 
@@ -238,9 +217,19 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
           end
 
           context 'when default and max_hours_before_termination are explicitly specified in the config passed' do
-            let(:termination_limits_sets) { true }
+            let(:default_max_hours_before_termination_present) { true }
+            let(:max_hours_before_termination_limit_present) { true }
             let(:default_max_hours_before_termination) { 20 }
             let(:max_hours_before_termination_limit) { 220 }
+
+            it_behaves_like 'successful update'
+          end
+
+          context 'when delayed termination fields are explicitly specified in the config passed' do
+            let(:max_active_hours_before_stop_present) { true }
+            let(:max_stopped_hours_before_termination_present) { true }
+            let(:max_active_hours_before_stop) { 24 }
+            let(:max_stopped_hours_before_termination) { 168 }
 
             it_behaves_like 'successful update'
           end
@@ -351,6 +340,35 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         before do
           agent.reload
         end
+
+        it_behaves_like 'successful update'
+      end
+
+      context "when enabled is a string" do
+        context "and is 'true'" do
+          let(:enabled) { "true" }
+
+          it_behaves_like 'successful update'
+        end
+
+        context "and is 'false'" do
+          let(:enabled) { "false" }
+          let(:expected_enabled) { false }
+
+          it_behaves_like 'successful update'
+        end
+      end
+
+      context "when enabled is false" do
+        let(:enabled) { false }
+        let(:expected_enabled) { false }
+
+        it_behaves_like 'successful update'
+      end
+
+      context "when enabled is not present" do
+        let(:enabled_present) { false }
+        let(:expected_enabled) { false }
 
         it_behaves_like 'successful update'
       end

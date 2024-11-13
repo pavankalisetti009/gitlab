@@ -60,15 +60,4 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       expect(workspace.reload.desired_state).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
     end
   end
-
-  context "when persisted workspace created_at + max_hours_before_termination.hours is in the past" do
-    before do
-      workspace.update!(created_at: 2.days.ago, max_hours_before_termination: 1)
-    end
-
-    it "sets persisted workspace desired state to TERMINATED" do
-      expect(returned_value).to eq(context.merge(workspaces_from_agent_infos: [workspace]))
-      expect(workspace.reload.desired_state).to eq(RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
-    end
-  end
 end

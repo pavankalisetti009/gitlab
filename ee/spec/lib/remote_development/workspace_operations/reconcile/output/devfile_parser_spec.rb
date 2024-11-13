@@ -10,8 +10,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version of these models, so we can use fast_spec_helper.
   let(:user) { instance_double("User", name: "name", email: "name@example.com") }
   let(:agent) { instance_double("Clusters::Agent", id: 1) }
+  let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
   let(:workspaces_agent_config) do
-    instance_double("RemoteDevelopment::WorkspacesAgentConfig", image_pull_secrets: [])
+    instance_double("RemoteDevelopment::WorkspacesAgentConfig", image_pull_secrets: image_pull_secrets)
   end
 
   let(:workspace) do
@@ -89,7 +90,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
         default_runtime_class: default_runtime_class,
         agent_labels: agent_labels,
         agent_annotations: agent_annotations,
-        workspace_image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets,
+        image_pull_secrets: image_pull_secrets,
         core_resources_only: true
       )
     )
