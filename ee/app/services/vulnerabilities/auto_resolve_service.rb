@@ -44,6 +44,7 @@ module Vulnerabilities
 
         vulnerabilities.update_all(
           state: :resolved,
+          auto_resolved: true,
           resolved_by_id: user.id,
           resolved_at: now,
           updated_at: now

@@ -25,6 +25,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(vulnerability).to be_resolved
       expect(vulnerability.resolved_by).to eq(project.security_policy_bot)
       expect(vulnerability.resolved_at).to eq(Time.current)
+      expect(vulnerability.auto_resolved).to be(true)
     end
 
     it 'inserts a state transition for each vulnerability' do
