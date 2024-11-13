@@ -1,6 +1,6 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import {
   BOT_MESSAGE_TYPE,
@@ -14,10 +14,11 @@ import ToggleList from '../toggle_list.vue';
 import Approvals from './policy_approvals.vue';
 import EdgeCaseSettings from './edge_case_settings.vue';
 import Settings from './policy_settings.vue';
-import { humanizeRules } from './utils';
+import { humanizeRules, mapApproversToArray } from './utils';
 
 export default {
   i18n: {
+    botActionText: s__('SecurityOrchestration|Send a bot message when the conditions match.'),
     approvalsSubheader: s__('SecurityOrchestration|If any of the following occur:'),
     fallbackTitle: s__('SecurityOrchestration|Fallback behavior in case of policy failure'),
     summary: SUMMARY_TITLE,
@@ -97,29 +98,8 @@ export default {
     showBranchExceptions(exceptions) {
       return exceptions?.length > 0;
     },
-    isLastApproverItem(index) {
-      return this.actionApprovers.length - 1 === index;
-    },
     mapApproversToArray(index) {
-      const approvers = this.actionApprovers[index];
-
-      if (approvers === undefined) {
-        return [];
-      }
-
-      return [
-        ...approvers.allGroups,
-        ...approvers.roles.map((role) => {
-          return {
-            GUEST: __('Guest'),
-            REPORTER: __('Reporter'),
-            DEVELOPER: __('Developer'),
-            MAINTAINER: __('Maintainer'),
-            OWNER: __('Owner'),
-          }[role];
-        }),
-        ...approvers.users,
-      ];
+      return mapApproversToArray(this.actionApprovers[index]);
     },
   },
 };
@@ -145,7 +125,7 @@ export default {
         />
 
         <div v-if="shouldRenderBotMessage" class="gl-mt-2" data-testid="policy-bot-message">
-          {{ s__('SecurityOrchestration|Send a bot message when the conditions match.') }}
+          {{ $options.i18n.botActionText }}
         </div>
 
         <p
