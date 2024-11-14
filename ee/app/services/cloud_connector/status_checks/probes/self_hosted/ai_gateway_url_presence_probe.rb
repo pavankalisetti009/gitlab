@@ -7,8 +7,6 @@ module CloudConnector
         class AiGatewayUrlPresenceProbe < BaseProbe
           extend ::Gitlab::Utils::Override
 
-          ENV_VARIABLE_NAME = 'AI_GATEWAY_URL'
-
           validate :check_ai_gateway_url_presence
 
           private
@@ -25,18 +23,19 @@ module CloudConnector
 
           override :success_message
           def success_message
-            format(
-              _("Environment variable %{env_variable_name} is set to %{url}."),
-              env_variable_name: ENV_VARIABLE_NAME,
-              url: self_hosted_url
-            )
+            format(_(
+              "Self hosted AI Gateway URL is set to %{url}." \
+                "To change it, in a rails console run: " \
+                "`Ai::Setting.instance.update!(ai_gateway_url: URL)`"
+            ), url: self_hosted_url)
           end
 
           def failure_message
-            format(
-              _("Environment variable %{env_variable_name} is not set."),
-              env_variable_name: ENV_VARIABLE_NAME
-            )
+            format(_(
+              "Self hosted AI Gateway URL is not set." \
+                "To set it, in a rails console run: " \
+                "`Ai::Setting.instance.update!(ai_gateway_url: URL)`"
+            ))
           end
         end
       end

@@ -21508,12 +21508,6 @@ msgstr ""
 msgid "Environment scope"
 msgstr ""
 
-msgid "Environment variable %{env_variable_name} is not set."
-msgstr ""
-
-msgid "Environment variable %{env_variable_name} is set to %{url}."
-msgstr ""
-
 msgid "Environment variables on this GitLab instance are configured to be %{help_link_start}protected%{help_link_end} by default."
 msgstr ""
 
@@ -51354,6 +51348,12 @@ msgid "Selected tag is already in use. Choose another option."
 msgstr ""
 
 msgid "Selecting a GitLab user will add a link to the GitLab user in the descriptions of issues and comments (e.g. \"By %{link_open}@johnsmith%{link_close}\"). It will also associate and/or assign these issues and comments with the selected user."
+msgstr ""
+
+msgid "Self hosted AI Gateway URL is not set.To set it, in a rails console run: `Ai::Setting.instance.update!(ai_gateway_url: URL)`"
+msgstr ""
+
+msgid "Self hosted AI Gateway URL is set to %{url}.To change it, in a rails console run: `Ai::Setting.instance.update!(ai_gateway_url: URL)`"
 msgstr ""
 
 msgid "Send"
