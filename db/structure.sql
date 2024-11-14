@@ -8485,7 +8485,7 @@ CREATE TABLE catalog_resource_components (
     name text NOT NULL,
     spec jsonb DEFAULT '{}'::jsonb NOT NULL,
     last_30_day_usage_count integer DEFAULT 0 NOT NULL,
-    last_30_day_usage_count_updated_at timestamp with time zone DEFAULT '1970-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    last_30_day_usage_count_updated_at timestamp with time zone DEFAULT '1969-12-31 19:00:00-05'::timestamp with time zone NOT NULL,
     component_type smallint DEFAULT 1,
     CONSTRAINT check_47c5537132 CHECK ((component_type IS NOT NULL)),
     CONSTRAINT check_ddca729980 CHECK ((char_length(name) <= 255))
@@ -8506,7 +8506,7 @@ CREATE TABLE catalog_resource_versions (
     catalog_resource_id bigint NOT NULL,
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    released_at timestamp with time zone DEFAULT '1970-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    released_at timestamp with time zone DEFAULT '1969-12-31 19:00:00-05'::timestamp with time zone NOT NULL,
     semver_major integer,
     semver_minor integer,
     semver_patch integer,
@@ -20611,7 +20611,7 @@ CREATE TABLE user_details (
     enterprise_group_associated_at timestamp with time zone,
     email_reset_offered_at timestamp with time zone,
     mastodon text DEFAULT ''::text NOT NULL,
-    project_authorizations_recalculated_at timestamp with time zone DEFAULT '2010-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    project_authorizations_recalculated_at timestamp with time zone DEFAULT '2009-12-31 19:00:00-05'::timestamp with time zone NOT NULL,
     onboarding_status jsonb DEFAULT '{}'::jsonb NOT NULL,
     bluesky text DEFAULT ''::text NOT NULL,
     bot_namespace_id bigint,
@@ -22273,7 +22273,7 @@ CREATE TABLE zoekt_nodes (
     uuid uuid NOT NULL,
     used_bytes bigint DEFAULT 0 NOT NULL,
     total_bytes bigint DEFAULT 0 NOT NULL,
-    last_seen_at timestamp with time zone DEFAULT '1970-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    last_seen_at timestamp with time zone DEFAULT '1969-12-31 19:00:00-05'::timestamp with time zone NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     index_base_url text NOT NULL,
@@ -30118,7 +30118,7 @@ CREATE INDEX index_events_on_author_id_and_created_at ON events USING btree (aut
 
 CREATE INDEX index_events_on_author_id_and_id ON events USING btree (author_id, id);
 
-CREATE INDEX index_events_on_created_at_and_id ON events USING btree (created_at, id) WHERE (created_at > '2021-08-27 00:00:00+00'::timestamp with time zone);
+CREATE INDEX index_events_on_created_at_and_id ON events USING btree (created_at, id) WHERE (created_at > '2021-08-26 20:00:00-04'::timestamp with time zone);
 
 CREATE INDEX index_events_on_group_id_and_id ON events USING btree (group_id, id) WHERE (group_id IS NOT NULL);
 
