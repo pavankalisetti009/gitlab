@@ -148,8 +148,12 @@ module Elastic
 
     private
 
+    def current_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    end
+
     def execute_with_redis(redis, shards:) # rubocop:disable Metrics/AbcSize
-      start_time = Time.current
+      start_time = current_time
 
       specs_buffer = []
       scores = {}
@@ -192,7 +196,7 @@ module Elastic
         @failures = bulk_indexer.flush
       end
 
-      indexed_bytes_per_second = (total_bytes / (Time.current - start_time)).ceil
+      indexed_bytes_per_second = (total_bytes / (current_time - start_time)).ceil
 
       logger.info(
         'class' => self.class.name,
@@ -220,7 +224,7 @@ module Elastic
           'meta.indexing.first_score' => first_score,
           'meta.indexing.last_score' => last_score,
           'meta.indexing.failures_count' => @failures.count,
-          'meta.indexing.bulk_execution_duration_s' => Time.current - start_time
+          'meta.indexing.bulk_execution_duration_s' => current_time - start_time
         )
       end
 
