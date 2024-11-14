@@ -11,6 +11,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+  let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -18,7 +19,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
-    let(:params) { { project_id: project.id } }
+    let(:params) { { project_id: project.id, agent_privileges: agent_privileges } }
 
     context 'when success' do
       it 'creates the Ai::DuoWorkflows::Workflow' do
@@ -27,6 +28,24 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:created)
         end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+
+        created_workflow = Ai::DuoWorkflows::Workflow.last
+
+        expect(created_workflow.agent_privileges).to eq(agent_privileges)
+      end
+
+      context 'when agent_privileges is not provided' do
+        let(:params) { { project_id: project.id } }
+
+        it 'creates a workflow with the default agent_privileges' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.agent_privileges).to match_array(
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
+          )
+        end
       end
 
       context 'when authenticated with a token that has the ai_workflows scope' do
@@ -80,46 +99,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         it_behaves_like 'workflow access is forbidden'
-      end
-    end
-  end
-
-  describe 'GET /ai/duo_workflows/workflows/:id' do
-    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}" }
-
-    it 'returns the Ai::DuoWorkflows::Workflow' do
-      get api(path, user)
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response['id']).to eq(workflow.id)
-    end
-
-    context 'when authenticated with a token that has the ai_workflows scope' do
-      it 'is forbidden' do
-        get api(path, oauth_access_token: ai_workflows_oauth_token)
-
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'when duo_features_enabled settings is turned off' do
-      before do
-        workflow.project.project_setting.update!(duo_features_enabled: false)
-        workflow.project.reload
-      end
-
-      it 'returns forbidden' do
-        get api(path, user)
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'with a workflow belonging to a different user' do
-      let(:workflow) { create(:duo_workflows_workflow) }
-
-      it 'returns 404' do
-        get api(path, user)
-        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
   end
@@ -232,6 +211,30 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
           expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
+    end
+  end
+
+  describe 'GET /ai/duo_workflows/workflows/agent_privileges' do
+    let(:path) { "/ai/duo_workflows/workflows/agent_privileges" }
+
+    it 'returns a static set of privileges' do
+      get api(path, user)
+
+      expect(response).to have_gitlab_http_status(:ok)
+
+      expect(json_response['all_privileges'].count).to eq(4)
+
+      privilege1 = json_response['all_privileges'][0]
+      expect(privilege1['id']).to eq(1)
+      expect(privilege1['name']).to eq('read_write_files')
+      expect(privilege1['description']).to eq('Allow local filesystem read/write access')
+      expect(privilege1['default_enabled']).to eq(true)
+
+      privilege4 = json_response['all_privileges'][3]
+      expect(privilege4['id']).to eq(4)
+      expect(privilege4['name']).to eq('run_commands')
+      expect(privilege4['description']).to eq('Allow running any commands')
+      expect(privilege4['default_enabled']).to eq(false)
     end
   end
 end

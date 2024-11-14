@@ -61,6 +61,8 @@ module API
               documentation: { example: '1' }
             optional :goal, type: String, desc: 'Goal of the workflow',
               documentation: { example: 'Fix pipeline for merge request 1 in project 1' }
+            optional :agent_privileges, type: [Integer], desc: 'The actions the agent is allowed to perform',
+              documentation: { example: [1] }
           end
         end
 
@@ -133,10 +135,15 @@ module API
                 present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow
               end
 
-              get '/:id' do
-                workflow = find_workflow!(params[:id])
-
-                present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow
+              desc 'Get all possible agent privileges and descriptions' do
+                success code: 200
+                failure [
+                  { code: 401, message: 'Unauthorized' }
+                ]
+              end
+              get 'agent_privileges' do
+                present ::Ai::DuoWorkflows::Workflow::AgentPrivileges,
+                  with: ::API::Entities::Ai::DuoWorkflows::Workflow::AgentPrivileges
               end
             end
           end

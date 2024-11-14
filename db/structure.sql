@@ -11436,6 +11436,7 @@ CREATE TABLE duo_workflows_workflows (
     updated_at timestamp with time zone NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
     goal text,
+    agent_privileges smallint[] DEFAULT '{1,2}'::smallint[] NOT NULL,
     CONSTRAINT check_5aedde451d CHECK ((char_length(goal) <= 4096))
 );
 
