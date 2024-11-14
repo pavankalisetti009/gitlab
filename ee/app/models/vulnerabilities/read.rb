@@ -13,6 +13,7 @@ module Vulnerabilities
     declarative_enum DismissalReasonEnum
 
     SEVERITY_COUNT_LIMIT = 1001
+    OWASP_TOP_10_DEFAULT = -1
 
     self.table_name = "vulnerability_reads"
     self.primary_key = :vulnerability_id
@@ -40,7 +41,9 @@ module Vulnerabilities
     enum state: ::Enums::Vulnerability.vulnerability_states
     enum report_type: ::Enums::Vulnerability.report_types
     enum severity: ::Enums::Vulnerability.severity_levels, _prefix: :severity
-    enum owasp_top_10: ::Enums::Vulnerability.owasp_top_10
+    enum owasp_top_10: ::Enums::Vulnerability.owasp_top_10.merge('undefined' => OWASP_TOP_10_DEFAULT)
+
+    after_initialize :set_default_values, if: :new_record?
 
     scope :by_uuid, ->(uuids) { where(uuid: uuids) }
     scope :by_vulnerabilities, ->(vulnerabilities) { where(vulnerability: vulnerabilities) }
@@ -229,6 +232,10 @@ module Vulnerabilities
                 .serialize(traversal_ids)
                 .then { |serialized_array| self.class.connection.quote(serialized_array) }
                 .then { |quoted_array| Arel::Nodes::SqlLiteral.new(quoted_array) }
+    end
+
+    def set_default_values
+      self.owasp_top_10 = 'undefined'
     end
   end
 end

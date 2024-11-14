@@ -9,6 +9,7 @@ FactoryBot.define do
     severity { :high }
     state { :detected }
     uuid { SecureRandom.uuid }
+    owasp_top_10 { 'undefined' }
     traits_for_enum :dismissal_reason, Vulnerabilities::DismissalReasonEnum.values.keys
 
     after(:build) do |vulnerability_read, _|
