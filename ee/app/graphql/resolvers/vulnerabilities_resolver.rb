@@ -34,7 +34,7 @@ module Resolvers
       required: false,
       experiment: { milestone: '17.6' },
       description: 'Filter vulnerabilities by identifier name. Applicable only on project ' \
-                   'level when feature flag `vulnerability_identifier_name_filter` is ' \
+                   'level when feature flag `vulnerability_filtering_by_identifier` is ' \
                    'enabled. Ignored when applied on group level or instance security' \
                    'dashboard queries.'
 
