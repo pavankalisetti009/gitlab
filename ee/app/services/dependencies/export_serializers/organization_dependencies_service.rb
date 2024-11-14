@@ -35,22 +35,7 @@ module Dependencies
       end
 
       def iterator
-        if export.organization.owner?(export.author) || export.author.can_read_all_resources?
-          Gitlab::Pagination::Keyset::Iterator
-            .new(scope: export.organization.sbom_occurrences)
-        else
-          clazz = ::Sbom::Occurrence
-          # rubocop: disable CodeReuse/ActiveRecord -- where clause
-          Gitlab::Pagination::Keyset::Iterator.new(
-            scope: export.organization.sbom_occurrences.order(:id),
-            in_operator_optimization_options: {
-              array_scope: export.author.project_authorizations.select(:project_id),
-              array_mapping_scope: ->(id) { clazz.where(clazz.arel_table[:project_id].eq(id)) },
-              finder_query: ->(id) { clazz.where(clazz.arel_table[:id].eq(id)) }
-            }
-          )
-          # rubocop: enable CodeReuse/ActiveRecord
-        end
+        Gitlab::Pagination::Keyset::Iterator.new(scope: ::Sbom::Occurrence.order_by_id)
       end
 
       def build_list_for(batch)

@@ -99,6 +99,7 @@ module Sbom
     end
 
     def occurrences
+      return Sbom::Occurrence.unarchived if organization?
       return dependable.sbom_occurrences if params[:project_ids].blank? || project?
 
       project_ids = []
@@ -119,6 +120,10 @@ module Sbom
 
     def non_admin_user?
       current_user && !current_user.can_read_all_resources?
+    end
+
+    def organization?
+      dependable.is_a?(::Organizations::Organization)
     end
 
     def project?

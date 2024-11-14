@@ -31,7 +31,7 @@ module DependenciesHelper
 
   def explore_dependencies_data(organization, page_info)
     shared_dependencies_data.merge({
-      has_dependencies: organization.has_dependencies?.to_s,
+      has_dependencies: Sbom::Occurrence.unarchived.exists?.to_s,
       page_info: page_info,
       endpoint: explore_dependencies_path(format: :json),
       licenses_endpoint: nil,

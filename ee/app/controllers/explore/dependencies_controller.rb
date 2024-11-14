@@ -101,14 +101,6 @@ module Explore
       Gitlab::Json.generate(page_info(paginator))
     end
 
-    def in_operator_optimization_options(array_scope, array_mapping_scope, finder_query)
-      {
-        array_scope: array_scope,
-        array_mapping_scope: array_mapping_scope,
-        finder_query: finder_query
-      }
-    end
-
     def tracking_namespace_source
       current_user.namespace
     end
