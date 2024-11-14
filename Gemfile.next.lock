@@ -41,6 +41,7 @@ PATH
       logger (~> 1.5.3)
       minitest (~> 5.11.0)
       parallel (~> 1.19)
+      pg (~> 1.5.6)
       rack (~> 2.2.9)
       rainbow (~> 3.0)
       rexml (~> 3.3.2)
