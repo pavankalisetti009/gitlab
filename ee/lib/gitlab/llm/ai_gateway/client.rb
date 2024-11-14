@@ -27,7 +27,7 @@ module Gitlab
             perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
           end
 
-          log_response_received(response.parsed_response)
+          log_response_received(response.parsed_response) if response&.success?
 
           response
         end

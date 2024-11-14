@@ -93,6 +93,53 @@ RSpec.shared_examples 'anthropic client' do
         it_behaves_like 'measured Llm request with error', StandardError
       end
 
+      context 'when response is a 500 error' do
+        let(:http_status) { 500 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it 'returns nil' do
+          expect(complete).to be_nil
+        end
+      end
+
+      context 'when response is 204 No Content' do
+        let(:http_status) { 204 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it_behaves_like 'measured Llm request'
+      end
+
+      context 'when response is a bad request with no body' do
+        let(:http_status) { 400 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it 'returns nil' do
+          expect(complete).to be_nil
+        end
+      end
+
+      context 'when response is a an authentication error' do
+        let(:http_status) { 401 }
+        let(:response_body) do
+          {
+            "type" => "error",
+            "error" => {
+              "type" => "authentication_error",
+              "message" => "There’s an issue with your API key."
+            }
+          }.to_json
+        end
+
+        it 'returns a response' do
+          expect(complete).to be_present
+          expect(complete.parsed_response['type']).to eq('error')
+          expect(complete.parsed_response['error']['type']).to eq('authentication_error')
+        end
+      end
+
       context 'when request is retried' do
         let(:http_status) { 429 }
 
@@ -422,6 +469,35 @@ RSpec.shared_examples 'anthropic client' do
 
         it 'returns nil response' do
           expect(subject).to be_nil
+        end
+      end
+
+      context 'when response is a bad request with no body' do
+        let(:http_status) { 400 }
+        let(:response_body) { nil }
+        let(:response_headers) { nil }
+
+        it 'returns nil' do
+          expect(subject).to be_nil
+        end
+      end
+
+      context 'when response is a an authentication error' do
+        let(:http_status) { 401 }
+        let(:response_body) do
+          {
+            "type" => "error",
+            "error" => {
+              "type" => "authentication_error",
+              "message" => "There’s an issue with your API key."
+            }
+          }.to_json
+        end
+
+        it 'returns a response' do
+          expect(subject).to be_present
+          expect(subject.parsed_response['type']).to eq('error')
+          expect(subject.parsed_response['error']['type']).to eq('authentication_error')
         end
       end
 

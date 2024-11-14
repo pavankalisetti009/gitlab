@@ -30,6 +30,14 @@ RSpec.describe Gitlab::Llm::Concerns::ExponentialBackoff, feature_category: :ai_
     instance_double(HTTParty::Response, response: nil)
   end
 
+  let(:no_content_response) do
+    instance_double(HTTParty::Response,
+      code: 204,
+      response: Net::HTTPNoContent.new("1.1", "204", "No Content"),
+      server_error?: false, too_many_requests?: false
+    )
+  end
+
   let(:server_error) do
     instance_double(HTTParty::Response,
       code: 503, success?: false, parsed_response: body,
@@ -182,6 +190,15 @@ RSpec.describe Gitlab::Llm::Concerns::ExponentialBackoff, feature_category: :ai_
         allow(response_caller).to receive(:call).and_return(empty_response)
 
         expect(subject).to be_nil
+        expect(response_caller).to have_received(:call).once
+      end
+    end
+
+    context 'when the function response is no content' do
+      it 'does not retry the function' do
+        allow(response_caller).to receive(:call).and_return(no_content_response)
+
+        expect(subject).to eq(no_content_response)
         expect(response_caller).to have_received(:call).once
       end
     end

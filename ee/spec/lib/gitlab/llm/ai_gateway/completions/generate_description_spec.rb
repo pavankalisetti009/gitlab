@@ -11,7 +11,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
   let(:ai_options) { { content: content, description_template_name: description_template_name } }
   let(:template_class) { ::Gitlab::Llm::Templates::GenerateDescription }
   let(:ai_client) { instance_double(Gitlab::Llm::AiGateway::Client) }
-  let(:ai_response) { instance_double(HTTParty::Response, body: %("Success")) }
+  let(:ai_response) { instance_double(HTTParty::Response, body: %("Success"), success?: true) }
   let(:uuid) { SecureRandom.uuid }
   let(:prompt_message) do
     build(:ai_message, :generate_description, user: user, resource: issuable, content: content, request_id: uuid)
@@ -42,6 +42,26 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
       expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
 
       expect(generate_description[:ai_message].content).to eq("Success")
+    end
+
+    context 'with an unsuccessful request' do
+      let(:ai_response) { instance_double(HTTParty::Response, body: %("Failed"), success?: false) }
+
+      it 'returns an error' do
+        expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
+          user,
+          service_name: :generate_description,
+          tracking_context: tracking_context
+        )
+        expect(ai_client).to receive(:complete).with(
+          url: "#{Gitlab::AiGateway.url}/v1/prompts/generate_description",
+          body: { 'inputs' => { content: content, template: expected_template } }
+        ).and_return(ai_response)
+
+        expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
+
+        expect(generate_description[:ai_message].content).to eq({ "detail" => "An unexpected error has occurred." })
+      end
     end
   end
 

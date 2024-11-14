@@ -42,8 +42,7 @@ module Gitlab
 
             return unless response.present?
 
-            http_response = response.response
-            return if http_response.nil? || http_response.body.blank?
+            return if response.response.nil?
 
             raise Gitlab::CircuitBreaker::InternalServerError if response.server_error?
 

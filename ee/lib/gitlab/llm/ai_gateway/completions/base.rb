@@ -45,7 +45,10 @@ module Gitlab
               body: { 'inputs' => inputs }
             )
 
-            Gitlab::Json.parse(response.body)
+            return if response&.body.blank?
+            return Gitlab::Json.parse(response.body) if response&.success?
+
+            { 'detail' => DEFAULT_ERROR }
           rescue ArgumentError => e
             { 'detail' => e.message }
           rescue StandardError => e
