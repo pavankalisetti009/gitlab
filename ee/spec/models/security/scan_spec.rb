@@ -446,16 +446,6 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
 
   it_behaves_like 'having unique enum values'
 
-  it 'sets `project_id` and `pipeline_id` before save' do
-    scan = create(:security_scan)
-    scan.update_columns(project_id: nil, pipeline_id: nil)
-
-    scan.save!
-
-    expect(scan.project_id).to eq(scan.build.project_id)
-    expect(scan.pipeline_id).to eq(scan.build.commit_id)
-  end
-
   describe "#scanner" do
     let_it_be(:scan) { create(:security_scan, scan_type: :dependency_scanning) }
     let_it_be(:artifact) { create(:ee_ci_job_artifact, :dependency_scanning, job: scan.build, project: scan.project) }
