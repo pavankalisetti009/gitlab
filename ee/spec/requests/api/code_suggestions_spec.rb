@@ -298,8 +298,26 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'Authorization' => ["Bearer #{token}"],
               'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
               'Content-Type' => ['application/json'],
-              'User-Agent' => ['Super Awesome Browser 43.144.12']
+              'User-Agent' => ['Super Awesome Browser 43.144.12'],
+              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
             )
+          end
+
+          context 'when expanded_ai_logging is disabled' do
+            before do
+              # this will set Feature.enabled?(expanded_ai_logging, unauthorized_user) to true
+              # and Feature.enabled?(expanded_ai_logging, authorized_user) to false
+              # post_api is calling the api with authorized_user
+              stub_feature_flags(expanded_ai_logging: [unauthorized_user])
+            end
+
+            it 'delegates downstream service call to Workhorse with correct auth token' do
+              post_api
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(response.body).to eq("".to_json)
+              _, params = workhorse_send_data
+              expect(params['Header']).to include("x-gitlab-enabled-feature-flags" => [""])
+            end
           end
         end
 
@@ -351,7 +369,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'Authorization' => ["Bearer #{token}"],
             'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
             'Content-Type' => ['application/json'],
-            'User-Agent' => ['Super Awesome Browser 43.144.12']
+            'User-Agent' => ['Super Awesome Browser 43.144.12'],
+            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
           )
         end
 
@@ -381,7 +400,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
               'X-Gitlab-Realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
-              'User-Agent' => ['Super Cool Browser 14.5.2']
+              'User-Agent' => ['Super Cool Browser 14.5.2'],
+              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
             })
           end
         end
