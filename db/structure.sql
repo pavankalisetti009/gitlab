@@ -20950,9 +20950,11 @@ CREATE TABLE vs_code_settings (
     content text NOT NULL,
     uuid uuid,
     version integer DEFAULT 0,
+    settings_context_hash text,
     CONSTRAINT check_2082c35541 CHECK ((version IS NOT NULL)),
     CONSTRAINT check_4680ca265d CHECK ((uuid IS NOT NULL)),
     CONSTRAINT check_5da3b2910b CHECK ((char_length(content) <= 524288)),
+    CONSTRAINT check_6d5f15039b CHECK ((char_length(settings_context_hash) <= 255)),
     CONSTRAINT check_994c503fc4 CHECK ((char_length(setting_type) <= 256))
 );
 
@@ -33023,7 +33025,7 @@ CREATE UNIQUE INDEX unique_streaming_event_type_filters_destination_id ON audit_
 
 CREATE UNIQUE INDEX unique_streaming_instance_event_type_filters_destination_id ON audit_events_streaming_instance_event_type_filters USING btree (instance_external_audit_event_destination_id, audit_event_type);
 
-CREATE UNIQUE INDEX unique_user_id_and_setting_type ON vs_code_settings USING btree (user_id, setting_type);
+CREATE UNIQUE INDEX unique_user_id_setting_type_and_settings_context_hash ON vs_code_settings USING btree (user_id, setting_type, settings_context_hash);
 
 CREATE UNIQUE INDEX unique_vuln_merge_request_link_vuln_id_and_mr_id ON vulnerability_merge_request_links USING btree (vulnerability_id, merge_request_id);
 
