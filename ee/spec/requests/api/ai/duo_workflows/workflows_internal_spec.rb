@@ -10,7 +10,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let_it_be(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
-  let_it_be(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+  let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -40,7 +40,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
     context 'when authenticated with a token that has the ai_workflows scope' do
       it 'is successful' do
-        post api(path, oauth_access_token: oauth_token),
+        post api(path, oauth_access_token: ai_workflows_oauth_token),
           params: params.merge(thread_ts: later_thread_ts, parent_ts: thread_ts)
 
         expect(response).to have_gitlab_http_status(:created)
@@ -97,7 +97,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       context 'when authenticated with a token that has the ai_workflows scope' do
         it 'is successful' do
           expect do
-            post api(path, oauth_access_token: oauth_token), params: params
+            post api(path, oauth_access_token: ai_workflows_oauth_token), params: params
             expect(response).to have_gitlab_http_status(:created)
           end.to change { workflow.events.count }.by(1)
         end
@@ -186,7 +186,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
       context 'when authenticated with a token that has the ai_workflows scope' do
         it 'is successful' do
-          put api(path, oauth_access_token: oauth_token), params: params
+          put api(path, oauth_access_token: ai_workflows_oauth_token), params: params
           expect(response).to have_gitlab_http_status(:ok)
         end
       end
@@ -224,6 +224,49 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
       it 'returns 404' do
         put api(path, user), params: params
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET /ai/duo_workflows/workflows/:id' do
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}" }
+
+    it 'returns the Ai::DuoWorkflows::Workflow' do
+      get api(path, user)
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response['id']).to eq(workflow.id)
+      expect(json_response['agent_privileges']).to eq(workflow.agent_privileges)
+      expect(json_response['agent_privileges_names']).to eq(["read_write_files"])
+    end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it 'returns the Ai::DuoWorkflows::Workflow' do
+        get api(path, oauth_access_token: ai_workflows_oauth_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(workflow.id)
+      end
+    end
+
+    context 'when duo_features_enabled settings is turned off' do
+      before do
+        workflow.project.project_setting.update!(duo_features_enabled: false)
+        workflow.project.reload
+      end
+
+      it 'returns forbidden' do
+        get api(path, user)
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'with a workflow belonging to a different user' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it 'returns 404' do
+        get api(path, user)
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end

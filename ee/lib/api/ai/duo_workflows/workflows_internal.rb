@@ -44,6 +44,15 @@ module API
           namespace :duo_workflows do
             namespace :workflows do
               namespace '/:id' do
+                params do
+                  requires :id, type: Integer, desc: 'The ID of the workflow', documentation: { example: 1 }
+                end
+                get do
+                  workflow = find_workflow!(params[:id])
+
+                  present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow
+                end
+
                 desc 'Updates the workflow status' do
                   success code: 200
                 end

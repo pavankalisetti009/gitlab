@@ -13,9 +13,52 @@ module Ai
       validates :status, presence: true
       validates :goal, length: { maximum: 4096 }
 
+      validate :only_known_agent_priviliges
+
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
       scope :for_project, ->(project) { where(project: project) }
+
+      class AgentPrivileges
+        READ_WRITE_FILES  = 1
+        READ_ONLY_GITLAB  = 2
+        READ_WRITE_GITLAB = 3
+        RUN_COMMANDS      = 4
+
+        ALL_PRIVILEGES = {
+          READ_WRITE_FILES => {
+            name: "read_write_files",
+            description: "Allow local filesystem read/write access"
+          }.freeze,
+          READ_ONLY_GITLAB => {
+            name: "read_only_gitlab",
+            description: "Allow read only access to GitLab APIs"
+          }.freeze,
+          READ_WRITE_GITLAB => {
+            name: "read_write_gitlab",
+            description: "Allow write access to GitLab APIs"
+          }.freeze,
+          RUN_COMMANDS => {
+            name: "run_commands",
+            description: "Allow running any commands"
+          }.freeze
+        }.freeze
+
+        DEFAULT_PRIVILEGES = [
+          READ_WRITE_FILES,
+          READ_ONLY_GITLAB
+        ].freeze
+      end
+
+      def only_known_agent_priviliges
+        self.agent_privileges ||= AgentPrivileges::DEFAULT_PRIVILEGES
+
+        agent_privileges.each do |privilege|
+          unless AgentPrivileges::ALL_PRIVILEGES.key?(privilege)
+            errors.add(:agent_privileges, "contains an invalid value #{privilege}")
+          end
+        end
+      end
 
       state_machine :status, initial: :created do
         event :start do

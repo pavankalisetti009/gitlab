@@ -37,6 +37,62 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(4096) }
+
+    describe '#only_known_agent_priviliges' do
+      it 'is valid with a valid privilege' do
+        workflow = described_class.new(agent_privileges: [
+          Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES
+        ])
+        expect(workflow).to be_valid
+      end
+
+      it 'is invalid with an invalid privilege' do
+        workflow = described_class.new(agent_privileges: [999])
+        expect(workflow).not_to be_valid
+        expect(workflow.errors[:agent_privileges]).to include("contains an invalid value 999")
+      end
+    end
+  end
+
+  describe '#agent_privileges' do
+    it 'returns the privileges that are set' do
+      workflow = described_class.new(agent_privileges: [
+        Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+        Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB
+      ])
+
+      # Validation triggers setting the default
+      expect(workflow).to be_valid
+
+      expect(workflow.agent_privileges).to match_array([
+        described_class::AgentPrivileges::READ_WRITE_FILES,
+        described_class::AgentPrivileges::READ_WRITE_GITLAB
+      ])
+    end
+
+    it 'replaces with DEFAULT_PRIVILEGES when set to nil' do
+      workflow = described_class.new(agent_privileges: nil)
+
+      # Validation triggers setting the default
+      expect(workflow).to be_valid
+
+      expect(workflow.agent_privileges).to match_array([
+        described_class::AgentPrivileges::READ_WRITE_FILES,
+        described_class::AgentPrivileges::READ_ONLY_GITLAB
+      ])
+    end
+
+    it 'replaces with DEFAULT_PRIVILEGES when not set' do
+      workflow = described_class.new
+
+      # Validation triggers setting the default
+      expect(workflow).to be_valid
+
+      expect(workflow.agent_privileges).to match_array([
+        described_class::AgentPrivileges::READ_WRITE_FILES,
+        described_class::AgentPrivileges::READ_ONLY_GITLAB
+      ])
+    end
   end
 
   describe 'state transitions' do
