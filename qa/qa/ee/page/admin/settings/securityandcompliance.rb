@@ -16,14 +16,26 @@ module QA
               element 'save-package-registry-button'
             end
 
+            view 'ee/app/views/admin/application_settings/_pre_receive_secret_detection.html.haml' do
+              element 'secret-push-protection-checkbox'
+            end
+
             view 'ee/app/views/admin/application_settings/security_and_compliance.html.haml' do
               element 'admin-license-compliance-settings'
+              element 'admin-secret-detection-settings'
             end
 
             def select_gem_checkbox
               expand_content('admin-license-compliance-settings') do
                 check_element('gem-checkbox', true)
                 click_element('save-package-registry-button')
+              end
+            end
+
+            def click_secret_protection_setting_checkbox
+              expand_content('admin-secret-detection-settings') do
+                check_element('secret-push-protection-checkbox', true)
+                click_button('Save changes')
               end
             end
           end
