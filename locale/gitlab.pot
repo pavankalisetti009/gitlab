@@ -23712,6 +23712,9 @@ msgstr ""
 msgid "Finalizing"
 msgstr ""
 
+msgid "Find"
+msgstr ""
+
 msgid "Find File"
 msgstr ""
 
@@ -33060,6 +33063,9 @@ msgid "MarkdownEditor|Add strikethrough text (%{modifier_key}⇧X)"
 msgstr ""
 
 msgid "MarkdownEditor|Click to expand"
+msgstr ""
+
+msgid "MarkdownEditor|Find and replace"
 msgstr ""
 
 msgid "MarkdownEditor|Indent line (%{modifierKey}])"
