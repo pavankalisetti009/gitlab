@@ -15,9 +15,11 @@ describe('PolicyTypeSelector component', () => {
         maxScanExecutionPoliciesAllowed: 5,
         maxScanResultPoliciesAllowed: 5,
         maxPipelineExecutionPoliciesAllowed: 5,
+        maxVulnerabilityManagementPoliciesAllowed: 5,
         maxActiveScanExecutionPoliciesReached: true,
         maxActiveScanResultPoliciesReached: false,
         maxActivePipelineExecutionPoliciesReached: false,
+        maxActiveVulnerabilityManagementPoliciesReached: false,
         ...provide,
       },
     });
@@ -49,11 +51,11 @@ describe('PolicyTypeSelector component', () => {
 
     describe.each(['vulnerabilityManagementPolicyType', 'vulnerabilityManagementPolicyTypeGroup'])(
       'feature flag `%s` is enabled',
-      () => {
+      (featureFlag) => {
         beforeEach(() => {
           factory({
             glFeatures: {
-              vulnerabilityManagementPolicyType: true,
+              [featureFlag]: true,
             },
           });
         });
@@ -126,6 +128,35 @@ describe('PolicyTypeSelector component', () => {
         ).toBe('You already have the maximum 5 pipeline execution policies.');
         expect(
           findPolicyButton(POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter).exists(),
+        ).toBe(false);
+      });
+
+      it('displays warning text for vulnerability management policy type', () => {
+        factory(
+          {
+            maxActiveVulnerabilityManagementPoliciesReached: true,
+            glFeatures: {
+              vulnerabilityManagementPolicyType: true,
+            },
+          },
+          {
+            GlSprintf,
+          },
+        );
+        expect(
+          findMaxAllowedPolicyText(
+            POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter,
+          ).exists(),
+        ).toBe(true);
+        expect(
+          findMaxAllowedPolicyText(
+            POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter,
+          ).text(),
+        ).toBe('You already have the maximum 5 vulnerability management policies.');
+        expect(
+          findPolicyButton(
+            POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter,
+          ).exists(),
         ).toBe(false);
       });
     });

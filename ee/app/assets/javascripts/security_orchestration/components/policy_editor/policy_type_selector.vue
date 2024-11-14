@@ -62,9 +62,11 @@ export default {
     'maxActiveScanExecutionPoliciesReached',
     'maxActiveScanResultPoliciesReached',
     'maxActivePipelineExecutionPoliciesReached',
+    'maxActiveVulnerabilityManagementPoliciesReached',
     'maxScanExecutionPoliciesAllowed',
     'maxScanResultPoliciesAllowed',
     'maxPipelineExecutionPoliciesAllowed',
+    'maxVulnerabilityManagementPoliciesAllowed',
     'policiesPath',
   ],
   computed: {
@@ -116,6 +118,8 @@ export default {
           description: i18n.vulnerabilityManagementPolicyDesc,
           example: i18n.vulnerabilityManagementPolicyExample,
           imageSrc: vulnerabilityIllustrationUrl,
+          hasMax: this.maxActiveVulnerabilityManagementPoliciesReached,
+          maxPoliciesAllowed: this.maxVulnerabilityManagementPoliciesAllowed,
         });
       }
 

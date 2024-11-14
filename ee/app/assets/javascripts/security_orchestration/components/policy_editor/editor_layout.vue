@@ -29,6 +29,9 @@ import {
 } from './constants';
 import { getPolicyLimitDetails } from './utils';
 
+const { scanExecution, legacyApproval, approval, vulnerabilityManagement, pipelineExecution } =
+  POLICY_TYPE_COMPONENT_OPTIONS;
+
 export default {
   i18n: {
     DELETE_MODAL_CONFIG,
@@ -68,6 +71,10 @@ export default {
     'maxScanExecutionPoliciesAllowed',
     'maxActiveScanResultPoliciesReached',
     'maxScanResultPoliciesAllowed',
+    'maxActiveVulnerabilityManagementPoliciesReached',
+    'maxVulnerabilityManagementPoliciesAllowed',
+    'maxActivePipelineExecutionPoliciesReached',
+    'maxPipelineExecutionPoliciesAllowed',
   ],
   props: {
     customSaveButtonText: {
@@ -138,33 +145,44 @@ export default {
     };
   },
   computed: {
-    hasEnabledPropertyChanged() {
-      return this.isInitiallyEnabled !== this.policy.enabled;
+    policyType() {
+      return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
+        (policy) => policy.urlParameter === this.policy.type,
+      );
     },
-    isScanExecution() {
-      return this.policyType === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter;
-    },
-    type() {
-      return this.isScanExecution
-        ? POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text.toLowerCase()
-        : POLICY_TYPE_COMPONENT_OPTIONS.approval.text.toLowerCase();
-    },
-    policyLimitReached() {
-      return this.isScanExecution
-        ? this.maxActiveScanExecutionPoliciesReached
-        : this.maxActiveScanResultPoliciesReached;
-    },
-    policyLimit() {
-      return this.isScanExecution
-        ? this.maxScanExecutionPoliciesAllowed
-        : this.maxScanResultPoliciesAllowed;
+    policyLimitArgs() {
+      switch (this.policyType) {
+        case scanExecution:
+          return {
+            policyLimitReached: this.maxActiveScanExecutionPoliciesReached,
+            policyLimit: this.maxScanExecutionPoliciesAllowed,
+          };
+        case legacyApproval:
+        case approval:
+          return {
+            policyLimitReached: this.maxActiveScanResultPoliciesReached,
+            policyLimit: this.maxScanResultPoliciesAllowed,
+          };
+        case vulnerabilityManagement:
+          return {
+            policyLimitReached: this.maxActiveVulnerabilityManagementPoliciesReached,
+            policyLimit: this.maxVulnerabilityManagementPoliciesAllowed,
+          };
+        case pipelineExecution:
+          return {
+            policyLimitReached: this.maxActivePipelineExecutionPoliciesReached,
+            policyLimit: this.maxPipelineExecutionPoliciesAllowed,
+          };
+        default:
+          return {};
+      }
     },
     policyLimitDetails() {
+      const { policyLimit, policyLimitReached } = this.policyLimitArgs;
       return getPolicyLimitDetails({
-        type: this.type,
-        policyLimitReached: this.policyLimitReached,
-        policyLimit: this.policyLimit,
-        hasPropertyChanged: this.hasEnabledPropertyChanged,
+        type: this.policyType?.text?.toLowerCase() || scanExecution.text.toLowerCase(),
+        policyLimit,
+        policyLimitReached,
         initialValue: this.isInitiallyEnabled,
       });
     },
@@ -175,9 +193,6 @@ export default {
     },
     hasValidName() {
       return this.policy.name !== '';
-    },
-    policyType() {
-      return this.policy.type;
     },
     saveTooltipText() {
       return this.customSaveTooltipText || this.saveButtonText;

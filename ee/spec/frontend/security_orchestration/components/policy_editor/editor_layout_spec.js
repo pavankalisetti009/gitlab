@@ -21,6 +21,8 @@ import ScopeSection from 'ee/security_orchestration/components/policy_editor/sco
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockDastScanExecutionObject } from '../../mocks/mock_scan_execution_policy_data';
 import { mockDefaultBranchesScanResultObject } from '../../mocks/mock_scan_result_policy_data';
+import { mockVulnerabilityManagementObject } from '../../mocks/mock_vulnerability_management_policy_data';
+import { mockWithoutRefPipelineExecutionObject } from '../../mocks/mock_pipeline_execution_policy_data';
 
 describe('EditorLayout component', () => {
   let wrapper;
@@ -48,6 +50,10 @@ describe('EditorLayout component', () => {
         maxScanExecutionPoliciesAllowed: 5,
         maxActiveScanResultPoliciesReached: false,
         maxScanResultPoliciesAllowed: 5,
+        maxActiveVulnerabilityManagementPoliciesReached: false,
+        maxVulnerabilityManagementPoliciesAllowed: 5,
+        maxActivePipelineExecutionPoliciesReached: false,
+        maxPipelineExecutionPoliciesAllowed: 5,
         ...provide,
       },
       stubs: { YamlEditor: true },
@@ -348,6 +354,40 @@ describe('EditorLayout component', () => {
     it('displays the correct radio button tooltip text for scan execution policy', () => {
       factory({
         provide: { maxActiveScanExecutionPoliciesReached: true },
+      });
+      expect(glTooltipDirectiveMock.mock.calls[0][1].value.title).toBe(
+        "You've reached the maximum limit of 5 scan execution policies allowed. Policies are disabled when added.",
+      );
+    });
+
+    it('displays the correct radio button tooltip text for vulnerability management policy', () => {
+      factory({
+        propsData: { policy: mockVulnerabilityManagementObject },
+        provide: { maxActiveVulnerabilityManagementPoliciesReached: true },
+      });
+      expect(glTooltipDirectiveMock.mock.calls[0][1].value.title).toBe(
+        "You've reached the maximum limit of 5 vulnerability management policies allowed. Policies are disabled when added.",
+      );
+    });
+
+    it('displays the correct radio button tooltip text for pipeline execution policy', () => {
+      factory({
+        propsData: { policy: mockWithoutRefPipelineExecutionObject },
+        provide: { maxActivePipelineExecutionPoliciesReached: true },
+      });
+      expect(glTooltipDirectiveMock.mock.calls[0][1].value.title).toBe(
+        "You've reached the maximum limit of 5 pipeline execution policies allowed. Policies are disabled when added.",
+      );
+    });
+
+    it('falls back to scan result policy type for invalid policy type', () => {
+      const invalidPolicyTypeObject = {
+        type: 'invalid_policy_type',
+        name: 'Invalid policy',
+      };
+      factory({
+        propsData: { policy: invalidPolicyTypeObject },
+        provide: { maxActiveScanResultPoliciesReached: true },
       });
       expect(glTooltipDirectiveMock.mock.calls[0][1].value.title).toBe(
         "You've reached the maximum limit of 5 scan execution policies allowed. Policies are disabled when added.",
