@@ -23246,6 +23246,9 @@ msgstr ""
 msgid "Failed to remove user key."
 msgstr ""
 
+msgid "Failed to request a review because no user was specified."
+msgstr ""
+
 msgid "Failed to retrieve page"
 msgstr ""
 
@@ -46473,6 +46476,9 @@ msgstr ""
 msgid "Request a new one"
 msgstr ""
 
+msgid "Request a review"
+msgstr ""
+
 msgid "Request changes"
 msgstr ""
 
@@ -46506,6 +46512,9 @@ msgstr ""
 msgid "Requested %{time_ago}"
 msgstr ""
 
+msgid "Requested a review from %{reviewer_users_sentence}."
+msgstr ""
+
 msgid "Requested design version does not exist."
 msgstr ""
 
@@ -46519,6 +46528,9 @@ msgid "Requests"
 msgstr ""
 
 msgid "Requests a Duo Code Review"
+msgstr ""
+
+msgid "Requests a review from %{reviewer_users_sentence}."
 msgstr ""
 
 msgid "Requests for pages at %{code_start}%{help_text_url}%{code_end} redirect to the URL. The destination must meet certain requirements. %{docs_link_start}Learn more%{docs_link_end}."
