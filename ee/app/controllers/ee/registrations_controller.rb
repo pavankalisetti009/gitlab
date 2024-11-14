@@ -107,7 +107,7 @@ module EE
       service.assume_user_high_risk_if_daily_limit_exceeded!(user)
 
       ::Onboarding::StatusCreateService
-        .new(onboarding_status_params, session, resource, onboarding_first_step_path).execute
+        .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path).execute
       clear_memoization(:onboarding_status) # clear since registration_type is now set
 
       log_audit_event(user)

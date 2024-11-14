@@ -2,9 +2,9 @@
 
 module Onboarding
   class StatusCreateService
-    def initialize(params, session, user, step_url)
+    def initialize(params, user_return_to, user, step_url)
       @params = params
-      @session = session
+      @user_return_to = user_return_to
       @user = user
       @step_url = step_url
     end
@@ -21,7 +21,7 @@ module Onboarding
 
     private
 
-    attr_reader :params, :session, :user, :step_url
+    attr_reader :params, :user_return_to, :user, :step_url
 
     def payload
       # Need to reset here since onboarding_status doesn't live on the user record, but in user_details.
@@ -63,14 +63,9 @@ module Onboarding
     end
 
     def base_stored_user_location_path
-      return unless stored_user_location
+      return unless user_return_to
 
-      URI.parse(stored_user_location).path
-    end
-
-    def stored_user_location
-      # side effect free look at devise store_location_for(:user)
-      session['user_return_to']
+      URI.parse(user_return_to).path
     end
 
     def free_registration_type?
