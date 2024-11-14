@@ -50,14 +50,14 @@ module EE
             user,
             onboarding_first_step_path
           ).execute
-        clear_memoization(:onboarding_status) # clear since registration_type is now set
+        clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
 
         # We need to do this here since the subscription flow relies on what was set
         # in the stored_location_for(:user) that was set on initial redirect from
         # the GitlabSubscriptions::SubscriptionsController#new and super will wipe that out.
         # Then the RegistrationsIdentityVerificationController#success will get
         # whatever is set in super instead of the subscription path we desire.
-        super unless onboarding_status.preserve_stored_location?
+        super unless onboarding_status_presenter.preserve_stored_location?
       else
         super
       end

@@ -96,7 +96,7 @@ module Registrations
     end
 
     def tracking_label
-      onboarding_status.tracking_label
+      onboarding_status_presenter.tracking_label
     end
 
     def track_event(action, label)
@@ -132,10 +132,10 @@ module Registrations
       ).track(name, label: label)
     end
 
-    def onboarding_status
-      ::Onboarding::Status.new({}, nil, current_user)
+    def onboarding_status_presenter
+      ::Onboarding::StatusPresenter.new({}, nil, current_user)
     end
-    strong_memoize_attr :onboarding_status
+    strong_memoize_attr :onboarding_status_presenter
 
     def group_params
       params.require(:group).permit(
@@ -159,11 +159,11 @@ module Registrations
     end
 
     def general_params
-      params.permit(*::Onboarding::Status::GLM_PARAMS, :import_url)
+      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :import_url)
     end
 
     def glm_params
-      ::Onboarding::Status.glm_tracking_params(params) # rubocop:disable Rails/StrongParams -- strong params are used in the method being called.
+      ::Onboarding::StatusPresenter.glm_tracking_params(params) # rubocop:disable Rails/StrongParams -- strong params are used in the method being called.
     end
   end
 end

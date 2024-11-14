@@ -108,21 +108,21 @@ module EE
 
       ::Onboarding::StatusCreateService
         .new(onboarding_status_params, session['user_return_to'], resource, onboarding_first_step_path).execute
-      clear_memoization(:onboarding_status) # clear since registration_type is now set
+      clear_memoization(:onboarding_status_presenter) # clear since registration_type is now set
 
       log_audit_event(user)
       # This must come after user has been onboarding to properly detect the label from the onboarded user.
       ::Gitlab::Tracking.event(
         self.class.name,
         'successfully_submitted_form',
-        label: onboarding_status.tracking_label,
+        label: onboarding_status_presenter.tracking_label,
         user: user
       )
     end
 
     override :onboarding_status_params
     def onboarding_status_params
-      base_params = params.permit(:invite_email, *::Onboarding::Status::GLM_PARAMS)
+      base_params = params.permit(:invite_email, *::Onboarding::StatusPresenter::GLM_PARAMS)
 
       return base_params.to_h.deep_symbolize_keys unless params[:user].present? # rubocop:disable Rails/StrongParams -- false positive, we are really checking here just need to detect difference on get vs post
 
@@ -199,7 +199,7 @@ module EE
 
     override :preregistration_tracking_label
     def preregistration_tracking_label
-      onboarding_status.preregistration_tracking_label
+      onboarding_status_presenter.preregistration_tracking_label
     end
 
     override :track_error

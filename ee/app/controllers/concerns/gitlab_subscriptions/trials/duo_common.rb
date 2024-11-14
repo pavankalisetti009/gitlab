@@ -46,7 +46,7 @@ module GitlabSubscriptions
 
       def lead_params
         params.permit(
-          *::Onboarding::Status::GLM_PARAMS,
+          *::Onboarding::StatusPresenter::GLM_PARAMS,
           :company_name, :company_size, :first_name, :last_name, :phone_number,
           :country, :state, :website_url
         ).to_h

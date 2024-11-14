@@ -18,7 +18,7 @@
 
     = yield :before_form
 
-    = form_tag trials_path(**::Onboarding::Status.glm_tracking_attributes(params), step: GitlabSubscriptions::Trials::CreateService::TRIAL), method: :post, class: 'js-saas-trial-group', data: { testid: 'trial-form' } do
+    = form_tag trials_path(**::Onboarding::StatusPresenter.glm_tracking_attributes(params), step: GitlabSubscriptions::Trials::CreateService::TRIAL), method: :post, class: 'js-saas-trial-group', data: { testid: 'trial-form' } do
       .js-namespace-selector{ data: trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
       - if should_ask_company_question?
         .form-group

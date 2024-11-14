@@ -2,11 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Onboarding::Status, feature_category: :onboarding do
+RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
   using RSpec::Parameterized::TableSyntax
-
-  let_it_be(:member) { create(:group_member) }
-  let_it_be(:user) { member.user }
 
   context 'for delegations' do
     subject { described_class.new({}, nil, nil) }

@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
   let(:show_company_form_illustration?) { false }
-  let(:onboarding_status) do
+  let(:onboarding_status_presenter) do
     instance_double(
-      ::Onboarding::Status,
+      ::Onboarding::StatusPresenter,
       company_form_type: 'registration',
       show_company_form_illustration?: show_company_form_illustration?,
       tracking_label: 'free_registration'
@@ -15,7 +15,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   end
 
   before do
-    allow(view).to receive_messages(current_user: user, onboarding_status: onboarding_status)
+    allow(view).to receive_messages(current_user: user, onboarding_status_presenter: onboarding_status_presenter)
   end
 
   describe 'Google Tag Manager' do

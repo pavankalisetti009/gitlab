@@ -8,7 +8,7 @@ module Users
     include ::Gitlab::InternalEventsTracking
     extend ::Gitlab::Utils::Override
 
-    helper_method :onboarding_status
+    helper_method :onboarding_status_presenter
 
     skip_before_action :authenticate_user!
 
@@ -69,7 +69,7 @@ module Users
       session.delete(:verification_user_id)
 
       # order matters here because set_redirect_url removes our ability to detect trial in the tracking label
-      @tracking_label = onboarding_status.tracking_label
+      @tracking_label = onboarding_status_presenter.tracking_label
 
       set_redirect_url
     end
@@ -124,16 +124,16 @@ module Users
       ::Gitlab::ApplicationRateLimiter.throttled?(:email_verification_code_send, scope: @user)
     end
 
-    def onboarding_status
-      Onboarding::Status.new({}, session['user_return_to'], @user)
+    def onboarding_status_presenter
+      Onboarding::StatusPresenter.new({}, session['user_return_to'], @user)
     end
-    strong_memoize_attr :onboarding_status
+    strong_memoize_attr :onboarding_status_presenter
 
     def set_redirect_url
-      @redirect_url = if onboarding_status.read_from_stored_user_location?
+      @redirect_url = if onboarding_status_presenter.read_from_stored_user_location?
                         # Since we need this value to stay in the stored_location_for(user) in order for
                         # us to be properly redirected for subscription signups.
-                        onboarding_status.user_return_to
+                        onboarding_status_presenter.user_return_to
                       else
                         after_sign_in_path_for(@user)
                       end

@@ -14,26 +14,26 @@ module Registrations
 
     feature_category :onboarding
 
-    helper_method :onboarding_status
+    helper_method :onboarding_status_presenter
 
     def new
-      track_event('render', onboarding_status.tracking_label)
+      track_event('render', onboarding_status_presenter.tracking_label)
     end
 
     def create
       result = GitlabSubscriptions::CreateCompanyLeadService.new(user: current_user, params: permitted_params).execute
 
       if result.success?
-        track_event('successfully_submitted_form', onboarding_status.tracking_label)
+        track_event('successfully_submitted_form', onboarding_status_presenter.tracking_label)
 
         response = Onboarding::StatusStepUpdateService.new(
-          current_user, new_users_sign_up_group_path(::Onboarding::Status.glm_tracking_params(params))
+          current_user, new_users_sign_up_group_path(::Onboarding::StatusPresenter.glm_tracking_params(params))
         ).execute
 
         redirect_to response[:step_url]
       else
         result.errors.each do |error|
-          track_event("track_#{onboarding_status.tracking_label}_error", error.parameterize.underscore)
+          track_event("track_#{onboarding_status_presenter.tracking_label}_error", error.parameterize.underscore)
         end
 
         flash.now[:alert] = result.errors.to_sentence
@@ -45,8 +45,8 @@ module Registrations
 
     def permitted_params
       params.permit(
-        *::Onboarding::Status::GLM_PARAMS,
-        *::Onboarding::Status::PASSED_THROUGH_PARAMS,
+        *::Onboarding::StatusPresenter::GLM_PARAMS,
+        *::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS,
         :company_name,
         :company_size,
         :first_name,
@@ -62,9 +62,9 @@ module Registrations
       ::Gitlab::Tracking.event(self.class.name, action, user: current_user, label: label)
     end
 
-    def onboarding_status
-      ::Onboarding::Status.new({}, nil, current_user)
+    def onboarding_status_presenter
+      ::Onboarding::StatusPresenter.new({}, nil, current_user)
     end
-    strong_memoize_attr :onboarding_status
+    strong_memoize_attr :onboarding_status_presenter
   end
 end

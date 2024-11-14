@@ -78,13 +78,13 @@ module EE
 
     override :onboarding_status_tracking_label
     def onboarding_status_tracking_label
-      onboarding_status.preregistration_tracking_label
+      onboarding_status_presenter.preregistration_tracking_label
     end
 
-    def onboarding_status
-      ::Onboarding::Status
+    def onboarding_status_presenter
+      ::Onboarding::StatusPresenter
         .new(params.permit(:invite_email).to_h.deep_symbolize_keys, session['user_return_to'], resource)
     end
-    strong_memoize_attr :onboarding_status
+    strong_memoize_attr :onboarding_status_presenter
   end
 end

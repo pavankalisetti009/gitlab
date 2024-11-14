@@ -5,10 +5,12 @@ require 'spec_helper'
 RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
   let(:resource) { Users::AuthorizedBuildService.new(nil, {}).execute }
   let(:params) { controller.params }
-  let(:onboarding_status) { ::Onboarding::Status.new(params.to_unsafe_h.deep_symbolize_keys, nil, resource) }
+  let(:onboarding_status_presenter) do
+    ::Onboarding::StatusPresenter.new(params.to_unsafe_h.deep_symbolize_keys, nil, resource)
+  end
 
   before do
-    allow(view).to receive(:onboarding_status).and_return(onboarding_status)
+    allow(view).to receive(:onboarding_status_presenter).and_return(onboarding_status_presenter)
     allow(view).to receive(:arkose_labs_enabled?).and_return(false)
     allow(view).to receive(:resource).and_return(resource)
     allow(view).to receive(:resource_name).and_return(:user)
