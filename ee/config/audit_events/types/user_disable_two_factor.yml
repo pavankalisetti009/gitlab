@@ -1,6 +1,8 @@
 ---
 name: user_disable_two_factor
-description: Audit event triggered when user disables two factor authentication
+description:
+  Audit event triggered when user disables two factor authentication.
+  Group scope was [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/171988) in GitLab 17.6.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/238177
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/89598
 milestone: '15.1'
