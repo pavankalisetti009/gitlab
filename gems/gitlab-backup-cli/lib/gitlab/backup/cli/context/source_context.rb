@@ -103,6 +103,10 @@ module Gitlab
             absolute_path(path).join('uploads')
           end
 
+          def database_config_file_path
+            gitlab_basepath.join('config/database.yml')
+          end
+
           def config(object_type)
             gitlab_config[object_type]
           end
