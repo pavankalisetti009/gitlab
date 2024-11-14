@@ -43,3 +43,11 @@ panels:
       width: 12
       height: 4
     options: {}
+  - visualization: dora_projects_comparison
+    title: Projects by DORA categories (Last full calendar month)
+    gridAttributes:
+      yPos: 15
+      xPos: 0
+      width: 12
+      height: 4
+    options: {}

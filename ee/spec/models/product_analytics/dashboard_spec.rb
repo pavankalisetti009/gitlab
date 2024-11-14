@@ -268,9 +268,9 @@ description: with missing properties
       it_behaves_like 'returns the value streams dashboard'
 
       it 'returns the correct panels' do
-        expect(dashboard.panels.size).to eq(5)
+        expect(dashboard.panels.size).to eq(6)
         expect(dashboard.panels.map { |panel| panel.visualization.type }).to eq(
-          %w[UsageOverview DORAChart DORAChart DORAChart DoraPerformersScore]
+          %w[UsageOverview DORAChart DORAChart DORAChart DoraPerformersScore DoraProjectsComparison]
         )
       end
     end

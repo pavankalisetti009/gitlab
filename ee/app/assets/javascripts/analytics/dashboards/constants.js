@@ -142,6 +142,13 @@ export const DASHBOARD_LABELS_LOAD_ERROR = s__(
 export const RESTRICTED_METRIC_ERROR = s__(
   'DORA4Metrics|You have insufficient permissions to view',
 );
+export const GENERIC_DASHBOARD_ERROR = s__('DORA4Metrics|Failed to load dashboard panel.');
+export const UNSUPPORTED_PROJECT_NAMESPACE_ERROR = s__(
+  'DORA4Metrics|This visualization is not supported for project namespaces.',
+);
+export const DASHBOARD_NO_DATA_FOR_GROUP = s__(
+  'DORA4Metrics|No data available for Group: %{fullPath}',
+);
 
 export const CHART_GRADIENT = ['#499767', '#5252B5'];
 export const CHART_GRADIENT_INVERTED = [...CHART_GRADIENT].reverse();

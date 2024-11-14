@@ -13,8 +13,8 @@ import {
   DORA_PERFORMERS_SCORE_NOT_INCLUDED,
   DORA_PERFORMERS_SCORE_LOADING_ERROR,
   DORA_PERFORMERS_SCORE_CHART_COLOR_PALETTE,
-  DORA_PERFORMERS_SCORE_NO_DATA,
 } from '../constants';
+import { DASHBOARD_NO_DATA_FOR_GROUP } from '../../constants';
 import { validateProjectTopics } from '../utils';
 import FilterProjectTopicsBadges from './filter_project_topics_badges.vue';
 
@@ -189,7 +189,7 @@ export default {
     },
   },
   i18n: {
-    noData: DORA_PERFORMERS_SCORE_NO_DATA,
+    noData: DASHBOARD_NO_DATA_FOR_GROUP,
     noTooltipData: __('No data'),
     loadingError: DORA_PERFORMERS_SCORE_LOADING_ERROR,
     panelTitleWithProjectsCount: DORA_PERFORMERS_SCORE_PANEL_TITLE_WITH_PROJECTS_COUNT,
