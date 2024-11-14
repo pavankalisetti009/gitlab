@@ -377,6 +377,7 @@ module EE
         enable :create_workspace
         enable :enable_continuous_vulnerability_scans
         enable :read_project_security_exclusions
+        enable :read_security_settings
       end
 
       rule { can?(:reporter_access) & iterations_available }.policy do
@@ -551,6 +552,7 @@ module EE
         enable :read_runner_usage
         enable :manage_project_security_exclusions
         enable :read_project_security_exclusions
+        enable :manage_security_settings
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -579,6 +581,7 @@ module EE
 
         enable :read_project_runners
         enable :read_project_security_exclusions
+        enable :read_security_settings
       end
 
       rule { auditor & ~guest & private_project }.policy do
