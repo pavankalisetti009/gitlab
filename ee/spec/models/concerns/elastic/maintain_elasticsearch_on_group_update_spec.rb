@@ -84,7 +84,7 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
 
         it 'calls Search::Wiki::ElasticDeleteGroupWikiWorker' do
           expect(Search::Wiki::ElasticDeleteGroupWikiWorker).to receive(:perform_async).with(group.id,
-            namespace_routing_id: group.root_ancestor.id)
+            'namespace_routing_id' => group.root_ancestor.id)
           group.destroy!
         end
       end

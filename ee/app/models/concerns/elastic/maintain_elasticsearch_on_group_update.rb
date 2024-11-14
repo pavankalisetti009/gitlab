@@ -33,7 +33,7 @@ module Elastic
     end
 
     def delete_group_wiki_in_elastic
-      ::Search::Wiki::ElasticDeleteGroupWikiWorker.perform_async(id, namespace_routing_id: root_ancestor.id)
+      ::Search::Wiki::ElasticDeleteGroupWikiWorker.perform_async(id, 'namespace_routing_id' => root_ancestor.id)
     end
 
     def maintain_indexed_associations
