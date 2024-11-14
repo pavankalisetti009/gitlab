@@ -28123,7 +28123,11 @@ CREATE INDEX idx_approval_merge_request_rules_on_scan_result_policy_id ON approv
 
 CREATE INDEX idx_approval_mr_rules_on_config_id_and_id_and_updated_at ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, id, updated_at);
 
+CREATE INDEX idx_approval_mr_rules_on_config_id_and_policy_rule_id ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id);
+
 CREATE INDEX idx_approval_policy_rules_security_policy_id_id ON approval_policy_rules USING btree (security_policy_id, id);
+
+CREATE INDEX idx_approval_project_rules_on_config_id_and_policy_rule_id ON approval_project_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id);
 
 CREATE INDEX idx_approval_project_rules_on_configuration_id_and_id ON approval_project_rules USING btree (security_orchestration_policy_configuration_id, id);
 
