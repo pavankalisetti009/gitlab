@@ -33,7 +33,7 @@ export default {
     >
       <dependency-vulnerability :vulnerability="vulnerability" />
     </li>
-    <li v-if="vulnerabilitiesNotShown" ref="excessMessage" class="text-muted text-center mt-3">
+    <li v-if="vulnerabilitiesNotShown" ref="excessMessage" class="text-center mt-3 gl-text-subtle">
       {{
         n__(
           'Dependencies|%d additional vulnerability not shown',

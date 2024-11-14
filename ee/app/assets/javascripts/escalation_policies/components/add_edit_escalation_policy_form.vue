@@ -147,7 +147,7 @@ export default {
           :value="form.name"
           @input="$emit('update-escalation-policy-form', { field: 'name', value: $event })"
         />
-        <span class="form-text text-muted">{{ $options.i18n.fields.name.help }}</span>
+        <span class="form-text gl-text-subtle">{{ $options.i18n.fields.name.help }}</span>
       </gl-form-group>
 
       <gl-form-group
@@ -165,7 +165,7 @@ export default {
             })
           "
         />
-        <span class="form-text text-muted">{{ $options.i18n.fields.description.help }}</span>
+        <span class="form-text gl-text-subtle">{{ $options.i18n.fields.description.help }}</span>
       </gl-form-group>
     </div>
 

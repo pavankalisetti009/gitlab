@@ -27,14 +27,14 @@
               = f.label :name, _('Branch name pattern'), class: 'col-sm-12'
               .col-sm-6
                 = f.text_field :name, class: 'form-control gl-form-input', placeholder: _('eg. dev/*')
-                .form-text.text-muted
+                .form-text.gl-text-subtle
                   = _('Branches matching this string are retargeted. Wildcards are supported, and names are case-sensitive.')
             .form-group.row
               = f.label :target_branch, _("Target branch"), class: 'col-sm-12'
               .col-sm-6
                 = f.hidden_field :target_branch
                 #js-target-branch{ data: { project_id: @project.id } }
-                .form-text.text-muted
+                .form-text.gl-text-subtle
                   = _('The branch to merge into.')
             = f.submit _('Save'), pajamas_button: true
             = render Pajamas::ButtonComponent.new(button_options: { type: 'reset', class: 'gl-ml-2 js-toggle-button' }) do

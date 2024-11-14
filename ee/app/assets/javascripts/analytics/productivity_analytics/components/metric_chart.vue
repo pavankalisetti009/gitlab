@@ -103,7 +103,7 @@ export default {
           @select="$emit('metricTypeChange', $event)"
         />
 
-        <p v-if="description" class="text-muted">{{ description }}</p>
+        <p v-if="description" class="gl-text-subtle">{{ description }}</p>
         <div ref="chart">
           <slot v-if="hasChartData"></slot>
         </div>

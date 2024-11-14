@@ -225,7 +225,7 @@ export default {
                 <span
                   v-if="rule.section && rule.section !== 'codeowners'"
                   :aria-label="sectionNameLabel(rule)"
-                  class="text-muted small gl-block"
+                  class="small gl-block gl-text-subtle"
                   data-testid="rule-section"
                 >
                   {{ rule.section }}

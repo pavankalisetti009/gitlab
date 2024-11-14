@@ -10,7 +10,7 @@
     regex_validator: AllowedEmailDomain::JS_VALID_DOMAIN_REGEX.source,
     disallowed_values: Gitlab::Access::ReservedDomains::ALL.to_json } }
   = f.hidden_field :allowed_email_domains_list, id: hidden_input_id
-  .form-text.text-muted
+  .form-text.gl-text-subtle
     - learn_more_link = link_to(_('Learn more'), help_page_path('user/group/access_and_permissions.md', anchor: 'restrict-group-access-by-domain'))
     = _('Only verified users with an email address in any of these domains can be added to the group. Multiple domains are supported.')
     %br

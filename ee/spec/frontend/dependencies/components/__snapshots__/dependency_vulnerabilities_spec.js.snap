@@ -2,7 +2,7 @@
 
 exports[`DependencVulnerabilities component given a huge number vulnerabilities renders the excess message 1`] = `
 <li
-  class="mt-3 text-center text-muted"
+  class="gl-text-subtle mt-3 text-center"
 >
   1 additional vulnerability not shown
 </li>

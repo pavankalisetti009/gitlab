@@ -45,12 +45,12 @@
       = f.text_area :user_provided_certificate,
         rows: 5,
         class: "form-control"
-      %p.help-inline.text-muted= _("Upload a certificate for your domain with all intermediates")
+      %p.help-inline.gl-text-subtle= _("Upload a certificate for your domain with all intermediates")
     .form-group.gl-form-group.gl-max-w-80
       = f.label :user_provided_key, _("Key (PEM)")
       = f.text_area :user_provided_key,
         rows: 5,
         class: "form-control"
-      %p.help-inline.text-muted= _("Upload a private key for your certificate")
+      %p.help-inline.gl-text-subtle= _("Upload a private key for your certificate")
 
 = render 'lets_encrypt_callout', auto_ssl_available_and_enabled: auto_ssl_available_and_enabled, group: @group

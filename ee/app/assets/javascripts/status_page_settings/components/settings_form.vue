@@ -116,7 +116,7 @@ export default {
           class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-url" v-model="url" />
-          <p class="form-text text-muted">
+          <p class="form-text gl-text-subtle">
             <gl-link target="_blank" :href="statusPageHelpUrl">
               {{ $options.i18n.url.linkText }}
             </gl-link>
@@ -130,7 +130,7 @@ export default {
           class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-s3-bucket-name" v-model="bucketName" />
-          <p class="form-text text-muted">
+          <p class="form-text gl-text-subtle">
             <gl-sprintf :message="$options.i18n.bucket.helpText">
               <template #docsLink>
                 <gl-link
@@ -156,7 +156,7 @@ export default {
             v-model="region"
             placeholder="example: us-west-2"
           />
-          <p class="form-text text-muted">
+          <p class="form-text gl-text-subtle">
             <gl-sprintf :message="$options.i18n.region.helpText">
               <template #docsLink>
                 <gl-link href="https://github.com/aws/aws-sdk-ruby#configuration" target="_blank">

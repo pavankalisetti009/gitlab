@@ -15,17 +15,17 @@
         = html_escape(_("Share the %{strong_open}GitLab single sign-on URL%{strong_close} with members so they can sign in to your group through your identity provider")) % { strong_open: '<strong>'.html_safe, strong_close: '</strong>'.html_safe }
   .well-segment.borderless.gl-mb-5
     = render 'info_row', field: :assertion_consumer_service_url, label_text: _('Assertion consumer service URL')
-    .form-text.text-muted= _('Also called "Relying party service URL" or "Reply URL"')
+    .form-text.gl-text-subtle= _('Also called "Relying party service URL" or "Reply URL"')
   .well-segment.borderless.gl-mb-5
     = render 'info_row', field: :issuer, label_text: _('Identifier')
-    .form-text.text-muted= _('Also called "Issuer" or "Relying party trust identifier"')
+    .form-text.gl-text-subtle= _('Also called "Issuer" or "Relying party trust identifier"')
   .well-segment.borderless.gl-mb-5
     %label= _("GitLab metadata URL")
     - metadata_url = user_group_saml_omniauth_metadata_url(@group)
     %div= link_to metadata_url, metadata_url
-    .form-text.text-muted= _("Used to help configure your identity provider")
+    .form-text.gl-text-subtle= _("Used to help configure your identity provider")
   .well-segment.borderless.gl-mb-5
     %label= _("GitLab single sign-on URL")
     - user_login_url = sso_group_saml_providers_url(@group, token: @group.saml_discovery_token)
     %div= link_to user_login_url, user_login_url, data: { testid: 'user-login-url-link' }
-    .form-text.text-muted= _("Used by members to sign in to your group in GitLab")
+    .form-text.gl-text-subtle= _("Used by members to sign in to your group in GitLab")

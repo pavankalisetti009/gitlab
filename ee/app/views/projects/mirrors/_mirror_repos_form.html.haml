@@ -30,7 +30,7 @@
   .form-group
     = f.label :mirror_user_name, _('Mirror user'), class: 'label-light'
     = f.text_field :mirror_user_name, value: current_user.name, class: 'form-control gl-form-input gl-mb-2 gl-form-input-xl', required: true, disabled: true
-    .form-text.text-muted
+    .form-text.gl-text-subtle
       = _('You will be the author of all events in the activity feed that are the result of an update, like new branches being created or new commits being pushed to existing branches.')
 
   - overwrite_diverged_branches_help_link = help_page_path('user/project/repository/mirror/pull.md', anchor: 'overwrite-diverged-branches')

@@ -13,7 +13,7 @@
             .template-subgroup-name.gl-ml-2
               %strong= group.full_name
               - if group.description.present?
-                .text-muted
+                .gl-text-subtle
                   = group.description
           .template-subgroup-project-count
             = gl_badge_tag projects.count, nil, { class: 'gl-font-bold' }
@@ -25,7 +25,7 @@
               %strong
                 = project.title
               %br
-              .text-muted
+              .gl-text-subtle
                 = project.description
             .controls.gl-items-baseline.gl-gap-3{ class: '!gl-flex' }
               = render Pajamas::ButtonComponent.new(href: project_path(project), target: '_blank') do

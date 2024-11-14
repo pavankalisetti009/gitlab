@@ -89,7 +89,7 @@ exports[`Status Page settings form default state should match the default snapsh
             value=""
           />
           <p
-            class="form-text text-muted"
+            class="form-text gl-text-subtle"
           >
             <gl-link-stub
               href="/help/operations/incident_management/status_page#configure-gitlab-with-cloud-provider-information"
@@ -112,7 +112,7 @@ exports[`Status Page settings form default state should match the default snapsh
             value=""
           />
           <p
-            class="form-text text-muted"
+            class="form-text gl-text-subtle"
           >
             <gl-sprintf-stub
               message="Bucket %{docsLink}"
@@ -133,7 +133,7 @@ exports[`Status Page settings form default state should match the default snapsh
             value=""
           />
           <p
-            class="form-text text-muted"
+            class="form-text gl-text-subtle"
           >
             <gl-sprintf-stub
               message="AWS %{docsLink}"
