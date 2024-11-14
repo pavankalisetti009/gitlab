@@ -183,7 +183,7 @@ module GitlabSubscriptions
 
     override :text_page_title
     def text_page_title
-      _('TrialDiscover|Discover')
+      s_('TrialDiscover|Discover')
     end
 
     override :why_section_header_text
