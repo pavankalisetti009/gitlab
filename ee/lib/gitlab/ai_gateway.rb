@@ -22,11 +22,8 @@ module Gitlab
       "#{base_url}/v1/code/user_access_token"
     end
 
-    # Returns the configured URL of a self-hosted AI Gateway.
-    # TODO: to be moved to a config instead of ENV variable
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/473143
     def self.self_hosted_url
-      ENV['AI_GATEWAY_URL']
+      ::Ai::Setting.instance.ai_gateway_url || ENV["AI_GATEWAY_URL"]
     end
 
     # Exposes the state of a feature flag to the AI Gateway code.

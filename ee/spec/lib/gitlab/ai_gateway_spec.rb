@@ -3,25 +3,37 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
-  describe '.url' do
-    context 'when AI_GATEWAY_URL environment variable is set' do
-      let(:url) { 'http://localhost:5052' }
+  let(:ai_setting) { Ai::Setting.instance }
+  let(:url) { 'http://ai-gateway.example.com:5052' }
 
-      it 'returns the AI_GATEWAY_URL' do
-        stub_env('AI_GATEWAY_URL', url)
+  describe '.url' do
+    context 'when ai_gateway_url setting is set' do
+      it 'returns the setting value' do
+        ai_setting.update!(ai_gateway_url: url)
 
         expect(described_class.url).to eq(url)
       end
     end
 
-    context 'when AI_GATEWAY_URL environment variable is not set' do
-      let(:url) { 'http:://example.com' }
+    context 'when ai_gateway_url setting is not set' do
+      before do
+        ai_setting.update!(ai_gateway_url: nil)
+      end
 
-      it 'returns the cloud connector url' do
-        stub_env('AI_GATEWAY_URL', nil)
-        allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+      context 'when AI_GATEWAY_URL environment variable is set' do
+        it 'returns the env var' do
+          stub_env('AI_GATEWAY_URL', url)
 
-        expect(described_class.url).to eq("#{url}/ai")
+          expect(described_class.url).to eq(url)
+        end
+      end
+
+      context 'when AI_GATEWAY_URL is not set' do
+        it 'returns the cloud connector url' do
+          allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+
+          expect(described_class.cloud_connector_url).to eq("#{url}/ai")
+        end
       end
     end
   end
@@ -39,21 +51,21 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
   end
 
   describe '.self_hosted_url' do
-    context 'when AI_GATEWAY_URL environment variable is set' do
-      let(:url) { 'http://localhost:5052' }
-
-      it 'returns the url' do
-        stub_env('AI_GATEWAY_URL', url)
+    context 'when the ai_gateway_url setting is set' do
+      it 'returns the the setting value' do
+        ai_setting.update!(ai_gateway_url: url)
+        stub_env('AI_GATEWAY_URL', nil)
 
         expect(described_class.self_hosted_url).to eq(url)
       end
     end
 
-    context 'when AI_GATEWAY_URL environment variable is not set' do
-      it 'returns nil' do
-        stub_env('AI_GATEWAY_URL', nil)
+    context 'when the ai_gateway_url setting is not set' do
+      it 'returns the AI_GATEWAY_URL env var value' do
+        ai_setting.update!(ai_gateway_url: nil)
+        stub_env('AI_GATEWAY_URL', url)
 
-        expect(described_class.self_hosted_url).to be_nil
+        expect(described_class.self_hosted_url).to eq(url)
       end
     end
   end
