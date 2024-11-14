@@ -202,6 +202,7 @@ export default {
       return this.$apollo.queries.pendingTodosCount.refetch();
     },
     async updateAllQueries(showLoading = true) {
+      this.$root.$emit('bv::hide::tooltip', 'todo-refresh-btn');
       this.showSpinnerWhileLoading = showLoading;
 
       await Promise.all([this.updateCounts(), this.$apollo.queries.todos.refetch()]);
@@ -244,11 +245,12 @@ export default {
         />
 
         <gl-button
+          id="todo-refresh-btn"
           v-gl-tooltip.hover
           data-testid="refresh-todos"
           icon="retry"
-          :aria-label="s__('Todos|Refresh To-Do List')"
-          :title="s__('Todos|Refresh To-Do List')"
+          :aria-label="__('Refresh')"
+          :title="__('Refresh')"
           :loading="isLoading && !showSpinnerWhileLoading"
           @click.prevent="updateAllQueries(false)"
         />
