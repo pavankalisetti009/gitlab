@@ -1360,6 +1360,22 @@
     core-js "^3.29.1"
     mitt "^3.0.1"
 
+"@gitlab/duo-ui@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gitlab/duo-ui/-/duo-ui-2.0.0.tgz#0d37ecf97fa38c1150aeb7123efd0ba050963507"
+  integrity sha512-7V28t2gYmRfh7DP+hWDRYopaEqdvqBLuvXKNxdq1F9EosO8J7iLLg7XRbTaSf1lKt90zptDHbw4CKv4FKvVyYA==
+  dependencies:
+    "@floating-ui/dom" "1.4.3"
+    echarts "^5.3.2"
+    iframe-resizer "^4.3.2"
+    lodash "^4.17.20"
+    marked "^12.0.0"
+    marked-bidi "^1.0.8"
+    popper.js "^1.16.1"
+    portal-vue "^2.1.7"
+    vue-functional-data-merge "^3.1.0"
+    vue-runtime-helpers "^1.1.2"
+
 "@gitlab/eslint-plugin@20.6.0":
   version "20.6.0"
   resolved "https://registry.yarnpkg.com/@gitlab/eslint-plugin/-/eslint-plugin-20.6.0.tgz#ff3b5cda779b4d9984796bf81286f70bfe7d5915"
