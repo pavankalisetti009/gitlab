@@ -6,6 +6,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas
   type: :component, feature_category: :acquisition do
   let(:namespace) { build(:group, id: non_existing_record_id) }
   let(:user) { build(:user) }
+  let(:title) { 'Introducing GitLab Duo Enterprise' }
 
   subject(:component) do
     render_inline(described_class.new(namespace: namespace, user: user)) && page
@@ -20,7 +21,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas
       build(:gitlab_subscription, :gold, namespace: namespace)
     end
 
-    it { is_expected.to have_content('') }
+    it { is_expected.not_to have_content(title) }
   end
 
   context 'when there is Duo Enterprise add-on' do
@@ -31,12 +32,12 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas
         .and_return(false)
     end
 
-    it { is_expected.to have_content('') }
+    it { is_expected.not_to have_content(title) }
   end
 
   context 'when rendering' do
     it 'has the correct text' do
-      is_expected.to have_content('Introducing GitLab Duo Enterprise')
+      is_expected.to have_content(title)
 
       is_expected.to have_content(
         'Start a GitLab Duo Enterprise trial to try all end-to-end AI ' \
