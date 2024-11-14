@@ -299,7 +299,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           before do
             stub_uploads_object_storage(FileUploader)
             # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/474656
-            allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(203)
+            allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(204)
           end
 
           it 'creates the project from project template', :sidekiq_might_not_need_inline do
@@ -322,7 +322,11 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         end
 
         it 'does not create the project from project template' do
-          expect { post :create, params: { project: templates_params } }.not_to change { Project.count }
+          expect_next_instance_of(Project) do |project|
+            expect(project).not_to receive(:save)
+          end
+
+          post :create, params: { project: templates_params }
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.body).to match(/Template name .* is unknown or invalid/)

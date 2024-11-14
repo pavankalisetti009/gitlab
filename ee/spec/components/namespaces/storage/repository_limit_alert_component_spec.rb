@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: :component, feature_category: :consumables_cost_management do
-  let(:group) { build_stubbed(:group) }
+  let(:group) { build_stubbed(:group, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
   let(:project_over_limit) { build_stubbed(:project, namespace: group) }
   let(:project_under_limit) { build_stubbed(:project, namespace: group) }
   let(:user) { build_stubbed(:user) }
@@ -179,7 +179,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimitAlertComponent, :saas, type: 
       end
 
       context 'when group is a user namespace' do
-        let(:group) { build_stubbed(:user_namespace) }
+        let(:group) { build_stubbed(:user_namespace, gitlab_subscription: build_stubbed(:gitlab_subscription)) }
 
         it 'renders the alert' do
           render_inline(component)

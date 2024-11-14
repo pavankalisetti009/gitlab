@@ -1584,6 +1584,28 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(namespace.actual_repository_size_limit).to eq(repository_size_limit)
       end
     end
+
+    context 'with plan_limits_repository_size' do
+      before do
+        namespace.actual_plan.actual_limits.update!(repository_size: 500)
+      end
+
+      it 'returns plan limit if the feature is enabled' do
+        expect(namespace.actual_repository_size_limit).to eq(500)
+      end
+
+      it 'returns the instance limit if the feature is disabled' do
+        stub_feature_flags(plan_limits_repository_size: false)
+
+        expect(namespace.actual_repository_size_limit).to eq(repository_size_limit)
+      end
+
+      it 'returns the value set locally, overriding the plan limit' do
+        namespace.update_attribute(:repository_size_limit, 75)
+
+        expect(namespace.actual_size_limit).to eq(75)
+      end
+    end
   end
 
   describe '#actual_size_limit', feature_category: :consumables_cost_management do
@@ -1597,6 +1619,28 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'returns the value set globally' do
         expect(namespace.actual_size_limit).to eq(repository_size_limit)
+      end
+
+      context 'with plan_limits_repository_size' do
+        before do
+          namespace.actual_plan.actual_limits.update!(repository_size: 500)
+        end
+
+        it 'returns plan limit if the feature is enabled' do
+          expect(namespace.actual_size_limit).to eq(500)
+        end
+
+        it 'returns the instance limit if the feature is disabled' do
+          stub_feature_flags(plan_limits_repository_size: false)
+
+          expect(namespace.actual_size_limit).to eq(repository_size_limit)
+        end
+
+        it 'returns the value set locally, overriding the plan limit' do
+          namespace.update_attribute(:repository_size_limit, 75)
+
+          expect(namespace.actual_size_limit).to eq(75)
+        end
       end
 
       it 'returns the value set locally' do
