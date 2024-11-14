@@ -250,6 +250,7 @@ export default {
           v-if="selectedProjectId"
           icon="remove"
           class="gl-ml-3"
+          data-testid="unlink-button"
           :aria-label="$options.i18n.unlinkButtonLabel"
           @click="confirmDeletion"
         />

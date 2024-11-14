@@ -91,7 +91,7 @@ describe('List Header Component', () => {
     });
 
     it('displays scan new policy modal when the action button is clicked', async () => {
-      await findEditPolicyProjectButton().trigger('click');
+      await findEditPolicyProjectButton().vm.$emit('click');
 
       expect(findScanNewPolicyModal().props().visible).toBe(true);
     });

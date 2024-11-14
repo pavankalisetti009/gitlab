@@ -1,12 +1,11 @@
 import { GlSprintf, GlLink } from '@gitlab/ui';
-import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
+import { trimText } from 'helpers/text_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DrawerLayout from 'ee/security_orchestration/components/policy_drawer/drawer_layout.vue';
 import {
   DEFAULT_DESCRIPTION_LABEL,
   ENABLED_LABEL,
   GROUP_TYPE_LABEL,
-  INHERITED_LABEL,
   NOT_ENABLED_LABEL,
   PROJECT_TYPE_LABEL,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
@@ -29,7 +28,6 @@ describe('DrawerLayout component', () => {
   const findNotEnabledText = () => wrapper.findByTestId('not-enabled-status-text');
   const findSourceSection = () => wrapper.findByTestId('policy-source');
   const findScopeInfoRow = () => wrapper.findComponent(ScopeInfoRow);
-  const findSprintf = () => wrapper.findComponent(GlSprintf);
   const findLink = () => wrapper.findComponent(GlLink);
   const componentStatusText = (status) => (status ? 'does' : 'does not');
 
@@ -89,11 +87,12 @@ describe('DrawerLayout component', () => {
 
     it('displays correctly for a group-level policy being displayed on a project', () => {
       factory({ propsData: { policy: mockGroupScanExecutionPolicy } });
-      expect(findSprintf().text()).toMatchInterpolatedText(INHERITED_LABEL);
+      expect(trimText(findSourceSection().text())).toBe(
+        'This policy is inherited from parent-group-name',
+      );
+      expect(findLink().text()).toBe('parent-group-name');
       expect(findLink().attributes('href')).toBe(
-        getSecurityPolicyListUrl({
-          namespacePath: mockGroupScanExecutionPolicy.source.namespace.fullPath,
-        }),
+        'http://test.host/groups/parent-group-path/-/security/policies',
       );
     });
 
