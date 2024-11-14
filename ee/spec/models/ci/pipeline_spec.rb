@@ -316,6 +316,10 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     context 'when pipeline is canceled' do
       it_behaves_like 'notification for unenforceable policy rules', :cancel
     end
+
+    context 'when pipeline is blocked' do
+      it_behaves_like 'notification for unenforceable policy rules', :block
+    end
   end
 
   describe 'Sbom Ingestion' do
