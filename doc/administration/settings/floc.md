@@ -21,7 +21,10 @@ by sending the following header:
 ```plaintext
 Permissions-Policy: interest-cohort=()
 
-To enable it:
+This header prevents users from being tracked and categorized in any GitLab instance.
+The header is compatible with the Topics API and the deprecated FLoC system.
+
+To enable user tracking for interest-based advertising:
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **Settings > General**.
