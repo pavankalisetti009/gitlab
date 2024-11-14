@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', product_group: :secret_detection,
-    only: { pipeline: %w[staging-canary staging] } do
+  # Do not run on production as this creates error logs
+  RSpec.describe 'Secure', product_group: :secret_detection, except: { pipeline: [:canary, :production] } do
     describe 'Secret Push Protection' do
       let!(:project) do
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
@@ -15,6 +15,8 @@ module QA
       it 'blocks commit when enabled when token is detected',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468475' do
         Flow::Login.sign_in_unless_signed_in
+
+        enable_secret_protection_for_self_managed unless Runtime::Env.running_on_dot_com?
 
         project.visit!
         Page::Project::Menu.perform(&:go_to_security_configuration)
@@ -36,10 +38,30 @@ module QA
           repository.commit_file("new-file", reverse_token_prefix.reverse + test_token, "Add token file")
           result = repository.push_changes(raise_on_failure: false)
 
-          # rubocop:disable Layout/LineLength -- Long regular expression to capture the error from the git commit
-          expect(result).to match(%r{.*(PUSH BLOCKED: Secrets detected in code changes )[\s\S]*(Secret push protection found the following secrets in commit)[\s\S]*(GitLab [Pp]ersonal [Aa]ccess [Tt]oken)[\s\S]*(To push your changes you must remove the identified secrets.)})
-          # rubocop:enable Layout/LineLength
+          expect(result).to match(expected_error_pattern)
         end
+      end
+
+      private
+
+      def enable_secret_protection_for_self_managed
+        Page::Main::Menu.perform(&:go_to_admin_area)
+        Page::Admin::Menu.perform(&:go_to_security_and_compliance_settings)
+        EE::Page::Admin::Settings::Securityandcompliance.perform(&:click_secret_protection_setting_checkbox)
+      end
+
+      def error_messages
+        {
+          blocked: 'PUSH BLOCKED: Secrets detected in code changes',
+          found: 'Secret push protection found the following secrets in commit',
+          token: 'GitLab [Pp]ersonal [Aa]ccess [Tt]oken',
+          resolution: 'To push your changes you must remove the identified secrets.'
+        }
+      end
+
+      def expected_error_pattern
+        messages = error_messages
+        %r{.*#{messages[:blocked]}[\s\S]*#{messages[:found]}[\s\S]*#{messages[:token]}[\s\S]*#{messages[:resolution]}}
       end
     end
   end
