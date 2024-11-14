@@ -1,9 +1,0 @@
----
-name: enable_adherence_check_for_scanners
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/440722
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163579/
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/492118
-milestone: '17.6'
-group: group::compliance
-type: gitlab_com_derisk
-default_enabled: false
