@@ -70,41 +70,27 @@ RSpec.describe Ci::JobArtifacts::CreateService, :clean_gitlab_redis_shared_state
         allow(job).to receive(:user_id).and_return(123)
       end
 
-      context 'when enable_adherence_check_for_scanners is enabled' do
-        context 'when the artifact is for project default branch' do
-          it 'triggers the adherence worker' do
-            expect(::ComplianceManagement::Standards::Gitlab::SastWorker).to receive(:perform_async)
-              .with({ 'project_id' => project.id, 'user_id' => 123 })
+      context 'when the artifact is for project default branch' do
+        it 'triggers the adherence worker' do
+          expect(::ComplianceManagement::Standards::Gitlab::SastWorker).to receive(:perform_async)
+            .with({ 'project_id' => project.id, 'user_id' => 123 })
 
-            subject
-          end
-        end
-
-        context 'when the artifact is not for project default branch' do
-          let(:merge_request) do
-            create(
-              :merge_request, source_project: project
-            )
-          end
-
-          let(:pipeline) { create(:ci_pipeline, :detached_merge_request_pipeline, merge_request: merge_request) }
-
-          let(:job) { create(:ci_build, pipeline: pipeline, project: project) }
-
-          it 'does not trigger the adherence worker' do
-            expect(::ComplianceManagement::Standards::Gitlab::SastWorker).not_to receive(:perform_async)
-
-            subject
-          end
+          subject
         end
       end
 
-      context 'when enable_adherence_check_for_scanners is disabled' do
-        before do
-          stub_feature_flags(enable_adherence_check_for_scanners: false)
+      context 'when the artifact is not for project default branch' do
+        let(:merge_request) do
+          create(
+            :merge_request, source_project: project
+          )
         end
 
-        it 'does not trigger adherence worker' do
+        let(:pipeline) { create(:ci_pipeline, :detached_merge_request_pipeline, merge_request: merge_request) }
+
+        let(:job) { create(:ci_build, pipeline: pipeline, project: project) }
+
+        it 'does not trigger the adherence worker' do
           expect(::ComplianceManagement::Standards::Gitlab::SastWorker).not_to receive(:perform_async)
 
           subject
@@ -119,41 +105,27 @@ RSpec.describe Ci::JobArtifacts::CreateService, :clean_gitlab_redis_shared_state
         allow(job).to receive(:user_id).and_return(123)
       end
 
-      context 'when enable_adherence_check_for_scanners is enabled' do
-        context 'when the artifact is for project default branch' do
-          it 'triggers the adherence worker' do
-            expect(::ComplianceManagement::Standards::Gitlab::DastWorker).to receive(:perform_async)
-              .with({ 'project_id' => project.id, 'user_id' => 123 })
+      context 'when the artifact is for project default branch' do
+        it 'triggers the adherence worker' do
+          expect(::ComplianceManagement::Standards::Gitlab::DastWorker).to receive(:perform_async)
+            .with({ 'project_id' => project.id, 'user_id' => 123 })
 
-            subject
-          end
-        end
-
-        context 'when the artifact is not for project default branch' do
-          let(:merge_request) do
-            create(
-              :merge_request, source_project: project
-            )
-          end
-
-          let(:pipeline) { create(:ci_pipeline, :detached_merge_request_pipeline, merge_request: merge_request) }
-
-          let(:job) { create(:ci_build, pipeline: pipeline, project: project) }
-
-          it 'does not trigger the adherence worker' do
-            expect(::ComplianceManagement::Standards::Gitlab::DastWorker).not_to receive(:perform_async)
-
-            subject
-          end
+          subject
         end
       end
 
-      context 'when enable_adherence_check_for_scanners is disabled' do
-        before do
-          stub_feature_flags(enable_adherence_check_for_scanners: false)
+      context 'when the artifact is not for project default branch' do
+        let(:merge_request) do
+          create(
+            :merge_request, source_project: project
+          )
         end
 
-        it 'does not trigger adherence worker' do
+        let(:pipeline) { create(:ci_pipeline, :detached_merge_request_pipeline, merge_request: merge_request) }
+
+        let(:job) { create(:ci_build, pipeline: pipeline, project: project) }
+
+        it 'does not trigger the adherence worker' do
           expect(::ComplianceManagement::Standards::Gitlab::DastWorker).not_to receive(:perform_async)
 
           subject

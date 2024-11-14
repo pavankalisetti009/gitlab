@@ -14,8 +14,7 @@ module EE
 
           if artifact.file_type == 'metrics'
             track_usage_event(METRICS_REPORT_UPLOAD_EVENT_NAME, job.user_id)
-          elsif ::Feature.enabled?(:enable_adherence_check_for_scanners, project) &&
-              artifact.job.pipeline.ref == artifact.project.default_branch
+          elsif artifact.job.pipeline.ref == artifact.project.default_branch
             if artifact.file_type == 'sast'
               ::ComplianceManagement::Standards::Gitlab::SastWorker
                 .perform_async({ 'project_id' => project.id, 'user_id' => job.user_id })
