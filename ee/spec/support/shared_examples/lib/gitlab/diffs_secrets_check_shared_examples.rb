@@ -1301,7 +1301,7 @@ end
 RSpec.shared_examples 'diff scan skipped due to invalid status' do
   include_context 'secrets check context'
 
-  let(:invalid_scan_status_code) { 7 } # doesn't exist in ::Gitlab::SecretDetection::Status
+  let(:invalid_scan_status_code) { -1 } # doesn't exist in ::Gitlab::SecretDetection::Status
   let(:invalid_scan_status_code_response) { ::Gitlab::SecretDetection::Response.new(invalid_scan_status_code) }
 
   it 'logs the error and passes the check' do
