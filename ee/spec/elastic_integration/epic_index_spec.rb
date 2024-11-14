@@ -167,7 +167,7 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
       it 'tracks the epic via ElasticAssociationIndexerWorker' do
         allow(ElasticWikiIndexerWorker).to receive(:perform_async)
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics, :work_items])
+          .with(anything, group.id, %w[epics work_items])
           .and_call_original
 
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
@@ -202,7 +202,7 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
       it 'tracks the epic via Elastic::NamespaceUpdateWorker if the new parent has indexing enabled' do
         expect(Elastic::NamespaceUpdateWorker).to receive(:perform_async).with(group.id).and_call_original
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics, :work_items])
+          .with(anything, group.id, %w[epics work_items])
           .and_call_original
 
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
@@ -222,7 +222,7 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
         expect(Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async)
           .with(group.id, parent_group.id, { include_descendants: true }).once
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics, :work_items])
+          .with(anything, group.id, %w[epics work_items])
           .and_call_original
 
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic.work_item).once

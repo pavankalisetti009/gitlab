@@ -120,7 +120,8 @@ module Elastic
 
           # Epics are only for group level namespaces
           filtered_associations = namespace.group_namespace? ? associations_to_index : associations_to_index - [:epics]
-          ElasticAssociationIndexerWorker.perform_async(namespace.class.name, namespace.id, filtered_associations)
+          ElasticAssociationIndexerWorker.perform_async(namespace.class.name, namespace.id,
+            filtered_associations.map(&:to_s))
         end
       end
 

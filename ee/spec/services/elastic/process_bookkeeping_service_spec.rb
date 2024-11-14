@@ -202,7 +202,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
       it 'calls ElasticAssociationIndexerWorker' do
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with("Group", group.id, [:epics, :work_items])
+          .with("Group", group.id, %w[epics work_items])
 
         described_class.maintain_indexed_namespace_associations!(group)
       end
@@ -222,7 +222,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
   end
 
   describe '#execute' do
-    context 'limit is less than refs count' do
+    context 'when limit is less than refs count' do
       before do
         stub_const('Elastic::ProcessBookkeepingService::SHARD_LIMIT', 2)
         stub_const('Elastic::ProcessBookkeepingService::SHARDS_MAX', 2)
@@ -234,10 +234,10 @@ RSpec.describe Elastic::ProcessBookkeepingService,
         expect(described_class.queue_size).to eq(fake_refs.size)
         allow_processing(*fake_refs)
 
-        expect { described_class.new.execute }.to change(described_class, :queue_size).by(-4)
+        expect { described_class.new.execute }.to change { described_class.queue_size }.by(-4)
       end
 
-      context 'limited to one shard' do
+      context 'when limited to one shard' do
         let(:shard_number) { 1 }
 
         it 'only processes specified shard' do
@@ -247,7 +247,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           allow_processing(*fake_refs)
 
           refs_in_shard = described_class.queued_items[shard_number]
-          expect { described_class.new.execute(shards: [shard_number]) }.to change(described_class, :queue_size)
+          expect { described_class.new.execute(shards: [shard_number]) }.to change { described_class.queue_size }
                                                                         .by(-refs_in_shard.count)
         end
       end
@@ -259,7 +259,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       expect(described_class.queue_size).to eq(fake_refs.size)
       expect_processing(*fake_refs)
 
-      expect { described_class.new.execute }.to change(described_class, :queue_size).by(-fake_refs.count)
+      expect { described_class.new.execute }.to change { described_class.queue_size }.by(-fake_refs.count)
     end
 
     it 'returns the number of documents processed and number of failures' do
@@ -284,7 +284,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       expect(described_class.queue_size).to eq(10)
       expect_processing(*fake_refs, failures: [failed])
 
-      expect { described_class.new.execute }.to change(described_class, :queue_size).by(-fake_refs.count + 1)
+      expect { described_class.new.execute }.to change { described_class.queue_size }.by(-fake_refs.count + 1)
 
       shard = described_class.shard_number(failed.serialize)
       serialized = described_class.queued_items[shard].first[0]
@@ -300,7 +300,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
         expect(indexer).not_to receive(:process)
       end
 
-      expect { described_class.new.execute }.to change(described_class, :queue_size).by(-1)
+      expect { described_class.new.execute }.to change { described_class.queue_size }.by(-1)
     end
 
     it 'fails, preserving documents, when processing fails with an exception' do
@@ -330,7 +330,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       described_class.new.execute
     end
 
-    context 'logging' do
+    context 'for logging' do
       let(:logger_double) { instance_double(Gitlab::Elasticsearch::Logger) }
 
       before do
@@ -439,7 +439,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       end
     end
 
-    context 'N+1 queries' do
+    context 'for N+1 queries' do
       it 'does not have N+1 queries for projects' do
         project = create(:project)
         projects = [create(:project, group: create(:group))]
@@ -663,7 +663,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
     def allow_processing(*refs, failures: [])
       expect_next_instance_of(::Gitlab::Elastic::BulkIndexer) do |indexer|
-        refs.each { |ref| allow(indexer).to receive(:process).with(anything).and_return(10) }
+        refs.each { |_ref| allow(indexer).to receive(:process).with(anything).and_return(10) }
 
         expect(indexer).to receive(:flush) { failures }
       end
