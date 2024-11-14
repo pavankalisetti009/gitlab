@@ -14,6 +14,8 @@ module EE
 
       # rubocop:disable Gitlab/ModuleWithInstanceVariables
       def removed
+        return redirect_to inactive_dashboard_projects_path if ::Feature.enabled?(:your_work_projects_vue, current_user)
+
         @projects = load_projects(params.merge(projects_pending_deletion_params))
 
         respond_to do |format|
