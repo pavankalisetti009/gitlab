@@ -26,6 +26,7 @@ module Search
       def base_options
         {
           project_id_field: :project_id,
+          project_visibility_level_field: :visibility_level,
           no_join_project: true,
           source_fields: ['id']
         }

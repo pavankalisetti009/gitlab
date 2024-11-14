@@ -41,8 +41,19 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       include_examples 'search results filtered by state'
       include_examples 'search results filtered by confidential'
       include_examples 'search results filtered by labels'
+
       it_behaves_like 'namespace ancestry_filter for aggregations' do
-        let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+        let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+      end
+
+      context 'when search_auth_filter_for_work_items flag is false' do
+        before do
+          stub_feature_flags(search_auth_filter_for_work_items: false)
+        end
+
+        it_behaves_like 'namespace ancestry_filter for aggregations' do
+          let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+        end
       end
     end
 
@@ -55,7 +66,17 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       include_examples 'search results filtered by confidential'
       include_examples 'search results filtered by labels'
       it_behaves_like 'namespace ancestry_filter for aggregations' do
-        let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+        let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+      end
+
+      context 'when search_auth_filter_for_work_items flag is false' do
+        before do
+          stub_feature_flags(search_auth_filter_for_work_items: false)
+        end
+
+        it_behaves_like 'namespace ancestry_filter for aggregations' do
+          let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+        end
       end
     end
 
@@ -63,7 +84,17 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     include_examples 'search results filtered by confidential'
     include_examples 'search results filtered by labels'
     it_behaves_like 'namespace ancestry_filter for aggregations' do
-      let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+      let(:query_name) { 'filters:permissions:group:ancestry_filter:descendants' }
+    end
+
+    context 'when search_auth_filter_for_work_items flag is false' do
+      before do
+        stub_feature_flags(search_auth_filter_for_work_items: false)
+      end
+
+      it_behaves_like 'namespace ancestry_filter for aggregations' do
+        let(:query_name) { 'filters:namespace:ancestry_filter:descendants' }
+      end
     end
   end
 

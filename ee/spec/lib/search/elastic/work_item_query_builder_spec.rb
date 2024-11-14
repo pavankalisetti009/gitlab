@@ -28,6 +28,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       work_item:multi_match:or:search_terms
       work_item:multi_match:and:search_terms
       work_item:multi_match_phrase:search_terms
+      filters:permissions:global
       filters:not_hidden
       filters:not_work_item_type_ids
       filters:non_archived
@@ -37,6 +38,30 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       filters:confidential:as_assignee
       filters:confidential:project:membership:id
     ])
+  end
+
+  context 'when search_auth_filter_for_work_items feature flag is false' do
+    before do
+      stub_feature_flags(search_auth_filter_for_work_items: false)
+    end
+
+    it 'contains all expected filters' do
+      assert_names_in_query(build,
+        with: %w[
+          work_item:multi_match:or:search_terms
+          work_item:multi_match:and:search_terms
+          work_item:multi_match_phrase:search_terms
+          filters:not_hidden
+          filters:not_work_item_type_ids
+          filters:non_archived
+          filters:non_confidential
+          filters:confidential
+          filters:confidential:as_author
+          filters:confidential:as_assignee
+          filters:confidential:project:membership:id
+        ],
+        without: %w[filters:permissions:global])
+    end
   end
 
   describe 'query' do
@@ -120,7 +145,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       expect(query[:knn][:boost]).to eq(hybrid_boost)
 
       expected_filters = %w[
-        filters:project
+        filters:permissions:global
         filters:non_confidential
         filters:confidential
         filters:confidential:as_author
@@ -199,8 +224,9 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
   end
 
   describe 'filters' do
-    let_it_be(:private_project) { create(:project, :private) }
-    let_it_be(:authorized_project) { create(:project, developers: [user]) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:private_project) { create(:project, :private, group: group) }
+    let_it_be(:authorized_project) { create(:project, developers: [user], group: group) }
     let(:project_ids) { [authorized_project.id, private_project.id] }
 
     it_behaves_like 'a query filtered by archived'
@@ -209,8 +235,16 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     it_behaves_like 'a query filtered by confidentiality'
 
     describe 'authorization' do
-      it 'applies authorization filters' do
-        assert_names_in_query(build, with: %w[filters:project:membership:id])
+      it_behaves_like 'a query filtered by project authorization'
+
+      context 'when search_auth_filter_for_work_items feature flag is false' do
+        before do
+          stub_feature_flags(search_auth_filter_for_work_items: false)
+        end
+
+        it 'applies authorization filters' do
+          assert_names_in_query(build, with: %w[filters:project:membership:id])
+        end
       end
     end
 

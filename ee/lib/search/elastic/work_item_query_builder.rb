@@ -35,12 +35,14 @@ module Search
 
       def get_authorization_filter(query_hash:, options:)
         if options[:group_level_authorization]
-          return ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash,
-            options: options)
+          return ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash, options: options)
         end
 
-        ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash,
-          options: options)
+        if Feature.enabled?(:search_auth_filter_for_work_items, options[:current_user])
+          ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
+        else
+          ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
+        end
       end
 
       def get_confidentiality_filter(query_hash:, options:)

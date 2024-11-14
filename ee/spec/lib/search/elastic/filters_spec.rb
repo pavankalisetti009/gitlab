@@ -1098,7 +1098,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         public_and_internal_projects: public_and_internal_projects,
         no_join_project: no_join_project,
         authorization_use_traversal_ids: authorization_use_traversal_ids,
-        project_id_field: :project_id
+        project_id_field: :project_id,
+        project_visibility_level_field: :visibility_level
       }
     end
 
@@ -2711,7 +2712,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: [],
           group_ids: [],
           search_level: search_level,
-          features: [:issues, :repository]
+          features: [:issues, :repository],
+          project_visibility_level_field: :visibility_level
         }
       end
 
@@ -2764,7 +2766,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: [],
           group_ids: groups.map(&:id),
           search_level: search_level,
-          features: [:issues, :repository]
+          features: [:issues, :repository],
+          project_visibility_level_field: :visibility_level
         }
       end
 
@@ -2874,7 +2877,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           project_ids: projects.map(&:id),
           group_ids: groups.map(&:id),
           search_level: search_level,
-          features: [:issues, :repository]
+          features: [:issues, :repository],
+          project_visibility_level_field: :visibility_level
         }
       end
 
