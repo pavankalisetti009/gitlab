@@ -311,7 +311,9 @@ module EE
           product_analytics_data_collector_host: nil,
           product_analytics_configurator_connection_string: nil,
           cube_api_base_url: nil,
-          cube_api_key: nil
+          cube_api_key: nil,
+          secret_detection_service_url: '',
+          secret_detection_service_auth_token: nil
         )
       end
 
