@@ -9,7 +9,10 @@ describe('Comparison table', () => {
   let wrapper;
 
   const createWrapper = (propsData = {}) => {
-    wrapper = mountExtended(ComparisonTable, { propsData });
+    wrapper = mountExtended(ComparisonTable, {
+      provide: { namespaceFullPath: 'goo' },
+      propsData,
+    });
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
@@ -24,7 +27,7 @@ describe('Comparison table', () => {
     });
 
     it('shows a no data message', () => {
-      expect(wrapper.text()).toEqual('No data available');
+      expect(wrapper.text()).toEqual('No data available for Group: goo');
     });
   });
 
@@ -47,6 +50,8 @@ describe('Comparison table', () => {
         it('renders the project avatar', () => {
           expect(findAvatar().props().label).toEqual(name);
           expect(findAvatar().props().labelLink).toEqual(webUrl);
+          expect(findAvatar().vm.$attrs['entity-id']).toEqual(getIdFromGraphQLId(id));
+          expect(findAvatar().vm.$attrs['entity-name']).toEqual(name);
           expect(findAvatar().vm.$attrs.src).toEqual(avatarUrl);
         });
 

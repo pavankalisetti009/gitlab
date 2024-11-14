@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Dora Metrics by project Data Source fetch formats the DORA metrics for the list of projects 1`] = `
+exports[`Dora Metrics by project Data Source for group formats the DORA metrics for the list of projects 1`] = `
 {
   "projects": [
     {

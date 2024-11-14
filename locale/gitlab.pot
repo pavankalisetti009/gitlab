@@ -17326,6 +17326,9 @@ msgstr ""
 msgid "DORA4Metrics|Failed to load DORA performance scores for Group: %{fullPath}"
 msgstr ""
 
+msgid "DORA4Metrics|Failed to load dashboard panel."
+msgstr ""
+
 msgid "DORA4Metrics|Failed to load labels matching the filter: %{labels}"
 msgstr ""
 

@@ -1,6 +1,6 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
-import { DORA_PERFORMERS_SCORE_PROJECT_ERROR } from 'ee/analytics/dashboards/dora_performers_score/constants';
+import { UNSUPPORTED_PROJECT_NAMESPACE_ERROR } from 'ee/analytics/dashboards/constants';
 import DoraPerformersScoreChart from 'ee/analytics/dashboards/dora_performers_score/components/dora_performers_score_chart.vue';
 import GroupOrProjectProvider from 'ee/analytics/dashboards/components/group_or_project_provider.vue';
 
@@ -32,7 +32,7 @@ export default {
     handleResolveNamespace({ isProject = false }) {
       if (isProject) {
         this.$emit('set-alerts', {
-          errors: [DORA_PERFORMERS_SCORE_PROJECT_ERROR],
+          errors: [UNSUPPORTED_PROJECT_NAMESPACE_ERROR],
           canRetry: false,
         });
       }

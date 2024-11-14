@@ -4,7 +4,11 @@ import {
   nMonthsBefore,
   toISODateFormat,
 } from '~/lib/utils/datetime_utility';
-import { SUPPORTED_DORA_METRICS } from 'ee/analytics/dashboards/constants';
+import {
+  GENERIC_DASHBOARD_ERROR,
+  UNSUPPORTED_PROJECT_NAMESPACE_ERROR,
+  SUPPORTED_DORA_METRICS,
+} from 'ee/analytics/dashboards/constants';
 import { percentChange } from 'ee/analytics/dashboards/utils';
 import DoraMetricsByProjectQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project.query.graphql';
 import { BUCKETING_INTERVAL_MONTHLY } from 'ee/analytics/dashboards/graphql/constants';
@@ -58,7 +62,17 @@ const fetchDoraMetricsQuery = async ({ namespace, startDate, endDate }) => {
   return { projects };
 };
 
-export default async function fetch({ namespace }) {
+export default async function fetch({ namespace, isProject, setAlerts }) {
+  if (isProject) {
+    setAlerts({
+      title: GENERIC_DASHBOARD_ERROR,
+      errors: [UNSUPPORTED_PROJECT_NAMESPACE_ERROR],
+      canRetry: false,
+    });
+
+    return undefined;
+  }
+
   const thisMonth = dateAtFirstDayOfMonth(new Date());
   const endDate = nDaysBefore(thisMonth, 1);
   const startDate = nMonthsBefore(thisMonth, 2);

@@ -191,10 +191,12 @@ export default {
           title: this.title,
           projectId: this.namespaceId,
           namespace: this.namespace,
+          isProject: this.isProject,
           query,
           queryOverrides,
           visualizationType: this.visualization.type,
           visualizationOptions: this.visualization.options,
+          setAlerts: this.setAlerts,
           filters,
           onRequestDelayed: () => {
             this.loadingDelayed = true;

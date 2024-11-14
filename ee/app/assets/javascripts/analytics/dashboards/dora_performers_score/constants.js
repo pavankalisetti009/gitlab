@@ -87,12 +87,4 @@ export const DORA_PERFORMERS_SCORE_LOADING_ERROR = s__(
   'DORA4Metrics|Failed to load DORA performance scores for Group: %{fullPath}',
 );
 
-export const DORA_PERFORMERS_SCORE_PROJECT_ERROR = s__(
-  'DORA4Metrics|This visualization is not supported for project namespaces.',
-);
-
-export const DORA_PERFORMERS_SCORE_NO_DATA = s__(
-  'DORA4Metrics|No data available for Group: %{fullPath}',
-);
-
 export const DORA_PERFORMERS_SCORE_CHART_COLOR_PALETTE = [GREEN_400, ORANGE_400, RED_400, GRAY_400];
