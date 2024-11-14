@@ -1,5 +1,74 @@
 /* eslint-disable @gitlab/require-i18n-strings */
 export const resolvers = {
+  Query: {
+    mockControls: () => ({
+      controls: [
+        {
+          id: 'scanner_sast_running',
+          name: 'SAST Running',
+          expression: {
+            field: 'scanner_sast_running',
+            operator: '=',
+            value: true,
+          },
+        },
+        {
+          id: 'minimum_approvals_required_2',
+          name: 'At least two approvals',
+          expression: {
+            field: 'minimum_approvals_required',
+            operator: '=',
+            value: 2,
+          },
+        },
+        {
+          id: 'minimum_approvals_required_3',
+          name: 'At least three approvals',
+          value: {
+            field: 'minimum_approvals_required',
+            operator: '=',
+            value: 3,
+          },
+        },
+        {
+          id: 'merge_request_prevent_author_approval',
+          name: 'Author approved merge request',
+          expression: {
+            field: 'merge_request_prevent_author_approval',
+            operator: '=',
+            value: true,
+          },
+        },
+        {
+          id: 'merge_request_prevent_committers_approval',
+          name: 'Committers approved merge request',
+          expression: {
+            field: 'merge_request_prevent_committers_approval',
+            operator: '=',
+            value: true,
+          },
+        },
+        {
+          id: 'project_visibility_not_internal',
+          name: 'Internal visibility is forbidden',
+          expression: {
+            field: 'project_visibility',
+            operator: '=',
+            value: 'internal',
+          },
+        },
+        {
+          id: 'default_branch_protected',
+          name: 'Default branch protected',
+          expression: {
+            field: 'default_branch_protected',
+            operator: '=',
+            value: true,
+          },
+        },
+      ],
+    }),
+  },
   ComplianceFramework: {
     mockRequirements: () => {
       return {
@@ -11,16 +80,23 @@ export const resolvers = {
             name: 'SOC2',
             description: 'Controls for SOC2',
             requirementType: 'internal',
-            controlExpression: {
-              __typename: 'ControlExpressionConnection',
-              nodes: [
+            controlExpression: `{
+              "operator": "AND",
+              "conditions": [
                 {
-                  id: 'gid://gitlab/Control/1',
-                  name: 'At least one non-author approval',
-                  __typename: 'ControlExpression',
+                  "id": "minimum_approvals_required_2",
+                  "field": "minimum_approvals_required",
+                  "operator": "=",
+                  "value": "2"
                 },
-              ],
-            },
+                {
+                  "id": "minimum_approvals_required_3",
+                  "field": "minimum_approvals_required",
+                  "operator": "=",
+                  "value": "3"
+                }
+              ]
+            }`,
           },
           {
             __typename: 'ComplianceRequirement',
@@ -28,26 +104,23 @@ export const resolvers = {
             name: 'GitLab',
             description: 'Controls used by GitLab',
             requirementType: 'internal',
-            controlExpression: {
-              __typename: 'ControlExpressionConnection',
-              nodes: [
+            controlExpression: `{
+              "operator": "AND",
+              "conditions": [
                 {
-                  id: 'gid://gitlab/Control/2',
-                  name: 'At least two approvals',
-                  __typename: 'ControlExpression',
+                  "id": "minimum_approvals_required_2",
+                  "field": "minimum_approvals_required",
+                  "operator": "=",
+                  "value": "2"
                 },
                 {
-                  id: 'gid://gitlab/Control/3',
-                  name: 'Prevent commiters as approvers',
-                  __typename: 'ControlExpression',
-                },
-                {
-                  id: 'gid://gitlab/Control/4',
-                  name: 'Prevent auhors as approvers',
-                  __typename: 'ControlExpression',
-                },
-              ],
-            },
+                  "id": "minimum_approvals_required_3",
+                  "field": "minimum_approvals_required",
+                  "operator": "=",
+                  "value": "3"
+                }
+              ]
+            }`,
           },
         ],
       };

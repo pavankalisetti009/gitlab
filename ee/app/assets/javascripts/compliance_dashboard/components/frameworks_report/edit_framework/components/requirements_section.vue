@@ -1,8 +1,11 @@
 <script>
 import { GlLoadingIcon, GlTable, GlButton } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+
 import { s__, __ } from '~/locale';
 import { emptyRequirement } from '../constants';
 
+import complianceRequirementControls from '../../../../graphql/compliance_requirement_controls.query.graphql';
 import EditSection from './edit_section.vue';
 import RequirementModal from './requirement_modal.vue';
 
@@ -20,10 +23,25 @@ export default {
       type: Array,
       required: true,
     },
+    isNewFramework: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  apollo: {
+    complianceRequirementControls: {
+      query: complianceRequirementControls,
+      update: (data) => data?.mockControls?.controls || [],
+      error(e) {
+        Sentry.captureException(e);
+        this.hasQueryError = true;
+      },
+    },
   },
   data() {
     return {
       requirementToEdit: {},
+      complianceRequirementControls: [],
     };
   },
   methods: {
@@ -32,6 +50,14 @@ export default {
       this.$nextTick(() => {
         this.$refs.requirementModal.show();
       });
+    },
+    getControls(controlExpression) {
+      const parsedExpression = JSON.parse(controlExpression);
+      return parsedExpression.conditions
+        .map((condition) =>
+          this.complianceRequirementControls.find((control) => control.id === condition.id),
+        )
+        .filter(Boolean);
     },
   },
   tableFields: [
@@ -92,14 +118,10 @@ export default {
       </template>
       <template #cell(controls)="{ item }">
         <ul
-          v-if="
-            item.controlExpression &&
-            item.controlExpression.nodes &&
-            item.controlExpression.nodes.length
-          "
+          v-if="item.controlExpression && getControls(item.controlExpression).length"
           class="gl-m-0 gl-p-0"
         >
-          <li v-for="control in item.controlExpression.nodes" :key="control.id">
+          <li v-for="control in getControls(item.controlExpression)" :key="control.id">
             {{ control.name }}
           </li>
         </ul>
@@ -121,7 +143,9 @@ export default {
     <requirement-modal
       v-if="requirementToEdit"
       ref="requirementModal"
+      :requirement-controls="complianceRequirementControls"
       :requirement="requirementToEdit"
+      :is-new-framework="isNewFramework"
       @save="$emit('save', $event)"
     />
   </edit-section>

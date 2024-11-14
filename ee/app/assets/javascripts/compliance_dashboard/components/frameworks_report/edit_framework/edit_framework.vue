@@ -1,10 +1,7 @@
 <script>
 import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
-
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-
 import { sprintf } from '~/locale';
-
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
 import {
   getSubmissionParams,
@@ -13,21 +10,17 @@ import {
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ROUTE_NEW_FRAMEWORK_SUCCESS } from '../../../constants';
-
 import { convertFrameworkIdToGraphQl } from '../../../utils';
-
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import deleteComplianceFrameworkMutation from '../../../graphql/mutations/delete_compliance_framework.mutation.graphql';
 import createComplianceRequirement from '../../../graphql/mutations/create_compliance_requirement.mutation.graphql';
 import getComplianceFrameworkQuery from './graphql/get_compliance_framework.query.graphql';
-
 import DeleteModal from './components/delete_modal.vue';
 import BasicInformationSection from './components/basic_information_section.vue';
 import RequirementsSection from './components/requirements_section.vue';
 import PoliciesSection from './components/policies_section.vue';
 import ProjectsSection from './components/projects_section.vue';
-
 import { i18n } from './constants';
 
 export default {
@@ -109,15 +102,12 @@ export default {
     isLoading() {
       return this.$apollo.loading || this.isSaving;
     },
-
     isNewFramework() {
       return !this.$route.params.id;
     },
-
     isDefaultFramework() {
       return this.formData.default;
     },
-
     hasLinkedPolicies() {
       return Boolean(
         this.formData.scanResultPolicies?.pageInfo.startCursor ||
@@ -125,17 +115,14 @@ export default {
           this.formData.pipelineExecutionPolicies?.pageInfo.startCursor,
       );
     },
-
     deleteBtnDisabled() {
       return this.hasLinkedPolicies || this.isDefaultFramework;
     },
-
     deleteBtnDisabledTooltip() {
       return this.isDefaultFramework
         ? i18n.deleteButtonDefaultFrameworkDisabledTooltip
         : i18n.deleteButtonLinkedPoliciesDisabledTooltip;
     },
-
     refetchConfig() {
       return {
         awaitRefetchQueries: true,
@@ -149,43 +136,35 @@ export default {
         ],
       };
     },
-
     title() {
       return this.isNewFramework
         ? this.$options.i18n.addFrameworkTitle
         : sprintf(this.$options.i18n.editFrameworkTitle, { frameworkName: this.originalName });
     },
-
     saveButtonText() {
       return this.isNewFramework
         ? this.$options.i18n.addSaveBtnText
         : this.$options.i18n.editSaveBtnText;
     },
-
     graphqlId() {
       return this.$route.params.id ? convertFrameworkIdToGraphQl(this.$route.params.id) : null;
     },
-
     disableSubmitBtn() {
       return !this.isBasicInformationValid;
     },
-
     shouldRenderPolicySection() {
       return !this.isNewFramework && this.featureSecurityPoliciesEnabled;
     },
   },
-
   methods: {
     setError(error, userFriendlyText, loadingProp = 'isSaving') {
       this[loadingProp] = false;
       this.errorMessage = userFriendlyText;
       Sentry.captureException(error);
     },
-
     navigateBack() {
       this.$router.back();
     },
-
     async createFramework(params) {
       const { data } = await this.$apollo.mutate({
         mutation: createComplianceFrameworkMutation,
@@ -206,7 +185,6 @@ export default {
 
       return framework.id;
     },
-
     async updateFramework(params) {
       const { data } = await this.$apollo.mutate({
         mutation: updateComplianceFrameworkMutation,
@@ -227,7 +205,6 @@ export default {
 
       return framework.id;
     },
-
     async onSubmit() {
       this.isSaving = true;
       this.errorMessage = '';
@@ -241,12 +218,11 @@ export default {
 
         if (this.isNewFramework) {
           frameworkId = await this.createFramework(params);
+          if (this.adherenceV2Enabled) {
+            await this.createRequirements(frameworkId);
+          }
         } else {
           frameworkId = await this.updateFramework(params);
-        }
-
-        if (this.adherenceV2Enabled) {
-          await this.createRequirements(frameworkId);
         }
 
         this.handleMutationSuccess(this.$route.params.id || frameworkId);
@@ -256,7 +232,6 @@ export default {
         this.isSaving = false;
       }
     },
-
     handleMutationSuccess(id) {
       if (this.isNewFramework) {
         this.$router.push({
@@ -275,24 +250,41 @@ export default {
       }
 
       const createRequirementPromises = newRequirements.map((requirement) =>
-        this.$apollo.mutate({
-          mutation: createComplianceRequirement,
-          variables: {
-            input: {
-              complianceFrameworkId: frameworkId,
-              params: {
-                name: requirement.name,
-                description: requirement.description,
-              },
-            },
-          },
-        }),
+        this.createRequirement(requirement, frameworkId),
       );
 
       await Promise.all(createRequirementPromises);
     },
-    updateRequirements(data) {
-      this.requirements.push(data);
+    async createRequirement(requirement, frameworkId) {
+      const { data } = await this.$apollo.mutate({
+        mutation: createComplianceRequirement,
+        variables: {
+          input: {
+            complianceFrameworkId: frameworkId,
+            params: {
+              name: requirement.name,
+              description: requirement.description,
+            },
+          },
+        },
+      });
+
+      const errors = data?.createComplianceRequirement?.errors;
+
+      if (errors && errors.length) {
+        throw new Error(errors[0]);
+      }
+    },
+    async updateRequirements(requirement) {
+      if (this.isNewFramework) {
+        this.requirements.push(requirement);
+      } else {
+        try {
+          await this.createRequirement(requirement, this.graphqlId);
+        } catch (error) {
+          this.setError(error, error);
+        }
+      }
     },
     async deleteFramework() {
       this.isDeleting = true;
@@ -324,7 +316,6 @@ export default {
       this.$refs.deleteModal.show();
     },
   },
-
   i18n,
 };
 </script>
@@ -350,8 +341,7 @@ export default {
         <requirements-section
           v-if="adherenceV2Enabled"
           :requirements="requirements"
-          :full-path="groupPath"
-          :graphql-id="graphqlId"
+          :is-new-framework="isNewFramework"
           @save="updateRequirements"
         />
 

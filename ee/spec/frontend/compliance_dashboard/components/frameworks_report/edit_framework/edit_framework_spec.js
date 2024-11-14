@@ -151,7 +151,6 @@ describe('Edit Framework Form', () => {
     it('does not pass hasMigratedPipeline prop to BasicInformationSection if relevant policy does not exists', async () => {
       wrapper = createComponent(mountExtended, {
         requestHandlers: [[getComplianceFrameworkQuery, createComplianceFrameworksReportResponse]],
-        /* id: 2 does not have attached policy, only id: 1 has */
         routeParams: { id: 2 },
       });
 
@@ -239,16 +238,17 @@ describe('Edit Framework Form', () => {
   });
 
   describe('Creating requirements', () => {
-    it('calls create requirement mutation after creating the framework if new requirements are added', async () => {
-      const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
+    let createRequirementMutationMock;
+    let createFrameworkMutationMock;
+    const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
 
-      const createFrameworkMutationMock = jest
-        .fn()
-        .mockResolvedValue(
-          createComplianceFrameworkMutationResponse('createComplianceFramework', 'framework'),
-        );
+    const requirements = [
+      { name: 'Requirement 1', description: 'Description 1' },
+      { name: 'Requirement 2', description: 'Description 2' },
+    ];
 
-      const createRequirementMutationMock = jest.fn().mockResolvedValue({
+    beforeEach(() => {
+      createRequirementMutationMock = jest.fn().mockResolvedValue({
         data: {
           createComplianceRequirement: {
             requirement: {
@@ -259,6 +259,14 @@ describe('Edit Framework Form', () => {
         },
       });
 
+      createFrameworkMutationMock = jest
+        .fn()
+        .mockResolvedValue(
+          createComplianceFrameworkMutationResponse('createComplianceFramework', 'framework'),
+        );
+    });
+
+    it('stores requirements locally when adding to a new framework and creates them after the framework is created', async () => {
       const stubHandlers = [
         [createComplianceFrameworkMutation, createFrameworkMutationMock],
         [createComplianceRequirement, createRequirementMutationMock],
@@ -276,16 +284,14 @@ describe('Edit Framework Form', () => {
       });
       await waitForPromises();
 
-      const requirements = [
-        { name: 'Requirement 1', description: 'Description 1' },
-        { name: 'Requirement 2', description: 'Description 2' },
-      ];
-
       const requirementsSection = wrapper.findComponent(RequirementsSection);
 
       requirements.forEach((requirement) => {
         requirementsSection.vm.$emit('save', requirement);
       });
+
+      expect(wrapper.vm.requirements).toEqual(requirements);
+      expect(createRequirementMutationMock).not.toHaveBeenCalled();
 
       const form = wrapper.find('form');
       await form.trigger('submit');
@@ -307,6 +313,80 @@ describe('Edit Framework Form', () => {
           }),
         );
       });
+    });
+
+    it('immediately calls create requirement mutation when adding a requirement to an existing framework', async () => {
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [createComplianceRequirement, createRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      requirements.forEach((requirement) => {
+        requirementsSection.vm.$emit('save', requirement);
+      });
+
+      await waitForPromises();
+
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(requirements.length);
+
+      requirements.forEach((requirement) => {
+        expect(createRequirementMutationMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            input: {
+              complianceFrameworkId: mockFrameworkId,
+              params: {
+                name: requirement.name,
+                description: requirement.description,
+              },
+            },
+          }),
+        );
+      });
+    });
+
+    it('handles errors during immediate requirement creation for existing frameworks', async () => {
+      const errorMessage = 'An error occurred';
+      createRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          createComplianceRequirement: {
+            requirement: null,
+            errors: [errorMessage],
+          },
+        },
+      });
+
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [createComplianceRequirement, createRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      requirementsSection.vm.$emit('save', requirements[0]);
+      await waitForPromises();
+
+      expect(createRequirementMutationMock).toHaveBeenCalledTimes(1);
+      expect(wrapper.vm.errorMessage.message).toBe(errorMessage);
     });
   });
 
