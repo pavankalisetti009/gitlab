@@ -147,6 +147,62 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       end
     end
 
+    describe '#number_of_active_fields_per_namespace_per_type' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:issue_type) { create(:work_item_type, :issue) }
+      let_it_be(:task_type) { create(:work_item_type, :task) }
+
+      before_all do
+        # Issue type under the limit
+        create(:custom_field, namespace: group, work_item_types: [issue_type])
+
+        # Custom field with issue type but from a different namespace
+        create(:custom_field, namespace: create(:group), work_item_types: [issue_type])
+
+        # Task type at the limit
+        create_list(:custom_field, 2, namespace: group, work_item_types: [task_type])
+      end
+
+      before do
+        stub_const("#{described_class}::MAX_ACTIVE_FIELDS_PER_TYPE", 2)
+      end
+
+      subject(:custom_field) { build(:custom_field, namespace: group, work_item_types: [issue_type]) }
+
+      it 'is valid when below the limit' do
+        expect(custom_field).to be_valid
+      end
+
+      it 'is not valid when type is already at the limit' do
+        custom_field.work_item_types = [task_type]
+
+        expect(custom_field).not_to be_valid
+        expect(custom_field.errors[:base]).to include(
+          "Work item type #{task_type.name} can only have a maximum of 2 active custom fields."
+        )
+      end
+
+      it 'is valid when field is inactive' do
+        custom_field.work_item_types = [task_type]
+        custom_field.archived_at = Time.current
+
+        expect(custom_field).to be_valid
+      end
+
+      context 'when updating an existing record' do
+        it 'is not valid when adding a type that is already at the limit' do
+          custom_field.save!
+
+          custom_field.work_item_types = [issue_type, task_type]
+
+          expect(custom_field).not_to be_valid
+          expect(custom_field.errors[:base]).to include(
+            "Work item type #{task_type.name} can only have a maximum of 2 active custom fields."
+          )
+        end
+      end
+    end
+
     describe '#selectable_field_type_with_select_options' do
       context 'when a select option exists' do
         before do

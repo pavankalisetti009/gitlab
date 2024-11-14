@@ -136,6 +136,21 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
         ])
         expect(updated_custom_field.updated_by_id).to eq(user.id)
       end
+
+      context 'when a work item type is over the limit' do
+        before do
+          stub_const('Issuables::CustomField::MAX_ACTIVE_FIELDS_PER_TYPE', 2)
+
+          create_list(:custom_field, 2, namespace: group, work_item_types: [issue_type])
+        end
+
+        it 'returns an error' do
+          expect(response).to be_error
+          expect(response.message).to contain_exactly(
+            "Work item type #{issue_type.name} can only have a maximum of 2 active custom fields."
+          )
+        end
+      end
     end
 
     context 'with existing work item types' do
