@@ -2,6 +2,7 @@ import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const maxNameLength = 255;
+export const maxControlsNumber = 5;
 export const emptyRequirement = {
   name: '',
   description: '',

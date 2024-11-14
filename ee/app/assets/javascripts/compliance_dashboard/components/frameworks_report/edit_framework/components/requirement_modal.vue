@@ -1,7 +1,17 @@
 <script>
-import { GlModal, GlFormInput, GlFormTextarea, GlFormGroup } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
-import { requirementDefaultValidationState } from '../constants';
+import {
+  GlBadge,
+  GlLink,
+  GlButton,
+  GlModal,
+  GlTooltip,
+  GlFormInput,
+  GlFormTextarea,
+  GlFormGroup,
+  GlCollapsibleListbox,
+} from '@gitlab/ui';
+import { s__, __, sprintf } from '~/locale';
+import { requirementDefaultValidationState, maxControlsNumber } from '../constants';
 
 export default {
   name: 'RequirementModal',
@@ -10,34 +20,63 @@ export default {
     GlFormInput,
     GlFormTextarea,
     GlFormGroup,
+    GlBadge,
+    GlLink,
+    GlButton,
+    GlTooltip,
+    GlCollapsibleListbox,
   },
   props: {
     requirement: {
       type: Object,
       required: true,
     },
+    requirementControls: {
+      type: Array,
+      required: true,
+    },
+    isNewFramework: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
       requirementData: null,
-      validation: {
-        ...requirementDefaultValidationState,
-      },
+      validation: { ...requirementDefaultValidationState },
+      controlIds: [],
+      searchQuery: '',
     };
   },
   computed: {
     title() {
       return this.requirementData?.id
-        ? this.$options.i18n.editTitle
+        ? this.$options.i18n.editText
         : this.$options.i18n.createTitle;
     },
+    disabledAddControlBtnText() {
+      return sprintf(
+        s__('ComplianceFrameworks|You can create a maximum of %{maxControlsNumber} controls'),
+        { maxControlsNumber },
+      );
+    },
+    controlItems() {
+      return this.requirementControls
+        .filter((control) => !this.controlIds.includes(control.id))
+        .filter((control) => control.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
+        .map(({ id, name }) => ({ value: id, text: name }));
+    },
     isFormValid() {
-      return Object.values(this.validation).every((field) => field === true);
+      return Object.values(this.validation).every(Boolean);
     },
     modalButtonProps() {
-      const text = this.requirementData?.id
-        ? this.$options.i18n.editButtonText
-        : this.$options.i18n.createButtonText;
+      const createButtonText = this.isNewFramework
+        ? this.$options.i18n.createButtonText
+        : this.$options.i18n.existingFrameworkButtonText;
+      const editButtonText = this.isNewFramework
+        ? this.$options.i18n.editText
+        : this.$options.i18n.existingFrameworkButtonText;
+      const text = this.requirementData?.id ? editButtonText : createButtonText;
       return {
         primary: {
           text,
@@ -48,53 +87,85 @@ export default {
         },
       };
     },
+    canAddControl() {
+      return this.controlIds.length < maxControlsNumber;
+    },
+    controlsLength() {
+      return this.controlIds.filter(Boolean).length;
+    },
   },
   watch: {
     requirement: {
       immediate: true,
       handler(newRequirement) {
         this.requirementData = { ...newRequirement };
-        this.validation = {
-          ...requirementDefaultValidationState,
-        };
+        this.initializeControlIds();
+        this.validation = { ...requirementDefaultValidationState };
       },
     },
   },
   methods: {
     show() {
       this.requirementData = { ...this.requirement };
-      this.validation = {
-        name: null,
-        description: null,
-      };
+      this.initializeControlIds();
+      this.validation = { ...requirementDefaultValidationState };
       this.$nextTick(() => {
         this.$refs.modal.show();
       });
     },
+    initializeControlIds() {
+      const conditions = this.requirementData.controlExpression
+        ? JSON.parse(this.requirementData.controlExpression)?.conditions
+        : [];
+      this.controlIds = conditions.length ? conditions.map((condition) => condition.id) : [null];
+    },
     validateField(key) {
-      if (!this.requirementData[key]) {
-        this.validation[key] = false;
-      } else {
-        this.validation[key] = true;
-      }
+      this.validation[key] = Boolean(this.requirementData[key]);
     },
     validateForm() {
-      Object.keys(this.validation).forEach((key) => this.validateField(key));
+      Object.keys(this.validation).forEach(this.validateField);
     },
     handleSubmit(event) {
       this.validateForm();
       if (this.isFormValid) {
+        const conditions = this.controlIds
+          .map((controlId) => this.requirementControls.find((ctrl) => ctrl.id === controlId))
+          .filter(Boolean)
+          .map((control) => ({ id: control.id, ...control.value }));
+
+        this.requirementData.controlExpression = conditions.length
+          ? JSON.stringify({ operator: 'AND', conditions })
+          : null;
+
         this.$emit('save', this.requirementData);
       } else {
         event.preventDefault();
       }
     },
+    getToggleText(controlId) {
+      const selectedItem = this.requirementControls.find((item) => item.id === controlId);
+      return selectedItem ? selectedItem.name : this.$options.i18n.toggleText;
+    },
+    getSelected(controlId) {
+      return controlId || null;
+    },
+    addControl() {
+      if (this.canAddControl) {
+        this.controlIds.push(null);
+      }
+    },
+    removeControl(index) {
+      this.controlIds.splice(index, 1);
+    },
+    onControlSelect(index, selectedValue) {
+      this.controlIds.splice(index, 1, selectedValue);
+    },
   },
   i18n: {
     createTitle: s__('ComplianceFrameworks|Create new requirement'),
-    editTitle: s__('ComplianceFrameworks|Edit requirement'),
+    editText: s__('ComplianceFrameworks|Edit requirement'),
     createButtonText: s__('ComplianceFrameworks|Create requirement'),
-    editButtonText: s__('ComplianceFrameworks|Edit requirement'),
+    existingFrameworkButtonText: s__('ComplianceFrameworks|Save changes to the framework'),
     nameInput: s__('ComplianceFrameworks|Name'),
     descriptionInput: s__('ComplianceFrameworks|Description'),
     controlsTitle: s__('ComplianceFrameworks|Controls'),
@@ -104,7 +175,7 @@ export default {
     learnMore: __('Learn more.'),
     nameInputInvalid: s__('ComplianceFrameworks|Name is required'),
     descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
-    addNewControl: s__('ComplianceFrameworks|Add a new control'),
+    addControl: s__('ComplianceFrameworks|Add another control'),
     toggleText: s__('ComplianceFrameworks|Choose a standard control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
   },
@@ -151,5 +222,57 @@ export default {
         :rows="5"
       />
     </gl-form-group>
+    <b>{{ $options.i18n.controlsTitle }}</b>
+    <gl-badge>{{ controlsLength }}</gl-badge>
+    <p>
+      {{ $options.i18n.controlsText }}
+      <gl-link href="#">{{ $options.i18n.learnMore }}</gl-link>
+    </p>
+
+    <div
+      v-for="(controlId, index) in controlIds"
+      :key="index"
+      class="gl-mb-5 gl-flex gl-justify-between"
+    >
+      <gl-collapsible-listbox
+        placement="bottom"
+        positioning-strategy="fixed"
+        boundary="viewport"
+        :data-testid="`control-select-${index}`"
+        :selected="getSelected(controlId)"
+        searchable
+        :toggle-text="getToggleText(controlId)"
+        :items="controlItems"
+        @select="onControlSelect(index, $event)"
+        @search="searchQuery = $event"
+      />
+
+      <gl-button
+        :aria-label="$options.i18n.removeControl"
+        category="tertiary"
+        icon="remove"
+        @click="removeControl(index)"
+      />
+    </div>
+
+    <gl-tooltip
+      v-if="!canAddControl"
+      placement="right"
+      :target="() => $refs.addControlBtn"
+      :title="disabledAddControlBtnText"
+    />
+    <div ref="addControlBtn" class="gl-inline-block">
+      <gl-button
+        size="small"
+        category="secondary"
+        variant="confirm"
+        class="gl-block"
+        data-testid="add-control-button"
+        :disabled="!canAddControl"
+        @click="addControl"
+      >
+        {{ $options.i18n.addControl }}
+      </gl-button>
+    </div>
   </gl-modal>
 </template>

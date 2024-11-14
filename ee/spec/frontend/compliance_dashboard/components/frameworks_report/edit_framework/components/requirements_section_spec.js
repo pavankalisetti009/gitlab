@@ -1,55 +1,7 @@
 import { GlTable } from '@gitlab/ui';
-
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
-
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-
-const mockRequirements = [
-  {
-    __typename: 'ComplianceRequirement',
-    id: 'gid://gitlab/Requirement/1',
-    name: 'SOC2',
-    description: 'Controls for SOC2',
-    requirementType: 'internal',
-    controlExpression: {
-      __typename: 'ControlExpressionConnection',
-      nodes: [
-        {
-          id: 'gid://gitlab/Control/1',
-          name: 'At least one non-author approval',
-          __typename: 'ControlExpression',
-        },
-      ],
-    },
-  },
-  {
-    __typename: 'ComplianceRequirement',
-    id: 'gid://gitlab/Requirement/2',
-    name: 'GitLab',
-    description: 'Controls used by GitLab',
-    requirementType: 'internal',
-    controlExpression: {
-      __typename: 'ControlExpressionConnection',
-      nodes: [
-        {
-          id: 'gid://gitlab/Control/2',
-          name: 'At least two approvals',
-          __typename: 'ControlExpression',
-        },
-        {
-          id: 'gid://gitlab/Control/3',
-          name: 'Prevent commiters as approvers',
-          __typename: 'ControlExpression',
-        },
-        {
-          id: 'gid://gitlab/Control/4',
-          name: 'Prevent auhors as approvers',
-          __typename: 'ControlExpression',
-        },
-      ],
-    },
-  },
-];
+import { mockRequirements } from 'ee_jest/compliance_dashboard/mock_data';
 
 describe('Requirements section', () => {
   let wrapper;
@@ -63,6 +15,7 @@ describe('Requirements section', () => {
     wrapper = mountExtended(RequirementsSection, {
       propsData: {
         requirements: mockRequirements,
+        isNewFramework: true,
       },
     });
   };
@@ -94,9 +47,6 @@ describe('Requirements section', () => {
 
       expect(frameworkRequirements[0]).toMatch(mockRequirements[idx].name);
       expect(frameworkRequirements[1]).toMatch(mockRequirements[idx].description);
-      expect(frameworkRequirements[2]).toMatch(
-        mockRequirements[idx].controlExpression.nodes[0].name,
-      );
     });
   });
   describe('Create requirement button', () => {
