@@ -45531,6 +45531,9 @@ msgstr ""
 msgid "Relates to"
 msgstr ""
 
+msgid "Relation import could not be created: %{errors}"
+msgstr ""
+
 msgid "Relation import tracker cannot be created for project with ongoing import"
 msgstr ""
 
