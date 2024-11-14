@@ -126,6 +126,9 @@ module API
           body = task.body
           file_too_large_with_origin_header! if body.size > MAX_BODY_SIZE
 
+          # we add expanded_ai_logging to header only if current user is internal user,
+          Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
+
           workhorse_headers =
             Gitlab::Workhorse.send_url(
               task.endpoint,
