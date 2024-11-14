@@ -1547,6 +1547,8 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       let_it_be(:restricted_project) { create(:project) }
       let_it_be(:ref1) { create(:issue, project: project).to_reference }
       let_it_be(:ref2) { create(:issue, project: project).to_reference }
+      let_it_be(:ref3) { create(:work_item, project: project).to_reference }
+      let_it_be(:ref4) { create(:work_item, :epic, namespace: group).to_reference }
 
       let(:target) { issue }
 
@@ -1555,7 +1557,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
 
       context 'with /blocks' do
-        let(:blocks_command) { "/blocks #{ref1} #{ref2}" }
+        let(:blocks_command) { "/blocks #{ref1} #{ref2} #{ref3} #{ref4}" }
 
         context 'with sufficient permissions' do
           before do
@@ -1565,7 +1567,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           it '/blocks is available' do
             _, explanations = service.explain(blocks_command, issue)
 
-            expect(explanations).to contain_exactly("Set this issue as blocking #{[ref1, ref2].to_sentence}.")
+            expect(explanations).to contain_exactly("Set this issue as blocking #{[ref1, ref2, ref3, ref4].to_sentence}.")
           end
 
           context 'when licensed feature is not available' do
@@ -1592,7 +1594,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
 
       context 'with /blocked_by' do
-        let(:blocked_by_command) { "/blocked_by #{ref1} #{ref2}" }
+        let(:blocked_by_command) { "/blocked_by #{ref1} #{ref2} #{ref3} #{ref4}" }
 
         context 'with sufficient permissions' do
           before do
@@ -1603,7 +1605,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
             _, explanations = service.explain(blocked_by_command, issue)
 
             expect(explanations)
-              .to contain_exactly("Set this issue as blocked by #{[ref1, ref2].to_sentence}.")
+              .to contain_exactly("Set this issue as blocked by #{[ref1, ref2, ref3, ref4].to_sentence}.")
           end
 
           context 'when licensed feature is not available' do
