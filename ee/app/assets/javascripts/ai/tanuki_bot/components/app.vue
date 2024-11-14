@@ -1,7 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { GlDuoChat } from '@gitlab/ui';
+import { DuoChat } from '@gitlab/duo-ui';
 import { v4 as uuidv4 } from 'uuid';
 import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
@@ -38,7 +38,7 @@ export default {
   SLASH_COMMANDS,
   helpPagePath: helpPagePath('policy/experiment-beta-support', { anchor: 'beta' }),
   components: {
-    GlDuoChat,
+    DuoChat,
     DuoChatCallout,
     TanukiBotSubscriptions,
   },
@@ -256,7 +256,7 @@ export default {
         @error="onError"
       />
 
-      <gl-duo-chat
+      <duo-chat
         id="duo-chat"
         :slash-commands="$options.SLASH_COMMANDS"
         :title="$options.i18n.gitlabChat"

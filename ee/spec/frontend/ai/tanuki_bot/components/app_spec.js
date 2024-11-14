@@ -1,4 +1,4 @@
-import { GlDuoChat } from '@gitlab/ui';
+import { DuoChat } from '@gitlab/duo-ui';
 import Vue, { nextTick } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 // eslint-disable-next-line no-restricted-imports
@@ -101,7 +101,7 @@ describeSkipVue3(skipReason, () => {
     });
   };
 
-  const findGlDuoChat = () => wrapper.findComponent(GlDuoChat);
+  const findDuoChat = () => wrapper.findComponent(DuoChat);
 
   beforeEach(() => {
     uuidv4.mockImplementation(() => UUIDMOCK);
@@ -154,16 +154,16 @@ describeSkipVue3(skipReason, () => {
     });
 
     it('renders the DuoChat component', () => {
-      expect(findGlDuoChat().exists()).toBe(true);
+      expect(findDuoChat().exists()).toBe(true);
     });
 
     it('sets correct `badge-type` and `badge-help-page-url` props on the chat component', () => {
-      expect(findGlDuoChat().props('badgeType')).toBe(null);
+      expect(findDuoChat().props('badgeType')).toBe(null);
     });
 
-    it('passes the correct slashCommands prop to GlDuoChat', () => {
+    it('passes the correct slashCommands prop to DuoChat', () => {
       createComponent();
-      expect(findGlDuoChat().props('slashCommands')).toEqual(MOCK_SLASH_COMMANDS);
+      expect(findDuoChat().props('slashCommands')).toEqual(MOCK_SLASH_COMMANDS);
     });
 
     it('renders the duo-chat-callout component', () => {
@@ -208,13 +208,13 @@ describeSkipVue3(skipReason, () => {
 
     describe('@chat-hidden', () => {
       beforeEach(async () => {
-        findGlDuoChat().vm.$emit('chat-hidden');
+        findDuoChat().vm.$emit('chat-hidden');
         await nextTick();
       });
 
       it('closes the chat on @chat-hidden', () => {
         expect(duoChatGlobalState.isShown).toBe(false);
-        expect(findGlDuoChat().exists()).toBe(false);
+        expect(findDuoChat().exists()).toBe(false);
       });
     });
 
@@ -229,12 +229,12 @@ describeSkipVue3(skipReason, () => {
       });
 
       it('does set loading to `true` for a message other than the reset or clear messages', () => {
-        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         expect(actionSpies.setLoading).toHaveBeenCalled();
       });
 
       it('starts the performance measurement when sending a prompt', () => {
-        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         expect(performance.mark).toHaveBeenCalledWith('prompt-sent');
       });
 
@@ -243,7 +243,7 @@ describeSkipVue3(skipReason, () => {
           propsData: { userId: MOCK_USER_ID, resourceId: null, projectId: 'project-123' },
         });
 
-        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
         await nextTick();
 
@@ -260,7 +260,7 @@ describeSkipVue3(skipReason, () => {
           propsData: { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID, projectId: null },
         });
 
-        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
         await nextTick();
 
@@ -276,7 +276,7 @@ describeSkipVue3(skipReason, () => {
         'does not set loading to `true` for "%s" message',
         async (msg) => {
           actionSpies.setLoading.mockReset();
-          findGlDuoChat().vm.$emit('send-chat-prompt', msg);
+          findDuoChat().vm.$emit('send-chat-prompt', msg);
           await nextTick();
           expect(actionSpies.setLoading).not.toHaveBeenCalled();
         },
@@ -289,7 +289,7 @@ describeSkipVue3(skipReason, () => {
       `(`with resourceId = $resourceId`, ({ resourceId, expectedResourceId }) => {
         it('calls correct GraphQL mutation with fallback to userId when input is submitted', async () => {
           createComponent({ propsData: { userId: MOCK_USER_ID, resourceId } });
-          findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+          findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
           await nextTick();
 
@@ -312,7 +312,7 @@ describeSkipVue3(skipReason, () => {
           queryHandlerMock.mockClear();
           actionSpies.addDuoChatMessage.mockClear();
 
-          findGlDuoChat().vm.$emit('send-chat-prompt', prompt);
+          findDuoChat().vm.$emit('send-chat-prompt', prompt);
 
           await waitForPromises();
 
@@ -334,7 +334,7 @@ describeSkipVue3(skipReason, () => {
 
         it('tracks the submission for prompts by default', async () => {
           createComponent();
-          findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+          findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
           await waitForPromises();
           expect(trackingSpy).toHaveBeenCalled();
@@ -343,7 +343,7 @@ describeSkipVue3(skipReason, () => {
           'does not track if the sent message is "%s"',
           async (msg) => {
             createComponent();
-            findGlDuoChat().vm.$emit('send-chat-prompt', msg);
+            findDuoChat().vm.$emit('send-chat-prompt', msg);
 
             await waitForPromises();
             expect(trackingSpy).not.toHaveBeenCalled();
@@ -390,7 +390,7 @@ describeSkipVue3(skipReason, () => {
     describe('@track-feedback', () => {
       it('calls the feedback GraphQL mutation when message is passed', async () => {
         createComponent();
-        findGlDuoChat().vm.$emit('track-feedback', feedbackData);
+        findDuoChat().vm.$emit('track-feedback', feedbackData);
 
         await waitForPromises();
         expect(duoUserFeedbackMutationHandlerMock).toHaveBeenCalledWith({
@@ -413,7 +413,7 @@ describeSkipVue3(skipReason, () => {
 
       it('updates Vuex store correctly when message is passed', async () => {
         createComponent();
-        findGlDuoChat().vm.$emit('track-feedback', feedbackData);
+        findDuoChat().vm.$emit('track-feedback', feedbackData);
 
         await waitForPromises();
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
@@ -451,7 +451,7 @@ describeSkipVue3(skipReason, () => {
         duoChatGlobalState.isShown = true;
         createComponent();
         await waitForPromises();
-        findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
