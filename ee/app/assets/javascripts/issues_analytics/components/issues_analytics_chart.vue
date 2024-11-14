@@ -164,7 +164,7 @@ export default {
       />
       <div v-if="chart" class="gl-flex gl-items-center">
         <gl-chart-legend :chart="chart" :series-info="legendSeriesInfo" />
-        <div class="gl-text-sm gl-text-gray-500">
+        <div class="gl-text-sm gl-text-subtle">
           {{ $options.i18n.seriesTotal }} {{ seriesTotal }}
           &#8226;
           {{ $options.i18n.seriesAvg }} {{ seriesAverage }}

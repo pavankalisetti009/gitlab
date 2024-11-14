@@ -65,17 +65,17 @@ export default {
     <div class="gl-grow">
       <h3 class="gl-m-0 gl-mb-1 gl-text-lg">
         {{ $options.i18n.preScanVerificationHeader }}
-        <span class="gl-ml-1 gl-text-base gl-font-normal gl-text-gray-500">
+        <span class="gl-ml-1 gl-text-base gl-font-normal gl-text-subtle">
           {{ $options.i18n.preScanVerificationLabel }}
         </span>
       </h3>
       <div data-testid="status-message">
-        <span v-if="isDefaultStatus" class="gl-text-gray-500">{{
+        <span v-if="isDefaultStatus" class="gl-text-subtle">{{
           $options.i18n.preScanVerificationDefaultText
         }}</span>
         <pipeline-details
           v-else
-          class="gl-text-gray-500"
+          class="gl-text-subtle"
           :status="status"
           :pipeline-id="pipelineId"
           :pipeline-path="pipelinePath"

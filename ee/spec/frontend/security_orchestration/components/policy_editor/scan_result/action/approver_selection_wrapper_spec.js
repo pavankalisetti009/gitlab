@@ -268,7 +268,7 @@ describe('ApproverSelectionWrapper', () => {
       });
 
       expect(findApproverTypeDropdownContent().classes()).not.toContain('!gl-cursor-default');
-      expect(findApproverTypeDropdownText().classes()).not.toContain('gl-text-gray-500');
+      expect(findApproverTypeDropdownText().classes()).not.toContain('gl-text-subtle');
     });
 
     it('renders disable state when items are not selected', () => {
@@ -280,7 +280,7 @@ describe('ApproverSelectionWrapper', () => {
       });
 
       expect(findApproverTypeDropdownContent().classes()).toContain('!gl-cursor-default');
-      expect(findApproverTypeDropdownText().classes()).toContain('gl-text-gray-500');
+      expect(findApproverTypeDropdownText().classes()).toContain('gl-text-subtle');
     });
   });
 });

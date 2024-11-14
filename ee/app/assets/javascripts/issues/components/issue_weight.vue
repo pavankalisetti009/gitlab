@@ -19,7 +19,7 @@ export default {
   <work-item-attribute
     wrapper-component="div"
     anchor-id="board-card-weight"
-    wrapper-component-class="board-card-info board-card-weight gl-mr-3 gl-inline-flex gl-cursor-help gl-items-center gl-align-bottom gl-text-sm gl-text-gray-500"
+    wrapper-component-class="board-card-info board-card-weight gl-mr-3 gl-inline-flex gl-cursor-help gl-items-center gl-align-bottom gl-text-sm gl-text-subtle"
     :title="`${weight}`"
     title-component-class="board-card-info-text"
     icon-name="weight"

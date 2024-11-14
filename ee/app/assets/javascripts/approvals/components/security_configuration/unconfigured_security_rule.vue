@@ -25,7 +25,7 @@ export default {
       <div class="gl-w-full">
         <rule-name class="!gl-text-left" :name="rule.name" />
 
-        <div class="!gl-text-left gl-text-gray-500">
+        <div class="!gl-text-left gl-text-subtle">
           <gl-sprintf :message="rule.description">
             <template #link="{ content }">
               <gl-link :href="rule.docsPath" target="_blank">{{ content }}</gl-link>

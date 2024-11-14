@@ -95,7 +95,7 @@ export default {
       </li>
     </ul>
 
-    <p v-else class="gl-text-gray-500">
+    <p v-else class="gl-text-subtle">
       {{
         s__(
           'ObservabilityMetrics|No related traces for the selected time. Select another data point and try again.',

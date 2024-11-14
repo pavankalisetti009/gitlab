@@ -110,7 +110,7 @@ export default {
   <div class="gl-mt-2">
     <p
       v-safe-html="collapsedSummary"
-      class="gl-mb-0 gl-text-gray-500"
+      class="gl-mb-0 gl-text-subtle"
       data-testid="collapsedSummaryText"
     ></p>
 

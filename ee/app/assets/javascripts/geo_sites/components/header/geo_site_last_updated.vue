@@ -58,7 +58,7 @@ export default {
 
 <template>
   <div class="gl-flex gl-items-center">
-    <span class="gl-text-gray-500" data-testid="last-updated-main-text">
+    <span class="gl-text-subtle" data-testid="last-updated-main-text">
       <gl-sprintf :message="$options.i18n.timeAgoMainText">
         <template #timeAgo>
           <time-ago :time="statusCheckTimestamp" />

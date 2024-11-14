@@ -46,7 +46,7 @@ export default {
       ].includes(this.status);
     },
     descriptionTextCssClass() {
-      return this.isFailedStatus ? 'gl-text-red-500' : 'gl-text-gray-500';
+      return this.isFailedStatus ? 'gl-text-red-500' : 'gl-text-subtle';
     },
   },
 };
@@ -65,7 +65,7 @@ export default {
     </div>
     <div class="gl-flex gl-items-start gl-gap-3 gl-pr-4">
       <div data-testid="pre-scan-step-content">
-        <p class="gl-m-0 gl-mb-2 gl-font-bold gl-text-gray-500">{{ step.header }}</p>
+        <p class="gl-m-0 gl-mb-2 gl-font-bold gl-text-subtle">{{ step.header }}</p>
         <p
           data-testid="pre-scan-step-text"
           class="gl-m-0 gl-leading-normal"

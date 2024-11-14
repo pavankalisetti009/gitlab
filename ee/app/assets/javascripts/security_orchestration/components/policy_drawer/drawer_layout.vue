@@ -104,7 +104,7 @@ export default {
       <div v-if="description" data-testid="custom-description-text">
         {{ description }}
       </div>
-      <div v-else class="gl-text-gray-500" data-testid="default-description-text">
+      <div v-else class="gl-text-subtle" data-testid="default-description-text">
         {{ $options.i18n.defaultDescription }}
       </div>
     </info-row>
@@ -136,7 +136,7 @@ export default {
       <div v-if="policy.enabled" class="gl-text-green-500" data-testid="enabled-status-text">
         <gl-icon name="check-circle-filled" class="gl-mr-3" />{{ statusLabel }}
       </div>
-      <div v-else class="gl-text-gray-500" data-testid="not-enabled-status-text">
+      <div v-else class="gl-text-subtle" data-testid="not-enabled-status-text">
         {{ statusLabel }}
       </div>
     </info-row>

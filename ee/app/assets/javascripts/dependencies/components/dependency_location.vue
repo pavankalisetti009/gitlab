@@ -67,7 +67,7 @@ export default {
 </script>
 
 <template>
-  <gl-intersperse separator=" / " class="gl-text-gray-500">
+  <gl-intersperse separator=" / " class="gl-text-subtle">
     <!-- We need to put an extra span to avoid separator between path & top level label -->
     <span>
       <component
@@ -107,7 +107,7 @@ export default {
         <!-- footer -->
         <div class="gl-mt-4">
           <gl-icon class="!gl-align-middle" name="information" :size="12" variant="info" />
-          <span class="gl-align-middle gl-text-gray-500">
+          <span class="gl-align-middle gl-text-subtle">
             {{ s__('Dependencies|There may be multiple paths') }}
           </span>
         </div>

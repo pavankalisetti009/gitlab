@@ -42,7 +42,7 @@ export default {
   <div>
     <div class="gl-text-gray-900" data-testid="corpus-name">
       {{ name }}
-      <span class="gl-text-gray-500" data-testid="file-size">({{ fileSize }})</span>
+      <span class="gl-text-subtle" data-testid="file-size">({{ fileSize }})</span>
     </div>
     <div class="gl-truncate">
       {{ $options.i18n.latestJob }}

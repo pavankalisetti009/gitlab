@@ -208,7 +208,7 @@ export default {
                 :id="item.value"
                 data-testid="list-item-text"
                 class="gl-pr-3"
-                :class="{ 'gl-text-gray-500': item.disabled }"
+                :class="{ 'gl-text-subtle': item.disabled }"
               >
                 {{ item.text }}
               </span>

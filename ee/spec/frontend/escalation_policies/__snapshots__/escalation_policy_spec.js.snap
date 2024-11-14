@@ -12,7 +12,7 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
       visible="true"
     >
       <p
-        class="gl-mb-5 gl-text-gray-500"
+        class="gl-mb-5 gl-text-subtle"
       >
         Description 1 lives here
       </p>

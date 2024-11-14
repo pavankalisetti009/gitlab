@@ -87,7 +87,7 @@ export default {
     <span
       ref="healthStatusRollUp"
       tabindex="0"
-      class="gl-flex gl-gap-3 gl-text-sm gl-font-normal gl-text-gray-500"
+      class="gl-flex gl-gap-3 gl-text-sm gl-font-normal gl-text-subtle"
     >
       <span class="gl-inline-flex gl-gap-1" data-testid="on-track-count">
         <gl-icon

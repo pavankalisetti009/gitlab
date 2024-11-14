@@ -208,13 +208,13 @@ export default {
               >
                 {{ severityGroup.type }}
               </span>
-              <span :class="{ 'gl-font-bold': isExpanded, 'gl-text-gray-500': isDisabled }">
+              <span :class="{ 'gl-font-bold': isExpanded, 'gl-text-subtle': isDisabled }">
                 {{ getProjectCountString(severityGroup) }}
               </span>
             </h5>
           </template>
           <template #sub-title>
-            <p class="gl-m-0 gl-ml-7 gl-pb-2 gl-text-gray-500">{{ severityGroup.warning }}</p>
+            <p class="gl-m-0 gl-ml-7 gl-pb-2 gl-text-subtle">{{ severityGroup.warning }}</p>
           </template>
           <div class="gl-ml-7 gl-pb-3">
             <ul class="list-unstyled gl-py-2">

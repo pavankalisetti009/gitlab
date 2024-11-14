@@ -96,7 +96,7 @@ export default {
             <span
               :id="item.value"
               class="gl-pr-3"
-              :class="{ 'gl-text-gray-500': filterDisabled(item.value) }"
+              :class="{ 'gl-text-subtle': filterDisabled(item.value) }"
             >
               {{ item.text }}
             </span>

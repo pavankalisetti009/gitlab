@@ -66,7 +66,7 @@ export default {
     :stars-count="starsCount"
   >
     <template #modal-footer>
-      <p class="gl-mb-0 gl-mt-3 gl-flex gl-items-center gl-text-gray-500">
+      <p class="gl-mb-0 gl-mt-3 gl-flex gl-items-center gl-text-subtle">
         <gl-sprintf :message="$options.strings.restoreMessage">
           <template #date>{{ delayedDeletionDate }}</template>
         </gl-sprintf>

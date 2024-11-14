@@ -7,7 +7,7 @@ exports[`Name component renders name with correct file size 1`] = `
 >
   Corpus-sample-1-13830-23932
   <span
-    class="gl-text-gray-500"
+    class="gl-text-subtle"
     data-testid="file-size"
   >
     (400 MB)
@@ -22,7 +22,7 @@ exports[`Name component renders the latest job 1`] = `
 >
   Corpus-sample-1-13830-23932
   <span
-    class="gl-text-gray-500"
+    class="gl-text-subtle"
     data-testid="file-size"
   >
     (400 MB)
@@ -37,7 +37,7 @@ exports[`Name component without job path renders a - string instead of a link 1`
 >
   Corpus-sample-3-1431-4425
   <span
-    class="gl-text-gray-500"
+    class="gl-text-subtle"
     data-testid="file-size"
   >
     (321 MB)

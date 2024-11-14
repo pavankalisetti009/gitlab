@@ -38,7 +38,7 @@ export default {
     <h5 class="gl-mb-2 gl-mt-0 gl-text-secondary" data-testid="empty-state-header">
       {{ emptyStateHeader }}
     </h5>
-    <span class="gl-text-center gl-text-gray-500">
+    <span class="gl-text-center gl-text-subtle">
       {{ $options.i18n.emptyStateContent }}
     </span>
     <gl-button

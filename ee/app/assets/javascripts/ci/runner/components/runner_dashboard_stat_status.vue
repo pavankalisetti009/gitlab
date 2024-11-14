@@ -47,7 +47,7 @@ export default {
         case STATUS_ONLINE:
           return { class: 'gl-text-green-500', name: 'status-active' };
         case STATUS_OFFLINE:
-          return { class: 'gl-text-gray-500', name: 'status-waiting' };
+          return { class: 'gl-text-subtle', name: 'status-waiting' };
         default:
           return null;
       }

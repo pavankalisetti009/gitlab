@@ -183,7 +183,7 @@ export default {
         @hidden="bodyClass = 'gl-p-0'"
         @show="bodyClass = 'gl-p-5'"
       >
-        <p v-if="policy.description" class="gl-mb-5 gl-text-gray-500">
+        <p v-if="policy.description" class="gl-mb-5 gl-text-subtle">
           {{ policy.description }}
         </p>
         <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-p-5">

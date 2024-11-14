@@ -35,12 +35,12 @@ exports[`JiraIssuesNote template renders note 1`] = `
           Justin Ho
         </gl-link-stub>
         <span
-          class="gl-mr-2 gl-text-gray-500"
+          class="gl-mr-2 gl-text-subtle"
         >
           ·
         </span>
         <gl-link-stub
-          class="gl-text-gray-500"
+          class="gl-text-subtle"
           data-testid="time-ago-link"
           href="#"
         >

@@ -116,7 +116,7 @@ export default {
     @primary="copySnippet"
     @secondary="copySnippet(false)"
   >
-    <p class="gl-text-gray-500" data-testid="configuration-modal-help-text">
+    <p class="gl-text-subtle" data-testid="configuration-modal-help-text">
       <gl-sprintf :message="$options.i18n.helpText">
         <template #link="{ content }">
           <gl-link :href="ciYamlEditUrl" target="_blank">

@@ -151,7 +151,7 @@ export default {
           <div>@{{ selected.username }}</div>
         </div>
       </div>
-      <div v-else class="gl-text-gray-500">{{ $options.i18n.anyAssignee }}</div>
+      <div v-else class="gl-text-subtle">{{ $options.i18n.anyAssignee }}</div>
     </div>
 
     <dropdown-widget

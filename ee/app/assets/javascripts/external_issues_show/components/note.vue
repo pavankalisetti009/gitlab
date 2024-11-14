@@ -79,15 +79,15 @@ export default {
           <gl-link
             v-if="authorUsername"
             :href="authorWebUrl"
-            class="gl-mr-2 gl-whitespace-nowrap gl-text-gray-500"
+            class="gl-mr-2 gl-whitespace-nowrap gl-text-subtle"
             data-testid="author-username"
           >
             @{{ authorUsername }}
           </gl-link>
 
-          <span class="gl-mr-2 gl-text-gray-500">·</span>
+          <span class="gl-mr-2 gl-text-subtle">·</span>
 
-          <gl-link class="gl-text-gray-500" :href="noteAnchor" data-testid="time-ago-link">
+          <gl-link class="gl-text-subtle" :href="noteAnchor" data-testid="time-ago-link">
             <time-ago-tooltip :time="noteCreatedAt" tooltip-placement="bottom" />
           </gl-link>
         </div>

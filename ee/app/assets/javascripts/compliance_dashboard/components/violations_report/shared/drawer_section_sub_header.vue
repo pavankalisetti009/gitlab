@@ -10,7 +10,7 @@ export default {
 };
 </script>
 <template>
-  <p class="gl-text-gray-500" :class="{ 'gl-mb-4': !isEmpty, 'gl-mb-0': isEmpty }">
+  <p class="gl-text-subtle" :class="{ 'gl-mb-4': !isEmpty, 'gl-mb-0': isEmpty }">
     <slot></slot>
   </p>
 </template>

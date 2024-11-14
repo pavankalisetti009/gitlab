@@ -66,7 +66,7 @@ export default {
       <gl-button v-if="!feedbackReceived" variant="link" @click="$refs.feedbackModal.show()">{{
         feedbackLinkText
       }}</gl-button>
-      <span v-else class="gl-text-gray-500">
+      <span v-else class="gl-text-subtle">
         {{ $options.i18n.GENIE_CHAT_FEEDBACK_THANKS }}
       </span>
     </div>

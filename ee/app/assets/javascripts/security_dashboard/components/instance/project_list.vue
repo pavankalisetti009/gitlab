@@ -64,7 +64,7 @@ export default {
 <template>
   <section>
     <h5
-      class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-3 gl-font-bold gl-text-gray-500 gl-border-b-solid"
+      class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-3 gl-font-bold gl-text-subtle gl-border-b-solid"
     >
       {{ $options.i18n.projectsAdded }}
       <gl-badge class="gl-font-bold">{{ projects.length }}</gl-badge>
@@ -93,7 +93,7 @@ export default {
         />
       </li>
     </ul>
-    <p v-else class="js-projects-list-empty-message gl-text-gray-500" data-testid="empty-message">
+    <p v-else class="js-projects-list-empty-message gl-text-subtle" data-testid="empty-message">
       {{ $options.i18n.emptyMessage }}
     </p>
   </section>

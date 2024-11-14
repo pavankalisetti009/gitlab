@@ -72,7 +72,7 @@ exports[`DrawerLayout component not enabled policy matches the snapshots 1`] = `
     label="Description"
   >
     <div
-      class="gl-text-gray-500"
+      class="gl-text-subtle"
       data-testid="default-description-text"
     >
       No description
@@ -96,7 +96,7 @@ exports[`DrawerLayout component not enabled policy matches the snapshots 1`] = `
     label="Status"
   >
     <div
-      class="gl-text-gray-500"
+      class="gl-text-subtle"
       data-testid="not-enabled-status-text"
     >
       Not enabled

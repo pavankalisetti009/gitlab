@@ -45,7 +45,7 @@ export default {
           <span class="gl-mr-2 gl-border-1 gl-border-gray-100 gl-pr-3 gl-border-r-solid">
             {{ column.title }}
             <span class="gl-font-bold"
-              >{{ percent(column.value) }}<small class="gl-text-gray-500">%</small></span
+              >{{ percent(column.value) }}<small class="gl-text-subtle">%</small></span
             >
           </span>
           <gl-sprintf :message="__('%{count} of %{total}')">
