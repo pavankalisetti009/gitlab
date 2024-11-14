@@ -18,7 +18,7 @@ module CloudConnector
       override :access_token
       def access_token(resource = nil, extra_claims: {})
         if Feature.enabled?(:cloud_connector_jwt_replace, gitlab_org_group)
-          ::Gitlab::CloudConnector::JSONWebToken.new(
+          ::Gitlab::CloudConnector::JsonWebToken.new(
             issuer: Doorkeeper::OpenidConnect.configuration.issuer,
             audience: backend,
             subject: Gitlab::CurrentSettings.uuid,

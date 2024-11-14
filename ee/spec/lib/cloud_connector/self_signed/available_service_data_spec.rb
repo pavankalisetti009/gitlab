@@ -34,7 +34,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
     shared_examples 'issue a token with scopes' do
       let(:expected_token) do
-        instance_double('Gitlab::CloudConnector::JSONWebToken')
+        instance_double('Gitlab::CloudConnector::JsonWebToken')
       end
 
       before do
@@ -44,7 +44,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
       end
 
       it 'returns the encoded token' do
-        expect(Gitlab::CloudConnector::JSONWebToken).to receive(:new).with(
+        expect(Gitlab::CloudConnector::JsonWebToken).to receive(:new).with(
           issuer: issuer,
           audience: backend,
           subject: instance_id,
