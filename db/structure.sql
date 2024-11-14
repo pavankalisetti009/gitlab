@@ -21357,7 +21357,6 @@ CREATE TABLE vulnerability_occurrences (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     severity smallint NOT NULL,
-    confidence smallint,
     report_type smallint NOT NULL,
     project_id bigint NOT NULL,
     scanner_id bigint NOT NULL,

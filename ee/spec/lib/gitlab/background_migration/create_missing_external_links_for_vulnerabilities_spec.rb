@@ -346,7 +346,6 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
       author_id: user.id,
       title: 'test',
       severity: 1,
-      confidence: 1,
       report_type: 1
     }.merge(overrides))
   end
@@ -356,7 +355,6 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
       project_id: project.id,
       scanner_id: scanner.id,
       severity: 5, # medium
-      confidence: 2, # unknown,
       report_type: 99, # generic
       primary_identifier_id: create_identifier.id,
       project_fingerprint: SecureRandom.hex(20),
