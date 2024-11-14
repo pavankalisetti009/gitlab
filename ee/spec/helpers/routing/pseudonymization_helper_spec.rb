@@ -139,4 +139,15 @@ RSpec.describe ::Routing::PseudonymizationHelper do
       it_behaves_like 'masked url'
     end
   end
+
+  describe '#masked_referrer_url' do
+    context 'with issues analytics controller' do
+      let(:original_url) { "http://localhost/groups/#{group.full_path}/-/issues_analytics" }
+      let(:masked_url) { 'http://localhost/groups/group/-/issues_analytics' }
+
+      it 'masks sensitive parameters in the URL for groups/issues_analytics controller' do
+        expect(helper.masked_referrer_url(original_url)).to eq(masked_url)
+      end
+    end
+  end
 end
