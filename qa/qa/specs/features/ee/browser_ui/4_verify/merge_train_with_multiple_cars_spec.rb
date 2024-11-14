@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Verify', :runner, product_group: :pipeline_execution do
+  RSpec.describe 'Verify', :runner, product_group: :pipeline_execution, quarantine: {
+    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/503711',
+    type: :flaky
+  } do
     describe 'Merge train with multiple cars' do
       let!(:project) { create(:project, name: 'merge-train-with-multiple-cars') }
       let(:executor) { "qa-runner-#{random_string}" }
