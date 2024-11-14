@@ -12,7 +12,7 @@
       = _("About your company")
     #js-registrations-company-form{ data: create_company_form_data(onboarding_status) }
 
-  - if onboarding_status.initial_trial?
+  - if onboarding_status.show_company_form_illustration?
     .col-md-4.company-illustration{ data: { testid: 'trial-registration-column' } }
       = image_tag 'illustrations/saas-trial-illustration.svg', alt: '', class: 'gl-hidden md:gl-inline gl-w-full'
   - else

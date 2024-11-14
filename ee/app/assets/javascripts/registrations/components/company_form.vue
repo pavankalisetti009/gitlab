@@ -41,9 +41,8 @@ export default {
       type: String,
       default: '',
     },
-    initialTrial: {
-      type: Boolean,
-      default: false,
+    formType: {
+      type: String,
     },
     trackActionForErrors: {
       type: String,
@@ -70,19 +69,6 @@ export default {
         },
         ...companySizes,
       ];
-    },
-    descriptionText() {
-      return this.initialTrial
-        ? this.$options.i18n.description.trial
-        : this.$options.i18n.description.registration;
-    },
-    submitButtonText() {
-      return this.initialTrial
-        ? this.$options.i18n.formSubmitText.trial
-        : this.$options.i18n.formSubmitText.registration;
-    },
-    footerText() {
-      return this.initialTrial ? '' : this.$options.i18n.footerDescriptionRegistration;
     },
   },
   mounted() {
@@ -111,7 +97,10 @@ export default {
       trial: GENERIC_TRIAL_FORM_SUBMIT_TEXT,
       registration: ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
     },
-    footerDescriptionRegistration: ULTIMATE_TRIAL_FOOTER_DESCRIPTION,
+    footerDescriptionRegistration: {
+      trial: '',
+      registration: ULTIMATE_TRIAL_FOOTER_DESCRIPTION,
+    },
   },
 };
 </script>
@@ -119,7 +108,7 @@ export default {
 <template>
   <gl-form :action="submitPath" method="post" @submit="trackCompanyForm">
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <p data-testid="description" class="gl-mt-2">{{ descriptionText }}</p>
+    <p data-testid="description" class="gl-mt-2">{{ $options.i18n.description[formType] }}</p>
     <div class="gl-mt-6 gl-flex gl-flex-col sm:gl-flex-row">
       <gl-form-group
         :label="$options.i18n.firstNameLabel"
@@ -220,10 +209,10 @@ export default {
       />
     </gl-form-group>
     <gl-button type="submit" variant="confirm" class="gl-w-full">
-      {{ submitButtonText }}
+      {{ $options.i18n.formSubmitText[formType] }}
     </gl-button>
     <p data-testid="footer_description_text" class="gl-mt-3 gl-text-sm gl-text-subtle">
-      {{ footerText }}
+      {{ $options.i18n.footerDescriptionRegistration[formType] }}
     </p>
   </gl-form>
 </template>

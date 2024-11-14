@@ -11,15 +11,14 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
   context 'for delegations' do
     subject { described_class.new({}, nil, nil) }
 
+    it { is_expected.to delegate_method(:company_form_type).to(:registration_type) }
     it { is_expected.to delegate_method(:tracking_label).to(:registration_type) }
-    it { is_expected.to delegate_method(:product_interaction).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_label_text).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_help_text).to(:registration_type) }
+    it { is_expected.to delegate_method(:show_company_form_illustration?).to(:registration_type) }
     it { is_expected.to delegate_method(:redirect_to_company_form?).to(:registration_type) }
-    it { is_expected.to delegate_method(:eligible_for_iterable_trigger?).to(:registration_type) }
     it { is_expected.to delegate_method(:show_joining_project?).to(:registration_type) }
     it { is_expected.to delegate_method(:hide_setup_for_company_field?).to(:registration_type) }
-    it { is_expected.to delegate_method(:apply_trial?).to(:registration_type) }
     it { is_expected.to delegate_method(:read_from_stored_user_location?).to(:registration_type) }
     it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
   end
@@ -52,6 +51,15 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
 
       it { is_expected.to eq(params.slice(:role, :registration_objective).permit!) }
     end
+  end
+
+  describe '.glm_tracking_attributes' do
+    let(:params) { ActionController::Parameters.new(glm_source: 'source', glm_content: 'content', extra: 'param') }
+    let(:expected_params) { { glm_source: 'source', glm_content: 'content' }.stringify_keys }
+
+    subject { described_class.glm_tracking_attributes(params) }
+
+    it { is_expected.to eq(expected_params) }
   end
 
   describe '.registration_path_params' do
@@ -219,20 +227,10 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
   end
 
   describe '#registration_type' do
-    where(:registration_type, :expected_klass) do
-      'free'         | ::Onboarding::FreeRegistration
-      nil            | ::Onboarding::FreeRegistration
-      'trial'        | ::Onboarding::TrialRegistration
-      'invite'       | ::Onboarding::InviteRegistration
-      'subscription' | ::Onboarding::SubscriptionRegistration
-    end
+    let(:current_user) { build(:user) }
 
-    with_them do
-      let(:current_user) { build(:user, onboarding_status_registration_type: registration_type) }
-
-      specify do
-        expect(described_class.new({}, nil, current_user).registration_type).to eq expected_klass
-      end
+    it 'provides the class for the registration type' do
+      expect(described_class.new({}, nil, current_user).registration_type).to eq ::Onboarding::FreeRegistration
     end
   end
 
@@ -294,75 +292,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       subject { instance.joining_a_project? }
 
       it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '#initial_trial?' do
-    let(:user_with_initial_trial) { build_stubbed(:user, onboarding_status_initial_registration_type: 'trial') }
-    let(:user_with_initial_free) { build_stubbed(:user, onboarding_status_initial_registration_type: 'free') }
-
-    before do
-      stub_saas_features(onboarding: true)
-    end
-
-    where(:current_user, :expected_result) do
-      ref(:user)                    | false
-      ref(:user_with_initial_trial) | true
-      ref(:user_with_initial_free)  | false
-    end
-
-    with_them do
-      let(:instance) { described_class.new(nil, nil, current_user) }
-
-      subject { instance.initial_trial? }
-
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '#company_lead_product_interaction' do
-    before do
-      stub_saas_features(onboarding: true)
-    end
-
-    subject { described_class.new(nil, nil, user).company_lead_product_interaction }
-
-    context 'when it is a true trial registration' do
-      let(:user) do
-        build_stubbed(
-          :user, onboarding_status_initial_registration_type: 'trial', onboarding_status_registration_type: 'trial'
-        )
-      end
-
-      it { is_expected.to eq('SaaS Trial') }
-    end
-
-    context 'when it is an automatic trial registration' do
-      it { is_expected.to eq('SaaS Trial - defaulted') }
-    end
-
-    context 'when it is initially free registration_type' do
-      let(:current_user) { build_stubbed(:user) { |u| u.onboarding_status_initial_registration_type = 'free' } }
-
-      context 'when it has trial set from params' do
-        it { is_expected.to eq('SaaS Trial - defaulted') }
-      end
-
-      context 'when it does not have trial set from params' do
-        let(:params) { {} }
-
-        it { is_expected.to eq('SaaS Trial - defaulted') }
-      end
-
-      context 'when it is now a trial registration_type' do
-        let(:params) { {} }
-
-        before do
-          current_user.onboarding_status_registration_type = 'trial'
-        end
-
-        it { is_expected.to eq('SaaS Trial - defaulted') }
-      end
     end
   end
 

@@ -127,35 +127,25 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
       end
 
       context 'when onboarding is ended' do
-        context 'when it is an invite registration' do
-          before do
-            user.update!(onboarding_in_progress: true, onboarding_status_registration_type: 'invite')
-          end
+        let(:params) { { onboarding_in_progress: false } }
 
-          it 'ends onboarding' do
-            expect { execute }.to change { user.onboarding_in_progress }.from(true).to(false)
-          end
+        before do
+          user.update!(onboarding_in_progress: true)
         end
 
-        context 'when it is in oauth flow' do
-          let(:user_return_to) { ::Gitlab::Routing.url_helpers.oauth_authorization_path }
-
-          before do
-            user.update!(onboarding_in_progress: true, onboarding_status_registration_type: 'free')
-          end
-
-          it 'ends onboarding' do
-            expect { execute }.to change { user.onboarding_in_progress }.from(true).to(false)
-          end
+        it 'ends onboarding' do
+          expect { execute }.to change { user.onboarding_in_progress }.from(true).to(false)
         end
       end
 
       context 'when onboarding continues' do
+        let(:params) { { onboarding_in_progress: true } }
+
         before do
-          user.update!(onboarding_in_progress: true, onboarding_status_registration_type: 'free')
+          user.update!(onboarding_in_progress: true)
         end
 
-        it 'ends onboarding' do
+        it 'does not end onboarding' do
           expect { execute }.not_to change { user.onboarding_in_progress }
         end
       end

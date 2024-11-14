@@ -45,7 +45,7 @@ module GitlabSubscriptions
     end
 
     def build_product_interaction
-      @product_interaction = ::Onboarding::Status.new(@params, nil, user).company_lead_product_interaction
+      @product_interaction = ::Onboarding::UserStatus.new(user).product_interaction
     end
   end
 end

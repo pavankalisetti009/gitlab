@@ -19,6 +19,7 @@ describe('CompanyForm', () => {
           lastName: 'Doe',
         },
         trackActionForErrors: '_trackActionForErrors_',
+        formType: 'registration',
         ...provideData,
       },
     });
@@ -49,9 +50,9 @@ describe('CompanyForm', () => {
     });
   });
 
-  describe('when initialTrial is true', () => {
+  describe('when formType is trial', () => {
     beforeEach(() => {
-      wrapper = createComponent({ initialTrial: true });
+      wrapper = createComponent({ formType: 'trial' });
     });
 
     it('displays correct description text', () => {
@@ -69,7 +70,7 @@ describe('CompanyForm', () => {
     });
   });
 
-  describe('when initialTrial is false', () => {
+  describe('when formType is registration', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
