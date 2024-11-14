@@ -4,14 +4,18 @@ require 'spec_helper'
 
 RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
-  let(:initial_trial?) { false }
+  let(:show_company_form_illustration?) { false }
   let(:onboarding_status) do
-    instance_double(::Onboarding::Status, initial_trial?: initial_trial?, tracking_label: 'free_registration')
+    instance_double(
+      ::Onboarding::Status,
+      company_form_type: 'registration',
+      show_company_form_illustration?: show_company_form_illustration?,
+      tracking_label: 'free_registration'
+    )
   end
 
   before do
-    allow(view).to receive(:current_user).and_return(user)
-    allow(view).to receive(:onboarding_status).and_return(onboarding_status)
+    allow(view).to receive_messages(current_user: user, onboarding_status: onboarding_status)
   end
 
   describe 'Google Tag Manager' do
@@ -43,7 +47,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
 
   describe 'when page is rendered' do
     context 'when a user is coming from a trial registration' do
-      let(:initial_trial?) { true }
+      let(:show_company_form_illustration?) { true }
 
       it 'renders correctly' do
         render
@@ -53,7 +57,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
     end
 
     context 'when a user is coming from a free registration' do
-      let(:initial_trial?) { false }
+      let(:show_company_form_illustration?) { false }
 
       it 'renders correctly' do
         render
@@ -64,9 +68,7 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   end
 
   def stub_devise
-    allow(view).to receive(:devise_mapping).and_return(Devise.mappings[:user])
-    allow(view).to receive(:resource).and_return(spy)
-    allow(view).to receive(:resource_name).and_return(:user)
+    allow(view).to receive_messages(devise_mapping: Devise.mappings[:user], resource: spy, resource_name: :user)
   end
 
   def expect_to_see_trial_column

@@ -6,7 +6,7 @@ module Users
       @user = current_user
       @user_return_to = user_return_to
       @params = params.dup
-      set_onboarding_status
+      set_onboarding_user_status
     end
 
     def execute
@@ -14,8 +14,8 @@ module Users
       inject_validators
 
       if @user.save
-        reset_onboarding_status # needed in case registration_type is changed on update
-        trigger_iterable_creation if onboarding_status.eligible_for_iterable_trigger?
+        reset_onboarding_user_status # needed in case registration_type is changed on update
+        trigger_iterable_creation if onboarding_user_status.eligible_for_iterable_trigger?
 
         ServiceResponse.success(payload: payload)
       else
@@ -34,16 +34,16 @@ module Users
 
     private
 
-    attr_reader :user, :user_return_to, :onboarding_status
+    attr_reader :user, :user_return_to, :onboarding_user_status
 
     def payload
       { user: user }
     end
 
-    def set_onboarding_status
-      @onboarding_status = Onboarding::Status.new({}, user_return_to, user)
+    def set_onboarding_user_status
+      @onboarding_user_status = Onboarding::UserStatus.new(user)
     end
-    alias_method :reset_onboarding_status, :set_onboarding_status
+    alias_method :reset_onboarding_user_status, :set_onboarding_user_status
 
     def trigger_iterable_creation
       ::Onboarding::CreateIterableTriggerWorker.perform_async(iterable_params.stringify_keys)
@@ -56,7 +56,7 @@ module Users
         uid: user.id,
         comment: params[:jobs_to_be_done_other],
         jtbd: user.registration_objective,
-        product_interaction: onboarding_status.product_interaction,
+        product_interaction: onboarding_user_status.product_interaction,
         opt_in: user.onboarding_status_email_opt_in,
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
         setup_for_company: user.setup_for_company,
@@ -69,7 +69,7 @@ module Users
     end
 
     def user_params
-      params.except(:jobs_to_be_done_other).merge(onboarding_in_progress: onboarding_status.continue_full_onboarding?)
+      params.except(:jobs_to_be_done_other)
     end
 
     def inject_validators

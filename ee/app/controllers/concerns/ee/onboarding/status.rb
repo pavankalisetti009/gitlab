@@ -5,26 +5,19 @@ module EE
     module Status
       extend ::Gitlab::Utils::Override
 
-      REGISTRATION_KLASSES = {
-        ::Onboarding::REGISTRATION_TYPE[:free] => ::Onboarding::FreeRegistration,
-        ::Onboarding::REGISTRATION_TYPE[:trial] => ::Onboarding::TrialRegistration,
-        ::Onboarding::REGISTRATION_TYPE[:invite] => ::Onboarding::InviteRegistration,
-        ::Onboarding::REGISTRATION_TYPE[:subscription] => ::Onboarding::SubscriptionRegistration
-      }.freeze
-
       GLM_PARAMS = [:glm_source, :glm_content].freeze
       PASSED_THROUGH_PARAMS = [:role, :registration_objective, :jobs_to_be_done_other].freeze
 
       attr_reader :registration_type, :user_return_to
 
       # string delegations
-      delegate :tracking_label, :product_interaction, to: :registration_type
+      delegate :tracking_label, :company_form_type, to: :registration_type
       # translation delegations
       delegate :setup_for_company_label_text, to: :registration_type
       delegate :setup_for_company_help_text, to: :registration_type
       # predicate delegations
-      delegate :redirect_to_company_form?, :eligible_for_iterable_trigger?, to: :registration_type
-      delegate :show_joining_project?, :apply_trial?, :hide_setup_for_company_field?, to: :registration_type
+      delegate :redirect_to_company_form?, :show_company_form_illustration?, to: :registration_type
+      delegate :show_joining_project?, :hide_setup_for_company_field?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
 
       module ClassMethods
@@ -32,6 +25,13 @@ module EE
 
         def glm_tracking_params(params)
           params.permit(*GLM_PARAMS)
+        end
+
+        def glm_tracking_attributes(params)
+          # Converting to a normal hash here to get more predictable
+          # behavior with the merge and basic hash behavior as we
+          # want to only think about it as a hash here.
+          glm_tracking_params(params).to_h
         end
 
         def passed_through_params(params)
@@ -42,7 +42,7 @@ module EE
         def registration_path_params(params:)
           return super unless ::Onboarding.enabled?
 
-          glm_tracking_params(params).to_h
+          glm_tracking_attributes(params)
         end
       end
 
@@ -53,7 +53,7 @@ module EE
       def initialize(*)
         super
 
-        @registration_type = calculate_registration_type_klass
+        @registration_type = ::Onboarding::UserStatus.new(user).registration_type
       end
 
       def welcome_submit_button_text
@@ -96,20 +96,6 @@ module EE
         ::Gitlab::Utils.to_boolean(params[:setup_for_company], default: false)
       end
 
-      def company_lead_product_interaction
-        if initial_trial?
-          ::Onboarding::TrialRegistration.product_interaction
-        else
-          # Due to this only being called in an area where only trials reach,
-          # we can assume and not check for free/invite/subscription/etc here.
-          'SaaS Trial - defaulted'
-        end
-      end
-
-      def initial_trial?
-        user.onboarding_status_initial_registration_type == ::Onboarding::REGISTRATION_TYPE[:trial]
-      end
-
       override :registration_omniauth_params
       def registration_omniauth_params
         return super unless ::Onboarding.enabled?
@@ -126,11 +112,7 @@ module EE
 
       private
 
-      attr_reader :params
-
-      def calculate_registration_type_klass
-        REGISTRATION_KLASSES.fetch(user&.onboarding_status_registration_type, ::Onboarding::FreeRegistration)
-      end
+      attr_reader :params, :onboarding_user_status
 
       def oauth?
         # During authorization for oauth, we want to allow it to finish.

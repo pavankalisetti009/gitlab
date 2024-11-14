@@ -5,10 +5,13 @@ module GitlabSubscriptions
     TRIAL_ONBOARDING_SOURCE_URLS = %w[about.gitlab.com docs.gitlab.com learn.gitlab.com].freeze
 
     def create_lead_form_data
+      submit_path = trials_path(
+        step: GitlabSubscriptions::Trials::CreateService::LEAD,
+        **params.permit(:namespace_id).merge(::Onboarding::Status.glm_tracking_attributes(params))
+      )
+
       _lead_form_data.merge(
-        submit_path: trials_path(
-          step: GitlabSubscriptions::Trials::CreateService::LEAD, **params.permit(:namespace_id).merge(glm_params)
-        ),
+        submit_path: submit_path,
         submit_button_text: s_('Trial|Continue')
       )
     end
@@ -33,25 +36,8 @@ module GitlabSubscriptions
       )
     end
 
-    def create_company_form_data(onboarding_status)
-      submit_params = glm_params.merge(::Onboarding::Status.passed_through_params(params))
-      {
-        submit_path: users_sign_up_company_path(submit_params),
-        first_name: current_user.first_name,
-        last_name: current_user.last_name,
-        initial_trial: onboarding_status.initial_trial?.to_s,
-        track_action_for_errors: onboarding_status.tracking_label
-      }
-    end
-
     def should_ask_company_question?
-      TRIAL_ONBOARDING_SOURCE_URLS.exclude?(glm_params[:glm_source])
-    end
-
-    def glm_params
-      strong_memoize(:glm_params) do
-        params.slice(*::Onboarding::Status::GLM_PARAMS).to_unsafe_h
-      end
+      TRIAL_ONBOARDING_SOURCE_URLS.exclude?(::Onboarding::Status.glm_tracking_attributes(params)[:glm_source])
     end
 
     def trial_namespace_selector_data(namespaces, namespace_create_errors)

@@ -20,7 +20,7 @@ module Registrations
       Gitlab::Tracking.event(self.class.name, group_track_action, namespace: group, user: user)
       ::Onboarding::Progress.onboard(group)
 
-      apply_trial if onboarding_status.apply_trial?
+      apply_trial if onboarding_user_status.apply_trial?
     end
 
     def modified_group_params
@@ -57,8 +57,8 @@ module Registrations
       group_params[:path]
     end
 
-    def onboarding_status
-      @onboarding_status ||= ::Onboarding::Status.new({}, nil, user)
+    def onboarding_user_status
+      @onboarding_user_status ||= ::Onboarding::UserStatus.new(user)
     end
   end
 end

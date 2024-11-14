@@ -8,7 +8,8 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
       :user,
       last_name: 'Jones',
       onboarding_status_email_opt_in: true,
-      onboarding_status_initial_registration_type: 'trial'
+      onboarding_status_initial_registration_type: 'trial',
+      onboarding_status_registration_type: 'trial'
     )
   end
 

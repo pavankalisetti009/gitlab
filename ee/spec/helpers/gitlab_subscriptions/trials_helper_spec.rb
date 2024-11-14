@@ -194,53 +194,23 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     end
   end
 
-  describe '#create_company_form_data' do
-    let(:user) { build_stubbed(:user) }
-    let(:extra_params) do
-      {
-        role: '_params_role_',
-        registration_objective: '_params_registration_objective_',
-        jobs_to_be_done_other: '_params_jobs_to_be_done_other'
-      }
-    end
-
-    let(:params) do
-      ActionController::Parameters.new(extra_params)
-    end
+  describe '#should_ask_company_question?' do
+    let(:params) { ActionController::Parameters.new(url_params) }
 
     before do
       allow(helper).to receive(:params).and_return(params)
-      allow(helper).to receive(:current_user).and_return(user)
-    end
-
-    it 'allows overriding data with params' do
-      attributes = {
-        submit_path: "/users/sign_up/company?#{extra_params.to_query}",
-        first_name: user.first_name,
-        last_name: user.last_name,
-        initial_trial: 'false',
-        track_action_for_errors: 'free_registration'
-      }
-
-      expect(helper.create_company_form_data(::Onboarding::Status.new({}, nil, user))).to match(attributes)
-    end
-  end
-
-  describe '#should_ask_company_question?' do
-    before do
-      allow(helper).to receive(:glm_params).and_return(glm_source ? { glm_source: glm_source } : {})
     end
 
     subject { helper.should_ask_company_question? }
 
-    where(:glm_source, :result) do
-      'about.gitlab.com'  | false
-      'learn.gitlab.com'  | false
-      'docs.gitlab.com'   | false
-      'abouts.gitlab.com' | true
-      'about.gitlab.org'  | true
-      'about.gitlob.com'  | true
-      nil                 | true
+    where(:url_params, :result) do
+      { glm_source: 'about.gitlab.com' }  | false
+      { glm_source: 'learn.gitlab.com' }  | false
+      { glm_source: 'docs.gitlab.com' }   | false
+      { glm_source: 'abouts.gitlab.com' } | true
+      { glm_source: 'about.gitlab.org' }  | true
+      { glm_source: 'about.gitlob.com' }  | true
+      {}                                  | true
     end
 
     with_them do
@@ -273,42 +243,6 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       subject { helper.show_tier_badge_for_new_trial?(namespace, user) }
 
       it { is_expected.to be(result) }
-    end
-  end
-
-  describe '#glm_params' do
-    let(:glm_source) { nil }
-    let(:glm_content) { nil }
-    let(:params) do
-      ActionController::Parameters.new({
-        controller: 'FooBar', action: 'stuff', id: '123'
-      }.tap do |p|
-        p[:glm_source] = glm_source if glm_source
-        p[:glm_content] = glm_content if glm_content
-      end)
-    end
-
-    before do
-      allow(helper).to receive(:params).and_return(params)
-    end
-
-    subject { helper.glm_params }
-
-    it 'is memoized' do
-      expect(helper).to receive(:strong_memoize)
-
-      subject
-    end
-
-    where(:glm_source, :glm_content, :result) do
-      nil       | nil       | {}
-      'source'  | nil       | { glm_source: 'source' }
-      nil       | 'content' | { glm_content: 'content' }
-      'source'  | 'content' | { glm_source: 'source', glm_content: 'content' }
-    end
-
-    with_them do
-      it { is_expected.to eq(HashWithIndifferentAccess.new(result)) }
     end
   end
 

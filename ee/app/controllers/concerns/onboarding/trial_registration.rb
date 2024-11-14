@@ -17,6 +17,10 @@ module Onboarding
       PRODUCT_INTERACTION
     end
 
+    def self.company_form_type
+      'trial'
+    end
+
     # internalization methods
 
     def self.welcome_submit_button_text
@@ -32,6 +36,10 @@ module Onboarding
     end
 
     # predicate methods
+
+    def self.show_company_form_illustration?
+      true
+    end
 
     def self.redirect_to_company_form?
       true

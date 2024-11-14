@@ -69,6 +69,7 @@ module Registrations
             .permit(:role, :setup_for_company, :registration_objective)
             .merge(params.permit(:jobs_to_be_done_other))
             .merge(user_onboarding_status_params)
+            .merge(onboarding_in_progress: onboarding_status.continue_full_onboarding?)
     end
 
     def user_onboarding_status_params
