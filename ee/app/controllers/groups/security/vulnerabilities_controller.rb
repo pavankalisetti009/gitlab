@@ -10,6 +10,8 @@ module Groups
       feature_category :vulnerability_management
       urgency :low
       track_govern_activity 'security_vulnerabilities', :index, conditions: :dashboard_available?
+      track_internal_event :index, name: 'visit_vulnerability_report', category: name,
+        conditions: -> { dashboard_available? }
 
       before_action do
         push_frontend_feature_flag(:vulnerability_report_owasp_2021, @group)

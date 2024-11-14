@@ -11,7 +11,7 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
   end
 
   describe 'GET index' do
-    subject { get :index, params: { group_id: group.to_param } }
+    subject(:show_vulnerability_dashboard) { get :index, params: { group_id: group.to_param } }
 
     context 'when security dashboard feature is enabled' do
       before do
@@ -26,7 +26,26 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
         it { is_expected.to have_gitlab_http_status(:ok) }
 
         it_behaves_like 'tracks govern usage event', 'users_visiting_security_vulnerabilities' do
-          let(:request) { subject }
+          let(:request) { show_vulnerability_dashboard }
+        end
+
+        it 'records correct events and metrics', :clean_gitlab_redis_shared_state do
+          expect { show_vulnerability_dashboard }
+              .to trigger_internal_events('visit_vulnerability_report')
+              .with(user: user, namespace: group)
+              .with(user: user, namespace: group)
+              .and increment_usage_metrics(
+                'counts.count_total_visit_vulnerability_report',
+                'counts.count_total_visit_vulnerability_report_monthly',
+                'counts.count_total_visit_vulnerability_report_weekly',
+                'redis_hll_counters.count_distinct_user_id_from_visit_vulnerability_report_monthly',
+                'redis_hll_counters.count_distinct_namespace_id_from_visit_vulnerability_report_monthly',
+                'redis_hll_counters.count_distinct_user_id_from_visit_vulnerability_report_weekly',
+                'redis_hll_counters.count_distinct_namespace_id_from_visit_vulnerability_report_weekly'
+              ).and not_increment_usage_metrics(
+                'redis_hll_counters.count_distinct_project_id_from_visit_vulnerability_report_monthly',
+                'redis_hll_counters.count_distinct_project_id_from_visit_vulnerability_report_weekly'
+              )
         end
       end
 
@@ -35,7 +54,11 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
         it { is_expected.to render_template(:unavailable) }
 
         it_behaves_like "doesn't track govern usage event", 'users_visiting_security_vulnerabilities' do
-          let(:request) { subject }
+          let(:request) { show_vulnerability_dashboard }
+        end
+
+        it 'does not record events or metrics' do
+          expect { show_vulnerability_dashboard }.not_to trigger_internal_events('visit_vulnerability_report')
         end
       end
     end
@@ -45,17 +68,19 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
       it { is_expected.to render_template(:unavailable) }
 
       it_behaves_like "doesn't track govern usage event", 'users_visiting_security_vulnerabilities' do
-        let(:request) { subject }
+        let(:request) { show_vulnerability_dashboard }
+      end
+
+      it 'does not record events or metrics' do
+        expect { show_vulnerability_dashboard }.not_to trigger_internal_events('visit_vulnerability_report')
       end
     end
 
     shared_examples 'resolveVulnerabilityWithAi ability' do |allowed|
-      let(:request) { subject }
-
       before do
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :resolve_vulnerability_with_ai, group).and_return(allowed)
-        request
+        show_vulnerability_dashboard
       end
 
       render_views

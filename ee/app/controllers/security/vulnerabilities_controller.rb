@@ -6,6 +6,7 @@ module Security
     include GovernUsageTracking
 
     track_govern_activity 'security_vulnerabilities', :index
+    track_internal_event :index, name: 'visit_vulnerability_report', category: name
 
     before_action do
       push_frontend_feature_flag(:vulnerability_report_owasp_2021, current_user)
