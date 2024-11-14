@@ -4485,6 +4485,54 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'manage_security_settings' do
+    let(:policy) { :manage_security_settings }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | false
+      :maintainer | true
+      :auditor    | false
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
+
+  describe 'read_security_settings' do
+    let(:policy) { :read_security_settings }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | true
+      :maintainer | true
+      :auditor    | true
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
+
   describe 'access_security_scans_api' do
     context 'when feature is disabled' do
       let(:current_user) { owner }

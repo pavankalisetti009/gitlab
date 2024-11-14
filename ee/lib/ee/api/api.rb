@@ -15,6 +15,7 @@ module EE
         mount ::API::AuditEvents
         mount ::API::Clusters::AgentUrlConfigurations
         mount ::API::ProjectApprovalRules
+        mount ::API::ProjectSecuritySettings
         mount ::API::GroupApprovalRules
         mount ::API::StatusChecks
         mount ::API::ProjectApprovalSettings
