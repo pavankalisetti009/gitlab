@@ -107,3 +107,57 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
     end
   end
 end
+
+# requires group, authorized_project and private_project project defined in caller
+RSpec.shared_examples 'a query filtered by project authorization' do
+  context 'for global search' do
+    let(:options) do
+      base_options.merge(search_level: :global, project_ids: [authorized_project.id, private_project.id])
+    end
+
+    it 'applies authorization filters' do
+      assert_names_in_query(build, with: %w[filters:permissions:global])
+    end
+
+    context 'when project_ids is passed :any' do
+      let(:options) do
+        base_options.merge(search_level: :global, project_ids: [authorized_project.id, private_project.id])
+      end
+
+      it 'applies authorization filters' do
+        assert_names_in_query(build, with: %w[filters:permissions:global],
+          without: %w[filters:level:group
+            filters:permissions:group
+            filters:level:project
+            filters:permissions:project])
+      end
+    end
+  end
+
+  context 'for group search' do
+    let(:options) do
+      base_options.merge(search_level: :group, group_ids: [group.id],
+        project_ids: [authorized_project.id, private_project.id])
+    end
+
+    it 'applies authorization filters' do
+      assert_names_in_query(build, with: %w[filters:level:group filters:permissions:group],
+        without: %w[filters:permissions:global
+          filters:level:project
+          filters:permissions:project])
+    end
+  end
+
+  context 'for project search' do
+    let(:options) do
+      base_options.merge(search_level: :project, project_ids: [authorized_project.id], group_ids: [group.id])
+    end
+
+    it 'applies authorization filters' do
+      assert_names_in_query(build, with: %w[filters:level:project filters:permissions:project],
+        without: %w[filters:permissions:global
+          filters:level:group
+          filters:permissions:group])
+    end
+  end
+end

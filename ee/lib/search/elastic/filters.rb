@@ -528,16 +528,16 @@ module Search
           namespaces.map(&:traversal_ids).select { |s| authorized_trie.covered?(s) }
         end
 
-        def visibility_level_for_user(user)
+        def visibility_level_for_user(user, visibility_level_field)
           if user && !user.external?
             { terms: {
-              _name: context.name(:visibility_level, :public_and_internal),
-              visibility_level: [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
+              _name: context.name(visibility_level_field, :public_and_internal),
+              "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL]
             } }
           else
             { terms: {
-              _name: context.name(:visibility_level, :public),
-              visibility_level: [::Gitlab::VisibilityLevel::PUBLIC]
+              _name: context.name(visibility_level_field, :public),
+              "#{visibility_level_field}": [::Gitlab::VisibilityLevel::PUBLIC]
             } }
           end
         end
@@ -650,8 +650,7 @@ module Search
         # internal or public projects where the project feature is private is not
         # granted here.
         def pick_projects_by_membership(
-          project_ids, user, no_join_project, features: nil, project_id_field: nil,
-          project_visibility_level_field: :visibility_level)
+          project_ids, user, no_join_project, project_visibility_level_field:, features: nil, project_id_field: nil)
           # This method is used to construct a query on the join as well as query
           # on top level doc. When querying top level doc the project's ID is
           # used from project_id_field with the default value of `project_id`
@@ -703,7 +702,7 @@ module Search
         #
         # If a project feature is specified, access is only granted if the feature
         # is enabled or, for admins & auditors, private.
-        def pick_projects_by_visibility(visibility, user, features, project_visibility_level_field: :visibility_level)
+        def pick_projects_by_visibility(visibility, user, features, project_visibility_level_field:)
           context.name(visibility) do
             condition = { term: { project_visibility_level_field => { _name: context.name, value: visibility } } }
 
@@ -952,11 +951,13 @@ module Search
           features = Array.wrap(options[:features])
           user = options[:current_user]
           search_level = options[:search_level].to_sym
+          # legacy query generation does not send this option
+          visibility_level_field = options.fetch(:project_visibility_level_field, :visibility_level)
 
           add_filter(query_hash, :query, :bool, :filter) do
             context.name(:filters, :permissions, search_level) do
               permissions_filters = Search::Elastic::BoolExpr.new
-              add_visibility_level_filter(permissions_filters, user)
+              add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
               add_feature_visibility_filter(permissions_filters, features, user)
 
               membership_filters = build_membership_filters(user, options, features)
@@ -975,11 +976,11 @@ module Search
           end
         end
 
-        def add_visibility_level_filter(permissions_filters, user)
+        def add_visibility_level_filter(permissions_filters:, user:, visibility_level_field:)
           return if user&.can_read_all_resources?
 
           add_filter(permissions_filters, :must) do
-            visibility_level_for_user(user)
+            visibility_level_for_user(user, visibility_level_field)
           end
         end
 
