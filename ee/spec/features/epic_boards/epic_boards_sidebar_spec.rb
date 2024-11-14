@@ -321,76 +321,13 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
       end
     end
 
-    context 'start date' do
-      it 'edits fixed start date' do
+    context 'dates' do
+      before do
         click_card(card)
-
         wait_for_requests
-
-        within_testid('work-item-start-due-dates') do
-          click_button 'Edit'
-          find('#start-date-input').set('2021-01-25')
-          click_button 'Apply'
-
-          expect(find_by_testid('start-date-value').text).to include('25')
-        end
       end
 
-      it 'removes fixed start date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('work-item-start-due-dates') do
-          click_button 'Edit'
-          find('#start-date-input').set('2021-01-25')
-          click_button 'Apply'
-
-          expect(find_by_testid('start-date-value').text).to include('25')
-
-          click_button 'Edit'
-          find_by_testid('clear-button').click
-          click_button 'Apply'
-
-          expect(find_by_testid('start-date-value').text).to include('None')
-        end
-      end
-    end
-
-    context 'due date' do
-      it 'edits fixed due date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('work-item-start-due-dates') do
-          click_button 'Edit'
-          find('#due-date-input').set('2021-01-25')
-          click_button 'Apply'
-
-          expect(find_by_testid('due-date-value').text).to include('25')
-        end
-      end
-
-      it 'removes fixed due date' do
-        click_card(card)
-
-        wait_for_requests
-
-        within_testid('work-item-start-due-dates') do
-          click_button 'Edit'
-          find('#due-date-input').set('2021-01-25')
-          click_button 'Apply'
-
-          expect(find_by_testid('due-date-value').text).to include('25')
-
-          click_button 'Edit'
-          find_by_testid('clear-button').click
-          click_button 'Apply'
-
-          expect(find_by_testid('due-date-value').text).to include('None')
-        end
-      end
+      it_behaves_like 'work items rolled up dates in drawer'
     end
 
     context 'confidentiality' do
