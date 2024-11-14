@@ -55,7 +55,8 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
       expect(search_for('somenewsearchablefile.txt', node_id)).to match_array(['somenewsearchablefile.txt'])
     end
 
-    it 'makes updates available when called with force: true' do
+    it 'makes updates available when called with force: true',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460608' do
       project.repository.create_file(
         user,
         'file_with_force.txt',
