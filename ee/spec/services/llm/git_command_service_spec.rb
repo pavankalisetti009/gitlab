@@ -22,6 +22,7 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
 
     let(:current_user) { user }
     let(:options) { { prompt: 'list 10 commit titles' } }
+    let(:response) { instance_double(HTTParty::Response, body: %("This is a response.")) }
 
     include_context 'with ai features enabled for group'
 
@@ -48,60 +49,17 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
       end
     end
 
-    context 'when prompt_migration_glab_ask_git_command is enabled' do
-      let(:response) { instance_double(HTTParty::Response, body: %("This is a response.")) }
-
-      before do
-        allow_next_instance_of(
-          ::Gitlab::Llm::AiGateway::Client,
-          current_user,
-          service_name: :glab_ask_git_command
-        ) do |client|
-          allow(client).to receive(:complete).and_return(response)
-        end
-      end
-
-      it_behaves_like 'performing requests'
-    end
-
-    context 'when prompt_migration_glab_ask_git_command is disabled' do
-      let(:response) do
-        {
-          content: [
-            {
-              text: "This is a response."
-            }
-          ]
-        }
-      end
-
-      before do
-        stub_feature_flags(prompt_migration_glab_ask_git_command: false)
-
-        allow_next_instance_of(
-          ::Gitlab::Llm::Anthropic::Client,
-          current_user,
-          unit_primitive: 'glab_ask_git_command'
-        ) do |client|
-          allow(client)
-            .to receive(:messages_complete)
-            .and_return(response)
-        end
-      end
-
-      it_behaves_like 'performing requests'
-
-      context 'when response is nil' do
-        let(:response) { nil }
-
-        it 'responds successfully' do
-          response = subject.execute
-
-          expect(response).to be_success
-          expect(response.payload).to be_nil
-        end
+    before do
+      allow_next_instance_of(
+        ::Gitlab::Llm::AiGateway::Client,
+        current_user,
+        service_name: :glab_ask_git_command
+      ) do |client|
+        allow(client).to receive(:complete).and_return(response)
       end
     end
+
+    it_behaves_like 'performing requests'
 
     it 'returns an error when messages are too big' do
       stub_const("#{described_class}::INPUT_CONTENT_LIMIT", 4)
