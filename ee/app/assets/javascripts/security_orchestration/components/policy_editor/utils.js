@@ -539,15 +539,10 @@ const enabledRadioButtonTooltipText = s__(
   "SecurityOrchestration|You've reached the maximum limit of %{max} %{type} policies allowed. Policies are disabled when added.",
 );
 
-const enabledSaveButtonTooltipText = s__(
-  "SecurityOrchestration|You've reached the maximum limit of %{max} %{type} policies allowed. To save this policy, set enabled: false.",
-);
-
 export const getPolicyLimitDetails = ({
   type,
-  policyLimitReached,
-  policyLimit,
-  hasPropertyChanged,
+  policyLimitReached = false,
+  policyLimit = 5,
   initialValue,
 }) => {
   const shouldBeDisabled = policyLimitReached && !initialValue;
@@ -557,10 +552,6 @@ export const getPolicyLimitDetails = ({
     radioButton: {
       disabled: shouldBeDisabled,
       text: sprintf(enabledRadioButtonTooltipText, sprintfParameters),
-    },
-    saveButton: {
-      disabled: shouldBeDisabled && hasPropertyChanged,
-      text: sprintf(enabledSaveButtonTooltipText, sprintfParameters),
     },
   };
 };

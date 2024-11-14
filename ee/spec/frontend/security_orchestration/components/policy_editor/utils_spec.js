@@ -438,7 +438,6 @@ describe('getPolicyLimitDetails', () => {
     type: 'scan',
     policyLimitReached: true,
     policyLimit: 5,
-    hasPropertyChanged: false,
     initialValue: false,
   };
   describe('radio button details', () => {
@@ -460,29 +459,6 @@ describe('getPolicyLimitDetails', () => {
         expect(
           getPolicyLimitDetails({ ...defaultValues, policyLimitReached, initialValue }).radioButton
             .disabled,
-        ).toBe(expectedOutput);
-      },
-    );
-  });
-  describe('save button details', () => {
-    it('returns the save button text', () => {
-      expect(getPolicyLimitDetails(defaultValues).saveButton.text).toBe(
-        "You've reached the maximum limit of 5 scan policies allowed. To save this policy, set enabled: false.",
-      );
-    });
-
-    it.each`
-      policyLimitReached | hasPropertyChanged | expectedOutput
-      ${true}            | ${true}            | ${true}
-      ${true}            | ${false}           | ${false}
-      ${false}           | ${true}            | ${false}
-      ${false}           | ${false}           | ${false}
-    `(
-      'returns $expectedOutput for the save button disabled status when policyLimitReached is $policyLimitReached and hasPropertyChanged is $hasPropertyChanged',
-      ({ policyLimitReached, hasPropertyChanged, expectedOutput }) => {
-        expect(
-          getPolicyLimitDetails({ ...defaultValues, policyLimitReached, hasPropertyChanged })
-            .saveButton.disabled,
         ).toBe(expectedOutput);
       },
     );

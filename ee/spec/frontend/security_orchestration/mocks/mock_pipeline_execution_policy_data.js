@@ -38,7 +38,8 @@ metadata:
   compliance_pipeline_migration: true
 `;
 
-export const mockWithoutRefPipelineExecutionManifest = `name: Ci config file
+export const mockWithoutRefPipelineExecutionManifest = `type: pipeline_execution_policy
+name: Ci config file
 description: triggers all protected branches except main
 enabled: true
 pipeline_config_strategy: inject_ci
