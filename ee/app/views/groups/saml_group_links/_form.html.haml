@@ -6,7 +6,7 @@
           = f.label :saml_group_name, s_('GroupSAML|SAML Group Name')
         .col-sm-10
           = f.text_field :saml_group_name, class: 'form-control xxlarge input-mn-300'
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_('GroupSAML|The case-sensitive group name that will be sent by the SAML identity provider.')
 
       .form-group.row
@@ -14,7 +14,7 @@
           = f.label :access_level, "Access Level"
         .col-sm-10
           .js-group-link-role-selector{ data: { group_link_role_selector_data: group_link_role_selector_data(group, current_user).to_json }.merge(saml_group_link_input_names) }
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_('GroupSAML|Role to assign members of this SAML group.')
 
     .form-actions.gl-mb-5

@@ -70,7 +70,7 @@ export default {
                   </ul>
                 </div>
                 <div class="col-sm-4">
-                  <div class="project-status-title text-muted">
+                  <div class="project-status-title gl-text-subtle">
                     {{ $options.i18n.retryCount }}
                   </div>
                   <div class="project-status-content">

@@ -26,7 +26,7 @@
           = f.label :cn, s_("LDAP|LDAP group cn")
         .col-sm-10{ data: { testid: 'ldap-group-field' } }
           #js-ldap-groups-select
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_("LDAP|Synchronize %{group_name}'s members with this LDAP group.") % { group_name: group.name }
             %br
             = s_("LDAP|If you select an LDAP group you do not belong to you will lose ownership of %{group_name}.") % { group_name: group.name }
@@ -37,7 +37,7 @@
             = f.label :filter, s_("LDAP|LDAP user filter")
           .col-sm-10
             = f.text_field :filter, placeholder: 'Ex. (&(objectCategory=person)(objectClass=developer))', class: 'form-control xxlarge input-mn-300', data: { testid: 'ldap-user-filter-field' }
-            .form-text.text-muted
+            .form-text.gl-text-subtle
               - ldap_link = link_to '', 'https://msdn.microsoft.com/en-us/library/aa746475(v=vs.85).aspx'
               = safe_format(s_("LDAP|This query must use valid %{ldap_link_start}LDAP Search Filter Syntax%{ldap_link_end}. Synchronize %{group_name}'s members with this LDAP user filter."), tag_pair(ldap_link, :ldap_link_start, :ldap_link_end), group_name: group.name)
               %br
@@ -48,7 +48,7 @@
           = f.label :group_access, s_("LDAP|LDAP access")
         .col-sm-10{ data: { testid: 'ldap-access-field' } }
           .js-group-link-role-selector{ data: { group_link_role_selector_data: group_link_role_selector_data(group, current_user).to_json }.merge(ldap_group_link_input_names) }
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_("LDAP|Default, minimum permission level for LDAP group members of %{group_name}.") % { group_name: group.name }
             %br
             = s_('LDAP|You can manage permission levels for individual group members in the Members tab.')

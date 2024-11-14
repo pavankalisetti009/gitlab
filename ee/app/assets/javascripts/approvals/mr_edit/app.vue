@@ -122,7 +122,7 @@ export default {
             <mr-rules-hidden-inputs />
           </template>
           <template v-if="canUpdateApprovers && showCodeOwnerTip" #footer>
-            <div class="form-text text-muted" data-testid="codeowners-tip">
+            <div class="form-text gl-text-subtle" data-testid="codeowners-tip">
               <gl-sprintf
                 :message="
                   __(

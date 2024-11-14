@@ -15,7 +15,7 @@
         .form-group
           = f.label :namespace_storage_forks_cost_factor, _('Cost factor for forks of projects'), class: 'label-light'
           = f.text_field :namespace_storage_forks_cost_factor, class: 'form-control gl-form-input'
-          %span.form-text.text-muted
+          %span.form-text.gl-text-subtle
             = s_("AdminSettings|This cost factor will be applied to the storage consumed by forks.")
 
       = f.submit _('Save changes'), pajamas_button: true

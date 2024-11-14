@@ -26,12 +26,12 @@
         .form-group
           = f.label :product_analytics_data_collector_host, s_('AdminSettings|Collector host'), class: 'label-light'
           = f.url_field :product_analytics_data_collector_host, class: 'form-control gl-form-input', placeholder: 'https://collector.gitlab.com'
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_('AdminSettings|The host of your data collector instance.')
         .form-group
           = f.label :cube_api_base_url, s_('AdminSettings|Cube API URL'), class: 'label-light'
           = f.url_field :cube_api_base_url, class: 'form-control gl-form-input', placeholder: 'https://cube.gitlab.com'
-          .form-text.text-muted
+          .form-text.gl-text-subtle
             = s_('AdminSettings|The URL of your Cube instance.')
         .form-group
           .js-input-copy-visibility{ data: cube_api_key_data(form_name: 'application_setting', value: @application_setting.cube_api_key, testid: 'cube-api-key-field') }

@@ -7,7 +7,7 @@
           %strong
             = template.title
           %br
-          .text-muted
+          .gl-text-subtle
             = template.description
         .controls.gl-items-baseline{ class: '!gl-flex' }
           = render Pajamas::ButtonComponent.new(href: project_path(template), target: '_blank', button_options: { class: 'gl-mr-3' }) do
