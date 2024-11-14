@@ -20,6 +20,7 @@ by sending the following header:
 
 ```plaintext
 Permissions-Policy: interest-cohort=()
+```
 
 This header prevents users from being tracked and categorized in any GitLab instance.
 The header is compatible with the Topics API and the deprecated FLoC system.
