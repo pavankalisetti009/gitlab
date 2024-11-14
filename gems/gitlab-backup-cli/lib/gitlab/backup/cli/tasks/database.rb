@@ -7,7 +7,7 @@ module Gitlab
         class Database < Task
           def self.id = 'db'
 
-          def human_name = _('database')
+          def human_name = _('databases')
 
           def destination_path = 'db'
 

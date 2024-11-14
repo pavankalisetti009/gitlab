@@ -3,75 +3,137 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Backup::Cli::Targets::Database do
-  let(:context) { Gitlab::Backup::Cli::Context.build }
+  let(:context) { build_test_context }
   let(:database) { described_class.new(context) }
+  let(:pipeline_success) { instance_double(Gitlab::Backup::Cli::Shell::Pipeline::Result, success?: true) }
 
-  describe '#dump' do
-    let(:destination) { '/path/to/destination' }
-    # let(:backup_connection) { double('backup_connection') }
-    # let(:database_configuration) { double('database_configuration') }
-    let(:pg_env_variables) { { 'PGHOST' => 'localhost' } }
-    let(:activerecord_variables) { { database: 'gitlabhq_production' } }
+  describe '#dump', :silence_output do
+    let(:destination) { Pathname(Dir.mktmpdir('database-target', temp_path)) }
 
-    before do
-      # allow(backup_connection).to receive(:database_configuration).and_return(database_configuration)
-      # allow(database_configuration).to receive(:pg_env_variables).and_return(pg_env_variables)
-      # allow(database_configuration).to receive(:activerecord_variables).and_return(activerecord_variables)
-      allow(Gitlab::Backup::Cli::Database::EachDatabase).to receive(:each_connection).and_yield(nil, 'main')
-      # allow(Gitlab::Backup::Cli::Database::Connection).to receive(:new).with('main').and_return(backup_connection)
+    after do
+      FileUtils.rm_rf(destination)
     end
 
     it 'creates the destination directory' do
+      mock_database_dump!
+
       expect(FileUtils).to receive(:mkdir_p).with(destination)
+
       database.dump(destination)
     end
 
-    # it 'dumps the database' do
-    #   dump_double = double('dump')
-    #   expect(Gitlab::Backup::Cli::Database::Postgres).to receive(:new).and_return(dump_double)
-    #   expect(dump_double).to receive(:dump)
-    #   database.dump(destination)
-    # end
+    it 'triggers a database snapshot' do
+      mock_database_dump!
 
-    # it 'releases the snapshot after dumping' do
-    #   expect(backup_connection).to receive(:release_snapshot!)
-    #   database.dump(destination)
-    # end
+      expect_next_instance_of(Gitlab::Backup::Cli::Services::Database) do |db|
+        expect(db).to receive(:export_snapshot!).and_call_original
+      end.at_least(:once)
 
-    # it 'raises an error if the dump fails' do
-    #   allow(Gitlab::Backup::Cli::Database::Postgres).to receive(:new).and_return(double('dump', dump: false))
-    #   expect { database.dump(destination) }.to raise_error(Gitlab::Backup::Cli::Errors::DatabaseBackupError)
-    # end
+      database.dump(destination)
+    end
+
+    it 'dumps the database' do
+      database.dump(destination)
+
+      database_dump_files = Dir.glob(destination.join('*.sql.gz'))
+
+      expect(database_dump_files).not_to be_empty
+    end
+
+    it 'releases the snapshot after dumping' do
+      mock_database_dump!
+
+      expect_next_instance_of(Gitlab::Backup::Cli::Services::Database) do |db|
+        expect(db).to receive(:release_snapshot!).and_call_original
+      end.at_least(:once)
+
+      database.dump(destination)
+    end
+
+    it 'raises an error if the dump fails' do
+      false_command = Gitlab::Backup::Cli::Shell::Command.new(%q(false))
+      replace_database_dump_command!(false_command)
+
+      expect { database.dump(destination) }.to raise_error(Gitlab::Backup::Cli::Errors::DatabaseBackupError)
+    end
   end
 
-  # describe '#restore' do
-  #   let(:source) { '/path/to/source' }
-  #   let(:backup_connection) { double('backup_connection') }
-  #   let(:database_configuration) { double('database_configuration') }
-  #   let(:pg_env_variables) { { 'PGHOST' => 'localhost' } }
-  #   let(:activerecord_variables) { { database: 'gitlabhq_production' } }
+  describe '#restore' do
+    let(:source) { Pathname(Dir.mktmpdir('database-target', temp_path)) }
 
-  #   before do
-  #     allow(backup_connection).to receive(:database_configuration).and_return(database_configuration)
-  #     allow(database_configuration).to receive(:pg_env_variables).and_return(pg_env_variables)
-  #     allow(database_configuration).to receive(:activerecord_variables).and_return(activerecord_variables)
-  #     allow(Gitlab::Backup::Cli::Database::Connection).to receive(:new).with(:main).and_return(backup_connection)
-  #   end
+    after do
+      FileUtils.rm_rf(source)
+    end
 
-  #   it 'drops all tables before restoring' do
-  #     expect(database).to receive(:drop_tables).with(:main)
-  #     database.restore(source)
-  #   end
+    context 'with an invalid backup source' do
+      it 'raises an error when main database backup file is missing' do
+        mock_databases_collection('main')
 
-  #   it 'restores the database' do
-  #     allow(File).to receive(:exist?).and_return(true)
-  #     expect(database).to receive(:with_transient_pg_env).and_yield
-  #     database.restore(source)
-  #   end
+        expect { database.restore(source) }.to raise_error(Gitlab::Backup::Cli::Error).with_message(
+          /Database backup file '[^']*' for the main database does not exist/
+        )
+      end
 
-  #   it 'raises an error if the database file does not exist' do
-  #     allow(File).to receive(:exist?).and_return(false)
-  #     expect { database.restore(source) }.to raise_error(Gitlab::Backup::Cli::Errors::DatabaseBackupError)
-  #   end
-  # end
+      it 'raises an warning when other database backup files are missing' do
+        mock_databases_collection('ci')
+
+        expect { database.restore(source) }.to output(
+          /Database backup file '[^']*' for the ci database does not exist/
+        ).to_stderr
+      end
+    end
+
+    context 'with a valid backup file' do
+      it 'drops all tables before restoring' do
+        allow(database).to receive(:restore_tables).and_return(
+          pipeline_success
+        )
+
+        mock_databases_collection('main') do |db|
+          FileUtils.touch(source.join('database.sql.gz'))
+
+          expect(database).to receive(:drop_tables).with(db)
+        end
+
+        database.restore(source)
+      end
+
+      it 'restores the database' do
+        allow(database).to receive(:drop_tables)
+
+        mock_databases_collection('main') do |db|
+          filepath = source.join('database.sql.gz')
+          FileUtils.touch(filepath)
+
+          expect(database).to receive(:restore_tables).with(database: db, filepath: filepath).and_return(
+            pipeline_success
+          )
+        end
+
+        database.restore(source)
+      end
+    end
+  end
+
+  def mock_databases_collection(dbname)
+    allow_next_instance_of(Gitlab::Backup::Cli::Services::Databases) do |databases|
+      entry = databases.send(:collection).find { |db| db.configuration.name == dbname }
+
+      allow(databases).to receive(:each).and_yield(entry)
+
+      yield entry if block_given?
+    end
+  end
+
+  def mock_database_dump!
+    echo_command = Gitlab::Backup::Cli::Shell::Command.new(%q(echo ''))
+
+    replace_database_dump_command!(echo_command)
+  end
+
+  def replace_database_dump_command!(new_command)
+    allow_next_instance_of(::Gitlab::Backup::Cli::Utils::PgDump) do |pg_dump|
+      allow(pg_dump).to receive(:build_command).and_return(new_command)
+    end
+  end
 end
