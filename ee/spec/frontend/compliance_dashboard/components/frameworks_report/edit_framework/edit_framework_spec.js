@@ -54,6 +54,7 @@ describe('Edit Framework Form', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findDeleteButtonTooltip = () => wrapper.findComponent(GlTooltip);
+  const findPipelineInput = () => wrapper.findComponentByTestId('pipeline-configuration-input');
   const findRequirementsSection = () => wrapper.findComponent(RequirementsSection);
 
   const invalidFeedback = (input) =>
@@ -193,9 +194,7 @@ describe('Edit Framework Form', () => {
       async ({ pipelineConfigurationFullPath, message }) => {
         jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
 
-        const pipelineInput = wrapper.findByLabelText(
-          'Compliance pipeline configuration (optional)',
-        );
+        const pipelineInput = findPipelineInput();
         await pipelineInput.setValue(pipelineConfigurationFullPath);
         await waitForPromises();
 
