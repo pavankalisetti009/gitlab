@@ -65,11 +65,10 @@ module QA
             }
           ])
 
-        Flow::Login.sign_in_unless_signed_in
-        project.visit!
-        Flow::Pipeline.wait_for_latest_pipeline(wait: 90)
+        Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: project, status: 'success')
 
-        Flow::Pipeline.visit_latest_pipeline
+        Flow::Login.sign_in
+        project.visit_latest_pipeline
         Page::Project::Pipeline::Show.perform(&:click_on_security)
 
         EE::Page::Project::Secure::PipelineSecurity.perform do |pipeline_security|
