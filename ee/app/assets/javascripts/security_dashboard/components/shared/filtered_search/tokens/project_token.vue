@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { createAlert } from '~/alert';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_INSTANCE } from 'ee/security_dashboard/constants';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import groupProjectsQuery from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
@@ -14,8 +14,8 @@ import QuerystringSync from '../../filters/querystring_sync.vue';
 import eventHub from '../event_hub';
 
 const QUERIES = {
-  [DASHBOARD_TYPES.GROUP]: groupProjectsQuery,
-  [DASHBOARD_TYPES.INSTANCE]: instanceProjectsQuery,
+  [DASHBOARD_TYPE_GROUP]: groupProjectsQuery,
+  [DASHBOARD_TYPE_INSTANCE]: instanceProjectsQuery,
 };
 
 export default {

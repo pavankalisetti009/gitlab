@@ -12,7 +12,7 @@ import { stubComponent } from 'helpers/stub_component';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import { DASHBOARD_TYPES } from 'ee/security_dashboard/constants';
+import { DASHBOARD_TYPE_GROUP } from 'ee/security_dashboard/constants';
 import getProjects from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -101,7 +101,7 @@ describe('ee/security_dashboard/components/shared/filtered_search/tokens/project
       },
       provide: {
         groupFullPath: TEST_GROUP,
-        dashboardType: DASHBOARD_TYPES.GROUP,
+        dashboardType: DASHBOARD_TYPE_GROUP,
       },
       stubs: {
         SearchSuggestion,
