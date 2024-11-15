@@ -16,9 +16,9 @@ module EE
     end
 
     override :event_wiki_page_target_url
-    def event_wiki_page_target_url(event)
+    def event_wiki_page_target_url(event, target: event.target, **options)
       if event.group_id.present?
-        group_wiki_url(event.group, event.target&.canonical_slug || ::Wiki::HOMEPAGE)
+        group_wiki_url(event.group, target&.canonical_slug || ::Wiki::HOMEPAGE, **options)
       else
         super
       end
