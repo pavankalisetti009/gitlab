@@ -350,6 +350,13 @@ module EE
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
           experiment: { milestone: '17.5' }
 
+        field :custom_field, ::Types::Issuables::CustomFieldType,
+          null: true,
+          description: 'A custom field configured for the group. ' \
+            'Available only when feature flag `custom_fields_feature` is enabled.',
+          resolver: ::Resolvers::Issuables::CustomFieldResolver,
+          experiment: { milestone: '17.6' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end

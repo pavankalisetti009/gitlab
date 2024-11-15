@@ -24542,6 +24542,22 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="groupcustomemojiincludeancestorgroups"></a>`includeAncestorGroups` | [`Boolean`](#boolean) | Includes custom emoji from parent groups. |
 
+##### `Group.customField`
+
+A custom field configured for the group. Available only when feature flag `custom_fields_feature` is enabled.
+
+DETAILS:
+**Introduced** in GitLab 17.6.
+**Status**: Experiment.
+
+Returns [`CustomField`](#customfield).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupcustomfieldid"></a>`id` | [`IssuablesCustomFieldID!`](#issuablescustomfieldid) | Global ID of the custom field. |
+
 ##### `Group.customFields`
 
 Custom fields configured for the group. Available only when feature flag `custom_fields_feature` is enabled.
