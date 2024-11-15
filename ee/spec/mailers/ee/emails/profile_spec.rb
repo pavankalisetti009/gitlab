@@ -6,9 +6,9 @@ require 'email_spec'
 RSpec.describe EE::Emails::Profile do
   include EmailSpec::Matchers
 
-  describe '#policy_revoked_personal_access_tokens_email' do
-    let_it_be(:user) { create(:user) }
+  let_it_be_with_reload(:user) { create(:user) }
 
+  describe '#policy_revoked_personal_access_tokens_email' do
     let(:token_names) { %w[name1 name2] }
 
     subject { Notify.policy_revoked_personal_access_tokens_email(user, token_names) }
@@ -31,6 +31,26 @@ RSpec.describe EE::Emails::Profile do
 
     it 'includes the email reason' do
       is_expected.to have_body_text %r{You're receiving this email because of your account on <a .*>localhost<\/a>}
+    end
+  end
+
+  describe '#pipl_compliance_notification' do
+    subject { Notify.pipl_compliance_notification(user, pipl_user.pipl_access_end_date) }
+
+    let_it_be(:pipl_user) do
+      create(:pipl_user, initial_email_sent_at: Time.current, user: user)
+    end
+
+    it 'has the correct subject' do
+      is_expected.to have_subject('Important Change to Your GitLab.com Account')
+    end
+
+    it 'includes the link to jihu' do
+      is_expected.to have_body_text('https://gitlab.cn/saasmigration/')
+    end
+
+    it 'includes the correctly formatted date' do
+      is_expected.to have_body_text(pipl_user.pipl_access_end_date.strftime('%d-%m-%Y').to_s)
     end
   end
 end

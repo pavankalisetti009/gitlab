@@ -92,6 +92,10 @@ RSpec.describe ComplianceManagement::Pipl::UpdateUserCountryAccessLogsService, f
             expect { service.execute }.not_to change { pipl_user.reload.last_access_from_pipl_country_at }
           end
 
+          it "does not update the user's initial_email_sent_at" do
+            expect { service.execute }.not_to change { pipl_user.reload.initial_email_sent_at }
+          end
+
           it_behaves_like 'does not enqueue job to check if user is paid'
         end
       end
