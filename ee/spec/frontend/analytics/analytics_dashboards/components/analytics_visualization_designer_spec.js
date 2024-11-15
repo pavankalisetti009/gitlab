@@ -164,7 +164,7 @@ describe('AnalyticsVisualizationDesigner', () => {
     });
 
     it('render a cancel button that routes to the dashboard listing page', async () => {
-      const button = wrapper.findByText('Cancel');
+      const button = wrapper.findByTestId('visualization-cancel-btn');
 
       expect(button.attributes('category')).toBe('secondary');
 

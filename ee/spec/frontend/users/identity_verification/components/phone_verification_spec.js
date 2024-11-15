@@ -35,7 +35,7 @@ describe('Phone Verification component', () => {
 
   const findInternationalPhoneInput = () => wrapper.findComponent(InternationalPhoneInput);
   const findVerifyCodeInput = () => wrapper.findComponent(VerifyPhoneVerificationCode);
-  const findPhoneExemptionLink = () => wrapper.findByText('Verify with a credit card instead?');
+  const findPhoneExemptionLink = () => wrapper.findByTestId('verify-with-card-btn');
 
   const findCaptcha = () => findInternationalPhoneInput().findComponent(Captcha);
 

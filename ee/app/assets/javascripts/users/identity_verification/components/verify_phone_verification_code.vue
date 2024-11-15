@@ -195,7 +195,7 @@ export default {
           <gl-link data-testid="resend-code-link" @click="resendCode">{{ content }}</gl-link>
         </template>
         <template #phoneLink="{ content }">
-          <gl-link @click="goBack">{{ content }}</gl-link>
+          <gl-link data-testid="go-back-btn" @click="goBack">{{ content }}</gl-link>
         </template>
         <template #supportLink="{ content }">
           <gl-link
@@ -232,6 +232,7 @@ export default {
       class="gl-mt-5 !gl-w-full"
       :disabled="isSubmitButtonDisabled"
       :loading="isLoading"
+      data-testid="verify-btn"
     >
       {{ $options.i18n.verifyButton }}
     </gl-button>

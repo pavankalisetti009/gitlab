@@ -168,6 +168,7 @@ export default {
       block
       variant="link"
       class="gl-mt-5 gl-text-sm"
+      data-testid="verify-with-card-btn"
       @click="$emit('exemptionRequested')"
       >{{ $options.i18n.verifyWithCreditCard }}</gl-button
     >

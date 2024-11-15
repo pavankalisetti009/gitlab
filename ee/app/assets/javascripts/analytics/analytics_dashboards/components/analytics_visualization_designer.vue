@@ -397,7 +397,12 @@ export default {
         @click="saveVisualization"
         >{{ saveButtonText }}
       </gl-button>
-      <gl-button category="secondary" @click="routeToDashboardList">{{ __('Cancel') }}</gl-button>
+      <gl-button
+        category="secondary"
+        data-testid="visualization-cancel-btn"
+        @click="routeToDashboardList"
+        >{{ __('Cancel') }}</gl-button
+      >
     </section>
   </div>
 </template>
