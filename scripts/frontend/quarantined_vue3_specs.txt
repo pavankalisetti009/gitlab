@@ -50,7 +50,6 @@ ee/spec/frontend/ci/secrets/components/secrets_breadcrumbs_spec.js
 ee/spec/frontend/ci/secrets/router_spec.js
 ee/spec/frontend/clusters/components/environments_spec.js
 ee/spec/frontend/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section_spec.js
-ee/spec/frontend/compliance_dashboard/components/frameworks_report/framework_info_drawer_spec.js
 ee/spec/frontend/compliance_dashboard/components/frameworks_report/report_spec.js
 ee/spec/frontend/compliance_dashboard/components/projects_report/report_spec.js
 ee/spec/frontend/compliance_dashboard/components/standards_adherence_report/base_table_spec.js
