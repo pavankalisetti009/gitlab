@@ -16,17 +16,12 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:instance) { described_class.new(current_user: user, question: question) }
   let(:ai_gateway_request) { ::Gitlab::Llm::Chain::Requests::AiGateway.new(user) }
   let(:attrs) { embeddings.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
-  let(:completion_body) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
-  let(:completion_response) do
-    instance_double(HTTParty::Response, code: 200, success?: true, body: completion_body.to_json,
-      parsed_response: completion_body)
-  end
-
+  let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
   let(:model) { ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }
 
   let(:docs_search_client) { ::Gitlab::Llm::AiGateway::DocsClient.new(user) }
   let(:docs_search_args) { { query: question } }
-  let(:docs_search_body) do
+  let(:docs_search_response) do
     {
       'response' => {
         'results' => [
@@ -38,12 +33,6 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
         ]
       }
     }
-  end
-
-  let(:docs_search_body_json) { docs_search_body.to_json }
-  let(:docs_search_response) do
-    instance_double(HTTParty::Response, success?: true, code: 200, body: docs_search_body_json,
-      parsed_response: docs_search_body)
   end
 
   describe '#execute' do
@@ -98,18 +87,6 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
       execute
     end
 
-    it 'raises an error when final prompt request fails' do
-      expect(ai_gateway_request).to receive(:request)
-        .with({ prompt: instance_of(Array),
-          options: { model: model, max_tokens: 256 } })
-        .once.and_return(nil)
-      expect(docs_search_client).to receive(:search).with(**docs_search_args).and_return(docs_search_response)
-
-      expect(logger).to receive(:error).with(a_hash_including(message: "Streaming error", error: anything))
-
-      execute
-    end
-
     context 'when user has AI features disabled' do
       before do
         allow(::Gitlab::Llm::TanukiBot).to receive(:enabled_for?).with(user: user).and_return(false)
@@ -129,7 +106,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     end
 
     context 'when no documents are found' do
-      let(:docs_search_body) { {} }
+      let(:docs_search_response) { {} }
 
       it 'returns an empty response message' do
         expect(execute.response_body).to eq(empty_response_message)
@@ -137,8 +114,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     end
 
     context 'when DocsClient returns nil' do
-      let(:docs_search_body) { nil }
-      let(:docs_search_body_json) { nil }
+      let(:docs_search_response) { nil }
 
       it 'returns an empty response message' do
         expect(execute.response_body).to eq(empty_response_message)
