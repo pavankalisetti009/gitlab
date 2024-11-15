@@ -33,7 +33,15 @@ module EE
       end
 
       if can?(current_user, :admin_licensed_seat, source.root_ancestor)
-        dataset[:add_seats_href] = add_seats_url(source.root_ancestor)
+        if ::Feature.enabled?(:sm_seat_control_block_overages, source.root_ancestor)
+          dataset[:has_bso_feature_enabled] = true.to_s
+          dataset[:add_seats_href] = help_page_url(
+            "subscriptions/self_managed/index.md",
+            anchor: "add-seats-to-a-subscription"
+          )
+        else
+          dataset[:add_seats_href] = add_seats_url(source.root_ancestor)
+        end
       end
 
       dataset[:manage_member_roles_path] = manage_member_roles_path(source)
