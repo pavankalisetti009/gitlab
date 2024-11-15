@@ -69,7 +69,7 @@ RSpec.describe BlobHelper do
     let(:ref) { 'main' }
 
     it 'returns data related to blob app' do
-      allow(helper).to receive(:current_user).and_return(nil)
+      allow(helper).to receive_messages(selected_branch: ref, current_user: nil)
 
       expect(helper.vue_blob_app_data(project, blob, ref)).to include({
         user_id: '',
