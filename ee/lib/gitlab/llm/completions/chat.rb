@@ -10,6 +10,7 @@ module Gitlab
         attr_reader :context
 
         TOOLS = [
+          ::Gitlab::Llm::Chain::Tools::BuildReader,
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
@@ -97,8 +98,6 @@ module Gitlab
 
           tools << ::Gitlab::Llm::Chain::Tools::CommitReader if Feature.enabled?(:ai_commit_reader_for_chat, user)
 
-          tools << ::Gitlab::Llm::Chain::Tools::BuildReader if Feature.enabled?(:ai_build_reader_for_chat, user)
-
           tools
         end
 
@@ -160,7 +159,6 @@ module Gitlab
 
         def push_feature_flags
           Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-          Gitlab::AiGateway.push_feature_flag(:ai_build_reader_for_chat, user)
 
           if Feature.enabled?(:ci_editor_tool_removed, user)
             Gitlab::AiGateway.push_feature_flag(:ci_editor_tool_removed, user)

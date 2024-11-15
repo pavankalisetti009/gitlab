@@ -21,8 +21,6 @@ module Ai
         end
 
         def current_page_short_description
-          return '' unless Feature.enabled?(:ai_build_reader_for_chat, current_user)
-
           <<~SENTENCE
           The user is currently on a page that displays a ci build which the user might refer to, for example, as 'current', 'this' or 'that'.
           SENTENCE

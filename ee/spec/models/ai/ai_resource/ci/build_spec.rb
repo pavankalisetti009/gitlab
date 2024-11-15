@@ -36,15 +36,5 @@ RSpec.describe Ai::AiResource::Ci::Build, feature_category: :duo_chat do
       expect(wrapped_build.current_page_short_description)
         .to include("The user is currently on a page that displays a ci build")
     end
-
-    context 'with ai_build_reader_for_chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_build_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_build.current_page_short_description).to eq("")
-      end
-    end
   end
 end
