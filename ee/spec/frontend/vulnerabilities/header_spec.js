@@ -567,5 +567,22 @@ describe('Vulnerability Header', () => {
         expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
       });
     });
+
+    describe('show-public-project warning', () => {
+      it.each([true, false])(
+        'passes "vulnerability.belongsToPublicProject" prop to the component',
+        (belongsToPublicProject) => {
+          createWrapper({
+            vulnerability: {
+              belongsToPublicProject,
+            },
+          });
+
+          expect(findActionsDropdown().props('showPublicProjectWarning')).toBe(
+            belongsToPublicProject,
+          );
+        },
+      );
+    });
   });
 });
