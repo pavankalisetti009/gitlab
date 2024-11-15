@@ -146,7 +146,7 @@ module Gitlab
             content = <<~MESSAGE
               I'm sorry, this question is not supported in your Duo Pro subscription. You might consider upgrading to Duo Enterprise. Selected tool: #{self.class.name}
 
-              [View a list of questions and the related subscriptions](#{::Gitlab::Routing.url_helpers.help_page_url('ee/user/gitlab_duo_chat/examples.md')}).
+              [View a list of questions and the related subscriptions](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat/examples.md')}).
             MESSAGE
 
             Answer.error_answer(context: context, content: content, error_code: "M3005")
