@@ -29,8 +29,12 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
     end
 
     context 'when there is a difference' do
+      let(:mismatched_attributes) { %w[title] }
+
       before do
-        epic.update_column(:title, "New title")
+        allow_next_instance_of(Gitlab::EpicWorkItemSync::Diff) do |instance|
+          allow(instance).to receive(:attributes).and_return(mismatched_attributes)
+        end
       end
 
       it 'logs a warning' do
@@ -43,6 +47,44 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
         )
 
         consume_event(subscriber: described_class, event: event)
+      end
+
+      context 'when on .com', :saas do
+        it 'does not track an internal event' do
+          expect { consume_event(subscriber: described_class, event: event) }
+            .not_to trigger_internal_events('epic_sync_mismatch_base_attributes')
+        end
+      end
+
+      context 'when not on .com' do
+        let(:mismatched_attributes) { %w[title related_links epic_issue parent_id] }
+
+        it 'tracks an internal event' do
+          expect { consume_event(subscriber: described_class, event: event) }
+            .to trigger_internal_events('epic_sync_mismatch_base_attributes')
+              .with({ namespace_id: group.id })
+            .and trigger_internal_events('epic_sync_mismatch_related_links')
+              .with({ namespace_id: group.id })
+            .and trigger_internal_events('epic_sync_mismatch_issue_hierarchy')
+              .with({ namespace_id: group.id })
+            .and trigger_internal_events('epic_sync_mismatch_epic_hierarchy')
+              .with({ namespace_id: group.id })
+            .and increment_usage_metrics(
+              'counts.epic_sync_mismatch.base_attributes',
+              'counts.epic_sync_mismatch.related_links',
+              'counts.epic_sync_mismatch.issue_hierarchy',
+              'counts.epic_sync_mismatch.epic_hierarchy'
+            ).by(1)
+        end
+
+        context 'when attributes we do not check for have a mismatch' do
+          let(:mismatched_attributes) { %w[updated_at] }
+
+          it 'does not track an internal event for attributes we do not check for' do
+            expect { consume_event(subscriber: described_class, event: event) }
+              .not_to trigger_internal_events('epic_sync_mismatch_base_attributes')
+          end
+        end
       end
     end
 
