@@ -1,4 +1,4 @@
-#import "./dora_metric_item.fragment.graphql"
+#import "~/analytics/shared/graphql/dora_metric_item.fragment.graphql"
 
 query doraMetricsByProjectQuery(
   $fullPath: ID!

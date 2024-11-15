@@ -3,13 +3,14 @@ import { uniq } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { toYmd } from '~/analytics/shared/utils';
 import { CONTRIBUTOR_METRICS } from '~/analytics/shared/constants';
+import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
+import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
+import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import MergeRequestsQuery from '../graphql/merge_requests.query.graphql';
-import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
-import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
 import GroupContributorCountQuery from '../graphql/group_contributor_count.query.graphql';
-import { BUCKETING_INTERVAL_ALL, MERGE_REQUESTS_STATE_MERGED } from '../graphql/constants';
+import { MERGE_REQUESTS_STATE_MERGED } from '../graphql/constants';
 import {
   DASHBOARD_LOADING_FAILURE,
   CHART_LOADING_FAILURE,

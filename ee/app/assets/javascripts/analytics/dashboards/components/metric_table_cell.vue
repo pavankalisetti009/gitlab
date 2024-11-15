@@ -2,7 +2,7 @@
 import { GlIcon, GlLink, GlPopover } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
 import { joinPaths, mergeUrlParams } from '~/lib/utils/url_utility';
-import { METRIC_TOOLTIPS } from '~/analytics/shared/constants';
+import { VALUE_STREAM_METRIC_METADATA } from '~/analytics/shared/constants';
 import { s__ } from '~/locale';
 import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
 import { TABLE_METRICS } from '../constants';
@@ -45,7 +45,7 @@ export default {
       return TABLE_METRICS[this.identifier] || AI_IMPACT_TABLE_METRICS[this.identifier];
     },
     tooltip() {
-      return METRIC_TOOLTIPS[this.identifier];
+      return VALUE_STREAM_METRIC_METADATA[this.identifier];
     },
     link() {
       const { groupLink, projectLink } = this.tooltip;

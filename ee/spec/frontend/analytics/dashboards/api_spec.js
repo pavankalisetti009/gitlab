@@ -1,5 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
+import { UNITS } from '~/analytics/shared/constants';
 import {
   extractGraphqlDoraData,
   extractGraphqlFlowData,
@@ -9,7 +10,6 @@ import {
   extractGraphqlContributorCountData,
   extractQueryResponseFromNamespace,
 } from 'ee/analytics/dashboards/api';
-import { UNITS } from 'ee/analytics/dashboards/constants';
 import {
   mockDoraMetricsResponseData,
   mockLastVulnerabilityCountData,

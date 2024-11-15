@@ -5,10 +5,11 @@ import {
   DORA_METRICS,
   VULNERABILITY_METRICS,
   AI_METRICS,
+  UNITS,
 } from '~/analytics/shared/constants';
 
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { UNITS, TABLE_METRICS as VSD_TABLE_METRICS } from '../constants';
+import { TABLE_METRICS as VSD_TABLE_METRICS } from '../constants';
 
 export const SUPPORTED_FLOW_METRICS = [FLOW_METRICS.CYCLE_TIME, FLOW_METRICS.LEAD_TIME];
 

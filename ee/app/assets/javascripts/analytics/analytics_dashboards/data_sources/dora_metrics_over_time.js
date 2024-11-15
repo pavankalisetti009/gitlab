@@ -1,6 +1,6 @@
-import DoraMetricsQuery from 'ee/analytics/dashboards/graphql/dora_metrics.query.graphql';
+import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
+import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import { TABLE_METRICS } from 'ee/analytics/dashboards/constants';
-import { BUCKETING_INTERVAL_ALL } from 'ee/analytics/dashboards/graphql/constants';
 import {
   extractQueryResponseFromNamespace,
   scaledValueForDisplay,

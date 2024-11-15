@@ -6,17 +6,8 @@ import {
   VULNERABILITY_METRICS,
   MERGE_REQUEST_METRICS,
   CONTRIBUTOR_METRICS,
+  UNITS,
 } from '~/analytics/shared/constants';
-
-export const UNITS = {
-  COUNT: 'COUNT',
-  DAYS: 'DAYS',
-  PER_DAY: 'PER_DAY',
-  PERCENT: 'PERCENT',
-};
-
-// Limits the number of decimals we round values to
-export const MAX_METRIC_PRECISION = 4;
 
 export const SUPPORTED_DORA_METRICS = [
   DORA_METRICS.DEPLOYMENT_FREQUENCY,

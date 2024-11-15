@@ -10,12 +10,12 @@ import {
 } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { toYmd } from '~/analytics/shared/utils';
-import { AI_METRICS } from '~/analytics/shared/constants';
+import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
+import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { dasherize } from '~/lib/utils/text_utility';
 import { formatNumber, s__ } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
-import { BUCKETING_INTERVAL_ALL } from '../../graphql/constants';
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
@@ -25,7 +25,6 @@ import TrendIndicator from '../../components/trend_indicator.vue';
 import {
   DASHBOARD_LOADING_FAILURE,
   RESTRICTED_METRIC_ERROR,
-  UNITS,
   CHART_LOADING_FAILURE,
   CHART_GRADIENT,
   CHART_GRADIENT_INVERTED,

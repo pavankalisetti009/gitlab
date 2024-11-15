@@ -1,4 +1,1 @@
-export const BUCKETING_INTERVAL_ALL = 'ALL';
-export const BUCKETING_INTERVAL_MONTHLY = 'MONTHLY';
-
 export const MERGE_REQUESTS_STATE_MERGED = 'merged';

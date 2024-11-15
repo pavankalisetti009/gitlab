@@ -1,7 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
+import { UNITS } from '~/analytics/shared/constants';
 import {
-  UNITS,
   SUPPORTED_DORA_METRICS,
   SUPPORTED_FLOW_METRICS,
   SUPPORTED_VULNERABILITY_METRICS,

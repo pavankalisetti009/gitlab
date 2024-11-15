@@ -1,6 +1,11 @@
 import { formatAsPercentageWithoutSymbol, secondsToDays } from 'ee/dora/components/util';
-import { CONTRIBUTOR_METRICS, VULNERABILITY_METRICS } from '~/analytics/shared/constants';
-import { TABLE_METRICS, UNITS, MAX_METRIC_PRECISION } from './constants';
+import {
+  CONTRIBUTOR_METRICS,
+  VULNERABILITY_METRICS,
+  UNITS,
+  MAX_METRIC_PRECISION,
+} from '~/analytics/shared/constants';
+import { TABLE_METRICS } from './constants';
 
 /**
  * @typedef {Object} ValueStreamDashboardTableMetric
