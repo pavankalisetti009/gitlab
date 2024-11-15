@@ -11,7 +11,7 @@ module Vulnerabilities
     end
 
     def execute
-      return policy_bot_error if user.blank?
+      return error_response unless can_create_state_transitions?
 
       vulnerability_ids.each_slice(MAX_BATCH).each do |ids|
         resolve(Vulnerability.id_in(ids))
@@ -20,7 +20,7 @@ module Vulnerabilities
 
       ServiceResponse.success
     rescue ActiveRecord::ActiveRecordError
-      ServiceResponse.error(message: "Could not resolve vulnerabilities")
+      error_response
     end
 
     private
@@ -100,6 +100,10 @@ module Vulnerabilities
       Vulnerabilities::Statistics::AdjustmentWorker.perform_async([project.id])
     end
 
+    def can_create_state_transitions?
+      Ability.allowed?(user, :create_vulnerability_state_transition, project)
+    end
+
     # We use this for setting the created_at and updated_at timestamps
     # for the various records created by this service.
     # The time is memoized on the first call to this method so all of the
@@ -108,8 +112,8 @@ module Vulnerabilities
       @now ||= Time.current.utc
     end
 
-    def policy_bot_error
-      ServiceResponse.error(message: "Project does not have a security policy bot")
+    def error_response
+      ServiceResponse.error(message: "Could not resolve vulnerabilities")
     end
   end
 end

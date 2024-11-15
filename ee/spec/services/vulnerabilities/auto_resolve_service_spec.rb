@@ -14,7 +14,11 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   subject(:service) { described_class.new(project, vulnerability_ids, security_policy_name) }
 
   before_all do
-    project.add_developer(user)
+    project.add_guest(user)
+  end
+
+  before do
+    stub_licensed_features(security_dashboard: true)
   end
 
   describe '#execute' do
@@ -78,7 +82,26 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         result = service.execute
 
         expect(result).to be_error
-        expect(result.errors).to eq(['Project does not have a security policy bot'])
+        expect(result.errors).to eq(['Could not resolve vulnerabilities'])
+      end
+    end
+
+    context 'when user does not have permission' do
+      let_it_be(:non_bot_user) { create(:user) }
+
+      before_all do
+        project.add_guest(non_bot_user)
+      end
+
+      before do
+        allow(project).to receive(:security_policy_bot).and_return(non_bot_user)
+      end
+
+      it 'returns an error response' do
+        result = service.execute
+
+        expect(result).to be_error
+        expect(result.errors).to eq(['Could not resolve vulnerabilities'])
       end
     end
 
