@@ -68,6 +68,7 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
 
     it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
+    it { is_expected.to have_many(:user_member_roles) }
   end
 
   describe 'nested attributes' do

@@ -14,12 +14,13 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   has_many :saml_group_links
   has_many :group_group_links
   has_many :users, -> { distinct }, through: :members
+  has_many :user_member_roles, class_name: 'Users::UserMemberRole'
   belongs_to :namespace
 
   validates :namespace, presence: true, if: :gitlab_com_subscription?
   validates :name, presence: true
   validates :name, uniqueness: { scope: :namespace_id }
-  validates :base_access_level, presence: true, inclusion: { in: LEVELS }
+  validates :base_access_level, presence: true, inclusion: { in: LEVELS }, unless: :admin_related_role?
   validates :permissions, json_schema: { filename: 'member_role_permissions' }
   validate :belongs_to_top_level_namespace
   validate :max_count_per_group_hierarchy, on: :create
@@ -88,6 +89,10 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       Gitlab::CustomRoles::Definition.all
     end
 
+    def admin_permissions
+      [:read_admin_dashboard]
+    end
+
     def all_customizable_project_permissions
       MemberRole.all_customizable_permissions.select { |_k, v| v[:project_ability] }.keys
     end
@@ -118,6 +123,16 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   private
+
+  def admin_related_permissions
+    self.class.admin_permissions & permissions.symbolize_keys.keys
+  end
+
+  def admin_related_role?
+    return false unless Feature.enabled?(:custom_ability_read_admin_dashboard, Feature.current_request)
+
+    admin_related_permissions.present?
+  end
 
   def belongs_to_top_level_namespace
     return if !namespace || namespace.root?
@@ -194,6 +209,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   def set_occupies_seat
+    return true if base_access_level.nil?
+
     self.occupies_seat = base_access_level > Gitlab::Access::GUEST ||
       self.class.elevating_permissions.any? { |attr| self[attr] }
   end
