@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
       include_context 'with pipeline policy context'
 
       let(:params) { { file: 'pipeline-execution-policy.yml', project: project.full_path } }
-      let(:execution_policy_dry_run) { true }
+      let(:creating_policy_pipeline) { true }
       let(:pipeline_config) do
         instance_double(Gitlab::Ci::ProjectConfig,
           internal_include_prepended?: true,
@@ -88,8 +88,8 @@ RSpec.describe Gitlab::Ci::Config::External::File::Project, feature_category: :p
                 expect(valid?).to be(true)
               end
 
-              context 'when not running in execution_policy_mode' do
-                let(:execution_policy_dry_run) { false }
+              context 'when creating_policy_pipeline? is false' do
+                let(:creating_policy_pipeline) { false }
 
                 it_behaves_like 'user has no access to the project'
               end

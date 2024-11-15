@@ -21,9 +21,9 @@ module EE
 
       override :validate_options!
       def validate_options!(options)
-        return unless params[:partition_id] && !options[:execution_policy_dry_run]
+        return unless params[:partition_id] && !options[:pipeline_policy_context]
 
-        raise ArgumentError, "Param `partition_id` is only allowed with `execution_policy_dry_run: true`"
+        raise ArgumentError, "Param `partition_id` is only allowed with `pipeline_policy_context`"
       end
     end
   end

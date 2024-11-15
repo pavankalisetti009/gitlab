@@ -12,7 +12,7 @@ module EE
 
             override :force_pipeline_creation_to_continue?
             def force_pipeline_creation_to_continue?
-              command.execution_policy_pipelines.present?
+              command.pipeline_policy_context.has_execution_policy_pipelines?
             end
           end
         end

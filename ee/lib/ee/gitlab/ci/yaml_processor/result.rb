@@ -26,9 +26,7 @@ module EE
           end
 
           def execution_policy_job_option
-            return unless ci_config&.pipeline_policy_context&.execution_policy_mode?
-
-            true
+            ci_config&.pipeline_policy_context&.creating_policy_pipeline? || nil
           end
         end
       end

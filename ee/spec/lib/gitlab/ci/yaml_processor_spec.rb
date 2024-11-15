@@ -485,8 +485,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         it { is_expected.to eq(%w[.pipeline-policy-pre .pre build test deploy .post .pipeline-policy-post]) }
       end
 
-      context 'when running in execution_policy_mode' do
-        let(:execution_policy_dry_run) { true }
+      context 'when creating_policy_pipeline? is true' do
+        let(:creating_policy_pipeline) { true }
 
         it_behaves_like 'stages including policy reserved stages'
       end
@@ -529,8 +529,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
 
           it_behaves_like 'reserved stage not allowed', stage
 
-          context 'with execution_policy_dry_run' do
-            let(:execution_policy_dry_run) { true }
+          context 'when creating_policy_pipeline? is true' do
+            let(:creating_policy_pipeline) { true }
 
             it 'is valid' do
               expect(result.errors).to be_empty
@@ -556,8 +556,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         expect(builds).to match([a_hash_including(options: { script: ['rspec'] })])
       end
 
-      context 'when running in execution_policy_mode' do
-        let(:execution_policy_dry_run) { true }
+      context 'when creating_policy_pipeline? is true' do
+        let(:creating_policy_pipeline) { true }
 
         it 'marks the build as `execution_policy_job` in :options' do
           expect(builds).to match([a_hash_including(options: { script: ['rspec'], execution_policy_job: true })])

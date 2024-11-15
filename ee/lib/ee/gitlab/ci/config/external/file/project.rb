@@ -17,7 +17,7 @@ module EE
               end
 
               def security_policy_management_project_access_allowed?(user, project)
-                return false unless context.pipeline_config&.pipeline_policy_context&.execution_policy_mode?
+                return false unless context.pipeline_config&.pipeline_policy_context&.creating_policy_pipeline?
                 return false unless context.project.affected_by_security_policy_management_project?(project)
 
                 Ability.allowed?(user, :download_code_spp_repository, project)

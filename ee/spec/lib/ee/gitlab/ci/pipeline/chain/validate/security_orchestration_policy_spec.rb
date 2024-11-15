@@ -26,12 +26,15 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::SecurityOrchestrationPolic
     ).execute
   end
 
-  let(:execution_policy_dry_run) { nil }
+  let(:creating_policy_pipeline) { false }
 
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project, current_user: user, yaml_processor_result: yaml_processor_result, save_incompleted: true,
-      execution_policy_dry_run: execution_policy_dry_run
+      pipeline_policy_context: instance_double(
+        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+        creating_policy_pipeline?: creating_policy_pipeline
+      )
     )
   end
 
@@ -40,8 +43,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::SecurityOrchestrationPolic
   describe '#perform' do
     subject(:warning_messages) { pipeline.warning_messages.map(&:content) }
 
-    context 'when running as execution_policy_dry_run' do
-      let(:execution_policy_dry_run) { true }
+    context 'when creating_policy_pipeline? is true' do
+      let(:creating_policy_pipeline) { true }
 
       it 'does not return warning' do
         step.perform!

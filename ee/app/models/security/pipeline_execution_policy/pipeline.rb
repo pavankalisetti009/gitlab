@@ -4,17 +4,17 @@
 module Security
   module PipelineExecutionPolicy
     class Pipeline
-      def initialize(pipeline:, config:)
+      def initialize(pipeline:, policy_config:)
         @pipeline = pipeline
-        @config = config
+        @policy_config = policy_config
       end
 
-      attr_reader :pipeline, :config
+      attr_reader :pipeline, :policy_config
 
-      delegate :suffix_strategy, :suffix, :suffix_on_conflict?, to: :config
+      delegate :suffix_strategy, :suffix, :suffix_on_conflict?, to: :policy_config
 
       def strategy
-        config.config_strategy
+        policy_config.config_strategy
       end
 
       def strategy_override_project_ci?
