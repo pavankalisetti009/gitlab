@@ -7,14 +7,17 @@ RSpec.shared_examples 'model with member role relation' do
 
   describe 'validations', feature_category: :permissions do
     before do
-      model.member_role = create(:member_role, namespace: model.group, base_access_level: Gitlab::Access::DEVELOPER)
+      assign_member_role(model, access_level: Gitlab::Access::DEVELOPER)
       model[model.base_access_level_attr] = Gitlab::Access::DEVELOPER
+
       stub_licensed_features(custom_roles: true)
     end
 
     describe 'validate_member_role_access_level' do
       context 'when no member role is associated' do
-        let(:member_role) { nil }
+        before do
+          model.member_role = nil
+        end
 
         it { is_expected.to be_valid }
       end
@@ -53,8 +56,7 @@ RSpec.shared_examples 'model with member role relation' do
 
       context 'when the member role has changed' do
         before do
-          member_role = create(:member_role, namespace: model.group, base_access_level: Gitlab::Access::MAINTAINER)
-          model.member_role = member_role
+          assign_member_role(model, access_level: Gitlab::Access::MAINTAINER)
         end
 
         it { is_expected.to be_valid }
@@ -85,7 +87,8 @@ RSpec.shared_examples 'model with member role relation' do
 
       context "when the member role namespace is outside the hierarchy of the model's group" do
         before do
-          model.group = create(:group)
+          model.member_role = create(:member_role,
+            namespace: create(:group), base_access_level: Gitlab::Access::DEVELOPER)
         end
 
         it 'is invalid' do
@@ -110,7 +113,8 @@ RSpec.shared_examples 'model with member role relation' do
 
     context 'when a member_role_id is present' do
       before do
-        model.member_role = create(:member_role, namespace: model.group, base_access_level: Gitlab::Access::DEVELOPER)
+        model[model.base_access_level_attr] = nil
+        assign_member_role(model)
       end
 
       context 'when custom roles are not enabled' do
@@ -141,5 +145,10 @@ RSpec.shared_examples 'model with member role relation' do
         end
       end
     end
+  end
+
+  def assign_member_role(model, access_level: Gitlab::Access::DEVELOPER)
+    model.member_role = create(:member_role,
+      namespace: model.send(:member_role_owner), base_access_level: access_level)
   end
 end

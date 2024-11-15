@@ -5,6 +5,11 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
+      include ::MemberRoles::MemberRoleRelation
+
+      base_access_level_attr :group_access
+      member_role_owner_association :project
+
       scope :in_project, ->(projects) { where(project: projects) }
       scope :not_in_group, ->(groups) { where.not(group: groups) }
 

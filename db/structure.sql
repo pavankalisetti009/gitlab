@@ -17811,7 +17811,8 @@ CREATE TABLE project_group_links (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     group_access integer DEFAULT 30 NOT NULL,
-    expires_at date
+    expires_at date,
+    member_role_id bigint
 );
 
 CREATE SEQUENCE project_group_links_id_seq
@@ -31597,6 +31598,8 @@ CREATE INDEX index_project_features_on_project_id_ral_20 ON project_features USI
 
 CREATE INDEX index_project_group_links_on_group_id_and_project_id ON project_group_links USING btree (group_id, project_id);
 
+CREATE INDEX index_project_group_links_on_member_role_id ON project_group_links USING btree (member_role_id);
+
 CREATE INDEX index_project_group_links_on_project_id ON project_group_links USING btree (project_id);
 
 CREATE INDEX index_project_import_data_on_project_id ON project_import_data USING btree (project_id);
@@ -35647,6 +35650,9 @@ ALTER TABLE ONLY analytics_cycle_analytics_group_stages
 
 ALTER TABLE ONLY oauth_device_grants
     ADD CONSTRAINT fk_308d5b76fe FOREIGN KEY (application_id) REFERENCES oauth_applications(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY project_group_links
+    ADD CONSTRAINT fk_30ec712bec FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY lists
     ADD CONSTRAINT fk_30f2a831f4 FOREIGN KEY (iteration_id) REFERENCES sprints(id) ON DELETE CASCADE;

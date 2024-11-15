@@ -13,6 +13,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   has_many :saml_providers
   has_many :saml_group_links
   has_many :group_group_links
+  has_many :project_group_links
   has_many :users, -> { distinct }, through: :members
   has_many :user_member_roles, class_name: 'Users::UserMemberRole'
   belongs_to :namespace
