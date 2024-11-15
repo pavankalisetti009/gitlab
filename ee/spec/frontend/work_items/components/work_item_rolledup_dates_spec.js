@@ -18,15 +18,6 @@ import {
 
 Vue.use(VueApollo);
 
-const DUE_DATE_INHERITED = '2024-12-31';
-const DUE_DATE_FIXED = '2024-11-30';
-const START_DATE_INHERITED = '2021-01-01';
-const START_DATE_FIXED = '2021-12-31';
-
-function parseDate(dateString) {
-  return new Date(dateString).toISOString().split('T')[0];
-}
-
 describe('WorkItemRolledupDates component', () => {
   let wrapper;
 
@@ -47,24 +38,20 @@ describe('WorkItemRolledupDates component', () => {
 
   const createComponent = ({
     canUpdate = false,
-    dueDateFixed = null,
-    startDateFixed = null,
-    dueDateInherited = null,
-    startDateInherited = null,
-    dueDateIsFixed = false,
-    startDateIsFixed = false,
+    dueDate = null,
+    startDate = null,
+    isFixed = false,
+    shouldRollUp = true,
     mutationHandler = updateWorkItemMutationHandler,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemRolledupDates, {
       apolloProvider: createMockApollo([[updateWorkItemMutation, mutationHandler]]),
       propsData: {
         canUpdate,
-        dueDateIsFixed,
-        startDateIsFixed,
-        dueDateFixed,
-        startDateFixed,
-        dueDateInherited,
-        startDateInherited,
+        dueDate,
+        startDate,
+        isFixed,
+        shouldRollUp,
         workItemType: 'Epic',
         workItem: updateWorkItemMutationResponse.data.workItemUpdate.workItem,
         fullPath: 'gitlab-org/gitlab',
@@ -83,7 +70,7 @@ describe('WorkItemRolledupDates component', () => {
   describe('when in default state', () => {
     describe('start date', () => {
       it('is rendered correctly when it is passed to the component', () => {
-        createComponent({ startDateInherited: '2022-01-01' });
+        createComponent({ startDate: '2022-01-01' });
 
         expect(findStartDateValue().text()).toBe('Jan 1, 2022');
         expect(findStartDateValue().classes('gl-text-secondary')).toBe(false);
@@ -99,7 +86,7 @@ describe('WorkItemRolledupDates component', () => {
 
     describe('end date', () => {
       it('is rendered correctly when it is passed to the component', () => {
-        createComponent({ dueDateInherited: '2022-01-01' });
+        createComponent({ dueDate: '2022-01-01' });
 
         expect(findDueDateValue().text()).toContain('Jan 1, 2022');
         expect(findDueDateValue().classes('gl-text-secondary')).toBe(false);
@@ -144,7 +131,7 @@ describe('WorkItemRolledupDates component', () => {
 
     describe('when both start and due date are fixed', () => {
       it('checks "fixed" radio button', async () => {
-        createComponent({ dueDateIsFixed: true, startDateIsFixed: true });
+        createComponent({ isFixed: true });
 
         await nextTick();
 
@@ -154,111 +141,11 @@ describe('WorkItemRolledupDates component', () => {
 
     describe('when both start and due date are inherited', () => {
       it('checks "inherited" radio button', async () => {
-        createComponent({ dueDateIsFixed: false, startDateIsFixed: false });
+        createComponent({ isFixed: false });
 
         await nextTick();
 
         expect(findInheritedRadioButton().props('checked')).toBe('inherited');
-      });
-    });
-
-    describe('when start date is fixed and has value and due date is inherited', () => {
-      beforeEach(async () => {
-        createComponent({
-          dueDateIsFixed: false,
-          startDateIsFixed: true,
-          startDateFixed: START_DATE_FIXED,
-          dueDate: DUE_DATE_INHERITED,
-        });
-
-        await nextTick();
-      });
-
-      it('checks "fixed" radio button', () => {
-        expect(findFixedRadioButton().props('checked')).toBe('fixed');
-      });
-
-      it('sets startDate to the fixed value', () => {
-        expect(parseDate(findStartDateValue().text())).toBe(START_DATE_FIXED);
-      });
-
-      it('sets dueDate to null, ignoring the inherited value', () => {
-        expect(findDueDateValue().text()).toBe('None');
-      });
-    });
-
-    describe('when start date is fixed but has no value and due date is inherited', () => {
-      beforeEach(async () => {
-        createComponent({
-          dueDateIsFixed: false,
-          startDateIsFixed: true,
-          startDateFixed: null,
-          dueDateInherited: DUE_DATE_INHERITED,
-        });
-
-        await nextTick();
-      });
-
-      it('checks "inherited" radio button', () => {
-        expect(findInheritedRadioButton().props('checked')).toBe('inherited');
-      });
-
-      it('sets startDate to null', () => {
-        expect(findStartDateValue().text()).toBe('None');
-      });
-
-      it('sets dueDate to the inherited value', () => {
-        expect(parseDate(findDueDateValue().text())).toBe(DUE_DATE_INHERITED);
-      });
-    });
-
-    describe('when due date is fixed and has value and start date is inherited', () => {
-      beforeEach(async () => {
-        createComponent({
-          dueDateIsFixed: true,
-          startDateIsFixed: false,
-          dueDateFixed: DUE_DATE_FIXED,
-          startDate: START_DATE_INHERITED,
-        });
-
-        await nextTick();
-      });
-
-      it('checks "fixed" radio button', () => {
-        expect(findFixedRadioButton().props('checked')).toBe('fixed');
-      });
-
-      it('sets dueDate to the fixed value', () => {
-        expect(parseDate(findDueDateValue().text())).toBe(DUE_DATE_FIXED);
-      });
-
-      it('sets startDate to null, ignoring the inherited value', () => {
-        expect(findStartDateValue().text()).toBe('None');
-      });
-    });
-
-    describe('when due date is fixed but has no value and start date is inherited', () => {
-      beforeEach(async () => {
-        createComponent({
-          dueDateIsFixed: true,
-          startDateIsFixed: false,
-          dueDateFixed: null,
-          startDateInherited: START_DATE_INHERITED,
-        });
-
-        await nextTick();
-      });
-
-      it('checks "inherited" radio button', () => {
-        expect(findInheritedRadioButton().props('checked')).toBe('inherited');
-      });
-
-      it('sets dueDate to null', () => {
-        expect(findDueDateValue().text()).toBe('None');
-      });
-
-      it('sets startDate to the inherited value', () => {
-        expect(parseDate(findStartDateValue().text())).toBe(START_DATE_INHERITED);
       });
     });
   });
@@ -286,7 +173,7 @@ describe('WorkItemRolledupDates component', () => {
       beforeEach(async () => {
         trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
-        createComponent({ canUpdate: true, dueDateIsFixed: isFixed, startDateIsFixed: isFixed });
+        createComponent({ canUpdate: true, isFixed });
 
         findRadioButton().vm.$emit('change');
         await nextTick();
@@ -296,7 +183,7 @@ describe('WorkItemRolledupDates component', () => {
         expect(updateWorkItemMutationHandler).toHaveBeenCalledWith({
           input: {
             id: workItemId,
-            rolledupDatesWidget: { dueDateIsFixed: isFixed, startDateIsFixed: isFixed },
+            startAndDueDateWidget: { isFixed },
           },
         });
       });
@@ -332,8 +219,8 @@ describe('WorkItemRolledupDates component', () => {
       expect(findDueDatePicker().props('value')).toBe(null);
 
       await wrapper.setProps({
-        startDateInherited: '2022-01-01',
-        dueDateInherited: '2022-01-02',
+        startDate: '2022-01-01',
+        dueDate: '2022-01-02',
       });
 
       expect(findStartDatePicker().props('value')).toEqual(newDate('2022-01-01'));
@@ -344,8 +231,8 @@ describe('WorkItemRolledupDates component', () => {
       beforeEach(() => {
         createComponent({
           canUpdate: true,
-          dueDateInherited: '2022-01-02',
-          startDateInherited: '2022-01-02',
+          dueDate: '2022-01-02',
+          startDate: '2022-01-02',
         });
 
         findEditButton().vm.$emit('click');
@@ -379,8 +266,8 @@ describe('WorkItemRolledupDates component', () => {
         beforeEach(async () => {
           createComponent({
             canUpdate: true,
-            dueDateInherited: '2022-12-31',
-            startDateInherited: '2022-12-31',
+            dueDate: '2022-12-31',
+            startDate: '2022-12-31',
           });
           trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
@@ -398,11 +285,10 @@ describe('WorkItemRolledupDates component', () => {
           expect(updateWorkItemMutationHandler).toHaveBeenCalledWith({
             input: {
               id: workItemId,
-              rolledupDatesWidget: {
-                dueDateFixed: '2022-12-31',
-                startDateFixed: '2022-01-01',
-                dueDateIsFixed: true,
-                startDateIsFixed: true,
+              startAndDueDateWidget: {
+                dueDate: '2022-12-31',
+                startDate: '2022-01-01',
+                isFixed: true,
               },
             },
           });
@@ -430,8 +316,8 @@ describe('WorkItemRolledupDates component', () => {
         beforeEach(async () => {
           createComponent({
             canUpdate: true,
-            dueDateInherited: '2022-12-31',
-            startDateInherited: '2022-12-31',
+            dueDate: '2022-12-31',
+            startDate: '2022-12-31',
           });
 
           findEditButton().vm.$emit('click');
@@ -457,8 +343,8 @@ describe('WorkItemRolledupDates component', () => {
         beforeEach(async () => {
           createComponent({
             canUpdate: true,
-            dueDateInherited: '2022-12-31',
-            startDateInherited: '2022-12-31',
+            dueDate: '2022-12-31',
+            startDate: '2022-12-31',
             mutationHandler,
           });
 

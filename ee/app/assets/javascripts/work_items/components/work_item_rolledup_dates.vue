@@ -7,7 +7,7 @@ import {
   GlFormRadio,
 } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { newWorkItemId } from '~/work_items/utils';
+import { newWorkItemId, findStartAndDueDateWidget } from '~/work_items/utils';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import { Mousetrap } from '~/lib/mousetrap';
@@ -17,7 +17,7 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
-  WIDGET_TYPE_ROLLEDUP_DATES,
+  WIDGET_TYPE_START_AND_DUE_DATE,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
@@ -49,45 +49,6 @@ export default {
   },
   mixins: [Tracking.mixin()],
   props: {
-    canUpdate: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    dueDateInherited: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    dueDateFixed: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    startDateInherited: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    startDateFixed: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    startDateIsFixed: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    dueDateIsFixed: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    workItemType: {
-      type: String,
-      required: true,
-    },
     workItem: {
       type: Object,
       required: true,
@@ -95,6 +56,35 @@ export default {
     fullPath: {
       type: String,
       required: true,
+    },
+    workItemType: {
+      type: String,
+      required: true,
+    },
+    canUpdate: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    startDate: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    dueDate: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    isFixed: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    shouldRollUp: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {
@@ -110,22 +100,6 @@ export default {
     workItemId() {
       return this.workItem.id;
     },
-    isFixed() {
-      const dueDateIsFixedAndHasValue = this.dueDateIsFixed && this.dueDateFixed;
-      const startDateIsFixedAndHasValue = this.startDateIsFixed && this.startDateFixed;
-
-      return Boolean(
-        (this.dueDateIsFixed && this.startDateIsFixed) ||
-          dueDateIsFixedAndHasValue ||
-          startDateIsFixedAndHasValue,
-      );
-    },
-    dueDate() {
-      return this.isFixed ? this.dueDateFixed : this.dueDateInherited;
-    },
-    startDate() {
-      return this.isFixed ? this.startDateFixed : this.startDateInherited;
-    },
     datesUnchanged() {
       const dirtyDueDate = this.dirtyDueDate || nullObjectDate;
       const dirtyStartDate = this.dirtyStartDate || nullObjectDate;
@@ -138,15 +112,6 @@ export default {
     },
     isDatepickerDisabled() {
       return !this.canUpdate || this.isUpdating;
-    },
-    isWithOnlyDueDate() {
-      return Boolean(this.dueDate && !this.startDate);
-    },
-    isWithOnlyStartDate() {
-      return Boolean(!this.dueDate && this.startDate);
-    },
-    isWithNoDates() {
-      return !this.dueDate && !this.startDate;
     },
     tracking() {
       return {
@@ -164,9 +129,7 @@ export default {
       return this.dueDate ? formatDate(this.dueDate, 'mmm d, yyyy', true) : this.$options.i18n.none;
     },
     optimisticResponse() {
-      const workItemDatesWidget = this.workItem.widgets.find(
-        (widget) => widget.type === WIDGET_TYPE_ROLLEDUP_DATES,
-      );
+      const workItemDatesWidget = findStartAndDueDateWidget(this.workItem);
 
       return {
         workItemUpdate: {
@@ -175,12 +138,12 @@ export default {
             ...this.workItem,
             widgets: [
               ...this.workItem.widgets.filter(
-                (widget) => widget.type !== WIDGET_TYPE_ROLLEDUP_DATES,
+                (widget) => widget.type !== WIDGET_TYPE_START_AND_DUE_DATE,
               ),
               {
                 ...workItemDatesWidget,
-                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
+                dueDate: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDate: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
               },
             ],
           },
@@ -234,8 +197,8 @@ export default {
               workItemType: this.workItemType,
               fullPath: this.fullPath,
               rolledUpDates: {
-                dueDateIsFixed: this.rollupType === ROLLUP_TYPE_FIXED,
-                startDateIsFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+                isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+                rollUp: this.shouldRollUp,
               },
             },
           },
@@ -251,9 +214,8 @@ export default {
           variables: {
             input: {
               id: this.workItemId,
-              rolledupDatesWidget: {
-                dueDateIsFixed: this.rollupType === ROLLUP_TYPE_FIXED,
-                startDateIsFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+              startAndDueDateWidget: {
+                isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
               },
             },
           },
@@ -291,10 +253,10 @@ export default {
               workItemType: this.workItemType,
               fullPath: this.fullPath,
               rolledUpDates: {
-                dueDateIsFixed: true,
-                startDateIsFixed: true,
-                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
+                isFixed: true,
+                dueDate: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDate: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
+                rollUp: this.shouldRollUp,
               },
             },
           },
@@ -310,11 +272,10 @@ export default {
           variables: {
             input: {
               id: this.workItemId,
-              rolledupDatesWidget: {
-                dueDateIsFixed: true,
-                startDateIsFixed: true,
-                dueDateFixed: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
-                startDateFixed: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
+              startAndDueDateWidget: {
+                isFixed: true,
+                dueDate: this.dirtyDueDate ? toISODateFormat(this.dirtyDueDate) : null,
+                startDate: this.dirtyStartDate ? toISODateFormat(this.dirtyStartDate) : null,
               },
             },
           },

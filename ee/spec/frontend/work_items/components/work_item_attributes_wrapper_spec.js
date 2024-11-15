@@ -276,11 +276,10 @@ describe('EE WorkItemAttributesWrapper component', () => {
     });
   });
 
-  describe('rolledup dates widget', () => {
+  describe('rolledup dates', () => {
     const createComponentWithRolledupDates = async ({ featureFlag = true } = {}) => {
       const response = workItemResponseFactory({
-        rolledupDatesWidgetPresent: true,
-        datesWidgetPresent: false,
+        datesWidgetPresent: true,
         workItemType: epicType,
       });
 
@@ -294,9 +293,9 @@ describe('EE WorkItemAttributesWrapper component', () => {
     };
 
     it.each`
-      description                                                              | featureFlag | exists
-      ${'renders rolledup dates widget when feature flag is enabled'}          | ${true}     | ${true}
-      ${'does not render rolledup dates widget when feature flag is disabled'} | ${false}    | ${false}
+      description                                                       | featureFlag | exists
+      ${'renders rolledup dates when feature flag is enabled'}          | ${true}     | ${true}
+      ${'does not render rolledup dates when feature flag is disabled'} | ${false}    | ${false}
     `('$description', async ({ featureFlag, exists }) => {
       await createComponentWithRolledupDates({ featureFlag });
 

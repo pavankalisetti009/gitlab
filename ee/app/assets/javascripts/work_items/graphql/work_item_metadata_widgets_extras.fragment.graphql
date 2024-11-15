@@ -1,8 +1,4 @@
-#import "./rolledup_dates.fragment.graphql"
-
 fragment WorkItemMetadataWidgetsExtras on WorkItemWidget {
-  ...RolledupDatesFragment
-
   ... on WorkItemWidgetIteration {
     iteration {
       description

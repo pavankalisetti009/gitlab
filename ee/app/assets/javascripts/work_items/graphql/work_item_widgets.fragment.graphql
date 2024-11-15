@@ -2,7 +2,6 @@
 #import "~/graphql_shared/fragments/user.fragment.graphql"
 #import "~/work_items/graphql/milestone.fragment.graphql"
 #import "~/work_items/graphql/timelog.fragment.graphql"
-#import "./rolledup_dates.fragment.graphql"
 
 fragment WorkItemWidgets on WorkItemWidget {
   type
@@ -39,6 +38,8 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetStartAndDueDate {
     dueDate
     startDate
+    rollUp
+    isFixed
   }
   ... on WorkItemWidgetTimeTracking {
     timeEstimate
@@ -49,7 +50,6 @@ fragment WorkItemWidgets on WorkItemWidget {
     }
     totalTimeSpent
   }
-  ...RolledupDatesFragment
   ... on WorkItemWidgetWeight {
     weight
     rolledUpWeight
