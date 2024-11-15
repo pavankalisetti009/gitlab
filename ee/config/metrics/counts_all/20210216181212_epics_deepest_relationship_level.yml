@@ -10,9 +10,6 @@ data_source: database
 instrumentation_class: EpicsDeepestRelationshipLevelMetric
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

@@ -16,9 +16,6 @@ events:
     property: warning
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

@@ -11,8 +11,6 @@ events:
   - name: status_page_incident_published
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate
 performance_indicator_type: []

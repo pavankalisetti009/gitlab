@@ -10,8 +10,6 @@ data_source: database
 data_category: operational
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate
 performance_indicator_type:

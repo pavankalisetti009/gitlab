@@ -16,7 +16,5 @@ events:
     property: failed
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate

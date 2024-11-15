@@ -15,9 +15,6 @@ options:
   parent_type: epic
 distribution:
   - ee
-tier:
-  - premium
-  - ultimate
 tiers:
   - premium
   - ultimate

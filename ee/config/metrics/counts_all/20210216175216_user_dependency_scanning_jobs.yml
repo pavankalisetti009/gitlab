@@ -12,8 +12,6 @@ options:
 data_source: database
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate
 performance_indicator_type:

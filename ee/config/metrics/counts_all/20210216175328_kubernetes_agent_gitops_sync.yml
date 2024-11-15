@@ -16,9 +16,6 @@ options:
   event: gitops_sync
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

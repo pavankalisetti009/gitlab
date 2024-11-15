@@ -15,9 +15,6 @@ options:
   seats_type: assigned
 distribution:
   - ee
-tier:
-  - premium
-  - ultimate
 tiers:
   - premium
   - ultimate

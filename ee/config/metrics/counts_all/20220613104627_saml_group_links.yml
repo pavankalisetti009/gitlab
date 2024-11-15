@@ -12,9 +12,6 @@ data_category: optional
 instrumentation_class: CountSamlGroupLinksMetric
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

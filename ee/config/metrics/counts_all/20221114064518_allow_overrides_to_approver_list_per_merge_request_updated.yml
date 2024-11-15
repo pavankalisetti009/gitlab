@@ -15,8 +15,6 @@ options:
   event: allow_overrides_to_approver_list_per_merge_request_updated
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate
 milestone_removed: "17.1"

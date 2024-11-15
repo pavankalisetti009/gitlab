@@ -12,8 +12,6 @@ options:
   scan_type: dependency_scanning
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate
 performance_indicator_type: [customer_health_score]

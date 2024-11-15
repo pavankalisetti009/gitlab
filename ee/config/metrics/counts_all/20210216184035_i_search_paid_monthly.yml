@@ -14,9 +14,6 @@ options:
   - i_search_paid
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

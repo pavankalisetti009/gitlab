@@ -15,8 +15,6 @@ options:
   event: allow_committer_approval_updated
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate
 milestone_removed: "17.1"

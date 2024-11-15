@@ -12,9 +12,6 @@ data_category: optional
 performance_indicator_type: []
 distribution:
 - ce
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

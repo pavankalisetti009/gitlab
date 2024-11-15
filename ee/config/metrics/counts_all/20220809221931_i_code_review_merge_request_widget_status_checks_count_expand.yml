@@ -15,7 +15,5 @@ events:
     label: status_checks
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate

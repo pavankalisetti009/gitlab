@@ -15,7 +15,5 @@ events:
     label: delete_work_item
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

@@ -12,7 +12,5 @@
   instrumentation_class: CountUserMergeRequestsForProjectsWithAppliedScanResultPoliciesMetric
   distribution:
   - ee
-  tier:
-  - ultimate
   tiers:
   - ultimate

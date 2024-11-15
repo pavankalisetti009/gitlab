@@ -12,7 +12,5 @@
   instrumentation_class: CountMergeRequestsWithAppliedScanResultPoliciesMetric
   distribution:
   - ee
-  tier:
-  - ultimate
   tiers:
   - ultimate

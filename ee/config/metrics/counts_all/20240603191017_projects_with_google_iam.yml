@@ -12,10 +12,6 @@ data_category: optional
 performance_indicator_type: []
 distribution:
 - ee
-tier:
-- free
-- premium
-- ultimate
 tiers:
 - free
 - premium

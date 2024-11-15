@@ -11,8 +11,6 @@ data_source: database
 instrumentation_class: CountUserPreferencesGroupOverviewSecurityDashboardMetric
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate
 performance_indicator_type: []

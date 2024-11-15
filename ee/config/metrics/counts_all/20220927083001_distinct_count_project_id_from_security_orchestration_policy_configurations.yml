@@ -12,7 +12,5 @@
   instrumentation_class: CountProjectsWithAssignedSecurityPolicyProjectMetric
   distribution:
   - ee
-  tier:
-  - ultimate
   tiers:
   - ultimate

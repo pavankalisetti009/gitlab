@@ -12,9 +12,6 @@ options:
   count_type: exact_required_approvers
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate
