@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import { GlAccordionItem } from '@gitlab/ui';
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
 import BasicInformationSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/basic_information_section.vue';
 import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
@@ -48,6 +49,7 @@ describe('Basic information section', () => {
   };
   const findMaintenanceAlert = () => wrapper.findComponentByTestId('maintenance-mode-alert');
   const findMigrationActionButton = () => wrapper.findComponentByTestId('migrate-action-button');
+  const findPipelineInput = () => wrapper.findComponentByTestId('pipeline-configuration-input');
 
   beforeEach(() => {
     createComponent();
@@ -89,7 +91,7 @@ describe('Basic information section', () => {
     async ({ pipelineConfigurationFullPath, message }) => {
       jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
 
-      const pipelineInput = wrapper.findByLabelText('Compliance pipeline configuration (optional)');
+      const pipelineInput = findPipelineInput();
       await pipelineInput.setValue(pipelineConfigurationFullPath);
       await waitForPromises();
 
@@ -101,6 +103,26 @@ describe('Basic information section', () => {
     createComponent({ isExpanded: true });
 
     expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(true);
+  });
+
+  describe('pipeline editing section', () => {
+    it('collapses the section when there is no pipeline configuration path', () => {
+      createComponent({
+        value: { ...fakeFramework, pipelineConfigurationFullPath: '' },
+      });
+
+      const accordionItem = wrapper.findComponent(GlAccordionItem);
+      expect(accordionItem.props('visible')).toBe(false);
+    });
+
+    it('expands the section when there is a pipeline configuration path', () => {
+      createComponent({
+        value: { ...fakeFramework, pipelineConfigurationFullPath: 'some/path.yml' },
+      });
+
+      const accordionItem = wrapper.findComponent(GlAccordionItem);
+      expect(accordionItem.props('visible')).toBe(true);
+    });
   });
 
   describe('maintenance mode alert', () => {
@@ -116,7 +138,7 @@ describe('Basic information section', () => {
 
       jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
       const pipelineYAMLPath = 'file.yaml@group/project';
-      const pipelineInput = wrapper.findByLabelText('Compliance pipeline configuration (optional)');
+      const pipelineInput = findPipelineInput();
       await pipelineInput.setValue(pipelineYAMLPath);
       await waitForPromises();
 
