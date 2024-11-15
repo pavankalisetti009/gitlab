@@ -16,11 +16,10 @@ module ComplianceManagement
 
         return unless @user
 
-        # This cache value is used to determine if a user is subject to PIPL
-        # which qualifies them for certain actions taken for compliance (e.g.
-        # banner and email notifications, etc.).
-        Rails.cache.fetch([PIPL_SUBJECT_USER_CACHE_KEY, user.id], expires_in: 24.hours) do
-          !paid?
+        if user_subject_to_pipl?
+          send_pipl_notification_email
+        else
+          user.pipl_user.reset_notification!
         end
       end
 
@@ -35,6 +34,20 @@ module ComplianceManagement
         user.authorized_groups.any? do |group|
           group.root_ancestor.paid?
         end
+      end
+
+      def user_subject_to_pipl?
+        # This cache value is used to determine if a user is subject to PIPL
+        # which qualifies them for certain actions taken for compliance (e.g.
+        # banner and email notifications, etc.).
+
+        Rails.cache.fetch([PIPL_SUBJECT_USER_CACHE_KEY, user.id], expires_in: 24.hours) do
+          !paid?
+        end
+      end
+
+      def send_pipl_notification_email
+        ComplianceManagement::Pipl::SendInitialComplianceEmailService.new(user: user).execute
       end
     end
   end
