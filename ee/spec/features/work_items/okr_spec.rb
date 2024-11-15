@@ -16,6 +16,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
   let(:objective) { create(:work_item, :objective, project: project, labels: [label]) }
   let!(:emoji_upvote) { create(:award_emoji, :upvote, awardable: objective, user: user2) }
   let(:key_result) { create(:work_item, :key_result, project: project, labels: [label]) }
+  let(:list_path) { project_issues_path(project) }
 
   before do
     group.add_developer(user)
@@ -24,103 +25,6 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
     stub_licensed_features(okrs: true, issuable_health_status: true)
     stub_feature_flags(work_items: true, okrs_mvc: true)
-  end
-
-  shared_examples 'work items progress' do
-    let(:progress_wrapper) { '[data-testid="work-item-progress-wrapper"]' }
-    let(:form_selector) { '[data-testid="work-item-progress"]' }
-    let(:input_selector) { '[data-testid="work-item-progress-input"]' }
-
-    it 'successfully sets the progress' do
-      within(progress_wrapper) do
-        click_button 'Edit'
-      end
-
-      find(input_selector).fill_in(with: '30')
-      send_keys(:tab) # Simulate blur
-
-      wait_for_requests
-
-      expect(find(progress_wrapper)).to have_content "30%"
-      expect(work_item.reload.progress.progress).to eq 30
-    end
-
-    it 'prevents typing values outside min and max range', :aggregate_failures do
-      page_body = page.find('body')
-
-      within(progress_wrapper) do
-        click_button 'Edit'
-      end
-
-      page.within(form_selector) do
-        progress_input = find(input_selector)
-        progress_input.native.send_keys('101')
-      end
-
-      page_body.click
-      expect(find(progress_wrapper)).to have_content "0%"
-    end
-
-    it 'prevent typing special characters `+`, `-`, and `e`', :aggregate_failures do
-      page_body = page.find('body')
-
-      within(progress_wrapper) do
-        click_button 'Edit'
-      end
-
-      page.within(form_selector) do
-        find(input_selector).native.send_keys('+')
-      end
-
-      page_body.click
-      expect(find(progress_wrapper)).to have_content "0%"
-
-      within(progress_wrapper) do
-        click_button 'Edit'
-      end
-
-      page.within(form_selector) do
-        find(input_selector).native.send_keys('-')
-      end
-
-      page_body.click
-      expect(find(progress_wrapper)).to have_content "0%"
-
-      within(progress_wrapper) do
-        click_button 'Edit'
-      end
-
-      page.within(form_selector) do
-        find(input_selector).native.send_keys('e')
-      end
-
-      page_body.click
-      expect(find(progress_wrapper)).to have_content "0%"
-    end
-  end
-
-  shared_examples 'work items health status' do
-    let(:health_status_selector) { '[data-testid="work-item-health-status"]' }
-
-    it 'successfully sets health status' do
-      within(health_status_selector) do
-        expect(page).to have_content 'None'
-        click_button 'Edit'
-
-        find_by_testid('listbox-item-needsAttention').click
-
-        wait_for_requests
-
-        expect(page).to have_content 'Needs attention'
-        expect(work_item.reload.health_status).to eq('needs_attention')
-
-        click_button 'Edit'
-        click_button 'Clear'
-
-        expect(page).to have_content 'None'
-        expect(work_item.reload.health_status).to be_nil
-      end
-    end
   end
 
   describe 'creating objective from issues list' do
@@ -148,7 +52,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
     it_behaves_like 'work items toggle status button'
     it_behaves_like 'work items assignees'
-    it_behaves_like 'work items labels'
+    it_behaves_like 'work items labels', 'project'
     it_behaves_like 'work items progress'
     it_behaves_like 'work items health status'
     it_behaves_like 'work items comments', :objective
@@ -389,7 +293,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
     it_behaves_like 'work items toggle status button'
     it_behaves_like 'work items assignees'
-    it_behaves_like 'work items labels'
+    it_behaves_like 'work items labels', 'project'
     it_behaves_like 'work items progress'
     it_behaves_like 'work items health status'
     it_behaves_like 'work items comments', :key_result

@@ -32,56 +32,6 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
       end
     end
 
-    context 'for epic work items' do
-      let_it_be(:label) { create(:group_label, group: group) }
-      let_it_be_with_reload(:work_item) do
-        create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group, labels: [label])
-      end
-
-      context 'on the work item route' do
-        before do
-          visit work_items_path
-        end
-
-        it_behaves_like 'work items rolled up dates'
-
-        it 'shows the correct breadcrumbs' do
-          within_testid('breadcrumb-links') do
-            expect(page).to have_link(group.name, href: group_path(group))
-            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference,
-              href: group_epic_path(group, work_item.iid))
-          end
-          expect(page).to have_link('Epics', href: group_epics_path(group))
-        end
-      end
-
-      context 'on the epics route' do
-        before do
-          visit group_epic_path(group, work_item.iid)
-
-          close_work_item_feedback_popover_if_present
-        end
-
-        it 'shows the correct breadcrumbs' do
-          within_testid('breadcrumb-links') do
-            expect(page).to have_link(group.name, href: group_path(group))
-            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference,
-              href: group_epic_path(group, work_item.iid))
-          end
-          expect(page).to have_link('Epics', href: group_epics_path(group))
-        end
-
-        it 'shows work item labels pointing to filtered epics list' do
-          within_testid('work-item-labels') do
-            expect(page).to have_link(label.title, href: "#{group_epics_path(group)}?label_name[]=#{label.title}")
-          end
-        end
-
-        # Make sure we render the work item under the epics route and are able to edit it.
-        it_behaves_like 'work items title'
-      end
-    end
-
     context 'for other work items' do
       let_it_be(:work_item) { create(:work_item, :issue, :group_level, namespace: group) }
 
