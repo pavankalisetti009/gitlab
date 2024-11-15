@@ -35,6 +35,11 @@ export default {
       required: false,
       default: null,
     },
+    summaryDataTestid: {
+      type: String,
+      required: false,
+      default: 'denominator',
+    },
     description: {
       type: String,
       required: false,
@@ -101,7 +106,7 @@ export default {
         <p
           v-if="usageValue"
           class="gl-mb-3 gl-text-size-h-display gl-font-bold"
-          data-testid="denominator"
+          :data-testid="summaryDataTestid"
         >
           {{ usageValue }}
           <span v-if="usageUnit" data-testid="denominator-usage-unit" class="gl-text-lg">{{

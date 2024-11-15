@@ -27,10 +27,10 @@ RSpec.describe 'Profile > Usage Quota', :js, feature_category: :consumables_cost
 
   describe 'shared runners use' do
     where(:shared_runners_enabled, :used, :quota, :usage_text) do
-      false | 300  | 500 | '300 / Not supported units Unlimited'
-      true  | 300  | nil | '300 / Unlimited units Unlimited'
-      true  | 300  | 500 | '300 / 500 units 60% used'
-      true  | 1000 | 500 | '1000 / 500 units 200% used'
+      false | 300  | 500 | '300 units / Not supported'
+      true  | 300  | nil | '300 / Unlimited units'
+      true  | 300  | 500 | '300 / 500 units'
+      true  | 1000 | 500 | '1000 / 500 units'
     end
 
     with_them do

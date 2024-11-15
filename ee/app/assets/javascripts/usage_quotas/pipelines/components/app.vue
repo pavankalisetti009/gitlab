@@ -283,22 +283,22 @@ export default {
           :limited-access-reason="subscriptionPermissions.reason"
         />
       </div>
-      <monthly-units-usage-summary
-        :class="{ 'gl-pt-5': !shouldShowBuyAdditionalMinutes }"
-        :monthly-units-used="ciMinutesMonthlyMinutesUsed"
-        :monthly-units-limit="ciMinutesMonthlyMinutesLimit"
-        :monthly-units-used-percentage="ciMinutesMonthlyMinutesUsedPercentage"
-        :last-reset-date="ciMinutesLastResetDate"
-        :any-project-enabled="ciMinutesAnyProjectEnabled"
-        :display-minutes-available-data="ciMinutesDisplayMinutesAvailableData"
-      />
-      <additional-units-usage-summary
-        v-if="shouldShowAdditionalMinutes"
-        class="gl-pt-5"
-        :additional-units-used="ciMinutesPurchasedMinutesUsed"
-        :additional-units-limit="ciMinutesPurchasedMinutesLimit"
-        :additional-units-used-percentage="ciMinutesPurchasedMinutesUsedPercentage"
-      />
+      <div class="gl-grid gl-gap-5 gl-py-4 md:gl-grid-cols-2">
+        <monthly-units-usage-summary
+          :monthly-units-used="ciMinutesMonthlyMinutesUsed"
+          :monthly-units-limit="ciMinutesMonthlyMinutesLimit"
+          :monthly-units-used-percentage="ciMinutesMonthlyMinutesUsedPercentage"
+          :last-reset-date="ciMinutesLastResetDate"
+          :any-project-enabled="ciMinutesAnyProjectEnabled"
+          :display-minutes-available-data="ciMinutesDisplayMinutesAvailableData"
+        />
+        <additional-units-usage-summary
+          v-if="shouldShowAdditionalMinutes"
+          :additional-units-used="ciMinutesPurchasedMinutesUsed"
+          :additional-units-limit="ciMinutesPurchasedMinutesLimit"
+          :additional-units-used-percentage="ciMinutesPurchasedMinutesUsedPercentage"
+        />
+      </div>
     </section>
 
     <div class="gl-my-5 gl-flex">

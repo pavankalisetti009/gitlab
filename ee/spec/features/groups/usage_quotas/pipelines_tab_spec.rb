@@ -49,7 +49,7 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
 
     it 'shows correct group quota info' do
       within_testid('pipelines-tab-app') do
-        expect(page).to have_content("Unlimited")
+        expect(page).to have_content("300 units / Not supported")
       end
 
       within_testid('pipelines-quota-tab-project-table') do
@@ -67,7 +67,6 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
     it 'shows correct group quota info' do
       within_testid('pipelines-tab-app') do
         expect(page).to have_content("300 / 500 units")
-        expect(page).to have_content("60% used")
       end
     end
   end
@@ -92,7 +91,6 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
     it 'has correct tracking setup and shows correct group quota and projects info' do
       within_testid('pipelines-tab-app') do
         expect(page).to have_content("1000 / 500 units")
-        expect(page).to have_content("200% used")
       end
 
       within_testid('pipelines-quota-tab-project-table') do

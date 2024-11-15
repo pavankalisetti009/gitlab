@@ -1,7 +1,7 @@
-import { GlProgressBar } from '@gitlab/ui';
+import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
 import MonthlyUnitsUsageSummary from 'ee_else_ce/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import { defaultProvide } from '../../mock_data';
 
 describe('MonthlyUnitsUsageSummary', () => {
@@ -26,47 +26,73 @@ describe('MonthlyUnitsUsageSummary', () => {
     });
   };
 
-  const findMinutesTitle = () => wrapper.findByTestId('minutes-title');
-  const findMinutesUsed = () => wrapper.findByTestId('minutes-used');
-  const findMinutesUsedPercentage = () => wrapper.findByTestId('minutes-used-percentage');
-  const findGlProgressBar = () => wrapper.findComponent(GlProgressBar);
+  const findStatisticsCard = () => wrapper.findComponent(StatisticsCard);
 
   beforeEach(() => {
     createComponent();
   });
 
-  it('renders the minutes title properly', () => {
-    expect(findMinutesTitle().text()).toBe(
-      `Compute usage since ${formatDate(defaultProps.lastResetDate, 'mmm dd, yyyy', true)}`,
+  it('passes props to StatisticsCard', () => {
+    expect(findStatisticsCard().props()).toEqual(
+      expect.objectContaining({
+        usageValue: defaultProps.monthlyUnitsUsed,
+        totalValue: defaultProps.monthlyUnitsLimit,
+        totalUnit: 'units',
+        percentage: Number(defaultProps.monthlyUnitsUsedPercentage),
+      }),
     );
   });
 
-  it('renders the minutes used properly', () => {
-    expect(findMinutesUsed().text()).toBe(
-      `${defaultProps.monthlyUnitsUsed} / ${defaultProps.monthlyUnitsLimit} units`,
+  it('displays last reset date', () => {
+    expect(findStatisticsCard().props('description')).toBe(
+      `Compute usage since ${localeDateFormat.asDate.format(newDate(defaultProps.lastResetDate))}`,
     );
   });
 
-  it('renders the minutes used percentage properly', () => {
-    expect(findMinutesUsedPercentage().text()).toBe(
-      `${defaultProps.monthlyUnitsUsedPercentage}% used`,
-    );
-  });
+  describe('Unlimited', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          monthlyUnitsLimit: 'Unlimited',
+          monthlyUnitsUsedPercentage: '0',
+          displayMinutesAvailableData: false,
+        },
+      });
+    });
 
-  it('passess the correct props to GlProgressBar', () => {
-    expect(findGlProgressBar().attributes()).toMatchObject({
-      value: defaultProps.monthlyUnitsUsedPercentage,
+    it('passes props to StatisticsCard', () => {
+      expect(findStatisticsCard().props()).toEqual(
+        expect.objectContaining({
+          usageValue: defaultProps.monthlyUnitsUsed,
+          totalValue: 'Unlimited',
+          totalUnit: 'units',
+          percentage: null,
+        }),
+      );
     });
   });
 
-  it('shows unlimited as usage percentage if quotas are disabled', () => {
-    createComponent({
-      props: {
-        displayMinutesAvailableData: false,
-        anyProjectEnabled: false,
-      },
+  describe('Unsupported', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          monthlyUnitsLimit: 'Not supported',
+          monthlyUnitsUsedPercentage: '0',
+          anyProjectEnabled: false,
+          displayMinutesAvailableData: false,
+        },
+      });
     });
 
-    expect(findMinutesUsedPercentage().text()).toBe('Unlimited');
+    it('passes props to StatisticsCard', () => {
+      expect(findStatisticsCard().props()).toEqual(
+        expect.objectContaining({
+          usageValue: defaultProps.monthlyUnitsUsed,
+          usageUnit: 'units',
+          totalValue: 'Not supported',
+          percentage: null,
+        }),
+      );
+    });
   });
 });
