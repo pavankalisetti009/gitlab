@@ -5,6 +5,7 @@ import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { MergeRequestGeneratedContent } from '~/merge_requests/generated_content';
 import HeaderComponent from '~/vue_shared/components/markdown/header.vue';
 import AiActionsDropdown from 'ee/ai/components/ai_actions_dropdown.vue';
+import SummarizeCodeChanges from 'ee/merge_requests/components/summarize_code_changes.vue';
 
 jest.mock('~/merge_requests/generated_content');
 
@@ -20,7 +21,13 @@ describe('Markdown field header component', () => {
         previewMarkdown: false,
         ...props,
       },
-      stubs: { GlTabs, AiActionsDropdown, GlDisclosureDropdown, GlListboxItem },
+      stubs: {
+        GlTabs,
+        AiActionsDropdown,
+        GlDisclosureDropdown,
+        GlListboxItem,
+        SummarizeCodeChanges,
+      },
       provide,
     });
   };
@@ -79,5 +86,32 @@ _This description was generated for revision ${sha} using AI_`;
         expect(gen.showWarning).toHaveBeenCalled();
       });
     });
+  });
+
+  describe('summarize code changes', () => {
+    it.each`
+      previewMarkdown | canSummarizeChanges | exists
+      ${true}         | ${true}             | ${false}
+      ${true}         | ${false}            | ${false}
+      ${false}        | ${true}             | ${true}
+      ${false}        | ${false}            | ${false}
+    `(
+      'SummarizeCodeChanges exists returns $exists when previewMarkdown is $previewMarkdown and canSummarizeChanges is $canSummarizeChanges',
+      ({ previewMarkdown, canSummarizeChanges, exists }) => {
+        createWrapper({
+          props: {
+            previewMarkdown,
+          },
+          provide: {
+            projectId: 1,
+            sourceBranch: 'branch',
+            targetBranch: 'target',
+            canSummarizeChanges,
+          },
+        });
+
+        expect(wrapper.findComponent(SummarizeCodeChanges).exists()).toBe(exists);
+      },
+    );
   });
 });
