@@ -102,6 +102,32 @@ RSpec.describe Dashboard::ProjectsController, feature_category: :groups_and_proj
           end
         end
       end
+
+      context 'with redirects' do
+        context 'when feature flag your_work_projects_vue is true' do
+          before do
+            stub_feature_flags(your_work_projects_vue: true)
+          end
+
+          it 'redirects /removed to /inactive' do
+            subject
+
+            expect(response).to redirect_to(inactive_dashboard_projects_path)
+          end
+        end
+
+        context 'when feature flag your_work_projects_vue is false' do
+          before do
+            stub_feature_flags(your_work_projects_vue: false)
+          end
+
+          it 'does not redirect /removed to /inactive' do
+            subject
+
+            expect(response).not_to redirect_to(inactive_dashboard_projects_path)
+          end
+        end
+      end
     end
 
     context 'when not licensed' do
