@@ -29855,6 +29855,9 @@ msgstr ""
 msgid "InviteMembersModal|Inviting a group %{linkStart}adds its members to your project%{linkEnd}, including members who join after the invite. This might put your group over the free %{count} user limit."
 msgstr ""
 
+msgid "InviteMembersModal|Learn how to add seats"
+msgstr ""
+
 msgid "InviteMembersModal|Manage members"
 msgstr ""
 
