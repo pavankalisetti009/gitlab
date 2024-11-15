@@ -19,7 +19,7 @@ module EE
       def organization_activity_event_types
         super.concat([
           {
-            title: _('Epic events'),
+            title: _('Epic'),
             value: EventFilter::EPIC
           }
         ]).sort_by { |event| event[:value] }

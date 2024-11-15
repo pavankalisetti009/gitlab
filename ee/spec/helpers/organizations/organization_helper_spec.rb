@@ -11,31 +11,31 @@ RSpec.describe Organizations::OrganizationHelper, feature_category: :cell do
     let_it_be(:expected_event_types) do
       [
         {
-          'title' => 'Comments',
+          'title' => 'Comment',
           'value' => EventFilter::COMMENTS
         },
         {
-          'title' => 'Designs',
+          'title' => 'Design',
           'value' => EventFilter::DESIGNS
         },
         {
-          'title' => 'Epic events',
+          'title' => 'Epic',
           'value' => EventFilter::EPIC
         },
         {
-          'title' => 'Issue events',
+          'title' => 'Issue',
           'value' => EventFilter::ISSUE
         },
         {
-          'title' => 'Merge events',
+          'title' => 'Merge',
           'value' => EventFilter::MERGED
         },
         {
-          'title' => 'Push events',
+          'title' => 'Repository',
           'value' => EventFilter::PUSH
         },
         {
-          'title' => 'Team',
+          'title' => 'Membership',
           'value' => EventFilter::TEAM
         },
         {
