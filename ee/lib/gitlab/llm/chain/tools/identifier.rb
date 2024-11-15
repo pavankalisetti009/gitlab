@@ -102,9 +102,12 @@ module Gitlab
           traceable :identify_resource, name: 'Identify resource', run_type: 'parser'
 
           def extract_json(response)
-            response = "```json
-                  \{
-                    \"ResourceIdentifierType\": \"" + response
+            unless response.include?("ResourceIdentifierType")
+              response = "```json
+                    \{
+                      \"ResourceIdentifierType\": \"" + response
+            end
+
             response = (Utils::TextProcessing.text_before_stop_word(response, /Question:/) || response).to_s.strip
             content_after_ticks = response.split(/```json/, 2).last
             content_between_ticks = content_after_ticks&.split(/```/, 2)&.first

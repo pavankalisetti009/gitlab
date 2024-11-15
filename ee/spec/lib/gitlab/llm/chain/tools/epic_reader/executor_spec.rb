@@ -197,6 +197,14 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
           it_behaves_like 'success response'
         end
 
+        context 'when ai response is a fully formed json' do
+          let(:identifier) { Gitlab::Saas.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
+          let(:resource) { epic2 }
+          let(:ai_response) { "{\"ResourceIdentifierType\": \"url\", \"ResourceIdentifier\": \"#{identifier}\"}```" }
+
+          it_behaves_like 'success response'
+        end
+
         context 'when context container is nil' do
           before do
             context.container = nil
