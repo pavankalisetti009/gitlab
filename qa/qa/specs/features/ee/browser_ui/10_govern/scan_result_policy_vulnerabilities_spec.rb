@@ -59,7 +59,9 @@ module QA
           project.find_member(approver.username)
         end
 
-        scan_result_policy_commit # fabricate scan result policy commit
+        QA::Support::Retrier.retry_on_exception(sleep_interval: 2, message: "Retrying Scan result policy commit") do
+          scan_result_policy_commit # fabricate scan result policy commit
+        end
 
         Flow::Login.sign_in
         project.visit!
