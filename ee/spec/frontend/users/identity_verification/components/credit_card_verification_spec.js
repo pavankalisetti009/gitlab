@@ -35,7 +35,7 @@ describe('CreditCardVerification', () => {
 
   const findZuora = () => wrapper.findComponent(Zuora);
   const findSubmitButton = () => wrapper.find('[type="submit"]');
-  const findPhoneExemptionLink = () => wrapper.findByText('Verify with a phone number instead?');
+  const findPhoneExemptionLink = () => wrapper.findByTestId('verify-with-phone-btn');
   const findCaptcha = () => wrapper.findComponent(Captcha);
 
   const createComponent = ({ provide, props } = { provide: {}, props: {} }) => {

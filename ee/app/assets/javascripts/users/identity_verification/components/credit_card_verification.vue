@@ -205,6 +205,7 @@ export default {
       block
       variant="link"
       class="gl-mt-5 gl-text-sm"
+      data-testid="verify-with-phone-btn"
       @click="$emit('exemptionRequested')"
       >{{ $options.i18n.verifyWithPhone }}</gl-button
     >

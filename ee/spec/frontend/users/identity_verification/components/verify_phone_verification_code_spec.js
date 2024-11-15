@@ -37,14 +37,14 @@ describe('Verify phone verification code input component', () => {
   const findVerificationCodeFormGroup = () => wrapper.findByTestId('verification-code-form-group');
   const findVerificationCodeInput = () => wrapper.findByTestId('verification-code-form-input');
 
-  const findVerifyCodeButton = () => wrapper.findByText('Verify phone number');
-  const findGoBackLink = () => wrapper.findByText('enter a new phone number');
+  const findVerifyCodeButton = () => wrapper.findByTestId('verify-btn');
+  const findGoBackLink = () => wrapper.findByTestId('go-back-btn');
   const findContactSupportLink = () => wrapper.findByTestId('contact-support-link');
 
   const enterCode = (value) => findVerificationCodeInput().vm.$emit('input', value);
   const submitForm = () => findForm().vm.$emit('submit', { preventDefault: jest.fn() });
 
-  const findResendCodeButton = () => wrapper.findByText('Send a new code');
+  const findResendCodeButton = () => wrapper.findByTestId('resend-code-link');
   const resendCode = () => findResendCodeButton().vm.$emit('click');
 
   const findCountdown = () => wrapper.findComponent(GlCountdown);

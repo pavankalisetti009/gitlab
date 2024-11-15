@@ -158,6 +158,7 @@ export default {
           :disabled="editDisabled"
           category="primary"
           variant="confirm"
+          data-testid="edit-framework-btn"
           @click="$emit('edit', framework)"
         >
           {{ $options.i18n.editFramework }}

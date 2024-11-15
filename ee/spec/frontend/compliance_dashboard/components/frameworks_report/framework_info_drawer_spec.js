@@ -22,7 +22,7 @@ describe('FrameworkInfoDrawer component', () => {
 
   const findDefaultBadge = () => wrapper.findComponent(GlLabel);
   const findTitle = () => wrapper.findByTestId('framework-name');
-  const findEditFrameworkBtn = () => wrapper.findByText('Edit framework');
+  const findEditFrameworkBtn = () => wrapper.findByTestId('edit-framework-btn');
 
   const findIdSection = () => wrapper.findByTestId('sidebar-id');
   const findIdSectionTitle = () => wrapper.findByTestId('sidebar-id-title');
