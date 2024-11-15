@@ -153,7 +153,28 @@ class ApprovalMergeRequestRule < ApplicationRecord
   end
 
   def hook_attrs
-    attributes
+    {
+      id: id,
+      approvals_required: approvals_required,
+      name: name,
+      rule_type: rule_type,
+      report_type: report_type,
+      merge_request_id: merge_request_id,
+      section: section,
+      modified_from_project_rule: modified_from_project_rule,
+      orchestration_policy_idx: orchestration_policy_idx,
+      vulnerabilities_allowed: vulnerabilities_allowed,
+      scanners: scanners,
+      severity_levels: severity_levels,
+      vulnerability_states: vulnerability_states,
+      security_orchestration_policy_configuration_id: security_orchestration_policy_configuration_id,
+      scan_result_policy_id: scan_result_policy_id,
+      applicable_post_merge: applicable_post_merge,
+      project_id: project_id,
+      approval_policy_rule_id: approval_policy_rule_id,
+      updated_at: updated_at,
+      created_at: created_at
+    }
   end
 
   private
