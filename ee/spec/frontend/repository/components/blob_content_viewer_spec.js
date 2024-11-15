@@ -16,6 +16,7 @@ import { isLoggedIn } from '~/lib/utils/common_utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import highlightMixin from '~/repository/mixins/highlight_mixin';
 import getRefMixin from '~/repository/mixins/get_ref';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   simpleViewerMock,
   projectMock,
@@ -104,7 +105,7 @@ const createComponent = async (mockData = {}) => {
       ...propsMock,
       path,
     },
-    mixins: [getRefMixin, highlightMixin],
+    mixins: [getRefMixin, highlightMixin, glFeatureFlagMixin()],
     provide: {
       targetBranch: 'test',
       originalBranch: 'test',
