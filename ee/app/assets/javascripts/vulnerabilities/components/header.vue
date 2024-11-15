@@ -338,6 +338,7 @@ export default {
           :show-resolve-with-ai="canResolveWithAi"
           :show-explain-with-ai="canExplainWithAi"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"
+          :show-public-project-warning="vulnerability.belongsToPublicProject"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"
           @explain-vulnerability="explainVulnerability"

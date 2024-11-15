@@ -94,6 +94,7 @@ module VulnerabilitiesHelper
     data[:ai_explanation_available] = vulnerability.finding.ai_explanation_available?
     data[:ai_resolution_available] = vulnerability.finding.ai_resolution_available?
     data[:ai_resolution_enabled] = vulnerability.finding.ai_resolution_enabled?
+    data[:belongs_to_public_project] = vulnerability.project.public?
     data
   end
 

@@ -2286,6 +2286,9 @@ msgstr ""
 msgid "AI|Create issue description based on a short prompt"
 msgstr ""
 
+msgid "AI|Creating an MR from a public project will publicly expose the vulnerability and offered resolution. To create the MR privately, see %{linkStart} Resolving a vulnerability privately%{linkEnd}."
+msgstr ""
+
 msgid "AI|Description is required"
 msgstr ""
 
