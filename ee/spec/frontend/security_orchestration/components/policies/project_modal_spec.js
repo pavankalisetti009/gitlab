@@ -24,7 +24,7 @@ describe('ProjectModal Component', () => {
   };
 
   const findSppSelector = () => wrapper.findComponent(SppSelector);
-  const findUnlinkButton = () => wrapper.findByLabelText('Unlink project');
+  const findUnlinkButton = () => wrapper.findByTestId('unlink-button');
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findModal = () => wrapper.findComponent(GlModal);
 
