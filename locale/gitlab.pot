@@ -3087,7 +3087,7 @@ msgstr ""
 msgid "Active Sessions"
 msgstr ""
 
-msgid "Active chat names (%{count})"
+msgid "Active chat names"
 msgstr ""
 
 msgid "Active group access tokens"
