@@ -49407,12 +49407,6 @@ msgstr ""
 msgid "SecurityConfiguration|Available with Ultimate"
 msgstr ""
 
-msgid "SecurityConfiguration|BAS"
-msgstr ""
-
-msgid "SecurityConfiguration|Breach and Attack Simulation (BAS)"
-msgstr ""
-
 msgid "SecurityConfiguration|Configuration guide"
 msgstr ""
 
