@@ -94,6 +94,8 @@ export const Unused = {
 export const Unlimited = {
   render: createTemplate({
     provide: {
+      ciMinutesAnyProjectEnabled: true,
+      ciMinutesDisplayMinutesAvailableData: false,
       ciMinutesMonthlyMinutesLimit: 'Unlimited',
       ciMinutesMonthlyMinutesUsedPercentage: '0',
     },

@@ -44,9 +44,6 @@ export const PROJECTS_TABLE_FIELDS = [
   },
 ];
 
-export const MINUTES_USED = __('%{minutesUsed} units');
-export const PERCENTAGE_USED = __('%{percentageUsed}%% used');
-
 export const ERROR_MESSAGE = s__(
   'UsageQuota|Something went wrong while fetching pipeline statistics',
 );

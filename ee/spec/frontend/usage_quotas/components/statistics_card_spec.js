@@ -1,9 +1,10 @@
 import { GlLink, GlButton, GlProgressBar, GlSkeletonLoader } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 describe('StatisticsCard', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const defaultProps = {
     description: 'Dummy text for description',
@@ -17,16 +18,16 @@ describe('StatisticsCard', () => {
     totalUnit: 'MiB',
   };
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(StatisticsCard, {
+    wrapper = shallowMountExtended(StatisticsCard, {
       propsData: props,
     });
   };
 
-  const findDenominatorBlock = () => wrapper.find('[data-testid="denominator"]');
-  const findUsageUnitBlock = () => wrapper.find('[data-testid="denominator-usage-unit"]');
-  const findTotalBlock = () => wrapper.find('[data-testid="denominator-total"]');
-  const findTotalUnitBlock = () => wrapper.find('[data-testid="denominator-total-unit"]');
-  const findDescriptionBlock = () => wrapper.find('[data-testid="description"]');
+  const findDenominatorBlock = () => wrapper.findByTestId('denominator');
+  const findUsageUnitBlock = () => wrapper.findByTestId('denominator-usage-unit');
+  const findTotalBlock = () => wrapper.findByTestId('denominator-total');
+  const findTotalUnitBlock = () => wrapper.findByTestId('denominator-total-unit');
+  const findDescriptionBlock = () => wrapper.findByTestId('description');
   const findPurchaseButton = () => wrapper.findComponent(GlButton);
   const findHelpLink = () => wrapper.findComponent(GlLink);
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
@@ -167,6 +168,20 @@ describe('StatisticsCard', () => {
 
     it('renders `GlSkeletonLoader`', () => {
       expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
+    });
+  });
+
+  describe('custom data-testid', () => {
+    it('allows changing summary block data-testid selector', () => {
+      createComponent({
+        usageValue: '0',
+        totalValue: '1',
+        summaryDataTestid: 'summary',
+      });
+
+      const summaryBlock = wrapper.findByTestId('summary');
+
+      expect(summaryBlock.text()).toMatchInterpolatedText('0 / 1');
     });
   });
 });
