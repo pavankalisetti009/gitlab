@@ -57,7 +57,6 @@ module EE
       end
 
       def enqueue_repository_xray
-        return unless ::Feature.enabled?(:ai_enable_internal_repository_xray_service, project)
         return if removing_branch?
         return unless default_branch? && project.duo_features_enabled
 

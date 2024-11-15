@@ -243,14 +243,6 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
 
           it_behaves_like 'does not enqueue the X-Ray worker'
         end
-
-        context 'when the FF `ai_enable_internal_repository_xray_service` is disabled' do
-          before do
-            stub_feature_flags(ai_enable_internal_repository_xray_service: false)
-          end
-
-          it_behaves_like 'does not enqueue the X-Ray worker'
-        end
       end
 
       context 'when pushing to a non-default branch' do
