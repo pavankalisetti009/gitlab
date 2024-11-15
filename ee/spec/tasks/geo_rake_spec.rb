@@ -41,6 +41,11 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
   describe 'geo:set_secondary_as_primary', :use_clean_rails_memory_store_caching do
     let!(:current_node) { create(:geo_node) }
     let!(:primary_node) { create(:geo_node, :primary) }
+    let(:execute) do
+      Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
+        run_rake_task('geo:set_secondary_as_primary')
+      end
+    end
 
     before do
       stub_current_geo_node(current_node)
@@ -52,7 +57,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
       # Pre-warming the cache. See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/22021
       Gitlab::Geo.primary_node
 
-      run_rake_task('geo:set_secondary_as_primary')
+      execute
 
       expect(current_node.primary?).to be_truthy
       expect(GeoNode.count).to eq(1)
@@ -62,7 +67,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
       it 'enables silent mode' do
         stub_env('ENABLE_SILENT_MODE' => true)
 
-        expect { run_rake_task('geo:set_secondary_as_primary') }
+        expect { execute }
           .to change { Gitlab::CurrentSettings.silent_mode_enabled? }
                 .from(false)
                 .to(true)
@@ -73,7 +78,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
       it 'does not enable silent mode' do
         stub_env('ENABLE_SILENT_MODE' => nil)
 
-        expect { run_rake_task('geo:set_secondary_as_primary') }
+        expect { execute }
           .not_to change { Gitlab::CurrentSettings.silent_mode_enabled? }
       end
     end

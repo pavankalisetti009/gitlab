@@ -6,8 +6,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
-  jobs = %w[
-    ldap_test
+  geo_jobs = %w[
     repository_check_worker
     geo_registry_sync_worker
     geo_repository_registry_sync_worker
@@ -18,8 +17,19 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
     geo_sync_timeout_cron_worker
   ].freeze
 
+  non_geo_jobs = %w[ldap_test]
+
   def job(name)
     Sidekiq::Cron::Job.find(name)
+  end
+
+  def init_cron_job(job_name, class_name, status: 'enabled')
+    Sidekiq::Cron::Job.new(
+      name: job_name,
+      cron: '0 * * * *',
+      class: class_name,
+      status: status
+    ).save # rubocop:disable Rails/SaveBang -- No ActiveRecord
   end
 
   subject(:manager) { described_class.new }
@@ -32,7 +42,6 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
     let(:ldap_test_job) { job('ldap_test') }
     let(:primary_jobs) { [job('geo_prune_event_log_worker')] }
     let(:repository_check_job) { job('repository_check_worker') }
-
     let(:secondary_jobs) do
       [
         job('geo_registry_sync_worker'),
@@ -43,21 +52,12 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
     end
 
     before_all do
-      jobs.each { |name| init_cron_job(name, name.camelize) }
+      geo_jobs.each { |name| init_cron_job(name, name.camelize) }
+      non_geo_jobs.each { |name| init_cron_job(name, name.camelize, status: 'disabled') }
     end
 
     after(:all) do
-      jobs.each { |name| job(name)&.destroy } # rubocop: disable Rails/SaveBang
-    end
-
-    def init_cron_job(job_name, class_name)
-      job = Sidekiq::Cron::Job.new(
-        name: job_name,
-        cron: '0 * * * *',
-        class: class_name
-      )
-
-      job.enable!
+      (geo_jobs + non_geo_jobs).each { |name| job(name)&.destroy } # rubocop: disable Rails/SaveBang -- No ActiveRecord
     end
 
     def count_enabled(jobs)
@@ -87,16 +87,31 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
         expect(repository_check_job).to be_enabled
       end
 
-      it 'enables non-geo jobs' do
-        expect(ldap_test_job).to be_enabled
+      context 'with enabled feature flag stop_bulk_sidekiq_job_activation' do
+        it 'does not enable non-geo jobs' do
+          expect(ldap_test_job).not_to be_enabled
+        end
       end
 
       context 'No connection' do
         it 'does not change current job configuration' do
           allow(Geo).to receive(:connected?).and_return(false)
 
-          expect { manager.execute }.not_to change { count_enabled(jobs) }
+          expect { manager.execute }.not_to change { count_enabled(geo_jobs + non_geo_jobs) }
         end
+      end
+    end
+
+    context 'with geo primary and disabled feature flag stop_bulk_sidekiq_job_activation' do
+      before do
+        stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
+        stub_current_geo_node(primary)
+
+        manager.execute
+      end
+
+      it 'enables non-geo jobs' do
+        expect(ldap_test_job).to be_enabled
       end
     end
 
@@ -151,6 +166,21 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
         expect(repository_check_job).to be_enabled
       end
 
+      context 'with enabled feature flag stop_bulk_sidekiq_job_activation' do
+        it 'does not enable non-geo jobs' do
+          expect(ldap_test_job).not_to be_enabled
+        end
+      end
+    end
+
+    context 'with non geo and disabled feature flag stop_bulk_sidekiq_job_activation' do
+      before do
+        stub_feature_flags(stop_bulk_sidekiq_job_activation: false)
+        stub_current_geo_node(nil)
+
+        manager.execute
+      end
+
       it 'enables non-geo jobs' do
         expect(ldap_test_job).to be_enabled
       end
@@ -167,6 +197,24 @@ RSpec.describe Gitlab::Geo::CronManager, :geo, :allow_unrouted_sidekiq_calls, fe
       expect(created.klass).to eq('Geo::SidekiqCronConfigWorker')
       expect(created.cron).to eq('*/1 * * * *')
       expect(created.name).to eq('geo_sidekiq_cron_config_worker')
+    end
+  end
+
+  describe '#enable_all_jobs!' do
+    name = "job"
+
+    before do
+      init_cron_job(name, name.camelize, status: 'disabled')
+    end
+
+    after(:all) do
+      job(name).destroy # rubocop: disable Rails/SaveBang -- No ActiveRecord
+    end
+
+    it 'enables all jobs' do
+      manager.enable_all_jobs!
+
+      expect(job(name)).to be_enabled
     end
   end
 end

@@ -3,6 +3,11 @@
 module Gitlab
   module Geo
     class CronManager
+      # This class helps to react to state changes in node types. We currently have non-geo nodes, primary and
+      # secondary geo nodes. This manager gets for example executed during Rails initialization, a promotion from a
+      # secondary to a primary node, during and also every minute by the `Geo::SidekiqCronConfigWorker` to ensure
+      # the correct status of the geo jobs.
+
       COMMON_GEO_JOBS = %w[
         geo_metrics_update_worker
         geo_verification_cron_worker
@@ -25,10 +30,11 @@ module Gitlab
         geo_sync_timeout_cron_worker
       ].freeze
 
-      GEO_JOBS = (COMMON_GEO_JOBS + PRIMARY_GEO_JOBS + SECONDARY_GEO_JOBS).freeze
-
       CONFIG_WATCHER = 'geo_sidekiq_cron_config_worker'
       CONFIG_WATCHER_CLASS = 'Geo::SidekiqCronConfigWorker'
+
+      GEO_JOBS = (COMMON_GEO_JOBS + PRIMARY_GEO_JOBS + SECONDARY_GEO_JOBS).freeze
+      GEO_ALWAYS_ENABLED_JOBS = (COMMON_GEO_JOBS + COMMON_GEO_AND_NON_GEO_JOBS).freeze
 
       def execute
         return unless Geo.connected?
@@ -38,8 +44,7 @@ module Gitlab
         elsif Geo.secondary?
           configure_secondary
         else
-          disable!(jobs(GEO_JOBS))
-          enable!(all_jobs(except: GEO_JOBS))
+          configure_non_geo_site
         end
       end
 
@@ -56,36 +61,75 @@ module Gitlab
         end
       end
 
+      # This method ensures disabled secondary geo jobs are enabled when promoting to a primary node.
+      # Applying the default config without `status` attributes won't enable previously disabled jobs.
+      def enable_all_jobs!
+        enable_jobs!(all_jobs)
+      end
+
       private
 
       def configure_primary
-        disable!(jobs(SECONDARY_GEO_JOBS))
-        enable!(all_jobs(except: SECONDARY_GEO_JOBS))
-      end
+        disable!(SECONDARY_GEO_JOBS)
 
-      def configure_secondary
-        names = [CONFIG_WATCHER, COMMON_GEO_JOBS, SECONDARY_GEO_JOBS, COMMON_GEO_AND_NON_GEO_JOBS].flatten
-
-        disable!(all_jobs(except: names))
-        enable!(jobs(names))
-      end
-
-      def enable!(jobs)
-        jobs.compact.each { |job| job.enable! unless job.enabled? }
-      end
-
-      def disable!(jobs)
-        jobs.compact.each { |job| job.disable! unless job.disabled? }
-      end
-
-      def all_jobs(except: [])
-        SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
-          Sidekiq::Cron::Job.all.reject { |job| except.include?(job.name) }
+        if Feature.enabled?(:stop_bulk_sidekiq_job_activation) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- No actor needed
+          enable!(GEO_ALWAYS_ENABLED_JOBS + PRIMARY_GEO_JOBS)
+        else
+          enable_all_except!(SECONDARY_GEO_JOBS)
         end
       end
 
+      def configure_secondary
+        names = GEO_ALWAYS_ENABLED_JOBS + SECONDARY_GEO_JOBS
+
+        disable_all_except!(names)
+        enable!(names)
+      end
+
+      def configure_non_geo_site
+        disable!(GEO_JOBS)
+
+        if Feature.enabled?(:stop_bulk_sidekiq_job_activation) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- No actor needed
+          enable!(COMMON_GEO_AND_NON_GEO_JOBS)
+        else
+          enable_all_except!(GEO_JOBS)
+        end
+      end
+
+      def enable!(names)
+        enable_jobs!(jobs(names))
+      end
+
+      def disable!(names)
+        disable_jobs!(jobs(names))
+      end
+
+      def enable_all_except!(names)
+        enable_jobs!(all_jobs_except(names))
+      end
+
+      def disable_all_except!(names)
+        disable_jobs!(all_jobs_except(names))
+      end
+
+      def enable_jobs!(jobs)
+        jobs.each { |job| job.enable! unless job.enabled? }
+      end
+
+      def disable_jobs!(jobs)
+        jobs.each { |job| job.disable! unless job.disabled? }
+      end
+
+      def all_jobs_except(names = [])
+        all_jobs.reject { |job| names.include?(job.name) }
+      end
+
+      def all_jobs
+        SidekiqSharding::Validator.allow_unrouted_sidekiq_calls { Sidekiq::Cron::Job.all }
+      end
+
       def jobs(names)
-        names.map { |name| job(name) }
+        names.filter_map { |name| job(name) }
       end
 
       def job(name)
