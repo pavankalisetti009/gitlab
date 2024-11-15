@@ -4,7 +4,7 @@ import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.grap
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import {
   WIDGET_TYPE_COLOR,
-  WIDGET_TYPE_ROLLEDUP_DATES,
+  WIDGET_TYPE_START_AND_DUE_DATE,
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_WEIGHT,
@@ -102,21 +102,19 @@ describe('EE work items graphql resolvers', () => {
       it('updates rolledUpDates', async () => {
         await mutate({
           rolledUpDates: {
-            dueDateIsFixed: true,
-            startDateIsFixed: true,
-            dueDateFixed: '2024-02-02',
-            startDateFixed: '2023-12-22',
+            isFixed: true,
+            rollUp: true,
+            dueDate: '2024-02-02',
+            startDate: '2023-12-22',
           },
         });
 
-        const queryResult = await query(WIDGET_TYPE_ROLLEDUP_DATES);
+        const queryResult = await query(WIDGET_TYPE_START_AND_DUE_DATE);
         expect(queryResult).toMatchObject({
+          isFixed: true,
+          rollUp: true,
           dueDate: '2024-02-02',
-          dueDateFixed: '2024-02-02',
-          dueDateIsFixed: true,
           startDate: '2023-12-22',
-          startDateFixed: '2023-12-22',
-          startDateIsFixed: true,
         });
       });
     });
