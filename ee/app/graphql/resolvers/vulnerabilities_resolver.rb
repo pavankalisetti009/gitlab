@@ -27,8 +27,7 @@ module Resolvers
       required: false,
       as: :owasp_top_10,
       description: 'Filter vulnerabilities by OWASP Top 10 category. Wildcard value "NONE" also supported ' \
-                   'when feature flag `owasp_top_10_null_filtering` is enabled. ' \
-                   '"NONE" wildcard cannot be combined with other OWASP top 10 values.'
+                   'and it cannot be combined with other OWASP top 10 values.'
 
     argument :identifier_name, GraphQL::Types::String,
       required: false,
