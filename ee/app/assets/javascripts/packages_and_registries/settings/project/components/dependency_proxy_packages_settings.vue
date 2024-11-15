@@ -21,6 +21,9 @@ export default {
   apollo: {
     dependencyProxyPackagesSettings: {
       query: getDependencyProxyPackagesSettings,
+      context: {
+        batchKey: 'PackageRegistryProjectSettings',
+      },
       variables() {
         return {
           projectPath: this.projectPath,
