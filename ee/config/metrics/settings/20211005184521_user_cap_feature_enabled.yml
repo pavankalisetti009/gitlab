@@ -12,9 +12,6 @@ data_source: database
 data_category: optional
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

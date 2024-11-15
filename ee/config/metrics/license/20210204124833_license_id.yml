@@ -12,9 +12,6 @@ options:
   attribute: license_id
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

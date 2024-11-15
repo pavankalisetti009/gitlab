@@ -12,9 +12,6 @@ options:
   attribute: plan
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

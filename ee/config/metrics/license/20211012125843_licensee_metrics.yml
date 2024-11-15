@@ -12,9 +12,6 @@ time_frame: none
 data_category: subscription
 distribution:
   - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

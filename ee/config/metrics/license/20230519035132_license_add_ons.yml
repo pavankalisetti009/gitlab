@@ -13,9 +13,6 @@ options:
 data_category: standard
 distribution:
   - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

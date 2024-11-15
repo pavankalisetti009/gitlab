@@ -12,7 +12,5 @@ data_category: optional
 instrumentation_class: MaximumSshKeysLifetimeEnabledMetric
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate

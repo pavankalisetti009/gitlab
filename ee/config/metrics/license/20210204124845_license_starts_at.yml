@@ -12,9 +12,6 @@ options:
   attribute: starts_at
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate
