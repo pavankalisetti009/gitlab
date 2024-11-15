@@ -6,12 +6,12 @@ module Sidebars
       class CodeSuggestionsMenu < ::Sidebars::Admin::BaseMenu
         override :link
         def link
-          admin_gitlab_duo_seat_utilization_index_path
+          admin_gitlab_duo_path
         end
 
         override :title
         def title
-          s_('Admin|GitLab Duo')
+          _('GitLab Duo')
         end
 
         override :sprite_icon
@@ -21,7 +21,10 @@ module Sidebars
 
         override :active_routes
         def active_routes
-          { controller: :seat_utilization }
+          {
+            controller: [:gitlab_duo, :seat_utilization],
+            action: %w[show index]
+          }
         end
       end
     end

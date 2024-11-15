@@ -1,4 +1,3 @@
-import { GlBadge } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -11,7 +10,6 @@ import CodeSuggestionsInfo from 'ee/usage_quotas/code_suggestions/components/cod
 import CodeSuggestionsStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
 import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/saas_add_on_eligible_user_list.vue';
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
-import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import { useFakeDate } from 'helpers/fake_date';
 import CodeSuggestionsUsageLoader from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_loader.vue';
@@ -43,13 +41,6 @@ import {
 Vue.use(VueApollo);
 
 jest.mock('~/sentry/sentry_browser_wrapper');
-jest.mock('ee/usage_quotas/code_suggestions/components/health_check_list.vue', () => ({
-  name: 'HealthCheckList',
-  template: '<div></div>',
-  methods: {
-    runHealthCheck: jest.fn(),
-  },
-}));
 
 describe('GitLab Duo Usage', () => {
   // Aug 1, 2024
@@ -86,9 +77,7 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsStatistics = () => wrapper.findComponent(CodeSuggestionsStatisticsCard);
   const findCodeSuggestionsSubtitle = () => wrapper.findByTestId('code-suggestions-subtitle');
   const findCodeSuggestionsTitle = () => wrapper.findByTestId('code-suggestions-title');
-  const findCodeSuggestionsTitleTierBadge = () => wrapper.findComponent(GlBadge);
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
-  const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findCodeSuggestionsUsageLoader = () => wrapper.findComponent(CodeSuggestionsUsageLoader);
   const findSelfManagedAddOnEligibleUserList = () =>
     wrapper.findComponent(SelfManagedAddOnEligibleUserList);
@@ -134,34 +123,9 @@ describe('GitLab Duo Usage', () => {
       expect(findCodeSuggestionsInfo().exists()).toBe(false);
       expect(findCodeSuggestionsStatistics().exists()).toBe(false);
       expect(findCodeSuggestionsTitle().exists()).toBe(false);
-      expect(findHealthCheckList().exists()).toBe(false);
       expect(findSelfManagedAddOnEligibleUserList().exists()).toBe(false);
       expect(findErrorAlert().exists()).toBe(false);
     });
-  });
-
-  describe('Cloud Connector health status check', () => {
-    it.each`
-      description   | isSaaS   | isStandalonePage | expected
-      ${'does not'} | ${true}  | ${true}          | ${false}
-      ${'does not'} | ${true}  | ${false}         | ${false}
-      ${'does'}     | ${false} | ${true}          | ${true}
-      ${'does'}     | ${false} | ${false}         | ${true}
-    `(
-      '$description render the health check list with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
-      async ({ isSaaS, isStandalonePage, expected } = {}) => {
-        createComponent({
-          addOnPurchasesHandler: noAssignedAddonDataHandler,
-          provideProps: {
-            isStandalonePage,
-            isSaaS,
-          },
-        });
-        await waitForPromises();
-
-        expect(findHealthCheckList().exists()).toBe(expected);
-      },
-    );
   });
 
   describe('when no group id prop is provided', () => {
@@ -260,7 +224,6 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions title and pro tier badge', () => {
           expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
-          expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
         });
 
         it('renders code suggestions subtitle', () => {
@@ -365,17 +328,13 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions title and pro tier badge', () => {
         expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
-        expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf(
-            'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
-            {
-              addOnName: CODE_SUGGESTIONS_TITLE,
-            },
-          ),
+          sprintf('Manage seat assignments for %{addOnName}.', {
+            addOnName: CODE_SUGGESTIONS_TITLE,
+          }),
         );
       });
 
@@ -389,17 +348,13 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions title and enterprise tier badge', () => {
           expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
-          expect(findCodeSuggestionsTitleTierBadge().text()).toBe('enterprise');
         });
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf(
-              'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
-              {
-                addOnName: DUO_ENTERPRISE_TITLE,
-              },
-            ),
+            sprintf('Manage seat assignments for %{addOnName}.', {
+              addOnName: DUO_ENTERPRISE_TITLE,
+            }),
           );
         });
       });
@@ -502,17 +457,13 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions title and pro tier badge', () => {
         expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
-        expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf(
-            'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
-            {
-              addOnName: CODE_SUGGESTIONS_TITLE,
-            },
-          ),
+          sprintf('Manage seat assignments for %{addOnName}.', {
+            addOnName: CODE_SUGGESTIONS_TITLE,
+          }),
         );
       });
 

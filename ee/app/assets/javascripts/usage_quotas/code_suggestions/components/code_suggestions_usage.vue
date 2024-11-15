@@ -37,7 +37,6 @@ import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import CodeSuggestionsIntro from './code_suggestions_intro.vue';
 import CodeSuggestionsInfoCard from './code_suggestions_info_card.vue';
 import CodeSuggestionsStatisticsCard from './code_suggestions_usage_statistics_card.vue';
-import HealthCheckList from './health_check_list.vue';
 import CodeSuggestionsUsageLoader from './code_suggestions_usage_loader.vue';
 
 export default {
@@ -50,7 +49,6 @@ export default {
     CodeSuggestionsIntro,
     CodeSuggestionsStatisticsCard,
     CodeSuggestionsUsageLoader,
-    HealthCheckList,
     GlBadge,
     GlAlert,
     GlSprintf,
@@ -144,16 +142,11 @@ export default {
 
       const message = this.isSaaS
         ? s__('CodeSuggestions|Manage seat assignments for %{addOnName} within your group.')
-        : s__(
-            'CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems.',
-          );
+        : s__('CodeSuggestions|Manage seat assignments for %{addOnName}.');
       return sprintf(message, { addOnName: this.codeSuggestionsFriendlyName });
     },
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
-    },
-    statusCheckEnabled() {
-      return !this.isSaaS;
     },
     activationListeners() {
       return {
@@ -281,7 +274,7 @@ export default {
           </template>
         </page-heading>
 
-        <health-check-list v-if="statusCheckEnabled" />
+        <slot name="health-check"></slot>
       </template>
 
       <section v-if="hasCodeSuggestions">
