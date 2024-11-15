@@ -31,9 +31,19 @@ module Gitlab
             primary_node.destroy
             current_node.update!(primary: true, enabled: true)
 
+            initialize_cron_jobs
+
             puts Rainbow("#{current_node.url} is now the primary Geo site").green
           end
         end
+      end
+
+      # On secondary nodes, most jobs are disabled. When we promote, we aim to use the default job configuration.
+      # To achieve this, we first need to enable all jobs, as many of them lack a defined `status` and cannot override
+      # the `status` `disabled`. Once all jobs are enabled, we can apply the configuration and proceed with the setup.
+      def initialize_cron_jobs
+        Gitlab::Geo::CronManager.new.enable_all_jobs!
+        Gitlab::SidekiqConfig::CronJobInitializer.execute
       end
 
       def update_primary_geo_node_url

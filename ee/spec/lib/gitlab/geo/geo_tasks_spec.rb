@@ -27,6 +27,12 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
     let(:secondary) { create(:geo_node) }
 
+    let(:execute) do
+      Gitlab::SidekiqSharding::Validator.allow_unrouted_sidekiq_calls do
+        subject.set_secondary_as_primary
+      end
+    end
+
     before do
       stub_current_geo_node(secondary)
       stub_current_node_name(secondary.name)
@@ -37,7 +43,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).to receive(:abort).with('The primary Geo site is not set').and_raise('aborted')
 
-      expect { subject.set_secondary_as_primary }.to raise_error('aborted')
+      expect { execute }.to raise_error('aborted')
     end
 
     it 'aborts if current node is not identified' do
@@ -45,7 +51,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).to receive(:abort).with('Current node is not identified').and_raise('aborted')
 
-      expect { subject.set_secondary_as_primary }.to raise_error('aborted')
+      expect { execute }.to raise_error('aborted')
     end
 
     it 'does nothing if run on a node that is not a secondary' do
@@ -54,7 +60,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).not_to receive(:abort)
 
-      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is already the primary Geo site/).to_stdout
+      expect { execute }.to output(/#{secondary.url} is already the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
       expect(primary.reload).to be_secondary
     end
@@ -62,7 +68,7 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
     it 'sets the secondary as the primary node' do
       expect(subject).not_to receive(:abort)
 
-      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
+      expect { execute }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
     end
 
@@ -71,9 +77,48 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
 
       expect(subject).not_to receive(:abort)
 
-      expect { subject.set_secondary_as_primary }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
+      expect { execute }.to output(/#{secondary.url} is now the primary Geo site/).to_stdout
       expect(secondary.reload).to be_primary
       expect(secondary.reload).to be_enabled
+    end
+
+    it 'loads configuration for all cron jobs' do
+      expect(Sidekiq::Cron::Job).to receive(:load_from_hash!).and_call_original
+
+      execute
+    end
+
+    it 'enables all cron jobs' do
+      cronjob1 = instance_double(Sidekiq::Cron::Job, enabled?: false, name: 'laser', disabled?: true)
+      cronjob2 = instance_double(Sidekiq::Cron::Job, enabled?: false, name: 'void', disabled?: true)
+      allow(Sidekiq::Cron::Job).to receive(:all).and_return([cronjob1, cronjob2])
+      allow(Sidekiq::Cron::Job).to receive(:load_from_hash!)
+      expect(cronjob1).to receive(:enable!)
+      expect(cronjob2).to receive(:enable!)
+
+      execute
+    end
+
+    context 'when EE files are available', if: Gitlab.ee? do
+      it 'configures mirror and geo cron jobs' do
+        expect(Gitlab::Mirror).to receive(:configure_cron_job!)
+        expect(Gitlab::Geo).to receive(:configure_cron_jobs!)
+
+        execute
+      end
+
+      context 'for FOSS' do
+        before do
+          allow(GitlabEdition).to receive(:ee?).and_return(false)
+        end
+
+        it 'does not configure mirror and geo cron jobs' do
+          expect(Gitlab::Mirror).not_to receive(:configure_cron_job!)
+          expect(Gitlab::Geo).not_to receive(:configure_cron_jobs!)
+
+          execute
+        end
+      end
     end
   end
 
