@@ -12,9 +12,6 @@ options:
   attribute: user_count
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

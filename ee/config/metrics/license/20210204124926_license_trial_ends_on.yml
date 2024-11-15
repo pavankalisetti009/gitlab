@@ -12,10 +12,6 @@ options:
   attribute: trial_ends_on
 distribution:
 - ee
-tier:
-- free
-- premium
-- ultimate
 tiers:
 - free
 - premium

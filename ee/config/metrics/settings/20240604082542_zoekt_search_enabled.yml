@@ -12,9 +12,6 @@ instrumentation_class: ZoektSearchEnabledMetric
 data_category: optional
 distribution:
   - ee
-tier:
-  - premium
-  - ultimate
 tiers:
   - premium
   - ultimate
