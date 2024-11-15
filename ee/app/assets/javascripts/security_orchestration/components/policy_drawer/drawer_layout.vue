@@ -37,12 +37,17 @@ export default {
     groupTypeLabel: GROUP_TYPE_LABEL,
     projectTypeLabel: PROJECT_TYPE_LABEL,
   },
-  inject: { namespaceType: {} },
+  inject: { namespaceType: { default: '' } },
   props: {
     description: {
       type: String,
       required: false,
       default: '',
+    },
+    showPolicyScope: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
     policyScope: {
       type: Object,
@@ -57,6 +62,11 @@ export default {
     type: {
       type: String,
       required: true,
+    },
+    showStatus: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
   },
   computed: {
@@ -99,7 +109,7 @@ export default {
       </div>
     </info-row>
 
-    <scope-info-row :policy-scope="policyScope" />
+    <scope-info-row v-if="showPolicyScope" :policy-scope="policyScope" />
 
     <info-row :label="$options.i18n.sourceTitle">
       <div data-testid="policy-source">
@@ -122,7 +132,7 @@ export default {
 
     <slot name="additional-details"></slot>
 
-    <info-row :label="$options.i18n.statusTitle">
+    <info-row v-if="showStatus" :label="$options.i18n.statusTitle">
       <div v-if="policy.enabled" class="gl-text-green-500" data-testid="enabled-status-text">
         <gl-icon name="check-circle-filled" class="gl-mr-3" />{{ statusLabel }}
       </div>

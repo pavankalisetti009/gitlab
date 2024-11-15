@@ -38,6 +38,16 @@ export default {
       type: Object,
       required: true,
     },
+    showPolicyScope: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    showStatus: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     actions() {
@@ -112,6 +122,8 @@ export default {
     :policy="policy"
     :policy-scope="policyScope"
     :type="$options.i18n.scanResult"
+    :show-policy-scope="showPolicyScope"
+    :show-status="showStatus"
   >
     <template v-if="parsedYaml" #summary>
       <info-row data-testid="policy-summary" :label="$options.i18n.summary">
@@ -175,6 +187,7 @@ export default {
         {{ fallbackBehaviorText }}
       </info-row>
       <edge-case-settings v-if="hasEdgeCaseSettings" :settings="edgeCaseSettings" />
+      <slot name="additional-details"></slot>
     </template>
   </drawer-layout>
 </template>

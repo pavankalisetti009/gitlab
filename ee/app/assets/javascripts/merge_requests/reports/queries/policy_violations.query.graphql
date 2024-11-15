@@ -3,7 +3,14 @@ query getPolicyViolations($projectPath: ID!, $iid: String!) {
     id
     mergeRequest(iid: $iid) {
       id
+      targetBranch
+      sourceBranch
       policyViolations {
+        comparisonPipelines {
+          reportType
+          source
+          target
+        }
         anyMergeRequest {
           commits
           name
