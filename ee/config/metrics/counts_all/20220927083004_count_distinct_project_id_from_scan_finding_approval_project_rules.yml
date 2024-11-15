@@ -12,7 +12,5 @@
   instrumentation_class: CountProjectsWithAppliedScanResultPoliciesMetric
   distribution:
   - ee
-  tier:
-  - ultimate
   tiers:
   - ultimate

@@ -15,7 +15,5 @@ events:
     label: delete_issue
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

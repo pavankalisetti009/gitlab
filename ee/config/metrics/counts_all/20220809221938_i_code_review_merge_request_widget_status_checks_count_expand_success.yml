@@ -16,7 +16,5 @@ events:
     property: success
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate

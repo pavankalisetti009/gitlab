@@ -15,9 +15,6 @@ instrumentation_class: CountEnterpriseUsersCreatedViaSamlOrScimMetric
 performance_indicator_type: []
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate

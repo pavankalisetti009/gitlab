@@ -15,7 +15,5 @@ options:
   event: set_runner_associated_projects
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

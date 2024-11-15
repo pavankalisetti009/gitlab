@@ -15,7 +15,5 @@ events:
     label: delete_epic
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

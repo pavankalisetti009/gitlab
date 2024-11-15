@@ -12,8 +12,6 @@ data_category: operational
 instrumentation_class: CountExternalStatusChecksMetric
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate
 performance_indicator_type:

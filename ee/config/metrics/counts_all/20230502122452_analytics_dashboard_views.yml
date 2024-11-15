@@ -13,7 +13,5 @@ events:
   - name: analytics_dashboard_viewed
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate

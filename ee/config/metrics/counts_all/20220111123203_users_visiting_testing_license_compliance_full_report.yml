@@ -14,9 +14,6 @@ events:
   - name: click_full_report_license_compliance
 distribution:
   - ee
-tier:
-  - premium
-  - ultimate
 tiers:
   - premium
   - ultimate

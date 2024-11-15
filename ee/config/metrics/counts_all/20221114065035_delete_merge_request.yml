@@ -15,7 +15,5 @@ events:
     label: delete_merge_request
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

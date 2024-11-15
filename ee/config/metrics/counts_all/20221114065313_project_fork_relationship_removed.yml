@@ -15,7 +15,5 @@ options:
   event: project_fork_relationship_removed
 distribution:
   - ee
-tier:
-  - ultimate
 tiers:
   - ultimate

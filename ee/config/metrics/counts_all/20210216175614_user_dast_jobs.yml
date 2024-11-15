@@ -12,8 +12,6 @@ data_source: database
 data_category: operational
 distribution:
 - ee
-tier:
-- ultimate
 tiers:
 - ultimate
 milestone: "<13.9"

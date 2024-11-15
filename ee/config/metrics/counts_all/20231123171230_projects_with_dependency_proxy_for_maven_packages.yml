@@ -13,9 +13,6 @@ data_category: optional
 instrumentation_class: CountProjectsWithDependencyProxyForMavenPackagesMetric
 distribution:
 - ee
-tier:
-- premium
-- ultimate
 tiers:
 - premium
 - ultimate
