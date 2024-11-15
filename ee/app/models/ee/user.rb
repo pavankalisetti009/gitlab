@@ -53,6 +53,8 @@ module EE
         :onboarding_status_registration_type, :onboarding_status_registration_type=,
         :onboarding_status_email_opt_in, :onboarding_status_email_opt_in=, :onboarding_status, :onboarding_status=,
         :onboarding_status_initial_registration_type, :onboarding_status_initial_registration_type=,
+        :onboarding_status_glm_content, :onboarding_status_glm_content=,
+        :onboarding_status_glm_source, :onboarding_status_glm_source=,
         :enterprise_group, :enterprise_group=,
         :enterprise_group_id, :enterprise_group_id=,
         to: :user_detail, allow_nil: true

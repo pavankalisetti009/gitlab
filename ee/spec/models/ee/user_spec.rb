@@ -16,6 +16,18 @@ RSpec.describe User, feature_category: :system_access do
   describe 'delegations' do
     it { is_expected.to delegate_method(:shared_runners_minutes_limit).to(:namespace) }
     it { is_expected.to delegate_method(:shared_runners_minutes_limit=).to(:namespace).with_arguments(133) }
+
+    it do
+      is_expected.to delegate_method(:onboarding_status_glm_content=).to(:user_detail).with_arguments('glm').allow_nil
+    end
+
+    it { is_expected.to delegate_method(:onboarding_status_glm_content).to(:user_detail).allow_nil }
+
+    it do
+      is_expected.to delegate_method(:onboarding_status_glm_source=).to(:user_detail).with_arguments('source').allow_nil
+    end
+
+    it { is_expected.to delegate_method(:onboarding_status_glm_source).to(:user_detail).allow_nil }
     it { is_expected.to delegate_method(:onboarding_status_step_url=).to(:user_detail).with_arguments('url').allow_nil }
     it { is_expected.to delegate_method(:onboarding_status_step_url).to(:user_detail).allow_nil }
 
