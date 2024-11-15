@@ -3,21 +3,33 @@
 module GitlabSubscriptions
   module DuoEnterpriseAlert
     class PremiumComponent < BaseComponent
+      include ::Gitlab::Utils::StrongMemoize
+
       private
 
+      attr_reader :add_on_purchase
+
       def render?
-        namespace.premium_plan? && GitlabSubscriptions::Duo.no_add_on_purchase_for_namespace?(namespace)
+        namespace.premium_plan? && GitlabSubscriptions::Trials.namespace_eligible?(namespace)
       end
 
+      def duo_pro_add_on_purchase?
+        GitlabSubscriptions::DuoPro.any_add_on_purchase_for_namespace(namespace)
+      end
+      strong_memoize_attr :duo_pro_add_on_purchase?
+
       def body
-        [
+        sentences = [
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to ' \
             'try the complete set of features from GitLab. GitLab Duo Enterprise ' \
             'gives you access to the full product offering from GitLab, ' \
-            'including AI-powered features.'),
-          s_('BillingPlans|Not ready to trial the full suite of GitLab and ' \
-            'GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
+            'including AI-powered features.')
         ]
+
+        return sentences if duo_pro_add_on_purchase?
+
+        sentences << s_('BillingPlans|Not ready to trial the full suite of GitLab and ' \
+          'GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
       end
 
       def secondary_cta_options

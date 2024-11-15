@@ -10,5 +10,6 @@
     .gl-flex.gl-flex-wrap.gl-gap-3
       = render Pajamas::ButtonComponent.new(**primary_cta_options) do
         = primary_cta
-      = render Pajamas::ButtonComponent.new(**secondary_cta_options) do
-        = secondary_cta
+      - unless duo_pro_add_on_purchase?
+        = render Pajamas::ButtonComponent.new(**secondary_cta_options) do
+          = secondary_cta

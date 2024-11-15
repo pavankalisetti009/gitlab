@@ -19,6 +19,10 @@ module GitlabSubscriptions
         before_action :check_trial_eligibility!
       end
 
+      def check_feature_available!
+        render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+      end
+
       def check_trial_eligibility!
         return if eligible_namespaces_exist?
 

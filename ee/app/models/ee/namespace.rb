@@ -102,7 +102,7 @@ module EE
       end
 
       scope :not_duo_enterprise_or_no_add_on, -> do
-        # We return any namespace that does not have a duo pro add on.
+        # We return any namespace that does not have a duo enterprise add on.
         # We get all namespaces that do not have an add on from the left_joins and the
         # or nil condition preserves the unmatched data what would be removed due to the not eq
         # condition without it.

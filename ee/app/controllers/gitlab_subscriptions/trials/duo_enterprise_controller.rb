@@ -70,10 +70,6 @@ module GitlabSubscriptions
       end
       strong_memoize_attr :eligible_namespaces
 
-      def check_feature_available!
-        render_404 unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
-      end
-
       def track_event(action)
         Gitlab::InternalEvents
           .track_event(action, user: current_user, namespace: namespace || eligible_namespaces.first)
