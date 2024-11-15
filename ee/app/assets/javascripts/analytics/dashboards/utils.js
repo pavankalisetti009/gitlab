@@ -1,3 +1,4 @@
+import { UNITS } from '~/analytics/shared/constants';
 import { s__, __ } from '~/locale';
 import {
   formatDate,
@@ -14,7 +15,6 @@ import {
   SUPPORTED_DORA_METRICS,
   SUPPORTED_FLOW_METRICS,
   SUPPORTED_VULNERABILITY_METRICS,
-  UNITS,
   CHART_TOOLTIP_UNITS,
   METRICS_WITH_NO_TREND,
 } from './constants';

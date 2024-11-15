@@ -1,7 +1,7 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
+import { UNITS } from '~/analytics/shared/constants';
 import { formatMetric } from '../utils';
-import { UNITS } from '../constants';
 
 export default {
   name: 'TrendIndicator',

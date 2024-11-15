@@ -1,7 +1,5 @@
-import {
-  BUCKETING_INTERVAL_ALL,
-  MERGE_REQUESTS_STATE_MERGED,
-} from 'ee/analytics/dashboards/graphql/constants';
+import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
+import { MERGE_REQUESTS_STATE_MERGED } from 'ee/analytics/dashboards/graphql/constants';
 import * as utils from '~/analytics/shared/utils';
 import {
   mockDoraMetricsResponseData,

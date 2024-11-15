@@ -13,11 +13,11 @@ import { generateSkeletonTableData } from 'ee/analytics/dashboards/utils';
 import ComparisonChart from 'ee/analytics/dashboards/components/comparison_chart.vue';
 import ComparisonTable from 'ee/analytics/dashboards/components/comparison_table.vue';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/graphql/vulnerabilities.query.graphql';
-import FlowMetricsQuery from 'ee/analytics/dashboards/graphql/flow_metrics.query.graphql';
-import DoraMetricsQuery from 'ee/analytics/dashboards/graphql/dora_metrics.query.graphql';
 import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.query.graphql';
 import GroupContributorCountQuery from 'ee/analytics/dashboards/graphql/group_contributor_count.query.graphql';
 import { VULNERABILITY_METRICS } from '~/analytics/shared/constants';
+import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
+import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {

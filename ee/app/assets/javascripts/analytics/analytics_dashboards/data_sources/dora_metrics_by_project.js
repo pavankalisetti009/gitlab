@@ -4,6 +4,7 @@ import {
   nMonthsBefore,
   toISODateFormat,
 } from '~/lib/utils/datetime_utility';
+import { BUCKETING_INTERVAL_MONTHLY } from '~/analytics/shared/graphql/constants';
 import {
   GENERIC_DASHBOARD_ERROR,
   UNSUPPORTED_PROJECT_NAMESPACE_ERROR,
@@ -11,7 +12,6 @@ import {
 } from 'ee/analytics/dashboards/constants';
 import { percentChange } from 'ee/analytics/dashboards/utils';
 import DoraMetricsByProjectQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project.query.graphql';
-import { BUCKETING_INTERVAL_MONTHLY } from 'ee/analytics/dashboards/graphql/constants';
 import { defaultClient } from '../graphql/client';
 
 const calculateTrends = (previous, current) =>
