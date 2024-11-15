@@ -8,6 +8,7 @@ import RuleSection from 'ee/security_orchestration/components/policy_editor/pipe
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
+  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
   SUFFIX_NEVER,
   SUFFIX_ON_CONFLICT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
@@ -298,6 +299,51 @@ describe('EditorComponent', () => {
     it('selects suffix strategy', () => {
       findActionSection().vm.$emit('changed', 'suffix', SUFFIX_NEVER);
       expect(findPolicyEditorLayout().props('policy').suffix).toEqual(SUFFIX_NEVER);
+    });
+  });
+
+  describe('new yaml format with type as a wrapper', () => {
+    beforeEach(() => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesNewYamlFormat: true,
+          },
+        },
+      });
+
+      window.gon.features = {
+        securityPoliciesNewYamlFormat: true,
+      };
+    });
+
+    it('renders default yaml in new format', () => {
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
+        DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
+      );
+    });
+
+    it('converts new policy format to old policy format when saved', async () => {
+      findPolicyEditorLayout().vm.$emit('save-policy');
+      await waitForPromises();
+
+      expect(wrapper.emitted('save')).toEqual([
+        [
+          {
+            action: undefined,
+            extraMergeRequestInput: null,
+            policy: `name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_ci
+content:
+  include:
+    - project: ''
+type: pipeline_execution_policy
+`,
+          },
+        ],
+      ]);
     });
   });
 });

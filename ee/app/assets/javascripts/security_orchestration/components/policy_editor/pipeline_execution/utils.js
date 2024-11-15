@@ -1,4 +1,6 @@
 import { safeDump, safeLoad } from 'js-yaml';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import { hasInvalidKey } from '../utils';
 import { PRIMARY_POLICY_KEYS } from '../constants';
 
@@ -7,7 +9,15 @@ import { PRIMARY_POLICY_KEYS } from '../constants';
 */
 export const fromYaml = ({ manifest, validateRuleMode = false }) => {
   try {
-    const policy = safeLoad(manifest, { json: true });
+    const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
+
+    const policy = securityPoliciesNewYamlFormat
+      ? extractPolicyContent({
+          manifest,
+          type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+          withType: true,
+        })
+      : safeLoad(manifest, { json: true });
 
     if (validateRuleMode) {
       /**
@@ -52,17 +62,6 @@ export const createPolicyObject = (manifest) => {
   const policy = fromYaml({ manifest, validateRuleMode: true });
 
   return { policy, hasParsingError: Boolean(policy.error) };
-};
-
-/*
- Return yaml representation of a policy.
-*/
-export const policyToYaml = (policy) => {
-  return safeDump(policy);
-};
-
-export const toYaml = (yaml) => {
-  return safeDump(yaml);
 };
 
 export const getInitialPolicy = (defaultPolicy, params = {}) => {

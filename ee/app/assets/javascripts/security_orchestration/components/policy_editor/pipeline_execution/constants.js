@@ -10,6 +10,16 @@ content:
     - project: ''
 `;
 
+export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_policy:
+- name: ''
+  description: ''
+  enabled: true
+  pipeline_config_strategy: inject_ci
+  content:
+    include:
+      - project: ''
+`;
+
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE = `type: pipeline_execution_policy
 name: ''
 description: ''
