@@ -775,7 +775,7 @@ export default {
           v-gl-tooltip
           :href="issuable.targetBranchPath"
           :title="targetBranchTooltip(issuable)"
-          class="ref-name !gl-text-gray-500"
+          class="ref-name !gl-text-subtle"
         >
           <gl-icon name="branch" :size="12" class="gl-mr-2" />{{ issuable.targetBranch }}
         </gl-link>
