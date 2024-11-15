@@ -57801,6 +57801,9 @@ msgstr ""
 msgid "Todos|The pipeline failed"
 msgstr ""
 
+msgid "Todos|There are no done to-do items yet."
+msgstr ""
+
 msgid "Todos|To Do"
 msgstr ""
 
@@ -57817,6 +57820,9 @@ msgid "Todos|Updated"
 msgstr ""
 
 msgid "Todos|When an issue or merge request is assigned to you, or when you receive a %{strongStart}@mention%{strongEnd} in a comment, this automatically triggers a new item in your To-Do List."
+msgstr ""
+
+msgid "Todos|When to-do items are done, they will appear here."
 msgstr ""
 
 msgid "Todos|Work item"
