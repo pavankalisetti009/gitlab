@@ -11,6 +11,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     it { is_expected.to have_many(:saml_providers) }
     it { is_expected.to have_many(:saml_group_links) }
     it { is_expected.to have_many(:group_group_links) }
+    it { is_expected.to have_many(:user_member_roles) }
   end
 
   describe 'validation' do
@@ -47,6 +48,12 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           member_role = build(:member_role, :instance, name: 'foo')
 
           expect(member_role).not_to be_valid
+        end
+
+        it 'is valid with read_admin_dashboard without base_access_level' do
+          admin_role = build(:member_role, :instance, read_admin_dashboard: true, base_access_level: nil)
+
+          expect(admin_role).to be_valid
         end
       end
 

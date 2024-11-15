@@ -125,6 +125,8 @@ module EE
 
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
 
+      has_many :user_member_roles, class_name: 'Users::UserMemberRole'
+
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
 
