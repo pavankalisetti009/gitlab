@@ -164,7 +164,7 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
     let_it_be_with_reload(:user) { project.first_owner }
 
     let(:ref_name) { 'refs/heads/master' }
-    let(:execution_policy_dry_run) { false }
+    let(:pipeline_policy_context) { nil }
 
     subject(:execute_service) do
       described_class.new(
@@ -178,17 +178,19 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
       ).execute(
         :push,
         save_on_errors: true,
-        execution_policy_dry_run: execution_policy_dry_run
+        pipeline_policy_context: pipeline_policy_context
       )
     end
 
     it 'raises error' do
       expect { execute_service }
-        .to raise_error(ArgumentError, "Param `partition_id` is only allowed with `execution_policy_dry_run: true`")
+        .to raise_error(ArgumentError, "Param `partition_id` is only allowed with `pipeline_policy_context`")
     end
 
-    context 'when used with execution_policy_dry_run param' do
-      let(:execution_policy_dry_run) { true }
+    context 'when used with `pipeline_policy_context` param' do
+      let(:pipeline_policy_context) do
+        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+      end
 
       it 'does not raise an error' do
         expect(execute_service)

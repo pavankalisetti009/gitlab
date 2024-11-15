@@ -21,8 +21,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project,
       current_user: user,
-      origin_ref: pipeline.ref,
-      execution_policy_pipelines: execution_policy_pipelines
+      origin_ref: pipeline.ref
     )
   end
 
@@ -40,6 +39,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
   before do
     stub_ci_pipeline_yaml_file(YAML.dump(config)) if config
+    allow(command.pipeline_policy_context).to receive(:policy_pipelines).and_return(execution_policy_pipelines)
   end
 
   describe '#perform!' do

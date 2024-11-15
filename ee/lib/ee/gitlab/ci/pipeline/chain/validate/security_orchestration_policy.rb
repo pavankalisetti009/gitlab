@@ -13,7 +13,7 @@ module EE
               override :perform!
               def perform!
                 # Skip this step in context of pipeline execution policies
-                return if command.execution_policy_mode?
+                return if command.pipeline_policy_context.creating_policy_pipeline?
                 return unless project&.feature_available?(:security_orchestration_policies)
                 return unless security_orchestration_policy_configuration
 

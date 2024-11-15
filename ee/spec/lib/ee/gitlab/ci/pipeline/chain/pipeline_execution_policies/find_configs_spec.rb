@@ -3,115 +3,41 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfigs, feature_category: :security_policy_management do
-  let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :repository, group: group) }
+  let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: 'master', user: user) }
   let(:source) { 'push' }
+  let(:pipeline) { build(:ci_pipeline, source: source, project: project, ref: 'master', user: user) }
 
-  let(:execution_policy_dry_run) { nil }
+  let(:creating_policy_pipeline) { nil }
+  let(:pipeline_policy_context) do
+    instance_double(
+      Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+      creating_policy_pipeline?: creating_policy_pipeline
+    )
+  end
+
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       source: pipeline.source,
       project: project,
       current_user: user,
       origin_ref: pipeline.ref,
-      execution_policy_dry_run: execution_policy_dry_run
+      pipeline_policy_context: pipeline_policy_context
     )
   end
 
   let(:step) { described_class.new(pipeline, command) }
 
-  let(:namespace_content) { { job: { script: 'namespace script' } } }
-  let(:namespace_config) { build(:pipeline_execution_policy_config, content: namespace_content) }
-
-  let(:project_content) { { job: { script: 'project script' } } }
-  let(:project_config) { build(:pipeline_execution_policy_config, :suffix_never, content: project_content) }
-
-  let(:policy_configs) { [project_config, namespace_config] }
-
-  before do
-    allow_next_instance_of(::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies) do |instance|
-      allow(instance).to receive(:configs).and_return(policy_configs)
-    end
-  end
-
   describe '#perform!' do
-    it 'sets execution_policy_pipelines' do
-      step.perform!
-
-      expect(command.execution_policy_pipelines).to be_a(Array)
-      expect(command.execution_policy_pipelines.size).to eq(2)
-    end
-
-    it 'passes pipeline source to execution policy pipelines' do
-      step.perform!
-
-      command.execution_policy_pipelines.each do |policy_pipeline|
-        expect(policy_pipeline.pipeline.source).to eq(source)
-      end
-    end
-
-    it 'propagates partition_id to execution policy pipelines' do
-      # Assigning partition_id to validate it is being propagated correctly
-      pipeline.partition_id = ci_testing_partition_id
+    it 'builds policy pipelines using pipeline_policy_context' do
+      expect(pipeline_policy_context).to receive(:build_policy_pipelines!).with(pipeline.partition_id)
 
       step.perform!
-
-      command.execution_policy_pipelines.each do |policy|
-        expect(policy.pipeline.partition_id).to eq(ci_testing_partition_id)
-      end
     end
 
-    context 'with merge_request parameter set on the command' do
-      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
-      let(:command) do
-        Gitlab::Ci::Pipeline::Chain::Command.new(
-          source: pipeline.source,
-          project: project,
-          current_user: user,
-          origin_ref: merge_request.ref_path,
-          merge_request: merge_request
-        )
-      end
-
-      let(:project_content) do
-        { job: { script: 'project script', rules: [{ when: 'always' }] } }
-      end
-
-      it 'passes the merge request to the policy pipelines' do
-        step.perform!
-
-        command.execution_policy_pipelines.each do |policy_pipeline|
-          expect(policy_pipeline.pipeline.merge_request).to eq(merge_request)
-        end
-      end
-    end
-
-    context 'when a policy has strategy "override_project_ci"' do
-      let(:namespace_config) do
-        build(:pipeline_execution_policy_config, :override_project_ci, content: namespace_content)
-      end
-
-      it 'passes configs to execution_policy_pipelines', :aggregate_failures do
-        step.perform!
-
-        project_pipeline = command.execution_policy_pipelines.first
-        expect(project_pipeline.strategy).to eq(:inject_ci)
-        expect(project_pipeline.suffix_strategy).to eq('never')
-        expect(project_pipeline.suffix).to be_nil
-
-        namespace_pipeline = command.execution_policy_pipelines.second
-        expect(namespace_pipeline.strategy).to eq(:override_project_ci)
-        expect(namespace_pipeline.suffix_strategy).to eq('on_conflict')
-        expect(namespace_pipeline.suffix).to eq(':policy-123456-0')
-      end
-    end
-
-    context 'when there is an error in pipeline execution policies' do
-      let(:project_content) { { job: {} } }
-
+    context 'when error is raised' do
       before do
+        allow(pipeline_policy_context).to receive(:build_policy_pipelines!).and_yield('some error')
         step.perform!
       end
 
@@ -124,39 +50,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfi
       end
 
       it 'returns a specific error' do
-        expect(pipeline.errors[:base]).to include(a_string_including('Pipeline execution policy error'))
-      end
-    end
-
-    context 'when the policy pipeline gets filtered out by rules' do
-      let(:namespace_content) do
-        { job: { script: 'namespace script', rules: [{ if: '$CI_COMMIT_REF_NAME == "invalid"' }] } }
-      end
-
-      let(:project_content) do
-        { job: { script: 'project script', rules: [{ if: '$CI_COMMIT_REF_NAME == "invalid"' }] } }
-      end
-
-      before do
-        step.perform!
-      end
-
-      it 'does not break the processing chain' do
-        expect(step.break?).to be false
-      end
-
-      it 'ignores the policy pipelines' do
-        expect(command.execution_policy_pipelines).to be_empty
-      end
-    end
-
-    context 'when running in execution_policy_dry_run' do
-      let(:execution_policy_dry_run) { true }
-
-      it 'does not set execution_policy_pipelines' do
-        step.perform!
-
-        expect(command.execution_policy_pipelines).to be_nil
+        expect(pipeline.errors[:base]).to include(a_string_including('Pipeline execution policy error: some error'))
       end
     end
 
@@ -166,21 +60,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfi
           let(:source) { source }
 
           it 'does not set execution_policy_pipelines' do
-            step.perform!
+            expect(pipeline_policy_context).not_to receive(:build_policy_pipelines!)
 
-            expect(command.execution_policy_pipelines).to be_nil
+            step.perform!
           end
         end
-      end
-    end
-
-    context 'when pipeline execution policy configs are empty' do
-      let(:policy_configs) { [] }
-
-      it 'does not set execution_policy_pipelines' do
-        step.perform!
-
-        expect(command.execution_policy_pipelines).to be_nil
       end
     end
   end

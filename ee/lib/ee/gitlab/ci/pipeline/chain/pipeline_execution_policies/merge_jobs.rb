@@ -19,7 +19,8 @@ module EE
               include ::Gitlab::InternalEventsTracking
 
               def perform!
-                return if command.execution_policy_mode? || command.execution_policy_pipelines.blank?
+                policy_context = command.pipeline_policy_context
+                return if policy_context.creating_policy_pipeline? || !policy_context.has_execution_policy_pipelines?
 
                 clear_project_pipeline
                 merge_policy_jobs
@@ -53,7 +54,7 @@ module EE
               end
 
               def merge_policy_jobs
-                command.execution_policy_pipelines.each do |policy|
+                command.pipeline_policy_context.policy_pipelines.each do |policy|
                   # Return `nil` is equivalent to "never" otherwise provide the new name.
                   on_conflict = ->(job_name) { job_name + policy.suffix if policy.suffix_on_conflict? }
 

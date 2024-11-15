@@ -21,53 +21,20 @@ module EE
           module PipelineExecutionPolicies
             module FindConfigs
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
-              include ::Gitlab::Utils::StrongMemoize
               extend ::Gitlab::Utils::Override
 
               override :perform!
               def perform!
-                return if command.execution_policy_mode?
                 return if pipeline.dangling?
-                return if pipeline_execution_policy_configs.empty?
 
-                command.execution_policy_pipelines = []
-                pipeline_execution_policy_configs.each do |config|
-                  response = create_pipeline(config.content)
-                  pipeline = response.payload
-
-                  if response.success?
-                    command.execution_policy_pipelines << ::Security::PipelineExecutionPolicy::Pipeline.new(
-                      pipeline: pipeline, config: config)
-                  elsif pipeline.filtered_as_empty?
-                    # no-op: we ignore empty pipelines
-                  else
-                    return error("Pipeline execution policy error: #{response.message}", failure_reason: :config_error)
-                  end
+                command.pipeline_policy_context.build_policy_pipelines!(pipeline.partition_id) do |error_message|
+                  break error("Pipeline execution policy error: #{error_message}", failure_reason: :config_error)
                 end
               end
 
               override :break?
               def break?
                 pipeline.errors.any?
-              end
-
-              private
-
-              def pipeline_execution_policy_configs
-                ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
-              end
-              strong_memoize_attr :pipeline_execution_policy_configs
-
-              def create_pipeline(content)
-                ::Ci::CreatePipelineService
-                  .new(command.project, command.current_user, ref: command.ref, partition_id: pipeline.partition_id)
-                  .execute(command.source,
-                    execution_policy_dry_run: true,
-                    content: content,
-                    merge_request: command.merge_request, # This is for supporting merge request pipelines
-                    ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
-                    # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
-                  )
               end
             end
           end

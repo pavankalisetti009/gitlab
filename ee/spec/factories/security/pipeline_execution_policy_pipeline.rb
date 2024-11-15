@@ -6,7 +6,7 @@ FactoryBot.define do
     class: '::Security::PipelineExecutionPolicy::Pipeline'
   ) do
     pipeline factory: :ci_empty_pipeline
-    config factory: :pipeline_execution_policy_config
+    policy_config factory: :pipeline_execution_policy_config
 
     skip_create
     initialize_with do
@@ -14,11 +14,11 @@ FactoryBot.define do
     end
 
     trait :override_project_ci do
-      config factory: [:pipeline_execution_policy_config, :override_project_ci]
+      policy_config factory: [:pipeline_execution_policy_config, :override_project_ci]
     end
 
     trait :suffix_never do
-      config factory: [:pipeline_execution_policy_config, :suffix_never]
+      policy_config factory: [:pipeline_execution_policy_config, :suffix_never]
     end
 
     transient do

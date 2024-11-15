@@ -8,14 +8,14 @@ module EE
           module Command
             extend ::Gitlab::Utils::Override
 
-            override :execution_policy_mode?
-            def execution_policy_mode?
-              !!execution_policy_dry_run
+            override :dry_run?
+            def dry_run?
+              super || !!pipeline_policy_context&.creating_policy_pipeline?
             end
 
             override :pipeline_policy_context
             def pipeline_policy_context
-              @pipeline_policy_context ||= ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(
+              self[:pipeline_policy_context] ||= ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(
                 project: project,
                 command: self
               )

@@ -32,7 +32,7 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
     describe 'execution_policy_job' do
       include_context 'with pipeline policy context'
 
-      let(:execution_policy_dry_run) { true }
+      let(:creating_policy_pipeline) { true }
       let(:ci_config) do
         Gitlab::Ci::Config.new(config_content, user: user, pipeline_policy_context: pipeline_policy_context)
       end
@@ -47,8 +47,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
         expect(build.dig(:options, :execution_policy_job)).to eq true
       end
 
-      context 'when not running in execution_policy_mode' do
-        let(:execution_policy_dry_run) { false }
+      context 'when creating_policy_pipeline? is false' do
+        let(:creating_policy_pipeline) { false }
 
         it 'does not mark the build as `execution_policy_job` via :options' do
           expect(build.dig(:options, :execution_policy_job)).to be_nil

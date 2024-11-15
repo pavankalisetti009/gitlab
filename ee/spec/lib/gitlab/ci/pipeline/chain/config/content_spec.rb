@@ -126,7 +126,6 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
   context 'when there are execution policy pipelines' do
     let_it_be(:project) { create(:project) }
     let(:ci_config_path) { nil }
-    let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
     let(:config_content_result) do
       <<~EOY
@@ -138,8 +137,14 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       EOY
     end
 
+    let(:has_overriding_policy_pipelines) { false }
+
     before do
-      command.execution_policy_pipelines = execution_policy_pipelines
+      command.pipeline_policy_context = instance_double(
+        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+        has_execution_policy_pipelines?: true,
+        has_overriding_execution_policy_pipelines?: has_overriding_policy_pipelines
+      )
     end
 
     it 'forces the pipeline creation' do
@@ -155,7 +160,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       let_it_be(:project) { create(:project) }
 
       let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
-      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
+      let(:has_overriding_policy_pipelines) { true }
 
       let(:project_content) do
         <<~EOY

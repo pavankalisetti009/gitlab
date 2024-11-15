@@ -185,17 +185,13 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
             end
           end
 
-          context 'when in execution_policy_mode' do
+          context 'when in creating_policy_pipeline? is true' do
             let(:pipeline_policy_context) do
-              Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project, command: command)
+              Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
             end
 
-            let(:command) do
-              Gitlab::Ci::Pipeline::Chain::Command.new(
-                project: project,
-                execution_policy_dry_run: true,
-                execution_policy_pipelines: []
-              )
+            before do
+              allow(pipeline_policy_context).to receive(:creating_policy_pipeline?).and_return(true)
             end
 
             it 'does not modify the config' do
@@ -256,7 +252,7 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
     end
 
     context 'when execution_policy_mode is true' do
-      let(:execution_policy_dry_run) { true }
+      let(:creating_policy_pipeline) { true }
 
       it_behaves_like 'injects reserved policy stages'
     end

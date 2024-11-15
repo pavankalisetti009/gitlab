@@ -6,44 +6,98 @@ module Gitlab
     module Pipeline
       module PipelineExecutionPolicies
         class PipelineContext
+          include ::Gitlab::Utils::StrongMemoize
+
+          attr_reader :policy_pipelines
+
           def initialize(project:, command: nil)
             @project = project
-            @command = command
+            @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
+            @policy_pipelines = []
           end
 
-          def execution_policy_mode?
-            command&.execution_policy_mode? || false
+          def build_policy_pipelines!(partition_id)
+            return if creating_policy_pipeline?
+            return if policies.empty?
+
+            policies.each do |policy|
+              response = create_pipeline(policy, partition_id)
+              pipeline = response.payload
+
+              if response.success?
+                @policy_pipelines << ::Security::PipelineExecutionPolicy::Pipeline.new(
+                  pipeline: pipeline, policy_config: policy)
+              elsif pipeline.filtered_as_empty?
+                # no-op: we ignore empty pipelines
+              elsif block_given?
+                yield response.message
+              end
+            end
+          end
+
+          def creating_policy_pipeline?
+            current_policy.present?
           end
 
           def has_execution_policy_pipelines?
-            command&.execution_policy_pipelines.present? || false
+            policy_pipelines.present?
           end
 
           def has_overriding_execution_policy_pipelines?
             return false unless has_execution_policy_pipelines?
 
-            command.execution_policy_pipelines.any?(&:strategy_override_project_ci?)
+            policy_pipelines.any?(&:strategy_override_project_ci?)
           end
 
           # We inject reserved policy stages only when;
-          # - execution_policy_mode: This is a temporary pipeline creation mode.
+          # - creating_policy_pipeline?: This is a temporary pipeline creation mode.
           #   We need to inject these stages for the validation because the policy may use them.
           # - has_execution_policy_pipelines?: This is the actual pipeline creation mode.
           #   It means that the result pipeline will have PEPs.
           #   We need to inject these stages because some of the policies may use them.
           def inject_policy_reserved_stages?
-            execution_policy_mode? || has_execution_policy_pipelines?
+            creating_policy_pipeline? || has_execution_policy_pipelines?
           end
 
           def valid_stage?(stage)
-            return true if execution_policy_mode?
+            return true if creating_policy_pipeline?
 
             ReservedStagesInjector::STAGES.exclude?(stage)
           end
 
           private
 
-          attr_reader :project, :command
+          attr_reader :project, :command, :current_policy
+
+          def policies
+            ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
+          end
+          strong_memoize_attr :policies
+
+          def create_pipeline(policy, partition_id)
+            with_policy_context(policy) do
+              ::Ci::CreatePipelineService
+                .new(project, command.current_user, ref: command.ref, partition_id: partition_id)
+                .execute(command.source,
+                  content: policy.content,
+                  pipeline_policy_context: self, # propagates itself inside the policy pipeline creation
+                  merge_request: command.merge_request, # This is for supporting merge request pipelines
+                  ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
+                  # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
+                )
+            end
+          end
+
+          # We are setting `@current_policy` to the policy we're currently building the pipeline for.
+          # By passing this context into the policy pipeline creation, we can evaluate policy-specific logic from within
+          # `CreatePipelineService` by delegating to this object.
+          # For example, it allows us to collect declared stages if @current_policy is `override_project_ci`.
+          def with_policy_context(policy)
+            @current_policy = policy
+            yield.tap do
+              @current_policy = nil
+            end
+          end
         end
       end
     end
