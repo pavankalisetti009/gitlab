@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project Subscriptions', :js, feature_category: :continuous_integration do
+RSpec.describe 'Project Subscriptions', :js,
+  feature_category: :continuous_integration,
+  quarantine: "https://gitlab.com/gitlab-org/gitlab/-/issues/504369" do
   let(:project) { create(:project, :public, :repository) }
   let(:upstream_project) { create(:project, :public, :repository) }
   let(:downstream_project) { create(:project, :public, :repository, upstream_projects: [project]) }
@@ -44,8 +46,7 @@ RSpec.describe 'Project Subscriptions', :js, feature_category: :continuous_integ
     end
   end
 
-  it 'successfully creates new pipeline subscription',
-    quarantine: "https://gitlab.com/gitlab-org/gitlab/-/issues/504369" do
+  it 'successfully creates new pipeline subscription' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
       within 'form' do
