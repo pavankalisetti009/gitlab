@@ -5,7 +5,6 @@ import { GlBreakpointInstance } from '@gitlab/ui/dist/utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import waitForPromises from 'helpers/wait_for_promises';
-import { stubExperiments } from 'helpers/experimentation_helper';
 import GroupProjectFields from 'ee/registrations/groups/new/components/group_project_fields.vue';
 import ProjectTemplateSelector from 'ee/registrations/groups/new/components/project_template_selector.vue';
 import createStore from 'ee/registrations/groups/new/store';
@@ -13,7 +12,6 @@ import { DEFAULT_GROUP_PATH, DEFAULT_PROJECT_PATH } from 'ee/registrations/group
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 
 jest.mock('~/alert');
 
@@ -27,6 +25,7 @@ describe('GroupProjectFields', () => {
     templateName: '',
     initializeWithReadme: false,
     rootUrl: 'https://example.com/',
+    trackActionForErrors: '',
   };
 
   let wrapper;
@@ -43,7 +42,6 @@ describe('GroupProjectFields', () => {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
       stubs: {
-        GitlabExperiment,
         GlFormInput,
       },
     });
@@ -277,44 +275,26 @@ describe('GroupProjectFields', () => {
     });
   });
 
-  describe('project_templates_during_registration experiment', () => {
-    describe('when control', () => {
-      beforeEach(() => {
-        stubExperiments({ project_templates_during_registration: 'control' });
-      });
+  describe('ProjectTemplateSelector', () => {
+    it('renders ProjectTemplateSelector', () => {
+      createComponent();
 
-      it('does not render ProjectTemplateSelector', () => {
-        createComponent();
-
-        expect(findProjectTemplateSelector().exists()).toBe(false);
-      });
+      expect(findProjectTemplateSelector().exists()).toBe(true);
     });
 
-    describe('when candidate', () => {
-      beforeEach(() => {
-        stubExperiments({ project_templates_during_registration: 'candidate' });
-      });
+    it('passes selected template to ProjectTemplateSelector', () => {
+      const templateName = '_template_name_';
 
-      it('renders ProjectTemplateSelector', () => {
-        createComponent();
+      createComponent({ templateName });
 
-        expect(findProjectTemplateSelector().exists()).toBe(true);
-      });
+      expect(findProjectTemplateSelector().props('selectedTemplateName')).toBe(templateName);
+    });
 
-      it('passes selected template to ProjectTemplateSelector', () => {
-        const templateName = '_template_name_';
+    describe('when import group', () => {
+      it('does not render ProjectTemplateSelector', () => {
+        createComponent({ importGroup: true });
 
-        createComponent({ templateName });
-
-        expect(findProjectTemplateSelector().props('selectedTemplateName')).toBe(templateName);
-      });
-
-      describe('when import group', () => {
-        it('does not render ProjectTemplateSelector', () => {
-          createComponent({ importGroup: true });
-
-          expect(findProjectTemplateSelector().exists()).toBe(false);
-        });
+        expect(findProjectTemplateSelector().exists()).toBe(false);
       });
     });
   });

@@ -6,7 +6,6 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
   let_it_be(:user, reload: true) { create(:user) }
   let_it_be(:group) { create(:group) }
 
-  let(:experiment) { instance_double(ApplicationExperiment) }
   let(:onboarding_enabled?) { true }
 
   before do
@@ -75,17 +74,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         end
 
         context 'when form is rendered' do
-          before do
-            allow(controller)
-              .to receive(:experiment)
-              .with(:project_templates_during_registration, user: user)
-              .and_return(experiment)
-          end
-
           it 'tracks the new group view event' do
-            expect(experiment).to receive(:publish)
-            expect(experiment).to receive(:track).with(:render_groups_new, label: 'free_registration')
-
             get_new
 
             expect_snowplow_event(
@@ -102,9 +91,6 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
             end
 
             it 'tracks the new group view event' do
-              expect(experiment).to receive(:publish)
-              expect(experiment).to receive(:track).with(:render_groups_new, label: 'trial_registration')
-
               get_new
 
               expect_snowplow_event(
@@ -182,37 +168,51 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       end
 
       context 'when form is successfully submitted' do
-        before do
-          allow(controller).to receive(:experiment).and_return(experiment)
-        end
-
         it 'tracks submission event' do
-          expect(experiment).to receive(:publish)
-          expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
-          expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
+          post_create
 
-          expect(experiment).not_to receive(:track).with(
-            'select_project_template_plainhtml',
-            label: 'free_registration'
+          expect_snowplow_event(
+            category: described_class.name,
+            action: 'successfully_submitted_form',
+            label: 'free_registration',
+            user: user,
+            project: an_instance_of(Project),
+            namespace: an_instance_of(Group)
           )
 
-          post_create
+          expect_no_snowplow_event(
+            category: described_class.name,
+            action: 'select_project_template_plainhtml',
+            label: 'free_registration',
+            user: user,
+            project: an_instance_of(Project),
+            namespace: an_instance_of(Group)
+          )
         end
 
         context 'with template name' do
           let(:project_params) { super().merge(template_name: 'plainhtml') }
 
           it 'tracks submission event' do
-            expect(experiment).to receive(:publish)
-            expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
-            expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
+            post_create
 
-            expect(experiment).to receive(:track).with(
-              'select_project_template_plainhtml',
-              label: 'free_registration'
+            expect_snowplow_event(
+              category: described_class.name,
+              action: 'successfully_submitted_form',
+              label: 'free_registration',
+              user: user,
+              project: an_instance_of(Project),
+              namespace: an_instance_of(Group)
             )
 
-            post_create
+            expect_snowplow_event(
+              category: described_class.name,
+              action: 'select_project_template_plainhtml',
+              label: 'free_registration',
+              user: user,
+              project: an_instance_of(Project),
+              namespace: an_instance_of(Group)
+            )
           end
         end
 
@@ -222,11 +222,16 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
           end
 
           it 'tracks submission event' do
-            expect(experiment).to receive(:publish)
-            expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
-            expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'trial_registration')
-
             post_create
+
+            expect_snowplow_event(
+              category: described_class.name,
+              action: 'successfully_submitted_form',
+              label: 'trial_registration',
+              user: user,
+              project: an_instance_of(Project),
+              namespace: an_instance_of(Group)
+            )
           end
         end
       end
@@ -257,16 +262,17 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         it { is_expected.to render_template(:new) }
 
         context 'when form is not submitted' do
-          before do
-            allow(controller).to receive(:experiment).and_return(experiment)
-          end
-
           it 'tracks error event and does not track submission event' do
-            expect(experiment).to receive(:publish)
-            expect(experiment).not_to receive(:track).with(:assignment, namespace: an_instance_of(Group))
-            expect(experiment).not_to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
-
             post_create
+
+            expect_no_snowplow_event(
+              category: described_class.name,
+              action: 'successfully_submitted_form',
+              label: 'free_registration',
+              user: user,
+              project: an_instance_of(Project),
+              namespace: an_instance_of(Group)
+            )
 
             expect_snowplow_event(
               category: described_class.name,

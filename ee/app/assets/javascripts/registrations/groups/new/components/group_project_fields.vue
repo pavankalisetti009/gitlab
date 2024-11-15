@@ -10,7 +10,6 @@ import { getGroupPathAvailability } from '~/rest_api';
 import { __, s__ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { slugify, convertUnicodeToAscii } from '~/lib/utils/text_utility';
-import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 import { DEFAULT_GROUP_PATH, DEFAULT_PROJECT_PATH } from '../constants';
 import ProjectTemplateSelector from './project_template_selector.vue';
 
@@ -21,7 +20,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormCheckbox,
-    GitlabExperiment,
     ProjectTemplateSelector,
   },
   directives: {
@@ -240,16 +238,12 @@ export default {
       </gl-form-group>
     </div>
 
-    <gitlab-experiment name="project_templates_during_registration">
-      <template #candidate>
-        <div v-if="!importGroup" class="row">
-          <project-template-selector
-            :selected-template-name="selectedTemplateName"
-            @select="selectTemplate"
-          />
-        </div>
-      </template>
-    </gitlab-experiment>
+    <div v-if="!importGroup" class="row">
+      <project-template-selector
+        :selected-template-name="selectedTemplateName"
+        @select="selectTemplate"
+      />
+    </div>
 
     <p class="form-text gl-text-center">{{ $options.i18n.urlHeader }}</p>
 

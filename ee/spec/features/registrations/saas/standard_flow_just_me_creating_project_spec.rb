@@ -32,7 +32,6 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
 
   context 'when template was selected' do
     it 'creates a project from given template', :with_default_organization, :sidekiq_inline do
-      stub_experiments(project_templates_during_registration: :candidate)
       regular_sign_up
 
       expect_to_see_welcome_form
