@@ -86,7 +86,7 @@ module ComplianceManagement
           author: current_user,
           scope: project,
           target: framework,
-          message: "#{event_type.capitalize} framework label #{framework.name}",
+          message: %(#{event_type.capitalize} 'framework label': "#{framework.name}"),
           additional_details: {
             framework: {
               id: framework.id,
