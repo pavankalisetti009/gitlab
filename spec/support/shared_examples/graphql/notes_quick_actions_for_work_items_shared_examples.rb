@@ -211,6 +211,7 @@ RSpec.shared_examples 'work item supports type change via quick actions' do
         expect(mutation_response['errors']).to eq([])
         expect(mutation_response['quickActionsStatus']['messages'])
           .to include("Type changed successfully. Assigned @#{assignee.username}.")
+        expect(mutation_response['quickActionsStatus']['error_messages']).to be_nil
       end
     end
 

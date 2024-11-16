@@ -198,7 +198,7 @@ describe('issue_comment_form component', () => {
               saveNote: jest.fn().mockRejectedValue({
                 response: {
                   status: httpStatus,
-                  data: { quick_actions_status: { messages: errors } },
+                  data: { quick_actions_status: { error_messages: errors } },
                 },
               }),
             },
@@ -261,7 +261,7 @@ describe('issue_comment_form component', () => {
             saveNote: jest.fn().mockRejectedValue({
               response: {
                 status: HTTP_STATUS_UNPROCESSABLE_ENTITY,
-                data: { quick_actions_status: { messages: [...commandErrors] } },
+                data: { quick_actions_status: { error_messages: [...commandErrors] } },
               },
             }),
           },

@@ -563,8 +563,7 @@ RSpec.describe Projects::NotesController, type: :controller, feature_category: :
             {
               "messages" => nil,
               "command_names" => %w[spend],
-              "commands_only" => false,
-              "error" => false
+              "commands_only" => false
             }
           end
 
@@ -583,8 +582,7 @@ RSpec.describe Projects::NotesController, type: :controller, feature_category: :
             {
               "messages" => ["Set time estimate to 1d."],
               "command_names" => %w[estimate spend],
-              "commands_only" => false,
-              "error" => false
+              "commands_only" => false
             }
           end
 
@@ -627,20 +625,19 @@ RSpec.describe Projects::NotesController, type: :controller, feature_category: :
           let(:expected) do
             {
               'quick_actions_status' => {
-                "messages" => ["Failed to apply commands."],
+                "error_messages" => ["Failed to apply commands."],
                 "command_names" => ["label"],
                 "commands_only" => true,
-                "error" => true
+                "messages" => nil
               }
             }
           end
 
           before do
             note.quick_actions_status = ::Notes::QuickActionsStatus.new(
-              message: 'Failed to apply commands.',
               command_names: ['label'],
-              commands_only: true,
-              error: true)
+              commands_only: true)
+            note.quick_actions_status.add_error('Failed to apply commands.')
 
             allow_next_instance_of(Notes::CreateService) do |service|
               allow(service).to receive(:execute).and_return(note)

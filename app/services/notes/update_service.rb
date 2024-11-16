@@ -30,7 +30,8 @@ module Notes
 
           note.note = content
           status = ::Notes::QuickActionsStatus.new(
-            message: message, command_names: command_names, commands_only: only_commands)
+            command_names: command_names, commands_only: only_commands)
+          status.add_message(message)
           note.quick_actions_status = status
         end
 
@@ -74,10 +75,7 @@ module Notes
     end
 
     def delete_note(note, message)
-      if message.blank?
-        note.quick_actions_status.error = true
-        note.quick_actions_status.message = _('Commands did not apply')
-      end
+      note.quick_actions_status.add_error(_('Commands did not apply')) if message.blank?
 
       Notes::DestroyService.new(project, current_user).execute(note)
     end

@@ -106,6 +106,8 @@ module API
             present note, with: Entities::NoteCommands
           elsif note.persisted?
             present note, with: Entities.const_get(note.class.name, false)
+          elsif quick_action_status&.error?
+            bad_request!(quick_action_status.error_messages.join(', '))
           elsif note.errors.present?
             bad_request!("Note #{note.errors.messages}")
           end

@@ -141,8 +141,8 @@ RSpec.describe 'Adding a Note', feature_category: :team_planning do
           'quickActionsStatus' => {
             "commandNames" => ["merge"],
             "commandsOnly" => true,
-            "error" => false,
-            "messages" => ["Merged this merge request."]
+            "messages" => ["Merged this merge request."],
+            "errorMessages" => nil
           })
       end
 

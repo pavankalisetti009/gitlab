@@ -9,7 +9,7 @@ module Types
 
       field :messages, [GraphQL::Types::String],
         null: true,
-        description: 'Quick action response messages.'
+        description: 'Response messages from quick actions.'
 
       field :command_names, [GraphQL::Types::String],
         null: true,
@@ -19,9 +19,9 @@ module Types
         null: true,
         description: 'Returns true if only quick action commands were in the note.'
 
-      field :error, GraphQL::Types::Boolean,
+      field :error_messages, [GraphQL::Types::String],
         null: true,
-        description: 'Error in processing quick actions.'
+        description: 'Error messages from quick actions that failed to apply.'
     end
   end
 end

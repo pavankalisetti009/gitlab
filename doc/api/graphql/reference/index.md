@@ -33459,8 +33459,8 @@ The amount of time for a job to be picked up by a runner, in percentiles.
 | ---- | ---- | ----------- |
 | <a id="quickactionsstatuscommandnames"></a>`commandNames` | [`[String!]`](#string) | Quick action command names. |
 | <a id="quickactionsstatuscommandsonly"></a>`commandsOnly` | [`Boolean`](#boolean) | Returns true if only quick action commands were in the note. |
-| <a id="quickactionsstatuserror"></a>`error` | [`Boolean`](#boolean) | Error in processing quick actions. |
-| <a id="quickactionsstatusmessages"></a>`messages` | [`[String!]`](#string) | Quick action response messages. |
+| <a id="quickactionsstatuserrormessages"></a>`errorMessages` | [`[String!]`](#string) | Error messages from quick actions that failed to apply. |
+| <a id="quickactionsstatusmessages"></a>`messages` | [`[String!]`](#string) | Response messages from quick actions. |
 
 ### `RecentFailures`
 

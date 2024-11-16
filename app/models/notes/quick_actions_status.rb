@@ -2,13 +2,21 @@
 
 module Notes
   class QuickActionsStatus
-    attr_accessor :message, :commands_only, :command_names, :error
+    attr_accessor :messages, :error_messages, :commands_only, :command_names
 
-    def initialize(message:, command_names:, commands_only:, error: false)
-      @message = message
+    def initialize(command_names:, commands_only:)
       @command_names = command_names
       @commands_only = commands_only
-      @error = error
+      @messages = []
+      @error_messages = []
+    end
+
+    def add_message(message)
+      @messages.append(message) unless message.blank?
+    end
+
+    def add_error(message)
+      @error_messages.append(message)
     end
 
     def commands_only?
@@ -16,26 +24,22 @@ module Notes
     end
 
     def success?
-      !error
+      !error?
     end
 
     def error?
-      error
+      error_messages.any?
     end
 
     def to_h
-      {
-        messages: messages,
+      payload = {
         command_names: command_names,
-        commands_only: commands_only,
-        error: error
+        commands_only: commands_only
       }
-    end
 
-    def messages
-      return unless message.presence
-
-      [message]
+      payload[:messages] = messages.presence
+      payload[:error_messages] = error_messages if error_messages.any?
+      payload
     end
   end
 end

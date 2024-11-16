@@ -123,9 +123,10 @@ module Notes
 
     def do_commands(note, update_params, message, command_names, only_commands)
       status = ::Notes::QuickActionsStatus.new(
-        message: message,
         command_names: command_names&.flatten,
         commands_only: only_commands)
+      status.add_message(message)
+
       note.quick_actions_status = status
 
       return if quick_actions_service.commands_executed_count.to_i == 0
@@ -133,13 +134,10 @@ module Notes
       update_error = quick_actions_update_errors(note, update_params)
       if update_error
         note.errors.add(:validation, update_error)
-        status.message = update_error
+        status.add_error(update_error)
       end
 
-      if only_commands && message.blank?
-        status.error = true
-        status.message = _('Failed to apply commands.')
-      end
+      status.add_error(_('Failed to apply commands.')) if only_commands && message.blank?
     end
 
     def quick_actions_update_errors(note, params)
