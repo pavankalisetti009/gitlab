@@ -24,6 +24,7 @@ module Ai
         READ_ONLY_GITLAB  = 2
         READ_WRITE_GITLAB = 3
         RUN_COMMANDS      = 4
+        USE_GIT           = 5
 
         ALL_PRIVILEGES = {
           READ_WRITE_FILES => {
@@ -41,6 +42,10 @@ module Ai
           RUN_COMMANDS => {
             name: "run_commands",
             description: "Allow running any commands"
+          }.freeze,
+          USE_GIT => {
+            name: "use_git",
+            description: "Allow git commits, push and other git commands"
           }.freeze
         }.freeze
 

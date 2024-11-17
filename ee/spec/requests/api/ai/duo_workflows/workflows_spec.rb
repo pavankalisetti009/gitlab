@@ -222,7 +222,8 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
 
       expect(response).to have_gitlab_http_status(:ok)
 
-      expect(json_response['all_privileges'].count).to eq(4)
+      all_privileges_count = ::Ai::DuoWorkflows::Workflow::AgentPrivileges::ALL_PRIVILEGES.count
+      expect(json_response['all_privileges'].count).to eq(all_privileges_count)
 
       privilege1 = json_response['all_privileges'][0]
       expect(privilege1['id']).to eq(1)
