@@ -3,9 +3,9 @@ import { GlBadge, GlPopover, GlIcon, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
 const ICON_COLOR = {
-  opened: 'gl-text-green-500',
-  closed: 'gl-text-red-500',
-  merged: 'gl-text-blue-500',
+  opened: 'success',
+  closed: 'danger',
+  merged: 'info',
 };
 
 const ICON = {
@@ -34,8 +34,8 @@ export default {
     },
   },
   methods: {
-    getIconColor(state) {
-      return ICON_COLOR[state] || 'gl-text-gray-500';
+    getIconVariant(state) {
+      return ICON_COLOR[state] || 'subtle';
     },
     getIcon(state) {
       return ICON[state] || 'issue-open-m';
@@ -56,7 +56,7 @@ export default {
           <gl-icon
             :name="getIcon(mergeRequest.state)"
             :size="16"
-            :class="getIconColor(mergeRequest.state)"
+            :variant="getIconVariant(mergeRequest.state)"
           />
           <gl-link :href="mergeRequest.webUrl" class="gl-ml-3">
             <gl-sprintf :message="mergeRequestIdString">
