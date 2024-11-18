@@ -219,13 +219,20 @@ module EE
 
       scope :mirror, -> { where(mirror: true) }
 
-      scope :mirrors_to_sync, ->(freeze_at, limit: nil) do
+      scope :mirrors_to_sync, ->(freeze_at, limit: nil, offset_at: nil) do
         mirror
+          .non_archived
+          .without_deleted
           .joins_import_state
-          .where.not(import_state: { status: [:scheduled, :started] })
+          .where.not(import_state: { status: %i[scheduled started] })
           .where("import_state.next_execution_timestamp <= ?", freeze_at)
           .where("import_state.retry_count <= ?", ::Gitlab::Mirror::MAX_RETRY)
           .limit(limit)
+          .reorder('import_state.next_execution_timestamp')
+          .then do |scope|
+            scope = scope.where('import_state.next_execution_timestamp > ?', offset_at) if offset_at
+            scope
+          end
       end
 
       scope :stuck_mirrors, ->(time_threshold, limit = nil) do
