@@ -2,7 +2,6 @@
 
 # The mock service can cause flakiness if it's started and stopped for each test, so we create it once before
 # all tests and access it via an instance variable
-# rubocop: disable RSpec/InstanceVariable
 module QA
   RSpec.describe(
     'Govern',
@@ -12,28 +11,12 @@ module QA
     product_group: :compliance
   ) do
     describe 'Group audit event streaming' do
-      let(:root_group) do
-        create(:sandbox, path: "gitlab-qa-event-stream-#{Faker::Alphanumeric.alphanumeric(number: 8)}")
-      end
+      include_context 'with streamed events mock setup'
+
+      let(:root_group) { create(:sandbox) }
 
       before(:context) do
         Runtime::ApplicationSettings.enable_local_requests
-
-        @mock_service = QA::Support::AuditEventStreamingService.new
-        @stream_destination_url = @mock_service.destination_url
-      end
-
-      after(:context) do
-        @mock_service&.teardown!
-
-        Runtime::ApplicationSettings.disable_local_requests
-      end
-
-      after do |example|
-        next unless example.exception
-
-        # If there is a failure this will output the logs from the smocker container (at the debug log level)
-        @mock_service.container_logs
       end
 
       context 'with no destination' do
@@ -45,8 +28,11 @@ module QA
           }
         end
 
-        before do
-          @mock_service.reset!
+        let(:stream_destination) do
+          EE::Resource::ExternalAuditEventDestination.init do |resource|
+            resource.destination_url = stream_destination_url
+            resource.group = root_group
+          end.reload!
         end
 
         it(
@@ -58,20 +44,16 @@ module QA
           Page::Group::Menu.perform(&:go_to_audit_events)
           EE::Page::Group::Secure::AuditEvents.perform do |audit_events|
             audit_events.click_streams_tab
-            audit_events.add_streaming_destination('Smocker', @stream_destination_url)
+            audit_events.add_streaming_destination('Smocker', stream_destination_url)
 
             expect(audit_events).to have_stream_destination('Smocker')
 
-            stream_destination = EE::Resource::ExternalAuditEventDestination.init do |resource|
-              resource.destination_url = @stream_destination_url
-              resource.group = root_group
-            end.reload!
             stream_destination.add_headers(headers)
             stream_destination.add_filters(event_types)
 
             # We add a compliance framework to the group as a way to generate a streamed audit event so that we can
             # confirm that the mock service is ready to receive events.
-            event_record = @mock_service.wait_for_streaming_to_start(
+            event_record = mock_service.wait_for_streaming_to_start(
               event_type: 'create_compliance_framework',
               entity_type: 'Group'
             ) do
@@ -80,7 +62,7 @@ module QA
               end.remove_via_api!
             end
 
-            verify_response = @mock_service.verify
+            verify_response = mock_service.verify
             aggregate_failures do
               # Smocker treats header values as arrays
               # Verification tokens are created for us if we don't provide one
@@ -106,20 +88,21 @@ module QA
           }
         end
 
-        before do
-          @mock_service.reset!
-          # Add a new streaming destination via the API
-          @stream_destination = EE::Resource::ExternalAuditEventDestination.fabricate_via_api! do |resource|
-            resource.destination_url = @stream_destination_url
+        let(:stream_destination) do
+          EE::Resource::ExternalAuditEventDestination.fabricate_via_api! do |resource|
+            resource.destination_url = stream_destination_url
             resource.group = root_group
             resource.name = "Smocker-#{Faker::Alphanumeric.alphanumeric(number: 8)}"
           end
-          @stream_destination.add_headers(headers)
-          @stream_destination.add_filters(event_types)
+        end
+
+        before do
+          stream_destination.add_headers(headers)
+          stream_destination.add_filters(event_types)
 
           # We add a compliance framework to the group as a way to generate a streamed audit event so that we can
           # confirm that the mock service is ready to receive events.
-          @mock_service.wait_for_streaming_to_start(
+          mock_service.wait_for_streaming_to_start(
             event_type: 'create_compliance_framework',
             entity_type: 'Group'
           ) do
@@ -166,4 +149,3 @@ module QA
     end
   end
 end
-# rubocop: enable RSpec/InstanceVariable

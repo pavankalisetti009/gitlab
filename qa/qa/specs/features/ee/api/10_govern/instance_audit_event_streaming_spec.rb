@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-# The Smocker service is used by a few tests so the instance variable avoids needless creating and destroying,
-# especially the mock service that causes flakiness if it's started and stopped for each test.
-# rubocop: disable RSpec/InstanceVariable
 module QA
-  # Redefine the constant because it's too long when it's used in the spec
-  StreamDestination = QA::EE::Resource::InstanceAuditEventExternalDestination
   RSpec.describe(
     'Govern',
     :requires_admin,
@@ -13,55 +8,33 @@ module QA
     product_group: :compliance
   ) do
     describe 'Instance audit event streaming' do
-      let(:target_details) { entity_path }
-      let(:headers) { @headers }
+      include_context 'with streamed events mock setup'
 
-      before(:context) do
-        @event_types = %w[remove_ssh_key group_created project_created user_created repository_git_operation]
-        @headers = {
+      let(:target_details) { entity_path }
+      let(:event_types) { %w[remove_ssh_key group_created project_created user_created repository_git_operation] }
+
+      let(:headers) do
+        {
           'Test-Header1': 'instance event streaming',
           'Test-Header2': 'destination via api'
         }
+      end
 
+      before(:context) do
         Runtime::ApplicationSettings.enable_local_requests
+      end
 
-        # Set up smocker as a mock streaming event destination
-        @mock_service = QA::Support::AuditEventStreamingService.new
-        @stream_destination = StreamDestination.fabricate_via_api! do |resource|
-          resource.destination_url = @mock_service.destination_url
-        end
-        @stream_destination.add_headers(@headers)
-        @stream_destination.add_filters(@event_types)
+      before do
+        stream_destination.add_headers(headers)
+        stream_destination.add_filters(event_types)
 
-        @mock_service.wait_for_streaming_to_start(event_type: 'remove_ssh_key', entity_type: 'User') do
+        mock_service.wait_for_streaming_to_start(event_type: 'remove_ssh_key', entity_type: 'User') do
           Resource::SSHKey.fabricate_via_api!.remove_via_api!
         end
       end
 
-      after(:context) do
-        @mock_service&.teardown!
-        @stream_destination&.remove_via_api!
-
-        Runtime::ApplicationSettings.disable_local_requests
-      end
-
-      around do |example|
-        @mock_service.reset!
-        example.run
-        next unless example.exception
-
-        # If there is a failure this will output the logs from the smocker container (at the debug log level)
-        @mock_service&.logs
-      end
-
       context 'when a group is created', :blocking do
-        # Create a group within a group so that the test doesn't reuse a pre-existing group
-        let!(:parent_group) { Resource::Group.fabricate! }
-        let(:entity_path) do
-          create(:group,
-            sandbox: parent_group,
-            name: "audit-event-streaming-#{Faker::Alphanumeric.alphanumeric(number: 8)}").full_path
-        end
+        let(:entity_path) { create(:group).full_path }
 
         include_examples 'streamed events', 'group_created', 'Group', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415874'
       end
@@ -71,7 +44,7 @@ module QA
         issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/427266'
       } do
         # Create a group first so its audit event is streamed before we check for the create project event
-        let!(:group) { Resource::Group.fabricate! }
+        let!(:group) { create(:group) }
         let(:entity_path) { create(:project, group: group).full_path }
 
         include_examples 'streamed events', 'project_created', 'Project', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415875'
@@ -89,11 +62,7 @@ module QA
       context 'when a repository is cloned via SSH', :blocking do
         # Create the project and key first so their audit events are streamed before we check for the clone event
         let!(:key) { Resource::SSHKey.fabricate_via_api! }
-        let!(:project) do
-          Resource::Project.fabricate! do |project|
-            project.initialize_with_readme = true
-          end
-        end
+        let!(:project) { create(:project, :with_readme) }
 
         # Clone the repo via SSH and then use the project path and name to confirm the event details
         let(:target_details) { project.name }
@@ -112,4 +81,3 @@ module QA
     end
   end
 end
-# rubocop: enable RSpec/InstanceVariable

@@ -3,17 +3,9 @@
 module QA
   RSpec.describe 'Create' do
     describe 'Push rules', :requires_admin, product_group: :source_code do
-      let!(:creator) { create(:user, username: Runtime::User.username, password: Runtime::User.password) }
+      let!(:creator) { Runtime::UserStore.test_user }
+      let!(:project) { create(:project, :with_readme) }
 
-      let!(:project) do
-        create(
-          :project,
-          name: 'push_rules',
-          initialize_with_readme: true,
-          api_client: Runtime::API::Client.new(user: creator))
-      end
-
-      let(:root) { build(:user, username: 'root', name: 'GitLab QA', email: 'root@gitlab.com', password: nil) }
       let(:file_name_limitation) { 'denied_file' }
       let(:file_size_limitation) { 1 }
       let(:branch_name_limitation) { project.default_branch }
@@ -168,8 +160,10 @@ module QA
           expect_no_error_on_push(file: standard_file)
           expect_error_on_push(
             file: standard_file,
-            user: root,
-            error: 'You can only push commits if the committer email is one of your own verified emails')
+            error: 'You can only push commits if the committer email is one of your own verified emails',
+            user: build(:user, name: creator.name, username: creator.username, password: creator.password,
+              email: 'unverified@example.com')
+          )
         end
       end
 
@@ -205,7 +199,7 @@ module QA
           push.commit_message = commit_message
           push.new_branch = branch != project.default_branch
           push.branch_name = branch
-          push.user = user if user != root
+          push.user = user
           push.files = [file] if tag.nil?
           push.tag_name = tag unless tag.nil?
           push.gpg_key_id = gpg.key_id unless gpg.nil?

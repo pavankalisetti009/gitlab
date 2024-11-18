@@ -3,34 +3,21 @@
 module QA
   RSpec.describe 'Govern' do
     describe 'Group access', :requires_admin, :skip_live_env, :blocking, product_group: :authentication do
-      let(:admin_api_client) { Runtime::API::Client.as_admin }
-
-      let(:sandbox_group) do
-        Resource::Sandbox.fabricate! do |sandbox_group|
-          sandbox_group.path = "gitlab-qa-ip-restricted-sandbox-group-#{SecureRandom.hex(8)}"
-        end
-      end
-
-      let(:group) { create(:group, path: "ip-address-restricted-group-#{SecureRandom.hex(8)}", sandbox: sandbox_group) }
-      let(:project) { create(:project, :with_readme, name: 'project-in-ip-restricted-group', group: group) }
-      let(:user) { create(:user, api_client: admin_api_client) }
-      let(:api_client) { Runtime::API::Client.new(:gitlab, user: user) }
-
       let!(:current_ip_address) do
-        Flow::Login.while_signed_in(as: user) { user.reload!.api_response[:current_sign_in_ip] }
+        Flow::Login.while_signed_in(as: user) { Runtime::UserStore.admin_user.get_user_ip_address(user.id) }
       end
+
+      let(:user) { Runtime::UserStore.test_user }
+      let(:api_client) { user.api_client }
+      let(:admin_api_client) { Runtime::UserStore.admin_api_client }
+
+      let(:sandbox_group) { create(:sandbox, api_client: admin_api_client) }
+      let(:group) { create(:group, sandbox: sandbox_group, api_client: admin_api_client) }
+      let(:project) { create(:project, :with_readme, group: group, api_client: admin_api_client) }
 
       before do
         project.add_member(user)
-
-        enable_plan_on_group(sandbox_group.path, "Gold") if Specs::Helpers::ContextSelector.dot_com?
-        page.visit Runtime::Scenario.gitlab_address
-
         set_ip_address_restriction_to(ip_address)
-      end
-
-      after do
-        sandbox_group.remove_via_api!
       end
 
       context 'when restricted by another ip address' do
@@ -64,17 +51,13 @@ module QA
 
         # Note: If you run this test against GDK make sure you've enabled sshd
         # See: https://gitlab.com/gitlab-org/gitlab-qa/blob/master/docs/run_qa_against_gdk.md
-        context 'with SSH', :requires_sshd, except: { job: 'review-qa-*' }, quarantine: {
+        context 'with SSH', :requires_sshd, quarantine: {
           type: :investigating,
           issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/499657",
           only: { job: /gdk-qa-.*/ }
         } do
           let(:key) do
             create(:ssh_key, api_client: api_client, title: "ssh key for allowed ip restricted access #{Time.now.to_f}")
-          end
-
-          after do
-            key&.remove_via_api!
           end
 
           it 'denies access', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347921' do
@@ -123,37 +106,26 @@ module QA
             create(:ssh_key, api_client: api_client, title: "ssh key for allowed ip restricted access #{Time.now.to_f}")
           end
 
-          after do
-            key&.remove_via_api!
-          end
-
           it 'allows access', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347924' do
-            expect { push_a_project_with_ssh_key(key) }.not_to raise_error
+            expect { push_a_project_with_ssh_key(key, 2) }.not_to raise_error
           end
         end
       end
 
       private
 
-      def push_a_project_with_ssh_key(key)
+      def push_a_project_with_ssh_key(key, attempts = 1)
         Resource::Repository::ProjectPush.fabricate! do |push|
           push.project = project
           push.group = sandbox_group
           push.ssh_key = key
           push.branch_name = "new_branch_#{SecureRandom.hex(8)}"
+          push.max_attempts = attempts
         end
       end
 
       def set_ip_address_restriction_to(ip_address)
-        Flow::Login.while_signed_in_as_admin do
-          group.sandbox.visit!
-
-          Page::Group::Menu.perform(&:go_to_general_settings)
-
-          Page::Group::Settings::General.perform do |settings|
-            settings.set_ip_address_restriction(ip_address)
-          end
-        end
+        sandbox_group.set_ip_restriction_range(ip_address)
       end
 
       def get_next_ip_address(address)
@@ -162,25 +134,6 @@ module QA
         updated_last_part = current_last_part < 255 ? current_last_part + 1 : 1
 
         address.split(".")[0...-1].push(updated_last_part).join(".")
-      end
-
-      def enable_plan_on_group(group, plan)
-        Flow::Login.while_signed_in_as_admin do
-          Page::Main::Menu.perform(&:go_to_admin_area)
-          Page::Admin::Menu.perform(&:go_to_groups_overview)
-
-          Page::Admin::Overview::Groups::Index.perform do |index|
-            index.search_group(group)
-            index.click_group(group)
-          end
-
-          Page::Admin::Overview::Groups::Show.perform(&:click_edit_group_link)
-
-          Page::Admin::Overview::Groups::Edit.perform do |edit|
-            edit.select_plan(plan)
-            edit.click_save_changes_button
-          end
-        end
       end
 
       def create_request(api_endpoint)

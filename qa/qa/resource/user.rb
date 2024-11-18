@@ -26,13 +26,6 @@ module QA
 
       class << self
         # TODO: remove as these methods can end up using same user which isn't fully compatible with parallel execution
-        def default
-          Resource::User.init do |user|
-            user.username = Runtime::User.ldap_user? ? Runtime::User.ldap_username : Runtime::User.username
-            user.password = Runtime::User.ldap_user? ? Runtime::User.ldap_password : Runtime::User.password
-          end
-        end
-
         def fabricate_or_use(username = nil, password = nil)
           if Runtime::Env.signup_disabled? && !Runtime::Env.personal_access_tokens_disabled?
             fabricate_via_api! do |user|
@@ -204,6 +197,16 @@ module QA
         )
       end
 
+      # Get users last sign in ip address
+      #
+      # @param user_id [Integer]
+      # @return [String]
+      def get_user_ip_address(user_id)
+        raise "Only admin can get user's ip address" unless admin?
+
+        parse_body(api_get_from("/users/#{user_id}"))[:last_sign_in_ip]
+      end
+
       # Get all users
       #
       # @param [Integer] per_page
@@ -268,6 +271,13 @@ module QA
         raise "Attempting to add token not belonging to this user" if pat.user_id != id
 
         @personal_access_tokens << pat
+      end
+
+      # Return personal access token currently used by user resource for all api operations
+      #
+      # @return [String]
+      def current_personal_access_token
+        api_client.personal_access_token
       end
 
       # Users can only be created by admin, use global admin api client if not explicitly set

@@ -16,83 +16,24 @@ module QA
             executor: :docker)
         end
 
-        let!(:source) do
-          create_source_commit
-        end
-
         before do
-          Flow::Login.sign_in_unless_signed_in
-          setup_admin_security_settings
-        end
+          create_source_commit
 
-        it('updates the vulnerability list with new vulnerabilities within the past 14 days',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/488440'
-        ) do
-          Flow::Login.sign_in_unless_signed_in
-          run_and_verify_pipeline
-          verify_vulnerabilities
-        end
+          Flow::Login.while_signed_in_as_admin do
+            Page::Main::Menu.perform(&:go_to_admin_area)
+            Page::Admin::Menu.perform(&:go_to_security_and_compliance_settings)
+            EE::Page::Admin::Settings::Securityandcompliance.perform(&:select_gem_checkbox)
+          end
 
-        private
-
-        def create_source_commit
-          create(:commit,
-            project: test_project,
-            branch: test_project.default_branch,
-            actions: create_file_actions
-          )
-        end
-
-        def create_file_actions
-          [
-            {
-              action: 'create',
-              file_path: '.gitlab-ci.yml',
-              content: File.read(
-                File.join(
-                  EE::Runtime::Path.fixtures_path, 'secure_cvs_files',
-                  '.gitlab-ci.yml'
-                )
-              )
-            },
-            {
-              action: 'create',
-              file_path: 'Gemfile',
-              content: File.read(
-                File.join(
-                  EE::Runtime::Path.fixtures_path,
-                  'secure_cvs_files',
-                  'Gemf'
-                )
-              )
-            },
-            {
-              action: 'create',
-              file_path: 'Gemfile.lock',
-              content: File.read(
-                File.join(
-                  EE::Runtime::Path.fixtures_path,
-                  'secure_cvs_files',
-                  'Gemf.lock'
-                )
-              )
-            }
-          ]
-        end
-
-        def setup_admin_security_settings
-          Page::Main::Menu.perform(&:go_to_admin_area)
-          Page::Admin::Menu.perform(&:go_to_security_and_compliance_settings)
-          EE::Page::Admin::Settings::Securityandcompliance.perform(&:select_gem_checkbox)
-        end
-
-        def run_and_verify_pipeline
+          Flow::Login.sign_in
           test_project.visit!
           Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 600)
           Page::Project::Menu.perform(&:go_to_vulnerability_report)
         end
 
-        def verify_vulnerabilities
+        it('updates the vulnerability list with new vulnerabilities within the past 14 days',
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/488440'
+        ) do
           EE::Page::Project::Secure::SecurityDashboard.perform do |vulnerability_list|
             expect(vulnerability_list).to have_vulnerability(description: 'Inefficient Regular Expression Complexity')
 
@@ -106,6 +47,47 @@ module QA
           EE::Page::Project::Secure::VulnerabilityDetails.perform do |vulnerability_details|
             expect(vulnerability_details).to have_vulnerable_package('RedCloth:2.0.0')
           end
+        end
+
+        def create_source_commit
+          create(:commit,
+            project: test_project,
+            branch: test_project.default_branch,
+            actions: [
+              {
+                action: 'create',
+                file_path: '.gitlab-ci.yml',
+                content: File.read(
+                  File.join(
+                    EE::Runtime::Path.fixtures_path, 'secure_cvs_files',
+                    '.gitlab-ci.yml'
+                  )
+                )
+              },
+              {
+                action: 'create',
+                file_path: 'Gemfile',
+                content: File.read(
+                  File.join(
+                    EE::Runtime::Path.fixtures_path,
+                    'secure_cvs_files',
+                    'Gemf'
+                  )
+                )
+              },
+              {
+                action: 'create',
+                file_path: 'Gemfile.lock',
+                content: File.read(
+                  File.join(
+                    EE::Runtime::Path.fixtures_path,
+                    'secure_cvs_files',
+                    'Gemf.lock'
+                  )
+                )
+              }
+            ]
+          )
         end
       end
     end
