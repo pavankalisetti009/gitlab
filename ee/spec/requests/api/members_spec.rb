@@ -1639,34 +1639,52 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       end
 
       context 'when authenticated as an owner' do
-        context 'with a user that is a GroupMember' do
-          let(:user) { maintainer }
-          let(:is_group_member) { true }
-          let(:source) { group }
-
-          it_behaves_like 'successful deletion'
-        end
-
-        context 'with a user that is only a ProjectMember' do
-          let(:user) { create(:user) }
-          let(:is_group_member) { false }
-          let(:source) { project }
-          let(:project) do
-            create(:project, group: group) do |project|
-              project.add_developer(user)
-            end
+        context 'when billable_member_async_deletion is enabled' do
+          before do
+            stub_feature_flags(billable_member_async_deletion: true)
           end
 
-          it_behaves_like 'successful deletion'
+          it 'schedules async deletion' do
+            expect do
+              delete api("/groups/#{group.id}/billable_members/#{maintainer.id}", owner)
+            end.to change { Members::DeletionSchedule.count }.from(0).to(1)
+          end
         end
 
-        context 'with a user that is not a member' do
-          it 'returns a relevant error message' do
-            user = create(:user)
-            delete api("/groups/#{group.id}/billable_members/#{user.id}", owner)
+        context 'when billable_member_async_deletion is disabled' do
+          before do
+            stub_feature_flags(billable_member_async_deletion: false)
+          end
 
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['message']).to eq '400 Bad request - No member found for the given user_id'
+          context 'with a user that is a GroupMember' do
+            let(:user) { maintainer }
+            let(:is_group_member) { true }
+            let(:source) { group }
+
+            it_behaves_like 'successful deletion'
+          end
+
+          context 'with a user that is only a ProjectMember' do
+            let(:user) { create(:user) }
+            let(:is_group_member) { false }
+            let(:source) { project }
+            let(:project) do
+              create(:project, group: group) do |project|
+                project.add_developer(user)
+              end
+            end
+
+            it_behaves_like 'successful deletion'
+          end
+
+          context 'with a user that is not a member' do
+            it 'returns a relevant error message' do
+              user = create(:user)
+              delete api("/groups/#{group.id}/billable_members/#{user.id}", owner)
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']).to eq '400 Bad request - No member found for the given user_id'
+            end
           end
         end
       end
