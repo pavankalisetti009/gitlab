@@ -13,8 +13,18 @@ export default {
   components: {
     RunnerWaitTimes,
   },
+  inject: {
+    clickhouseCiAnalyticsAvailable: {
+      default: false,
+    },
+  },
+  data() {
+    return {
+      waitTimes: null,
+      waitTimeHistory: [],
+    };
+  },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimes: {
       query: runnerWaitTimesQuery,
       update({ runners }) {
@@ -24,7 +34,6 @@ export default {
         this.handlerError(error);
       },
     },
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimeHistory: {
       query: runnerWaitTimeHistoryQuery,
       skip() {
@@ -39,11 +48,6 @@ export default {
       error(error) {
         this.handlerError(error);
       },
-    },
-  },
-  inject: {
-    clickhouseCiAnalyticsAvailable: {
-      default: false,
     },
   },
   computed: {

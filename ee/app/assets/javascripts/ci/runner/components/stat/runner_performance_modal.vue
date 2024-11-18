@@ -24,10 +24,10 @@ export default {
   data() {
     return {
       skip: true,
+      duration: null,
     };
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     duration: {
       query: runnersJobsQueueDurationQuery,
       update(data) {
