@@ -24,8 +24,13 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      waitTimes: null,
+      waitTimeHistory: [],
+    };
+  },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimes: {
       query: groupRunnerWaitTimesQuery,
       update({ group }) {
@@ -40,7 +45,6 @@ export default {
         this.handlerError(error);
       },
     },
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimeHistory: {
       query: groupRunnerWaitTimeHistoryQuery,
       skip() {

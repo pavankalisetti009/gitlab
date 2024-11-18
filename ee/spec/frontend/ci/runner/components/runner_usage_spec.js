@@ -176,17 +176,13 @@ describe('RunnerUsage', () => {
 
       const [, row1, row2, row3] = findTopProjects().wrappers;
 
-      expect(row1.findComponent(GlAvatar).attributes()).toMatchObject({
-        label: 'Project1',
-        src: '/project1.png',
-      });
+      expect(row1.findComponent(GlAvatar).props('src')).toBe('/project1.png');
+      expect(row1.findComponent(GlAvatar).attributes('label')).toBe('Project1');
       expect(row1.text()).toContain('Project1');
       expect(row1.text()).toContain('1,002');
 
-      expect(row2.findComponent(GlAvatar).attributes()).toMatchObject({
-        label: 'Project2',
-        src: '/project2.png',
-      });
+      expect(row2.findComponent(GlAvatar).props('src')).toBe('/project2.png');
+      expect(row2.findComponent(GlAvatar).attributes('label')).toBe('Project2');
       expect(row2.text()).toContain('Project2');
       expect(row2.text()).toContain('1,001');
 
