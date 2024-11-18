@@ -2561,11 +2561,43 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         expected_filter = [
           { bool: {
             must: {
-              terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
+              bool: {
+                should: [
+                  {
+                    terms: {
+                      _name: 'filters:work_item_type_ids',
+                      work_item_type_id: [1]
+                    }
+                  },
+                  {
+                    terms: {
+                      _name: 'filters:correct_work_item_type_ids',
+                      correct_work_item_type_id: [1]
+                    }
+                  }
+                ],
+                minimum_should_match: 1
+              }
             }
           } },
           { bool: { must_not: {
-            terms: { work_item_type_id: [2], _name: 'filters:not_work_item_type_ids' }
+            bool: {
+              should: [
+                {
+                  terms: {
+                    _name: 'filters:not_work_item_type_ids',
+                    work_item_type_id: [2]
+                  }
+                },
+                {
+                  terms: {
+                    _name: 'filters:not_correct_work_item_type_ids',
+                    correct_work_item_type_id: [2]
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
           } } }
         ]
 
@@ -2582,7 +2614,23 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it 'adds the work_item_type_id filter to query_hash' do
         expected_filter = [
           { bool: { must: {
-            terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
+            bool: {
+              should: [
+                {
+                  terms: {
+                    _name: 'filters:work_item_type_ids',
+                    work_item_type_id: [1]
+                  }
+                },
+                {
+                  terms: {
+                    _name: 'filters:correct_work_item_type_ids',
+                    correct_work_item_type_id: [1]
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
           } } }
         ]
 
@@ -2599,7 +2647,23 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it 'adds the work_item_type_id filter to query_hash' do
         expected_filter = [
           { bool: { must_not: {
-            terms: { work_item_type_id: [1], _name: 'filters:not_work_item_type_ids' }
+            bool: {
+              should: [
+                {
+                  terms: {
+                    _name: 'filters:not_work_item_type_ids',
+                    work_item_type_id: [1]
+                  }
+                },
+                {
+                  terms: {
+                    _name: 'filters:not_correct_work_item_type_ids',
+                    correct_work_item_type_id: [1]
+                  }
+                }
+              ],
+              minimum_should_match: 1
+            }
           } } }
         ]
 
