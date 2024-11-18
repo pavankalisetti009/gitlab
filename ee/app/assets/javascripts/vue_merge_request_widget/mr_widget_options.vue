@@ -120,7 +120,7 @@ export default {
             v-if="autoMergeEnabled"
             :mr="mr"
             :service="service"
-            class="gl-border-b"
+            class="gl-border-b gl-border-b-section"
           />
           <merge-checks :mr="mr" :service="service" />
         </template>
