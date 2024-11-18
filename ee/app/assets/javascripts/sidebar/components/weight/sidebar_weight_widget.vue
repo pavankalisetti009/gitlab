@@ -226,7 +226,7 @@ export default {
           <span class="gl-mx-2">-</span>
           <gl-button
             variant="link"
-            class="!gl-text-gray-500"
+            class="!gl-text-subtle"
             :disabled="loading"
             @click="setWeight(true)"
           >
