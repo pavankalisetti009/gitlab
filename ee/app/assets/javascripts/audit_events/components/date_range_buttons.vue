@@ -1,8 +1,8 @@
 <script>
 import { GlButtonGroup, GlButton } from '@gitlab/ui';
-import { datesMatch, dateAtFirstDayOfMonth, getDateInPast } from '~/lib/utils/datetime_utility';
+import { datesMatch, getDateInPast } from '~/lib/utils/datetime_utility';
 import { convertToSnakeCase } from '~/lib/utils/text_utility';
-import { n__, s__ } from '~/locale';
+import { n__ } from '~/locale';
 import { CURRENT_DATE, SAME_DAY_OFFSET } from '../constants';
 
 const DATE_RANGE_OPTIONS = [
@@ -17,8 +17,8 @@ const DATE_RANGE_OPTIONS = [
     endDate: CURRENT_DATE,
   },
   {
-    text: s__('AuditLogs|This month'),
-    startDate: dateAtFirstDayOfMonth(CURRENT_DATE),
+    text: n__('Last %d day', 'Last %d days', 30),
+    startDate: getDateInPast(CURRENT_DATE, 30 - SAME_DAY_OFFSET),
     endDate: CURRENT_DATE,
   },
 ];
