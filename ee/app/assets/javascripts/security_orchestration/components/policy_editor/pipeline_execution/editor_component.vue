@@ -3,7 +3,10 @@ import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import {
   ACTIONS_LABEL,
   EDITOR_MODE_RULE,
@@ -11,13 +14,17 @@ import {
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
 } from '../constants';
-import { doesFileExist, getMergeRequestConfig } from '../utils';
+import { doesFileExist, getMergeRequestConfig, policyBodyToYaml, policyToYaml } from '../utils';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
-import { createPolicyObject, policyToYaml, getInitialPolicy } from './utils';
-import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY } from './constants';
+import { createPolicyObject, getInitialPolicy } from './utils';
+import {
+  CONDITIONS_LABEL,
+  DEFAULT_PIPELINE_EXECUTION_POLICY,
+  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
+} from './constants';
 
 export default {
   ACTION: 'actions',
@@ -38,6 +45,7 @@ export default {
     EditorLayout,
     RuleSection,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'namespacePath',
@@ -71,12 +79,16 @@ export default {
     let yamlEditorValue;
 
     if (this.existingPolicy) {
-      yamlEditorValue = policyToYaml(this.existingPolicy);
-    } else {
-      yamlEditorValue = getInitialPolicy(
-        DEFAULT_PIPELINE_EXECUTION_POLICY,
-        queryToObject(window.location.search),
+      yamlEditorValue = policyToYaml(
+        this.existingPolicy,
+        POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
       );
+    } else {
+      const manifest = this.glFeatures.securityPoliciesNewYamlFormat
+        ? DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT
+        : DEFAULT_PIPELINE_EXECUTION_POLICY;
+
+      yamlEditorValue = getInitialPolicy(manifest, queryToObject(window.location.search));
     }
 
     const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
@@ -131,7 +143,19 @@ export default {
         namespacePath: this.namespacePath,
       });
 
-      this.$emit('save', { action, extraMergeRequestInput, policy: this.yamlEditorValue });
+      /**
+       * backend only accepts the old format
+       * policy body is extracted
+       * and policy type is added to a policy body
+       */
+      const type = POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter;
+      const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
+
+      const payload = this.glFeatures.securityPoliciesNewYamlFormat
+        ? policyBodyToYaml(policy)
+        : this.yamlEditorValue;
+
+      this.$emit('save', { action, extraMergeRequestInput, policy: payload });
     },
     async doesFileExist(value) {
       const { project, ref = null, file } = value?.include?.[0] || {};
@@ -161,7 +185,10 @@ export default {
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy);
+      this.yamlEditorValue = policyToYaml(
+        policy,
+        POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      );
     },
   },
 };

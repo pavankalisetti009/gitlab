@@ -2,12 +2,11 @@ import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE,
   DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX,
+  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import {
   createPolicyObject,
   fromYaml,
-  policyToYaml,
-  toYaml,
   getInitialPolicy,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import {
@@ -17,6 +16,11 @@ import {
   customYamlUrlParams,
   invalidStrategyManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import {
+  policyBodyToYaml,
+  policyToYaml,
+} from 'ee/security_orchestration/components/policy_editor/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 describe('fromYaml', () => {
   it.each`
@@ -33,24 +37,28 @@ describe('fromYaml', () => {
 
 describe('createPolicyObject', () => {
   it.each`
-    title                                                                           | input                                | output
-    ${'returns the policy object and no errors for a supported manifest'}           | ${DEFAULT_PIPELINE_EXECUTION_POLICY} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), hasParsingError: false }}
-    ${'returns the error policy object and the error for an unsupported manifest'}  | ${customYaml}                        | ${{ policy: { error: true }, hasParsingError: true }}
-    ${'returns the error policy object and the error for an invalid strategy name'} | ${invalidStrategyManifest}           | ${{ policy: { error: true }, hasParsingError: true }}
-  `('$title', ({ input, output }) => {
+    title                                                                            | input                                           | output                                                                                           | securityPoliciesNewYamlFormat
+    ${'returns the policy object and no errors for a supported manifest'}            | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), hasParsingError: false }} | ${false}
+    ${'returns the policy object and no errors for a supported manifest new format'} | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), hasParsingError: false }} | ${true}
+    ${'returns the error policy object and the error for an unsupported manifest'}   | ${customYaml}                                   | ${{ policy: { error: true }, hasParsingError: true }}                                            | ${false}
+    ${'returns the error policy object and the error for an invalid strategy name'}  | ${invalidStrategyManifest}                      | ${{ policy: { error: true }, hasParsingError: true }}                                            | ${false}
+  `('$title', ({ input, output, securityPoliciesNewYamlFormat }) => {
+    window.gon.features = { securityPoliciesNewYamlFormat };
     expect(createPolicyObject(input)).toStrictEqual(output);
   });
 });
 
 describe('policyToYaml', () => {
   it('returns policy object as yaml', () => {
-    expect(policyToYaml(customYamlObject)).toBe(customYaml);
+    expect(
+      policyToYaml(customYamlObject, POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter),
+    ).toBe(customYaml);
   });
 });
 
 describe('toYaml', () => {
   it('returns policy object as yaml', () => {
-    expect(toYaml(customYamlObject)).toBe(customYaml);
+    expect(policyBodyToYaml(customYamlObject)).toBe(customYaml);
   });
 });
 
