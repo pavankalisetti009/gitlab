@@ -15,31 +15,9 @@ module Security
         branches = branches_for(rule)
         actions = actions_for(schedule)
 
-        if Feature.enabled?(:scan_execution_pipeline_worker, project)
-          schedule_scans_using_a_worker(branches, schedule) unless actions.blank?
-          schedule_errors = []
-        else
-          schedule_errors = schedule_scan(actions, branches).select do |service_result|
-            service_result[:status] == :error
-          end
-        end
+        schedule_scans_using_a_worker(branches, schedule) unless actions.blank?
 
-        return ServiceResponse.success if schedule_errors.blank?
-
-        # The use of .pluck here is not for an Active record model but for a hash
-        # rubocop: disable CodeReuse/ActiveRecord
-        message = schedule_errors.pluck(:message)
-        # rubocop: enable CodeReuse/ActiveRecord
-
-        ::Gitlab::AppJsonLogger.warn(
-          build_structured_payload(
-            security_orchestration_policy_configuration_id: schedule.security_orchestration_policy_configuration_id,
-            user_id: current_user&.id,
-            message: message.join(", ")
-          )
-        )
-
-        ServiceResponse.error(message: message)
+        ServiceResponse.success
       end
 
       private
@@ -59,16 +37,6 @@ module Security
         ::Security::SecurityOrchestrationPolicies::PolicyBranchesService
           .new(project: project)
           .scan_execution_branches([rule])
-      end
-
-      def schedule_scan(actions, branches)
-        return [] if actions.blank?
-
-        branches.map do |branch|
-          ::Security::SecurityOrchestrationPolicies::CreatePipelineService
-            .new(project: project, current_user: current_user, params: { actions: actions, branch: branch })
-            .execute
-        end
       end
 
       def schedule_scans_using_a_worker(branches, schedule)
