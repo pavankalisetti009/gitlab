@@ -2,6 +2,8 @@
 key_path: license_plan
 description: The plan of the GitLab license
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: string
 status: active
 time_frame: none

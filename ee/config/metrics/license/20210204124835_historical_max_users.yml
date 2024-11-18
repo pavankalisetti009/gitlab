@@ -2,6 +2,8 @@
 key_path: historical_max_users
 description: The peak active user count. Active is defined in UsersStatistics model.
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: number
 status: active
 instrumentation_class: HistoricalMaxUsersMetric

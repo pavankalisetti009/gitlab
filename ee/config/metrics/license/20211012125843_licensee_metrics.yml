@@ -2,6 +2,8 @@
 key_path: licensee
 description: Licensee Information
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: object
 instrumentation_class: LicenseeMetrics
 status: active

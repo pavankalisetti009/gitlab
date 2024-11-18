@@ -2,6 +2,8 @@
 key_path: license_sha256
 description: The SHA256 hash of license key of the GitLab instance, for identification purpose
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: string
 status: active
 time_frame: none

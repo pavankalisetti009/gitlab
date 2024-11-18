@@ -4,6 +4,8 @@ key_path: license_billable_users
 name: billable_users
 description: Number of all billable users (active users excluding bots and guests).
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: number
 status: active
 milestone: "14.0"

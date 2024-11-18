@@ -2,6 +2,8 @@
 key_path: license_expires_at
 description: The date the license ends
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: string
 status: active
 data_category: subscription

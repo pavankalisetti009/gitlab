@@ -2,6 +2,8 @@
 key_path: license_md5
 description: The MD5 hash of license key of the GitLab instance
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: string
 status: removed
 removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/123386
