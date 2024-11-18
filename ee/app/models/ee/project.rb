@@ -1433,6 +1433,11 @@ module EE
       @vulnerability_quota ||= Vulnerabilities::Quota.new(self)
     end
 
+    override :jira_subscription_exists?
+    def jira_subscription_exists?
+      !::Integrations::JiraCloudApp.blocked_by_settings? && super
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key
