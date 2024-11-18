@@ -87,11 +87,13 @@ module Security
       end
 
       def track_no_longer_detected_vulnerabilities(count)
-        count.times do
-          track_internal_event(
-            'vulnerability_no_longer_detected_on_default_branch',
-            project: project
-          )
+        Gitlab::InternalEvents.with_batched_redis_writes do
+          count.times do
+            track_internal_event(
+              'vulnerability_no_longer_detected_on_default_branch',
+              project: project
+            )
+          end
         end
       end
     end
