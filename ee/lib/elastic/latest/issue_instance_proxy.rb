@@ -6,14 +6,15 @@ module Elastic
       SCHEMA_VERSION = 24_08
       OPTIONAL_FIELDS = %w[embedding embedding_version].freeze
 
-      def as_indexed_json(options = {})
+      def as_indexed_json(_options = {})
         data = {}
 
         return data unless target.project_id
 
         # We don't use as_json(only: ...) because it calls all virtual and serialized attributes
         # https://gitlab.com/gitlab-org/gitlab/issues/349
-        [:id, :iid, :title, :description, :created_at, :updated_at, :state, :project_id, :author_id, :confidential].each do |attr|
+        [:id, :iid, :title, :description, :created_at, :updated_at, :state, :project_id, :author_id,
+          :confidential].each do |attr|
           data[attr.to_s] = safely_read_attribute_for_elasticsearch(attr)
         end
 
