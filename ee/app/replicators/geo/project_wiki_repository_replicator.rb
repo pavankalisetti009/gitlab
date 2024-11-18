@@ -8,14 +8,6 @@ module Geo
       ::Projects::WikiRepository
     end
 
-    def self.git_access_class
-      ::Gitlab::GitAccessWiki
-    end
-
-    def self.no_repo_message
-      git_access_class.error_message(:no_repo)
-    end
-
     override :housekeeping_model_record
     def housekeeping_model_record
       # The Repositories::HousekeepingService and Wikis::GitGarbageCollectWorker

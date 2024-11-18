@@ -8,14 +8,6 @@ module Geo
       ::Project
     end
 
-    def self.git_access_class
-      ::Gitlab::GitAccessProject
-    end
-
-    def self.no_repo_message
-      git_access_class.error_message(:no_repo)
-    end
-
     def before_housekeeping
       return unless ::Gitlab::Geo.secondary?
 
