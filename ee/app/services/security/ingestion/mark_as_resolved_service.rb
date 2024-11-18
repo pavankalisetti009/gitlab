@@ -50,14 +50,12 @@ module Security
       def mark_as_resolved(missing_ids)
         return if missing_ids.blank?
 
-        vulnerabilities = Vulnerability.id_in(missing_ids)
-                     .with_resolution(false)
-                     .not_requiring_manual_resolution
-                     .to_a
+        resolved_count = Vulnerability.id_in(missing_ids)
+          .with_resolution(false)
+          .not_requiring_manual_resolution
+          .update_all(resolved_on_default_branch: true)
 
-        vulnerabilities.update_all(resolved_on_default_branch: true)
-
-        track_no_longer_detected_vulnerabilities(vulnerabilities)
+        track_no_longer_detected_vulnerabilities(resolved_count)
       end
 
       def process_existing_cvs_vulnerabilities_for_container_scanning
@@ -88,12 +86,11 @@ module Security
         scanner.external_id.in?(DS_SCANNERS_EXTERNAL_IDS)
       end
 
-      def track_no_longer_detected_vulnerabilities(vulnerabilities)
-        vulnerabilities.each do |vulnerability|
+      def track_no_longer_detected_vulnerabilities(count)
+        count.times do
           track_internal_event(
             'vulnerability_no_longer_detected_on_default_branch',
-            project: project,
-            user: vulnerability.author
+            project: project
           )
         end
       end

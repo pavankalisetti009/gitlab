@@ -24,6 +24,28 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         expect(vulnerability.reload).to be_resolved_on_default_branch
       end
 
+      context 'with multiple vulnerabilities' do
+        let_it_be(:num_vulnerabilities) { 3 }
+        let_it_be(:user) { create(:user) }
+        let_it_be(:vulnerabilities) do
+          num_vulnerabilities.times do
+            create(:vulnerability,
+              :sast,
+              project: project,
+              author: user,
+              present_on_default_branch: true,
+              resolved_on_default_branch: false,
+              findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
+            )
+          end
+        end
+
+        it 'emits event for each vulnerability' do
+          expect { command.execute }.to trigger_internal_events('vulnerability_no_longer_detected_on_default_branch')
+            .with(project: project).exactly(num_vulnerabilities).times
+        end
+      end
+
       it 'does not resolve vulnerabilities detected by a different scanner' do
         vulnerability = create(:vulnerability, :sast, project: project, present_on_default_branch: true)
 
