@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Project Subscriptions', :js,
-  feature_category: :continuous_integration,
-  quarantine: "https://gitlab.com/gitlab-org/gitlab/-/issues/504369" do
+  feature_category: :continuous_integration do
   let(:project) { create(:project, :public, :repository) }
   let(:upstream_project) { create(:project, :public, :repository) }
   let(:downstream_project) { create(:project, :public, :repository, upstream_projects: [project]) }
