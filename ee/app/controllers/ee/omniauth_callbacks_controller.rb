@@ -45,7 +45,10 @@ module EE
       if provider.to_sym.in?(::AuthHelper.providers_for_base_controller)
         ::Onboarding::StatusCreateService
           .new(
-            request.env.fetch('omniauth.params', {}).deep_symbolize_keys, session, user, onboarding_first_step_path
+            request.env.fetch('omniauth.params', {}).deep_symbolize_keys,
+            session['user_return_to'],
+            user,
+            onboarding_first_step_path
           ).execute
         clear_memoization(:onboarding_status) # clear since registration_type is now set
 

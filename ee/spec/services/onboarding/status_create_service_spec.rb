@@ -11,7 +11,7 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
     let(:current_user) { user }
     let(:step_url) { 'foobar' }
     let(:params) { {} }
-    let(:session) { {} }
+    let(:user_return_to) { nil }
     let(:onboarding_status) do
       {
         step_url: step_url,
@@ -20,7 +20,7 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
       }
     end
 
-    subject(:execute) { described_class.new(params, session, current_user, step_url).execute }
+    subject(:execute) { described_class.new(params, user_return_to, current_user, step_url).execute }
 
     context 'when onboarding is enabled' do
       before do
@@ -29,8 +29,8 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
 
       context 'when update is successful' do
         let_it_be(:user_with_members, reload: true) { create(:group_member).user }
-        let(:subscription_return) { { 'user_return_to' => ::Gitlab::Routing.url_helpers.new_subscriptions_path } }
-        let(:no_sub_return) { { 'user_return_to' => 'some/path' } }
+        let(:subscription_return) { ::Gitlab::Routing.url_helpers.new_subscriptions_path }
+        let(:no_sub_return) { 'some/path' }
 
         let(:trial_registration) do
           {
@@ -64,16 +64,16 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
           }
         end
 
-        where(:params, :session, :current_user, :expected_onboarding_status) do
-          { trial: 'true' }  | {}                        | ref(:user_with_members) | ref(:trial_registration)
-          { trial: 'true' }  | {}                        | ref(:user)              | ref(:trial_registration)
-          { trial: 'false' } | {}                        | ref(:user)              | ref(:free_registration)
-          { trial: '' }      | {}                        | ref(:user)              | ref(:free_registration)
-          {}                 | {}                        | ref(:user)              | ref(:free_registration)
+        where(:params, :user_return_to, :current_user, :expected_onboarding_status) do
+          { trial: 'true' }  | nil                       | ref(:user_with_members) | ref(:trial_registration)
+          { trial: 'true' }  | nil                       | ref(:user)              | ref(:trial_registration)
+          { trial: 'false' } | nil                       | ref(:user)              | ref(:free_registration)
+          { trial: '' }      | nil                       | ref(:user)              | ref(:free_registration)
+          {}                 | nil                       | ref(:user)              | ref(:free_registration)
           {}                 | ref(:subscription_return) | ref(:user)              | ref(:subscription_registration)
           {}                 | ref(:subscription_return) | ref(:user_with_members) | ref(:invite_registration)
-          {}                 | {}                        | ref(:user_with_members) | ref(:invite_registration)
-          {}                 | {}                        | ref(:user)              | ref(:free_registration)
+          {}                 | nil                       | ref(:user_with_members) | ref(:invite_registration)
+          {}                 | nil                       | ref(:user)              | ref(:free_registration)
           {}                 | ref(:no_sub_return)       | ref(:user)              | ref(:free_registration)
         end
 
