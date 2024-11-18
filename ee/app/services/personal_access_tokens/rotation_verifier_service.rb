@@ -6,37 +6,6 @@ module PersonalAccessTokens
       @user = user
     end
 
-    # If a new token has been created after we started notifying the user about the most recently EXPIRED token,
-    # rotation is NOT needed.
-    # For example: If the most recent token expired on 14th of June, and user created a token anytime on or after
-    # 7th of June (first notification date), no rotation is required.
-    def expired?
-      Rails.cache.fetch(expired_cache_key, expires_in: expires_in.minutes) do
-        most_recent_expires_at = tokens_without_impersonation.not_revoked.expired.maximum(:expires_at)
-
-        if most_recent_expires_at.nil?
-          false
-        else
-          !tokens_without_impersonation.created_on_or_after(most_recent_expires_at - Expirable::DAYS_TO_EXPIRE).exists?
-        end
-      end
-    end
-
-    # If a new token has been created after we started notifying the user about the most recently EXPIRING token,
-    # rotation is NOT needed.
-    # User is notified about an expiring token before `days_within` (7 days) of expiry
-    def expiring_soon?
-      Rails.cache.fetch(expiring_cache_key, expires_in: expires_in.minutes) do
-        most_recent_expires_at = tokens_without_impersonation.expires_in(Expirable::DAYS_TO_EXPIRE.days.from_now).maximum(:expires_at)
-
-        if most_recent_expires_at.nil?
-          false
-        else
-          !tokens_without_impersonation.created_on_or_after(most_recent_expires_at - Expirable::DAYS_TO_EXPIRE).exists?
-        end
-      end
-    end
-
     def clear_cache
       Rails.cache.delete(expired_cache_key)
       Rails.cache.delete(expiring_cache_key)
