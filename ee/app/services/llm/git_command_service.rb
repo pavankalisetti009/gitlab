@@ -18,24 +18,13 @@ module Llm
     end
 
     def perform
-      response_modifier =
-        if Feature.enabled?(:prompt_migration_glab_ask_git_command, user)
-          response = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: :glab_ask_git_command)
-            .complete(
-              url: "#{::Gitlab::AiGateway.url}/v1/prompts/glab_ask_git_command",
-              body: { 'inputs' => options }
-            )
+      response = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: :glab_ask_git_command)
+        .complete(
+          url: "#{::Gitlab::AiGateway.url}/v1/prompts/glab_ask_git_command",
+          body: { 'inputs' => options }
+        )
 
-          ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(Gitlab::Json.parse(response.body))
-        else
-          response = ::Gitlab::Llm::Anthropic::Client
-            .new(user, unit_primitive: 'glab_ask_git_command')
-            .messages_complete(
-              **::Gitlab::Llm::Templates::GitCommand.new(options[:prompt]).to_prompt
-            )
-
-          ::Gitlab::Llm::Anthropic::ResponseModifiers::GitCommand.new(response)
-        end
+      response_modifier = ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(Gitlab::Json.parse(response.body))
 
       success(response_modifier.response_body)
     end
