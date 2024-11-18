@@ -67,7 +67,8 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
       end
 
       context 'when seat is not available' do
-        let_it_be(:group_member) { build(:group_member, source: group, user: create(:user)) }
+        let_it_be(:user) { create(:user) }
+        let!(:group_member) { build(:group_member, source: group, user: user) }
 
         context 'when ignore_user_limits is falsey' do
           it 'is invalid' do
