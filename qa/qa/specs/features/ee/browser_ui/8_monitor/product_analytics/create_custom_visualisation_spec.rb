@@ -7,8 +7,7 @@ module QA
       only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics" } },
       product_group: :product_analytics
     ) do
-      let!(:sandbox_group) { create(:sandbox, path: "gitlab-qa-product-analytics") }
-      let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}", sandbox: sandbox_group) }
+      let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}") }
       let!(:project) do
         create(:project, :with_readme, name: "project-analytics-p-#{SecureRandom.hex(8)}", group: group)
       end

@@ -6,12 +6,14 @@ module QA
   RSpec.describe 'Create', product_group: :code_creation do
     describe 'Code Suggestions in Web IDE' do
       include_context "Web IDE test prep"
-      let(:project) { create(:project, :with_readme, name: 'webide-code-suggestions-project') }
+
+      let(:api_client) { Runtime::UserStore.default_api_client }
+      let(:project) { create(:project, :with_readme, name: 'webide-code-suggestions-project', api_client: api_client) }
       let(:file_name) { 'new_file.rb' }
       let(:prompt_data) { 'def reverse_string' }
 
       before do
-        create(:commit, project: project, actions: [
+        create(:commit, project: project, api_client: api_client, actions: [
           { action: 'create', file_path: file_name, content: '# test' }
         ])
         load_web_ide(file_name)
@@ -80,6 +82,9 @@ module QA
       end
 
       context 'on Self-managed', :orchestrated do
+        let(:api_client) { Runtime::UserStore.admin_api_client }
+        let(:user) { Runtime::UserStore.admin_user }
+
         context 'with a valid license' do
           context 'with a Duo Enterprise add-on' do
             context 'when seat is assigned', :blocking, :ai_gateway do

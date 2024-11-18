@@ -5,6 +5,8 @@ module QA
     module Resource
       # GraphQL mutations implemented as part of https://gitlab.com/gitlab-org/gitlab/-/issues/335175
       class InstanceAuditEventExternalDestination < QA::Resource::Base
+        uses_admin_api_client
+
         attributes :id,
           :destination_url,
           :verification_token

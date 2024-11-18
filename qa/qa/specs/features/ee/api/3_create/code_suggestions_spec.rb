@@ -37,7 +37,8 @@ module QA
         }
       end
 
-      let(:token) { Runtime::UserStore.default_api_client.personal_access_token }
+      let(:token) { Runtime::UserStore.user_api_client.personal_access_token }
+
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
 
       let(:context) do
@@ -153,6 +154,8 @@ module QA
         end
 
         context 'on Self-managed', :orchestrated do
+          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
@@ -196,6 +199,8 @@ module QA
         end
 
         context 'on Self-managed', :orchestrated do
+          let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+
           context 'with a valid license' do
             context 'with a Duo Enterprise add-on' do
               context 'when seat is assigned', :blocking, :ai_gateway do
@@ -226,6 +231,8 @@ module QA
           end
 
           context 'on Self-managed', :orchestrated do
+            let(:token) { Runtime::UserStore.admin_api_client.personal_access_token }
+
             context 'with a valid license' do
               context 'with a Duo Enterprise add-on' do
                 context 'when seat is assigned', :blocking, :ai_gateway do

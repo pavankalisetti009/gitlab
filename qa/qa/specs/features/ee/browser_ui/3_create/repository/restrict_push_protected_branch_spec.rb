@@ -10,7 +10,7 @@ module QA
 
       shared_examples 'user without push access' do |user, testcase|
         it 'fails to push', testcase: testcase do
-          expect { push_new_file(branch_name, as_user: send(user)) }.to raise_error(
+          expect { push_new_file(branch_name, as_user: send(user), max_attempts: 1) }.to raise_error(
             QA::Support::Run::CommandError,
             /You are not allowed to push code to protected branches on this project\.([\s\S]+)\[remote rejected\] #{branch_name} -> #{branch_name} \(pre-receive hook declined\)/)
         end
@@ -119,7 +119,7 @@ module QA
         it_behaves_like 'user without push access', :user_developer, 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436937'
       end
 
-      def login(as_user: Runtime::User)
+      def login(as_user: Runtime::UserStore.test_user)
         Page::Main::Menu.perform(&:sign_out_if_signed_in)
 
         Runtime::Browser.visit(:gitlab, Page::Main::Login)
@@ -128,12 +128,13 @@ module QA
         end
       end
 
-      def push_new_file(branch_name, as_user: user)
+      def push_new_file(branch_name, as_user: user, max_attempts: 3)
         Resource::Repository::Push.fabricate! do |push|
           push.repository_http_uri = project.repository_http_location.uri
           push.branch_name = branch_name
           push.new_branch = false
           push.user = as_user
+          push.max_attempts = max_attempts
         end
       end
     end

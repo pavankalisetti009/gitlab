@@ -4,8 +4,10 @@ module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
   RSpec.describe 'Ai-powered', product_group: :duo_chat do
     describe 'Duo Chat' do
-      let(:project) { create(:project, name: 'duo-chat-project') }
-      let(:token) { Runtime::UserStore.default_api_client.personal_access_token }
+      let(:user) { Runtime::UserStore.test_user }
+      let(:api_client) { Runtime::UserStore.default_api_client }
+      let(:token) { api_client.personal_access_token }
+      let(:project) { create(:project, name: 'duo-chat-project', api_client: api_client) }
       let(:direct_access) { Resource::CodeSuggestions::DirectAccess.fetch_direct_connection_details(token) }
       # Determine whether we are running against dotcom or a self managed cloud connector by checking
       # the base_url of the direct connection endpoint. This lets us determine the expected response.
@@ -31,7 +33,7 @@ module QA
       end
 
       before do
-        Flow::Login.sign_in
+        Flow::Login.sign_in(as: user)
         project.visit!
       end
 
@@ -42,6 +44,9 @@ module QA
         end
 
         context 'on Self-managed', :blocking, :orchestrated, :ai_gateway do
+          let(:api_client) { Runtime::UserStore.admin_api_client }
+          let(:user) { Runtime::UserStore.admin_user }
+
           it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/464684'
         end
       end
