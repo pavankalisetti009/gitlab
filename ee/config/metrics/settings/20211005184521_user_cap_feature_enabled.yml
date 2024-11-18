@@ -2,6 +2,8 @@
 key_path: user_cap_feature_enabled
 description: Whether User Cap feature is enabled
 product_group: utilization
+product_categories:
+- seat_cost_management
 value_type: number
 status: active
 milestone: "14.4"
