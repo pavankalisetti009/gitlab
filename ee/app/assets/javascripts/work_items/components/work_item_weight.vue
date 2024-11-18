@@ -232,7 +232,7 @@ export default {
       <div>{{ weight }}</div>
     </template>
     <template v-else>
-      <div class="gl-text-secondary">{{ __('None') }}</div>
+      <div class="gl-text-subtle">{{ __('None') }}</div>
     </template>
   </div>
 </template>

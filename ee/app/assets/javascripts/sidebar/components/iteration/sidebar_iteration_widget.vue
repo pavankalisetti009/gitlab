@@ -74,11 +74,11 @@ export default {
     @attribute-updated="$emit('iteration-updated', $event)"
   >
     <template #value="{ attributeUrl, currentAttribute }">
-      <p class="gl-font-size-sm gl-line-height-21 gl-my-1 gl-text-gray-500">
+      <p class="gl-font-size-sm gl-line-height-21 gl-my-1 gl-text-subtle">
         {{ getCadenceTitle(currentAttribute) }}
       </p>
       <gl-link
-        class="gl-leading-20 !gl-text-gray-900"
+        class="gl-leading-20 !gl-text-default"
         :href="attributeUrl"
         data-testid="iteration-link"
       >
