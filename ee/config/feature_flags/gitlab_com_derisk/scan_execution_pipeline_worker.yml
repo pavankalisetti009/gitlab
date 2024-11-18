@@ -1,8 +1,0 @@
----
-name: scan_execution_pipeline_worker
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147691
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/451890
-milestone: '16.11'
-type: gitlab_com_derisk
-group: group::security policies
-default_enabled: false

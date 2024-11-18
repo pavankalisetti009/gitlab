@@ -19,14 +19,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
 
     subject(:service) { described_class.new(project: project, current_user: current_user) }
 
-    shared_examples 'does not execute scan' do
-      it 'does not create scan pipeline' do
-        expect { service.execute(schedule) }.to change(Ci::Pipeline, :count).by(0)
+    shared_examples 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker' do
+      it 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker' do
+        expect(::Security::ScanExecutionPolicies::CreatePipelineWorker).not_to receive(:perform_async)
+
+        service.execute(schedule)
       end
     end
 
     before do
-      stub_feature_flags(scan_execution_pipeline_worker: false)
       stub_licensed_features(security_on_demand_scans: true)
 
       project.repository.create_branch('production', project.default_branch)
@@ -43,36 +44,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
       expect(service_result.success?).to be(true)
     end
 
-    shared_examples 'with scan' do |scan_type|
-      context "when scan is #{scan_type}" do
-        context 'when the feature flag scan_execution_pipeline_worker is enabled' do
-          before do
-            stub_feature_flags(scan_execution_pipeline_worker: true)
-          end
-
-          it 'enqueues Security::SyncScanPoliciesWorker for each branch' do
-            existing_branches.each do |branch|
-              expect(::Security::ScanExecutionPolicies::CreatePipelineWorker).to(
-                receive(:perform_async)
-                  .with(project.id, current_user.id, schedule.id, branch)
-                  .and_call_original
-              )
-            end
-
-            service.execute(schedule)
-          end
-
-          it 'does not invokes Security::SecurityOrchestrationPolicies::CreatePipelineService' do
-            existing_branches.each do |branch|
-              expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).not_to(
-                receive(:new)
-                  .with(project: project, current_user: current_user,
-                    params: { actions: [{ scan: 'scan_type' }], branch: branch }))
-            end
-
-            service.execute(schedule)
-          end
+    shared_examples 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch' do
+      it 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch' do
+        existing_branches.each do |branch|
+          expect(::Security::ScanExecutionPolicies::CreatePipelineWorker).to(
+            receive(:perform_async)
+              .with(project.id, current_user.id, schedule.id, branch)
+              .and_call_original
+          )
         end
+
+        service.execute(schedule)
       end
     end
 
@@ -81,21 +63,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         policy[:actions] = [{ scan: 'dast' }]
       end
 
-      it 'invokes Security::SecurityOrchestrationPolicies::CreatePipelineService for branches existing for the project defined in the schedule rule' do
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'dast' }], branch: 'production' })
-          .and_call_original)
-
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'dast' }], branch: 'master' })
-          .and_call_original)
-
-        service.execute(schedule)
-      end
-
-      it_behaves_like 'with scan', 'dast'
+      it_behaves_like 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch'
     end
 
     context 'when scan type is secret_detection' do
@@ -103,21 +71,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         policy[:actions] = [{ scan: 'secret_detection' }]
       end
 
-      it 'invokes Security::SecurityOrchestrationPolicies::CreatePipelineService for branches existing for the project defined in the schedule rule' do
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'secret_detection' }], branch: 'production' })
-          .and_call_original)
-
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'secret_detection' }], branch: 'master' })
-          .and_call_original)
-
-        service.execute(schedule)
-      end
-
-      it_behaves_like 'with scan', 'secret_detection'
+      it_behaves_like 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch'
     end
 
     context 'when scan type is container_scanning' do
@@ -126,31 +80,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
       end
 
       context 'when clusters are not defined in the rule' do
-        it 'invokes Security::SecurityOrchestrationPolicies::CreatePipelineService for branches existing for the project defined in the schedule rule' do
-          expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-            receive(:new)
-            .with(project: project, current_user: current_user, params: { actions: [{ scan: 'container_scanning' }], branch: 'production' })
-            .and_call_original)
-
-          expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-            receive(:new)
-            .with(project: project, current_user: current_user, params: { actions: [{ scan: 'container_scanning' }], branch: 'master' })
-            .and_call_original)
-
-          service.execute(schedule)
-        end
-
-        it_behaves_like 'with scan', 'container_scanning'
+        it_behaves_like 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch'
       end
 
       context 'when agents are defined in the rule' do
         let(:rule) { { type: 'schedule', agents: { kasagent: { namespaces: 'default' } }, cadence: '*/20 * * * *' } }
 
-        it 'does not invokes Security::SecurityOrchestrationPolicies::CreatePipelineService' do
-          expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).not_to receive(:new)
-
-          service.execute(schedule)
-        end
+        it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
       end
     end
 
@@ -159,27 +95,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         policy[:actions] = [{ scan: 'sast' }]
       end
 
-      it 'invokes Security::SecurityOrchestrationPolicies::CreatePipelineService for branches existing for the project defined in the schedule rule' do
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'sast' }], branch: 'production' })
-          .and_call_original)
-
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
-          receive(:new)
-          .with(project: project, current_user: current_user, params: { actions: [{ scan: 'sast' }], branch: 'master' })
-          .and_call_original)
-
-        service.execute(schedule)
-      end
-
-      it_behaves_like 'with scan', 'sast'
+      it_behaves_like 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch'
     end
 
     context 'when policy actions exists and there are multiple matching branches' do
-      it 'creates multiple scan pipelines' do
-        expect { service.execute(schedule) }.to change(Ci::Pipeline, :count).by(2)
-      end
+      it_behaves_like 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker for each branch'
     end
 
     context 'without rules' do
@@ -189,7 +109,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
 
       subject(:response) { service.execute(schedule) }
 
-      it_behaves_like 'does not execute scan'
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
 
       it 'fails' do
         expect(response.to_h).to include(status: :error, message: "No rules")
@@ -203,7 +123,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
 
       subject(:response) { service.execute(schedule) }
 
-      it_behaves_like 'does not execute scan'
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
 
       it 'fails' do
         expect(response.to_h).to include(status: :error, message: "No scheduled rules")
@@ -219,7 +139,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         )
       end
 
-      it_behaves_like 'does not execute scan'
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
     end
 
     context 'with mismatching `branch_type`' do
@@ -231,72 +151,32 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         )
       end
 
-      it_behaves_like 'does not execute scan'
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
     end
 
     context 'when policy actions does not exist' do
       let(:policy) { build(:scan_execution_policy, :with_schedule, enabled: true, actions: []) }
 
-      it_behaves_like 'does not execute scan'
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
     end
 
     context 'when policy scan type is invalid' do
       let(:policy) { build(:scan_execution_policy, :with_schedule, enabled: true, actions: [{ scan: 'invalid' }]) }
 
-      it_behaves_like 'does not execute scan'
+      it 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker' do
+        expect(::Security::ScanExecutionPolicies::CreatePipelineWorker)
+          .to(receive(:perform_async))
+          .with(project.id, current_user.id, schedule.id, project.default_branch)
+          .and_call_original
+
+        service.execute(schedule)
+      end
     end
 
     context 'when policy does not exist' do
       let(:policy) { nil }
 
-      it_behaves_like 'does not execute scan'
-    end
-
-    context 'when create pipeline service returns errors' do
-      before do
-        allow_next_instance_of(::Security::SecurityOrchestrationPolicies::CreatePipelineService) do |service|
-          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'message'))
-        end
-      end
-
-      it 'bubbles one error per branch' do
-        service_result = service.execute(schedule)
-
-        expect(service_result).to be_kind_of(ServiceResponse)
-        expect(service_result.message).to contain_exactly('message', 'message')
-      end
-
-      it 'logs the error' do
-        expect(::Gitlab::AppJsonLogger).to receive(:warn).with({
-          'class' => 'Security::SecurityOrchestrationPolicies::RuleScheduleService',
-          'security_orchestration_policy_configuration_id' => policy_configuration.id,
-          'user_id' => current_user.id,
-          'message' => 'message, message'
-        })
-
-        service.execute(schedule)
-      end
-
-      context 'with one branch' do
-        let(:branches) { %w[master] }
-
-        it 'returns one error message' do
-          service_result = service.execute(schedule)
-
-          expect(service_result.message).to contain_exactly('message')
-        end
-
-        it 'logs the error' do
-          expect(::Gitlab::AppJsonLogger).to receive(:warn).with({
-            'class' => 'Security::SecurityOrchestrationPolicies::RuleScheduleService',
-            'security_orchestration_policy_configuration_id' => policy_configuration.id,
-            'user_id' => current_user.id,
-            'message' => 'message'
-          })
-
-          service.execute(schedule)
-        end
-      end
+      it_behaves_like 'does not enqueue Security::ScanExecutionPolicies::CreatePipelineWorker'
     end
 
     describe "branch lookup" do
@@ -312,9 +192,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::RuleScheduleService, fea
         project.protected_branches.create!(name: project.default_branch)
       end
 
-      it "executes scan" do
-        expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService)
-          .to(receive(:new))
+      it 'enqueues Security::ScanExecutionPolicies::CreatePipelineWorker' do
+        expect(::Security::ScanExecutionPolicies::CreatePipelineWorker)
+          .to(receive(:perform_async))
+          .with(project.id, current_user.id, schedule.id, project.default_branch)
           .and_call_original
 
         service.execute(schedule)
