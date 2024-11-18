@@ -2,6 +2,8 @@
 key_path: license_id
 description: The ID of the license
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: number
 status: active
 time_frame: none

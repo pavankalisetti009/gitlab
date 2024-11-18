@@ -2,6 +2,8 @@
 key_path: license_trial
 description: Whether this is a trial license or not
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: boolean
 status: active
 time_frame: none

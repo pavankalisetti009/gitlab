@@ -2,6 +2,8 @@
 key_path: license_starts_at
 description: The date the license starts
 product_group: provision
+product_categories:
+- plan_provisioning
 value_type: string
 status: active
 time_frame: none
