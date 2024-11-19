@@ -2077,11 +2077,17 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     describe '.with_applied_scan_result_policies' do
-      let_it_be(:scan_finding_approval_rule) { create(:report_approver_rule, :code_coverage) }
-      let_it_be(:code_coverage_approval_rule) { create(:report_approver_rule, :scan_finding) }
+      let_it_be(:code_coverage_approval_rule) { create(:report_approver_rule, :code_coverage) }
+      let_it_be(:scan_finding_approval_rule) { create(:report_approver_rule, :scan_finding) }
+      let_it_be(:license_scanning_approval_rule) { create(:report_approver_rule, :license_scanning) }
+      let_it_be(:any_merge_request_approval_rule) { create(:report_approver_rule, :any_merge_request) }
 
       it 'returns MRs that have applied scan result policies' do
-        expect(described_class.with_applied_scan_result_policies).to eq([code_coverage_approval_rule.merge_request])
+        expect(described_class.with_applied_scan_result_policies).to eq([
+          scan_finding_approval_rule.merge_request,
+          license_scanning_approval_rule.merge_request,
+          any_merge_request_approval_rule.merge_request
+        ])
       end
     end
 

@@ -194,7 +194,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
     end
   end
 
-  describe '.not_from_scan_result_policy' do
+  shared_examples '.not_from_scan_result_policy scope' do
     it 'returns regular or any-approver rules' do
       any_approver_rule = create(:approval_project_rule, rule_type: :any_approver)
       regular_rule = create(:approval_project_rule)
@@ -202,14 +202,40 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
       create(:approval_project_rule, :scan_finding)
       create(:approval_project_rule, :any_merge_request)
 
-      expect(described_class.not_from_scan_result_policy).to(
+      expect(subject).to(
         contain_exactly(any_approver_rule, regular_rule)
       )
     end
   end
 
-  describe '.report_approver_without_scan_finding' do
-    subject { described_class.report_approver_without_scan_finding }
+  describe '.exportable' do
+    subject { described_class.exportable }
+
+    include_examples '.not_from_scan_result_policy scope'
+  end
+
+  describe '.not_from_scan_result_policy' do
+    subject { described_class.not_from_scan_result_policy }
+
+    include_examples '.not_from_scan_result_policy scope'
+  end
+
+  describe '.from_scan_result_policy' do
+    it 'returns scan_finding, license_scanning and any_merge_request rules' do
+      create(:approval_project_rule, rule_type: :any_approver)
+      create(:approval_project_rule)
+      license_scanning = create(:approval_project_rule, :license_scanning)
+      scan_finding = create(:approval_project_rule, :scan_finding)
+      any_merge_request = create(:approval_project_rule, :any_merge_request)
+
+      expect(described_class.from_scan_result_policy).to(
+        contain_exactly(license_scanning, scan_finding, any_merge_request)
+      )
+    end
+  end
+
+  describe '.report_approver_without_policy_report_types' do
+    subject { described_class.report_approver_without_policy_report_types }
 
     let_it_be(:regular_rule) { create(:approval_project_rule) }
     let_it_be(:code_owner_rule) { create(:code_owner_rule) }

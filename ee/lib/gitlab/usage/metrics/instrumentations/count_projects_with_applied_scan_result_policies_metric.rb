@@ -7,7 +7,7 @@ module Gitlab
         class CountProjectsWithAppliedScanResultPoliciesMetric < DatabaseMetric
           operation :distinct_count, column: :project_id
 
-          relation { ::ApprovalProjectRule.scan_finding }
+          relation { ::ApprovalProjectRule.from_scan_result_policy }
 
           start { ::ApprovalProjectRule.minimum(:project_id) }
           finish { ::ApprovalProjectRule.maximum(:project_id) }
