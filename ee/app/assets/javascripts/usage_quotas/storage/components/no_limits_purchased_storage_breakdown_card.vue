@@ -3,7 +3,6 @@ import { GlIcon, GlLink, GlCard, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import { STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE } from '../constants';
 
 export default {
   name: 'NoLimitsPurchasedStorageBreakdownCard',
@@ -26,7 +25,6 @@ export default {
   },
   i18n: {
     PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE: s__('UsageQuota|Purchased storage'),
-    STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
     PROJECT_ENFORCEMENT_PURCHASE_CARD_SUBTITLE: s__(
       'UsageQuota|Any additional purchased storage will be displayed here.',
     ),
@@ -51,7 +49,7 @@ export default {
             :href="$options.usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit"
             target="_blank"
             class="gl-ml-2"
-            :aria-label="$options.i18n.STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE"
+            :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
           >
             <gl-icon name="question-o" />
           </gl-link>

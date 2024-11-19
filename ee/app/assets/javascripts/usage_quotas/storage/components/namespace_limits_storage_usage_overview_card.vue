@@ -1,12 +1,8 @@
 <script>
 import { GlCard, GlProgressBar, GlIcon, GlLink } from '@gitlab/ui';
-import { sprintf } from '~/locale';
+import { sprintf, s__ } from '~/locale';
 import { usageQuotasHelpPaths } from '~/usage_quotas/storage/constants';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import {
-  STORAGE_STATISTICS_PERCENTAGE_REMAINING,
-  STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
-} from '../constants';
 
 export default {
   name: 'NamespaceLimitsStorageUsageOverviewCard',
@@ -58,13 +54,10 @@ export default {
 
       const percentageRemaining = Math.max(100 - this.percentageUsed, 0);
 
-      return sprintf(STORAGE_STATISTICS_PERCENTAGE_REMAINING, {
+      return sprintf(s__('UsageQuota|%{percentageRemaining}%% namespace storage remaining.'), {
         percentageRemaining,
       });
     },
-  },
-  i18n: {
-    STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
   },
   usageQuotasHelpPaths,
 };
@@ -79,7 +72,7 @@ export default {
         :href="$options.usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit"
         target="_blank"
         class="gl-ml-2"
-        :aria-label="$options.i18n.STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE"
+        :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
       >
         <gl-icon name="question-o" />
       </gl-link>

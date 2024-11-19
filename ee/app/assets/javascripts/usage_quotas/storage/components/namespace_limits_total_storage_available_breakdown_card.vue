@@ -6,7 +6,6 @@ import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/numb
 import {
   STORAGE_STATISTICS_PURCHASED_STORAGE,
   STORAGE_STATISTICS_TOTAL_STORAGE,
-  STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
 } from '../constants';
 
 /**
@@ -44,7 +43,6 @@ export default {
   },
   i18n: {
     PURCHASED_USAGE_HELP_LINK: usageQuotasHelpPaths.usageQuotasNamespaceStorageLimit,
-    STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE,
     STORAGE_STATISTICS_PURCHASED_STORAGE,
     STORAGE_STATISTICS_TOTAL_STORAGE,
   },
@@ -65,7 +63,7 @@ export default {
           :href="$options.i18n.PURCHASED_USAGE_HELP_LINK"
           target="_blank"
           class="gl-ml-2"
-          :aria-label="$options.i18n.STORAGE_STATISTICS_USAGE_QUOTA_LEARN_MORE"
+          :aria-label="s__('UsageQuota|Learn more about usage quotas.')"
         >
           <gl-icon name="question-o" />
         </gl-link>
