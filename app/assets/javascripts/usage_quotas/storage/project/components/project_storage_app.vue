@@ -9,7 +9,6 @@ import getProjectStorageStatistics from 'ee_else_ce/usage_quotas/storage/project
 import getCostFactoredProjectStorageStatistics from 'ee_else_ce/usage_quotas/storage/project/queries/cost_factored_project_storage.query.graphql';
 import {
   ERROR_MESSAGE,
-  LEARN_MORE_LABEL,
   USAGE_QUOTAS_LABEL,
   TOTAL_USAGE_TITLE,
   TOTAL_USAGE_SUBTITLE,
@@ -178,7 +177,6 @@ export default {
     },
   },
   usageQuotasHelpPaths,
-  LEARN_MORE_LABEL,
   USAGE_QUOTAS_LABEL,
   TOTAL_USAGE_TITLE,
   TOTAL_USAGE_SUBTITLE,
@@ -201,7 +199,7 @@ export default {
               :href="$options.usageQuotasHelpPaths.usageQuotas"
               target="_blank"
               :aria-label="helpLinkAriaLabel($options.USAGE_QUOTAS_LABEL)"
-              >{{ $options.LEARN_MORE_LABEL }}</gl-link
+              >{{ __('Learn more.') }}</gl-link
             >
           </p>
         </div>

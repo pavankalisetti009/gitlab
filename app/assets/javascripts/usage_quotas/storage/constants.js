@@ -4,7 +4,6 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 export const ERROR_MESSAGE = s__(
   'UsageQuota|Something went wrong while fetching project storage statistics',
 );
-export const LEARN_MORE_LABEL = __('Learn more.');
 export const USAGE_QUOTAS_LABEL = s__('UsageQuota|Usage Quotas');
 export const TOTAL_USAGE_TITLE = s__('UsageQuota|Usage breakdown');
 export const TOTAL_USAGE_SUBTITLE = s__(
