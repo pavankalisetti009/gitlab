@@ -19,6 +19,45 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
     end
   end
 
+  describe '#by_full_text' do
+    let(:query) { 'foo bar' }
+    let(:options) { { fields: %w[iid^3 title^2 description] } }
+
+    subject(:by_full_text) do
+      described_class.by_full_text(query: query, options: options)
+    end
+
+    context 'when advanced query syntax is not matched and feature is enabled' do
+      it 'calls by_multi_match_query' do
+        expect(described_class).to receive(:by_multi_match_query).with(fields: options[:fields], query: query,
+          options: options)
+        by_full_text
+      end
+    end
+
+    context 'when advanced query syntax is matched' do
+      let(:query) { 'foo ~bar' }
+
+      it 'calls by_simple_query_string' do
+        expect(described_class).to receive(:by_simple_query_string).with(fields: options[:fields], query: query,
+          options: options)
+        by_full_text
+      end
+    end
+
+    context 'when feature is not enabled' do
+      before do
+        stub_feature_flags(search_uses_match_queries: false)
+      end
+
+      it 'calls by_simple_query_string' do
+        expect(described_class).to receive(:by_simple_query_string).with(fields: options[:fields], query: query,
+          options: options)
+        by_full_text
+      end
+    end
+  end
+
   describe '#by_simple_query_string' do
     let(:query) { 'foo bar' }
     let(:options) { base_options }
@@ -51,6 +90,25 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
                    number_of_fragments: 0, pre_tags: ['gitlabelasticsearch→'], post_tags: ['←gitlabelasticsearch'] }
 
       expect(by_simple_query_string[:highlight]).to eq(expected)
+    end
+
+    context 'when options[:clause] is should' do
+      let(:options) { base_options.merge(keyword_match_clause: :should) }
+
+      it 'returns a simple_query_string query as a should and adds doc type as a filter' do
+        expected_should = [
+          { simple_query_string: { _name: 'my_type:match:search_terms', fields: %w[iid^3 title^2 description],
+                                   query: 'foo bar', lenient: true, default_operator: :and } }
+        ]
+        expected_filter = [
+          { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+        ]
+
+        expect(by_simple_query_string[:query][:bool][:must]).to eq([])
+        expect(by_simple_query_string[:query][:bool][:must_not]).to eq([])
+        expect(by_simple_query_string[:query][:bool][:should]).to eq(expected_should)
+        expect(by_simple_query_string[:query][:bool][:filter]).to eq(expected_filter)
+      end
     end
 
     context 'when query is provided' do
@@ -191,6 +249,37 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       end
     end
 
+    context 'when options[:clause] is should' do
+      let(:options) { base_options.merge(keyword_match_clause: :should) }
+
+      it 'removes field boosts and returns a by_multi_match_query as a filter' do
+        expected_should = [
+          { bool: {
+            should: [
+              { multi_match: { _name: 'my_type:multi_match:or:search_terms',
+                               fields: %w[iid^3 title^2 description],
+                               query: 'foo bar', operator: :or, lenient: true } },
+              { multi_match: { _name: 'my_type:multi_match:and:search_terms',
+                               fields: %w[iid^3 title^2 description],
+                               query: 'foo bar', operator: :and, lenient: true } },
+              { multi_match: { _name: 'my_type:multi_match_phrase:search_terms',
+                               type: :phrase, fields: %w[iid^3 title^2 description],
+                               query: 'foo bar', lenient: true } }
+            ],
+            minimum_should_match: 1
+          } }
+        ]
+
+        expected_filter = [
+          { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+        ]
+        expect(by_multi_match_query[:query][:bool][:must]).to eq([])
+        expect(by_multi_match_query[:query][:bool][:must_not]).to eq([])
+        expect(by_multi_match_query[:query][:bool][:should]).to eql(expected_should)
+        expect(by_multi_match_query[:query][:bool][:filter]).to eql(expected_filter)
+      end
+    end
+
     context 'when options[:count_only] is true' do
       let(:options) { base_options.merge(count_only: true) }
 
@@ -227,19 +316,29 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
 
   describe '#by_knn' do
     let_it_be(:user) { create(:user) }
-    let(:query_hash) { { query: { bool: { filter: filter } } } }
-    let(:filter) { { foo: 'bar' } }
     let(:hybrid_similarity) { 0.5 }
     let(:hybrid_boost) { 0.9 }
-    let(:options) { { current_user: user, hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost } }
+    let(:options) do
+      {
+        current_user: user,
+        hybrid_similarity: hybrid_similarity,
+        hybrid_boost: hybrid_boost,
+        embedding_field: :embedding_0,
+        fields: %w[iid^3 title^2 description]
+      }
+    end
+
     let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
     let(:mock_embedding) { [1, 2, 3] }
+    let_it_be(:helper) { Gitlab::Elastic::Helper.default }
 
-    subject(:by_knn) { described_class.by_knn(query_hash: query_hash, query: 'test', options: options) }
+    subject(:by_knn) { described_class.by_knn(query: 'test', options: options) }
 
     before do
       allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)
+      allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+      allow(helper).to receive(:vectors_supported?).with(:elasticsearch).and_return(true)
     end
 
     it 'returns the expected query hash' do
@@ -247,18 +346,22 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       expect(by_knn[:knn][:query_vector]).to eq(mock_embedding)
       expect(by_knn[:knn][:similarity]).to eq(hybrid_similarity)
       expect(by_knn[:knn][:boost]).to eq(hybrid_boost)
-      expect(by_knn[:knn][:filter]).to eq(filter)
     end
 
     context 'if we do not pass hybrid_similarity and hybrid_boost' do
-      let(:options) { { current_user: user } }
+      let(:options) do
+        {
+          current_user: user,
+          embedding_field: :embedding_0,
+          fields: %w[iid^3 title^2 description]
+        }
+      end
 
       it 'uses default value' do
         expect(by_knn).to have_key(:knn)
         expect(by_knn[:knn][:query_vector]).to eq(mock_embedding)
         expect(by_knn[:knn][:similarity]).to eq(described_class::DEFAULT_HYBRID_SIMILARITY)
         expect(by_knn[:knn][:boost]).to eq(described_class::DEFAULT_HYBRID_BOOST)
-        expect(by_knn[:knn][:filter]).to eq(filter)
       end
     end
 

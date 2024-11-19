@@ -9,6 +9,7 @@ module Search
       KNN_NUM_CANDIDATES = 100
       DEFAULT_HYBRID_SIMILARITY = 0.6
       DEFAULT_HYBRID_BOOST = 5
+      SIMPLE_QUERY_STRING_BOOST = 0.2
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
@@ -26,6 +27,15 @@ module Search
               bool: bool_expr
             }
           }
+        end
+
+        def by_full_text(query:, options:)
+          if !ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
+              Feature.enabled?(:search_uses_match_queries, options[:current_user])
+            by_multi_match_query(fields: options[:fields], query: query, options: options)
+          else
+            by_simple_query_string(fields: options[:fields], query: query, options: options)
+          end
         end
 
         def by_multi_match_query(fields:, query:, options:)
@@ -54,6 +64,8 @@ module Search
 
             if options[:count_only]
               bool_expr.filter << { bool: multi_match_bool }
+            elsif options[:keyword_match_clause] == :should
+              bool_expr.should << { bool: multi_match_bool }
             else
               bool_expr.must << { bool: multi_match_bool }
             end
@@ -88,6 +100,8 @@ module Search
 
             if options[:count_only]
               bool_expr.filter << simple_query_string(fields, query, options)
+            elsif options[:keyword_match_clause] == :should
+              bool_expr.should << simple_query_string(fields, query, options)
             else
               bool_expr.must << simple_query_string(fields, query, options)
             end
@@ -103,46 +117,87 @@ module Search
           query_hash
         end
 
-        def by_knn(query_hash:, query:, options:)
-          embedding = embedding(query, options)
+        def by_knn(query:, options:)
+          embedding = get_embedding_for_hybrid_query(query: query, options: options)
+          return by_full_text(query: query, options: options) unless embedding
 
-          return query_hash unless embedding
+          if helper.vectors_supported?(:elasticsearch)
+            build_elastic_knn_query(query: query, options: options, embedding: embedding)
+          elsif helper.vectors_supported?(:opensearch)
+            build_opensearch_knn_query(query: query, options: options, embedding: embedding)
+          else
+            by_full_text(query: query, options: options)
+          end
+        end
 
-          filters = query_hash.dig(:query, :bool, :filter)
+        private
+
+        def helper
+          @helper ||= Gitlab::Elastic::Helper.default
+        end
+
+        def get_embedding_for_hybrid_query(query:, options:)
+          return options[:embeddings] if options[:embeddings]
+
+          options[:embeddings] = embedding(query, options)
+        rescue StandardError => e
+          Gitlab::ErrorTracking.track_exception(e)
+          nil
+        end
+
+        def build_opensearch_knn_query(query:, options:, embedding:)
+          options[:simple_query_string_boost] = SIMPLE_QUERY_STRING_BOOST
+          options[:keyword_match_clause] = :should
 
           knn_query = {
             knn: {
-              field: 'embedding_0',
+              options[:embedding_field] => {
+                k: KNN_K,
+                vector: embedding
+              }
+            }
+          }
+
+          query_hash = by_full_text(query: query, options: options)
+          query_hash[:query][:bool][:should].append(knn_query)
+
+          query_hash
+        end
+
+        def build_elastic_knn_query(query:, options:, embedding:)
+          query_hash = by_full_text(query: query, options: options)
+
+          knn_query = {
+            knn: {
+              field: options[:embedding_field].to_s,
               query_vector: embedding,
               boost: options[:hybrid_boost] || DEFAULT_HYBRID_BOOST,
               k: KNN_K,
               num_candidates: KNN_NUM_CANDIDATES,
-              similarity: options[:hybrid_similarity] || DEFAULT_HYBRID_SIMILARITY,
-              filter: filters
+              similarity: options[:hybrid_similarity] || DEFAULT_HYBRID_SIMILARITY
             }
           }
 
           query_hash.merge(knn_query)
-        rescue StandardError => e
-          Gitlab::ErrorTracking.track_exception(e)
-          query_hash
         end
-
-        private
 
         def remove_fields_boost(fields)
           fields.map { |m| m.split('^').first }
         end
 
         def simple_query_string(fields, query, options)
+          query_hash = {
+            _name: context.name(options[:doc_type], :match, :search_terms),
+            fields: fields,
+            query: query,
+            lenient: true,
+            default_operator: :and
+          }
+
+          query_hash[:boost] = options[:simple_query_string_boost] if options[:simple_query_string_boost]
+
           {
-            simple_query_string: {
-              _name: context.name(options[:doc_type], :match, :search_terms),
-              fields: fields,
-              query: query,
-              lenient: true,
-              default_operator: :and
-            }
+            simple_query_string: query_hash
           }
         end
 
