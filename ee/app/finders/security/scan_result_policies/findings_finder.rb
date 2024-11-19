@@ -48,11 +48,17 @@ module Security
       def security_findings
         return Security::Finding.none unless pipeline
 
-        if params[:related_pipeline_ids].present?
-          return Security::Finding.by_project_id_and_pipeline_ids(project.id, params[:related_pipeline_ids])
+        findings = if params[:related_pipeline_ids].present?
+                     Security::Finding.by_project_id_and_pipeline_ids(project.id, params[:related_pipeline_ids])
+                   else
+                     pipeline.security_findings.by_partition_number(pipeline.security_findings_partition_number)
+                   end
+
+        if Feature.enabled?(:use_latest_security_scans_for_security_policies, project)
+          return findings.merge(::Security::Scan.latest_successful)
         end
 
-        pipeline.security_findings.by_partition_number(pipeline.security_findings_partition_number)
+        findings
       end
 
       def only_new_dismissed_findings?
