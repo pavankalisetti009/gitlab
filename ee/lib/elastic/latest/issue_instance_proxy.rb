@@ -37,7 +37,7 @@ module Elastic
         data['archived'] = target.project.archived?
         data['work_item_type_id'] = target.work_item_type_id
 
-        data['routing'] = es_parent if ::Elastic::DataMigrationService.migration_has_finished?(:add_routing_to_issues)
+        data['routing'] = es_parent
 
         data.merge(generic_attributes)
       end

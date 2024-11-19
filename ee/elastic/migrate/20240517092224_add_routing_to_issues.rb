@@ -11,3 +11,5 @@ class AddRoutingToIssues < Elastic::Migration
     { routing: { type: 'keyword' } }
   end
 end
+
+AddRoutingToIssues.prepend ::Elastic::MigrationObsolete

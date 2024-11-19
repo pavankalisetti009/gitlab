@@ -144,13 +144,9 @@ module Gitlab
       private
 
       def index_operation
-        return :upsert if klass == Issue && issue_upsert?
+        return :upsert if klass == Issue
 
         :index
-      end
-
-      def issue_upsert?
-        ::Elastic::DataMigrationService.migration_has_finished?(:add_routing_to_issues)
       end
     end
   end
