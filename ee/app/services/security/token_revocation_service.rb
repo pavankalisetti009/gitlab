@@ -125,11 +125,9 @@ module Security
       ::Gitlab::CurrentSettings.secret_detection_token_revocation_token
     end
 
-    # rubocop:disable Layout/LineLength
     def revocation_comment
       s_("TokenRevocation|This personal access token has been automatically revoked on detection. " \
          "Consider investigating and rotating before marking this vulnerability as resolved.")
     end
-    # rubocop:enable Layout/LineLength
   end
 end
