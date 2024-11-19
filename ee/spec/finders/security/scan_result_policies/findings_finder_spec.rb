@@ -7,11 +7,11 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
   let_it_be(:pipeline) { create(:ee_ci_pipeline, project: project) }
 
   let_it_be(:dependency_scan) do
-    create(:security_scan, project: project, pipeline: pipeline, scan_type: 'dependency_scanning')
+    create(:security_scan, :latest_successful, project: project, pipeline: pipeline, scan_type: 'dependency_scanning')
   end
 
-  let_it_be(:container_scan) do
-    create(:security_scan, project: project, pipeline: pipeline, scan_type: 'container_scanning')
+  let_it_be_with_reload(:container_scan) do
+    create(:security_scan, :latest_successful, project: project, pipeline: pipeline, scan_type: 'container_scanning')
   end
 
   let_it_be(:high_severity_finding) do
@@ -139,11 +139,11 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
       let_it_be(:findings) do
         create_list(:security_finding, 5,
           :with_finding_data,
-          scan: create(:security_scan, project: project, pipeline: pipeline_with_scans, status: :succeeded)
+          scan: create(:security_scan, :latest_successful, project: project, pipeline: pipeline_with_scans)
         )
       end
 
-      let(:params) { { related_pipeline_ids: [pipeline.id, pipeline_with_scans.id, pipeline_without_scans.id] } }
+      let(:params) { { related_pipeline_ids: [pipeline_with_scans.id, pipeline_without_scans.id] } }
 
       it { is_expected.to contain_exactly(*findings) }
 
@@ -164,6 +164,65 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
         let(:params) { { uuids: [] } }
 
         it { is_expected.to match_array(all_findings) }
+      end
+    end
+
+    context 'with multiple security_scans for a report_type' do
+      let(:params) { { scanners: ['container_scanning'] } }
+
+      before do
+        container_scan.update!(latest: false)
+      end
+
+      context 'when use_latest_security_scans_for_security_policies is disabled' do
+        before do
+          stub_feature_flags(use_latest_security_scans_for_security_policies: false)
+        end
+
+        it { is_expected.to contain_exactly(container_scanning_finding) }
+      end
+
+      context 'when latest scan is not successful' do
+        let_it_be(:failed_container_scan) do
+          create(:security_scan, status: :job_failed, latest: true,
+            project: project,
+            pipeline: pipeline,
+            scan_type: 'container_scanning'
+          )
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when latest successful scan has no security_findings' do
+        let_it_be(:latest_successful_scan) do
+          create(:security_scan, :latest_successful,
+            project: project,
+            pipeline: pipeline,
+            scan_type: 'container_scanning'
+          )
+        end
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when latest successful scan has security_findings' do
+        let_it_be(:latest_successful_scan) do
+          create(:security_scan,
+            :latest_successful,
+            project: project,
+            pipeline: pipeline,
+            scan_type: 'container_scanning'
+          )
+        end
+
+        let_it_be(:finding) do
+          create(:security_finding, :with_finding_data, scan: latest_successful_scan)
+        end
+
+        it { is_expected.to contain_exactly(finding) }
+
+        it { is_expected.not_to include(container_scanning_finding) }
       end
     end
   end
