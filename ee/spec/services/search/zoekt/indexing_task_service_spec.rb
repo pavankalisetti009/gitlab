@@ -247,6 +247,26 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
           expect(repo.tasks.last.task_type).to eq 'force_index_repo'
         end
       end
+
+      context 'when index is orphaned' do
+        before do
+          zoekt_index.orphaned!
+        end
+
+        it 'does not do anything' do
+          expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+        end
+      end
+
+      context 'when index is pending deletion' do
+        before do
+          zoekt_index.pending_deletion!
+        end
+
+        it 'does not do anything' do
+          expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+        end
+      end
     end
   end
 end

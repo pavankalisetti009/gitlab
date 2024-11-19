@@ -28,6 +28,18 @@ module Search
 
         current_task_type = random_force_reindexing? ? :force_index_repo : task_type
         Router.fetch_indices_for_indexing(project_id, root_namespace_id: root_namespace_id).find_each do |idx|
+          if current_task_type != :delete_repo && idx.should_be_deleted?
+            logger.info(
+              build_structured_payload(
+                indexing_task_type: task_type,
+                message: 'Indexing skipped due to index being either orphaned or pending deletion',
+                index_id: idx.id,
+                index_state: idx.state
+              )
+            )
+            next
+          end
+
           if index_circuit_breaker_enabled? && index_circuit_broken?(idx)
             IndexingTaskWorker.perform_in(WATERMARK_RESCHEDULE_INTERVAL, project_id, task_type, { index_id: idx.id })
             logger.info(
