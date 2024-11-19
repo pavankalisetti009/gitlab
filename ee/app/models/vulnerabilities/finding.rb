@@ -291,7 +291,7 @@ module Vulnerabilities
 
     def issue_feedback
       related_issues = vulnerability&.related_issues
-      related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues)
+      related_issues.blank? ? feedback(feedback_type: 'issue') : Vulnerabilities::Feedback.find_by(issue: related_issues.first.id)
     end
 
     def merge_request_feedback

@@ -19,6 +19,8 @@ module EE
             instance.iteration_url(object, **options)
           when ::Vulnerability
             instance.project_security_vulnerability_url(object.project, object, **options)
+          when ::Vulnerabilities::RelatedIssuesDecorator
+            instance.issue_url(object, **options)
           when WorkItem
             if object.epic_work_item? && object.project_id.nil?
               instance.group_epic_url(object.namespace, object, **options)

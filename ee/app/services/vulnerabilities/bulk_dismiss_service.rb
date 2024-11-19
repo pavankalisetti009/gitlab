@@ -37,8 +37,9 @@ module Vulnerabilities
     end
 
     def authorized_and_ff_enabled?
-      Vulnerability.id_in(vulnerability_ids)
-        .projects
+      project_ids = Vulnerability.id_in(vulnerability_ids).pluck(:project_id).uniq # rubocop: disable CodeReuse/ActiveRecord -- Vulnerabilities are unlikely to have many linked issues.
+
+      Project.id_in(project_ids)
         .with_group
         .with_namespace
         .include_project_feature
