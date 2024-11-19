@@ -97,7 +97,7 @@ module Gitlab
 
       def ==(other)
         other.instance_of?(self.class) &&
-          self.serialize == other.serialize
+          serialize == other.serialize
       end
 
       def klass_name
@@ -105,8 +105,9 @@ module Gitlab
       end
 
       def database_record
-        strong_memoize(:database_record) { klass.find_by_id(db_id) }
+        klass.find_by_id(db_id)
       end
+      strong_memoize_attr :database_record
 
       def database_record=(record)
         strong_memoize(:database_record) { record }
