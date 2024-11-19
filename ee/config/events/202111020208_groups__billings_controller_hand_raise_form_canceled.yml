@@ -8,6 +8,8 @@ identifiers:
 #- user
 #- namespace
 product_group: acquisition
+product_categories:
+- acquisition
 milestone: "14.5"
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/72725
 distributions:
