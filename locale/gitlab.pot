@@ -34050,9 +34050,6 @@ msgid_plural "Merge %d cells"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Merge Conflicts"
-msgstr ""
-
 msgid "Merge Request"
 msgstr ""
 
@@ -34227,13 +34224,16 @@ msgstr ""
 msgid "MergeChecks|View policies"
 msgstr ""
 
+msgid "MergeConflict|&gt;&gt;&gt;&gt;&gt;&gt;&gt; %{commit}: %{message} (our changes)"
+msgstr ""
+
+msgid "MergeConflict|&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD: %{target} (their changes)"
+msgstr ""
+
 msgid "MergeConflict|Commit to source branch"
 msgstr ""
 
 msgid "MergeConflict|Committing..."
-msgstr ""
-
-msgid "MergeConflict|HEAD//our changes"
 msgstr ""
 
 msgid "MergeConflict|Use ours"
@@ -34246,9 +34246,6 @@ msgid "MergeConflict|conflict"
 msgstr ""
 
 msgid "MergeConflict|conflicts"
-msgstr ""
-
-msgid "MergeConflict|origin//their changes"
 msgstr ""
 
 msgid "MergeRequestAnalytics|Assignees"
@@ -57530,6 +57527,9 @@ msgstr ""
 msgid "To remove the %{link_start}read-only%{link_end} state and regain write access, you can reduce the number of users in your top-level group to %{free_limit} users or less. You can also upgrade to a paid tier, which do not have user limits. If you need additional time, you can start a free 60-day trial which includes unlimited users."
 msgstr ""
 
+msgid "To resolve the conflicts, either use interactive mode to select %{use_ours} or %{use_theirs}, or edit the files inline. Commit these changes into %{branch_name}."
+msgstr ""
+
 msgid "To resolve the problem, refine your search criteria. Select a group or project or use double quotes for multiple keywords (for example, %{code_open}\"your search\"%{code_close})."
 msgstr ""
 
@@ -63826,9 +63826,6 @@ msgid "You can only merge once the items above are resolved."
 msgstr ""
 
 msgid "You can only transfer the project to namespaces you manage."
-msgstr ""
-
-msgid "You can resolve the merge conflict using either the Interactive mode, by choosing %{use_ours} or %{use_theirs} buttons, or by editing the files directly. Commit these changes into %{branch_name}."
 msgstr ""
 
 msgid "You can specify notification level per group or per project."
