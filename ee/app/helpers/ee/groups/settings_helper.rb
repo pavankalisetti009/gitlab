@@ -41,6 +41,20 @@ module EE
         !current_user.user_preference.early_access_program_participant? && @group.experiment_features_enabled
       end
 
+      def group_ai_general_settings_helper_data
+        {
+          on_general_settings_page: 'true',
+          redirect_path: edit_group_path(@group)
+        }.merge(group_ai_settings_helper_data)
+      end
+
+      def group_ai_configuration_settings_helper_data
+        {
+          on_general_settings_page: 'false',
+          redirect_path: group_settings_gitlab_duo_path(@group)
+        }.merge(group_ai_settings_helper_data)
+      end
+
       def group_ai_settings_helper_data
         cascading_settings_data = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
         {
@@ -50,7 +64,6 @@ module EE
           experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
           are_experiment_settings_allowed: @group.experiment_settings_allowed?.to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
-          redirect_path: edit_group_path(@group),
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id
         }

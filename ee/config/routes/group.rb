@@ -24,6 +24,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       resource :gitlab_duo, only: [:show], controller: 'gitlab_duo'
       namespace :gitlab_duo do
         resources :seat_utilization, only: [:index]
+        resources :configuration, only: [:index]
       end
 
       get '/gitlab_duo_usage', to: redirect('groups/%{group_id}/-/settings/gitlab_duo/seat_utilization')
