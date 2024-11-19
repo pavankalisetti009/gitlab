@@ -4,9 +4,9 @@ class ElasticRemoveExpiredNamespaceSubscriptionsFromIndexCronWorker
   include ApplicationWorker
   include Search::Worker
   prepend ::Geo::SkipSecondary
-  prepend Elastic::IndexingControl
 
   data_consistency :always
+  pause_control :advanced_search
 
   include Gitlab::ExclusiveLeaseHelpers
   include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- This is a cron job

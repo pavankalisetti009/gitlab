@@ -13,19 +13,6 @@ RSpec.describe Search::ElasticGroupAssociationDeletionWorker, :elastic_helpers, 
     let(:helper) { Gitlab::Elastic::Helper.default }
     let(:client) { helper.client }
 
-    context 'when indexing is paused' do
-      before do
-        allow(Elastic::IndexingControl).to receive(:non_cached_pause_indexing?).and_return(true)
-      end
-
-      it 'adds the job to the waiting queue' do
-        expect(Elastic::IndexingControlService).to receive(:add_to_waiting_queue!)
-          .with(described_class, [group.id, parent_group.id], anything).once
-
-        perform
-      end
-    end
-
     context 'when Elasticsearch is enabled', :elastic_delete_by_query do
       let(:work_item_index) { ::Search::Elastic::Types::WorkItem.index_name }
       let(:group_work_item) { create(:work_item, namespace: group) }

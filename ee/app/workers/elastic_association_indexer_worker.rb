@@ -3,7 +3,6 @@
 class ElasticAssociationIndexerWorker
   include ApplicationWorker
   include Search::Worker
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
@@ -12,6 +11,7 @@ class ElasticAssociationIndexerWorker
   idempotent!
   worker_resource_boundary :cpu
   loggable_arguments 0, 2
+  pause_control :advanced_search
 
   def perform(class_name, id, indexed_associations)
     return unless Gitlab::CurrentSettings.elasticsearch_indexing?

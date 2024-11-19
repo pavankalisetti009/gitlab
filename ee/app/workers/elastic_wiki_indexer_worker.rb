@@ -4,7 +4,6 @@ class ElasticWikiIndexerWorker
   include ApplicationWorker
   include Search::Worker
   include Gitlab::ExclusiveLeaseHelpers
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
@@ -12,6 +11,7 @@ class ElasticWikiIndexerWorker
   urgency :throttled
   idempotent!
   loggable_arguments 1, 2
+  pause_control :advanced_search
 
   MAX_JOBS_PER_HOUR = 3600
   LOCK_RETRIES = 2

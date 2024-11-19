@@ -7,10 +7,10 @@
 class ElasticFullIndexWorker # rubocop:disable Scalability/IdempotentWorker
   include ApplicationWorker
   include Search::Worker
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :always
+  pause_control :advanced_search
 
   sidekiq_options retry: 2
 

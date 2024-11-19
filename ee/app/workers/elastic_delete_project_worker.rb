@@ -5,12 +5,12 @@ class ElasticDeleteProjectWorker
   include Search::Worker
 
   data_consistency :always
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   sidekiq_options retry: 2
   urgency :throttled
   idempotent!
+  pause_control :advanced_search
 
   def perform(project_id, es_id, options = {})
     options = options.with_indifferent_access
