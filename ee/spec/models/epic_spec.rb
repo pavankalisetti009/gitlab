@@ -1689,6 +1689,42 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   end
 
   context 'with unified associations' do
+    context 'with label_links' do
+      let_it_be(:label1) { create(:group_label, group: group, title: 'epic-label-1') }
+      let_it_be(:label2) { create(:group_label, group: group, title: 'epic-label-2') }
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:work_item) { epic.work_item }
+      let_it_be(:epic_label_link) { create(:label_link, label: label1, target: epic) }
+      let_it_be(:epic_work_item_label_link) { create(:label_link, label: label2, target: work_item) }
+
+      context 'when label_links are fetched just from the epic itself' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
+        end
+
+        it 'returns only epic label_links' do
+          expect(epic.reload.label_links).to match_array([epic_label_link])
+          expect(work_item.reload.label_links).to match_array([epic_work_item_label_link])
+        end
+      end
+
+      context 'when labels are fetched from the epic and epic work item' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
+        end
+
+        it 'returns epic and epic work item label_links' do
+          expect(epic.reload.label_links).to match_array([epic_label_link, epic_work_item_label_link])
+          expect(work_item.reload.label_links).to match_array([epic_label_link, epic_work_item_label_link])
+        end
+
+        it 'returns epic and epic work item label_links queried by id' do
+          expect(epic.reload.label_links.find(epic_label_link.id)).to eq(epic_label_link)
+          expect(work_item.reload.label_links.find(epic_label_link.id)).to eq(epic_label_link)
+        end
+      end
+    end
+
     context 'with labels' do
       let_it_be(:label1) { create(:group_label, group: group, title: 'epic-label-1') }
       let_it_be(:label2) { create(:group_label, group: group, title: 'epic-label-2') }
