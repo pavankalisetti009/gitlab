@@ -246,6 +246,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:elastic_indexing_control
+  :worker_name: ElasticIndexingControlWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:elastic_migration
   :worker_name: Elastic::MigrationWorker
   :feature_category: :global_search
@@ -1469,15 +1478,6 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: false
-  :tags: []
-- :name: elastic_indexing_control
-  :worker_name: ElasticIndexingControlWorker
-  :feature_category: :global_search
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
   :tags: []
 - :name: elastic_namespace_indexer
   :worker_name: ElasticNamespaceIndexerWorker

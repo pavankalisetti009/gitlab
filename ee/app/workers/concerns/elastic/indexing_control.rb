@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # Concern for pausing/unpausing elasticsearch indexing workers
+# This concern is deprecated and being replaced with pause_control
 module Elastic
   module IndexingControl
     WORKERS = [
@@ -37,7 +38,7 @@ module Elastic
 
     class << self
       def non_cached_pause_indexing?
-        ApplicationSetting.where(elasticsearch_pause_indexing: true).exists? # rubocop: disable CodeReuse/ActiveRecord
+        false
       end
 
       def resume_processing!

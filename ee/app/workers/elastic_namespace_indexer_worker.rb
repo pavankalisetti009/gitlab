@@ -3,7 +3,6 @@
 class ElasticNamespaceIndexerWorker
   include ApplicationWorker
   include Search::Worker
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
@@ -13,6 +12,7 @@ class ElasticNamespaceIndexerWorker
   idempotent!
   sidekiq_options retry: 2
   loggable_arguments 1
+  pause_control :advanced_search
 
   def perform(namespace_id, operation)
     return true unless Gitlab::CurrentSettings.elasticsearch_indexing?

@@ -9,54 +9,6 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
     { 'correlation_id' => 'context_correlation_id', 'meta.sidekiq_destination_shard_redis' => 'main' }
   end
 
-  describe '::WORKERS' do
-    it 'only includes classes which inherit from this class' do
-      described_class::WORKERS.each do |klass|
-        expect(klass.ancestors).to include(described_class)
-      end
-    end
-
-    it 'includes all workers with Elastic::IndexingControl enabled' do
-      # do not include the dummy class created in this spec to avoid flaky spec
-      workers = ObjectSpace.each_object(::Class).select do |klass|
-        next if klass.singleton_class?
-
-        klass < described_class && klass.name != 'TestIndexingControlWorker'
-      end
-
-      expect(described_class::WORKERS).to match_array(workers)
-    end
-
-    it 'includes all workers with feature_category :global_search and without pause_control' do
-      exceptions = [
-        ConcurrencyLimit::ResumeWorker,
-        Elastic::MigrationWorker,
-        ElasticClusterReindexingCronWorker,
-        ElasticIndexBulkCronWorker,
-        ElasticIndexInitialBulkCronWorker,
-        ElasticIndexingControlWorker,
-        ElasticNamespaceRolloutWorker,
-        PauseControl::ResumeWorker,
-        Search::ElasticIndexEmbeddingBulkCronWorker,
-        Search::Elastic::MetricsUpdateCronWorker,
-        Search::Elastic::TriggerIndexingWorker
-      ]
-
-      workers = ObjectSpace.each_object(::Class).select do |klass|
-        klass < ApplicationWorker &&
-          klass.get_feature_category == :global_search &&
-          klass.get_pause_control.nil? &&
-          !klass.name.nil? &&
-          !klass.name.empty? &&
-          !klass.singleton_class? &&
-          !klass.name.start_with?('Search::Zoekt') &&
-          exceptions.exclude?(klass)
-      end
-
-      expect(described_class::WORKERS).to match_array(workers)
-    end
-  end
-
   context 'with stub_const' do
     let_it_be(:worker) do
       Class.new do
@@ -81,10 +33,7 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
 
     describe '.non_cached_pause_indexing?' do
       it 'calls current_without_cache' do
-        expect(ApplicationSetting).to receive(:where).with(elasticsearch_pause_indexing: true)
-          .and_return(ApplicationSetting.none)
-
-        expect(described_class.non_cached_pause_indexing?).to be_falsey
+        expect(described_class.non_cached_pause_indexing?).to be(false)
       end
     end
 

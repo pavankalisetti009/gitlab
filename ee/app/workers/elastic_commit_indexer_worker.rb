@@ -4,7 +4,6 @@ class ElasticCommitIndexerWorker
   include ApplicationWorker
   include Search::Worker
   include Gitlab::ExclusiveLeaseHelpers
-  prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
   data_consistency :delayed
@@ -14,6 +13,7 @@ class ElasticCommitIndexerWorker
   idempotent!
   loggable_arguments 1, 2
   concurrency_limit -> { Gitlab::CurrentSettings.elasticsearch_max_code_indexing_concurrency }
+  pause_control :advanced_search
 
   LOCK_RETRIES = 2
   LOCK_SLEEP_SEC = 1
