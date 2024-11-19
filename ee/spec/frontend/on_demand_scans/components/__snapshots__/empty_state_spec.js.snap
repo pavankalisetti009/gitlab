@@ -24,7 +24,7 @@ exports[`EmptyState renders properly 1`] = `
       On-demand scans
     </h1>
     <p
-      class="gl-mb-0 gl-mt-4"
+      class="gl-mb-0 gl-mt-4 gl-text-subtle"
     >
       On-demand scans run outside of DevOps cycle and find vulnerabilities in your projects.
       <a

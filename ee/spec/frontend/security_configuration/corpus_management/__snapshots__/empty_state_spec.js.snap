@@ -24,7 +24,7 @@ exports[`EE - CorpusManagement - EmptyState should render correct content 1`] = 
       Manage your fuzz testing corpus files
     </h1>
     <p
-      class="gl-mb-0 gl-mt-4"
+      class="gl-mb-0 gl-mt-4 gl-text-subtle"
     >
       <gl-sprintf-stub
         message="A corpus is used by fuzz testing to improve coverage. Corpus files can be manually created or auto-generated. %{linkStart}Learn more%{linkEnd}"
