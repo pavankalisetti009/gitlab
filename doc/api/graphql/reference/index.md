@@ -43132,7 +43132,7 @@ see the associated mutation type above.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="airesolvevulnerabilityinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
-| <a id="airesolvevulnerabilityinputsuggestionmergerequestid"></a>`suggestionMergeRequestId` | [`MergeRequestID`](#mergerequestid) | Global ID of the merge request where resolution will be provided as a suggestion. |
+| <a id="airesolvevulnerabilityinputvulnerablemergerequestid"></a>`vulnerableMergeRequestId` | [`MergeRequestID`](#mergerequestid) | Global ID of the merge request which the merge request containing the vulnerability resolution will target. |
 
 ### `AiSummarizeCommentsInput`
 
