@@ -7,6 +7,8 @@ module Search
       include Search::Worker
       prepend ::Geo::SkipSecondary
 
+      BATCH_SIZE = 250
+
       idempotent!
 
       # Create the pending zoekt_repositories and move the index to initializing
@@ -17,7 +19,7 @@ module Search
         namespace = ::Namespace.find_by_id(index.namespace_id)
         return if namespace.nil?
 
-        namespace.all_project_ids.each_batch do |batch|
+        namespace.all_project_ids.each_batch(of: BATCH_SIZE) do |batch|
           data = batch.map { |p| { zoekt_index_id: index.id, project_id: p.id, project_identifier: p.id } }
           Repository.insert_all(data)
         end
